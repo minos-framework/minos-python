@@ -10,6 +10,6 @@ def test_config_ini_fail():
 
 
 def test_config_ini_provider_default_section():
-    provider_instance = MinosConfig.read('./test_config.ini', MinosConfigProviders.INI)
+    provider_instance = MinosConfig.read('./tests/test_config.ini', MinosConfigProviders.INI)
     returned_value = provider_instance.get(key="host", section="kafka")
     assert returned_value == "kafka.minos.run"
