@@ -11,9 +11,3 @@ pipelines:
             - if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
             - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
             - make test
-      - step:
-          name: Coverage
-          script:
-            - if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
-            - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-            - make coverage
