@@ -2,7 +2,7 @@
 
 """The setup script."""
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -10,7 +10,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['minos-microservice-common', ]
+requirements = ['minos-microservice-common', 'aiokafka', 'aiomisc']
 
 setup_requirements = ['pytest-runner',]
 
@@ -36,7 +36,7 @@ setup(
     include_package_data=True,
     keywords='minos_microservice_networks',
     name='minos_microservice_networks',
-    packages=find_packages(include=['minos', 'minos.*']),
+    packages=find_namespace_packages(include=['minos.*']),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
