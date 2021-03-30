@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import typing as t
 from collections import Counter
 
@@ -93,10 +94,11 @@ class MinosEventServer(Service):
     Consumer for the Broker ( at the moment only Kafka is supported )
 
     """
-    __slots__ = "tasks", "_conf", "_local_state", "_storage"
+    __slots__ = "_tasks", "_conf", "_local_state", "_storage", "_handlers"
 
-    def __init__(self, *, conf: t.Dict, storage: MinosStorage = MinosStorageLmdb, **kwargs: t.Any):
-        self.tasks = set()  # type: t.Set[asyncio.Task]
+    def __init__(self, *, conf: t.Dict, handlers: t.Dict[str, t.Callable[[t.Any], t.Any]], storage: MinosStorage = MinosStorageLmdb, **kwargs: t.Any):
+        self._tasks = set()  # type: t.Set[asyncio.Task]
+        self._handlers = handlers
         self._conf = conf
         self._storage = storage.build(self._conf['db_events_path'])
         self._local_state = MinosLocalState(storage=self._storage)
@@ -105,8 +107,8 @@ class MinosEventServer(Service):
 
     def create_task(self, coro: t.Awaitable[t.Any]):
         task = self.loop.create_task(coro)
-        self.tasks.add(task)
-        task.add_done_callback(self.tasks.remove)
+        self._tasks.add(task)
+        task.add_done_callback(self._tasks.remove)
 
     async def save_state_every_second(self):
         while True:
@@ -129,10 +131,15 @@ class MinosEventServer(Service):
             for tp, msgs in msg_set.items():
                 log.debug(f"EVENT Manager topic: {tp}")
                 log.debug(f"EVENT Manager msg: {msgs}")
-                counts = Counter()
-                for msg in msgs:
-                    counts[msg.key] += 1
-                self._local_state.add_counts(tp, counts, msg.offset)
+                # check if the topic is managed by the handler
+                if tp.topic in self._handlers:
+                    func_handler = functools.partial(self._handlers[tp.topic])
+                    counts = Counter()
+                    for msg in msgs:
+                        counts[msg.key] += 1
+                        func_handler(msg)
+                    self._local_state.add_counts(tp, counts, msg.offset)
+
 
     async def start(self) -> t.Any:
         self.start_event.set()
@@ -148,10 +155,8 @@ class MinosEventServer(Service):
         await consumer.start()
         # prepare the database interface
         listener = MinosRebalanceListener(consumer, self._local_state)
-
-        consumer.subscribe(topics=self.topics, listener=listener)
+        topics: t.List = list(self._handlers.keys())
+        consumer.subscribe(topics=topics, listener=listener)
 
         self.create_task(self.save_state_every_second())
-
-
         self.create_task(self.handle_message(consumer))

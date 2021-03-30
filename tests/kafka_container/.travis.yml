@@ -1,0 +1,89 @@
+sudo: required
+
+language: scala
+
+services:
+  - docker
+
+# This version will be also tagged as 'latest'
+env:
+  global:
+    - LATEST="2.13-2.7.0"
+
+# Build recommended versions based on: http://kafka.apache.org/downloads
+matrix:
+  include:
+  - scala: "2.10"
+    env: KAFKA_VERSION=0.8.2.2
+  - scala: 2.11
+    env: KAFKA_VERSION=0.9.0.1
+  - scala: 2.11
+    env: KAFKA_VERSION=0.10.2.2
+  - scala: 2.11
+    env: KAFKA_VERSION=0.11.0.3
+  - scala: 2.11
+    env: KAFKA_VERSION=1.0.2
+  - scala: 2.11
+    env: KAFKA_VERSION=1.1.1
+  - scala: 2.12
+    env: KAFKA_VERSION=2.0.1
+  - scala: 2.12
+    env: KAFKA_VERSION=2.1.1
+  - scala: 2.12
+    env: KAFKA_VERSION=2.2.2
+  - scala: 2.12
+    env: KAFKA_VERSION=2.3.1
+  - scala: 2.12
+    env: KAFKA_VERSION=2.4.1
+  - scala: 2.12
+    env: KAFKA_VERSION=2.5.0
+  - scala: 2.13
+    env: KAFKA_VERSION=2.6.0
+  - scala: 2.13
+    env: KAFKA_VERSION=2.7.0
+
+install:
+  - docker --version
+  - docker-compose --version
+  - echo "KAFKA VERSION  $KAFKA_VERSION"
+  - echo "SCALA VERSION  $TRAVIS_SCALA_VERSION"
+  - echo "LATEST VERSION $LATEST"
+  - export CURRENT=${TRAVIS_SCALA_VERSION}-${KAFKA_VERSION}
+  - docker build --build-arg kafka_version=$KAFKA_VERSION --build-arg scala_version=$TRAVIS_SCALA_VERSION --build-arg vcs_ref=$TRAVIS_COMMIT --build-arg build_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ") -t wurstmeister/kafka .
+  - docker pull confluentinc/cp-kafkacat
+
+before_script:
+  - docker-compose -f test/docker-compose.yml up -d zookeeper kafka_1 kafka_2
+
+script:
+  # Shellcheck main source files
+  - shellcheck -s bash broker-list.sh create-topics.sh start-kafka.sh download-kafka.sh versions.sh
+  - cd test
+  # Shellcheck the tests
+  - shellcheck -x -e SC1090 -s bash *.sh **/*.sh
+  - ./verifyImageLabels.sh # Verify docker image's label
+  - sleep 5 # Wait for containers to start
+  - docker-compose logs
+  - docker ps -a
+  - ./runAllTests.sh
+  # End-to-End scenario tests
+  - cd scenarios
+  - ./runJmxScenario.sh
+  - cd $TRAVIS_BUILD_DIR
+
+after_script:
+  - docker-compose stop
+
+# This will deploy from master. Might want to have a single release branch for a little more control
+deploy:
+  - provider: script
+    script: bash docker_push latest
+    on:
+      repo: wurstmeister/kafka-docker
+      branch: master
+      condition: $CURRENT = $LATEST
+  - provider: script
+    script: bash docker_push "${TRAVIS_SCALA_VERSION}-${KAFKA_VERSION}"
+    on:
+      repo: wurstmeister/kafka-docker
+      # branch: release

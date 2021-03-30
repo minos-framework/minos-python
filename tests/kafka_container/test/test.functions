@@ -1,0 +1,78 @@
+#!/bin/bash -e
+
+# Sourcing this script will replace any of the external calls in the start-kafka.sh script and mock
+# any outbound calls (i.e. to docker)
+
+export START_KAFKA=/usr/bin/start-kafka.sh
+export BROKER_CONFIG=/opt/kafka/config/server.properties
+export ORIG_LOG4J_CONFIG=/opt/kafka/config/log4j.properties
+
+enforceOriginalFile() {
+	SOURCE="$1"
+	BACKUP="$1.bak"
+
+	if [[ ! -f "$BACKUP" ]]; then
+		echo "Backing up $SOURCE to $BACKUP"
+		cp "$SOURCE" "$BACKUP"
+	else
+		echo "Restoring $SOURCE from $BACKUP"
+		cp "$BACKUP" "$SOURCE"
+	fi
+}
+
+setupStartKafkaScript() {
+	echo "Preparing $START_KAFKA script for test"
+
+	enforceOriginalFile "$START_KAFKA"
+	enforceOriginalFile "$BROKER_CONFIG"
+	enforceOriginalFile "$ORIG_LOG4J_CONFIG"
+
+	# We need to remove all executable commands from the start-kafka.sh script, so it can be sourced to evaluate
+	# the environment variables
+	sed  -i -E -e '/^create-topics.sh/d' -e '/^exec "\$KAFKA_HOME\/bin\/kafka-server-start.sh"/d' "$START_KAFKA"
+
+	# Mock the call to docker port to return valid result
+	function docker() { echo "0.0.0.0:9092"; }
+	export -f docker
+}
+
+setupStartKafkaScript
+
+
+# Will look in the server.properties file, and check if there is an exact match for the provided input
+# i.e. `assertExpectedConfig 'broker.id=123'`
+# This will only succeed if there is exactly one line matching `broker.id=123`
+assertExpectedConfig() {
+	EXPECTED=$1
+
+	COUNT=$(grep -E '^'"$EXPECTED"'$' "$BROKER_CONFIG" | wc -l)
+	RESULT=$(grep -E '^'"$EXPECTED"'$' "$BROKER_CONFIG")
+	echo " > $COUNT matches of $RESULT"
+
+	[[ "$RESULT" == "$EXPECTED" && "$COUNT" == "1" ]]
+}
+
+assertExpectedLog4jConfig() {
+	EXPECTED=$1
+
+	RESULT=$(grep -E '^'"$EXPECTED"'$' "$ORIG_LOG4J_CONFIG")
+	echo " > $RESULT"
+
+	[[ "$RESULT" == "$EXPECTED" ]]
+}
+
+
+assertAbsent() {
+	EXPECTED_ABSENT=$1
+
+	RESULT=$(grep -E '^'"$EXPECTED_ABSENT" "$BROKER_CONFIG" | wc -l)
+	echo " > $RESULT matches for ^$EXPECTED_ABSENT"
+
+	[[ "$RESULT" == "0" ]]
+}
+
+printBrokerConfig() {
+	echo "----[ $BROKER_CONFIG ]----"
+	cat "$BROKER_CONFIG" | sed -nE '/^[^#]/p'
+	echo "--------------------------"
+}
