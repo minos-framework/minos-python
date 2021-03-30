@@ -2,7 +2,7 @@
 
 """The setup script."""
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -36,10 +36,10 @@ setup(
     include_package_data=True,
     keywords='minos_microservice_common',
     name='minos_microservice_common',
-    packages=find_packages(include=['minos', 'minos.*']),
+    packages=find_namespace_packages(include=['minos.*']),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    version='0.0.1-alpha',
+    version='0.0.1.1-alpha',
     zip_safe=False,
 )
