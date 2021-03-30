@@ -1,8 +1,21 @@
+import shutil
+
 import pytest
 from minos.common.storage.lmdb import MinosStorageLmdb
 
-def test_storage_add_text():
+@pytest.fixture
+def path():
+    return "./tests/test_db.lmdb"
 
+@pytest.fixture(autouse=True)
+def clear_database(path):
+    yield
+    # Code that will run after your test, for example:
+    shutil.rmtree(path, ignore_errors=True)
+
+
+
+def test_storage_add_text(path):
     minosEnv = MinosStorageLmdb.build(path)
     minosEnv.add("TestOne", "first", "Text Value")
 
@@ -10,7 +23,7 @@ def test_storage_add_text():
     assert value_returned == "Text Value"
 
 
-def test_storage_add_int():
+def test_storage_add_int(path):
     minosEnv = MinosStorageLmdb.build(path)
     minosEnv.add("TestOne", "first", 123)
 
@@ -18,7 +31,7 @@ def test_storage_add_int():
     assert value_returned == 123
 
 
-def test_storage_add_dict():
+def test_storage_add_dict(path):
     minosEnv = MinosStorageLmdb.build(path)
     minosEnv.add("TestOne", "first", {"key_one": "hello", "key_two": "minos"})
 
@@ -27,7 +40,7 @@ def test_storage_add_dict():
     assert value_returned["key_two"] == "minos"
 
 
-def test_storage_add_multi_dict():
+def test_storage_add_multi_dict(path):
     minosEnv = MinosStorageLmdb.build(path)
     minosEnv.add("TestOne", "first", {"key_one": "hello", "key_two": {"sub_key": "this is a sub text"}})
 
@@ -36,7 +49,7 @@ def test_storage_add_multi_dict():
     assert value_returned["key_two"]["sub_key"] == "this is a sub text"
 
 
-def test_storage_add_list():
+def test_storage_add_list(path):
     minosEnv = MinosStorageLmdb.build(path)
     minosEnv.add("TestOne", "first", ["hello", "minos"])
 
@@ -45,7 +58,7 @@ def test_storage_add_list():
     assert value_returned[1] == "minos"
 
 
-def test_storage_add_multi_table():
+def test_storage_add_multi_table(path):
     minosEnv = MinosStorageLmdb.build(path)
     minosEnv.add("TestOne", "first", "Text Value")
     minosEnv.add("TestTwo", "first_double", "Text Double Value")
@@ -61,7 +74,7 @@ def test_storage_add_multi_table():
     assert value_returned == "Text Value Diff"
 
 
-def test_storage_delete():
+def test_storage_delete(path):
     minosEnv = MinosStorageLmdb.build(path)
     minosEnv.add("TestOne", "first", "Text Value")
     minosEnv.add("TestOne", "second", "Text Second Value")
@@ -74,7 +87,7 @@ def test_storage_delete():
     assert exception_value is None
 
 
-def test_storage_update():
+def test_storage_update(path):
     minosEnv = MinosStorageLmdb.build(path)
     minosEnv.add("TestOne", "first", "Text Value")
 
