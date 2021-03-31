@@ -2,11 +2,9 @@
 Minos Microservice Common
 =========================
 
-.. image:: https://codecov.io/gh/Clariteia/minos_microservice_common/branch/main/graph/badge.svg
-  :target: https://codecov.io/gh/Clariteia/minos_microservice_common
+[![codecov](https://codecov.io/gh/Clariteia/minos_microservice_common/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_common)
 
-.. image:: https://github.com/Clariteia/minos_microservice_common/actions/workflows/python-test.yml/badge.svg
-
+![Tests](https://github.com/Clariteia/minos_microservice_common/actions/workflows/python-test.yml/badge.svg)
 
 Python Package with common Classes and Utilities used in Minos Microservices
 

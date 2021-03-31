@@ -1,15 +1,32 @@
 import pytest
 
-from minos.common.configuration.config import MinosConfig, MinosConfigProviders
+from minos.common.configuration.config import MinosConfig
 from minos.common.exceptions import MinosConfigException
 
 
 def test_config_ini_fail():
     with pytest.raises(MinosConfigException):
-        MinosConfig.read('./test_fail_config.ini', MinosConfigProviders.INI)
+        instance = MinosConfig(path='./test_fail_config.ini')
 
 
-def test_config_ini_provider_default_section():
-    provider_instance = MinosConfig.read('./tests/test_config.ini', MinosConfigProviders.INI)
-    returned_value = provider_instance.get(key="host", section="kafka")
-    assert returned_value == "kafka.minos.run"
+def test_config_kafka():
+    provider_instance = MinosConfig(path='./tests/test_config.ini')
+    kafka = provider_instance.kafka
+    assert kafka.host == "kafka.minos.run"
+    assert kafka.port == 9092
+
+
+def test_config_rest():
+    provider_instance = MinosConfig(path='./tests/test_config.ini')
+    rest = provider_instance.rest
+    assert rest.host == "localhost"
+    assert rest.port == 8900
+
+
+def test_config_microservice():
+    provider_instance = MinosConfig(path='./tests/test_config.ini')
+    microservice = provider_instance.microservice
+    assert isinstance(microservice.events, list) == True
+    assert isinstance(microservice.saga, list) == True
+    assert microservice.events[0] == "OrderAdded"
+    assert microservice.saga[0] == "CreateOrder"
