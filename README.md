@@ -16,7 +16,5 @@ Features
 Credits
 -------
 
-This package was created with Cookiecutter_  and the `clariteia/minos-pypackage`_ project template.
+This package was created with ![Cookiecutter](https://github.com/audreyr/cookiecutter)  and the ![Minos Package](https://github.com/Clariteia/minos-pypackage) project template.
 
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`clariteia/minos-pypackage`: https://bitbucket.org/clariteia-devs/minos-pypackage/src/master/
