@@ -7,6 +7,7 @@ from aiokafka import AIOKafkaProducer
 import random
 
 from aiomisc.log import basic_config
+from minos.common.configuration.config import MinosConfig
 
 from minos.networks.event import MinosEventServer
 from tests.conftest import CallBackReturn
@@ -14,15 +15,7 @@ from tests.conftest import CallBackReturn
 
 @pytest.fixture()
 def config():
-    return {
-        "controller": "tests.controllers.RootController",
-        "group": "OrdersGroup",
-        "host": "localhost",
-        "port": 8900,
-        "kafka_host": "localhost",
-        "kafka_port": 9092,
-        "db_events_path": "./tests/events_db.lmdb"
-    }
+    return MinosConfig(path='./tests/test_config.ini')
 
 
 def TicketAddedCallback(message: bytes):
