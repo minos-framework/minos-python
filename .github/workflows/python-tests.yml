@@ -20,8 +20,8 @@ jobs:
             ports:
                 - "9092:9092"
             env:
-                KAFKA_BROKER_ID=1
-                KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+                KAFKA_BROKER_ID: 1
+                KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
                 KAFKA_ADVERTISED_HOST_NAME: localhost
     steps:
     - uses: actions/checkout@v2
