@@ -137,7 +137,7 @@ class MinosEventServer(Service):
                     counts = Counter()
                     for msg in msgs:
                         counts[msg.key] += 1
-                        func_handler(msg)
+                        func_handler(msg.value)
                     self._local_state.add_counts(tp, counts, msg.offset)
 
 

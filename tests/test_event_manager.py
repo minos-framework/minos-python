@@ -1,9 +1,13 @@
 import asyncio
+import logging
 
 import pytest
 import string
 from aiokafka import AIOKafkaProducer
 import random
+
+from aiomisc.log import basic_config
+
 from minos.networks.event import MinosEventServer
 from tests.conftest import CallBackReturn
 
@@ -21,12 +25,12 @@ def config():
     }
 
 
-def TicketAddedCallback(message):
-    CallBackReturn.content = message
+def TicketAddedCallback(message: bytes):
+    CallBackReturn.content = message.decode('utf-8')
 
 
-def TicketRemoved(message):
-    CallBackReturn.content = message
+def TicketRemoved(message: bytes):
+    CallBackReturn.content = message.decode('utf-8')
 
 
 @pytest.fixture()
@@ -40,6 +44,13 @@ def services(config):
 
 
 async def test_producer_kafka(loop):
+    basic_config(
+        level=logging.INFO,
+        buffered=True,
+        log_format='color',
+        flush_interval=2
+    )
+
     producer = AIOKafkaProducer(loop=loop, bootstrap_servers='localhost:9092')
     # Get cluster layout and topic/partition allocation
     await producer.start()
@@ -53,4 +64,4 @@ async def test_producer_kafka(loop):
     await producer.send_and_wait("TicketRemoved", other_string_to_send.encode())
     await asyncio.sleep(1)
     assert CallBackReturn.content == other_string_to_send
-    producer.stop()
+    await producer.stop()
