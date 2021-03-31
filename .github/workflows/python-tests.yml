@@ -10,6 +10,8 @@ jobs:
     strategy:
       matrix:
         python-version: [3.9]
+    container:
+        image: python:latest
     services:
         zookeeper:
             image: bitnami/zookeeper:latest
