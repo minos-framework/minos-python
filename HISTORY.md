@@ -12,3 +12,9 @@ History
 
 * Completed the Generic Config class Microservices.
 * README badges modification.
+
+
+0.0.1.3-alpha (2021-03-31)
+------------------
+
+* Updated Markdown for README and HISTORY
