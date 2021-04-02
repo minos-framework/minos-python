@@ -6,35 +6,36 @@ from collections import Counter
 from aiokafka import AIOKafkaConsumer, ConsumerRebalanceListener
 from aiomisc import Service
 from kafka.errors import OffsetOutOfRangeError
+from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 from minos.common.storage.abstract import MinosStorage
 from minos.common.storage.lmdb import MinosStorageLmdb
 
 
 class MinosLocalState:
-    __slots__ = "_counts", "_offsets", "_storage"
+    __slots__ = "_counts", "_offsets", "_storage", "_dbname"
 
-    def __init__(self, storage: MinosStorage):
+    def __init__(self, storage: MinosStorage, db_name="LocalState"):
         self._counts = {}
         self._offsets = {}
+        self._dbname = db_name
         self._storage = storage
 
     def dump_local_state(self):
-        db_name = "LocalState"
+
         for tp in self._counts:
             key = f"{tp.topic}:{tp.partition}"
             state = {
                 "last_offset": self._offsets[tp],
                 "counts": dict(self._counts[tp])
             }
-            actual_state = self._storage.get(db_name, key)
+            actual_state = self._storage.get(self._dbname, key)
             if actual_state is not None:
-                self._storage.update(db_name, key, state)
+                self._storage.update(self._dbname, key, state)
             else:
-                self._storage.add(db_name, key, state)
+                self._storage.add(self._dbname, key, state)
 
     def load_local_state(self, partitions):
-        db_name = "LocalState"
         self._counts.clear()
         self._offsets.clear()
         for tp in partitions:
@@ -44,7 +45,7 @@ class MinosLocalState:
                 "counts": {}
             }
             key = f"{tp.topic}:{tp.partition}"
-            returned_val = self._storage.get(db_name, key)
+            returned_val = self._storage.get(self._dbname, key)
             if returned_val is not None:
                 state = returned_val
             self._counts[tp] = Counter(state['counts'])
@@ -94,14 +95,15 @@ class MinosEventServer(Service):
     Consumer for the Broker ( at the moment only Kafka is supported )
 
     """
-    __slots__ = "_tasks", "_conf", "_local_state", "_storage", "_handlers"
+    __slots__ = "_tasks", "_local_state", "_storage", "_handlers", "_broker_host", "_broker_port", "_broker_group"
 
-    def __init__(self, *, conf: t.Dict, handlers: t.Dict[str, t.Callable[[t.Any], t.Any]], storage: MinosStorage = MinosStorageLmdb, **kwargs: t.Any):
+    def __init__(self, *, conf: MinosConfig, storage: MinosStorage = MinosStorageLmdb, **kwargs: t.Any):
         self._tasks = set()  # type: t.Set[asyncio.Task]
-        self._handlers = handlers
-        self._conf = conf
-        self._storage = storage.build(self._conf['db_events_path'])
-        self._local_state = MinosLocalState(storage=self._storage)
+        self._broker_host = conf.events.broker.host
+        self._broker_port = conf.events.broker.port
+        self._broker_port = f"{conf.service.name}_group_id"
+        self._storage = storage.build(conf.events.database.path)
+        self._local_state = MinosLocalState(storage=self._storage, db_name=conf.events.database.name)
 
         super().__init__(**kwargs)
 
@@ -137,6 +139,7 @@ class MinosEventServer(Service):
                     counts = Counter()
                     for msg in msgs:
                         counts[msg.key] += 1
+
                         func_handler(msg.value)
                     self._local_state.add_counts(tp, counts, msg.offset)
 
@@ -148,8 +151,8 @@ class MinosEventServer(Service):
         consumer = AIOKafkaConsumer(loop=self.loop,
                                     enable_auto_commit=False,
                                     auto_offset_reset="none",
-                                    group_id=self._conf['group'],
-                                    bootstrap_servers=f"{self._conf['kafka_host']}:{self._conf['kafka_port']}",
+                                    group_id=self._broker_group,
+                                    bootstrap_servers=f"{self._broker_host}:{self._broker_port}",
                                     key_deserializer=lambda key: key.decode("utf-8") if key else "",)
 
         await consumer.start()

@@ -15,7 +15,7 @@ from tests.conftest import CallBackReturn
 
 @pytest.fixture()
 def config():
-    return MinosConfig(path='./tests/test_config.ini')
+    return MinosConfig(path='./tests/test_config.yaml')
 
 
 def TicketAddedCallback(message: bytes):
