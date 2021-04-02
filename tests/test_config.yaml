@@ -10,6 +10,9 @@ rest:
 events:
     broker: localhost
     port: 9092
+    database:
+        path: ./tests/local_db.lmdb
+        name: database_events_test
     items:
         - name: TicketAdded
           controller: minos.services.CQRSService
@@ -23,6 +26,9 @@ events:
 commands:
     broker: localhost
     port: 9092
+    database:
+        path: ./tests/local_db.lmdb
+        name: database_commands_test
     items:
         - name: AddOrder
           controller: minos.services.OrderService

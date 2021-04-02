@@ -26,3 +26,9 @@ History
 * Added a set of tests for the MinosConfig class
 * As well from the tests folder would be possible to get and example of
   the configuration file for microservices
+
+0.0.1.5-alpha (2021-04-04)
+------------------
+
+* Added support for database configuration parameters ( events and commands)
+* Added set of tests for database config parameters

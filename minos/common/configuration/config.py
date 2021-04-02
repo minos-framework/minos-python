@@ -8,12 +8,13 @@ import abc
 from minos.common.exceptions import MinosConfigException
 
 BROKER = collections.namedtuple("Broker", "host port")
+DATABASE = collections.namedtuple("Database", "path name")
 ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
 EVENT = collections.namedtuple("Event", "name controller action")
 COMMAND = collections.namedtuple("Command", "name controller action")
 
-EVENTS = collections.namedtuple("Events", "broker items")
-COMMANDS = collections.namedtuple("Commands", "broker items")
+EVENTS = collections.namedtuple("Events", "broker database items")
+COMMANDS = collections.namedtuple("Commands", "broker database items")
 REST = collections.namedtuple("Rest", "broker endpoints")
 
 
@@ -37,17 +38,6 @@ class MinosConfigAbstract(abc.ABC):
         if os.path.isfile(path):
             return True
         return False
-
-    @property
-    def services(self) -> t.Dict[str, t.Union[int, str, t.Dict, t.List]]:
-        raise NotImplementedError
-
-    @property
-    def kafka(self):
-        return KAFKA(
-            host=self._get("host", "kafka"),
-            port=self._get("port", "kafka")
-        )
 
 
 class MinosConfig(MinosConfigAbstract):
@@ -81,20 +71,22 @@ class MinosConfig(MinosConfigAbstract):
     def events(self):
         event_info = self._get("events")
         broker = BROKER(host=event_info['broker'], port=event_info['port'])
+        database = DATABASE(path=event_info['database']['path'], name=event_info['database']['name'])
         events = []
         for event in event_info['items']:
             events.append(EVENT(name=event['name'], controller=event['controller'],
                                 action=event['action'])
                           )
-        return EVENTS(broker=broker, items=events)
+        return EVENTS(broker=broker, items=events, database=database)
 
     @property
     def commands(self):
         command_info = self._get("commands")
         broker = BROKER(host=command_info['broker'], port=command_info['port'])
+        database = DATABASE(path=command_info['database']['path'], name=command_info['database']['name'])
         commands = []
         for command in command_info['items']:
             commands.append(COMMAND(name=command['name'], controller=command['controller'],
                                     action=command['action'])
                             )
-        return COMMANDS(broker=broker, items=commands)
+        return COMMANDS(broker=broker, items=commands, database=database)
