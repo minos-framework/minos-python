@@ -18,3 +18,11 @@ History
 ------------------
 
 * Updated Markdown for README and HISTORY
+
+0.0.1.4-alpha (2021-04-04)
+------------------
+
+* Completed the Config Class for YAML Support
+* Added a set of tests for the MinosConfig class
+* As well from the tests folder would be possible to get and example of
+  the configuration file for microservices
