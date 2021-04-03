@@ -12,6 +12,7 @@ DATABASE = collections.namedtuple("Database", "path name")
 ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
 EVENT = collections.namedtuple("Event", "name controller action")
 COMMAND = collections.namedtuple("Command", "name controller action")
+SERVICE = collections.namedtuple("Service", "name")
 
 EVENTS = collections.namedtuple("Events", "broker database items")
 COMMANDS = collections.namedtuple("Commands", "broker database items")
@@ -54,6 +55,11 @@ class MinosConfig(MinosConfigAbstract):
         if key in self._data:
             return self._data[key]
         return None
+
+    @property
+    def service(self):
+        service = self._get("service")
+        return SERVICE(name=service['name'])
 
     @property
     def rest(self):

@@ -9,6 +9,11 @@ def test_config_ini_fail():
         instance = MinosConfig(path='./test_fail_config.yaml')
 
 
+def test_config_service():
+    provider_instance = MinosConfig(path='./tests/test_config.yaml')
+    assert provider_instance.service.name == "Order"
+
+
 def test_config_rest():
     provider_instance = MinosConfig(path='./tests/test_config.yaml')
     assert provider_instance.rest.broker.host == "localhost"
@@ -26,6 +31,7 @@ def test_config_events_database():
     provider_instance = MinosConfig(path='./tests/test_config.yaml')
     assert provider_instance.events.database.path == "./tests/local_db.lmdb"
     assert provider_instance.events.database.name == "database_events_test"
+
 
 def test_config_commands_database():
     provider_instance = MinosConfig(path='./tests/test_config.yaml')

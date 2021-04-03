@@ -19,7 +19,7 @@ History
 
 * Updated Markdown for README and HISTORY
 
-0.0.1.4-alpha (2021-04-04)
+0.0.1.4-alpha (2021-04-02)
 ------------------
 
 * Completed the Config Class for YAML Support
@@ -27,8 +27,13 @@ History
 * As well from the tests folder would be possible to get and example of
   the configuration file for microservices
 
-0.0.1.5-alpha (2021-04-04)
+0.0.1.5-alpha (2021-04-02)
 ------------------
 
 * Added support for database configuration parameters ( events and commands)
 * Added set of tests for database config parameters
+
+0.0.1.6 (2021-04-03)
+------------------
+
+* MinosConfig added service parameter
