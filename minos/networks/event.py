@@ -7,9 +7,12 @@ from aiokafka import AIOKafkaConsumer, ConsumerRebalanceListener
 from aiomisc import Service
 from kafka.errors import OffsetOutOfRangeError
 from minos.common.configuration.config import MinosConfig
+from minos.common.importlib import import_module
 from minos.common.logs import log
 from minos.common.storage.abstract import MinosStorage
 from minos.common.storage.lmdb import MinosStorageLmdb
+
+from minos.networks.exceptions import MinosNetworkException
 
 
 class MinosLocalState:
@@ -101,7 +104,8 @@ class MinosEventServer(Service):
         self._tasks = set()  # type: t.Set[asyncio.Task]
         self._broker_host = conf.events.broker.host
         self._broker_port = conf.events.broker.port
-        self._broker_port = f"{conf.service.name}_group_id"
+        self._broker_group = f"{conf.service.name}_group_id"
+        self._handler = conf.events.items
         self._storage = storage.build(conf.events.database.path)
         self._local_state = MinosLocalState(storage=self._storage, db_name=conf.events.database.name)
 
@@ -135,14 +139,12 @@ class MinosEventServer(Service):
                 log.debug(f"EVENT Manager msg: {msgs}")
                 # check if the topic is managed by the handler
                 if tp.topic in self._handlers:
-                    func_handler = functools.partial(self._handlers[tp.topic])
                     counts = Counter()
                     for msg in msgs:
                         counts[msg.key] += 1
-
-                        func_handler(msg.value)
-                    self._local_state.add_counts(tp, counts, msg.offset)
-
+                        func = self._get_event_handler(tp.topic)
+                        func(msg.value)
+                        self._local_state.add_counts(tp, counts, msg.offset)
 
     async def start(self) -> t.Any:
         self.start_event.set()
@@ -153,7 +155,7 @@ class MinosEventServer(Service):
                                     auto_offset_reset="none",
                                     group_id=self._broker_group,
                                     bootstrap_servers=f"{self._broker_host}:{self._broker_port}",
-                                    key_deserializer=lambda key: key.decode("utf-8") if key else "",)
+                                    key_deserializer=lambda key: key.decode("utf-8") if key else "", )
 
         await consumer.start()
         # prepare the database interface
@@ -163,3 +165,15 @@ class MinosEventServer(Service):
 
         self.create_task(self.save_state_every_second())
         self.create_task(self.handle_message(consumer))
+
+    def _get_event_handler(self, topic: str) -> t.Callable:
+        for event in self._handlers:
+            if event.name == topic:
+                # the topic exist, get the controller and the action
+                controller = event.controller
+                action = event.action
+                object_class = import_module(controller)
+                instance_class = object_class()
+                return functools.partial(instance_class.action)
+        raise MinosNetworkException(f"topic {topic} have no controller/action configured, "
+                                    f"please review th configuration file")

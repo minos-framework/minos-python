@@ -10,7 +10,6 @@ from aiomisc.log import basic_config
 from minos.common.configuration.config import MinosConfig
 
 from minos.networks.event import MinosEventServer
-from tests.conftest import CallBackReturn
 
 
 @pytest.fixture()
@@ -18,22 +17,9 @@ def config():
     return MinosConfig(path='./tests/test_config.yaml')
 
 
-def TicketAddedCallback(message: bytes):
-    CallBackReturn.content = message.decode('utf-8')
-
-
-def TicketRemoved(message: bytes):
-    CallBackReturn.content = message.decode('utf-8')
-
-
 @pytest.fixture()
 def services(config):
-    handlers_test = {
-        'TicketAdded': TicketAddedCallback,
-        'TicketRemoved': TicketRemoved
-    }
-
-    return [MinosEventServer(conf=config, handlers=handlers_test)]
+    return [MinosEventServer(conf=config)]
 
 
 async def test_producer_kafka(loop):
@@ -51,10 +37,8 @@ async def test_producer_kafka(loop):
     string_to_send = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
     await producer.send_and_wait("TicketAdded", string_to_send.encode())
     await asyncio.sleep(1)
-    assert CallBackReturn.content == string_to_send
 
     other_string_to_send = ''.join(random.choices(string.ascii_uppercase + string.digits, k=40))
-    await producer.send_and_wait("TicketRemoved", other_string_to_send.encode())
+    await producer.send_and_wait("TicketDeleted", other_string_to_send.encode())
     await asyncio.sleep(1)
-    assert CallBackReturn.content == other_string_to_send
     await producer.stop()
