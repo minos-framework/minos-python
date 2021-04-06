@@ -13,7 +13,7 @@ class AggregateField:
         self.value = value
 
     def __repr__(self):
-        return f"AggregateField(name={self.name}, type={self.type}, value={self.value}"
+        return f"AggregateField(name={self.name}, type={self.type}, value={self.value})"
 
 
 def _process_aggregate(cls):
@@ -22,7 +22,7 @@ def _process_aggregate(cls):
     aggregate_fields = []
     for name, type in cls_annotations.items():
         attribute = getattr(cls, name, None)
-        aggregate_fields.append(AggregateField(name=name, type=type, value=value))
+        aggregate_fields.append(AggregateField(name=name, type=type, value=attribute))
         value = None
     setattr(cls, "_FIELDS", aggregate_fields)
     return cls
