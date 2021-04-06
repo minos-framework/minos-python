@@ -37,3 +37,8 @@ History
 ------------------
 
 * MinosConfig added service parameter
+
+0.0.1.7 (2021-04-06)
+------------------
+
+* Modified the schema structure of Avro generic encoder and decoder
