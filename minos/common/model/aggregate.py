@@ -1,7 +1,30 @@
 import dataclasses
 from collections import namedtuple
 
+from minos.common.logs import log
+
 AVRO_FIELD = namedtuple("MinosAvroField", "name type")
+
+
+def _process_aggregate(cls):
+    # get the list of the fields from the __annotations__
+    cls_annotations = cls.__dict__.get('__annotations__', {})
+    log.debug("Testing")
+    for name, type in cls_annotations.items():
+
+        log.debug(f"Annotations: {name}, {type}")
+
+    return cls
+
+
+def aggregate(cls=None):
+    def wrap(cls):
+        return _process_aggregate(cls)
+
+    if cls is None:
+        return wrap
+
+    return wrap(cls)
 
 
 class MinosBaseAggregate:
