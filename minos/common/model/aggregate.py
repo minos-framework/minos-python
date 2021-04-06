@@ -1,19 +1,30 @@
 import dataclasses
-from collections import namedtuple
+import typing as t
 
-from minos.common.logs import log
 
-AVRO_FIELD = namedtuple("MinosAvroField", "name type")
+class AggregateField:
+    name: str
+    type: t.Any
+    value: t.Any
+
+    def __init__(self, name: str, type: t.Any, value: t.Optional[t.Any] = None):
+        self.name = name
+        self.type = type
+        self.value = value
+
+    def __repr__(self):
+        return f"AggregateField(name={self.name}, type={self.type}, value={self.value}"
 
 
 def _process_aggregate(cls):
     # get the list of the fields from the __annotations__
     cls_annotations = cls.__dict__.get('__annotations__', {})
-    log.debug("Testing")
+    aggregate_fields = []
     for name, type in cls_annotations.items():
-
-        log.debug(f"Annotations: {name}, {type}")
-
+        attribute = getattr(cls, name, None)
+        aggregate_fields.append(AggregateField(name=name, type=type, value=value))
+        value = None
+    setattr(cls, "_FIELDS", aggregate_fields)
     return cls
 
 

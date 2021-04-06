@@ -1,8 +1,5 @@
-from dataclasses import dataclass, field
-import pytest
-from minos.common.logs import log
-from minos.common.model.aggregate import MinosBaseAggregate, aggregate
-import typing as t
+
+from minos.common.model.aggregate import aggregate
 
 @aggregate
 class TestAggregate:
@@ -14,5 +11,5 @@ class TestAggregate:
 
 def test_aggregate_model():
     aggregate = TestAggregate()
-    assert aggregate._TESTER == "bravo"
+    assert aggregate._FIELDS == "bravo"
     assert False == True
