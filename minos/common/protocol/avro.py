@@ -51,7 +51,9 @@ class MinosAvroProtocol(MinosBinaryProtocol):
                                      "string", "int", "bytes", "long", "boolean", "float",
                                      {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]}
                                  ]},
-                                 {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]}
+                                 {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float",
+                                                            {"type": "map", "values": ["string", "int", "bytes", "long",
+                                                                                       "boolean", "float"]}]}
                              ]
                          }
                     ]
@@ -128,7 +130,10 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
                                          "string", "int", "bytes", "long", "boolean", "float",
                                          {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]}
                                      ]},
-                                     {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]}
+                                     {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float",
+                                                                {"type": "map",
+                                                                 "values": ["string", "int", "bytes", "long",
+                                                                            "boolean", "float"]}]}
                                  ]
                              }
                         ]
