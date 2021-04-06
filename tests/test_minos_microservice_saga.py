@@ -11,7 +11,7 @@ from minos.common.logs import log
 from minos.microservice.saga.saga import Saga
 
 
-async def create_ticket_on_reply_callback(response):
+def create_ticket_on_reply_callback(response):
     treated_response = 'async create_ticket_on_reply_callback response!!!!'
     log.debug("---> create_ticket_on_reply_callback")
     return treated_response
@@ -29,13 +29,13 @@ async def create_order_callback2(response):
     return treated_response
 
 
-async def delete_order_callback(response):
+def delete_order_callback(response):
     treated_response = 'async delete_order_callback response!!!!'
     log.debug("---> delete_order_callback")
     return treated_response
 
 
-async def shipping_callback(response):
+def shipping_callback(response):
     treated_response = 'async shipping_callback response!!!!'
     log.debug("---> shipping_callback")
     return treated_response
@@ -52,9 +52,27 @@ def test_saga_correct():
             .invokeParticipant("CreateTicket") \
             .onReply(create_ticket_on_reply_callback) \
         .step() \
-            .invokeParticipant("Shipping") \
+            .invokeParticipant("Shopping") \
             .withCompensation(["Failed","BlockOrder"], shipping_callback) \
         .execute()
+
+"""
+def test_saga_execute_all_compensations():
+    with pytest.raises(Exception) as exc:
+        Saga("ItemsAdd") \
+            .start() \
+            .step() \
+                .invokeParticipant("CreateOrder", create_order_callback) \
+                .withCompensation("DeleteOrder", delete_order_callback) \
+                .onReply(create_ticket_on_reply_callback) \
+            .step() \
+                .invokeParticipant("CreateTicket") \
+                .onReply(create_ticket_on_reply_callback) \
+            .step() \
+                .invokeParticipant("Shipping") \
+                .withCompensation(["Failed","BlockOrder"], shipping_callback) \
+            .execute()
+    assert "Exception: Error performing step Shipping." in str(exc.value)
 
 
 
@@ -92,4 +110,4 @@ def test_saga_wrong_step_action_must_throw_exception():
             .execute()
 
     assert "The first method of the step must be .invokeParticipant(name, callback (optional))." in str(exc.value)
-
+"""
