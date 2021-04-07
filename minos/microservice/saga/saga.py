@@ -9,6 +9,8 @@ import typing as t
 import asyncio
 import uuid
 import inspect
+from functools import partial
+
 from minos.microservice.saga.abstract import MinosBaseSagaBuilder
 from minos.common.logs import log
 from minos.common.storage.abstract import MinosStorage
@@ -177,7 +179,7 @@ class MinosSagaStepManager:
 
     def close(self):
         self._state = self._local_state.load_state(self.uuid)
-        log.debug(self._state)
+        #log.debug(self._state)
         self._local_state.delete_state(self.uuid)
 
 
@@ -202,7 +204,6 @@ class Saga(MinosBaseSagaBuilder):
     ):
         self.saga_name = name
         self.uuid = str(uuid.uuid4())
-        self._tasks = set()
         self.saga_process = {
             "name": self.saga_name,
             "id": self.uuid,
@@ -220,20 +221,16 @@ class Saga(MinosBaseSagaBuilder):
         self.saga_process["steps"].append([])
         return self
 
-    async def callback_function_call_async(self, loop, func, response, callback_id):
-        task = loop.create_task(func(response))  # just some task
-        loop.run_until_complete(task)
-        await task  # wait for it (inside a coroutine)
-        response = ''
-        self._step_manager.add_response(callback_id, response)
-
-        return response
-
-    def callback_function_call(self, func, response, callback_id):
-        response = func(response)
-        self._step_manager.add_response(callback_id, response)
-
-        return response
+    def callback_function_call(self, func, response):
+        loop = asyncio.get_event_loop()
+        task = func(response)
+        if inspect.isawaitable(task):
+            result = loop.run_until_complete(task)
+            log.debug(result)
+            return result
+        else:
+            log.debug(task)
+            return task
 
     def _invokeParticipant(self, operation):
         self._response = _invokeParticipant(operation['name'])
@@ -243,15 +240,10 @@ class Saga(MinosBaseSagaBuilder):
             func = operation["callback"]
             callback_id = str(uuid.uuid4())
             self._step_manager.operation(callback_id, "invokeParticipant_callback", operation["name"])
-            log.debug(func)
-            log.debug(asyncio.coroutines.iscoroutine(func))
-            if asyncio.iscoroutine(func):
-                log.debug("--------- async -----------")
-                self._create_task(func, self._response, callback_id)
-            else:
-                log.debug("--------- sync -----------")
-                self._response = self.callback_function_call(func, self._response, callback_id)
-                self._step_manager.add_response(callback_id, self._response)
+
+            result = self.callback_function_call(func, self._response)
+
+            self._step_manager.add_response(callback_id, result)
 
         return self._response
 
@@ -292,11 +284,9 @@ class Saga(MinosBaseSagaBuilder):
             self._step_manager.operation(callback_id, "withCompensation_callback", name)
             func = operation["callback"]
 
-            if asyncio.iscoroutine(func):
-                self._create_task(func(response))
-            else:
-                self._response = func(response)
-                self._step_manager.add_response(callback_id, response)
+            result = self.callback_function_call(func, response)
+
+            self._step_manager.add_response(callback_id, result)
 
     def withCompensation(self, name: t.Union[str, list], callback: t.Callable = None):
         self.saga_process["steps"][len(self.saga_process["steps"]) - 1].append(
@@ -320,11 +310,8 @@ class Saga(MinosBaseSagaBuilder):
 
         self._step_manager.operation(callback_id, operation["type"])
 
-        if asyncio.iscoroutine(func):
-            self._create_task(func)
-        else:
-            self._response = func(prev_response)
-            self._step_manager.add_response(callback_id, self._response)
+        result = self.callback_function_call(func, prev_response)
+        self._step_manager.add_response(callback_id, result)
 
         return self._response
 
@@ -350,7 +337,6 @@ class Saga(MinosBaseSagaBuilder):
         self._validate_steps()
         self._execute_steps()
         self._step_manager.close()
-        return self
 
     def _validate_steps(self):
         for step in self.saga_process["steps"]:
@@ -362,11 +348,6 @@ class Saga(MinosBaseSagaBuilder):
                     raise Exception(
                         "The first method of the step must be .invokeParticipant(name, callback (optional))."
                     )
-
-    def _create_task(self, coro: t.Awaitable[t.Any], response, callback_id):
-        task = self.loop.create_task(self.callback_function_call_async(self.loop, coro, response, callback_id))
-        self._tasks.add(task)
-        task.add_done_callback(self._tasks.remove)
 
     def _execute_steps(self):
         self._step_manager.start()
@@ -404,9 +385,7 @@ class Saga(MinosBaseSagaBuilder):
         for operation in self.saga_process["current_compensations"]:
             func = operation["method"]
             func(operation)
-
-        self._step_manager.close()
-
+        #self._step_manager.close()
 
 """
 {
