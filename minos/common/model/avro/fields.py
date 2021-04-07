@@ -9,7 +9,8 @@ import uuid
 
 import orjson
 
-from minos.common.model.avro import types, utils, serialization
+from minos.common.model.avro import utils, serialization
+from minos.common.model import types
 from minos.common.model.avro.model import MinosAvroModel
 
 

@@ -1,6 +1,6 @@
 import typing as t
 
-from minos.common.model.avro.types import CUSTOM_TYPES
+from minos.common.model.types import CUSTOM_TYPES
 
 
 def is_union(a_type: t.Any) -> bool:
