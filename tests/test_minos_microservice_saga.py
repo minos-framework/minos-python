@@ -17,9 +17,15 @@ def create_ticket_on_reply_callback(response):
     return treated_response
 
 
-def create_order_callback(response):
+async def create_order_callback(response):
     treated_response = 'create_order_callback response!!!!'
     log.debug("---> create_order_callback")
+    return treated_response
+
+
+def create_ticket_callback(response):
+    treated_response = 'create_ticket_callback response!!!!'
+    log.debug("---> create_ticket_callback")
     return treated_response
 
 
@@ -29,7 +35,7 @@ async def create_order_callback2(response):
     return treated_response
 
 
-def delete_order_callback(response):
+async def delete_order_callback(response):
     treated_response = 'async delete_order_callback response!!!!'
     log.debug("---> delete_order_callback")
     return treated_response
@@ -49,14 +55,14 @@ def test_saga_correct():
             .withCompensation("DeleteOrder", delete_order_callback) \
             .onReply(create_ticket_on_reply_callback) \
         .step() \
-            .invokeParticipant("CreateTicket") \
+            .invokeParticipant("CreateTicket", create_ticket_callback) \
             .onReply(create_ticket_on_reply_callback) \
         .step() \
             .invokeParticipant("Shopping") \
             .withCompensation(["Failed","BlockOrder"], shipping_callback) \
         .execute()
 
-"""
+
 def test_saga_execute_all_compensations():
     with pytest.raises(Exception) as exc:
         Saga("ItemsAdd") \
@@ -72,13 +78,13 @@ def test_saga_execute_all_compensations():
                 .invokeParticipant("Shipping") \
                 .withCompensation(["Failed","BlockOrder"], shipping_callback) \
             .execute()
-    assert "Exception: Error performing step Shipping." in str(exc.value)
+    assert "Error performing step Shipping." in str(exc.value)
 
 
 
 def test_saga_empty_step_must_throw_exception():
     with pytest.raises(Exception) as exc:
-        Saga("OrdersAdd") \
+        Saga("OrdersAdd2") \
             .start() \
             .step() \
                 .invokeParticipant("CreateOrder") \
@@ -97,7 +103,7 @@ def test_saga_empty_step_must_throw_exception():
 
 def test_saga_wrong_step_action_must_throw_exception():
     with pytest.raises(Exception) as exc:
-        Saga("OrdersAdd") \
+        Saga("OrdersAdd3") \
             .start() \
             .step() \
                 .invokeParticipant("CreateOrder") \
@@ -110,4 +116,4 @@ def test_saga_wrong_step_action_must_throw_exception():
             .execute()
 
     assert "The first method of the step must be .invokeParticipant(name, callback (optional))." in str(exc.value)
-"""
+
