@@ -139,7 +139,7 @@ class Saga(MinosBaseSagaBuilder):
         else:
             return task
 
-    def _invokeParticipantCreateOperationDB(self, id, type, name):
+    def _createOperationDB(self, id, type, name):
         flag = False
         error = ""
         for x in range(2):
@@ -154,7 +154,7 @@ class Saga(MinosBaseSagaBuilder):
 
         return flag, error
 
-    def _invokeParticipantOperationResponseDB(self, id, response):
+    def _operationResponseDB(self, id, response):
         flag = False
         error = ""
         for x in range(2):
@@ -176,9 +176,7 @@ class Saga(MinosBaseSagaBuilder):
         (
             db_operation_flag,
             db_operation_error,
-        ) = self._invokeParticipantCreateOperationDB(
-            operation["id"], operation["type"], operation["name"]
-        )
+        ) = self._createOperationDB(operation["id"], operation["type"], operation["name"])
         # if the DB was updated
         if db_operation_flag:
             try:
@@ -190,7 +188,7 @@ class Saga(MinosBaseSagaBuilder):
             (
                 db_op_response_flag,
                 db_op_response_error,
-            ) = self._invokeParticipantOperationResponseDB(operation["id"], response)
+            ) = self._operationResponseDB(operation["id"], response)
 
             # if the DB was updated with the response of previous operation
             if db_op_response_flag:
@@ -201,9 +199,7 @@ class Saga(MinosBaseSagaBuilder):
                     (
                         db_op_callback_flag,
                         db_op_callback_error,
-                    ) = self._invokeParticipantCreateOperationDB(
-                        callback_id, "invokeParticipant_callback", operation["name"]
-                    )
+                    ) = self._createOperationDB(callback_id, "invokeParticipant_callback", operation["name"])
                     # if the DB was updated
                     if db_op_callback_flag:
                         try:
@@ -215,9 +211,7 @@ class Saga(MinosBaseSagaBuilder):
                         (
                             db_op_callback_response_flag,
                             db_op_callback_response_error,
-                        ) = self._invokeParticipantOperationResponseDB(
-                            callback_id, response
-                        )
+                        ) = self._operationResponseDB(callback_id, response)
 
                         # If the database could not be updated
                         if not db_op_callback_response_flag:
@@ -232,7 +226,7 @@ class Saga(MinosBaseSagaBuilder):
         else:
             raise db_operation_error
 
-        return self._response
+        return response
 
     def invokeParticipant(self, name: str, callback: t.Callable = None):
         self.saga_process["steps"][len(self.saga_process["steps"]) - 1].append(
@@ -249,35 +243,72 @@ class Saga(MinosBaseSagaBuilder):
 
     def _withCompensation(self, operation):
         response = None
+        operations = None
+
         if type(operation["name"]) == list:
-            for compensation in operation["name"]:
-                callback_id = str(uuid.uuid4())
-                self._step_manager.operation(
-                    callback_id, operation["type"], compensation
-                )
-                response = _withCompensation(compensation)
-                self._step_manager.add_response(callback_id, response)
+            operations = operation["name"]
         else:
-            callback_id = str(uuid.uuid4())
-            self._step_manager.operation(
-                callback_id, operation["type"], operation["name"]
-            )
-            response = _withCompensation(operation["name"])
-            self._step_manager.add_response(callback_id, response)
+            operations = [operation["name"]]
 
-        if operation["callback"] is not None:
-            if type(operation["name"]) == list:
-                name = "_".join(operation["name"])
+        name = "_".join(operations)
+
+        for compensation in operations:
+            # Add current operation to lmdb
+            (
+                db_operation_flag,
+                db_operation_error,
+            ) = self._createOperationDB(operation["id"], operation["type"], name)
+            # if the DB was updated
+            if db_operation_flag:
+                try:
+                    response = _withCompensation(compensation)
+                except MinosSagaException as error:
+                    raise error
+
+                # Add response of current operation to lmdb
+                (
+                    db_op_response_flag,
+                    db_op_response_error,
+                ) = self._operationResponseDB(operation["id"], response)
+
+                # if the DB was updated with the response of previous operation
+                if db_op_response_flag:
+                    if operation["callback"] is not None:
+
+                        func = operation["callback"]
+                        callback_id = str(uuid.uuid4())
+
+                        (
+                            db_op_callback_flag,
+                            db_op_callback_error,
+                        ) = self._createOperationDB(callback_id, "withCompensation_callback", name)
+                        # if the DB was updated
+                        if db_op_callback_flag:
+                            try:
+                                response = self.callback_function_call(func, self._response)
+                            except MinosSagaException as error:
+                                raise error
+
+                            # Add response of current operation to lmdb
+                            (
+                                db_op_callback_response_flag,
+                                db_op_callback_response_error,
+                            ) = self._operationResponseDB(callback_id, response)
+
+                            # If the database could not be updated
+                            if not db_op_callback_response_flag:
+                                raise db_op_callback_response_error
+
+                        # If the database could not be updated
+                        else:
+                            raise db_op_callback_error
+                else:
+                    raise db_op_response_error
+            # If the database could not be updated
             else:
-                name = operation["name"]
+                raise db_operation_error
 
-            callback_id = str(uuid.uuid4())
-            self._step_manager.operation(callback_id, "withCompensation_callback", name)
-            func = operation["callback"]
-
-            result = self.callback_function_call(func, response)
-
-            self._step_manager.add_response(callback_id, result)
+        return response
 
     def withCompensation(self, name: t.Union[str, list], callback: t.Callable = None):
         self.saga_process["steps"][len(self.saga_process["steps"]) - 1].append(
