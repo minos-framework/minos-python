@@ -14,7 +14,7 @@ class MinosBaseSagaBuilder(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def step(self, **kwargs):   # pragma: no cover
+    def step(self, **kwargs):  # pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -22,13 +22,13 @@ class MinosBaseSagaBuilder(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def withCompensation(self, **kwargs):   # pragma: no cover
+    def withCompensation(self, **kwargs):  # pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
-    def onReply(self, **kwargs):    # pragma: no cover
+    def onReply(self, **kwargs):  # pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
-    def execute(self, **kwargs):    # pragma: no cover
+    def execute(self, **kwargs):  # pragma: no cover
         raise NotImplementedError

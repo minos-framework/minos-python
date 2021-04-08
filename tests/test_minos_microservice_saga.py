@@ -13,37 +13,37 @@ from minos.microservice.saga.saga import Saga
 
 def create_ticket_on_reply_callback(response):
     treated_response = 'async create_ticket_on_reply_callback response!!!!'
-    log.debug("---> create_ticket_on_reply_callback")
+    #log.debug("---> create_ticket_on_reply_callback")
     return treated_response
 
 
 async def create_order_callback(response):
     treated_response = 'create_order_callback response!!!!'
-    log.debug("---> create_order_callback")
+    #log.debug("---> create_order_callback")
     return treated_response
 
 
 def create_ticket_callback(response):
     treated_response = 'create_ticket_callback response!!!!'
-    log.debug("---> create_ticket_callback")
+    #log.debug("---> create_ticket_callback")
     return treated_response
 
 
 async def create_order_callback2(response):
     treated_response = 'create_order_callback response!!!!'
-    log.debug("---> create_order_callback")
+    #log.debug("---> create_order_callback")
     return treated_response
 
 
 async def delete_order_callback(response):
     treated_response = 'async delete_order_callback response!!!!'
-    log.debug("---> delete_order_callback")
+    #log.debug("---> delete_order_callback")
     return treated_response
 
 
 def shipping_callback(response):
     treated_response = 'async shipping_callback response!!!!'
-    log.debug("---> shipping_callback")
+    #log.debug("---> shipping_callback")
     return treated_response
 
 
@@ -64,21 +64,20 @@ def test_saga_correct():
 
 
 def test_saga_execute_all_compensations():
-    with pytest.raises(Exception) as exc:
-        Saga("ItemsAdd") \
-            .start() \
-            .step() \
-                .invokeParticipant("CreateOrder", create_order_callback) \
-                .withCompensation("DeleteOrder", delete_order_callback) \
-                .onReply(create_ticket_on_reply_callback) \
-            .step() \
-                .invokeParticipant("CreateTicket") \
-                .onReply(create_ticket_on_reply_callback) \
-            .step() \
-                .invokeParticipant("Shipping") \
-                .withCompensation(["Failed","BlockOrder"], shipping_callback) \
-            .execute()
-    assert "Error performing step Shipping." in str(exc.value)
+    Saga("ItemsAdd") \
+        .start() \
+        .step() \
+            .invokeParticipant("CreateOrder", create_order_callback) \
+            .withCompensation("DeleteOrder", delete_order_callback) \
+            .onReply(create_ticket_on_reply_callback) \
+        .step() \
+            .invokeParticipant("CreateTicket") \
+            .onReply(create_ticket_on_reply_callback) \
+        .step() \
+            .invokeParticipant("Shipping") \
+            .withCompensation(["Failed","BlockOrder"], shipping_callback) \
+        .execute()
+
 
 
 
