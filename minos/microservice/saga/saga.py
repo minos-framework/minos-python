@@ -144,7 +144,7 @@ class Saga(MinosBaseSagaBuilder):
         error = ""
         for x in range(2):
             try:
-                self._step_manager.operation(id, type, name)
+                self._step_manager.operation(id, type, name="")
                 flag = True
                 error = ""
                 break
@@ -168,6 +168,22 @@ class Saga(MinosBaseSagaBuilder):
                 time.sleep(0.5)
 
         return flag, error
+
+    def _getLastResponseDB(self):
+        flag = False
+        response = ""
+        error = ""
+        for x in range(2):
+            try:
+                response = self._step_manager.get_last_response()
+                flag = True
+                error = ""
+                break
+            except Exception as e:
+                error = e
+                time.sleep(0.5)
+
+        return flag, response, error
 
     def _invokeParticipant(self, operation):
         response = None
@@ -324,18 +340,45 @@ class Saga(MinosBaseSagaBuilder):
         return self
 
     def _onReply(self, operation):
-        prev_response = self._step_manager.get_last_response()
+        response = None
 
-        func = operation["callback"]
+        # Add current operation to lmdb
+        (
+            db_response_flag,
+            db_response_error,
+            db_response,
+        ) = self._getLastResponseDB()
 
-        callback_id = str(uuid.uuid4())
+        if db_response_flag:
+            func = operation["callback"]
+            callback_id = str(uuid.uuid4())
 
-        self._step_manager.operation(callback_id, operation["type"])
+            (
+                db_op_callback_flag,
+                db_op_callback_error,
+            ) = self._createOperationDB(callback_id, operation["type"])
 
-        result = self.callback_function_call(func, prev_response)
-        self._step_manager.add_response(callback_id, result)
+            if db_op_callback_flag:
+                try:
+                    response = self.callback_function_call(func, db_response)
+                except MinosSagaException as error:
+                    raise error
 
-        return self._response
+                # Add response of current operation to lmdb
+                (
+                    db_op_callback_response_flag,
+                    db_op_callback_response_error,
+                ) = self._operationResponseDB(callback_id, response)
+
+                # If the database could not be updated
+                if not db_op_callback_response_flag:
+                    raise db_op_callback_response_error
+            else:
+                raise db_op_callback_error
+        else:
+            raise db_response_error
+
+        return response
 
     def onReply(self, _callback: t.Callable):
         self.saga_process["steps"][len(self.saga_process["steps"]) - 1].append(
