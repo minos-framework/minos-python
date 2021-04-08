@@ -1,21 +1,26 @@
-from collections import Sequence
-from typing import Optional, Union, Dict
+import pytest
 
-from minos.common.model.aggregate import aggregate
-
-class User: ...
-
-@aggregate
-class TestAggregate:
-    id: Optional[int]
-    name: str
-    listes: list[int]
-    dicts: dict[str, int]
-    users: Sequence[User]
+from minos.common.exceptions import MinosModelException, MinosModelAttributeException
+from tests.modelClasses import CustomerAggregate, CustomerFailListAggregate
 
 
-def test_aggregate_model():
-    aggregate = TestAggregate()
-    fields = aggregate._FIELDS
-    assert fields[3].get_avro_type() == "bravo"
-    assert False == True
+def test_aggregate_setter():
+    aggregate = CustomerAggregate()
+    aggregate.id = 1234
+    aggregate.name = "John"
+    aggregate.surname = "Doe"
+    assert aggregate.id == 1234
+    assert aggregate.surname == "Doe"
+    assert aggregate.name == "John"
+    assert aggregate.fields == "ciao"
+
+
+def test_aggregate_freeze_class():
+    with pytest.raises(MinosModelException):
+        aggregate = CustomerAggregate()
+        aggregate.address = "str kennedy"
+
+
+def test_aggregate_fail_class_structure():
+    with pytest.raises(MinosModelAttributeException):
+        aggregate = CustomerFailListAggregate()

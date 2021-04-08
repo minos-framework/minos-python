@@ -14,3 +14,5 @@ class MinosImportException(MinosException): pass
 class MinosProtocolException(MinosException): pass
 class MinosMessageException(MinosException): pass
 class MinosConfigException(MinosException): pass
+class MinosModelException(MinosException): pass
+class MinosModelAttributeException(MinosException): pass
