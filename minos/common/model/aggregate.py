@@ -126,3 +126,13 @@ def aggregate(cls=None):
         return wrap
 
     return wrap(cls)
+
+
+class MinosModel(object):
+    __slots__ = "_fields"
+
+    def __init__(self):
+        self._fields = []
+
+    def _get_fields(self):
+        cls_annotations = self.__dict__.get('__annotations__', {})
