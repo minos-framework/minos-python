@@ -7,6 +7,7 @@ import uuid
 import typing as t
 
 from minos.common.exceptions import MinosModelException
+from minos.common.logs import log
 from minos.common.model import types
 from minos.common.model.fields import ModelField
 
@@ -89,7 +90,6 @@ class MinosModel(object):
 
     @property
     def fields(self):
-        logging.debug(self._fields)
         return self._fields
 
     def __setattr__(self, key, value):
@@ -97,14 +97,14 @@ class MinosModel(object):
             field_class: ModelField = self._fields[key]
             field_class.value = value
             self._fields[key] = field_class
-            super().__setattr__(key, value)
+            super().__setattr__(key, field_class.value)
         elif key == "_fields":
             super().__setattr__(key, value)
         else:
             raise MinosModelException(f"model attribute {key} doesn't exist")
 
     def _list_fields(self) -> t.Dict[str, ModelField]:
-        fields: t.Dict[str, t.Any] = self.__annotations__
+        fields: t.Dict[str, t.Any] = t.get_type_hints(self)
         fields = self._update_from_inherited_class(fields)
         # get the updated list of field, now is time to convert in a Dictionary of ModelField's
         dict_objects = {}
@@ -119,7 +119,9 @@ class MinosModel(object):
         for b in self.__class__.__mro__[-1:0:-1]:
             base_fields = getattr(b, "_fields", None)
             if base_fields is not None:
-                list_fields = b.__annotations__
+                list_fields = t.get_type_hints(b)
+                list_fields.pop("_fields")
+                log.debug(f"Fields Derivative {list_fields}")
                 if "_fields" not in list_fields:
                     # the class is a derivative of MinosModel class
                     fields = fields | list_fields
