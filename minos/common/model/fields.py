@@ -64,15 +64,20 @@ class ModelField:
                 log.debug("the Value passed is an integer")
                 self._value = int(data)
                 return
+            if type_field is bool and self._is_bool(data):
+                log.debug("the Value passed is an integer")
+                self._value = data
+                return
             if type_field is str and self._is_string(data):
                 log.debug("the Value passed is a string")
                 self._value = data
                 return
             if type_field is list:
-                converted_list_data = self._is_list(data, self.type['values'])
-                log.debug("the Value passed is a string")
-                self._value = converted_list_data
-                return
+                converted_list_data = self._is_list(data, self.type['values'], convert=True)
+                if converted_list_data:
+                    log.debug("the Value passed is a string")
+                    self._value = converted_list_data
+                    return
         raise MinosModelAttributeException(f"Something goes wrong check if the type of the passed value "
                                            f"is fine: data:{type(data)} vs type requested: {self._type['origin']}")
 
@@ -94,14 +99,20 @@ class ModelField:
             return True
         return False
 
+    def _is_bool(self, data: bool):
+        if type(data) == bool:
+            return True
+        return False
+
     def _is_list(self, data: list, type_values: t.Any, convert: bool = False) -> t.Union[bool, t.List]:
 
         if isinstance(data, list):
             # check if the values are instances of type_values
             data_converted = self._convert_list_params(data, type_values)
-            if convert:
-                return data_converted
-            return True
+            if data_converted:
+                if convert:
+                    return data_converted
+                return True
         return False
 
     def _convert_list_params(self, data: list, type_params: t.Any):
@@ -110,6 +121,7 @@ class ModelField:
         """
         if type_params is int:
             # loop the list and check if all are integers
+            log.debug("list parameters must be integer")
             converted = []
             for item in data:
                 if self._is_int(item):
@@ -120,6 +132,7 @@ class ModelField:
 
         if type_params is str:
             # loop the list and check if all are integers
+            log.debug("list parameters must be string")
             for item in data:
                 if self._is_string(item):
                     continue
@@ -129,9 +142,10 @@ class ModelField:
 
         if type_params is bool:
             # loop and chek is a boolean
+            log.debug("list parameters must be boolean")
             for item in data:
                 # loop the list and check if all are booleans
-                if self._is_string(item):
+                if self._is_bool(item):
                     continue
                 else:
                     return False

@@ -16,3 +16,4 @@ class MinosMessageException(MinosException): pass
 class MinosConfigException(MinosException): pass
 class MinosModelException(MinosException): pass
 class MinosModelAttributeException(MinosException): pass
+class MinosReqAttributeException(MinosException): pass

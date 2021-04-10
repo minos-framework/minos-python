@@ -21,6 +21,7 @@ class CustomerAggregate(UserAggregate):
     """
     name: str
     surname: str
+    is_admin: bool
     lists: list[int]
 
 
