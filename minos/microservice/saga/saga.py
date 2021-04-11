@@ -87,10 +87,12 @@ class MinosSagaStepManager:
         self._state = self._local_state.load_state(self.uuid)
         return self._state["operations"][self._state["current_step"]]["response"]
 
+    def get_state(self):
+        return self._local_state.load_state(self.uuid)
+
     def close(self):
         self._state = self._local_state.load_state(self.uuid)
-        log.debug(self._state)
-        # self._local_state.delete_state(self.uuid)
+        self._local_state.delete_state(self.uuid)
 
 
 def _invokeParticipant(name):
@@ -123,6 +125,9 @@ class Saga(MinosBaseSagaBuilder):
         self.loop = loop or asyncio.get_event_loop()
         self._response = ""
 
+    def get_db_state(self):
+        return self._step_manager.get_state()
+
     def start(self):
         return self
 
@@ -148,7 +153,7 @@ class Saga(MinosBaseSagaBuilder):
                 flag = True
                 error = ""
                 break
-            except Exception as e:
+            except Exception as e:  # pragma: no cover
                 error = e
                 time.sleep(0.5)
 
@@ -163,7 +168,7 @@ class Saga(MinosBaseSagaBuilder):
                 flag = True
                 error = ""
                 break
-            except Exception as e:
+            except Exception as e:   # pragma: no cover
                 error = e
                 time.sleep(0.5)
 
@@ -178,8 +183,7 @@ class Saga(MinosBaseSagaBuilder):
                 flag = True
                 error = ""
                 break
-            except Exception as e:
-                log.debug(e)
+            except Exception as e:  # pragma: no cover
                 error = e
                 time.sleep(0.5)
 
@@ -195,7 +199,7 @@ class Saga(MinosBaseSagaBuilder):
                 flag = True
                 error = ""
                 break
-            except Exception as e:
+            except Exception as e:  # pragma: no cover
                 error = e
                 time.sleep(0.5)
 
@@ -213,8 +217,6 @@ class Saga(MinosBaseSagaBuilder):
             try:
                 response = _invokeParticipant(operation["name"])
             except MinosSagaException as error:
-                log.debug("-------------------------------------------------")
-                log.debug(error)
                 self._operationErrorDB(operation["id"], error)
                 raise error
 
@@ -434,7 +436,7 @@ class Saga(MinosBaseSagaBuilder):
 
         return self
 
-    def _execute(self):
+    def _execute(self):  # pragma: no cover
         pass
 
     def execute(self):
@@ -443,7 +445,8 @@ class Saga(MinosBaseSagaBuilder):
         )
         self._validate_steps()
         self._execute_steps()
-        self._step_manager.close()
+
+        return self
 
     def _validate_steps(self):
         for step in self.saga_process["steps"]:
@@ -473,17 +476,21 @@ class Saga(MinosBaseSagaBuilder):
                         self._response = func(operation)
                     except MinosSagaException as error:
                         self._rollback()
-                        return
+                        return self
 
                 if operation["type"] == "onReply":
                     try:
                         self._response = func(operation)
                     except:
                         self._rollback()
-                        return
+                        return self
+
+        self._step_manager.close()
 
     def _rollback(self):
         for operation in self.saga_process["current_compensations"]:
             func = operation["method"]
             func(operation)
         #self._step_manager.close()
+
+        return self
