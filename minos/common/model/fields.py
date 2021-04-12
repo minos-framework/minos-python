@@ -12,7 +12,7 @@ PYTHON_NULL_TYPE = (type(None))
 class ModelField:
     __slots__ = "_name", "_type", "_value"
 
-    def __init__(self, name: str, type_val: t.Any, value: t.Optional[t.Any]):
+    def __init__(self, name: str, type_val: t.Any, value: t.Optional[t.Any] = None):
         self._name = name
         self._type = None
         origin = t.get_origin(type_val)
