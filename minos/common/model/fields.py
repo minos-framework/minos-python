@@ -1,6 +1,8 @@
 """
 Copyright (C) 2021 Clariteia SL
+
 This file is part of minos framework.
+
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
@@ -14,38 +16,17 @@ PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
 PYTHON_NULL_TYPE = (type(None))
 
+T = t.TypeVar("T")
+
 
 class ModelField:
     __slots__ = "_name", "_type", "_value"
 
-    def __init__(self, name: str, type_val: t.Any, value: t.Optional[t.Any]):
+    def __init__(self, name: str, type_val: t.Type[T], value: T):
         self._name = name
         self._type = None
-        origin = t.get_origin(type_val)
-
-        log.debug(f"Name val {name}")
-        log.debug(f"Origin Type {origin}")
-        log.debug(f"Type val {type_val}")
-
-        # get the type
-        if type_val in PYTHON_INMUTABLE_TYPES:
-            log.debug(f"Inmutable type for the Model Field")
-            self._type = {"origin": type_val}
-        if origin in PYTHON_LIST_TYPES or type_val in PYTHON_LIST_TYPES:
-            log.debug(f"List or Tuple type for the Model Field")
-            args = t.get_args(type_val)
-            if len(args) == 0:
-                log.debug(f"List type invalid")
-                raise MinosModelAttributeException("List or Tuple need the argument type definition")
-            self._type = {"origin": t.get_origin(type_val), "values": args[0]}
-        if origin in PYTHON_ARRAY_TYPES or type_val in PYTHON_ARRAY_TYPES:
-            log.debug(f"Dictionary type for the Model Field")
-            args = t.get_args(type_val)
-            if len(args) == 0 or len(args) == 1:
-                raise MinosModelAttributeException("Dictionaries types need the key and value type definition")
-            self._type = {"origin": t.get_origin(type_val), "keys": args[0], "values": args[1]}
-
-        self._value = value
+        self._type = type_val
+        self.value = value
 
     @property
     def name(self):
@@ -60,30 +41,56 @@ class ModelField:
         return self._value
 
     @value.setter
-    def value(self, data: t.Any):
+    def value(self, data: t.Any) -> t.NoReturn:
         """
         check if the value is correct
         """
-        if "origin" in self._type:
-            type_field = self._type['origin']
-            if type_field is int and self._is_int(data):
-                log.debug("the Value passed is an integer")
-                self._value = int(data)
+        log.debug(f"Name val {self._name}")
+        log.debug(f"Type val {self._type}")
+
+        origin = t.get_origin(self._type)
+        log.debug(f"Origin Type {origin}")
+
+        if origin is not t.Union:
+            self._set_value(self._type, data)
+            return
+
+        alternatives = t.get_args(self._type)
+        for alternative_type in alternatives:
+            try:
+                self._set_value(alternative_type, data)
                 return
-            if type_field is bool and self._is_bool(data):
-                log.debug("the Value passed is an integer")
-                self._value = data
-                return
-            if type_field is str and self._is_string(data):
+            except MinosModelAttributeException:
+                pass
+
+        raise MinosModelAttributeException(
+            f"None of the '{alternatives}' alternatives matches the given data type: {type(data)}"
+        )
+
+    def _set_value(self, type_field: t.Type, data: t.Any) -> t.NoReturn:
+        if type_field is type(None) and data is None:
+            log.debug("the Value passed is None")
+            self._value = None
+        elif type_field is int and self._is_int(data):
+            log.debug("the Value passed is an integer")
+            self._value = int(data)
+        elif type_field is bool and self._is_bool(data):
+            log.debug("the Value passed is an integer")
+            self._value = data
+            return
+        elif type_field is str and self._is_string(data):
+            log.debug("the Value passed is a string")
+            self._value = data
+        elif t.get_origin(type_field) is list:
+            converted_list_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
+            if converted_list_data:
                 log.debug("the Value passed is a string")
-                self._value = data
-                return
-            if type_field is list:
-                converted_list_data = self._is_list(data, self.type['values'], convert=True)
-                if converted_list_data:
-                    log.debug("the Value passed is a string")
-                    self._value = converted_list_data
-                    return
+                self._value = converted_list_data
+            else:
+                raise MinosModelAttributeException(
+                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
+                )
+        else:
             if type_field is dict:
                 converted_data = self._is_dict(data, self.type["keys"], self.type['values'], convert=True)
                 if converted_data:
@@ -91,7 +98,8 @@ class ModelField:
                     self._value = converted_data
                     return
         raise MinosModelAttributeException(f"Something goes wrong check if the type of the passed value "
-                                           f"is fine: data:{type(data)} vs type requested: {self._type['origin']}")
+                                           f"is fine: data:{type(data)} vs type requested: {type_field}"
+            )
 
     def _is_int(self, data: t.Union[int, str]):
         if isinstance(data, str):

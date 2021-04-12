@@ -1,3 +1,5 @@
+from typing import Optional
+
 from minos.common import MinosModel
 
 
@@ -5,24 +7,24 @@ class Aggregate(MinosModel):
     """
     base class derived directly from MinosModel
     """
-    id: int
+    id: Optional[int]
 
 
 class UserAggregate(Aggregate):
     """
     Class for Inheritance Test
     """
-    username: str
+    username: Optional[str]
 
 
 class CustomerAggregate(UserAggregate):
     """
     Test a Model Class with List
     """
-    name: str
-    surname: str
-    is_admin: bool
-    lists: list[int]
+    name: Optional[str]
+    surname: Optional[str]
+    is_admin: Optional[bool]
+    lists: Optional[list[int]]
 
 
 class CustomerDictAggregate(UserAggregate):
