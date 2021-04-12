@@ -45,9 +45,10 @@ class MinosSagaStepManager:
 
     """
 
-    def __init__(self, name, uuid: str, db_name: str, storage: MinosStorage = MinosStorageLmdb):
-        self.db_name = db_name
-        self._storage = storage.build(path_db=self.db_name)
+    def __init__(self, name, uuid: str, db_path: str, storage: MinosStorage = MinosStorageLmdb):
+        self.db_name = "LocalState"
+        self.db_path = db_path
+        self._storage = storage.build(path_db=self.db_path)
         self._local_state = MinosLocalState(storage=self._storage, db_name=self.db_name)
         self.uuid = uuid
         self.saga_name = name
@@ -91,7 +92,7 @@ class MinosSagaStepManager:
         return self._local_state.load_state(self.uuid)
 
     def close(self):
-        self._state = self._local_state.load_state(self.uuid)
+        #self._state = self._local_state.load_state(self.uuid)
         self._local_state.delete_state(self.uuid)
 
 
@@ -110,7 +111,7 @@ class Saga(MinosBaseSagaBuilder):
     def __init__(
         self,
         name,
-        db_name: str = "./LocalState",
+        db_path: str = "./db.lmdb",
         step_manager: MinosSagaStepManager = MinosSagaStepManager,
         loop: asyncio.AbstractEventLoop = None,
     ):
@@ -122,7 +123,7 @@ class Saga(MinosBaseSagaBuilder):
             "steps": [],
             "current_compensations": [],
         }
-        self._step_manager = step_manager(self.saga_name, self.uuid, db_name)
+        self._step_manager = step_manager(self.saga_name, self.uuid, db_path)
         self.loop = loop or asyncio.get_event_loop()
         self._response = ""
 
