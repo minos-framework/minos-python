@@ -25,6 +25,8 @@ class ModelField:
         log.debug(f"Type val {type_val}")
 
         # get the type
+        if origin == t.Union:
+            self._type = {"origin": origin, "alternatives": args}
         if type_val in PYTHON_INMUTABLE_TYPES:
             log.debug(f"Inmutable type for the Model Field")
             self._type = {"origin": type_val}
@@ -55,32 +57,56 @@ class ModelField:
         return self._value
 
     @value.setter
-    def value(self, data: t.Any):
+    def value(self, data: t.Any) -> t.NoReturn:
         """
         check if the value is correct
         """
-        if "origin" in self._type:
-            type_field = self._type['origin']
-            if type_field is int and self._is_int(data):
-                log.debug("the Value passed is an integer")
-                self._value = int(data)
+        assert "origin" in self._type  # Invariance condition.
+
+        type_field = self._type['origin']
+        if type_field is not t.Union:
+            self._set_value(type_field, data)
+            return
+        alternatives = self._type.get("alternatives", tuple())
+        for alternative_type in alternatives:
+            try:
+                self._set_value(alternative_type, data)
                 return
-            if type_field is bool and self._is_bool(data):
-                log.debug("the Value passed is an integer")
-                self._value = data
-                return
-            if type_field is str and self._is_string(data):
+            except MinosModelAttributeException:
+                pass
+
+        raise MinosModelAttributeException(
+            f"None of the '{alternatives}' alternatives matches the given data type: {type(data)}"
+        )
+
+    def _set_value(self, type_field: t.Type, data: t.Any) -> t.NoReturn:
+        if type_field is type(None):
+            log.debug("the Value passed is None")
+            self._value = None
+        elif type_field is int and self._is_int(data):
+            log.debug("the Value passed is an integer")
+            self._value = int(data)
+        elif type_field is bool and self._is_bool(data):
+            log.debug("the Value passed is an integer")
+            self._value = data
+            return
+        elif type_field is str and self._is_string(data):
+            log.debug("the Value passed is a string")
+            self._value = data
+        elif t.get_origin(type_field) is list:
+            converted_list_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
+            if converted_list_data:
                 log.debug("the Value passed is a string")
-                self._value = data
-                return
-            if type_field is list:
-                converted_list_data = self._is_list(data, self.type['values'], convert=True)
-                if converted_list_data:
-                    log.debug("the Value passed is a string")
-                    self._value = converted_list_data
-                    return
-        raise MinosModelAttributeException(f"Something goes wrong check if the type of the passed value "
-                                           f"is fine: data:{type(data)} vs type requested: {self._type['origin']}")
+                self._value = converted_list_data
+            else:
+                raise MinosModelAttributeException(
+                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
+                )
+        else:
+            raise MinosModelAttributeException(
+                f"Something goes wrong check if the type of the passed value "
+                f"is fine: data:{type(data)} vs type requested: {type_field}"
+            )
 
     def _is_int(self, data: t.Union[int, str]):
         if isinstance(data, str):
