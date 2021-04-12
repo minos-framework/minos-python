@@ -1,11 +1,18 @@
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
 import abc
 import typing as t
 import random
 
-from minos.common.exceptions import MinosMessageException
-from minos.common.logs import log
-from minos.common.protocol.abstract import MinosBinaryProtocol
-from minos.common.protocol.avro import MinosAvroProtocol
+from ..exceptions import MinosMessageException
+from ..logs import log
+from ..protocol import MinosBinaryProtocol, MinosAvroProtocol
 
 
 class MinosBaseRequest(abc.ABC):
@@ -158,7 +165,7 @@ class MinosRPCBodyRequest(MinosBaseRequest):
 class MinosRequest(object):
 
     @staticmethod
-    def build(request_clas: MinosBaseRequest, binary: MinosBinaryProtocol = MinosAvroProtocol):
+    def build(request_clas: t.Type[MinosBaseRequest], binary: MinosBinaryProtocol = MinosAvroProtocol):
         """
         this is the Builder that create specific Requests Objects
         """
@@ -172,7 +179,7 @@ class MinosRequest(object):
             raise MinosMessageException("The request class must extend MinosBaseRequest")
 
     @staticmethod
-    def load(data: bytes, request_class: MinosBaseRequest, binary: MinosBinaryProtocol = MinosAvroProtocol):
+    def load(data: bytes, request_class: t.Type[MinosBaseRequest], binary: MinosBinaryProtocol = MinosAvroProtocol):
         """
         load binary data and convert in the Message Request Instance given
         """

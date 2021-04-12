@@ -1,6 +1,6 @@
 from typing import Optional
 
-from minos.common.model.aggregate import MinosModel
+from minos.common import MinosModel
 
 
 class Aggregate(MinosModel):

@@ -1,7 +1,6 @@
 import pytest
 
-from minos.common.exceptions import MinosImportException
-from minos.common.importlib import import_module
+from minos.common import MinosImportException, import_module
 
 
 def test_import_module():
