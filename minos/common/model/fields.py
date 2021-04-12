@@ -134,12 +134,18 @@ class ModelField:
                 return True
         return False
 
-    def _convert_dict_params(self, data: t.Mapping, type_keys: t.Type, type_values: t.Type):
+    def _convert_dict_params(self, data: t.Mapping, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, t.Dict]:
         keys = self._convert_list_params(data.keys(), type_keys)
+        if isinstance(keys, bool) and not keys:
+            return False
+
         values = self._convert_list_params(data.values(), type_values)
+        if isinstance(values, bool) and not values:
+            return False
+
         return dict(zip(keys, values))
 
-    def _convert_list_params(self, data: t.Iterable, type_params: t.Any):
+    def _convert_list_params(self, data: t.Iterable, type_params: t.Any) -> t.Union[bool, t.List]:
         """
         check if the parameters list are equal to @type_params type
         """
