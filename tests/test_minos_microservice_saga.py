@@ -10,6 +10,10 @@ import asyncio
 from minos.common.logs import log
 from minos.microservice.saga.saga import Saga, MinosLocalState
 
+@pytest.fixture
+def db_path():
+    return "./tests/test_db.lmdb"
+
 
 def create_ticket_on_reply_callback(response):
     treated_response = 'async create_ticket_on_reply_callback response!!!!'
@@ -76,8 +80,8 @@ def f(response):
     #log.debug("---> create_ticket_on_reply_callback")
     return treated_response
 
-def test_saga_async_callbacks_ok():
-    s = Saga("OrdersAdd") \
+def test_saga_async_callbacks_ok(db_path):
+    s = Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", a) \
@@ -87,8 +91,8 @@ def test_saga_async_callbacks_ok():
 
     assert s.get_db_state() is None
 
-def test_saga_sync_callbacks_ok():
-    s = Saga("OrdersAdd") \
+def test_saga_sync_callbacks_ok(db_path):
+    s = Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", d) \
@@ -98,8 +102,8 @@ def test_saga_sync_callbacks_ok():
 
     assert s.get_db_state() is None
 
-def test_saga_async_callbacks_ko():
-    s = Saga("OrdersAdd") \
+def test_saga_async_callbacks_ko(db_path):
+    s = Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("Shipping", a) \
@@ -112,8 +116,8 @@ def test_saga_async_callbacks_ko():
     assert state is not None
     assert list(state['operations'].values())[0]['error'] == 'invokeParticipantTest exception'
 
-def test_saga_sync_callbacks_ko():
-    s = Saga("OrdersAdd") \
+def test_saga_sync_callbacks_ko(db_path):
+    s = Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("Shipping", d) \
@@ -128,8 +132,8 @@ def test_saga_sync_callbacks_ko():
     assert list(state['operations'].values())[0]['error'] == 'invokeParticipantTest exception'
 
 
-def test_saga_correct():
-    Saga("OrdersAdd") \
+def test_saga_correct(db_path):
+    Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", create_order_callback) \
@@ -144,8 +148,8 @@ def test_saga_correct():
         .execute()
 
 
-def test_saga_execute_all_compensations():
-    Saga("ItemsAdd") \
+def test_saga_execute_all_compensations(db_path):
+    Saga("ItemsAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", create_order_callback) \
@@ -162,9 +166,9 @@ def test_saga_execute_all_compensations():
 
 
 
-def test_saga_empty_step_must_throw_exception():
+def test_saga_empty_step_must_throw_exception(db_path):
     with pytest.raises(Exception) as exc:
-        Saga("OrdersAdd2") \
+        Saga("OrdersAdd2", db_path) \
             .start() \
             .step() \
                 .invokeParticipant("CreateOrder") \
@@ -181,9 +185,9 @@ def test_saga_empty_step_must_throw_exception():
     assert "The step() cannot be empty." in str(exc.value)
 
 
-def test_saga_wrong_step_action_must_throw_exception():
+def test_saga_wrong_step_action_must_throw_exception(db_path):
     with pytest.raises(Exception) as exc:
-        Saga("OrdersAdd3") \
+        Saga("OrdersAdd3", db_path) \
             .start() \
             .step() \
                 .invokeParticipant("CreateOrder") \

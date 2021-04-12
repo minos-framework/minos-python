@@ -20,9 +20,9 @@ from minos.common.storage.lmdb import MinosStorageLmdb
 
 
 class MinosLocalState:
-    def __init__(self, storage: MinosStorage):
+    def __init__(self, storage: MinosStorage, db_name: str):
         self._storage = storage
-        self.db_name = "LocalState"
+        self.db_name = db_name
 
     def create(self, key: str, value: str):
         actual_state = self._storage.get(self.db_name, key)
@@ -45,10 +45,10 @@ class MinosSagaStepManager:
 
     """
 
-    def __init__(self, name, uuid: str, storage: MinosStorage = MinosStorageLmdb):
-        self.db_name = "LocalState"
+    def __init__(self, name, uuid: str, db_name: str, storage: MinosStorage = MinosStorageLmdb):
+        self.db_name = db_name
         self._storage = storage.build(path_db=self.db_name)
-        self._local_state = MinosLocalState(storage=self._storage)
+        self._local_state = MinosLocalState(storage=self._storage, db_name=self.db_name)
         self.uuid = uuid
         self.saga_name = name
         self._state = {}
@@ -110,6 +110,7 @@ class Saga(MinosBaseSagaBuilder):
     def __init__(
         self,
         name,
+        db_name: str = "./LocalState",
         step_manager: MinosSagaStepManager = MinosSagaStepManager,
         loop: asyncio.AbstractEventLoop = None,
     ):
@@ -121,7 +122,7 @@ class Saga(MinosBaseSagaBuilder):
             "steps": [],
             "current_compensations": [],
         }
-        self._step_manager = step_manager(self.saga_name, self.uuid)
+        self._step_manager = step_manager(self.saga_name, self.uuid, db_name)
         self.loop = loop or asyncio.get_event_loop()
         self._response = ""
 
