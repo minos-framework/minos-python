@@ -1,15 +1,12 @@
-import dataclasses
+
 import datetime
-import inspect
-import logging
-import typing
 import uuid
 import typing as t
 
-from minos.common.exceptions import MinosModelException
-from minos.common.logs import log
-from minos.common.model import types
-from minos.common.model.fields import ModelField
+from ..exceptions import MinosModelException
+from ..logs import log
+from .types import Fixed, Enum
+from .fields import ModelField
 
 BOOLEAN = "boolean"
 NULL = "null"
@@ -39,8 +36,8 @@ PYTHON_TYPE_TO_AVRO = {
     list: ARRAY,
     tuple: ARRAY,
     dict: MAP,
-    types.Fixed: {"type": FIXED},
-    types.Enum: {"type": ENUM},
+    Fixed: {"type": FIXED},
+    Enum: {"type": ENUM},
     datetime.date: {"type": INT, "logicalType": DATE},
     datetime.time: {"type": INT, "logicalType": TIME_MILLIS},
     datetime.datetime: {"type": LONG, "logicalType": TIMESTAMP_MILLIS},

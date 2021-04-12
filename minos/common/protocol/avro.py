@@ -6,9 +6,9 @@ import orjson
 from avro.datafile import DataFileReader, DataFileWriter
 from avro.io import DatumReader, DatumWriter
 
-from minos.common.exceptions import MinosProtocolException
-from minos.common.logs import log
-from minos.common.protocol.abstract import MinosBinaryProtocol
+from ..exceptions import MinosProtocolException
+from ..logs import log
+from .abstract import MinosBinaryProtocol
 
 
 class MinosAvroProtocol(MinosBinaryProtocol):

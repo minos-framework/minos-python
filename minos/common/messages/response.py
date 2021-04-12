@@ -1,9 +1,8 @@
 import abc
 import typing as t
 
-from minos.common.exceptions import MinosMessageException
-from minos.common.protocol.abstract import MinosBinaryProtocol
-from minos.common.protocol.avro import MinosAvroProtocol
+from ..exceptions import MinosMessageException
+from ..protocol import MinosBinaryProtocol, MinosAvroProtocol
 
 
 class MinosBaseResponse(abc.ABC):

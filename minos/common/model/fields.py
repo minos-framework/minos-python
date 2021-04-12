@@ -1,7 +1,7 @@
 import typing as t
 
-from minos.common.exceptions import MinosModelAttributeException
-from minos.common.logs import log
+from ..exceptions import MinosModelAttributeException
+from ..logs import log
 
 PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)

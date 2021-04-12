@@ -1,9 +1,13 @@
 import pytest
 
-from minos.common.messages.request import MinosRequest, MinosRPCHeadersRequest, \
-    MinosRPCBodyRequest
-from minos.common.messages.response import MinosRPCResponse, MinosResponse
-from minos.common.protocol.avro import MinosAvroProtocol
+from minos.common import (
+    MinosRequest,
+    MinosRPCHeadersRequest,
+    MinosRPCBodyRequest,
+    MinosRPCResponse,
+    MinosResponse,
+    MinosAvroProtocol,
+)
 
 
 def test_request_avro_request_get_binary_headers():

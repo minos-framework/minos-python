@@ -1,6 +1,6 @@
 import pytest
 
-from minos.common.exceptions import MinosModelException, MinosModelAttributeException
+from minos.common import MinosModelException, MinosModelAttributeException
 from tests.modelClasses import CustomerAggregate, CustomerFailListAggregate, CustomerFailDictAggregate
 
 

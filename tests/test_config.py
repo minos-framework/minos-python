@@ -1,7 +1,6 @@
 import pytest
 
-from minos.common.configuration.config import MinosConfig
-from minos.common.exceptions import MinosConfigException
+from minos.common import MinosConfig, MinosConfigException
 
 
 def test_config_ini_fail():
