@@ -130,7 +130,7 @@ def test_saga_sync_callbacks_ko(db_path):
 
 
 def test_saga_correct(db_path):
-    Saga("OrdersAdd", db_path) \
+    s = Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", create_order_callback) \
@@ -144,9 +144,12 @@ def test_saga_correct(db_path):
             .withCompensation(["Failed","BlockOrder"], shipping_callback) \
         .execute()
 
+    state = s.get_db_state()
+
+    assert state is None
 
 def test_saga_execute_all_compensations(db_path):
-    Saga("ItemsAdd", db_path) \
+    s = Saga("ItemsAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", create_order_callback) \
@@ -160,6 +163,19 @@ def test_saga_execute_all_compensations(db_path):
             .withCompensation(["Failed","BlockOrder"], shipping_callback) \
         .execute()
 
+    state = s.get_db_state()
+
+    assert state is not None
+    assert list(state['operations'].values())[0]['type'] == 'invokeParticipant'
+    assert list(state['operations'].values())[1]['type'] == 'invokeParticipant_callback'
+    assert list(state['operations'].values())[2]['type'] == 'onReply'
+    assert list(state['operations'].values())[3]['type'] == 'invokeParticipant'
+    assert list(state['operations'].values())[4]['type'] == 'onReply'
+    assert list(state['operations'].values())[5]['type'] == 'invokeParticipant'
+    assert list(state['operations'].values())[6]['type'] == 'withCompensation'
+    assert list(state['operations'].values())[7]['type'] == 'withCompensation_callback'
+    assert list(state['operations'].values())[8]['type'] == 'withCompensation'
+    assert list(state['operations'].values())[9]['type'] == 'withCompensation_callback'
 
 def test_saga_empty_step_must_throw_exception(db_path):
     with pytest.raises(Exception) as exc:
