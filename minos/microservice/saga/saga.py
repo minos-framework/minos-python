@@ -455,7 +455,7 @@ class Saga(MinosBaseSagaBuilder):
                 raise Exception("The step() cannot be empty.")
 
             for idx, operation in enumerate(step):
-                if idx == 0 and operation["type"] is not "invokeParticipant":
+                if idx == 0 and operation["type"] != "invokeParticipant":
                     raise Exception(
                         "The first method of the step must be .invokeParticipant(name, callback (optional))."
                     )
@@ -490,6 +490,5 @@ class Saga(MinosBaseSagaBuilder):
     def _rollback(self):
         for operation in self.saga_process["current_compensations"]:
             self._withCompensation(operation)
-        #self._step_manager.close()
 
         return self
