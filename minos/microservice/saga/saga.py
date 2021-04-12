@@ -468,18 +468,17 @@ class Saga(MinosBaseSagaBuilder):
                     self.saga_process["current_compensations"].insert(0, operation)
 
             for operation in step:
-                func = operation["method"]
 
                 if operation["type"] == "invokeParticipant":
                     try:
-                        self._response = func(operation)
+                        self._response = self._invokeParticipant(operation)
                     except MinosSagaException as error:
                         self._rollback()
                         return self
 
                 if operation["type"] == "onReply":
                     try:
-                        self._response = func(operation)
+                        self._response = self._onReply(operation)
                     except:
                         self._rollback()
                         return self
@@ -488,8 +487,7 @@ class Saga(MinosBaseSagaBuilder):
 
     def _rollback(self):
         for operation in self.saga_process["current_compensations"]:
-            func = operation["method"]
-            func(operation)
+            self._withCompensation(operation)
         #self._step_manager.close()
 
         return self
