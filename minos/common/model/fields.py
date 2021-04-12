@@ -82,23 +82,23 @@ class ModelField:
             log.debug("the Value passed is a string")
             self._value = data
         elif t.get_origin(type_field) is list:
-            converted_list_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
-            if converted_list_data:
-                log.debug("the Value passed is a string")
-                self._value = converted_list_data
-            else:
+            converted_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
+            if isinstance(converted_data, bool) and not converted_data:
                 raise MinosModelAttributeException(
                     f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
                 )
+            self._value = converted_data
+        elif type_field is dict or t.get_origin(type_field) is dict:
+            converted_data = self._is_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1], convert=True)
+            if isinstance(converted_data, bool) and not converted_data:
+                raise MinosModelAttributeException(
+                    f"{type(data)} could not be converted into {type_field} key, value types"
+                )
+            self._value = converted_data
         else:
-            if type_field is dict:
-                converted_data = self._is_dict(data, self.type["keys"], self.type['values'], convert=True)
-                if converted_data:
-                    log.debug("the Value passed is a string")
-                    self._value = converted_data
-                    return
-        raise MinosModelAttributeException(f"Something goes wrong check if the type of the passed value "
-                                           f"is fine: data:{type(data)} vs type requested: {type_field}"
+            raise MinosModelAttributeException(
+                f"Something goes wrong check if the type of the passed value "
+                f"is fine: data:{type(data)} vs type requested: {type_field}"
             )
 
     def _is_int(self, data: t.Union[int, str]):
@@ -139,14 +139,15 @@ class ModelField:
         self, data: list, type_keys: t.Type, type_values: t.Type, convert: bool = False
     ) -> t.Union[bool, t.Dict]:
 
-        if isinstance(data, dict):
-            # check if the values are instances of type_values
-            data_converted = self._convert_dict_params(data, type_keys, type_values)
-            if data_converted:
-                if convert:
-                    return data_converted
-                return True
-        return False
+        if not isinstance(data, dict):
+            return False
+        # check if the values are instances of type_values
+        data_converted = self._convert_dict_params(data, type_keys, type_values)
+        if isinstance(data_converted, bool) and not data_converted:
+            return False
+        if convert:
+            return data_converted
+        return True
 
     def _convert_dict_params(self, data: t.Mapping, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, t.Dict]:
         keys = self._convert_list_params(data.keys(), type_keys)
