@@ -82,14 +82,19 @@ class ModelField:
             log.debug("the Value passed is a string")
             self._value = data
         elif t.get_origin(type_field) is list:
-            converted_list_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
-            if converted_list_data:
-                log.debug("the Value passed is a string")
-                self._value = converted_list_data
-            else:
+            converted_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
+            if isinstance(converted_data, bool) and not converted_data:
                 raise MinosModelAttributeException(
                     f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
                 )
+            self._value = converted_data
+        elif type_field is dict or t.get_origin(type_field) is dict:
+            converted_data = self._is_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1], convert=True)
+            if isinstance(converted_data, bool) and not converted_data:
+                raise MinosModelAttributeException(
+                    f"{type(data)} could not be converted into {type_field} key, value types"
+                )
+            self._value = converted_data
         else:
             raise MinosModelAttributeException(
                 f"Something goes wrong check if the type of the passed value "
@@ -130,7 +135,32 @@ class ModelField:
                 return True
         return False
 
-    def _convert_list_params(self, data: list, type_params: t.Any):
+    def _is_dict(
+        self, data: list, type_keys: t.Type, type_values: t.Type, convert: bool = False
+    ) -> t.Union[bool, t.Dict]:
+
+        if not isinstance(data, dict):
+            return False
+        # check if the values are instances of type_values
+        data_converted = self._convert_dict_params(data, type_keys, type_values)
+        if isinstance(data_converted, bool) and not data_converted:
+            return False
+        if convert:
+            return data_converted
+        return True
+
+    def _convert_dict_params(self, data: t.Mapping, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, t.Dict]:
+        keys = self._convert_list_params(data.keys(), type_keys)
+        if isinstance(keys, bool) and not keys:
+            return False
+
+        values = self._convert_list_params(data.values(), type_values)
+        if isinstance(values, bool) and not values:
+            return False
+
+        return dict(zip(keys, values))
+
+    def _convert_list_params(self, data: t.Iterable, type_params: t.Any) -> t.Union[bool, t.List]:
         """
         check if the parameters list are equal to @type_params type
         """

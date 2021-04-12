@@ -22,6 +22,10 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", list[int], [1, 2, 3])
         self.assertEqual([1, 2, 3], field.value)
 
+    def test_value_dict(self):
+        field = ModelField("test", dict[str, bool], {"foo": True, "bar": False})
+        self.assertEqual({"foo": True, "bar": False}, field.value)
+
     def test_value_setter(self):
         field = ModelField("test", int, 3)
         field.value = 3
@@ -31,6 +35,20 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", int, 3)
         with self.assertRaises(MinosModelAttributeException):
             field.value = None
+
+    def test_value_setter_dict(self):
+        field = ModelField("test", dict[str, bool], {})
+        field.value = {"foo": True, "bar": False}
+        self.assertEqual({"foo": True, "bar": False}, field.value)
+
+    def test_value_setter_dict_raises(self):
+        field = ModelField("test", dict[str, bool], {})
+        with self.assertRaises(MinosModelAttributeException):
+            field.value = "foo"
+        with self.assertRaises(MinosModelAttributeException):
+            field.value = {"foo": 1, "bar": 2}
+        with self.assertRaises(MinosModelAttributeException):
+            field.value = {1: True, 2: False}
 
     def test_optional_type(self):
         field = ModelField("test", Optional[int], None)
