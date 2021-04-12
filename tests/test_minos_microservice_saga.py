@@ -8,43 +8,124 @@
 import pytest
 import asyncio
 from minos.common.logs import log
-from minos.microservice.saga.saga import Saga
+from minos.microservice.saga.saga import Saga, MinosLocalState
 
 
 def create_ticket_on_reply_callback(response):
     treated_response = 'async create_ticket_on_reply_callback response!!!!'
-    log.debug("---> create_ticket_on_reply_callback")
+    #log.debug("---> create_ticket_on_reply_callback")
     return treated_response
 
 
 async def create_order_callback(response):
     treated_response = 'create_order_callback response!!!!'
-    log.debug("---> create_order_callback")
+    #log.debug("---> create_order_callback")
     return treated_response
 
 
 def create_ticket_callback(response):
     treated_response = 'create_ticket_callback response!!!!'
-    log.debug("---> create_ticket_callback")
+    #log.debug("---> create_ticket_callback")
     return treated_response
 
 
 async def create_order_callback2(response):
     treated_response = 'create_order_callback response!!!!'
-    log.debug("---> create_order_callback")
+    #log.debug("---> create_order_callback")
     return treated_response
 
 
 async def delete_order_callback(response):
     treated_response = 'async delete_order_callback response!!!!'
-    log.debug("---> delete_order_callback")
+    #log.debug("---> delete_order_callback")
     return treated_response
 
 
 def shipping_callback(response):
     treated_response = 'async shipping_callback response!!!!'
-    log.debug("---> shipping_callback")
+    #log.debug("---> shipping_callback")
     return treated_response
+
+async def a(response):
+    treated_response = 'create_order_callback response!!!!'
+    #log.debug("---> create_order_callback")
+    return treated_response
+
+async def b(response):
+    treated_response = 'create_order_callback response!!!!'
+    #log.debug("---> create_order_callback")
+    return treated_response
+
+async def c(response):
+    treated_response = 'async create_ticket_on_reply_callback response!!!!'
+    #log.debug("---> create_ticket_on_reply_callback")
+    return treated_response
+
+def d(response):
+    treated_response = 'create_order_callback response!!!!'
+    #log.debug("---> create_order_callback")
+    return treated_response
+
+def e(response):
+    treated_response = 'create_order_callback response!!!!'
+    #log.debug("---> create_order_callback")
+    return treated_response
+
+def f(response):
+    treated_response = 'async create_ticket_on_reply_callback response!!!!'
+    #log.debug("---> create_ticket_on_reply_callback")
+    return treated_response
+
+def test_saga_async_callbacks_ok():
+    s = Saga("OrdersAdd") \
+        .start() \
+        .step() \
+            .invokeParticipant("CreateOrder", a) \
+            .withCompensation("DeleteOrder", b) \
+            .onReply(c) \
+        .execute()
+
+    assert s.get_db_state() is None
+
+def test_saga_sync_callbacks_ok():
+    s = Saga("OrdersAdd") \
+        .start() \
+        .step() \
+            .invokeParticipant("CreateOrder", d) \
+            .withCompensation("DeleteOrder", e) \
+            .onReply(f) \
+        .execute()
+
+    assert s.get_db_state() is None
+
+def test_saga_async_callbacks_ko():
+    s = Saga("OrdersAdd") \
+        .start() \
+        .step() \
+            .invokeParticipant("Shipping", a) \
+            .withCompensation("DeleteOrder", b) \
+            .onReply(c) \
+        .execute()
+
+    state = s.get_db_state()
+
+    assert state is not None
+    assert list(state['operations'].values())[0]['error'] == 'invokeParticipantTest exception'
+
+def test_saga_sync_callbacks_ko():
+    s = Saga("OrdersAdd") \
+        .start() \
+        .step() \
+            .invokeParticipant("Shipping", d) \
+            .withCompensation("DeleteOrder", e) \
+            .onReply(f) \
+        .execute()
+
+
+    state = s.get_db_state()
+
+    assert state is not None
+    assert list(state['operations'].values())[0]['error'] == 'invokeParticipantTest exception'
 
 
 def test_saga_correct():
@@ -64,21 +145,20 @@ def test_saga_correct():
 
 
 def test_saga_execute_all_compensations():
-    with pytest.raises(Exception) as exc:
-        Saga("ItemsAdd") \
-            .start() \
-            .step() \
-                .invokeParticipant("CreateOrder", create_order_callback) \
-                .withCompensation("DeleteOrder", delete_order_callback) \
-                .onReply(create_ticket_on_reply_callback) \
-            .step() \
-                .invokeParticipant("CreateTicket") \
-                .onReply(create_ticket_on_reply_callback) \
-            .step() \
-                .invokeParticipant("Shipping") \
-                .withCompensation(["Failed","BlockOrder"], shipping_callback) \
-            .execute()
-    assert "Error performing step Shipping." in str(exc.value)
+    Saga("ItemsAdd") \
+        .start() \
+        .step() \
+            .invokeParticipant("CreateOrder", create_order_callback) \
+            .withCompensation("DeleteOrder", delete_order_callback) \
+            .onReply(create_ticket_on_reply_callback) \
+        .step() \
+            .invokeParticipant("CreateTicket") \
+            .onReply(create_ticket_on_reply_callback) \
+        .step() \
+            .invokeParticipant("Shipping") \
+            .withCompensation(["Failed","BlockOrder"], shipping_callback) \
+        .execute()
+
 
 
 
