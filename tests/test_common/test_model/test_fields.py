@@ -1,6 +1,6 @@
 import unittest
 
-from minos.common import ModelField
+from minos.common.model.fields import ModelField
 
 
 class TestModelField(unittest.TestCase):
