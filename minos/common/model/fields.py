@@ -40,7 +40,7 @@ class ModelField:
                 raise MinosModelAttributeException("Dictionaries types need the key and value type definition")
             self._type = {"origin": origin, "keys": args[0], "values": args[1]}
 
-        self._value = value
+        self.value = value
 
     @property
     def name(self):
