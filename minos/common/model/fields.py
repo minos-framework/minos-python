@@ -8,14 +8,17 @@ PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
 PYTHON_NULL_TYPE = (type(None))
 
+T = t.TypeVar("T")
+
 
 class ModelField:
     __slots__ = "_name", "_type", "_value"
 
-    def __init__(self, name: str, type_val: t.Any, value: t.Optional[t.Any] = None):
+    def __init__(self, name: str, type_val: t.Type[T], value: T):
         self._name = name
         self._type = None
         origin = t.get_origin(type_val)
+        args = t.get_args(type_val)
 
         log.debug(f"Name val {name}")
         log.debug(f"Origin Type {origin}")
@@ -27,17 +30,15 @@ class ModelField:
             self._type = {"origin": type_val}
         if origin in PYTHON_LIST_TYPES or type_val in PYTHON_LIST_TYPES:
             log.debug(f"List or Tuple type for the Model Field")
-            args = t.get_args(type_val)
             if len(args) == 0:
                 log.debug(f"List type invalid")
                 raise MinosModelAttributeException("List or Tuple need the argument type definition")
-            self._type = {"origin": t.get_origin(type_val), "values": args[0]}
+            self._type = {"origin": origin, "values": args[0]}
         if origin in PYTHON_ARRAY_TYPES or type_val in PYTHON_ARRAY_TYPES:
             log.debug(f"Dictionary type for the Model Field")
-            args = t.get_args(type_val)
             if len(args) == 0 or len(args) == 1:
                 raise MinosModelAttributeException("Dictionaries types need the key and value type definition")
-            self._type = {"origin": t.get_origin(type_val), "keys": args[0], "values": args[1]}
+            self._type = {"origin": origin, "keys": args[0], "values": args[1]}
 
         self._value = value
 
