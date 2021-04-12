@@ -1,7 +1,13 @@
+"""
+Copyright (C) 2021 Clariteia SL
+This file is part of minos framework.
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
 import typing as t
 
-from minos.common.exceptions import MinosModelAttributeException
-from minos.common.logs import log
+from ..exceptions import MinosModelAttributeException
+from ..logs import log
 
 PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)

@@ -1,7 +1,6 @@
 import unittest
 
-from minos.common.model.fields import ModelField
-from minos.common.exceptions import MinosModelAttributeException
+from minos.common import ModelField, MinosModelAttributeException
 
 
 class TestModelField(unittest.TestCase):
