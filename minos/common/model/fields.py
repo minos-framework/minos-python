@@ -86,12 +86,6 @@ class ModelField:
                     log.debug("the Value passed is a string")
                     self._value = converted_list_data
                     return
-            if type_field is dict:
-                converted_data = self._is_dict(data, self.type["keys"], self.type['values'], convert=True)
-                if converted_data:
-                    log.debug("the Value passed is a string")
-                    self._value = converted_data
-                    return
         raise MinosModelAttributeException(f"Something goes wrong check if the type of the passed value "
                                            f"is fine: data:{type(data)} vs type requested: {self._type['origin']}")
 
@@ -129,31 +123,7 @@ class ModelField:
                 return True
         return False
 
-    def _is_dict(
-        self, data: list, type_keys: t.Type, type_values: t.Type, convert: bool = False
-    ) -> t.Union[bool, t.Dict]:
-
-        if isinstance(data, dict):
-            # check if the values are instances of type_values
-            data_converted = self._convert_dict_params(data, type_keys, type_values)
-            if data_converted:
-                if convert:
-                    return data_converted
-                return True
-        return False
-
-    def _convert_dict_params(self, data: t.Mapping, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, t.Dict]:
-        keys = self._convert_list_params(data.keys(), type_keys)
-        if isinstance(keys, bool) and not keys:
-            return False
-
-        values = self._convert_list_params(data.values(), type_values)
-        if isinstance(values, bool) and not values:
-            return False
-
-        return dict(zip(keys, values))
-
-    def _convert_list_params(self, data: t.Iterable, type_params: t.Any) -> t.Union[bool, t.List]:
+    def _convert_list_params(self, data: list, type_params: t.Any):
         """
         check if the parameters list are equal to @type_params type
         """
