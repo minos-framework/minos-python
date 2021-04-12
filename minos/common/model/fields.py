@@ -80,7 +80,7 @@ class ModelField:
         )
 
     def _set_value(self, type_field: t.Type, data: t.Any) -> t.NoReturn:
-        if type_field is type(None):
+        if type_field is type(None) and data is None:
             log.debug("the Value passed is None")
             self._value = None
         elif type_field is int and self._is_int(data):
