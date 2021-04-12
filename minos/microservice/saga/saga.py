@@ -136,10 +136,9 @@ class Saga(MinosBaseSagaBuilder):
         return self
 
     def callback_function_call(self, func, response):
-        loop = asyncio.get_event_loop()
         task = func(response)
         if inspect.isawaitable(task):
-            result = loop.run_until_complete(task)
+            result = self.loop.run_until_complete(task)
             return result
         else:
             return task
