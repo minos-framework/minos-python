@@ -1,6 +1,6 @@
 import pytest
 
-from minos.common.protocol.avro import MinosAvroProtocol, MinosAvroValuesDatabase
+from minos.common import MinosAvroProtocol, MinosAvroValuesDatabase
 
 
 def test_encoder_decoder_with_body_dict():

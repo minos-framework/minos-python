@@ -1,9 +1,17 @@
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
 import importlib
 import typing as t
 
 import six
 
-from minos.common.exceptions import MinosImportException
+from .exceptions import MinosImportException
 
 
 def import_module(module: str) -> t.Callable:

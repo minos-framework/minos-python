@@ -1,3 +1,11 @@
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
 import collections
 import os
 import typing as t
@@ -5,7 +13,7 @@ import typing as t
 import yaml
 import abc
 
-from minos.common.exceptions import MinosConfigException
+from ..exceptions import MinosConfigException
 
 BROKER = collections.namedtuple("Broker", "host port")
 DATABASE = collections.namedtuple("Database", "path name")

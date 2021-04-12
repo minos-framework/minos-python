@@ -1,7 +1,7 @@
 import shutil
 
 import pytest
-from minos.common.storage.lmdb import MinosStorageLmdb
+from minos.common import MinosStorageLmdb
 
 @pytest.fixture
 def path():
