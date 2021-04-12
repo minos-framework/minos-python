@@ -1,5 +1,5 @@
 import unittest
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Dict
 
 from minos.common import ModelField, MinosModelAttributeException
 
@@ -12,11 +12,15 @@ class TestModelField(unittest.TestCase):
 
     def test_type(self):
         field = ModelField("test", int, 3)
-        self.assertEqual({"origin": int}, field.type)
+        self.assertEqual(int, field.type)
 
-    def test_value(self):
+    def test_value_int(self):
         field = ModelField("test", int, 3)
         self.assertEqual(3, field.value)
+
+    def test_value_list(self):
+        field = ModelField("test", list[int], [1, 2, 3])
+        self.assertEqual([1, 2, 3], field.value)
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
@@ -30,7 +34,7 @@ class TestModelField(unittest.TestCase):
 
     def test_optional_type(self):
         field = ModelField("test", Optional[int], None)
-        self.assertEqual({"origin": Union, "alternatives": (int, type(None),)}, field.type)
+        self.assertEqual(Optional[int], field.type)
 
     def test_value_setter_optional_int(self):
         field = ModelField("test", Optional[int], 3)

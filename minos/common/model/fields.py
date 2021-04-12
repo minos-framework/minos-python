@@ -25,31 +25,7 @@ class ModelField:
     def __init__(self, name: str, type_val: t.Type[T], value: T):
         self._name = name
         self._type = None
-        origin = t.get_origin(type_val)
-        args = t.get_args(type_val)
-
-        log.debug(f"Name val {name}")
-        log.debug(f"Origin Type {origin}")
-        log.debug(f"Type val {type_val}")
-
-        # get the type
-        if origin == t.Union:
-            self._type = {"origin": origin, "alternatives": args}
-        if type_val in PYTHON_INMUTABLE_TYPES:
-            log.debug(f"Inmutable type for the Model Field")
-            self._type = {"origin": type_val}
-        if origin in PYTHON_LIST_TYPES or type_val in PYTHON_LIST_TYPES:
-            log.debug(f"List or Tuple type for the Model Field")
-            if len(args) == 0:
-                log.debug(f"List type invalid")
-                raise MinosModelAttributeException("List or Tuple need the argument type definition")
-            self._type = {"origin": origin, "values": args[0]}
-        if origin in PYTHON_ARRAY_TYPES or type_val in PYTHON_ARRAY_TYPES:
-            log.debug(f"Dictionary type for the Model Field")
-            if len(args) == 0 or len(args) == 1:
-                raise MinosModelAttributeException("Dictionaries types need the key and value type definition")
-            self._type = {"origin": origin, "keys": args[0], "values": args[1]}
-
+        self._type = type_val
         self.value = value
 
     @property
@@ -69,13 +45,17 @@ class ModelField:
         """
         check if the value is correct
         """
-        assert "origin" in self._type  # Invariance condition.
+        log.debug(f"Name val {self._name}")
+        log.debug(f"Type val {self._type}")
 
-        type_field = self._type['origin']
-        if type_field is not t.Union:
-            self._set_value(type_field, data)
+        origin = t.get_origin(self._type)
+        log.debug(f"Origin Type {origin}")
+
+        if origin is not t.Union:
+            self._set_value(self._type, data)
             return
-        alternatives = self._type.get("alternatives", tuple())
+
+        alternatives = t.get_args(self._type)
         for alternative_type in alternatives:
             try:
                 self._set_value(alternative_type, data)
