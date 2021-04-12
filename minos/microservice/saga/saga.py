@@ -24,12 +24,15 @@ class MinosLocalState:
         self._storage = storage
         self.db_name = db_name
 
-    def create(self, key: str, value: str):
+    def update(self, key: str, value: str):
         actual_state = self._storage.get(self.db_name, key)
         if actual_state is not None:
             self._storage.update(self.db_name, key, value)
         else:
             self._storage.add(self.db_name, key, value)
+
+    def add(self, key: str, value: str):
+        self._storage.add(self.db_name, key, value)
 
     def load_state(self, key: str):
         actual_state = self._storage.get(self.db_name, key)
@@ -56,7 +59,7 @@ class MinosSagaStepManager:
 
     def start(self):
         structure = {"saga": self.saga_name, "current_step": None, "operations": {}}
-        self._local_state.create(self.uuid, structure)
+        self._local_state.update(self.uuid, structure)
 
     def operation(self, step_uuid: str, type: str, name: str = ""):
         operation = {
@@ -72,17 +75,17 @@ class MinosSagaStepManager:
 
         self._state["current_step"] = step_uuid
         self._state["operations"][step_uuid] = operation
-        self._local_state.create(self.uuid, self._state)
+        self._local_state.add(self.uuid, self._state)
 
     def add_response(self, step_uuid: str, response: str):
         self._state = self._local_state.load_state(self.uuid)
         self._state["operations"][step_uuid]["response"] = response
-        self._local_state.create(self.uuid, self._state)
+        self._local_state.update(self.uuid, self._state)
 
     def add_error(self, step_uuid: str, error: str):
         self._state = self._local_state.load_state(self.uuid)
         self._state["operations"][step_uuid]["error"] = error
-        self._local_state.create(self.uuid, self._state)
+        self._local_state.update(self.uuid, self._state)
 
     def get_last_response(self):
         self._state = self._local_state.load_state(self.uuid)
