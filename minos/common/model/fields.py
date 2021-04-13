@@ -20,6 +20,8 @@ T = t.TypeVar("T")
 
 
 class ModelField:
+    """Represents a model field."""
+
     __slots__ = "_name", "_type", "_value"
 
     def __init__(self, name: str, type_val: t.Type[T], value: T):
@@ -29,15 +31,18 @@ class ModelField:
         self.value = value
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """Name getter."""
         return self._name
 
     @property
-    def type(self):
+    def type(self) -> t.Type:
+        """Type getter."""
         return self._type
 
     @property
-    def value(self):
+    def value(self) -> t.Any:
+        """Value getter."""
         return self._value
 
     @value.setter
@@ -101,7 +106,8 @@ class ModelField:
                 f"is fine: data:{type(data)} vs type requested: {type_field}"
             )
 
-    def _is_int(self, data: t.Union[int, str]):
+    @staticmethod
+    def _is_int(data: t.Union[int, str]) -> bool:
         if isinstance(data, str):
             # sometime the data is an integer but is passed as string, on that case would be better
             # to check if is a decimal
@@ -114,12 +120,14 @@ class ModelField:
             return True
         return False
 
-    def _is_string(self, data: str):
+    @staticmethod
+    def _is_string(data: str) -> bool:
         if isinstance(data, str):
             return True
         return False
 
-    def _is_bool(self, data: bool):
+    @staticmethod
+    def _is_bool(data: bool) -> bool:
         if type(data) == bool:
             return True
         return False
@@ -160,7 +168,7 @@ class ModelField:
 
         return dict(zip(keys, values))
 
-    def _convert_list_params(self, data: t.Iterable, type_params: t.Any) -> t.Union[bool, t.List]:
+    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> t.Union[bool, t.Any]:
         """
         check if the parameters list are equal to @type_params type
         """

@@ -87,13 +87,15 @@ PYTHON_ARRAY_TYPES = (dict,)
 #     return wrap(cls)
 
 class MinosModel(object):
+    """Base class for ``minos`` model entities."""
     _fields: dict[str, ModelField] = {}
 
     def __init__(self):
         self._fields = self._list_fields()
 
     @property
-    def fields(self):
+    def fields(self) -> dict[str, ModelField]:
+        """Fields getter"""
         return self._fields
 
     def __setattr__(self, key, value):
@@ -112,8 +114,8 @@ class MinosModel(object):
         fields = self._update_from_inherited_class(fields)
         # get the updated list of field, now is time to convert in a Dictionary of ModelField's
         dict_objects = {}
-        for name, type in fields.items():
-            dict_objects[name] = ModelField(name=name, type_val=type, value=None)
+        for name, type_val in fields.items():
+            dict_objects[name] = ModelField(name=name, type_val=type_val, value=None)
         return dict_objects
 
     def _update_from_inherited_class(self, fields: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
@@ -128,7 +130,7 @@ class MinosModel(object):
                 log.debug(f"Fields Derivative {list_fields}")
                 if "_fields" not in list_fields:
                     # the class is a derivative of MinosModel class
-                    fields = fields | list_fields
+                    fields |= list_fields
         return fields
 
     def __eq__(self, other: "MinosModel") -> bool:
