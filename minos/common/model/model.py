@@ -9,6 +9,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 import datetime
 import uuid
 import typing as t
+from collections import namedtuple
+from itertools import zip_longest
 
 from ..exceptions import MinosModelException
 from ..logs import log
@@ -88,40 +90,61 @@ PYTHON_ARRAY_TYPES = (dict,)
 
 class MinosModel(object):
     """Base class for ``minos`` model entities."""
+
     _fields: dict[str, ModelField] = {}
 
-    def __init__(self):
-        self._fields = self._list_fields()
+    def __init__(self, *args, **kwargs):
+        """Class constructor.
+
+        :param kwargs: Named arguments to be set as model attributes.
+        """
+        self._fields = self._list_fields(*args, **kwargs)
 
     @property
     def fields(self) -> dict[str, ModelField]:
         """Fields getter"""
         return self._fields
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value: t.Any) -> t.NoReturn:
         if self._fields is not None and key in self._fields:
             field_class: ModelField = self._fields[key]
             field_class.value = value
             self._fields[key] = field_class
-            super().__setattr__(key, field_class.value)
         elif key == "_fields":
             super().__setattr__(key, value)
         else:
             raise MinosModelException(f"model attribute {key} doesn't exist")
 
-    def _list_fields(self) -> t.Dict[str, ModelField]:
+    def __getattr__(self, item: str) -> t.Any:
+        if self._fields is not None and item in self._fields:
+            return self._fields[item].value
+        else:
+            raise AttributeError
+
+    def _list_fields(self, *args, **kwargs) -> t.Dict[str, ModelField]:
         fields: t.Dict[str, t.Any] = t.get_type_hints(self)
         fields = self._update_from_inherited_class(fields)
+
         # get the updated list of field, now is time to convert in a Dictionary of ModelField's
-        dict_objects = {}
-        for name, type_val in fields.items():
-            dict_objects[name] = ModelField(name=name, type_val=type_val, value=None)
+        dict_objects = dict()
+
+        empty = namedtuple("Empty", ())()  # artificial value to discriminate between None and empty.
+        for (name, type_val), value in zip_longest(fields.items(), args, fillvalue=empty):
+            if name in kwargs and value is not empty:
+                raise TypeError(f"got multiple values for argument {repr(name)}")
+
+            if value is empty:
+                value = kwargs.get(name, None)
+
+            dict_objects[name] = ModelField(name, type_val, value)
+
         return dict_objects
 
     def _update_from_inherited_class(self, fields: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
         """
         get all the child class __annotations__ and update the FIELD base attribute
         """
+        ans = dict()
         for b in self.__class__.__mro__[-1:0:-1]:
             base_fields = getattr(b, "_fields", None)
             if base_fields is not None:
@@ -130,8 +153,9 @@ class MinosModel(object):
                 log.debug(f"Fields Derivative {list_fields}")
                 if "_fields" not in list_fields:
                     # the class is a derivative of MinosModel class
-                    fields |= list_fields
-        return fields
+                    ans |= list_fields
+        ans |= fields
+        return ans
 
     def __eq__(self, other: "MinosModel") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

@@ -7,7 +7,7 @@ class Aggregate(MinosModel):
     """
     base class derived directly from MinosModel
     """
-    id: Optional[int]
+    id: int
 
 
 class UserAggregate(Aggregate):
