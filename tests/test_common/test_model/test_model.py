@@ -1,7 +1,9 @@
+from typing import Optional
+
 import pytest
 
-from minos.common import MinosModelException, MinosModelAttributeException
-from tests.modelClasses import CustomerAggregate, CustomerFailListAggregate, CustomerFailDictAggregate
+from minos.common import MinosModelException, MinosModelAttributeException, ModelField
+from tests.modelClasses import CustomerAggregate, CustomerFailListAggregate, CustomerFailDictAggregate, UserAggregate
 import unittest
 
 
@@ -77,6 +79,47 @@ class TestMinosModel(unittest.TestCase):
     def test_aggregate_fail_dict_class_attribute(self):
         with pytest.raises(MinosModelAttributeException):
             CustomerFailDictAggregate()
+
+    def test_fields(self):
+        fields = {
+            'id': ModelField("id", Optional[int], None), 'username': ModelField("username", Optional[str], None)
+        }
+        model = UserAggregate()
+        self.assertEqual(fields, model.fields)
+
+    def test_equal(self):
+        a, b = UserAggregate(), UserAggregate()
+        a.id = 123
+        b.id = 123
+        self.assertEqual(a, b)
+
+    def test_not_equal(self):
+        a, b = UserAggregate(), UserAggregate()
+        a.id = 123
+        b.id = 456
+        self.assertNotEqual(a, b)
+
+    def test_iter(self):
+        user = UserAggregate()
+        user.id = 123
+
+        expected = {
+            'id': ModelField("id", Optional[int], 123),
+            'username': ModelField("username", Optional[str], None)
+        }
+        self.assertEqual(expected, dict(user))
+
+    def test_hash(self):
+        user = UserAggregate()
+        user.id = 123
+
+        expected = hash(
+            (
+                ('username', ModelField("username", Optional[str], None)),
+                ('id', ModelField("id", Optional[int], 123)),
+            )
+        )
+        self.assertEqual(expected, hash(user))
 
 
 if __name__ == '__main__':

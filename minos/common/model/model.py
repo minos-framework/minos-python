@@ -130,3 +130,13 @@ class MinosModel(object):
                     # the class is a derivative of MinosModel class
                     fields = fields | list_fields
         return fields
+
+    def __eq__(self, other: "MinosModel") -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
+        yield from self.fields.items()
