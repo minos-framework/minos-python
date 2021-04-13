@@ -99,41 +99,34 @@ class TestMinosModel(unittest.TestCase):
 
     def test_fields(self):
         fields = {
-            'id': ModelField("id", Optional[int], None), 'username': ModelField("username", Optional[str], None)
+            'id': ModelField("id", int, 123), 'username': ModelField("username", Optional[str], None)
         }
-        model = UserAggregate()
+        model = UserAggregate(123)
         self.assertEqual(fields, model.fields)
 
     def test_equal(self):
-        a, b = UserAggregate(), UserAggregate()
-        a.id = 123
-        b.id = 123
+        a, b = UserAggregate(123), UserAggregate(123)
         self.assertEqual(a, b)
 
     def test_not_equal(self):
-        a, b = UserAggregate(), UserAggregate()
-        a.id = 123
-        b.id = 456
+        a, b = UserAggregate(123), UserAggregate(456)
         self.assertNotEqual(a, b)
 
     def test_iter(self):
-        user = UserAggregate()
-        user.id = 123
-
+        user = UserAggregate(123)
         expected = {
-            'id': ModelField("id", Optional[int], 123),
+            'id': ModelField("id", int, 123),
             'username': ModelField("username", Optional[str], None)
         }
         self.assertEqual(expected, dict(user))
 
     def test_hash(self):
-        user = UserAggregate()
-        user.id = 123
+        user = UserAggregate(123)
 
         expected = hash(
             (
+                ('id', ModelField("id", int, 123)),
                 ('username', ModelField("username", Optional[str], None)),
-                ('id', ModelField("id", Optional[int], 123)),
             )
         )
         self.assertEqual(expected, hash(user))
