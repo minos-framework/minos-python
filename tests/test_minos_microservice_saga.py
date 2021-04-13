@@ -6,14 +6,21 @@
 # permission of Clariteia SL.
 
 import pytest
+import shutil
 import asyncio
 from minos.common.logs import log
 from minos.microservice.saga.saga import Saga, MinosLocalState
 
-
 @pytest.fixture
 def db_path():
     return "./tests/test_db.lmdb"
+
+
+@pytest.fixture(autouse=True)
+def clear_database(db_path):
+    yield
+    # Code that will run after your test, for example:
+    shutil.rmtree(db_path, ignore_errors=True)
 
 
 def create_ticket_on_reply_callback(response):
