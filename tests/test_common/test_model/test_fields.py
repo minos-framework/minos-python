@@ -88,6 +88,18 @@ class TestModelField(unittest.TestCase):
         field.value = [4]
         self.assertEqual([4], field.value)
 
+    def test_equal(self):
+        self.assertEqual(ModelField("id", Optional[int], 3), ModelField("id", Optional[int], 3))
+        self.assertNotEqual(ModelField("id", Optional[int], 3), ModelField("id", Optional[int], None))
+        self.assertNotEqual(ModelField("id", Optional[int], 3), ModelField("foo", Optional[int], 3))
+        self.assertNotEqual(ModelField("id", Optional[int], 3), ModelField("id", int, 3))
+
+    def test_iter(self):
+        self.assertEqual(("id", Optional[int], 3), tuple(ModelField("id", Optional[int], 3)))
+
+    def test_hash(self):
+        self.assertEqual(hash(("id", Optional[int], 3)), hash(ModelField("id", Optional[int], 3)))
+
     def test_repr(self):
         field = ModelField("test", Optional[int], 1)
         self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1)", repr(field))

@@ -32,15 +32,18 @@ class ModelField:
         self.value = value
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """Name getter."""
         return self._name
 
     @property
-    def type(self):
+    def type(self) -> t.Type:
+        """Type getter."""
         return self._type
 
     @property
-    def value(self):
+    def value(self) -> t.Any:
+        """Value getter."""
         return self._value
 
     @value.setter
@@ -111,7 +114,8 @@ class ModelField:
                 f"is fine: data:{type(data)} vs type requested: {type_field}"
             )
 
-    def _is_int(self, data: t.Union[int, str]):
+    @staticmethod
+    def _is_int(data: t.Union[int, str]) -> bool:
         if isinstance(data, str):
             # sometime the data is an integer but is passed as string, on that case would be better
             # to check if is a decimal
@@ -124,12 +128,14 @@ class ModelField:
             return True
         return False
 
-    def _is_string(self, data: str):
+    @staticmethod
+    def _is_string(data: str) -> bool:
         if isinstance(data, str):
             return True
         return False
 
-    def _is_bool(self, data: bool):
+    @staticmethod
+    def _is_bool(data: bool) -> bool:
         if type(data) == bool:
             return True
         return False
@@ -178,7 +184,7 @@ class ModelField:
             return True
         return False
 
-    def _convert_list_params(self, data: t.Iterable, type_params: t.Any) -> t.Union[bool, t.List]:
+    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> t.Union[bool, t.List]:
         """
         check if the parameters list are equal to @type_params type
         """
@@ -252,6 +258,16 @@ class ModelField:
     #             args = t.get_args(self.type)
     #             type_union = args[0]
     #             return {"name": self.name, "type": ["null", PYTHON_TYPE_TO_AVRO[type_union]]}
+
+    def __eq__(self, other: "ModelField") -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
+        yield from (self.name, self.type, self.value)
 
     def __repr__(self):
         return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)})"

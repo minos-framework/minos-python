@@ -89,6 +89,8 @@ PYTHON_ARRAY_TYPES = (dict,)
 #     return wrap(cls)
 
 class MinosModel(object):
+    """Base class for ``minos`` model entities."""
+
     _fields: dict[str, ModelField] = {}
 
     def __init__(self, *args, **kwargs):
@@ -99,7 +101,8 @@ class MinosModel(object):
         self._fields = self._list_fields(*args, **kwargs)
 
     @property
-    def fields(self):
+    def fields(self) -> dict[str, ModelField]:
+        """Fields getter"""
         return self._fields
 
     def __setattr__(self, key: str, value: t.Any) -> t.NoReturn:
@@ -126,14 +129,14 @@ class MinosModel(object):
         dict_objects = dict()
 
         empty = namedtuple("Empty", ())()  # artificial value to discriminate between None and empty.
-        for (name, type), value in zip_longest(fields.items(), args, fillvalue=empty):
+        for (name, type_val), value in zip_longest(fields.items(), args, fillvalue=empty):
             if name in kwargs and value is not empty:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
 
             if value is empty:
                 value = kwargs.get(name, None)
 
-            dict_objects[name] = ModelField(name, type, value)
+            dict_objects[name] = ModelField(name, type_val, value)
 
         return dict_objects
 
@@ -153,3 +156,13 @@ class MinosModel(object):
                     ans |= list_fields
         ans |= fields
         return ans
+
+    def __eq__(self, other: "MinosModel") -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
+        yield from self.fields.items()

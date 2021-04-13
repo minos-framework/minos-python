@@ -1,7 +1,10 @@
+from typing import Optional
+
 import pytest
 
-from minos.common import MinosModelException, MinosModelAttributeException
+from minos.common import MinosModelException, MinosModelAttributeException, ModelField
 from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User
+
 import unittest
 
 
@@ -105,6 +108,40 @@ class TestMinosModel(unittest.TestCase):
     def test_model_fail_dict_class_attribute(self):
         with pytest.raises(MinosModelAttributeException):
             CustomerFailDict(123)
+
+    def test_fields(self):
+        fields = {
+            'id': ModelField("id", int, 123), 'username': ModelField("username", Optional[str], None)
+        }
+        model = User(123)
+        self.assertEqual(fields, model.fields)
+
+    def test_equal(self):
+        a, b = User(123), User(123)
+        self.assertEqual(a, b)
+
+    def test_not_equal(self):
+        a, b = User(123), User(456)
+        self.assertNotEqual(a, b)
+
+    def test_iter(self):
+        user = User(123)
+        expected = {
+            'id': ModelField("id", int, 123),
+            'username': ModelField("username", Optional[str], None)
+        }
+        self.assertEqual(expected, dict(user))
+
+    def test_hash(self):
+        user = User(123)
+
+        expected = hash(
+            (
+                ('id', ModelField("id", int, 123)),
+                ('username', ModelField("username", Optional[str], None)),
+            )
+        )
+        self.assertEqual(expected, hash(user))
 
 
 if __name__ == '__main__':
