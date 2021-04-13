@@ -115,10 +115,8 @@ class MinosModel(object):
     def __getattr__(self, item: str) -> t.Any:
         if self._fields is not None and item in self._fields:
             return self._fields[item].value
-        elif item == "_fields":
-            return self._fields
         else:
-            raise AttributeError()
+            raise AttributeError
 
     def _list_fields(self, *args, **kwargs) -> t.Dict[str, ModelField]:
         fields: t.Dict[str, t.Any] = t.get_type_hints(self)
