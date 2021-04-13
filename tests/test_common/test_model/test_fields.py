@@ -28,7 +28,7 @@ class TestModelField(unittest.TestCase):
         self.assertEqual({"foo": True, "bar": False}, field.value)
 
     def test_value_model_ref(self):
-        user = User()
+        user = User(1234)
         field = ModelField("test", ModelRef[User], user)
         self.assertEqual(user, field.value)
 
@@ -40,7 +40,7 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", Optional[ModelRef[User]], None)
         self.assertIsNone(field.value)
 
-        user = User()
+        user = User(1234)
         field.value = user
         self.assertEqual(user, field.value)
 
