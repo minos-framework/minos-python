@@ -1,7 +1,7 @@
 import unittest
 from typing import Generic
 
-from minos.common import MissingSentinel, Fixed, Enum, Decimal
+from minos.common import MissingSentinel, Fixed, Enum, Decimal, ModelRef, CUSTOM_TYPES
 
 
 class TestMissingSentinel(unittest.TestCase):
@@ -94,6 +94,23 @@ class TestDecimal(unittest.TestCase):
     def test_repr(self):
         decimal = Decimal(6)
         self.assertEqual("Decimal(precision=6, scale=0)", repr(decimal))
+
+
+class TestModelRef(unittest.TestCase):
+
+    def test_subclass(self):
+        # noinspection PyTypeHints
+        self.assertTrue(issubclass(ModelRef, Generic))
+
+    def test_repr(self):
+        ref = ModelRef()
+        self.assertEqual("ModelRef()", repr(ref))
+
+
+class TestTypesModule(unittest.TestCase):
+
+    def test_custom_types(self):
+        self.assertEqual(("Fixed", "Enum", "Decimal", "ModelRef",), CUSTOM_TYPES)
 
 
 if __name__ == '__main__':
