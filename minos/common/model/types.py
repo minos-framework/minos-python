@@ -34,7 +34,7 @@ class Fixed(t.Generic[T]):
     _dataclasses_custom_type: str = "Fixed"
 
     def __repr__(self) -> str:
-        return f"{self.size}"
+        return f"Fixed(size={self.size})"
 
 
 @dataclasses.dataclass
@@ -52,7 +52,7 @@ class Enum(t.Generic[T]):
     _dataclasses_custom_type: str = "Enum"
 
     def __repr__(self) -> str:
-        return f"{self.symbols}"
+        return f"Enum(symbols={self.symbols})"
 
 
 @dataclasses.dataclass
@@ -72,7 +72,7 @@ class Decimal(t.Generic[T]):
     aliases: t.Optional[t.List] = None
 
     def __repr__(self) -> str:
-        return f"Decimal precision: {self.precision} scale:{self.scale}"
+        return f"Decimal(precision={self.precision}, scale={self.scale})"
 
 
 @dataclasses.dataclass
