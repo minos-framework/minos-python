@@ -77,10 +77,7 @@ class Decimal(t.Generic[T]):
 
 @dataclasses.dataclass
 class ModelRef(t.Generic[T]):
-    """Represents an Avro Model Reference type.
-
-    TODO
-    """
+    """Represents an Avro Model Reference type."""
 
     default: t.Any = dataclasses.field(default=MissingSentinel)
     namespace: t.Optional[str] = None

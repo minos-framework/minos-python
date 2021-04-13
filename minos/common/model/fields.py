@@ -98,7 +98,6 @@ class ModelField:
             self._value = converted_data
         elif type_field is ModelRef or t.get_origin(type_field) is ModelRef:
             converted_data = self._is_model_ref(data, t.get_args(type_field)[0], convert=True)
-
             if isinstance(converted_data, bool) and not converted_data:
                 raise MinosModelAttributeException(
                     f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
@@ -170,7 +169,7 @@ class ModelField:
         return dict(zip(keys, values))
 
     @staticmethod
-    def _is_model_ref(data: t.Any, model_type: t.Any, convert: bool = False) -> t.Union[bool, t.Any]:
+    def _is_model_ref(data: t.Any, model_type: t.Type, convert: bool = False) -> t.Union[bool, t.Any]:
         if isinstance(data, model_type):
             if convert:
                 return data
