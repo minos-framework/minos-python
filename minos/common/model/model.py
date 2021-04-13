@@ -89,31 +89,42 @@ PYTHON_ARRAY_TYPES = (dict,)
 class MinosModel(object):
     _fields: dict[str, ModelField] = {}
 
-    def __init__(self):
-        self._fields = self._list_fields()
+    def __init__(self, **kwargs):
+        """Class constructor.
+
+        :param kwargs: Named arguments to be set as model attributes.
+        """
+        self._fields = self._list_fields(**kwargs)
 
     @property
     def fields(self):
         return self._fields
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value: t.Any) -> t.NoReturn:
         if self._fields is not None and key in self._fields:
             field_class: ModelField = self._fields[key]
             field_class.value = value
             self._fields[key] = field_class
-            super().__setattr__(key, field_class.value)
         elif key == "_fields":
             super().__setattr__(key, value)
         else:
             raise MinosModelException(f"model attribute {key} doesn't exist")
 
-    def _list_fields(self) -> t.Dict[str, ModelField]:
+    def __getattr__(self, item: str) -> t.Any:
+        if self._fields is not None and item in self._fields:
+            return self._fields[item].value
+        elif item == "_fields":
+            return self._fields
+        else:
+            raise AttributeError()
+
+    def _list_fields(self, **kwargs) -> t.Dict[str, ModelField]:
         fields: t.Dict[str, t.Any] = t.get_type_hints(self)
         fields = self._update_from_inherited_class(fields)
         # get the updated list of field, now is time to convert in a Dictionary of ModelField's
         dict_objects = {}
         for name, type in fields.items():
-            dict_objects[name] = ModelField(name=name, type_val=type, value=None)
+            dict_objects[name] = ModelField(name=name, type_val=type, value=kwargs.get(name, None))
         return dict_objects
 
     def _update_from_inherited_class(self, fields: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
