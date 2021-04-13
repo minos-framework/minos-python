@@ -17,6 +17,11 @@ class User(Base):
     username: Optional[str]
 
 
+class ShoppingList(MinosModel):
+    """Class to test ``MinosModel`` composition."""
+    user: Optional[ModelRef[User]]
+
+
 class Customer(User):
     """
     Test a Model Class with List

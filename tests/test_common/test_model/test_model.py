@@ -1,7 +1,7 @@
 import pytest
 
 from minos.common import MinosModelException, MinosModelAttributeException
-from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict
+from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User
 import unittest
 
 
@@ -69,6 +69,17 @@ class TestMinosModel(unittest.TestCase):
         model = Customer()
         with pytest.raises(MinosModelAttributeException):
             model.lists = [1, "hola", 8, 6]
+
+    def test_model_ref(self):
+        shopping_list = ShoppingList()
+        user = User()
+        shopping_list.user = user
+        self.assertEqual(user, shopping_list.user)
+
+    def test_model_ref_raises(self):
+        shopping_list = ShoppingList()
+        with self.assertRaises(MinosModelAttributeException):
+            shopping_list.user = "foo"
 
     def test_model_fail_list_class_attribute(self):
         with pytest.raises(MinosModelAttributeException):
