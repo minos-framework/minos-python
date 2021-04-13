@@ -21,6 +21,8 @@ T = t.TypeVar("T")
 
 
 class ModelField:
+    """Represents a minor model field."""
+
     __slots__ = "_name", "_type", "_value"
 
     def __init__(self, name: str, type_val: t.Type[T], value: T):
@@ -252,4 +254,4 @@ class ModelField:
     #             return {"name": self.name, "type": ["null", PYTHON_TYPE_TO_AVRO[type_union]]}
 
     def __repr__(self):
-        return f"AggregateField(name={self.name}, type={self.type}, value={self.value})"
+        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)})"

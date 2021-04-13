@@ -88,6 +88,10 @@ class TestModelField(unittest.TestCase):
         field.value = [4]
         self.assertEqual([4], field.value)
 
+    def test_repr(self):
+        field = ModelField("test", Optional[int], 1)
+        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1)", repr(field))
+
 
 if __name__ == '__main__':
     unittest.main()
