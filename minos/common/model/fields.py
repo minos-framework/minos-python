@@ -21,7 +21,7 @@ T = t.TypeVar("T")
 
 
 class ModelField:
-    """Represents a minor model field."""
+    """Represents a model field."""
 
     __slots__ = "_name", "_type", "_value"
 
