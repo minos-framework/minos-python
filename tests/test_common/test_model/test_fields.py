@@ -1,7 +1,8 @@
 import unittest
 from typing import Optional, Union, List, Dict
 
-from minos.common import ModelField, MinosModelAttributeException
+from minos.common import ModelField, MinosModelAttributeException, ModelRef
+from tests.modelClasses import User
 
 
 class TestModelField(unittest.TestCase):
@@ -25,6 +26,23 @@ class TestModelField(unittest.TestCase):
     def test_value_dict(self):
         field = ModelField("test", dict[str, bool], {"foo": True, "bar": False})
         self.assertEqual({"foo": True, "bar": False}, field.value)
+
+    def test_value_model_ref(self):
+        user = User(1234)
+        field = ModelField("test", ModelRef[User], user)
+        self.assertEqual(user, field.value)
+
+    def test_value_model_ref_raises(self):
+        with self.assertRaises(MinosModelAttributeException):
+            ModelField("test", ModelRef[User], "foo")
+
+    def test_value_model_ref_optional(self):
+        field = ModelField("test", Optional[ModelRef[User]], None)
+        self.assertIsNone(field.value)
+
+        user = User(1234)
+        field.value = user
+        self.assertEqual(user, field.value)
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
@@ -69,6 +87,10 @@ class TestModelField(unittest.TestCase):
         self.assertEqual(None, field.value)
         field.value = [4]
         self.assertEqual([4], field.value)
+
+    def test_repr(self):
+        field = ModelField("test", Optional[int], 1)
+        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1)", repr(field))
 
 
 if __name__ == '__main__':

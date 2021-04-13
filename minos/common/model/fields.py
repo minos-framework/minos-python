@@ -10,6 +10,7 @@ import typing as t
 
 from ..exceptions import MinosModelAttributeException
 from ..logs import log
+from .types import ModelRef
 
 PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
@@ -20,6 +21,8 @@ T = t.TypeVar("T")
 
 
 class ModelField:
+    """Represents a model field."""
+
     __slots__ = "_name", "_type", "_value"
 
     def __init__(self, name: str, type_val: t.Type[T], value: T):
@@ -95,6 +98,13 @@ class ModelField:
                     f"{type(data)} could not be converted into {type_field} key, value types"
                 )
             self._value = converted_data
+        elif type_field is ModelRef or t.get_origin(type_field) is ModelRef:
+            converted_data = self._is_model_ref(data, t.get_args(type_field)[0], convert=True)
+            if isinstance(converted_data, bool) and not converted_data:
+                raise MinosModelAttributeException(
+                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
+                )
+            self._value = converted_data
         else:
             raise MinosModelAttributeException(
                 f"Something goes wrong check if the type of the passed value "
@@ -159,6 +169,14 @@ class ModelField:
             return False
 
         return dict(zip(keys, values))
+
+    @staticmethod
+    def _is_model_ref(data: t.Any, model_type: t.Type, convert: bool = False) -> t.Union[bool, t.Any]:
+        if isinstance(data, model_type):
+            if convert:
+                return data
+            return True
+        return False
 
     def _convert_list_params(self, data: t.Iterable, type_params: t.Any) -> t.Union[bool, t.List]:
         """
@@ -236,4 +254,4 @@ class ModelField:
     #             return {"name": self.name, "type": ["null", PYTHON_TYPE_TO_AVRO[type_union]]}
 
     def __repr__(self):
-        return f"AggregateField(name={self.name}, type={self.type}, value={self.value})"
+        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)})"
