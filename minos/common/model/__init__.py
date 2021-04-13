@@ -43,5 +43,6 @@ from .types import (
     Fixed,
     Enum,
     Decimal,
+    ModelRef,
     CUSTOM_TYPES,
 )

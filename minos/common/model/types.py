@@ -75,4 +75,20 @@ class Decimal(t.Generic[T]):
         return f"Decimal precision: {self.precision} scale:{self.scale}"
 
 
-CUSTOM_TYPES = ("Fixed", "Enum", "Decimal")
+@dataclasses.dataclass
+class ModelRef(t.Generic[T]):
+    """Represents an Avro Model Reference type.
+
+    TODO
+    """
+
+    default: t.Any = dataclasses.field(default=MissingSentinel)
+    namespace: t.Optional[str] = None
+    aliases: t.Optional[t.List] = None
+    _dataclasses_custom_type: str = "ModelRef"
+
+    def __repr__(self) -> str:
+        return "ModelRef()"
+
+
+CUSTOM_TYPES = ("Fixed", "Enum", "Decimal", "ModelRef",)

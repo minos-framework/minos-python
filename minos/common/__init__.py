@@ -63,6 +63,7 @@ from .model import (
     Enum,
     Decimal,
     CUSTOM_TYPES,
+    ModelRef,
 )
 from .protocol import (
     MinosBinaryProtocol,
