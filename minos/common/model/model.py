@@ -141,6 +141,7 @@ class MinosModel(object):
         """
         get all the child class __annotations__ and update the FIELD base attribute
         """
+        ans = dict()
         for b in self.__class__.__mro__[-1:0:-1]:
             base_fields = getattr(b, "_fields", None)
             if base_fields is not None:
@@ -149,5 +150,6 @@ class MinosModel(object):
                 log.debug(f"Fields Derivative {list_fields}")
                 if "_fields" not in list_fields:
                     # the class is a derivative of MinosModel class
-                    fields = list_fields | fields
-        return fields
+                    ans |= list_fields
+        ans |= fields
+        return ans
