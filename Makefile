@@ -62,7 +62,7 @@ coverage: ## check code coverage quickly with the default Python
 	coverage run --source minos -m pytest
 	coverage report -m
 	coverage html
-	$(BROWSER) htmlcov/index.html
+	# $(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/minos_microservice_saga.rst
