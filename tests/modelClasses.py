@@ -1,23 +1,23 @@
 from typing import Optional
 
-from minos.common import MinosModel
+from minos.common import MinosModel, ModelRef
 
 
-class Aggregate(MinosModel):
+class Base(MinosModel):
     """
     base class derived directly from MinosModel
     """
     id: Optional[int]
 
 
-class UserAggregate(Aggregate):
+class User(Base):
     """
     Class for Inheritance Test
     """
     username: Optional[str]
 
 
-class CustomerAggregate(UserAggregate):
+class Customer(User):
     """
     Test a Model Class with List
     """
@@ -27,7 +27,7 @@ class CustomerAggregate(UserAggregate):
     lists: Optional[list[int]]
 
 
-class CustomerDictAggregate(UserAggregate):
+class CustomerDict(User):
     """
     Test a Model Class with Dictionary
     """
@@ -36,7 +36,7 @@ class CustomerDictAggregate(UserAggregate):
     friends: dict[str, str]
 
 
-class CustomerFailListAggregate(UserAggregate):
+class CustomerFailList(User):
     """
     Test a Model Class with a List wrong formatted
     """
@@ -45,7 +45,7 @@ class CustomerFailListAggregate(UserAggregate):
     listes_failed: list
 
 
-class CustomerFailDictAggregate(UserAggregate):
+class CustomerFailDict(User):
     """
     Test a Model Class with a Dictionary wrong formatted
     """
