@@ -235,5 +235,15 @@ class ModelField:
     #             type_union = args[0]
     #             return {"name": self.name, "type": ["null", PYTHON_TYPE_TO_AVRO[type_union]]}
 
+    def __eq__(self, other: "ModelField") -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
+        yield from (self.name, self.type, self.value)
+
     def __repr__(self):
         return f"AggregateField(name={self.name}, type={self.type}, value={self.value})"
