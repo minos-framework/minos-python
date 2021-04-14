@@ -17,7 +17,7 @@ class MissingSentinel(t.Generic[T]):
     Class to detect when a field is not initialized
     """
 
-    _instance = None
+    _instance = None  # Stores de singleton instance.
 
     def __new__(cls):
         if not isinstance(cls._instance, cls):
