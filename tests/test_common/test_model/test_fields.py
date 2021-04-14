@@ -23,9 +23,17 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", list[int], [1, 2, 3])
         self.assertEqual([1, 2, 3], field.value)
 
+    def test_value_list_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", list[int], 3)
+
     def test_value_dict(self):
         field = ModelField("test", dict[str, bool], {"foo": True, "bar": False})
         self.assertEqual({"foo": True, "bar": False}, field.value)
+
+    def test_value_dict_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", dict[str, bool], 3)
 
     def test_value_model_ref(self):
         user = User(1234)
