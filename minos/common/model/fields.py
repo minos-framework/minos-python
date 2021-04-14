@@ -80,6 +80,9 @@ class ModelField:
         elif type_field is int and self._is_int(data):
             log.debug("the Value passed is an integer")
             self._value = int(data)
+        elif type_field is float and self._is_float(data):
+            log.debug("the Value passed is an integer")
+            self._value = float(data)
         elif type_field is bool and self._is_bool(data):
             log.debug("the Value passed is an integer")
             self._value = data
@@ -125,6 +128,20 @@ class ModelField:
             except ValueError:
                 return False
         if isinstance(data, int):
+            return True
+        return False
+
+    @staticmethod
+    def _is_float(data: t.Union[float, str]) -> bool:
+        if isinstance(data, str):
+            # sometime the data is an integer but is passed as string, on that case would be better
+            # to check if is a decimal
+            try:
+                float(data)
+                return True
+            except ValueError:
+                return False
+        if isinstance(data, float):
             return True
         return False
 

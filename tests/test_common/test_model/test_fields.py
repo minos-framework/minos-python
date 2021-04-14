@@ -19,6 +19,10 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", int, 3)
         self.assertEqual(3, field.value)
 
+    def test_value_float(self):
+        field = ModelField("test", float, 3.14)
+        self.assertEqual(3.14, field.value)
+
     def test_value_list(self):
         field = ModelField("test", list[int], [1, 2, 3])
         self.assertEqual([1, 2, 3], field.value)
