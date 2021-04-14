@@ -1,5 +1,5 @@
 import unittest
-from typing import Optional
+from typing import Optional, Union
 
 from minos.common import ModelField, ModelRef, MinosReqAttributeException, MinosTypeAttributeException
 from tests.modelClasses import User
@@ -54,9 +54,13 @@ class TestModelField(unittest.TestCase):
         with self.assertRaises(MinosReqAttributeException):
             field.value = None
 
-    def test_value_setter_composed_raises(self):
+    def test_value_setter_list_raises_required(self):
         with self.assertRaises(MinosReqAttributeException):
             ModelField("test", list[int])
+
+    def test_value_setter_union_raises_required(self):
+        with self.assertRaises(MinosReqAttributeException):
+            ModelField("test", Union[int, str])
 
     def test_value_setter_dict(self):
         field = ModelField("test", dict[str, bool], {})
