@@ -76,13 +76,18 @@ class TestModelField(unittest.TestCase):
         with self.assertRaises(MinosTypeAttributeException):
             field.value = {1: True, 2: False}
 
-    def test_empty_value(self):
+    def test_empty_value_raises(self):
         with self.assertRaises(MinosReqAttributeException):
             ModelField("id", int)
 
     def test_optional_type(self):
-        field = ModelField("test", Optional[int], None)
+        field = ModelField("test", Optional[int])
         self.assertEqual(Optional[int], field.type)
+
+    def test_empty_optional_value(self):
+        field = ModelField("test", Optional[int])
+        self.assertEqual(ModelField("test", Optional[int], None), field)
+        self.assertEqual(None, field.value)
 
     def test_value_setter_optional_int(self):
         field = ModelField("test", Optional[int], 3)

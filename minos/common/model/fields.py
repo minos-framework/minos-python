@@ -79,7 +79,7 @@ class ModelField:
         if type_field is type(None):
             if data is None or data == MissingSentinel:
                 log.debug("the Value passed is None")
-                self._value = data
+                self._value = None
                 return
         else:
             if type_field in PYTHON_INMUTABLE_TYPES:
