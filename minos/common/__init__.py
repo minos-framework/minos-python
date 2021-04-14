@@ -83,6 +83,8 @@ from .exceptions import (
     MinosModelException,
     MinosModelAttributeException,
     MinosReqAttributeException,
+    MinosTypeAttributeException,
+    MinosMalformedAttributeException,
 )
 from .importlib import (
     import_module,

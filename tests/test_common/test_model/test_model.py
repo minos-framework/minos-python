@@ -2,7 +2,13 @@ from typing import Optional
 
 import pytest
 
-from minos.common import MinosModelException, MinosModelAttributeException, ModelField
+from minos.common import (
+    MinosModelException,
+    ModelField,
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
+    MinosMalformedAttributeException,
+)
 from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User
 
 import unittest
@@ -53,7 +59,7 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual("John", model.name)
 
     def test_aggregate_wrong_int_type_setter(self):
-        with pytest.raises(MinosModelAttributeException):
+        with pytest.raises(MinosTypeAttributeException):
             Customer("1234S")
 
     def test_aggregate_string_type_setter(self):
@@ -63,7 +69,7 @@ class TestMinosModel(unittest.TestCase):
 
     def test_aggregate_wrong_string_type_setter(self):
         model = Customer(123)
-        with pytest.raises(MinosModelAttributeException):
+        with pytest.raises(MinosTypeAttributeException):
             model.name = 456
 
     def test_aggregate_bool_type_setter(self):
@@ -75,11 +81,11 @@ class TestMinosModel(unittest.TestCase):
     def test_aggregate_wrong_bool_type_setter(self):
         model = Customer(123)
         model.name = "John"
-        with pytest.raises(MinosModelAttributeException):
+        with pytest.raises(MinosTypeAttributeException):
             model.is_admin = "True"
 
     def test_aggregate_empty_mandatory_field(self):
-        with pytest.raises(MinosModelAttributeException):
+        with pytest.raises(MinosReqAttributeException):
             Customer()
 
     def test_model_is_freezed_class(self):
@@ -95,31 +101,35 @@ class TestMinosModel(unittest.TestCase):
 
     def test_model_list_wrong_attribute_type(self):
         model = Customer(123)
-        with pytest.raises(MinosModelAttributeException):
+        with pytest.raises(MinosTypeAttributeException):
             model.lists = [1, "hola", 8, 6]
 
     def test_model_ref(self):
-        shopping_list = ShoppingList()
+        shopping_list = ShoppingList(cost=3.14)
         user = User(1234)
         shopping_list.user = user
         self.assertEqual(user, shopping_list.user)
 
     def test_model_ref_raises(self):
-        shopping_list = ShoppingList()
-        with self.assertRaises(MinosModelAttributeException):
+        shopping_list = ShoppingList(cost=3.14)
+        with self.assertRaises(MinosTypeAttributeException):
             shopping_list.user = "foo"
 
     def test_model_fail_list_class_attribute(self):
-        with pytest.raises(MinosModelAttributeException):
+        with pytest.raises(MinosMalformedAttributeException):
             CustomerFailList(123)
 
     def test_model_fail_dict_class_attribute(self):
-        with pytest.raises(MinosModelAttributeException):
+        with pytest.raises(MinosMalformedAttributeException):
             CustomerFailDict(123)
+
+    def test_empty_required_value(self):
+        with self.assertRaises(MinosReqAttributeException):
+            User()
 
     def test_fields(self):
         fields = {
-            'id': ModelField("id", int, 123), 'username': ModelField("username", Optional[str], None)
+            'id': ModelField("id", int, 123), 'username': ModelField("username", Optional[str])
         }
         model = User(123)
         self.assertEqual(fields, model.fields)
@@ -136,7 +146,7 @@ class TestMinosModel(unittest.TestCase):
         user = User(123)
         expected = {
             'id': ModelField("id", int, 123),
-            'username': ModelField("username", Optional[str], None)
+            'username': ModelField("username", Optional[str])
         }
         self.assertEqual(expected, dict(user))
 
@@ -146,7 +156,7 @@ class TestMinosModel(unittest.TestCase):
         expected = hash(
             (
                 ('id', ModelField("id", int, 123)),
-                ('username', ModelField("username", Optional[str], None)),
+                ('username', ModelField("username", Optional[str])),
             )
         )
         self.assertEqual(expected, hash(user))
