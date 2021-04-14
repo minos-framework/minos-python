@@ -31,6 +31,14 @@ class Customer(User):
     is_admin: Optional[bool]
     lists: Optional[list[int]]
 
+    def parse_name(self, name: str) -> str:
+        """Parse name into a cleaner format.
+
+        :param name: name to be parsed.
+        :return: An string object.
+        """
+        return name.title()
+
 
 class CustomerDict(User):
     """
