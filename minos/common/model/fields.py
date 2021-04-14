@@ -147,9 +147,7 @@ class ModelField:
                 return True
             except ValueError:
                 return False
-        if isinstance(data, int):
-            return True
-        return False
+        return isinstance(data, int)
 
     @staticmethod
     def _is_float(data: t.Union[float, str]) -> bool:
@@ -161,21 +159,15 @@ class ModelField:
                 return True
             except ValueError:
                 return False
-        if isinstance(data, float):
-            return True
-        return False
+        return isinstance(data, float)
 
     @staticmethod
     def _is_string(data: str) -> bool:
-        if isinstance(data, str):
-            return True
-        return False
+        return isinstance(data, str)
 
     @staticmethod
     def _is_bool(data: bool) -> bool:
-        if type(data) == bool:
-            return True
-        return False
+        return type(data) == bool
 
     def _is_list(self, data: list, type_values: t.Any, convert: bool = False) -> t.Union[bool, t.List]:
 
