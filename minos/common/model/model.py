@@ -9,12 +9,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 import datetime
 import uuid
 import typing as t
-from collections import namedtuple
 from itertools import zip_longest
 
 from ..exceptions import MinosModelException
 from ..logs import log
-from .types import Fixed, Enum
+from .types import Fixed, Enum, MissingSentinel
 from .fields import ModelField
 
 BOOLEAN = "boolean"
@@ -121,26 +120,26 @@ class MinosModel(object):
         else:
             raise AttributeError
 
-    def _list_fields(self, *args, **kwargs) -> t.Dict[str, ModelField]:
-        fields: t.Dict[str, t.Any] = t.get_type_hints(self)
+    def _list_fields(self, *args, **kwargs) -> dict[str, ModelField]:
+        fields: dict[str, t.Any] = t.get_type_hints(self)
         fields = self._update_from_inherited_class(fields)
 
         # get the updated list of field, now is time to convert in a Dictionary of ModelField's
         dict_objects = dict()
 
-        empty = namedtuple("Empty", ())()  # artificial value to discriminate between None and empty.
+        empty = MissingSentinel()  # artificial value to discriminate between None and empty.
         for (name, type_val), value in zip_longest(fields.items(), args, fillvalue=empty):
             if name in kwargs and value is not empty:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
 
             if value is empty:
-                value = kwargs.get(name, None)
+                value = kwargs.get(name, MissingSentinel())
 
             dict_objects[name] = ModelField(name, type_val, value)
 
         return dict_objects
 
-    def _update_from_inherited_class(self, fields: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
+    def _update_from_inherited_class(self, fields: dict[str, t.Any]) -> dict[str, t.Any]:
         """
         get all the child class __annotations__ and update the FIELD base attribute
         """

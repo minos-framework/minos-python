@@ -17,7 +17,18 @@ class MissingSentinel(t.Generic[T]):
     Class to detect when a field is not initialized
     """
 
-    ...
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    def __eq__(self, other: t.Optional["MissingSentinel"]):
+        return type(self) == type(other) or other is None
+
+    def __hash__(self) -> int:
+        return id(self)
 
 
 @dataclasses.dataclass
@@ -30,7 +41,7 @@ class Fixed(t.Generic[T]):
     size: int
     default: t.Any = dataclasses.field(default=MissingSentinel)
     namespace: t.Optional[str] = None
-    aliases: t.Optional[t.List] = None
+    aliases: t.Optional[list[t.Any]] = None
     _dataclasses_custom_type: str = "Fixed"
 
     def __repr__(self) -> str:
@@ -44,10 +55,10 @@ class Enum(t.Generic[T]):
     simbols (typing.List): Specifying the possible values for the enum
     """
 
-    symbols: t.List[t.Any]
+    symbols: list[t.Any]
     default: t.Any = dataclasses.field(default=MissingSentinel)
     namespace: t.Optional[str] = None
-    aliases: t.Optional[t.List] = None
+    aliases: t.Optional[list[t.Any]] = None
     docs: t.Optional[str] = None
     _dataclasses_custom_type: str = "Enum"
 
@@ -69,7 +80,7 @@ class Decimal(t.Generic[T]):
     _dataclasses_custom_type: str = "Decimal"
 
     # Decimal serializes to bytes, which doesn't support namespace
-    aliases: t.Optional[t.List] = None
+    aliases: t.Optional[list[t.Any]] = None
 
     def __repr__(self) -> str:
         return f"Decimal(precision={self.precision}, scale={self.scale})"
@@ -81,7 +92,7 @@ class ModelRef(t.Generic[T]):
 
     default: t.Any = dataclasses.field(default=MissingSentinel)
     namespace: t.Optional[str] = None
-    aliases: t.Optional[t.List] = None
+    aliases: t.Optional[list[t.Any]] = None
     _dataclasses_custom_type: str = "ModelRef"
 
     def __repr__(self) -> str:
