@@ -121,7 +121,7 @@ class TestMinosModel(unittest.TestCase):
 
     def test_fields(self):
         fields = {
-            'id': ModelField("id", int, 123), 'username': ModelField("username", Optional[str], None)
+            'id': ModelField("id", int, 123), 'username': ModelField("username", Optional[str])
         }
         model = User(123)
         self.assertEqual(fields, model.fields)
@@ -138,7 +138,7 @@ class TestMinosModel(unittest.TestCase):
         user = User(123)
         expected = {
             'id': ModelField("id", int, 123),
-            'username': ModelField("username", Optional[str], None)
+            'username': ModelField("username", Optional[str])
         }
         self.assertEqual(expected, dict(user))
 

@@ -10,13 +10,6 @@ class TestMissingSentinel(unittest.TestCase):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(MissingSentinel, Generic))
 
-    def test_equal(self):
-        self.assertEqual(MissingSentinel(), MissingSentinel())
-        self.assertEqual(None, MissingSentinel())
-
-    def test_hash(self):
-        self.assertEqual(id(MissingSentinel()), hash(MissingSentinel()))
-
 
 class TestFixed(unittest.TestCase):
 

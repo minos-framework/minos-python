@@ -127,13 +127,13 @@ class MinosModel(object):
         # get the updated list of field, now is time to convert in a Dictionary of ModelField's
         dict_objects = dict()
 
-        empty = MissingSentinel()  # artificial value to discriminate between None and empty.
+        empty = MissingSentinel  # artificial value to discriminate between None and empty.
         for (name, type_val), value in zip_longest(fields.items(), args, fillvalue=empty):
             if name in kwargs and value is not empty:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
 
             if value is empty:
-                value = kwargs.get(name, MissingSentinel())
+                value = kwargs.get(name, MissingSentinel)
 
             dict_objects[name] = ModelField(name, type_val, value)
 

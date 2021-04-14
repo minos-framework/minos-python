@@ -25,7 +25,7 @@ class ModelField:
 
     __slots__ = "_name", "_type", "_value"
 
-    def __init__(self, name: str, type_val: t.Type[T], value: T = MissingSentinel()):
+    def __init__(self, name: str, type_val: t.Type[T], value: T = MissingSentinel):
         self._name = name
         self._type = type_val
         self.value = value
@@ -68,7 +68,7 @@ class ModelField:
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
-        if data == None and self._type != type(None):
+        if (data is None or data == MissingSentinel) and self._type != type(None):
             raise MinosReqAttributeException("")
 
         raise MinosTypeAttributeException(
@@ -77,13 +77,13 @@ class ModelField:
 
     def _set_value(self, type_field: t.Type, data: t.Any) -> t.NoReturn:
         if type_field is type(None):
-            if data == None:
+            if data is None or data == MissingSentinel:
                 log.debug("the Value passed is None")
                 self._value = data
                 return
         else:
             if type_field in PYTHON_INMUTABLE_TYPES:
-                if data == None:
+                if data is None or data == MissingSentinel:
                     raise MinosReqAttributeException("")
                 elif type_field is int and self._is_int(data):
                     log.debug("the Value passed is an integer")
@@ -101,7 +101,7 @@ class ModelField:
                 origin_type = t.get_origin(type_field)
                 if origin_type is None:
                     raise MinosMalformedAttributeException("")
-                if data == None:
+                if data is None or data == MissingSentinel:
                     raise MinosReqAttributeException("")
                 elif origin_type is list:
                     converted_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
