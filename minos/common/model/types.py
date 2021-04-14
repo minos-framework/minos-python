@@ -16,19 +16,7 @@ class MissingSentinel(t.Generic[T]):
     """
     Class to detect when a field is not initialized
     """
-
-    _instance = None  # Stores de singleton instance.
-
-    def __new__(cls):
-        if not isinstance(cls._instance, cls):
-            cls._instance = object.__new__(cls)
-        return cls._instance
-
-    def __eq__(self, other: t.Optional["MissingSentinel"]):
-        return type(self) == type(other) or other is None
-
-    def __hash__(self) -> int:
-        return id(self)
+    pass
 
 
 @dataclasses.dataclass
