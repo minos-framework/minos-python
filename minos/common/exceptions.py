@@ -47,3 +47,8 @@ class MinosTypeAttributeException(MinosModelAttributeException):
 class MinosMalformedAttributeException(MinosModelAttributeException):
     """Exception to be raised when there are any kind of problems with the type definition."""
     pass
+
+
+class MinosAttributeValidationException(MinosModelAttributeException):
+    """Exception to be raised when some fields are not valid."""
+    pass

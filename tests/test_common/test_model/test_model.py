@@ -7,7 +7,7 @@ from minos.common import (
     ModelField,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    MinosMalformedAttributeException,
+    MinosMalformedAttributeException, MinosAttributeValidationException,
 )
 from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User
 
@@ -118,6 +118,16 @@ class TestMinosModel(unittest.TestCase):
     def test_empty_required_value(self):
         with self.assertRaises(MinosReqAttributeException):
             User()
+
+    @unittest.skip  # FIXME
+    def test_validate_required_raises(self):
+        with self.assertRaises(MinosAttributeValidationException):
+            User(-34)
+
+    @unittest.skip  # FIXME
+    def test_validate_optional_raises(self):
+        with self.assertRaises(MinosAttributeValidationException):
+            User(1234, username="user name")
 
     def test_fields(self):
         fields = {
