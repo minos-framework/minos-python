@@ -18,6 +18,10 @@ class TestExceptions(unittest.TestCase):
         exception = MinosException("test")
         self.assertEqual("MinosException(message='test')", repr(exception))
 
+    def test_base_str(self):
+        exception = MinosException("test")
+        self.assertEqual("test", str(exception))
+
     def test_model_attribute(self):
         self.assertTrue(issubclass(MinosModelAttributeException, MinosException))
 
