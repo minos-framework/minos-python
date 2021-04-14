@@ -86,8 +86,10 @@ class TestModelField(unittest.TestCase):
 
     def test_empty_optional_value(self):
         field = ModelField("test", Optional[int])
-        self.assertEqual(ModelField("test", Optional[int], None), field)
         self.assertEqual(None, field.value)
+
+    def test_empty_field_equality(self):
+        self.assertEqual(ModelField("test", Optional[int], None), ModelField("test", Optional[int]))
 
     def test_value_setter_optional_int(self):
         field = ModelField("test", Optional[int], 3)
