@@ -45,15 +45,15 @@ class CustomerFailList(User):
     """
     Test a Model Class with a List wrong formatted
     """
-    name: str
-    surname: str
-    listes_failed: list
+    name: Optional[str]
+    surname: Optional[str]
+    listes_failed: Optional[list]
 
 
 class CustomerFailDict(User):
     """
     Test a Model Class with a Dictionary wrong formatted
     """
-    name: str
-    surname: str
+    name: Optional[str]
+    surname: Optional[str]
     friends: dict

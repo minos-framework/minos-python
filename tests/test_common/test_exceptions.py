@@ -1,0 +1,39 @@
+import unittest
+
+from minos.common import (
+    MinosException,
+    MinosModelAttributeException,
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
+    MinosMalformedAttributeException,
+)
+
+
+class TestExceptions(unittest.TestCase):
+
+    def test_type(self):
+        self.assertTrue(issubclass(MinosException, Exception))
+
+    def test_base_repr(self):
+        exception = MinosException("test")
+        self.assertEqual("MinosException(message='test')", repr(exception))
+
+    def test_base_str(self):
+        exception = MinosException("test")
+        self.assertEqual("test", str(exception))
+
+    def test_model_attribute(self):
+        self.assertTrue(issubclass(MinosModelAttributeException, MinosException))
+
+    def test_required_attribute(self):
+        self.assertTrue(issubclass(MinosReqAttributeException, MinosModelAttributeException))
+
+    def test_type_attribute(self):
+        self.assertTrue(issubclass(MinosTypeAttributeException, MinosModelAttributeException))
+
+    def test_malformed_attribute(self):
+        self.assertTrue(issubclass(MinosMalformedAttributeException, MinosModelAttributeException))
+
+
+if __name__ == '__main__':
+    unittest.main()

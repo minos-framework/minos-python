@@ -8,9 +8,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import typing as t
 
-from ..exceptions import MinosModelAttributeException
+from ..exceptions import MinosReqAttributeException, MinosTypeAttributeException, MinosMalformedAttributeException
 from ..logs import log
-from .types import ModelRef
+from .types import ModelRef, MissingSentinel
 
 PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
@@ -25,9 +25,8 @@ class ModelField:
 
     __slots__ = "_name", "_type", "_value"
 
-    def __init__(self, name: str, type_val: t.Type[T], value: T):
+    def __init__(self, name: str, type_val: t.Type[T], value: T = MissingSentinel):
         self._name = name
-        self._type = None
         self._type = type_val
         self.value = value
 
@@ -66,53 +65,79 @@ class ModelField:
             try:
                 self._set_value(alternative_type, data)
                 return
-            except MinosModelAttributeException:
+            except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
-        raise MinosModelAttributeException(
+        if (data is None or data == MissingSentinel) and self._type != type(None):
+            raise MinosReqAttributeException("")
+
+        raise MinosTypeAttributeException(
             f"None of the '{alternatives}' alternatives matches the given data type: {type(data)}"
         )
 
     def _set_value(self, type_field: t.Type, data: t.Any) -> t.NoReturn:
-        if type_field is type(None) and data is None:
-            log.debug("the Value passed is None")
-            self._value = None
-        elif type_field is int and self._is_int(data):
-            log.debug("the Value passed is an integer")
-            self._value = int(data)
-        elif type_field is bool and self._is_bool(data):
-            log.debug("the Value passed is an integer")
-            self._value = data
-            return
-        elif type_field is str and self._is_string(data):
-            log.debug("the Value passed is a string")
-            self._value = data
-        elif t.get_origin(type_field) is list:
-            converted_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosModelAttributeException(
-                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
-                )
-            self._value = converted_data
-        elif type_field is dict or t.get_origin(type_field) is dict:
-            converted_data = self._is_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1], convert=True)
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosModelAttributeException(
-                    f"{type(data)} could not be converted into {type_field} key, value types"
-                )
-            self._value = converted_data
-        elif type_field is ModelRef or t.get_origin(type_field) is ModelRef:
-            converted_data = self._is_model_ref(data, t.get_args(type_field)[0], convert=True)
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosModelAttributeException(
-                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
-                )
-            self._value = converted_data
+        if type_field is type(None):
+            if data is None or data == MissingSentinel:
+                log.debug("the Value passed is None")
+                self._value = None
+                return
         else:
-            raise MinosModelAttributeException(
-                f"Something goes wrong check if the type of the passed value "
-                f"is fine: data:{type(data)} vs type requested: {type_field}"
-            )
+            if type_field in PYTHON_INMUTABLE_TYPES:
+                if data is None:
+                    raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
+                elif data == MissingSentinel:
+                    raise MinosReqAttributeException(f"'{self.name}' field is missing.")
+                elif type_field is int and self._is_int(data):
+                    log.debug("the Value passed is an integer")
+                    self._value = int(data)
+                    return
+                elif type_field is bool and self._is_bool(data):
+                    log.debug("the Value passed is an integer")
+                    self._value = data
+                    return
+                elif type_field is str and self._is_string(data):
+                    log.debug("the Value passed is a string")
+                    self._value = data
+                    return
+            else:
+                origin_type = t.get_origin(type_field)
+                if origin_type is None:
+                    raise MinosMalformedAttributeException(f"'{self.name}' field is malformed. Type: '{type_field}'.")
+                if data is None:
+                    raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
+                elif data == MissingSentinel:
+                    raise MinosReqAttributeException(f"'{self.name}' field is missing.")
+                elif origin_type is list:
+                    converted_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
+                    if isinstance(converted_data, bool) and not converted_data:
+                        raise MinosTypeAttributeException(
+                            f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
+                        )
+                    self._value = converted_data
+                    return
+
+                elif origin_type is dict:
+                    converted_data = self._is_dict(
+                        data, t.get_args(type_field)[0], t.get_args(type_field)[1], convert=True
+                    )
+                    if isinstance(converted_data, bool) and not converted_data:
+                        raise MinosTypeAttributeException(
+                            f"{type(data)} could not be converted into {type_field} key, value types"
+                        )
+                    self._value = converted_data
+                    return
+                elif origin_type is ModelRef:
+                    converted_data = self._is_model_ref(data, t.get_args(type_field)[0], convert=True)
+                    if isinstance(converted_data, bool) and not converted_data:
+                        raise MinosTypeAttributeException(
+                            f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
+                        )
+                    self._value = converted_data
+                    return
+
+        raise MinosTypeAttributeException(
+            f"The '{type_field}' type does not match with the given data type: {type(data)}"
+        )
 
     @staticmethod
     def _is_int(data: t.Union[int, str]) -> bool:
@@ -140,7 +165,7 @@ class ModelField:
             return True
         return False
 
-    def _is_list(self, data: list, type_values: t.Any, convert: bool = False) -> t.Union[bool, t.List]:
+    def _is_list(self, data: list, type_values: t.Any, convert: bool = False) -> t.Union[bool, list[t.Any]]:
 
         if isinstance(data, list):
             # check if the values are instances of type_values
@@ -153,7 +178,7 @@ class ModelField:
 
     def _is_dict(
         self, data: list, type_keys: t.Type, type_values: t.Type, convert: bool = False
-    ) -> t.Union[bool, t.Dict]:
+    ) -> t.Union[bool, dict[t.Any, t.Any]]:
 
         if not isinstance(data, dict):
             return False
@@ -165,7 +190,9 @@ class ModelField:
             return data_converted
         return True
 
-    def _convert_dict_params(self, data: t.Mapping, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, t.Dict]:
+    def _convert_dict_params(
+        self, data: t.Mapping, type_keys: t.Type, type_values: t.Type
+    ) -> t.Union[bool, dict[t.Any, t.Any]]:
         keys = self._convert_list_params(data.keys(), type_keys)
         if isinstance(keys, bool) and not keys:
             return False
@@ -184,7 +211,7 @@ class ModelField:
             return True
         return False
 
-    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> t.Union[bool, t.List]:
+    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> t.Union[bool, t.Any]:
         """
         check if the parameters list are equal to @type_params type
         """
