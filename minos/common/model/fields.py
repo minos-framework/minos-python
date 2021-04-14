@@ -83,8 +83,10 @@ class ModelField:
                 return
         else:
             if type_field in PYTHON_INMUTABLE_TYPES:
-                if data is None or data == MissingSentinel:
-                    raise MinosReqAttributeException("")
+                if data is None:
+                    raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
+                elif data == MissingSentinel:
+                    raise MinosReqAttributeException(f"'{self.name}' field is missing.")
                 elif type_field is int and self._is_int(data):
                     log.debug("the Value passed is an integer")
                     self._value = int(data)
@@ -100,9 +102,11 @@ class ModelField:
             else:
                 origin_type = t.get_origin(type_field)
                 if origin_type is None:
-                    raise MinosMalformedAttributeException("")
-                if data is None or data == MissingSentinel:
-                    raise MinosReqAttributeException("")
+                    raise MinosMalformedAttributeException(f"'{self.name}' field is malformed. Type: '{type_field}'.")
+                if data is None:
+                    raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
+                elif data == MissingSentinel:
+                    raise MinosReqAttributeException(f"'{self.name}' field is missing.")
                 elif origin_type is list:
                     converted_data = self._is_list(data, t.get_args(type_field)[0], convert=True)
                     if isinstance(converted_data, bool) and not converted_data:
