@@ -19,9 +19,9 @@ class MissingSentinel(t.Generic[T]):
 
     _instance = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls):
         if not isinstance(cls._instance, cls):
-            cls._instance = object.__new__(cls, *args, **kwargs)
+            cls._instance = object.__new__(cls)
         return cls._instance
 
     def __eq__(self, other: t.Optional["MissingSentinel"]):
