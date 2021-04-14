@@ -27,7 +27,6 @@ class ModelField:
 
     def __init__(self, name: str, type_val: t.Type[T], value: T):
         self._name = name
-        self._type = None
         self._type = type_val
         self.value = value
 
