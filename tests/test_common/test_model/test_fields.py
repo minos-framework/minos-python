@@ -92,6 +92,27 @@ class TestModelField(unittest.TestCase):
         field.value = [4]
         self.assertEqual([4], field.value)
 
+    def test_parser(self):
+        parser = lambda x: x.title()
+        field = ModelField("test", str, "foo", parser)
+        self.assertEqual(parser, field.parser)
+
+    def test_parser_non_set(self):
+        field = ModelField("test", str, "foo")
+        self.assertEqual(None, field.parser)
+
+    def test_parser_value(self):
+        field = ModelField("test", str, "foo", lambda x: x.title())
+        self.assertEqual("Foo", field.value)
+
+    def test_parser_with_casting(self):
+        field = ModelField("test", float, "1.234,56", lambda x: x.replace(".", "").replace(",", "."))
+        self.assertEqual(1234.56, field.value)
+
+    def test_parser_optional(self):
+        field = ModelField("test", Optional[str], None, lambda x: x.title())
+        self.assertEqual(None, field.value)
+
     def test_equal(self):
         self.assertEqual(ModelField("id", Optional[int], 3), ModelField("id", Optional[int], 3))
         self.assertNotEqual(ModelField("id", Optional[int], 3), ModelField("id", Optional[int], None))
@@ -99,14 +120,14 @@ class TestModelField(unittest.TestCase):
         self.assertNotEqual(ModelField("id", Optional[int], 3), ModelField("id", int, 3))
 
     def test_iter(self):
-        self.assertEqual(("id", Optional[int], 3), tuple(ModelField("id", Optional[int], 3)))
+        self.assertEqual(("id", Optional[int], 3, None), tuple(ModelField("id", Optional[int], 3)))
 
     def test_hash(self):
-        self.assertEqual(hash(("id", Optional[int], 3)), hash(ModelField("id", Optional[int], 3)))
+        self.assertEqual(hash(("id", Optional[int], 3, None)), hash(ModelField("id", Optional[int], 3)))
 
     def test_repr(self):
-        field = ModelField("test", Optional[int], 1)
-        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1)", repr(field))
+        field = ModelField("test", Optional[int], 1, lambda x: x * 10)
+        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=10, parser=<lambda>)", repr(field))
 
 
 if __name__ == '__main__':

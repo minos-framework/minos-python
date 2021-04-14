@@ -23,12 +23,13 @@ T = t.TypeVar("T")
 class ModelField:
     """Represents a model field."""
 
-    __slots__ = "_name", "_type", "_value"
+    __slots__ = "_name", "_type", "_value", "_parser"
 
-    def __init__(self, name: str, type_val: t.Type[T], value: T):
+    def __init__(self, name: str, type_val: t.Type[T], value: T, parser: t.Optional[t.Callable[[t.Any], T]] = None):
         self._name = name
-        self._type = None
         self._type = type_val
+        self._parser = parser
+
         self.value = value
 
     @property
@@ -42,15 +43,34 @@ class ModelField:
         return self._type
 
     @property
+    def parser(self) -> t.Optional[t.Callable[[t.Any], T]]:
+        """Parser getter."""
+        return self._parser
+
+    @property
+    def _parser_name(self) -> t.Optional[str]:
+        if self.parser is None:
+            return None
+        return self.parser.__name__
+
+    @property
     def value(self) -> t.Any:
         """Value getter."""
         return self._value
 
     @value.setter
     def value(self, data: t.Any) -> t.NoReturn:
+        """Check if the given value is correct and stores it if ``True``, otherwise raises an exception.
+
+        :param data: new value.
+        :return: This method does not return anything.
         """
-        check if the value is correct
-        """
+        if self._parser is not None:
+            try:
+                data = self.parser(data)
+            except Exception as exc:
+                log.warning(f"Raised {repr(exc)} while parsing {repr(self.name)} field with {repr(data)} value.")
+
         log.debug(f"Name val {self._name}")
         log.debug(f"Type val {self._type}")
 
@@ -284,7 +304,8 @@ class ModelField:
 
     def __iter__(self) -> t.Iterable:
         # noinspection PyRedundantParentheses
-        yield from (self.name, self.type, self.value)
+        yield from (self.name, self.type, self.value, self.parser)
 
     def __repr__(self):
-        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)})"
+        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, " \
+               f"value={repr(self.value)}, parser={self._parser_name})"

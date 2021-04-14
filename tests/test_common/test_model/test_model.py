@@ -38,6 +38,14 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual("Doe", model.surname)
         self.assertEqual("John", model.name)
 
+    def test_attribute_parser_same_type(self):
+        model = Customer(1234, name="john")
+        self.assertEqual("John", model.name)
+
+    def test_attribute_parser_different_type(self):
+        model = ShoppingList(User(1234), cost="1.234,56")
+        self.assertEqual(1234.56, model.cost)
+
     def test_aggregate_int_as_string_type_setter(self):
         model = Customer("1234")
         model.name = "John"

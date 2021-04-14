@@ -136,7 +136,7 @@ class MinosModel(object):
             if value is empty:
                 value = kwargs.get(name, None)
 
-            dict_objects[name] = ModelField(name, type_val, value)
+            dict_objects[name] = ModelField(name, type_val, value, getattr(self, f"parse_{name}", None))
 
         return dict_objects
 

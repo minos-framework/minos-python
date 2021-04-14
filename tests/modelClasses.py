@@ -20,6 +20,17 @@ class User(Base):
 class ShoppingList(MinosModel):
     """Class to test ``MinosModel`` composition."""
     user: Optional[ModelRef[User]]
+    cost: float
+
+    def parse_cost(self, value: Optional[str]) -> float:
+        """Parse a number encoded as string with a semicolon as decimal separator.
+
+        :param value: cost to be parsed.
+        :return: A float value.
+        """
+        if value is None:
+            return 0.0
+        return float(value.replace(".", "").replace(",", "."))
 
 
 class Customer(User):
