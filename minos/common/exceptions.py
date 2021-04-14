@@ -14,6 +14,9 @@ class MinosException(Exception):
     def __init__(self, error_message: str):
         self._message = error_message
 
+    def __repr__(self):
+        return f"{type(self).__name__}(message={repr(self._message)})"
+
     def __str__(self) -> str:
         """represent in a string format the error message passed during the instantiation"""
         return self._message
