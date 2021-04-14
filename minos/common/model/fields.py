@@ -303,8 +303,9 @@ class ModelField:
         return hash(tuple(self))
 
     def __iter__(self) -> t.Iterable:
-        # noinspection PyRedundantParentheses
-        yield from (self.name, self.type, self.value, self.parser)
+        yield from (
+            self.name, self.type, self.value, self.parser
+        )
 
     def __repr__(self):
         return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, " \
