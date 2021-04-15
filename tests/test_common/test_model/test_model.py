@@ -137,7 +137,7 @@ class TestMinosModel(unittest.TestCase):
     def test_avro_schema(self):
         shopping_list = ShoppingList(User(1234))
         expected = {
-            "fields": [{"name": "user", "type": ["User", "null"]}, {'name': 'cost', 'type': 'double'}],
+            "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "double"}],
             "name": "ShoppingList",
             "namespace": "minos.common.model.model",
             "type": "record",
@@ -146,7 +146,7 @@ class TestMinosModel(unittest.TestCase):
 
     def test_avro_data(self):
         shopping_list = ShoppingList(User(1234))
-        expected = {'cost': float("inf"), 'user': {'id': 1234, 'username': 'null'}}
+        expected = {"cost": float("inf"), "user": {"id": 1234, "username": "null"}}
         self.assertEqual(expected, shopping_list.avro_data)
 
     def test_avro_schema_simple(self):
