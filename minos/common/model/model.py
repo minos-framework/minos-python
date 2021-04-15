@@ -97,7 +97,8 @@ class MinosModel(object):
 
         :param kwargs: Named arguments to be set as model attributes.
         """
-        self._fields = self._list_fields(*args, **kwargs)
+        self._fields = dict()
+        self._list_fields(*args, **kwargs)
 
     @property
     def fields(self) -> dict[str, ModelField]:
@@ -120,12 +121,9 @@ class MinosModel(object):
         else:
             raise AttributeError
 
-    def _list_fields(self, *args, **kwargs) -> dict[str, ModelField]:
+    def _list_fields(self, *args, **kwargs) -> t.NoReturn:
         fields: dict[str, t.Any] = t.get_type_hints(self)
         fields = self._update_from_inherited_class(fields)
-
-        # get the updated list of field, now is time to convert in a Dictionary of ModelField's
-        dict_objects = dict()
 
         empty = MissingSentinel  # artificial value to discriminate between None and empty.
         for (name, type_val), value in zip_longest(fields.items(), args, fillvalue=empty):
@@ -135,9 +133,7 @@ class MinosModel(object):
             if value is empty:
                 value = kwargs.get(name, MissingSentinel)
 
-            dict_objects[name] = ModelField(name, type_val, value)
-
-        return dict_objects
+            self._fields[name] = ModelField(name, type_val, value, getattr(self, f"validate_{name}", None))
 
     def _update_from_inherited_class(self, fields: dict[str, t.Any]) -> dict[str, t.Any]:
         """

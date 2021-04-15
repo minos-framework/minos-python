@@ -5,6 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from typing import Any
 
 
 class MinosException(Exception):
@@ -47,3 +48,12 @@ class MinosTypeAttributeException(MinosModelAttributeException):
 class MinosMalformedAttributeException(MinosModelAttributeException):
     """Exception to be raised when there are any kind of problems with the type definition."""
     pass
+
+
+class MinosAttributeValidationException(MinosModelAttributeException):
+    """Exception to be raised when some fields are not valid."""
+
+    def __init__(self, name: str, value: Any):
+        self.name = name
+        self.value = value
+        super().__init__(f"{repr(value)} value does not pass the {repr(name)} field validation.")
