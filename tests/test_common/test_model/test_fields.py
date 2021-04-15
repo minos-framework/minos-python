@@ -63,6 +63,11 @@ class TestModelField(unittest.TestCase):
         expected = {"name": "test", "type": "long"}
         self.assertEqual(expected, field.avro_schema)
 
+    def test_avro_schema_float(self):
+        field = ModelField("test", float, 3.4)
+        expected = {"name": "test", "type": "long"}
+        self.assertEqual(expected, field.avro_schema)
+
     def test_avro_schema_string(self):
         field = ModelField("test", str, "foo")
         expected = {"name": "test", "type": "string"}
