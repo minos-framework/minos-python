@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = '0.0.1.7'
+__version__ = "0.0.1.7"
 
 from .configuration import (
     BROKER,
@@ -88,6 +88,4 @@ from .exceptions import (
     MinosAttributeValidationException,
     MinosParseAttributeException,
 )
-from .importlib import (
-    import_module,
-)
+from .importlib import import_module

@@ -20,7 +20,6 @@ from minos.common import (
 
 
 class TestExceptions(unittest.TestCase):
-
     def test_type(self):
         self.assertTrue(issubclass(MinosException, Exception))
 
@@ -49,8 +48,10 @@ class TestExceptions(unittest.TestCase):
 
     def test_attribute_validation_repr(self):
         exception = MinosParseAttributeException("foo", 34, ValueError())
-        message = 'MinosParseAttributeException(message="ValueError() ' \
-                  'was raised while parsing \'foo\' field with 34 value.")'
+        message = (
+            'MinosParseAttributeException(message="ValueError() '
+            "was raised while parsing 'foo' field with 34 value.\")"
+        )
         self.assertEqual(message, repr(exception))
 
     def test_attribute_validation(self):
@@ -58,9 +59,9 @@ class TestExceptions(unittest.TestCase):
 
     def test_attribute_validation_repr(self):
         exception = MinosAttributeValidationException("foo", 34)
-        message = 'MinosAttributeValidationException(message="34 value does not pass the \'foo\' field validation.")'
+        message = "MinosAttributeValidationException(message=\"34 value does not pass the 'foo' field validation.\")"
         self.assertEqual(message, repr(exception))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

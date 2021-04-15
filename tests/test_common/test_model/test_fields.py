@@ -20,7 +20,6 @@ from tests.modelClasses import User
 
 
 class TestModelField(unittest.TestCase):
-
     def test_name(self):
         field = ModelField("test", int, 3)
         self.assertEqual("test", field.name)
@@ -90,7 +89,7 @@ class TestModelField(unittest.TestCase):
 
     def test_value_unsupported(self):
         with self.assertRaises(MinosTypeAttributeException):
-            ModelField("test", set[int], {3, })
+            ModelField("test", set[int], {3,})
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
@@ -225,5 +224,5 @@ class TestModelField(unittest.TestCase):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
