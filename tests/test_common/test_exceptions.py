@@ -46,6 +46,11 @@ class TestExceptions(unittest.TestCase):
     def test_attribute_validation(self):
         self.assertTrue(issubclass(MinosAttributeValidationException, MinosModelAttributeException))
 
+    def test_attribute_validation_repr(self):
+        exception = MinosAttributeValidationException("foo", 34)
+        message = 'MinosAttributeValidationException(message="34 value does not pass the \'foo\' field validation.")'
+        self.assertEqual(message, repr(exception))
+
 
 if __name__ == '__main__':
     unittest.main()

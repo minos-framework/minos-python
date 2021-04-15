@@ -56,4 +56,4 @@ class MinosAttributeValidationException(MinosModelAttributeException):
     def __init__(self, name: str, value: Any):
         self.name = name
         self.value = value
-        super().__init__(f"{repr(value)} value does not pass the {repr(name)}' field validation.")
+        super().__init__(f"{repr(value)} value does not pass the {repr(name)} field validation.")
