@@ -8,19 +8,15 @@ Minos framework can not be copied and/or distributed without the express permiss
 import inspect
 import typing as t
 
-from ..exceptions import (
-    MinosAttributeValidationException,
-    MinosMalformedAttributeException,
-    MinosReqAttributeException,
-    MinosTypeAttributeException,
-)
+from ..exceptions import MinosAttributeValidationException
+from ..exceptions import MinosMalformedAttributeException
+from ..exceptions import MinosReqAttributeException
+from ..exceptions import MinosTypeAttributeException
 from ..logs import (
     log,
 )
-from .types import (
-    MissingSentinel,
-    ModelRef,
-)
+from .types import MissingSentinel
+from .types import ModelRef
 
 PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
