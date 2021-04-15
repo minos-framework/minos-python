@@ -7,7 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from minos.common import ModelField, ModelRef, MinosReqAttributeException, MinosTypeAttributeException
 from tests.modelClasses import User
@@ -111,6 +111,10 @@ class TestModelField(unittest.TestCase):
     def test_empty_value_raises(self):
         with self.assertRaises(MinosReqAttributeException):
             ModelField("id", int)
+
+    def test_union_type(self):
+        with self.assertRaises(MinosReqAttributeException):
+            ModelField("test", Union[int, List[int]], None)
 
     def test_optional_type(self):
         field = ModelField("test", Optional[int])
