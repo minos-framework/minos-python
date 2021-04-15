@@ -5,16 +5,27 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 import datetime
-import uuid
 import typing as t
-from itertools import zip_longest
+import uuid
+from itertools import (
+    zip_longest,
+)
 
-from ..exceptions import MinosModelException
-from ..logs import log
-from .types import Fixed, Enum, MissingSentinel
-from .fields import ModelField
+from ..exceptions import (
+    MinosModelException,
+)
+from ..logs import (
+    log,
+)
+from .fields import (
+    ModelField,
+)
+from .types import (
+    Enum,
+    Fixed,
+    MissingSentinel,
+)
 
 BOOLEAN = "boolean"
 NULL = "null"
@@ -87,6 +98,7 @@ PYTHON_ARRAY_TYPES = (dict,)
 #
 #     return wrap(cls)
 
+
 class MinosModel(object):
     """Base class for ``minos`` model entities."""
 
@@ -133,7 +145,9 @@ class MinosModel(object):
             if value is empty:
                 value = kwargs.get(name, MissingSentinel)
 
-            self._fields[name] = ModelField(name, type_val, value, getattr(self, f"validate_{name}", None))
+            self._fields[name] = ModelField(
+                name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
+            )
 
     def _update_from_inherited_class(self, fields: dict[str, t.Any]) -> dict[str, t.Any]:
         """

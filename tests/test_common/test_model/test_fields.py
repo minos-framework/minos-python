@@ -5,22 +5,25 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 import unittest
-from typing import Optional, Union, List
+from typing import (
+    Optional,
+    Union,
+)
 
 from minos.common import (
-    ModelField,
-    ModelRef,
+    MinosAttributeValidationException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    MinosAttributeValidationException,
+    ModelField,
+    ModelRef,
 )
-from tests.modelClasses import User
+from tests.modelClasses import (
+    User,
+)
 
 
 class TestModelField(unittest.TestCase):
-
     def test_name(self):
         field = ModelField("test", int, 3)
         self.assertEqual("test", field.name)
@@ -32,6 +35,16 @@ class TestModelField(unittest.TestCase):
     def test_value_int(self):
         field = ModelField("test", int, 3)
         self.assertEqual(3, field.value)
+
+    def test_value_float(self):
+        field = ModelField("test", float, 3.14)
+        self.assertEqual(3.14, field.value)
+
+    def test_value_float_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", float, [3])
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", float, "foo")
 
     def test_value_list_int(self):
         field = ModelField("test", list[int], [1, 2, 3])
@@ -79,7 +92,7 @@ class TestModelField(unittest.TestCase):
 
     def test_value_dict_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
-            ModelField("test", dict[str, bool], 3)
+            ModelField("test", dict[str, int], 3)
 
     def test_value_model_ref(self):
         user = User(1234)
@@ -100,7 +113,7 @@ class TestModelField(unittest.TestCase):
 
     def test_value_unsupported(self):
         with self.assertRaises(MinosTypeAttributeException):
-            ModelField("test", set[int], {3, })
+            ModelField("test", set[int], {3,})
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
@@ -140,7 +153,7 @@ class TestModelField(unittest.TestCase):
 
     def test_union_type(self):
         with self.assertRaises(MinosReqAttributeException):
-            ModelField("test", Union[int, List[int]], None)
+            ModelField("test", Union[int, list[int]], None)
 
     def test_optional_type(self):
         field = ModelField("test", Optional[int])
@@ -169,9 +182,30 @@ class TestModelField(unittest.TestCase):
         field.value = [4]
         self.assertEqual([4], field.value)
 
+    def test_parser(self):
+        parser = lambda x: x.title()
+        field = ModelField("test", str, "foo", parser)
+        self.assertEqual(parser, field.parser)
+
+    def test_parser_non_set(self):
+        field = ModelField("test", str, "foo")
+        self.assertEqual(None, field.parser)
+
+    def test_parser_value(self):
+        field = ModelField("test", str, "foo", lambda x: x.title())
+        self.assertEqual("Foo", field.value)
+
+    def test_parser_with_casting(self):
+        field = ModelField("test", float, "1.234,56", lambda x: x.replace(".", "").replace(",", "."))
+        self.assertEqual(1234.56, field.value)
+
+    def test_parser_optional(self):
+        field = ModelField("test", Optional[str], None, lambda x: x if x is None else x.title())
+        self.assertEqual(None, field.value)
+
     def test_validator(self):
         validator = lambda x: not x.count(" ")
-        field = ModelField("test", str, "foo", validator)
+        field = ModelField("test", str, "foo", validator=validator)
         self.assertEqual(validator, field.validator)
 
     def test_validator_non_set(self):
@@ -179,15 +213,15 @@ class TestModelField(unittest.TestCase):
         self.assertEqual(None, field.validator)
 
     def test_validator_ok(self):
-        field = ModelField("test", str, "foo", lambda x: not x.count(" "))
+        field = ModelField("test", str, "foo", validator=lambda x: not x.count(" "))
         self.assertEqual("foo", field.value)
 
     def test_validator_raises(self):
         with self.assertRaises(MinosAttributeValidationException):
-            ModelField("test", str, "foo bar", lambda x: not x.count(" "))
+            ModelField("test", str, "foo bar", validator=lambda x: not x.count(" "))
 
     def test_validator_optional(self):
-        field = ModelField("test", Optional[str], None, lambda x: not x.count(" "))
+        field = ModelField("test", Optional[str], validator=lambda x: not x.count(" "))
         self.assertEqual(None, field.value)
 
     def test_equal(self):
@@ -197,19 +231,22 @@ class TestModelField(unittest.TestCase):
         self.assertNotEqual(ModelField("id", Optional[int], 3), ModelField("id", int, 3))
 
     def test_iter(self):
-        self.assertEqual(("id", Optional[int], 3, None), tuple(ModelField("id", Optional[int], 3)))
+        self.assertEqual(("id", Optional[int], 3, None, None), tuple(ModelField("id", Optional[int], 3)))
 
     def test_hash(self):
-        self.assertEqual(hash(("id", Optional[int], 3, None)), hash(ModelField("id", Optional[int], 3)))
+        self.assertEqual(hash(("id", Optional[int], 3, None, None)), hash(ModelField("id", Optional[int], 3)))
 
     def test_repr(self):
-        field = ModelField("test", Optional[int], 1, validator=lambda x: x > 0)
-        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1, validator=<lambda>)", repr(field))
+        field = ModelField("test", Optional[int], 1, parser=lambda x: x * 10, validator=lambda x: x > 0)
+        expected = "ModelField(name='test', type=typing.Optional[int], value=10, parser=<lambda>, validator=<lambda>)"
+        self.assertEqual(expected, repr(field))
 
     def test_repr_empty_parser(self):
         field = ModelField("test", Optional[int], 1)
-        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1, validator=None)", repr(field))
+        self.assertEqual(
+            "ModelField(name='test', type=typing.Optional[int], value=1, parser=None, validator=None)", repr(field),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

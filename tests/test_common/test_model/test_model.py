@@ -5,26 +5,32 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
-from typing import Optional
+import unittest
+from typing import (
+    Optional,
+)
 
 import pytest
-
 from minos.common import (
+    MinosAttributeValidationException,
+    MinosMalformedAttributeException,
     MinosModelException,
-    ModelField,
+    MinosParseAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    MinosMalformedAttributeException,
-    MinosAttributeValidationException,
+    ModelField,
 )
-from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User, Analytics
-
-import unittest
+from tests.modelClasses import (
+    Analytics,
+    Customer,
+    CustomerFailDict,
+    CustomerFailList,
+    ShoppingList,
+    User,
+)
 
 
 class TestMinosModel(unittest.TestCase):
-
     def test_constructor_args(self):
         model = Customer(1234, "johndoe", "John", "Doe")
         self.assertEqual(1234, model.id)
@@ -53,6 +59,18 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual("Doe", model.surname)
         self.assertEqual("John", model.name)
 
+    def test_attribute_parser_same_type(self):
+        model = Customer(1234, name="john")
+        self.assertEqual("John", model.name)
+
+    def test_attribute_parser_different_type(self):
+        model = ShoppingList(User(1234), cost="1.234,56")
+        self.assertEqual(1234.56, model.cost)
+
+    def test_attribute_parser_attribute(self):
+        model = ShoppingList(User(1234, "admin"), cost="1.234,56")
+        self.assertEqual(0.0, model.cost)
+
     def test_aggregate_int_as_string_type_setter(self):
         model = Customer("1234")
         model.name = "John"
@@ -68,10 +86,15 @@ class TestMinosModel(unittest.TestCase):
         model.name = "John"
         self.assertEqual("John", model.name)
 
+    def test_aggregate_wrong_string_type_setter_with_parser(self):
+        model = Customer(123)
+        with pytest.raises(MinosParseAttributeException):
+            model.name = 456
+
     def test_aggregate_wrong_string_type_setter(self):
         model = Customer(123)
         with pytest.raises(MinosTypeAttributeException):
-            model.name = 456
+            model.surname = 456
 
     def test_aggregate_bool_type_setter(self):
         model = Customer(123)
@@ -106,7 +129,7 @@ class TestMinosModel(unittest.TestCase):
             model.lists = [1, "hola", 8, 6]
 
     def test_model_ref(self):
-        shopping_list = ShoppingList()
+        shopping_list = ShoppingList(cost=3.14)
         user = User(1234)
         shopping_list.user = user
         self.assertEqual(user, shopping_list.user)
@@ -150,14 +173,14 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(expected, customer.avro_data)
 
     def test_model_ref_raises(self):
-        shopping_list = ShoppingList()
+        shopping_list = ShoppingList(cost=3.14)
         with self.assertRaises(MinosTypeAttributeException):
             shopping_list.user = "foo"
 
     def test_recursive_type_composition(self):
         orders = {
             User(1): [ShoppingList(User(1)), ShoppingList(User(1))],
-            User(2): [ShoppingList(User(2)), ShoppingList(User(2))]
+            User(2): [ShoppingList(User(2)), ShoppingList(User(2))],
         }
 
         analytics = Analytics(1, orders)
@@ -186,8 +209,10 @@ class TestMinosModel(unittest.TestCase):
     def test_fields(self):
         user = User(123)
         fields = {
-            'id': ModelField("id", int, 123,  validator=user.validate_id),
-            'username': ModelField("username", Optional[str],  validator=user.validate_username)
+            "id": ModelField("id", int, 123, validator=user.validate_id),
+            "username": ModelField(
+                "username", Optional[str], parser=user.parse_username, validator=user.validate_username
+            ),
         }
         self.assertEqual(fields, user.fields)
 
@@ -202,8 +227,10 @@ class TestMinosModel(unittest.TestCase):
     def test_iter(self):
         user = User(123)
         expected = {
-            'id': ModelField("id", int, 123, validator=user.validate_id),
-            'username': ModelField("username", Optional[str], validator=user.validate_username)
+            "id": ModelField("id", int, 123, validator=user.validate_id),
+            "username": ModelField(
+                "username", Optional[str], parser=user.parse_username, validator=user.validate_username
+            ),
         }
         self.assertEqual(expected, dict(user))
 
@@ -212,12 +239,15 @@ class TestMinosModel(unittest.TestCase):
 
         expected = hash(
             (
-                ('id', ModelField("id", int, 123, user.validate_id)),
-                ('username', ModelField("username", Optional[str], validator=user.validate_username)),
+                ("id", ModelField("id", int, 123, validator=user.validate_id)),
+                (
+                    "username",
+                    ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
+                ),
             )
         )
         self.assertEqual(expected, hash(user))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
