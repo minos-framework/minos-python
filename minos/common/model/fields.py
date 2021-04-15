@@ -245,6 +245,107 @@ class ModelField:
                 return False
         return converted
 
+    @property
+    def avro_schema(self) -> dict[str, t.Any]:
+        """Compute the avro schema of the field.
+
+        :return: A dictionary object.
+        """
+        return {"name": self.name, "type": self._build_schema(self._type)}
+
+    def _build_schema(self, type_field: t.Type) -> t.Any:
+        origin = t.get_origin(type_field)
+        if origin is not t.Union:
+            return self._build_single_schema(type_field)
+        return self._build_union_schema(type_field)
+
+    def _build_union_schema(self, type_field: t.Type) -> t.Any:
+        ans = list()
+        alternatives = t.get_args(type_field)
+        for alternative_type in alternatives:
+            step = self._build_single_schema(alternative_type)
+            ans.append(step)
+        return ans
+
+    def _build_single_schema(self, type_field: t.Type) -> t.Any:
+        if type_field is type(None):
+            return self._build_none_schema(type_field)
+
+        if type_field in PYTHON_INMUTABLE_TYPES:
+            return self._build_simple_schema(type_field)
+
+        return self._build_composed_schema(type_field)
+
+    @staticmethod
+    def _build_none_schema(type_field: t.Type) -> t.Any:
+        return "null"
+
+    @staticmethod
+    def _build_simple_schema(type_field: t.Type) -> t.Any:
+        if type_field is int:
+            return "long"
+
+        if type_field is bool:
+            return "boolean"
+
+        if type_field is str:
+            return "string"
+
+        raise Exception()
+
+    def _build_composed_schema(self, type_field: t.Type) -> t.Any:
+        origin_type = t.get_origin(type_field)
+        if origin_type is None:
+            raise MinosMalformedAttributeException(f"'{self.name}' field is malformed. Type: '{type_field}'.")
+
+        if origin_type is list:
+            return self._build_list_schema(type_field)
+
+        if origin_type is dict:
+            return self._build_dict_schema(type_field)
+
+        if origin_type is ModelRef:
+            return self._build_model_ref_schema(type_field)
+
+        raise Exception
+
+    def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
+        return {
+            "type": "array",
+            "items": self._build_schema(t.get_args(type_field)[0]),
+            "default": []
+        }
+
+    def _build_dict_schema(self, type_field: t.Type) -> dict[str, t.Any]:
+        return {
+            "type": "map",
+            "values": self._build_schema(t.get_args(type_field)[1]),
+            "default": {}
+        }
+
+    @staticmethod
+    def _build_model_ref_schema(type_field: t.Type) -> t.Union[bool, t.Any]:
+        return t.get_args(type_field)[0].__name__
+
+    @property
+    def avro_data(self):
+        """Compute the avro data of the model.
+
+        :return: A dictionary object.
+        """
+        return self._to_avro_raw(self.value)
+
+    def _to_avro_raw(self, value: t.Any) -> t.Any:
+        if value is None:
+            return "null"
+        if type(value) in PYTHON_INMUTABLE_TYPES:
+            return value
+        if isinstance(value, list):
+            return [self._to_avro_raw(v) for v in value]
+        if isinstance(value, dict):
+            return {k: self._to_avro_raw(v) for k, v in value.items()}
+        return value.avro_data
+
     # def get_avro(self):
     #     """
     #     return the avro format of the field
