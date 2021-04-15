@@ -8,7 +8,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import typing as t
 
-from ..exceptions import MinosReqAttributeException, MinosTypeAttributeException, MinosMalformedAttributeException
+from ..exceptions import (
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
+    MinosMalformedAttributeException,
+    MinosAttributeValidationException,
+)
 from ..logs import log
 from .types import ModelRef, MissingSentinel
 
@@ -79,6 +84,8 @@ class ModelField:
             value = self._cast_union_value(self._type, data)
 
         # Validation call will be here!
+        if self.validator is not None and value is not None and not self.validator(value):
+            raise MinosAttributeValidationException(self.name, value)
 
         self._value = value
 

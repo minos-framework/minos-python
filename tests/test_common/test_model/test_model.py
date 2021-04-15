@@ -127,12 +127,10 @@ class TestMinosModel(unittest.TestCase):
         with self.assertRaises(MinosReqAttributeException):
             User()
 
-    @unittest.skip  # FIXME
     def test_validate_required_raises(self):
         with self.assertRaises(MinosAttributeValidationException):
             User(-34)
 
-    @unittest.skip  # FIXME
     def test_validate_optional_raises(self):
         with self.assertRaises(MinosAttributeValidationException):
             User(1234, username="user name")
