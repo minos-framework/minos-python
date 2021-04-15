@@ -40,6 +40,11 @@ class ShoppingList(MinosModel):
     user: Optional[ModelRef[User]]
 
 
+class Analytics(Base):
+    """Class to test ``MinosModel`` recursive type validation."""
+    orders: dict[ModelRef[User], list[ModelRef[ShoppingList]]]
+
+
 class Customer(User):
     """
     Test a Model Class with List
