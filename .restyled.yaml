@@ -12,7 +12,7 @@ restylers:
     image: restyled/restyler-black:v19.10b0
     command:
       - black
-    arguments: []
+    arguments: [" --line-length 120"]
     include:
       - "**/*.py"
     interpreters:
@@ -24,5 +24,15 @@ restylers:
     arguments: []
     include:
       - "**/*.py"
+    interpreters:
+      - python
+  - name: reorder-python-imports
+    image: 'restyled/restyler-reorder-python-imports:v2.4.0'
+    command:
+      - reorder-python-imports
+      - '--exit-zero-even-if-changed'
+    arguments: []
+    include:
+      - '**/*.py'
     interpreters:
       - python
