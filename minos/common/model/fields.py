@@ -20,7 +20,7 @@ from .types import ModelRef, MissingSentinel
 PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
-PYTHON_NULL_TYPE = (type(None))
+PYTHON_NULL_TYPE = type(None)
 
 T = t.TypeVar("T")
 
@@ -32,9 +32,10 @@ class ModelField:
 
     def __init__(
         self,
-        name: str, type_val: t.Type[T],
+        name: str,
+        type_val: t.Type[T],
         value: T = MissingSentinel,
-        validator: t.Optional[t.Callable[[t.Any], bool]] = None
+        validator: t.Optional[t.Callable[[t.Any], bool]] = None,
     ):
         self._name = name
         self._type = type_val
@@ -341,18 +342,10 @@ class ModelField:
         raise Exception
 
     def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
-        return {
-            "type": "array",
-            "items": self._build_schema(t.get_args(type_field)[0]),
-            "default": []
-        }
+        return {"type": "array", "items": self._build_schema(t.get_args(type_field)[0]), "default": []}
 
     def _build_dict_schema(self, type_field: t.Type) -> dict[str, t.Any]:
-        return {
-            "type": "map",
-            "values": self._build_schema(t.get_args(type_field)[1]),
-            "default": {}
-        }
+        return {"type": "map", "values": self._build_schema(t.get_args(type_field)[1]), "default": {}}
 
     @staticmethod
     def _build_model_ref_schema(type_field: t.Type) -> t.Union[bool, t.Any]:
@@ -424,10 +417,10 @@ class ModelField:
 
     def __iter__(self) -> t.Iterable:
         # noinspection PyRedundantParentheses
-        yield from (
-            self.name, self.type, self.value, self._validator_function
-        )
+        yield from (self.name, self.type, self.value, self._validator_function)
 
     def __repr__(self):
-        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, " \
-               f"value={repr(self.value)}, validator={self._validator_name})"
+        return (
+            f"ModelField(name={repr(self.name)}, type={repr(self.type)}, "
+            f"value={repr(self.value)}, validator={self._validator_name})"
+        )

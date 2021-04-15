@@ -87,6 +87,7 @@ PYTHON_ARRAY_TYPES = (dict,)
 #
 #     return wrap(cls)
 
+
 class MinosModel(object):
     """Base class for ``minos`` model entities."""
 
