@@ -13,9 +13,7 @@ from ..exceptions import MinosMalformedAttributeException
 from ..exceptions import MinosParseAttributeException
 from ..exceptions import MinosReqAttributeException
 from ..exceptions import MinosTypeAttributeException
-from ..logs import (
-    log,
-)
+from ..logs import log
 from .types import MissingSentinel
 from .types import ModelRef
 

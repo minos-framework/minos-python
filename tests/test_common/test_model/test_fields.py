@@ -14,9 +14,7 @@ from minos.common import MinosReqAttributeException
 from minos.common import MinosTypeAttributeException
 from minos.common import ModelField
 from minos.common import ModelRef
-from tests.modelClasses import (
-    User,
-)
+from tests.modelClasses import User
 
 
 class TestModelField(unittest.TestCase):
