@@ -110,6 +110,44 @@ class TestMinosModel(unittest.TestCase):
         shopping_list.user = user
         self.assertEqual(user, shopping_list.user)
 
+    def test_avro_schema(self):
+        shopping_list = ShoppingList(User(1234))
+        expected = {'fields': [{'name': 'user', 'type': ['User', 'null']}],
+                    'name': 'ShoppingList',
+                    'namespace': 'minos.common.model.model',
+                    'type': 'record'}
+        self.assertEqual(expected, shopping_list.avro_schema)
+
+    def test_avro_data(self):
+        shopping_list = ShoppingList(User(1234))
+        expected = {'user': {'id': 1234, 'username': 'null'}}
+        self.assertEqual(expected, shopping_list.avro_data)
+
+    def test_avro_schema_simple(self):
+        customer = Customer(1234)
+        expected = {'fields': [{'name': 'id', 'type': 'long'},
+                               {'name': 'username', 'type': ['string', 'null']},
+                               {'name': 'name', 'type': ['string', 'null']},
+                               {'name': 'surname', 'type': ['string', 'null']},
+                               {'name': 'is_admin', 'type': ['boolean', 'null']},
+                               {'name': 'lists',
+                                'type': [{'default': [], 'items': 'long', 'type': 'array'},
+                                         'null']}],
+                    'name': 'Customer',
+                    'namespace': 'minos.common.model.model',
+                    'type': 'record'}
+        self.assertEqual(expected, customer.avro_schema)
+
+    def test_avro_data_simple(self):
+        customer = Customer(1234)
+        expected = {'id': 1234,
+                    'is_admin': 'null',
+                    'lists': 'null',
+                    'name': 'null',
+                    'surname': 'null',
+                    'username': 'null'}
+        self.assertEqual(expected, customer.avro_data)
+
     def test_model_ref_raises(self):
         shopping_list = ShoppingList()
         with self.assertRaises(MinosTypeAttributeException):

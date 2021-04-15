@@ -156,6 +156,23 @@ class MinosModel(object):
         ans |= fields
         return ans
 
+    @property
+    def avro_schema(self) -> dict[str, t.Any]:
+        """Compute the avro schema of the model.
+
+        :return: A dictionary object.
+        """
+        fields = [field.avro_schema for field in self.fields.values()]
+        return {"name": type(self).__name__, "namespace": __name__, "type": "record", "fields": fields}
+
+    @property
+    def avro_data(self) -> t.Any:
+        """Compute the avro data of the model.
+
+        :return: A dictionary object.
+        """
+        return {name: field.avro_data for name, field in self.fields.items()}
+
     def __eq__(self, other: "MinosModel") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
