@@ -5,16 +5,13 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 from typing import (
     Optional,
 )
 
-from minos.common import (
-    MinosModel,
-    MissingSentinel,
-    ModelRef,
-)
+from minos.common import MinosModel
+from minos.common import MissingSentinel
+from minos.common import ModelRef
 
 
 class Base(MinosModel):

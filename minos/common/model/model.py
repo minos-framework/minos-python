@@ -5,7 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 import datetime
 import typing as t
 import uuid
@@ -22,11 +21,9 @@ from ..logs import (
 from .fields import (
     ModelField,
 )
-from .types import (
-    Enum,
-    Fixed,
-    MissingSentinel,
-)
+from .types import Enum
+from .types import Fixed
+from .types import MissingSentinel
 
 BOOLEAN = "boolean"
 NULL = "null"

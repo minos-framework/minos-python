@@ -5,18 +5,15 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 import unittest
 
-from minos.common import (
-    MinosAttributeValidationException,
-    MinosException,
-    MinosMalformedAttributeException,
-    MinosModelAttributeException,
-    MinosParseAttributeException,
-    MinosReqAttributeException,
-    MinosTypeAttributeException,
-)
+from minos.common import MinosAttributeValidationException
+from minos.common import MinosException
+from minos.common import MinosMalformedAttributeException
+from minos.common import MinosModelAttributeException
+from minos.common import MinosParseAttributeException
+from minos.common import MinosReqAttributeException
+from minos.common import MinosTypeAttributeException
 
 
 class TestExceptions(unittest.TestCase):
