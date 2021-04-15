@@ -60,6 +60,10 @@ class TestMinosModel(unittest.TestCase):
         model = ShoppingList(User(1234), cost="1.234,56")
         self.assertEqual(1234.56, model.cost)
 
+    def test_attribute_parser_attribute(self):
+        model = ShoppingList(User(1234, "admin"), cost="1.234,56")
+        self.assertEqual(0.0, model.cost)
+
     def test_aggregate_int_as_string_type_setter(self):
         model = Customer("1234")
         model.name = "John"
@@ -141,12 +145,12 @@ class TestMinosModel(unittest.TestCase):
             User()
 
     def test_fields(self):
+        user = User(123)
         fields = {
             'id': ModelField("id", int, 123),
-            'username': ModelField("username", Optional[str], parser=User.parse_username)
+            'username': ModelField("username", Optional[str], parser=user.parse_username)
         }
-        model = User(123)
-        self.assertEqual(fields, model.fields)
+        self.assertEqual(fields, user.fields)
 
     def test_equal(self):
         a, b = User(123), User(123)
@@ -160,7 +164,7 @@ class TestMinosModel(unittest.TestCase):
         user = User(123)
         expected = {
             'id': ModelField("id", int, 123),
-            'username': ModelField("username", Optional[str], parser=User.parse_username)
+            'username': ModelField("username", Optional[str], parser=user.parse_username)
         }
         self.assertEqual(expected, dict(user))
 
@@ -170,7 +174,7 @@ class TestMinosModel(unittest.TestCase):
         expected = hash(
             (
                 ('id', ModelField("id", int, 123)),
-                ('username', ModelField("username", Optional[str], parser=User.parse_username)),
+                ('username', ModelField("username", Optional[str], parser=user.parse_username)),
             )
         )
         self.assertEqual(expected, hash(user))

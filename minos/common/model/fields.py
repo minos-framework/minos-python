@@ -5,7 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
+import inspect
 import typing as t
 
 from ..exceptions import (
@@ -62,6 +62,14 @@ class ModelField:
         if self.parser is None:
             return None
         return self.parser.__name__
+
+    @property
+    def _parser_function(self) -> t.Optional[t.Callable[[t.Any], T]]:
+        if self.parser is None:
+            return None
+        if inspect.ismethod(self.parser):
+            return self.parser.__func__
+        return self.parser
 
     @property
     def value(self) -> t.Any:
@@ -335,7 +343,7 @@ class ModelField:
 
     def __iter__(self) -> t.Iterable:
         yield from (
-            self.name, self.type, self.value, self.parser
+            self.name, self.type, self.value, self._parser_function
         )
 
     def __repr__(self):
