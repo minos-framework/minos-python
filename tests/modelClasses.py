@@ -17,12 +17,23 @@ class Base(MinosModel):
     """
     id: int
 
+    @staticmethod
+    def validate_id(value: int) -> bool:
+        """Validate non negative ids."""
+        return value >= 0
+
 
 class User(Base):
     """
     Class for Inheritance Test
     """
     username: Optional[str]
+
+    def validate_username(self, value: str) -> bool:
+        """Validate that the username is ``None`` or a single word."""
+        if self.id == 0 and value != "admin":
+            return False
+        return not value.count(" ")
 
 
 class ShoppingList(MinosModel):
