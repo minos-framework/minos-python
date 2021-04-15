@@ -9,18 +9,24 @@ import inspect
 import typing as t
 
 from ..exceptions import (
+    MinosAttributeValidationException,
+    MinosMalformedAttributeException,
+    MinosParseAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    MinosMalformedAttributeException,
-    MinosAttributeValidationException,
 )
-from ..logs import log
-from .types import ModelRef, MissingSentinel
+from ..logs import (
+    log,
+)
+from .types import (
+    MissingSentinel,
+    ModelRef,
+)
 
-PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes)
+PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
-PYTHON_NULL_TYPE = (type(None))
+PYTHON_NULL_TYPE = type(None)
 
 T = t.TypeVar("T")
 
@@ -28,17 +34,21 @@ T = t.TypeVar("T")
 class ModelField:
     """Represents a model field."""
 
-    __slots__ = "_name", "_type", "_value", "_validator"
+    __slots__ = "_name", "_type", "_value", "_parser", "_validator"
 
     def __init__(
         self,
-        name: str, type_val: t.Type[T],
+        name: str,
+        type_val: t.Type[T],
         value: T = MissingSentinel,
-        validator: t.Optional[t.Callable[[t.Any], bool]] = None
+        parser: t.Optional[t.Callable[[t.Any], T]] = None,
+        validator: t.Optional[t.Callable[[t.Any], bool]] = None,
     ):
         self._name = name
         self._type = type_val
+        self._parser = parser
         self._validator = validator
+
         self.value = value
 
     @property
@@ -50,6 +60,25 @@ class ModelField:
     def type(self) -> t.Type:
         """Type getter."""
         return self._type
+
+    @property
+    def parser(self) -> t.Optional[t.Callable[[t.Any], T]]:
+        """Parser getter."""
+        return self._parser
+
+    @property
+    def _parser_name(self) -> t.Optional[str]:
+        if self.parser is None:
+            return None
+        return self.parser.__name__
+
+    @property
+    def _parser_function(self) -> t.Optional[t.Callable[[t.Any], T]]:
+        if self.parser is None:
+            return None
+        if inspect.ismethod(self.parser):
+            return self.parser.__func__
+        return self.parser
 
     @property
     def validator(self) -> t.Optional[t.Callable[[t.Any], T]]:
@@ -76,15 +105,22 @@ class ModelField:
 
     @value.setter
     def value(self, data: t.Any) -> t.NoReturn:
+        """Check if the given value is correct and stores it if ``True``, otherwise raises an exception.
+
+        :param data: new value.
+        :return: This method does not return anything.
         """
-        check if the value is correct
-        """
+        if self._parser is not None:
+            try:
+                data = self.parser(data)
+            except Exception as exc:
+                raise MinosParseAttributeException(self.name, data, exc)
+
         log.debug(f"Name val {self._name}")
         log.debug(f"Type val {self._type}")
 
         value = self._cast_value(self._type, data)
 
-        # Validation call will be here!
         if self.validator is not None and value is not None and not self.validator(value):
             raise MinosAttributeValidationException(self.name, value)
 
@@ -119,7 +155,7 @@ class ModelField:
         if type_field is type(None):
             return self._cast_none_value(type_field, data)
 
-        if type_field in PYTHON_INMUTABLE_TYPES:
+        if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._cast_simple_value(type_field, data)
 
         return self._cast_composed_value(type_field, data)
@@ -144,7 +180,9 @@ class ModelField:
         if type_field is int and self._is_int(data):
             log.debug("the Value passed is an integer")
             return int(data)
-
+        if type_field is float and self._is_float(data):
+            log.debug("the Value passed is an integer")
+            return float(data)
         if type_field is bool and self._is_bool(data):
             log.debug("the Value passed is an integer")
             return data
@@ -167,21 +205,27 @@ class ModelField:
                 return True
             except ValueError:
                 return False
-        if isinstance(data, int):
-            return True
-        return False
+        return isinstance(data, int)
+
+    @staticmethod
+    def _is_float(data: t.Union[float, str]) -> bool:
+        if isinstance(data, str):
+            # sometime the data is an integer but is passed as string, on that case would be better
+            # to check if is a decimal
+            try:
+                float(data)
+                return True
+            except ValueError:
+                return False
+        return isinstance(data, float)
 
     @staticmethod
     def _is_string(data: str) -> bool:
-        if isinstance(data, str):
-            return True
-        return False
+        return isinstance(data, str)
 
     @staticmethod
     def _is_bool(data: bool) -> bool:
-        if type(data) == bool:
-            return True
-        return False
+        return type(data) == bool
 
     def _cast_composed_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         origin_type = t.get_origin(type_field)
@@ -263,7 +307,7 @@ class ModelField:
             return False
         return data
 
-    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> t.Union[bool, t.Any]:
+    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> t.Union[bool, list[t.Any]]:
         """
         check if the parameters list are equal to @type_params type
         """
@@ -322,11 +366,10 @@ class ModelField:
         return hash(tuple(self))
 
     def __iter__(self) -> t.Iterable:
-        # noinspection PyRedundantParentheses
-        yield from (
-            self.name, self.type, self.value, self._validator_function
-        )
+        yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
 
     def __repr__(self):
-        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, " \
-               f"value={repr(self.value)}, validator={self._validator_name})"
+        return (
+            f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
+            f"parser={self._parser_name}, validator={self._validator_name})"
+        )
