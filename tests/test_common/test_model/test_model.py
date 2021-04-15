@@ -15,7 +15,8 @@ from minos.common import (
     ModelField,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    MinosMalformedAttributeException, MinosParseAttributeException,
+    MinosMalformedAttributeException,
+    MinosParseAttributeException,
 )
 from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User, Analytics
 
