@@ -6,14 +6,18 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from typing import Optional
-from typing import Union
+from typing import (
+    Optional,
+    Union,
+)
 
-from minos.common import MinosAttributeValidationException
-from minos.common import MinosReqAttributeException
-from minos.common import MinosTypeAttributeException
-from minos.common import ModelField
-from minos.common import ModelRef
+from minos.common import (
+    MinosAttributeValidationException,
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
+    ModelField,
+    ModelRef,
+)
 from tests.modelClasses import (
     User,
 )

@@ -9,9 +9,11 @@ from typing import (
     Optional,
 )
 
-from minos.common import MinosModel
-from minos.common import MissingSentinel
-from minos.common import ModelRef
+from minos.common import (
+    MinosModel,
+    MissingSentinel,
+    ModelRef,
+)
 
 
 class Base(MinosModel):

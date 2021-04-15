@@ -21,9 +21,11 @@ from ..logs import (
 from .fields import (
     ModelField,
 )
-from .types import Enum
-from .types import Fixed
-from .types import MissingSentinel
+from .types import (
+    Enum,
+    Fixed,
+    MissingSentinel,
+)
 
 BOOLEAN = "boolean"
 NULL = "null"

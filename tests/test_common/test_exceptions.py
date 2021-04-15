@@ -7,13 +7,15 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
-from minos.common import MinosAttributeValidationException
-from minos.common import MinosException
-from minos.common import MinosMalformedAttributeException
-from minos.common import MinosModelAttributeException
-from minos.common import MinosParseAttributeException
-from minos.common import MinosReqAttributeException
-from minos.common import MinosTypeAttributeException
+from minos.common import (
+    MinosAttributeValidationException,
+    MinosException,
+    MinosMalformedAttributeException,
+    MinosModelAttributeException,
+    MinosParseAttributeException,
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
+)
 
 
 class TestExceptions(unittest.TestCase):
