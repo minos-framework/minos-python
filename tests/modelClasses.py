@@ -8,7 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 from typing import Optional
 
-from minos.common import MinosModel, ModelRef
+from minos.common import MinosModel, ModelRef, MissingSentinel
 
 
 class Base(MinosModel):
@@ -25,12 +25,14 @@ class User(Base):
     username: Optional[str]
 
     @staticmethod
-    def parse_username(value: str) -> str:
+    def parse_username(value: Optional[str]) -> Optional[str]:
         """Parse username into a cleaner format.
 
         :param value: username to be parsed.
         :return: An string object.
         """
+        if value is None or value is MissingSentinel:
+            return None
         return value.lower()
 
 
@@ -46,8 +48,10 @@ class ShoppingList(MinosModel):
         :param value: cost to be parsed.
         :return: A float value.
         """
-        if value is None:
+        if value is None or value is MissingSentinel:
             return 0.0
+        if isinstance(value, float):
+            return value
         return float(value.replace(".", "").replace(",", "."))
 
 
@@ -61,12 +65,14 @@ class Customer(User):
     lists: Optional[list[int]]
 
     @staticmethod
-    def parse_name(name: str) -> str:
+    def parse_name(name: str) -> Optional[str]:
         """Parse name into a cleaner format.
 
         :param name: name to be parsed.
         :return: An string object.
         """
+        if name is None or name is MissingSentinel:
+            return None
         return name.title()
 
 

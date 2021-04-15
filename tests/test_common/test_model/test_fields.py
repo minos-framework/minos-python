@@ -152,7 +152,7 @@ class TestModelField(unittest.TestCase):
         self.assertEqual(1234.56, field.value)
 
     def test_parser_optional(self):
-        field = ModelField("test", Optional[str], None, lambda x: x.title())
+        field = ModelField("test", Optional[str], None, lambda x: x if x is None else x.title())
         self.assertEqual(None, field.value)
 
     def test_equal(self):

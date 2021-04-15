@@ -8,7 +8,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import typing as t
 
-from ..exceptions import MinosReqAttributeException, MinosTypeAttributeException, MinosMalformedAttributeException
+from ..exceptions import MinosReqAttributeException, MinosTypeAttributeException, MinosMalformedAttributeException, \
+    MinosParseAttributeException
 from ..logs import log
 from .types import ModelRef, MissingSentinel
 
@@ -25,7 +26,12 @@ class ModelField:
 
     __slots__ = "_name", "_type", "_value", "_parser"
 
-    def __init__(self, name: str, type_val: t.Type[T], value: T = MissingSentinel, parser: t.Optional[t.Callable[[t.Any], T]] = None):
+    def __init__(
+        self, name: str,
+        type_val: t.Type[T],
+        value: T = MissingSentinel,
+        parser: t.Optional[t.Callable[[t.Any], T]] = None,
+    ):
         self._name = name
         self._type = type_val
         self._parser = parser
@@ -69,7 +75,7 @@ class ModelField:
             try:
                 data = self.parser(data)
             except Exception as exc:
-                log.warning(f"Raised {repr(exc)} while parsing {repr(self.name)} field with {repr(data)} value.")
+                raise MinosParseAttributeException(self.name, data, exc)
 
         log.debug(f"Name val {self._name}")
         log.debug(f"Type val {self._type}")

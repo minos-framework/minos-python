@@ -15,7 +15,7 @@ from minos.common import (
     ModelField,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    MinosMalformedAttributeException,
+    MinosMalformedAttributeException, MinosParseAttributeException,
 )
 from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User
 
@@ -75,10 +75,15 @@ class TestMinosModel(unittest.TestCase):
         model.name = "John"
         self.assertEqual("John", model.name)
 
+    def test_aggregate_wrong_string_type_setter_with_parser(self):
+        model = Customer(123)
+        with pytest.raises(MinosParseAttributeException):
+            model.name = 456
+
     def test_aggregate_wrong_string_type_setter(self):
         model = Customer(123)
         with pytest.raises(MinosTypeAttributeException):
-            model.name = 456
+            model.surname = 456
 
     def test_aggregate_bool_type_setter(self):
         model = Customer(123)

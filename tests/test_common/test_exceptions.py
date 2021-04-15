@@ -13,7 +13,7 @@ from minos.common import (
     MinosModelAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    MinosMalformedAttributeException,
+    MinosMalformedAttributeException, MinosParseAttributeException,
 )
 
 
@@ -41,6 +41,15 @@ class TestExceptions(unittest.TestCase):
 
     def test_malformed_attribute(self):
         self.assertTrue(issubclass(MinosMalformedAttributeException, MinosModelAttributeException))
+
+    def test_parse_attribute(self):
+        self.assertTrue(issubclass(MinosParseAttributeException, MinosModelAttributeException))
+
+    def test_attribute_validation_repr(self):
+        exception = MinosParseAttributeException("foo", 34, ValueError())
+        message = 'MinosParseAttributeException(message="ValueError() ' \
+                  'was raised while parsing \'foo\' field with 34 value.")'
+        self.assertEqual(message, repr(exception))
 
 
 if __name__ == '__main__':
