@@ -53,9 +53,6 @@ class ModelField:
         log.debug(f"Name val {self._name}")
         log.debug(f"Type val {self._type}")
 
-        origin = t.get_origin(self._type)
-        log.debug(f"Origin Type {origin}")
-
         value = self._cast_value(self._type, data)
 
         # Validation call will be here!
@@ -76,8 +73,12 @@ class ModelField:
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
-        if (data is None or data is MissingSentinel) and type_field != type(None):
-            raise MinosReqAttributeException("")
+        if type_field != type(None):
+            if data is None:
+                raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
+
+            if data is MissingSentinel:
+                raise MinosReqAttributeException(f"'{self.name}' field is missing.")
 
         raise MinosTypeAttributeException(
             f"The '{type_field}' type does not match with the given data type: {type(data)}"
@@ -240,16 +241,12 @@ class ModelField:
         """
         check if the parameters list are equal to @type_params type
         """
-        converted = []
+        converted = list()
         for item in data:
             try:
-                origin = t.get_origin(type_params)
-                if origin is not t.Union:
-                    value = self._cast_single_value(type_params, item)
-                else:
-                    value = self._cast_union_value(type_params, item)
+                value = self._cast_value(type_params, item)
                 converted.append(value)
-            except Exception as exc:
+            except (MinosTypeAttributeException, MinosReqAttributeException):
                 return False
         return converted
 
