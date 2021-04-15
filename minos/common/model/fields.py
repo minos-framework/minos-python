@@ -5,7 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
+import inspect
 import typing as t
 
 from ..exceptions import (
@@ -61,6 +61,13 @@ class ModelField:
         if self.validator is None:
             return None
         return self.validator.__name__
+
+    @property
+    def _validator_function(self) -> t.Optional[t.Callable[[t.Any], T]]:
+        if self.validator is None:
+            return None
+        if inspect.ismethod(self.validator):
+            return self.validator.__func__
 
     @property
     def value(self) -> t.Any:
@@ -317,7 +324,7 @@ class ModelField:
     def __iter__(self) -> t.Iterable:
         # noinspection PyRedundantParentheses
         yield from (
-            self.name, self.type, self.value, self.validator
+            self.name, self.type, self.value, self._validator_function
         )
 
     def __repr__(self):

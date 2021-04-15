@@ -29,9 +29,10 @@ class User(Base):
     """
     username: Optional[str]
 
-    @staticmethod
-    def validate_username(value: str) -> bool:
+    def validate_username(self, value: str) -> bool:
         """Validate that the username is ``None`` or a single word."""
+        if self.id == 0 and value != "admin":
+            return False
         return not value.count(" ")
 
 

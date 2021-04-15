@@ -147,8 +147,8 @@ class TestMinosModel(unittest.TestCase):
     def test_fields(self):
         user = User(123)
         fields = {
-            'id': ModelField("id", int, 123,  validator=User.validate_id),
-            'username': ModelField("username", Optional[str],  validator=User.validate_username)
+            'id': ModelField("id", int, 123,  validator=user.validate_id),
+            'username': ModelField("username", Optional[str],  validator=user.validate_username)
         }
         self.assertEqual(fields, user.fields)
 
@@ -163,8 +163,8 @@ class TestMinosModel(unittest.TestCase):
     def test_iter(self):
         user = User(123)
         expected = {
-            'id': ModelField("id", int, 123, validator=User.validate_id),
-            'username': ModelField("username", Optional[str], validator=User.validate_username)
+            'id': ModelField("id", int, 123, validator=user.validate_id),
+            'username': ModelField("username", Optional[str], validator=user.validate_username)
         }
         self.assertEqual(expected, dict(user))
 
@@ -173,8 +173,8 @@ class TestMinosModel(unittest.TestCase):
 
         expected = hash(
             (
-                ('id', ModelField("id", int, 123, User.validate_id)),
-                ('username', ModelField("username", Optional[str], validator=User.validate_username)),
+                ('id', ModelField("id", int, 123, user.validate_id)),
+                ('username', ModelField("username", Optional[str], validator=user.validate_username)),
             )
         )
         self.assertEqual(expected, hash(user))
