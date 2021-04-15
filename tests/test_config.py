@@ -40,7 +40,27 @@ def test_config_events_database():
     assert provider_instance.events.database.name == "database_events_test"
 
 
+def test_config_events_queue_database():
+    provider_instance = MinosConfig(path='./tests/test_config.yaml')
+    assert provider_instance.events.queue.database == "broker_db"
+    assert provider_instance.events.queue.user == "broker"
+    assert provider_instance.events.queue.password == "br0k3r"
+    assert provider_instance.events.queue.host == "localhost"
+    assert provider_instance.events.queue.port == 5432
+    assert provider_instance.events.queue.records == 10
+
+
 def test_config_commands_database():
     provider_instance = MinosConfig(path='./tests/test_config.yaml')
     assert provider_instance.commands.database.path == "./tests/local_db.lmdb"
     assert provider_instance.commands.database.name == "database_commands_test"
+
+
+def test_config_commands_queue_database():
+    provider_instance = MinosConfig(path='./tests/test_config.yaml')
+    assert provider_instance.commands.queue.database == "broker_db"
+    assert provider_instance.commands.queue.user == "broker"
+    assert provider_instance.commands.queue.password == "br0k3r"
+    assert provider_instance.commands.queue.host == "localhost"
+    assert provider_instance.commands.queue.port == 5432
+    assert provider_instance.commands.queue.records == 10
