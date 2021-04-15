@@ -37,9 +37,21 @@ class TestModelField(unittest.TestCase):
         with self.assertRaises(MinosTypeAttributeException):
             ModelField("test", float, "foo")
 
-    def test_value_list(self):
+    def test_value_list_int(self):
         field = ModelField("test", list[int], [1, 2, 3])
         self.assertEqual([1, 2, 3], field.value)
+
+    def test_value_list_str(self):
+        field = ModelField("test", list[str], ["foo", "bar", "foobar"])
+        self.assertEqual(["foo", "bar", "foobar"], field.value)
+
+    def test_value_list_model_ref(self):
+        field = ModelField("test", list[ModelRef[User]], [User(123), User(456)])
+        self.assertEqual([User(123), User(456)], field.value)
+
+    def test_value_list_optional(self):
+        field = ModelField("test", list[Optional[int]], [1, None, 3, 4])
+        self.assertEqual([1, None, 3, 4], field.value)
 
     def test_value_list_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
@@ -69,6 +81,10 @@ class TestModelField(unittest.TestCase):
         user = User(1234)
         field.value = user
         self.assertEqual(user, field.value)
+
+    def test_value_unsupported(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", set[int], {3, })
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
@@ -105,6 +121,10 @@ class TestModelField(unittest.TestCase):
     def test_empty_value_raises(self):
         with self.assertRaises(MinosReqAttributeException):
             ModelField("id", int)
+
+    def test_union_type(self):
+        with self.assertRaises(MinosReqAttributeException):
+            ModelField("test", Union[int, list[int]], None)
 
     def test_optional_type(self):
         field = ModelField("test", Optional[int])

@@ -17,7 +17,7 @@ from minos.common import (
     MinosTypeAttributeException,
     MinosMalformedAttributeException, MinosParseAttributeException,
 )
-from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User
+from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User, Analytics
 
 import unittest
 
@@ -131,6 +131,15 @@ class TestMinosModel(unittest.TestCase):
         shopping_list = ShoppingList(cost=3.14)
         with self.assertRaises(MinosTypeAttributeException):
             shopping_list.user = "foo"
+
+    def test_recursive_type_composition(self):
+        orders = {
+            User(1): [ShoppingList(User(1)), ShoppingList(User(1))],
+            User(2): [ShoppingList(User(2)), ShoppingList(User(2))]
+        }
+
+        analytics = Analytics(1, orders)
+        self.assertEqual(orders, analytics.orders)
 
     def test_model_fail_list_class_attribute(self):
         with pytest.raises(MinosMalformedAttributeException):
