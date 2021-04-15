@@ -63,9 +63,14 @@ class TestModelField(unittest.TestCase):
         expected = {"name": "test", "type": "long"}
         self.assertEqual(expected, field.avro_schema)
 
+    def test_avro_schema_bool(self):
+        field = ModelField("test", bool, True)
+        expected = {"name": "test", "type": "boolean"}
+        self.assertEqual(expected, field.avro_schema)
+
     def test_avro_schema_float(self):
         field = ModelField("test", float, 3.4)
-        expected = {"name": "test", "type": "long"}
+        expected = {"name": "test", "type": "double"}
         self.assertEqual(expected, field.avro_schema)
 
     def test_avro_schema_string(self):
@@ -118,7 +123,7 @@ class TestModelField(unittest.TestCase):
 
     def test_value_unsupported(self):
         with self.assertRaises(MinosTypeAttributeException):
-            ModelField("test", set[int], {3,})
+            ModelField("test", set[int], {3, })
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
