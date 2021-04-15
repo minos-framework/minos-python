@@ -27,9 +27,21 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", int, 3)
         self.assertEqual(3, field.value)
 
-    def test_value_list(self):
+    def test_value_list_int(self):
         field = ModelField("test", list[int], [1, 2, 3])
         self.assertEqual([1, 2, 3], field.value)
+
+    def test_value_list_str(self):
+        field = ModelField("test", list[str], ["foo", "bar", "foobar"])
+        self.assertEqual(["foo", "bar", "foobar"], field.value)
+
+    def test_value_list_model_ref(self):
+        field = ModelField("test", list[ModelRef[User]], [User(123), User(456)])
+        self.assertEqual([User(123), User(456)], field.value)
+
+    def test_value_list_optional(self):
+        field = ModelField("test", list[Optional[int]], [1, None, 3, 4])
+        self.assertEqual([1, None, 3, 4], field.value)
 
     def test_value_list_raises(self):
         with self.assertRaises(MinosTypeAttributeException):

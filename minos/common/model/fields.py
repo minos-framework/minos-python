@@ -56,20 +56,23 @@ class ModelField:
         origin = t.get_origin(self._type)
         log.debug(f"Origin Type {origin}")
 
-        if origin is not t.Union:
-            value = self._cast_value(self._type, data)
-        else:
-            value = self._cast_union_value(self._type, data)
+        value = self._cast_value(self._type, data)
 
         # Validation call will be here!
 
         self._value = value
 
+    def _cast_value(self, type_field: t.Type, data: t.Any) -> t.Any:
+        origin = t.get_origin(type_field)
+        if origin is not t.Union:
+            return self._cast_single_value(type_field, data)
+        return self._cast_union_value(type_field, data)
+
     def _cast_union_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         alternatives = t.get_args(type_field)
         for alternative_type in alternatives:
             try:
-                return self._cast_value(alternative_type, data)
+                return self._cast_single_value(alternative_type, data)
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
@@ -80,7 +83,7 @@ class ModelField:
             f"The '{type_field}' type does not match with the given data type: {type(data)}"
         )
 
-    def _cast_value(self, type_field: t.Type, data: t.Any) -> t.NoReturn:
+    def _cast_single_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         if type_field is type(None):
             return self._cast_none_value(type_field, data)
 
@@ -237,37 +240,18 @@ class ModelField:
         """
         check if the parameters list are equal to @type_params type
         """
-        if type_params is int:
-            # loop the list and check if all are integers
-            log.debug("list parameters must be integer")
-            converted = []
-            for item in data:
-                if self._is_int(item):
-                    converted.append(int(item))
+        converted = []
+        for item in data:
+            try:
+                origin = t.get_origin(type_params)
+                if origin is not t.Union:
+                    value = self._cast_single_value(type_params, item)
                 else:
-                    return False
-            return converted
-
-        if type_params is str:
-            # loop the list and check if all are integers
-            log.debug("list parameters must be string")
-            for item in data:
-                if self._is_string(item):
-                    continue
-                else:
-                    return False
-            return data
-
-        if type_params is bool:
-            # loop and chek is a boolean
-            log.debug("list parameters must be boolean")
-            for item in data:
-                # loop the list and check if all are booleans
-                if self._is_bool(item):
-                    continue
-                else:
-                    return False
-            return data
+                    value = self._cast_union_value(type_params, item)
+                converted.append(value)
+            except Exception as exc:
+                return False
+        return converted
 
     # def get_avro(self):
     #     """
