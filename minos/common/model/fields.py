@@ -346,7 +346,7 @@ class ModelField:
         if type_field is type(None):
             return self._build_none_schema(type_field)
 
-        if type_field in PYTHON_INMUTABLE_TYPES:
+        if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._build_simple_schema(type_field)
 
         return self._build_composed_schema(type_field)
@@ -362,6 +362,9 @@ class ModelField:
 
         if type_field is bool:
             return "boolean"
+
+        if type_field is float:
+            return "double"
 
         if type_field is str:
             return "string"
@@ -385,18 +388,10 @@ class ModelField:
         raise Exception
 
     def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
-        return {
-            "type": "array",
-            "items": self._build_schema(t.get_args(type_field)[0]),
-            "default": []
-        }
+        return {"type": "array", "items": self._build_schema(t.get_args(type_field)[0]), "default": []}
 
     def _build_dict_schema(self, type_field: t.Type) -> dict[str, t.Any]:
-        return {
-            "type": "map",
-            "values": self._build_schema(t.get_args(type_field)[1]),
-            "default": {}
-        }
+        return {"type": "map", "values": self._build_schema(t.get_args(type_field)[1]), "default": {}}
 
     @staticmethod
     def _build_model_ref_schema(type_field: t.Type) -> t.Union[bool, t.Any]:
@@ -413,7 +408,7 @@ class ModelField:
     def _to_avro_raw(self, value: t.Any) -> t.Any:
         if value is None:
             return "null"
-        if type(value) in PYTHON_INMUTABLE_TYPES:
+        if type(value) in PYTHON_IMMUTABLE_TYPES:
             return value
         if isinstance(value, list):
             return [self._to_avro_raw(v) for v in value]
@@ -426,7 +421,7 @@ class ModelField:
     #     return the avro format of the field
     #     """
     #     origin = t.get_origin(self.type)
-    #     if self.type in PYTHON_INMUTABLE_TYPES:
+    #     if self.type in PYTHON_I<MUTABLE_TYPES:
     #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[self.type]}
     #
     #     # check with origin

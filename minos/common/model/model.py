@@ -63,7 +63,7 @@ PYTHON_TYPE_TO_AVRO = {
     uuid.uuid4: {"type": STRING, "logicalType": UUID},
 }
 
-PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes, type(None))
+PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes, type(None))
 PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
 
