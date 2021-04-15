@@ -1,7 +1,8 @@
 import unittest
 from typing import Optional, Union
 
-from minos.common import ModelField, ModelRef, MinosReqAttributeException, MinosTypeAttributeException,MinosReqAttributeException
+from minos.common import ModelField, ModelRef, MinosReqAttributeException, MinosTypeAttributeException, \
+    MinosReqAttributeException
 from tests.modelClasses import User
 
 
@@ -161,6 +162,10 @@ class TestModelField(unittest.TestCase):
     def test_repr(self):
         field = ModelField("test", Optional[int], 1, lambda x: x * 10)
         self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=10, parser=<lambda>)", repr(field))
+
+    def test_repr_empty_parser(self):
+        field = ModelField("test", Optional[int], 1)
+        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1, parser=None)", repr(field))
 
 
 if __name__ == '__main__':
