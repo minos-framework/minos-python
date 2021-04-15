@@ -142,6 +142,10 @@ class TestModelField(unittest.TestCase):
         self.assertEqual(hash(("id", Optional[int], 3, None)), hash(ModelField("id", Optional[int], 3)))
 
     def test_repr(self):
+        field = ModelField("test", Optional[int], 1, validator=lambda x: x > 0)
+        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1, validator=<lambda>)", repr(field))
+
+    def test_repr_empty_parser(self):
         field = ModelField("test", Optional[int], 1)
         self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1, validator=None)", repr(field))
 
