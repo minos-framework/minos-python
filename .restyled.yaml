@@ -1,3 +1,4 @@
+---
 enabled: true
 exclude:
   - "**/*.md"
@@ -6,3 +7,22 @@ exclude:
   - "**/*.in"
   - "Makefile"
   - ".github/workflows/**/*"
+restylers:
+  - name: black
+    image: restyled/restyler-black:v19.10b0
+    command:
+      - black
+    arguments: []
+    include:
+      - "**/*.py"
+    interpreters:
+      - python
+  - name: isort
+    image: restyled/restyler-isort:v4.3.21
+    command:
+      - isort
+    arguments: []
+    include:
+      - "**/*.py"
+    interpreters:
+      - python
