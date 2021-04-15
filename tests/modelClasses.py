@@ -16,13 +16,23 @@ class User(Base):
     """
     username: Optional[str]
 
+    @staticmethod
+    def parse_username(value: str) -> str:
+        """Parse username into a cleaner format.
+
+        :param value: username to be parsed.
+        :return: An string object.
+        """
+        return value.lower()
+
 
 class ShoppingList(MinosModel):
     """Class to test ``MinosModel`` composition."""
     user: Optional[ModelRef[User]]
     cost: float
 
-    def parse_cost(self, value: Optional[str]) -> float:
+    @staticmethod
+    def parse_cost(value: Optional[str]) -> float:
         """Parse a number encoded as string with a semicolon as decimal separator.
 
         :param value: cost to be parsed.
@@ -42,7 +52,8 @@ class Customer(User):
     is_admin: Optional[bool]
     lists: Optional[list[int]]
 
-    def parse_name(self, name: str) -> str:
+    @staticmethod
+    def parse_name(name: str) -> str:
         """Parse name into a cleaner format.
 
         :param name: name to be parsed.
