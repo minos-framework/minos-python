@@ -135,7 +135,7 @@ class MinosModel(object):
             if value is empty:
                 value = kwargs.get(name, MissingSentinel)
 
-            dict_objects[name] = ModelField(name, type_val, value)
+            dict_objects[name] = ModelField(name, type_val, value, getattr(type(self), f"validate_{name}", None))
 
         return dict_objects
 

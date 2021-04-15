@@ -23,11 +23,17 @@ T = t.TypeVar("T")
 class ModelField:
     """Represents a model field."""
 
-    __slots__ = "_name", "_type", "_value"
+    __slots__ = "_name", "_type", "_value", "_validator"
 
-    def __init__(self, name: str, type_val: t.Type[T], value: T = MissingSentinel):
+    def __init__(
+        self,
+        name: str, type_val: t.Type[T],
+        value: T = MissingSentinel,
+        validator: t.Optional[t.Callable[[t.Any], bool]] = None
+    ):
         self._name = name
         self._type = type_val
+        self._validator = validator
         self.value = value
 
     @property
@@ -39,6 +45,17 @@ class ModelField:
     def type(self) -> t.Type:
         """Type getter."""
         return self._type
+
+    @property
+    def validator(self) -> t.Optional[t.Callable[[t.Any], T]]:
+        """Parser getter."""
+        return self._validator
+
+    @property
+    def _validator_name(self) -> t.Optional[str]:
+        if self.validator is None:
+            return None
+        return self.validator.__name__
 
     @property
     def value(self) -> t.Any:
@@ -294,7 +311,10 @@ class ModelField:
 
     def __iter__(self) -> t.Iterable:
         # noinspection PyRedundantParentheses
-        yield from (self.name, self.type, self.value)
+        yield from (
+            self.name, self.type, self.value, self.validator
+        )
 
     def __repr__(self):
-        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)})"
+        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, " \
+               f"value={repr(self.value)}, validator={self._validator_name})"

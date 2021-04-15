@@ -9,7 +9,8 @@ class Base(MinosModel):
     """
     id: int
 
-    def validate_id(self, value: int) -> bool:
+    @staticmethod
+    def validate_id(value: int) -> bool:
         """Validate non negative ids."""
         return value >= 0
 
@@ -20,7 +21,8 @@ class User(Base):
     """
     username: Optional[str]
 
-    def validate_username(self, value: str) -> bool:
+    @staticmethod
+    def validate_username(value: str) -> bool:
         """Validate that the username is ``None`` or a single word."""
         return not value.count(" ")
 

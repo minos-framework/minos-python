@@ -107,6 +107,28 @@ class TestModelField(unittest.TestCase):
         field.value = [4]
         self.assertEqual([4], field.value)
 
+    def test_validator(self):
+        validator = lambda x: not x.count(" ")
+        field = ModelField("test", str, "foo", validator)
+        self.assertEqual(validator, field.validator)
+
+    def test_validator_non_set(self):
+        field = ModelField("test", str, "foo")
+        self.assertEqual(None, field.validator)
+
+    def test_validator_ok(self):
+        field = ModelField("test", str, "foo", lambda x: not x.count(" "))
+        self.assertEqual("foo", field.value)
+
+    @unittest.skip  # FIXME
+    def test_validator_raises(self):
+        with self.assertRaises(MinosReqAttributeException):
+            ModelField("test", str, "foo bar", lambda x: not x.count(" "))
+
+    def test_validator_optional(self):
+        field = ModelField("test", Optional[str], None, lambda x: not x.count(" "))
+        self.assertEqual(None, field.value)
+
     def test_equal(self):
         self.assertEqual(ModelField("id", Optional[int], 3), ModelField("id", Optional[int], 3))
         self.assertNotEqual(ModelField("id", Optional[int], 3), ModelField("id", Optional[int], None))
@@ -114,14 +136,14 @@ class TestModelField(unittest.TestCase):
         self.assertNotEqual(ModelField("id", Optional[int], 3), ModelField("id", int, 3))
 
     def test_iter(self):
-        self.assertEqual(("id", Optional[int], 3), tuple(ModelField("id", Optional[int], 3)))
+        self.assertEqual(("id", Optional[int], 3, None), tuple(ModelField("id", Optional[int], 3)))
 
     def test_hash(self):
-        self.assertEqual(hash(("id", Optional[int], 3)), hash(ModelField("id", Optional[int], 3)))
+        self.assertEqual(hash(("id", Optional[int], 3, None)), hash(ModelField("id", Optional[int], 3)))
 
     def test_repr(self):
         field = ModelField("test", Optional[int], 1)
-        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1)", repr(field))
+        self.assertEqual("ModelField(name='test', type=typing.Optional[int], value=1, validator=None)", repr(field))
 
 
 if __name__ == '__main__':
