@@ -8,14 +8,24 @@ Minos framework can not be copied and/or distributed without the express permiss
 import datetime
 import typing as t
 import uuid
-from itertools import zip_longest
+from itertools import (
+    zip_longest,
+)
 
-from ..exceptions import MinosModelException
-from ..logs import log
-from .fields import ModelField
-from .types import Enum
-from .types import Fixed
-from .types import MissingSentinel
+from ..exceptions import (
+    MinosModelException,
+)
+from ..logs import (
+    log,
+)
+from .fields import (
+    ModelField,
+)
+from .types import (
+    Enum,
+    Fixed,
+    MissingSentinel,
+)
 
 BOOLEAN = "boolean"
 NULL = "null"

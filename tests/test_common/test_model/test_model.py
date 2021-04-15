@@ -6,23 +6,28 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from typing import Optional
+from typing import (
+    Optional,
+)
 
 import pytest
-
-from minos.common import MinosAttributeValidationException
-from minos.common import MinosMalformedAttributeException
-from minos.common import MinosModelException
-from minos.common import MinosParseAttributeException
-from minos.common import MinosReqAttributeException
-from minos.common import MinosTypeAttributeException
-from minos.common import ModelField
-from tests.modelClasses import Analytics
-from tests.modelClasses import Customer
-from tests.modelClasses import CustomerFailDict
-from tests.modelClasses import CustomerFailList
-from tests.modelClasses import ShoppingList
-from tests.modelClasses import User
+from minos.common import (
+    MinosAttributeValidationException,
+    MinosMalformedAttributeException,
+    MinosModelException,
+    MinosParseAttributeException,
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
+    ModelField,
+)
+from tests.modelClasses import (
+    Analytics,
+    Customer,
+    CustomerFailDict,
+    CustomerFailList,
+    ShoppingList,
+    User,
+)
 
 
 class TestMinosModel(unittest.TestCase):
