@@ -1,0 +1,8 @@
+enabled: true
+exclude:
+  - "**/*.md"
+  - ".idea/**/*"
+  - "docs/**/*"
+  - "**/*.in"
+  - "Makefile"
+  - ".github/workflows/**/*"
