@@ -9,14 +9,19 @@ import inspect
 import typing as t
 
 from ..exceptions import (
-    MinosReqAttributeException,
-    MinosTypeAttributeException,
+    MinosAttributeValidationException,
     MinosMalformedAttributeException,
     MinosParseAttributeException,
-    MinosAttributeValidationException,
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
 )
-from ..logs import log
-from .types import ModelRef, MissingSentinel
+from ..logs import (
+    log,
+)
+from .types import (
+    MissingSentinel,
+    ModelRef,
+)
 
 PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
