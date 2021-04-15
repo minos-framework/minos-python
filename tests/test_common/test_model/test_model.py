@@ -5,27 +5,29 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
-from typing import Optional
+import unittest
+from typing import (
+    Optional,
+)
 
 import pytest
 
-from minos.common import (
-    MinosModelException,
-    ModelField,
-    MinosReqAttributeException,
-    MinosTypeAttributeException,
-    MinosMalformedAttributeException,
-    MinosParseAttributeException,
-    MinosAttributeValidationException,
-)
-from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User, Analytics
-
-import unittest
+from minos.common import MinosAttributeValidationException
+from minos.common import MinosMalformedAttributeException
+from minos.common import MinosModelException
+from minos.common import MinosParseAttributeException
+from minos.common import MinosReqAttributeException
+from minos.common import MinosTypeAttributeException
+from minos.common import ModelField
+from tests.modelClasses import Analytics
+from tests.modelClasses import Customer
+from tests.modelClasses import CustomerFailDict
+from tests.modelClasses import CustomerFailList
+from tests.modelClasses import ShoppingList
+from tests.modelClasses import User
 
 
 class TestMinosModel(unittest.TestCase):
-
     def test_constructor_args(self):
         model = Customer(1234, "johndoe", "John", "Doe")
         self.assertEqual(1234, model.id)
@@ -137,7 +139,7 @@ class TestMinosModel(unittest.TestCase):
     def test_recursive_type_composition(self):
         orders = {
             User(1): [ShoppingList(User(1)), ShoppingList(User(1))],
-            User(2): [ShoppingList(User(2)), ShoppingList(User(2))]
+            User(2): [ShoppingList(User(2)), ShoppingList(User(2))],
         }
 
         analytics = Analytics(1, orders)
@@ -166,8 +168,10 @@ class TestMinosModel(unittest.TestCase):
     def test_fields(self):
         user = User(123)
         fields = {
-            'id': ModelField("id", int, 123, validator=user.validate_id),
-            'username': ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username)
+            "id": ModelField("id", int, 123, validator=user.validate_id),
+            "username": ModelField(
+                "username", Optional[str], parser=user.parse_username, validator=user.validate_username
+            ),
         }
         self.assertEqual(fields, user.fields)
 
@@ -182,9 +186,10 @@ class TestMinosModel(unittest.TestCase):
     def test_iter(self):
         user = User(123)
         expected = {
-            'id': ModelField("id", int, 123, validator=user.validate_id),
-            'username': ModelField("username", Optional[str], parser=user.parse_username,
-                                   validator=user.validate_username)
+            "id": ModelField("id", int, 123, validator=user.validate_id),
+            "username": ModelField(
+                "username", Optional[str], parser=user.parse_username, validator=user.validate_username
+            ),
         }
         self.assertEqual(expected, dict(user))
 
@@ -193,13 +198,15 @@ class TestMinosModel(unittest.TestCase):
 
         expected = hash(
             (
-                ('id', ModelField("id", int, 123, validator=user.validate_id)),
-                ('username',
-                 ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username)),
+                ("id", ModelField("id", int, 123, validator=user.validate_id)),
+                (
+                    "username",
+                    ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
+                ),
             )
         )
         self.assertEqual(expected, hash(user))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

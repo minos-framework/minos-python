@@ -8,20 +8,21 @@ Minos framework can not be copied and/or distributed without the express permiss
 import inspect
 import typing as t
 
-from ..exceptions import (
-    MinosReqAttributeException,
-    MinosTypeAttributeException,
-    MinosMalformedAttributeException,
-    MinosParseAttributeException,
-    MinosAttributeValidationException,
+from ..exceptions import MinosAttributeValidationException
+from ..exceptions import MinosMalformedAttributeException
+from ..exceptions import MinosParseAttributeException
+from ..exceptions import MinosReqAttributeException
+from ..exceptions import MinosTypeAttributeException
+from ..logs import (
+    log,
 )
-from ..logs import log
-from .types import ModelRef, MissingSentinel
+from .types import MissingSentinel
+from .types import ModelRef
 
 PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
-PYTHON_NULL_TYPE = (type(None))
+PYTHON_NULL_TYPE = type(None)
 
 T = t.TypeVar("T")
 
@@ -37,7 +38,7 @@ class ModelField:
         type_val: t.Type[T],
         value: T = MissingSentinel,
         parser: t.Optional[t.Callable[[t.Any], T]] = None,
-        validator: t.Optional[t.Callable[[t.Any], bool]] = None
+        validator: t.Optional[t.Callable[[t.Any], bool]] = None,
     ):
         self._name = name
         self._type = type_val
@@ -361,10 +362,10 @@ class ModelField:
         return hash(tuple(self))
 
     def __iter__(self) -> t.Iterable:
-        yield from (
-            self.name, self.type, self.value, self._parser_function, self._validator_function
-        )
+        yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
 
     def __repr__(self):
-        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, " \
-               f"parser={self._parser_name}, validator={self._validator_name})"
+        return (
+            f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
+            f"parser={self._parser_name}, validator={self._validator_name})"
+        )

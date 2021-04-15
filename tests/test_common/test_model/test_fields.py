@@ -5,22 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 import unittest
-from typing import Optional, Union
+from typing import Optional
+from typing import Union
 
-from minos.common import (
-    ModelField,
-    ModelRef,
-    MinosReqAttributeException,
-    MinosTypeAttributeException,
-    MinosAttributeValidationException,
+from minos.common import MinosAttributeValidationException
+from minos.common import MinosReqAttributeException
+from minos.common import MinosTypeAttributeException
+from minos.common import ModelField
+from minos.common import ModelRef
+from tests.modelClasses import (
+    User,
 )
-from tests.modelClasses import User
 
 
 class TestModelField(unittest.TestCase):
-
     def test_name(self):
         field = ModelField("test", int, 3)
         self.assertEqual("test", field.name)
@@ -90,7 +89,7 @@ class TestModelField(unittest.TestCase):
 
     def test_value_unsupported(self):
         with self.assertRaises(MinosTypeAttributeException):
-            ModelField("test", set[int], {3, })
+            ModelField("test", set[int], {3,})
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
@@ -225,5 +224,5 @@ class TestModelField(unittest.TestCase):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
