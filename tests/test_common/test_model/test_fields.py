@@ -9,7 +9,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 from typing import Optional, Union
 
-from minos.common import ModelField, ModelRef, MinosReqAttributeException, MinosTypeAttributeException
+from minos.common import ModelField, ModelRef, MinosReqAttributeException, MinosTypeAttributeException, \
+    MinosAttributeValidationException
 from tests.modelClasses import User
 
 
@@ -140,9 +141,8 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", str, "foo", lambda x: not x.count(" "))
         self.assertEqual("foo", field.value)
 
-    @unittest.skip  # FIXME
     def test_validator_raises(self):
-        with self.assertRaises(MinosReqAttributeException):
+        with self.assertRaises(MinosAttributeValidationException):
             ModelField("test", str, "foo bar", lambda x: not x.count(" "))
 
     def test_validator_optional(self):
