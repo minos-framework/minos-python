@@ -13,7 +13,8 @@ from minos.common import (
     MinosModelAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    MinosMalformedAttributeException, MinosParseAttributeException,
+    MinosMalformedAttributeException,
+    MinosParseAttributeException,
 )
 
 

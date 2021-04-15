@@ -8,12 +8,16 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import typing as t
 
-from ..exceptions import MinosReqAttributeException, MinosTypeAttributeException, MinosMalformedAttributeException, \
-    MinosParseAttributeException
+from ..exceptions import (
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
+    MinosMalformedAttributeException,
+    MinosParseAttributeException,
+)
 from ..logs import log
 from .types import ModelRef, MissingSentinel
 
-PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes)
+PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
 PYTHON_NULL_TYPE = (type(None))
@@ -109,7 +113,7 @@ class ModelField:
                 self._value = None
                 return
         else:
-            if type_field in PYTHON_INMUTABLE_TYPES:
+            if type_field in PYTHON_IMMUTABLE_TYPES:
                 if data is None:
                     raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
                 elif data == MissingSentinel:

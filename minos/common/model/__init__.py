@@ -32,7 +32,7 @@ from .model import (
 )
 
 from .fields import (
-    PYTHON_INMUTABLE_TYPES,
+    PYTHON_IMMUTABLE_TYPES,
     PYTHON_LIST_TYPES,
     PYTHON_ARRAY_TYPES,
     PYTHON_NULL_TYPE,
