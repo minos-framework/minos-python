@@ -9,8 +9,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 from typing import Optional, Union
 
-from minos.common import ModelField, ModelRef, MinosReqAttributeException, MinosTypeAttributeException, \
-    MinosReqAttributeException
+from minos.common import ModelField, ModelRef, MinosTypeAttributeException, MinosReqAttributeException
 from tests.modelClasses import User
 
 
