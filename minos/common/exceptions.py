@@ -59,3 +59,12 @@ class MinosParseAttributeException(MinosModelAttributeException):
         self.exception = exception
         super().__init__(f"{repr(exception)} was raised while parsing {repr(name)} field with {repr(value)} value.")
 
+
+
+class MinosAttributeValidationException(MinosModelAttributeException):
+    """Exception to be raised when some fields are not valid."""
+
+    def __init__(self, name: str, value: Any):
+        self.name = name
+        self.value = value
+        super().__init__(f"{repr(value)} value does not pass the {repr(name)} field validation.")

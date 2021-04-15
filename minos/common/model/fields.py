@@ -13,6 +13,7 @@ from ..exceptions import (
     MinosTypeAttributeException,
     MinosMalformedAttributeException,
     MinosParseAttributeException,
+    MinosAttributeValidationException,
 )
 from ..logs import log
 from .types import ModelRef, MissingSentinel
@@ -28,17 +29,20 @@ T = t.TypeVar("T")
 class ModelField:
     """Represents a model field."""
 
-    __slots__ = "_name", "_type", "_value", "_parser"
+    __slots__ = "_name", "_type", "_value", "_parser", "_validator"
 
     def __init__(
-        self, name: str,
+        self,
+        name: str,
         type_val: t.Type[T],
         value: T = MissingSentinel,
         parser: t.Optional[t.Callable[[t.Any], T]] = None,
+        validator: t.Optional[t.Callable[[t.Any], bool]] = None
     ):
         self._name = name
         self._type = type_val
         self._parser = parser
+        self._validator = validator
 
         self.value = value
 
@@ -72,6 +76,24 @@ class ModelField:
         return self.parser
 
     @property
+    def validator(self) -> t.Optional[t.Callable[[t.Any], T]]:
+        """Parser getter."""
+        return self._validator
+
+    @property
+    def _validator_name(self) -> t.Optional[str]:
+        if self.validator is None:
+            return None
+        return self.validator.__name__
+
+    @property
+    def _validator_function(self) -> t.Optional[t.Callable[[t.Any], T]]:
+        if self.validator is None:
+            return None
+        if inspect.ismethod(self.validator):
+            return self.validator.__func__
+
+    @property
     def value(self) -> t.Any:
         """Value getter."""
         return self._value
@@ -94,7 +116,8 @@ class ModelField:
 
         value = self._cast_value(self._type, data)
 
-        # Validation call will be here!
+        if self.validator is not None and value is not None and not self.validator(value):
+            raise MinosAttributeValidationException(self.name, value)
 
         self._value = value
 
@@ -339,9 +362,9 @@ class ModelField:
 
     def __iter__(self) -> t.Iterable:
         yield from (
-            self.name, self.type, self.value, self._parser_function
+            self.name, self.type, self.value, self._parser_function, self._validator_function
         )
 
     def __repr__(self):
-        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, " \
-               f"value={repr(self.value)}, parser={self._parser_name})"
+        return f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, " \
+               f"parser={self._parser_name}, validator={self._validator_name})"

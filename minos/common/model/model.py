@@ -133,7 +133,9 @@ class MinosModel(object):
             if value is empty:
                 value = kwargs.get(name, MissingSentinel)
 
-            self._fields[name] = ModelField(name, type_val, value, getattr(self, f"parse_{name}", None))
+            self._fields[name] = ModelField(
+                name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
+            )
 
     def _update_from_inherited_class(self, fields: dict[str, t.Any]) -> dict[str, t.Any]:
         """

@@ -17,6 +17,7 @@ from minos.common import (
     MinosTypeAttributeException,
     MinosMalformedAttributeException,
     MinosParseAttributeException,
+    MinosAttributeValidationException,
 )
 from tests.modelClasses import Customer, CustomerFailList, CustomerFailDict, ShoppingList, User, Analytics
 
@@ -154,11 +155,19 @@ class TestMinosModel(unittest.TestCase):
         with self.assertRaises(MinosReqAttributeException):
             User()
 
+    def test_validate_required_raises(self):
+        with self.assertRaises(MinosAttributeValidationException):
+            User(-34)
+
+    def test_validate_optional_raises(self):
+        with self.assertRaises(MinosAttributeValidationException):
+            User(1234, username="user name")
+
     def test_fields(self):
         user = User(123)
         fields = {
-            'id': ModelField("id", int, 123),
-            'username': ModelField("username", Optional[str], parser=user.parse_username)
+            'id': ModelField("id", int, 123, validator=user.validate_id),
+            'username': ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username)
         }
         self.assertEqual(fields, user.fields)
 
@@ -173,8 +182,9 @@ class TestMinosModel(unittest.TestCase):
     def test_iter(self):
         user = User(123)
         expected = {
-            'id': ModelField("id", int, 123),
-            'username': ModelField("username", Optional[str], parser=user.parse_username)
+            'id': ModelField("id", int, 123, validator=user.validate_id),
+            'username': ModelField("username", Optional[str], parser=user.parse_username,
+                                   validator=user.validate_username)
         }
         self.assertEqual(expected, dict(user))
 
@@ -183,8 +193,9 @@ class TestMinosModel(unittest.TestCase):
 
         expected = hash(
             (
-                ('id', ModelField("id", int, 123)),
-                ('username', ModelField("username", Optional[str], parser=user.parse_username)),
+                ('id', ModelField("id", int, 123, validator=user.validate_id)),
+                ('username',
+                 ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username)),
             )
         )
         self.assertEqual(expected, hash(user))

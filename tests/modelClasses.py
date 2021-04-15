@@ -17,6 +17,11 @@ class Base(MinosModel):
     """
     id: int
 
+    @staticmethod
+    def validate_id(value: int) -> bool:
+        """Validate non negative ids."""
+        return value >= 0
+
 
 class User(Base):
     """
@@ -34,6 +39,12 @@ class User(Base):
         if value is None or value is MissingSentinel:
             return None
         return value.lower()
+
+    def validate_username(self, value: str) -> bool:
+        """Validate that the username is ``None`` or a single word."""
+        if self.id == 0 and value != "admin":
+            return False
+        return not value.count(" ")
 
 
 class ShoppingList(MinosModel):
