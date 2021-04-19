@@ -338,7 +338,52 @@ class ModelField:
 
         :return: A dictionary object.
         """
-        return {"name": self.name, "type": self._build_schema(self._type)}
+        return _MinosModelAvroSchemaBuilder(self).build()
+
+    @property
+    def avro_data(self):
+        """Compute the avro data of the model.
+
+        :return: A dictionary object.
+        """
+        return _MinosModelAvroDataBuilder(self).build()
+
+    def __eq__(self, other: "ModelField") -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
+        yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
+
+    def __repr__(self):
+        return (
+            f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
+            f"parser={self._parser_name}, validator={self._validator_name})"
+        )
+
+
+class _MinosModelAvroSchemaBuilder(object):
+    def __init__(self, field: ModelField):
+        self._field = field
+
+    @property
+    def _name(self):
+        return self._field.name
+
+    @property
+    def _type(self):
+        return self._field.type
+
+    def build(self) -> dict[str, t.Any]:
+        """Build the avro schema for the given field.
+
+        :return: A dictionary object.
+        """
+
+        return {"name": self._name, "type": self._build_schema(self._type)}
 
     def _build_schema(self, type_field: t.Type) -> t.Any:
         origin = t.get_origin(type_field)
@@ -417,13 +462,21 @@ class ModelField:
     def _build_model_ref_schema(type_field: t.Type) -> t.Union[bool, t.Any]:
         return t.get_args(type_field)[0].__name__
 
-    @property
-    def avro_data(self):
-        """Compute the avro data of the model.
 
-        :return: A dictionary object.
+class _MinosModelAvroDataBuilder(object):
+    def __init__(self, field: ModelField):
+        self._field = field
+
+    @property
+    def _value(self):
+        return self._field.value
+
+    def build(self):
+        """Build a avro data representation based on the content of the given field.
+
+        :return: A `avro`-compatible data.
         """
-        return self._to_avro_raw(self.value)
+        return self._to_avro_raw(self._value)
 
     def _to_avro_raw(self, value: t.Any) -> t.Any:
         if value is None:
@@ -435,19 +488,3 @@ class ModelField:
         if isinstance(value, dict):
             return {k: self._to_avro_raw(v) for k, v in value.items()}
         return value.avro_data
-
-    def __eq__(self, other: "ModelField") -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
-
-    def __hash__(self) -> int:
-        return hash(tuple(self))
-
-    def __iter__(self) -> t.Iterable:
-        # noinspection PyRedundantParentheses
-        yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
-
-    def __repr__(self):
-        return (
-            f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
-            f"parser={self._parser_name}, validator={self._validator_name})"
-        )
