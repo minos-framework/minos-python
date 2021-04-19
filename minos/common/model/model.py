@@ -82,6 +82,11 @@ class MinosModel(object):
     def from_dict(cls, d: dict[str, t.Any]) -> "MinosModel":
         return cls(**d)
 
+    @classmethod
+    def to_avro_bytes(cls, models: t.Iterable["MinosModel"]) -> bytes:
+        avro_schema = models[0].avro_schema
+        return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
+
     @property
     def fields(self) -> dict[str, ModelField]:
         """Fields getter"""

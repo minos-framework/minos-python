@@ -129,20 +129,20 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
                                 "type": "array",
                                 "items": ["int", "string", "bytes", "long", "boolean", "float"]
                             },
-                             {
-                                 "type": "map",
-                                 "values": [
-                                     "null", "int", "string", "bytes", "boolean", "float", "long",
-                                     {"type": "array", "items": [
-                                         "string", "int", "bytes", "long", "boolean", "float",
-                                         {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]}
-                                     ]},
-                                     {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float",
-                                                                {"type": "map",
-                                                                 "values": ["string", "int", "bytes", "long",
-                                                                            "boolean", "float"]}]}
-                                 ]
-                             }
+                            {
+                                "type": "map",
+                                "values": [
+                                    "null", "int", "string", "bytes", "boolean", "float", "long",
+                                    {"type": "array", "items": [
+                                        "string", "int", "bytes", "long", "boolean", "float",
+                                        {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]}
+                                    ]},
+                                    {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float",
+                                                               {"type": "map",
+                                                                "values": ["string", "int", "bytes", "long",
+                                                                           "boolean", "float"]}]}
+                                ]
+                            }
                         ]
                     }
                 ]
@@ -153,12 +153,16 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
             schema_val = schema
             final_data = value
 
+        if not isinstance(final_data, list):
+            final_data = [final_data]
+
         schema_json = orjson.dumps(schema_val)
         schema_bytes = avro.schema.parse(schema_json)
 
         with io.BytesIO() as f:
             writer = DataFileWriter(f, DatumWriter(), schema_bytes)
-            writer.append(final_data)
+            for d in final_data:
+                writer.append(d)
             writer.flush()
             f.seek(0)
             content_bytes = f.getvalue()

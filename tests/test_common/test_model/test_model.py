@@ -178,12 +178,19 @@ class TestMinosModel(unittest.TestCase):
         }
         self.assertEqual(expected, customer.avro_data)
 
-    def test_avro_bytes(self):
+    def test_avro_bytes_single(self):
         customer = Customer(1234)
         avro_bytes = customer.avro_bytes
         self.assertIsInstance(avro_bytes, bytes)
         decoded_customer = Customer.from_avro_bytes(avro_bytes)
         self.assertEqual(customer, decoded_customer)
+
+    def test_avro_bytes_sequence(self):
+        customers = [Customer(1234), Customer(5678)]
+        avro_bytes = Customer.to_avro_bytes(customers)
+        self.assertIsInstance(avro_bytes, bytes)
+        decoded_customer = Customer.from_avro_bytes(avro_bytes)
+        self.assertEqual(customers, decoded_customer)
 
     def test_model_ref_raises(self):
         shopping_list = ShoppingList(cost=3.14)
