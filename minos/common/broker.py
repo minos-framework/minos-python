@@ -8,7 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import abc
 
 
-class BrokerBase(abc.ABC):
+class MinosBaseBroker(abc.ABC):
     @abc.abstractmethod
     def _database(self):
         raise NotImplementedError
