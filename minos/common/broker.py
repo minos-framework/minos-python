@@ -10,9 +10,9 @@ import abc
 
 class MinosBaseBroker(abc.ABC):
     @abc.abstractmethod
-    def _database(self):
+    def _database(self):  # pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
-    def send(self):
+    def send(self):  # pragma: no cover
         raise NotImplementedError
