@@ -11,7 +11,6 @@ from tests.aggregate_classes import Car
 
 
 class TestAggregate(unittest.TestCase):
-
     def test_create(self):
         car = Car.create(doors=3, color="blue")
         self.assertEqual(Car(0, 0, 3, "blue"), car)
@@ -26,5 +25,5 @@ class TestAggregate(unittest.TestCase):
         self.assertEqual(Car(0, 2, 5, "red"), car)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

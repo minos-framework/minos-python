@@ -37,6 +37,4 @@ from .abc import (
     ModelField,
     ModelRef,
 )
-from .aggregate import (
-    Aggregate,
-)
+from .aggregate import Aggregate

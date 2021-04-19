@@ -12,6 +12,7 @@ from minos.common import Aggregate, ModelRef
 
 class Owner(Aggregate):
     """Aggregate ``Owner`` class for testing purposes."""
+
     name: str
     surname: str
     age: Optional[int]
@@ -19,6 +20,7 @@ class Owner(Aggregate):
 
 class Car(Aggregate):
     """Aggregate ``Car`` class for testing purposes."""
+
     doors: int
     color: str
     owner: Optional[ModelRef[Owner]]
