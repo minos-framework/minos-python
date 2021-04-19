@@ -18,9 +18,7 @@ from minos.common import (
     ModelField,
     ModelRef,
 )
-from tests.modelClasses import (
-    User,
-)
+from tests.modelClasses import User
 
 
 class TestModelField(unittest.TestCase):
@@ -104,7 +102,7 @@ class TestModelField(unittest.TestCase):
 
     def test_avro_data_dict(self):
         field = ModelField("test", dict[str, int], {"foo": 1, "bar": 2})
-        self.assertEqual({'bar': 2, 'foo': 1}, field.avro_data)
+        self.assertEqual({"bar": 2, "foo": 1}, field.avro_data)
 
     def test_avro_data_bytes(self):
         field = ModelField("test", bytes, bytes("foo", "utf-8"))
