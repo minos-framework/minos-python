@@ -21,12 +21,8 @@ from ..logs import (
 from .types import (
     MissingSentinel,
     ModelRef,
+    PYTHON_IMMUTABLE_TYPES,
 )
-
-PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
-PYTHON_LIST_TYPES = (list, tuple)
-PYTHON_ARRAY_TYPES = (dict,)
-PYTHON_NULL_TYPE = type(None)
 
 T = t.TypeVar("T")
 

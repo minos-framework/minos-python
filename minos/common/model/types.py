@@ -8,6 +8,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import dataclasses
 import typing as t
+import datetime
+import uuid
 
 T = t.TypeVar("T")
 
@@ -87,4 +89,44 @@ class ModelRef(t.Generic[T]):
         return "ModelRef()"
 
 
+BOOLEAN = "boolean"
+NULL = "null"
+INT = "int"
+FLOAT = "float"
+LONG = "long"
+DOUBLE = "double"
+BYTES = "bytes"
+STRING = "string"
+ARRAY = "array"
+ENUM = "enum"
+MAP = "map"
+FIXED = "fixed"
+DATE = "date"
+TIME_MILLIS = "time-millis"
+TIMESTAMP_MILLIS = "timestamp-millis"
+UUID = "uuid"
+DECIMAL = "decimal"
+
+PYTHON_TYPE_TO_AVRO = {
+    bool: BOOLEAN,
+    type(None): NULL,
+    int: LONG,
+    float: DOUBLE,
+    bytes: BYTES,
+    str: STRING,
+    list: ARRAY,
+    tuple: ARRAY,
+    dict: MAP,
+    Fixed: {"type": FIXED},
+    Enum: {"type": ENUM},
+    datetime.date: {"type": INT, "logicalType": DATE},
+    datetime.time: {"type": INT, "logicalType": TIME_MILLIS},
+    datetime.datetime: {"type": LONG, "logicalType": TIMESTAMP_MILLIS},
+    uuid.uuid4: {"type": STRING, "logicalType": UUID},
+}
+
+PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
+PYTHON_LIST_TYPES = (list, tuple)
+PYTHON_ARRAY_TYPES = (dict,)
+PYTHON_NULL_TYPE = type(None)
 CUSTOM_TYPES = ("Fixed", "Enum", "Decimal", "ModelRef",)

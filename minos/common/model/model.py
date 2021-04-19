@@ -5,9 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import datetime
 import typing as t
-import uuid
 from itertools import (
     zip_longest,
 )
@@ -22,50 +20,8 @@ from .fields import (
     ModelField,
 )
 from .types import (
-    Enum,
-    Fixed,
     MissingSentinel,
 )
-
-BOOLEAN = "boolean"
-NULL = "null"
-INT = "int"
-FLOAT = "float"
-LONG = "long"
-DOUBLE = "double"
-BYTES = "bytes"
-STRING = "string"
-ARRAY = "array"
-ENUM = "enum"
-MAP = "map"
-FIXED = "fixed"
-DATE = "date"
-TIME_MILLIS = "time-millis"
-TIMESTAMP_MILLIS = "timestamp-millis"
-UUID = "uuid"
-DECIMAL = "decimal"
-
-PYTHON_TYPE_TO_AVRO = {
-    bool: BOOLEAN,
-    type(None): NULL,
-    int: LONG,
-    float: DOUBLE,
-    bytes: BYTES,
-    str: STRING,
-    list: ARRAY,
-    tuple: ARRAY,
-    dict: MAP,
-    Fixed: {"type": FIXED},
-    Enum: {"type": ENUM},
-    datetime.date: {"type": INT, "logicalType": DATE},
-    datetime.time: {"type": INT, "logicalType": TIME_MILLIS},
-    datetime.datetime: {"type": LONG, "logicalType": TIMESTAMP_MILLIS},
-    uuid.uuid4: {"type": STRING, "logicalType": UUID},
-}
-
-PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes, type(None))
-PYTHON_LIST_TYPES = (list, tuple)
-PYTHON_ARRAY_TYPES = (dict,)
 
 
 # def _process_aggregate(cls):
@@ -84,7 +40,7 @@ PYTHON_ARRAY_TYPES = (dict,)
 #     # g get metaclass
 #     meta_class = getattr(cls, "Meta", None)
 #     if meta_class:
-#         # meta class exist so get the informations related
+#         # meta class exist so get the information related
 #         ...
 #     return cls
 #
