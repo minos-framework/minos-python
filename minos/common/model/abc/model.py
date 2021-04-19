@@ -123,7 +123,7 @@ class MinosModel(object):
             field_class: ModelField = self._fields[key]
             field_class.value = value
             self._fields[key] = field_class
-        elif key == "_fields":
+        elif key.startswith("_"):
             super().__setattr__(key, value)
         else:
             raise MinosModelException(f"model attribute {key} doesn't exist")

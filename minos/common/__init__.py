@@ -73,6 +73,7 @@ from .model import (
     TIME_MILLIS,
     TIMESTAMP_MILLIS,
     UUID,
+    Aggregate,
     Decimal,
     Enum,
     Fixed,

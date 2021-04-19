@@ -37,3 +37,6 @@ from .abc import (
     MissingSentinel,
     ModelRef,
 )
+from .aggregate import (
+    Aggregate,
+)
