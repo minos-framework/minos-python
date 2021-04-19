@@ -8,14 +8,14 @@ Minos framework can not be copied and/or distributed without the express permiss
 import inspect
 import typing as t
 
-from ..exceptions import (
+from ...exceptions import (
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
     MinosParseAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
 )
-from ..logs import (
+from ...logs import (
     log,
 )
 from .types import (

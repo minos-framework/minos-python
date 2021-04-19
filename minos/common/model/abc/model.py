@@ -10,15 +10,15 @@ from itertools import (
     zip_longest,
 )
 
-from ..exceptions import (
+from ...exceptions import (
     EmptyMinosModelSequenceException,
     MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
-from ..logs import (
+from ...logs import (
     log,
 )
-from ..protocol import (
+from ...protocol import (
     MinosAvroValuesDatabase,
 )
 from .fields import (
