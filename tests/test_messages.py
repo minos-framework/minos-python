@@ -19,8 +19,7 @@ from minos.common import (
 
 
 def test_request_avro_request_get_binary_headers():
-    class_request: MinosRPCHeadersRequest = MinosRequest.build(MinosRPCHeadersRequest) \
-        .addAction("with_args")
+    class_request: MinosRPCHeadersRequest = MinosRequest.build(MinosRPCHeadersRequest).addAction("with_args")
     binary_data = class_request.binary
     imported_request_class: MinosRPCHeadersRequest = MinosRequest.load(binary_data, MinosRPCHeadersRequest)
 
@@ -28,14 +27,13 @@ def test_request_avro_request_get_binary_headers():
 
 
 def test_request_avro_build_request_headers():
-    class_request: MinosRPCHeadersRequest = MinosRequest.build(MinosRPCHeadersRequest) \
-        .addAction("with_args")
+    class_request: MinosRPCHeadersRequest = MinosRequest.build(MinosRPCHeadersRequest).addAction("with_args")
 
     assert class_request.action == "with_args"
 
 
 def test_request_avro_import_request_headers():
-    headers = {'id': 123, 'action': 'get'}
+    headers = {"id": 123, "action": "get"}
     data_return_bytes = MinosAvroProtocol.encode(headers)
 
     class_request: MinosRPCHeadersRequest = MinosRequest.load(data_return_bytes, MinosRPCHeadersRequest)
@@ -49,13 +47,13 @@ def test_request_avro_build_request_body():
 
 
 def test_request_avro_import_request_body():
-    headers = {'id': 123, 'action': 'get'}
+    headers = {"id": 123, "action": "get"}
     body = {"test": "this is a test"}
     data_return_bytes = MinosAvroProtocol.encode(headers, body)
 
     class_request: MinosRPCBodyRequest = MinosRequest.load(data_return_bytes, MinosRPCBodyRequest)
 
-    assert class_request.body['test'] == "this is a test"
+    assert class_request.body["test"] == "this is a test"
 
 
 def test_request_avro_attributes_error_request():
@@ -67,13 +65,13 @@ def test_request_avro_attributes_error_request():
 
 
 def test_request_avro_import_response():
-    headers = {'id': 123}
+    headers = {"id": 123}
     body = {"test": "this is a response test"}
     data_return_bytes = MinosAvroProtocol.encode(headers, body)
 
     class_response: MinosRPCResponse = MinosResponse.load(data_return_bytes, MinosRPCResponse)
 
-    assert class_response.body['test'] == "this is a response test"
+    assert class_response.body["test"] == "this is a response test"
 
 
 def test_request_avro_build_response():
@@ -95,7 +93,8 @@ def test_request_avro_error_response_id():
 def test_request_avro_get_binary_response():
     try:
         class_response: MinosRPCResponse = MinosResponse.build(MinosRPCResponse).addId(123).addBody(
-            "Test Response Body")
+            "Test Response Body"
+        )
         binary_format = class_response.binary
         imported_response_class: MinosRPCResponse = MinosResponse.load(binary_format, MinosRPCResponse)
         assert imported_response_class.id == 123

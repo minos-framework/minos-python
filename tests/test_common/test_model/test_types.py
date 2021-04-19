@@ -13,14 +13,12 @@ from minos.common import MissingSentinel, Fixed, Enum, Decimal, ModelRef, CUSTOM
 
 
 class TestMissingSentinel(unittest.TestCase):
-
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(MissingSentinel, Generic))
 
 
 class TestFixed(unittest.TestCase):
-
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(Enum, Generic))
@@ -47,7 +45,6 @@ class TestFixed(unittest.TestCase):
 
 
 class TestEnum(unittest.TestCase):
-
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(Enum, Generic))
@@ -78,7 +75,6 @@ class TestEnum(unittest.TestCase):
 
 
 class TestDecimal(unittest.TestCase):
-
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(Decimal, Generic))
@@ -105,7 +101,6 @@ class TestDecimal(unittest.TestCase):
 
 
 class TestModelRef(unittest.TestCase):
-
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(ModelRef, Generic))
@@ -116,10 +111,9 @@ class TestModelRef(unittest.TestCase):
 
 
 class TestTypesModule(unittest.TestCase):
-
     def test_custom_types(self):
         self.assertEqual(("Fixed", "Enum", "Decimal", "ModelRef",), CUSTOM_TYPES)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

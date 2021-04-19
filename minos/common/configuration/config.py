@@ -16,10 +16,8 @@ from ..exceptions import MinosConfigException
 
 BROKER = collections.namedtuple("Broker", "host port")
 DATABASE = collections.namedtuple("Database", "path name")
-QUEUE = collections.namedtuple("Queue",
-                               "database user password host port records")
-ENDPOINT = collections.namedtuple("Endpoint",
-                                  "name route method controller action")
+QUEUE = collections.namedtuple("Queue", "database user password host port records")
+ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
 EVENT = collections.namedtuple("Event", "name controller action")
 COMMAND = collections.namedtuple("Command", "name controller action")
 SERVICE = collections.namedtuple("Service", "name")
@@ -59,11 +57,9 @@ class MinosConfig(MinosConfigAbstract):
             with open(path) as f:
                 self._data = yaml.load(f, Loader=yaml.FullLoader)
         else:
-            raise MinosConfigException(
-                f"Check if this path: {path} is correct")
+            raise MinosConfigException(f"Check if this path: {path} is correct")
 
-    def _get(self, key: str,
-             **kwargs: t.Any) -> t.Union[str, int, t.Dict[str, t.Any], None]:
+    def _get(self, key: str, **kwargs: t.Any) -> t.Union[str, int, t.Dict[str, t.Any], None]:
         if key in self._data:
             return self._data[key]
         return None
@@ -86,15 +82,15 @@ class MinosConfig(MinosConfigAbstract):
                     method=endpoint["method"].upper(),
                     controller=endpoint["controller"],
                     action=endpoint["action"],
-                ))
+                )
+            )
         return REST(broker=broker, endpoints=endpoints)
 
     @property
     def events(self):
         event_info = self._get("events")
         broker = BROKER(host=event_info["broker"], port=event_info["port"])
-        database = DATABASE(path=event_info["database"]["path"],
-                            name=event_info["database"]["name"])
+        database = DATABASE(path=event_info["database"]["path"], name=event_info["database"]["name"])
         queue = QUEUE(
             database=event_info["queue"]["database"],
             user=event_info["queue"]["user"],
@@ -105,23 +101,14 @@ class MinosConfig(MinosConfigAbstract):
         )
         events = []
         for event in event_info["items"]:
-            events.append(
-                EVENT(
-                    name=event["name"],
-                    controller=event["controller"],
-                    action=event["action"],
-                ))
-        return EVENTS(broker=broker,
-                      items=events,
-                      database=database,
-                      queue=queue)
+            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"],))
+        return EVENTS(broker=broker, items=events, database=database, queue=queue)
 
     @property
     def commands(self):
         command_info = self._get("commands")
         broker = BROKER(host=command_info["broker"], port=command_info["port"])
-        database = DATABASE(path=command_info["database"]["path"],
-                            name=command_info["database"]["name"])
+        database = DATABASE(path=command_info["database"]["path"], name=command_info["database"]["name"])
         queue = QUEUE(
             database=command_info["queue"]["database"],
             user=command_info["queue"]["user"],
@@ -132,13 +119,5 @@ class MinosConfig(MinosConfigAbstract):
         )
         commands = []
         for command in command_info["items"]:
-            commands.append(
-                COMMAND(
-                    name=command["name"],
-                    controller=command["controller"],
-                    action=command["action"],
-                ))
-        return COMMANDS(broker=broker,
-                        items=commands,
-                        database=database,
-                        queue=queue)
+            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"],))
+        return COMMANDS(broker=broker, items=commands, database=database, queue=queue)

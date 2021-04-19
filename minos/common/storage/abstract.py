@@ -10,7 +10,6 @@ import abc
 
 
 class MinosStorage(abc.ABC):
-
     @abc.abstractmethod
     def add(self, **kwargs):
         raise NotImplementedError

@@ -17,9 +17,9 @@ from .exceptions import MinosImportException
 def import_module(module: str) -> t.Callable:
     """Import the given module from a package"""
     try:
-        if '.' in module:
-            parts = module.split('.')
-            name = '.'.join(parts[:-1])
+        if "." in module:
+            parts = module.split(".")
+            name = ".".join(parts[:-1])
 
         module_ref = importlib.import_module(name)
         kallable = getattr(module_ref, parts[-1])

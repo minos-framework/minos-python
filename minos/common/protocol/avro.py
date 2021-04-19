@@ -20,15 +20,9 @@ from avro.io import (
     DatumWriter,
 )
 
-from ..exceptions import (
-    MinosProtocolException,
-)
-from ..logs import (
-    log,
-)
-from .abstract import (
-    MinosBinaryProtocol,
-)
+from ..exceptions import MinosProtocolException
+from ..logs import log
+from .abstract import MinosBinaryProtocol
 
 
 class MinosAvroProtocol(MinosBinaryProtocol):

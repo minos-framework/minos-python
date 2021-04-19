@@ -17,11 +17,11 @@ from ..protocol import MinosBinaryProtocol, MinosAvroProtocol
 
 class MinosBaseRequest(abc.ABC):
 
-    __slots__ = 'binary_class', '_encoder', '_decoder', '_headers', '_body'
+    __slots__ = "binary_class", "_encoder", "_decoder", "_headers", "_body"
 
     @property
     def id(self):
-        return self._headers['id']
+        return self._headers["id"]
 
     @property
     def body(self):
@@ -51,11 +51,11 @@ class MinosBaseRequest(abc.ABC):
         return self
 
     def addMethod(self, method: str):
-        self._headers['method'] = method
+        self._headers["method"] = method
         return self
 
     def addPath(self, path: str):
-        self._headers['path'] = path
+        self._headers["path"] = path
         return self
 
     def sub_build(self):
@@ -74,7 +74,7 @@ class MinosBaseRequest(abc.ABC):
         """
         self._headers = {}
         self._body = None
-        self._headers['id'] = random.randint(0, 1000)
+        self._headers["id"] = random.randint(0, 1000)
 
     def build(self):
         """
@@ -91,9 +91,9 @@ class MinosBaseRequest(abc.ABC):
         self._prepare_binary_encoder_decoder()
         decoded_dict = self._decoder(data)
         self._headers = {}
-        self._headers = decoded_dict['headers']
+        self._headers = decoded_dict["headers"]
         if "body" in decoded_dict:
-            self._body = decoded_dict['body']
+            self._body = decoded_dict["body"]
 
 
 class MinosRPCHeadersRequest(MinosBaseRequest):
@@ -107,7 +107,7 @@ class MinosRPCHeadersRequest(MinosBaseRequest):
 
     @property
     def action(self):
-        return self._headers['action']
+        return self._headers["action"]
 
     def addMethod(self, method: str):
         """
@@ -126,14 +126,14 @@ class MinosRPCHeadersRequest(MinosBaseRequest):
         RPC support the action header parameter
         the action correspond to the RPC command
         """
-        self._headers['action'] = action
+        self._headers["action"] = action
         return self
 
     def sub_build(self):
         """
         instance more variables for this specific Message class
         """
-        self._headers['type'] = "headers"
+        self._headers["type"] = "headers"
 
 
 class MinosRPCBodyRequest(MinosBaseRequest):
@@ -146,7 +146,7 @@ class MinosRPCBodyRequest(MinosBaseRequest):
     """
 
     def addId(self, id: int):
-        self._headers['id'] = id
+        self._headers["id"] = id
         return self
 
     def addMethod(self, method: str):
@@ -159,11 +159,10 @@ class MinosRPCBodyRequest(MinosBaseRequest):
         """
         instance more variables for this specific Message class
         """
-        self._headers['type'] = "body"
+        self._headers["type"] = "body"
 
 
 class MinosRequest(object):
-
     @staticmethod
     def build(request_clas: t.Type[MinosBaseRequest], binary: MinosBinaryProtocol = MinosAvroProtocol):
         """
