@@ -225,9 +225,7 @@ class _ModelFieldCaster(object):
             if data is MissingSentinel:
                 raise MinosReqAttributeException(f"'{self._name}' field is missing.")
 
-        raise MinosTypeAttributeException(
-            f"The '{type_field}' type does not match with the given data type: {type(data)}"
-        )
+        raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_single_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         if type_field is type(None):
@@ -238,15 +236,12 @@ class _ModelFieldCaster(object):
 
         return self._cast_composed_value(type_field, data)
 
-    @staticmethod
-    def _cast_none_value(type_field: t.Type, data: t.Any) -> t.Any:
+    def _cast_none_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         if data is None or data is MissingSentinel:
             log.debug("the Value passed is None")
             return None
 
-        raise MinosTypeAttributeException(
-            f"The '{type_field}' type does not match with the given data type: {type(data)}"
-        )
+        raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_simple_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         if data is None:
@@ -255,55 +250,45 @@ class _ModelFieldCaster(object):
         if data is MissingSentinel:
             raise MinosReqAttributeException(f"'{self._name}' field is missing.")
 
-        if type_field is int and self._is_int(data):
+        if type_field is int:
             log.debug("the Value passed is an integer")
-            return int(data)
-        if type_field is float and self._is_float(data):
-            log.debug("the Value passed is an integer")
-            return float(data)
-        if type_field is bool and self._is_bool(data):
-            log.debug("the Value passed is an integer")
-            return data
+            return self._cast_int(data)
 
-        if type_field is str and self._is_string(data):
+        if type_field is float:
+            log.debug("the Value passed is an integer")
+            return self._cast_float(data)
+
+        if type_field is bool:
+            log.debug("the Value passed is an integer")
+            return self._cast_bool(data)
+
+        if type_field is str:
             log.debug("the Value passed is a string")
-            return data
+            return self._cast_string(data)
 
-        raise MinosTypeAttributeException(
-            f"The '{type_field}' type does not match with the given data type: {type(data)}"
-        )
+        raise MinosTypeAttributeException(self._name, type_field, data)  # pragma: no cover
 
-    @staticmethod
-    def _is_int(data: t.Union[int, str]) -> bool:
-        if isinstance(data, str):
-            # sometime the data is an integer but is passed as string, on that case would be better
-            # to check if is a decimal
-            try:
-                int(data)
-                return True
-            except ValueError:
-                return False
-        return isinstance(data, int)
+    def _cast_int(self, data: t.Any) -> int:
+        try:
+            return int(data)
+        except (ValueError, TypeError):
+            raise MinosTypeAttributeException(self._name, int, data)
 
-    @staticmethod
-    def _is_float(data: t.Union[float, str]) -> bool:
-        if isinstance(data, str):
-            # sometime the data is an integer but is passed as string, on that case would be better
-            # to check if is a decimal
-            try:
-                float(data)
-                return True
-            except ValueError:
-                return False
-        return isinstance(data, float)
+    def _cast_float(self, data: t.Any) -> float:
+        try:
+            return float(data)
+        except (ValueError, TypeError):
+            raise MinosTypeAttributeException(self._name, float, data)
 
-    @staticmethod
-    def _is_string(data: str) -> bool:
-        return isinstance(data, str)
+    def _cast_bool(self, data: t.Any) -> bool:
+        if not isinstance(data, bool):
+            raise MinosTypeAttributeException(self._name, bool, data)
+        return data
 
-    @staticmethod
-    def _is_bool(data: bool) -> bool:
-        return type(data) == bool
+    def _cast_string(self, data: t.Any) -> str:
+        if not isinstance(data, str):
+            raise MinosTypeAttributeException(self._name, str, data)
+        return data
 
     def _cast_composed_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         origin_type = t.get_origin(type_field)
@@ -317,83 +302,44 @@ class _ModelFieldCaster(object):
             raise MinosReqAttributeException(f"'{self._name}' field is missing.")
 
         if origin_type is list:
-            converted_data = self._convert_list(data, t.get_args(type_field)[0])
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosTypeAttributeException(
-                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
-                )
-            return converted_data
+            return self._convert_list(data, t.get_args(type_field)[0])
 
         if origin_type is dict:
-            converted_data = self._convert_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1])
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosTypeAttributeException(
-                    f"{type(data)} could not be converted into {type_field} key, value types"
-                )
-            return converted_data
+            return self._convert_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1])
 
         if origin_type is ModelRef:
-            converted_data = self._convert_model_ref(data, t.get_args(type_field)[0])
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosTypeAttributeException(
-                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
-                )
-            return converted_data
+            return self._convert_model_ref(data, t.get_args(type_field)[0])
 
-        raise MinosTypeAttributeException(
-            f"The '{type_field}' type does not match with the given data type: {type(data)}"
-        )
+        raise MinosTypeAttributeException(self._name, type_field, data)
 
-    def _convert_list(self, data: list, type_values: t.Any) -> t.Union[bool, list[t.Any]]:
+    def _convert_list(self, data: list, type_values: t.Any) -> list[t.Any]:
         if not isinstance(data, list):
-            return False
+            raise MinosTypeAttributeException(self._name, list, data)
 
-        data_converted = self._convert_list_params(data, type_values)
+        return self._convert_list_params(data, type_values)
 
-        if isinstance(data_converted, bool) and not data_converted:
-            return False
-
-        return data_converted
-
-    def _convert_dict(self, data: list, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, dict[t.Any, t.Any]]:
+    def _convert_dict(self, data: list, type_keys: t.Type, type_values: t.Type) -> dict[t.Any, t.Any]:
         if not isinstance(data, dict):
-            return False
+            raise MinosTypeAttributeException(self._name, dict, data)
 
-        data_converted = self._convert_dict_params(data, type_keys, type_values)
+        return self._convert_dict_params(data, type_keys, type_values)
 
-        if isinstance(data_converted, bool) and not data_converted:
-            return False
-
-        return data_converted
-
-    def _convert_dict_params(
-        self, data: t.Mapping, type_keys: t.Type, type_values: t.Type
-    ) -> t.Union[bool, dict[t.Any, t.Any]]:
+    def _convert_dict_params(self, data: t.Mapping, type_keys: t.Type, type_values: t.Type) -> dict[t.Any, t.Any]:
         keys = self._convert_list_params(data.keys(), type_keys)
-        if isinstance(keys, bool) and not keys:
-            return False
-
         values = self._convert_list_params(data.values(), type_values)
-        if isinstance(values, bool) and not values:
-            return False
-
         return dict(zip(keys, values))
 
-    @staticmethod
-    def _convert_model_ref(data: t.Any, model_type: t.Type) -> t.Union[bool, t.Any]:
+    def _convert_model_ref(self, data: t.Any, model_type: t.Type) -> t.Any:
         if not isinstance(data, model_type):
-            return False
+            raise MinosTypeAttributeException(self._name, model_type, data)
         return data
 
-    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> t.Union[bool, list[t.Any]]:
+    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> list[t.Any]:
         """
         check if the parameters list are equal to @type_params type
         """
         converted = list()
         for item in data:
-            try:
-                value = self._cast_value(type_params, item)
-                converted.append(value)
-            except (MinosTypeAttributeException, MinosReqAttributeException):
-                return False
+            value = self._cast_value(type_params, item)
+            converted.append(value)
         return converted

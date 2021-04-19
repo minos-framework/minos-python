@@ -39,6 +39,14 @@ class TestExceptions(unittest.TestCase):
     def test_type_attribute(self):
         self.assertTrue(issubclass(MinosTypeAttributeException, MinosModelAttributeException))
 
+    def test_type_attribute_repr(self):
+        exception = MinosTypeAttributeException("foo", float, True)
+        message = (
+            "MinosTypeAttributeException(message=\"The <class 'float'> expected type for 'foo' "
+            "does not match with the given data type: <class 'bool'>\")"
+        )
+        self.assertEqual(message, repr(exception))
+
     def test_malformed_attribute(self):
         self.assertTrue(issubclass(MinosMalformedAttributeException, MinosModelAttributeException))
 

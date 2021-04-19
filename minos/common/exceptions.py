@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
-    Any,
+    Any, Type,
 )
 
 
@@ -61,7 +61,14 @@ class MinosReqAttributeException(MinosModelAttributeException):
 class MinosTypeAttributeException(MinosModelAttributeException):
     """Exception to be raised when there are any mismatching between the expected and observed attribute type."""
 
-    pass
+    def __init__(self, name: str, target_type: Type, value: Any):
+        self.name = name
+        self.target_type = target_type
+        self.value = value
+        super().__init__(
+            f"The {repr(target_type)} expected type for {repr(name)} does not match with "
+            f"the given data type: {type(value)}"
+        )
 
 
 class MinosMalformedAttributeException(MinosModelAttributeException):
