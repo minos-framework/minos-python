@@ -16,12 +16,16 @@ from ..exceptions import (
 from ..logs import (
     log,
 )
+from ..protocol import (
+    MinosAvroValuesDatabase,
+)
 from .fields import (
     ModelField,
 )
 from .types import (
     MissingSentinel,
 )
+
 
 # def _process_aggregate(cls):
 #     """
@@ -66,6 +70,17 @@ class MinosModel(object):
         """
         self._fields = dict()
         self._list_fields(*args, **kwargs)
+
+    @classmethod
+    def from_avro_bytes(cls, raw: bytes) -> t.Union["MinosModel", list["MinosModel"]]:
+        decoded = MinosAvroValuesDatabase().decode(raw, content_root=False)
+        if isinstance(decoded, list):
+            return [cls.from_dict(d) for d in decoded]
+        return cls.from_dict(decoded)
+
+    @classmethod
+    def from_dict(cls, d: dict[str, t.Any]) -> "MinosModel":
+        return cls(**d)
 
     @property
     def fields(self) -> dict[str, ModelField]:
@@ -137,6 +152,10 @@ class MinosModel(object):
         :return: A dictionary object.
         """
         return {name: field.avro_data for name, field in self.fields.items()}
+
+    @property
+    def avro_bytes(self) -> bytes:
+        return MinosAvroValuesDatabase().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self, other: "MinosModel") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

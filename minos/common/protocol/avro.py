@@ -147,13 +147,15 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
                     }
                 ]
             }
+            final_data = {}
+            final_data['content'] = value
         else:
             schema_val = schema
+            final_data = value
 
         schema_json = orjson.dumps(schema_val)
         schema_bytes = avro.schema.parse(schema_json)
-        final_data = {}
-        final_data['content'] = value
+
         with io.BytesIO() as f:
             writer = DataFileWriter(f, DatumWriter(), schema_bytes)
             writer.append(final_data)
@@ -164,12 +166,17 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
             return content_bytes
 
     @classmethod
-    def decode(cls, data: bytes) -> t.Dict:
+    def decode(cls, data: bytes, content_root: bool = True) -> t.Union[dict[str, t.Any], list[dict[str, t.Any]]]:
         try:
+            ans = list()
             message_avro = DataFileReader(io.BytesIO(data), DatumReader())
             for schema_dict in message_avro:
                 log.debug(f"Avro Database: get the values data")
-                data_return = schema_dict['content']
-            return data_return
+                if content_root:
+                    schema_dict = schema_dict['content']
+                ans.append(schema_dict)
+            if len(ans) == 1:
+                return ans[0]
+            return ans
         except Exception:
             raise MinosProtocolException("Error decoding string, check if is a correct Avro Binary data")
