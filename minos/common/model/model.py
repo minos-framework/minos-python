@@ -178,6 +178,4 @@ class MinosModel(object):
 
     def __repr__(self):
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
-        return (
-            f"{type(self).__name__}(fields=[{fields_repr}])"
-        )
+        return f"{type(self).__name__}(fields=[{fields_repr}])"
