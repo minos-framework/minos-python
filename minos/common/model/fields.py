@@ -345,11 +345,15 @@ class ModelField:
         return ans
 
     def _build_single_schema(self, type_field: t.Type) -> t.Any:
-        if type_field is type(None):
+        try:
             return self._build_none_schema(type_field)
+        except ValueError:
+            pass
 
-        if type_field in PYTHON_IMMUTABLE_TYPES:
+        try:
             return self._build_simple_schema(type_field)
+        except ValueError:
+            pass
 
         return self._build_composed_schema(type_field)
 
