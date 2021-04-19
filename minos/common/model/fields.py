@@ -79,6 +79,7 @@ class ModelField:
         if self.parser is None:
             return None
         if inspect.ismethod(self.parser):
+            # noinspection PyUnresolvedReferences
             return self.parser.__func__
         return self.parser
 
@@ -98,6 +99,7 @@ class ModelField:
         if self.validator is None:
             return None
         if inspect.ismethod(self.validator):
+            # noinspection PyUnresolvedReferences
             return self.validator.__func__
 
     @property
@@ -121,219 +123,12 @@ class ModelField:
         log.debug(f"Name val {self._name}")
         log.debug(f"Type val {self._type}")
 
-        value = self._cast_value(self._type, data)
+        value = _ModelFieldCaster(self).cast(data)
 
         if self.validator is not None and value is not None and not self.validator(value):
             raise MinosAttributeValidationException(self.name, value)
 
         self._value = value
-
-    def _cast_value(self, type_field: t.Type, data: t.Any) -> t.Any:
-        origin = t.get_origin(type_field)
-        if origin is not t.Union:
-            return self._cast_single_value(type_field, data)
-        return self._cast_union_value(type_field, data)
-
-    def _cast_union_value(self, type_field: t.Type, data: t.Any) -> t.Any:
-        alternatives = t.get_args(type_field)
-        for alternative_type in alternatives:
-            try:
-                return self._cast_single_value(alternative_type, data)
-            except (MinosTypeAttributeException, MinosReqAttributeException):
-                pass
-
-        if type_field != type(None):
-            if data is None:
-                raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
-
-            if data is MissingSentinel:
-                raise MinosReqAttributeException(f"'{self.name}' field is missing.")
-
-        raise MinosTypeAttributeException(
-            f"The '{type_field}' type does not match with the given data type: {type(data)}"
-        )
-
-    def _cast_single_value(self, type_field: t.Type, data: t.Any) -> t.Any:
-        if type_field is type(None):
-            return self._cast_none_value(type_field, data)
-
-        if type_field in PYTHON_IMMUTABLE_TYPES:
-            return self._cast_simple_value(type_field, data)
-
-        return self._cast_composed_value(type_field, data)
-
-    @staticmethod
-    def _cast_none_value(type_field: t.Type, data: t.Any) -> t.Any:
-        if data is None or data is MissingSentinel:
-            log.debug("the Value passed is None")
-            return None
-
-        raise MinosTypeAttributeException(
-            f"The '{type_field}' type does not match with the given data type: {type(data)}"
-        )
-
-    def _cast_simple_value(self, type_field: t.Type, data: t.Any) -> t.Any:
-        if data is None:
-            raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
-
-        if data is MissingSentinel:
-            raise MinosReqAttributeException(f"'{self.name}' field is missing.")
-
-        if type_field is int and self._is_int(data):
-            log.debug("the Value passed is an integer")
-            return int(data)
-
-        if type_field is float and self._is_float(data):
-            log.debug("the Value passed is an integer")
-            return float(data)
-
-        if type_field is bool and self._is_bool(data):
-            log.debug("the Value passed is an integer")
-            return data
-
-        if type_field is str and self._is_string(data):
-            log.debug("the Value passed is a string")
-            return data
-
-        if type_field is bytes and self._is_bytes(data):
-            log.debug("the Value passed is a bytes")
-            return data
-
-        raise MinosTypeAttributeException(
-            f"The '{type_field}' type does not match with the given data type: {type(data)}"
-        )
-
-    @staticmethod
-    def _is_int(data: t.Union[int, str]) -> bool:
-        if isinstance(data, str):
-            # sometime the data is an integer but is passed as string, on that case would be better
-            # to check if is a decimal
-            try:
-                int(data)
-                return True
-            except ValueError:
-                return False
-        return isinstance(data, int)
-
-    @staticmethod
-    def _is_float(data: t.Union[float, str]) -> bool:
-        if isinstance(data, str):
-            # sometime the data is an integer but is passed as string, on that case would be better
-            # to check if is a decimal
-            try:
-                float(data)
-                return True
-            except ValueError:
-                return False
-        return isinstance(data, float)
-
-    @staticmethod
-    def _is_string(data: str) -> bool:
-        return isinstance(data, str)
-
-    @staticmethod
-    def _is_bytes(data: str) -> bool:
-        return isinstance(data, bytes)
-
-    @staticmethod
-    def _is_bool(data: bool) -> bool:
-        return type(data) == bool
-
-    def _cast_composed_value(self, type_field: t.Type, data: t.Any) -> t.Any:
-        origin_type = t.get_origin(type_field)
-        if origin_type is None:
-            raise MinosMalformedAttributeException(f"'{self.name}' field is malformed. Type: '{type_field}'.")
-
-        if data is None:
-            raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
-
-        if data is MissingSentinel:
-            raise MinosReqAttributeException(f"'{self.name}' field is missing.")
-
-        if origin_type is list:
-            converted_data = self._convert_list(data, t.get_args(type_field)[0])
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosTypeAttributeException(
-                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
-                )
-            return converted_data
-
-        if origin_type is dict:
-            converted_data = self._convert_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1])
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosTypeAttributeException(
-                    f"{type(data)} could not be converted into {type_field} key, value types"
-                )
-            return converted_data
-
-        if origin_type is ModelRef:
-            converted_data = self._convert_model_ref(data, t.get_args(type_field)[0])
-            if isinstance(converted_data, bool) and not converted_data:
-                raise MinosTypeAttributeException(
-                    f"{type(data)} could not be converted into {t.get_args(type_field)[0]} type"
-                )
-            return converted_data
-
-        raise MinosTypeAttributeException(
-            f"The '{type_field}' type does not match with the given data type: {type(data)}"
-        )
-
-    def _convert_list(self, data: list, type_values: t.Any) -> t.Union[bool, list[t.Any]]:
-        if not isinstance(data, list):
-            return False
-
-        data_converted = self._convert_list_params(data, type_values)
-
-        if isinstance(data_converted, bool) and not data_converted:
-            return False
-
-        return data_converted
-
-    def _convert_dict(self, data: list, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, dict[str, t.Any]]:
-        if not isinstance(data, dict):
-            return False
-
-        if type_keys is not str:
-            raise MinosTypeAttributeException(f"dictionary keys must be {type(str)}. Obtained: {type_keys}")
-
-        data_converted = self._convert_dict_params(data, type_keys, type_values)
-
-        if isinstance(data_converted, bool) and not data_converted:
-            return False
-
-        return data_converted
-
-    def _convert_dict_params(
-        self, data: t.Mapping, type_keys: t.Type, type_values: t.Type
-    ) -> t.Union[bool, dict[t.Any, t.Any]]:
-        keys = self._convert_list_params(data.keys(), type_keys)
-        if isinstance(keys, bool) and not keys:
-            return False
-
-        values = self._convert_list_params(data.values(), type_values)
-        if isinstance(values, bool) and not values:
-            return False
-
-        return dict(zip(keys, values))
-
-    @staticmethod
-    def _convert_model_ref(data: t.Any, model_type: t.Type) -> t.Union[bool, t.Any]:
-        if not isinstance(data, model_type):
-            return False
-        return data
-
-    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> t.Union[bool, list[t.Any]]:
-        """
-        check if the parameters list are equal to @type_params type
-        """
-        converted = list()
-        for item in data:
-            try:
-                value = self._cast_value(type_params, item)
-                converted.append(value)
-            except (MinosTypeAttributeException, MinosReqAttributeException):
-                return False
-        return converted
 
     @property
     def avro_schema(self) -> dict[str, t.Any]:
@@ -366,6 +161,179 @@ class ModelField:
             f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
             f"parser={self._parser_name}, validator={self._validator_name})"
         )
+
+
+class _ModelFieldCaster(object):
+    def __init__(self, field: ModelField):
+        self._field = field
+
+    @property
+    def _name(self):
+        return self._field.name
+
+    @property
+    def _type(self):
+        return self._field.type
+
+    def cast(self, data: t.Any) -> t.Any:
+        """Cast data type according to the field definition..
+
+        :param data: Data to be casted.
+        :return: Casted object.
+        """
+        return self._cast_value(self._type, data)
+
+    def _cast_value(self, type_field: t.Type, data: t.Any) -> t.Any:
+        origin = t.get_origin(type_field)
+        if origin is not t.Union:
+            return self._cast_single_value(type_field, data)
+        return self._cast_union_value(type_field, data)
+
+    def _cast_union_value(self, type_field: t.Type, data: t.Any) -> t.Any:
+        alternatives = t.get_args(type_field)
+        for alternative_type in alternatives:
+            try:
+                return self._cast_single_value(alternative_type, data)
+            except (MinosTypeAttributeException, MinosReqAttributeException):
+                pass
+
+        if type_field is not type(None):
+            if data is None:
+                raise MinosReqAttributeException(f"'{self._name}' field is 'None'.")
+
+            if data is MissingSentinel:
+                raise MinosReqAttributeException(f"'{self._name}' field is missing.")
+
+        raise MinosTypeAttributeException(self._name, type_field, data)
+
+    def _cast_single_value(self, type_field: t.Type, data: t.Any) -> t.Any:
+        if type_field is type(None):
+            return self._cast_none_value(type_field, data)
+
+        if type_field in PYTHON_IMMUTABLE_TYPES:
+            return self._cast_simple_value(type_field, data)
+
+        return self._cast_composed_value(type_field, data)
+
+    def _cast_none_value(self, type_field: t.Type, data: t.Any) -> t.Any:
+        if data is None or data is MissingSentinel:
+            log.debug("the Value passed is None")
+            return None
+
+        raise MinosTypeAttributeException(self._name, type_field, data)
+
+    def _cast_simple_value(self, type_field: t.Type, data: t.Any) -> t.Any:
+        if data is None:
+            raise MinosReqAttributeException(f"'{self._name}' field is 'None'.")
+
+        if data is MissingSentinel:
+            raise MinosReqAttributeException(f"'{self._name}' field is missing.")
+
+        if type_field is int:
+            log.debug("the Value passed is an integer")
+            return self._cast_int(data)
+
+        if type_field is float:
+            log.debug("the Value passed is an integer")
+            return self._cast_float(data)
+
+        if type_field is bool:
+            log.debug("the Value passed is an integer")
+            return self._cast_bool(data)
+
+        if type_field is str:
+            log.debug("the Value passed is a string")
+            return self._cast_string(data)
+
+        if type_field is bytes:
+            log.debug("the Value passed is a bytes")
+            return self._cast_bytes(data)
+
+        raise MinosTypeAttributeException(self._name, type_field, data)  # pragma: no cover
+
+    def _cast_int(self, data: t.Any) -> int:
+        try:
+            return int(data)
+        except (ValueError, TypeError):
+            raise MinosTypeAttributeException(self._name, int, data)
+
+    def _cast_float(self, data: t.Any) -> float:
+        try:
+            return float(data)
+        except (ValueError, TypeError):
+            raise MinosTypeAttributeException(self._name, float, data)
+
+    def _cast_bool(self, data: t.Any) -> bool:
+        if not isinstance(data, bool):
+            raise MinosTypeAttributeException(self._name, bool, data)
+        return data
+
+    def _cast_string(self, data: t.Any) -> str:
+        if not isinstance(data, str):
+            raise MinosTypeAttributeException(self._name, str, data)
+        return data
+
+    def _cast_bytes(self, data: t.Any) -> bytes:
+        if not isinstance(data, bytes):
+            raise MinosTypeAttributeException(self._name, bytes, data)
+        return data
+
+    def _cast_composed_value(self, type_field: t.Type, data: t.Any) -> t.Any:
+        origin_type = t.get_origin(type_field)
+        if origin_type is None:
+            raise MinosMalformedAttributeException(f"'{self._name}' field is malformed. Type: '{type_field}'.")
+
+        if data is None:
+            raise MinosReqAttributeException(f"'{self._name}' field is 'None'.")
+
+        if data is MissingSentinel:
+            raise MinosReqAttributeException(f"'{self._name}' field is missing.")
+
+        if origin_type is list:
+            return self._convert_list(data, t.get_args(type_field)[0])
+
+        if origin_type is dict:
+            return self._convert_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1])
+
+        if origin_type is ModelRef:
+            return self._convert_model_ref(data, t.get_args(type_field)[0])
+
+        raise MinosTypeAttributeException(self._name, type_field, data)
+
+    def _convert_list(self, data: list, type_values: t.Any) -> list[t.Any]:
+        if not isinstance(data, list):
+            raise MinosTypeAttributeException(self._name, list, data)
+
+        return self._convert_list_params(data, type_values)
+
+    def _convert_dict(self, data: list, type_keys: t.Type, type_values: t.Type) -> dict[str, t.Any]:
+        if not isinstance(data, dict):
+            raise MinosTypeAttributeException(self._name, dict, data)
+
+        if type_keys is not str:
+            raise MinosMalformedAttributeException(f"dictionary keys must be {type(str)}. Obtained: {type_keys}")
+
+        return self._convert_dict_params(data, type_keys, type_values)
+
+    def _convert_dict_params(self, data: t.Mapping, type_keys: t.Type, type_values: t.Type) -> dict[t.Any, t.Any]:
+        keys = self._convert_list_params(data.keys(), type_keys)
+        values = self._convert_list_params(data.values(), type_values)
+        return dict(zip(keys, values))
+
+    def _convert_model_ref(self, data: t.Any, model_type: t.Type) -> t.Any:
+        if not isinstance(data, model_type):
+            raise MinosTypeAttributeException(self._name, model_type, data)
+        return data
+
+    def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> list[t.Any]:
+        """
+        check if the parameters list are equal to @type_params type
+        """
+        converted = list()
+        for item in data:
+            value = self._cast_value(type_params, item)
+            converted.append(value)
+        return converted
 
 
 class _MinosModelAvroSchemaBuilder(object):

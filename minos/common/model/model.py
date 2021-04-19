@@ -201,3 +201,7 @@ class MinosModel(object):
     def __iter__(self) -> t.Iterable:
         # noinspection PyRedundantParentheses
         yield from self.fields.items()
+
+    def __repr__(self):
+        fields_repr = ", ".join(repr(field) for field in self.fields.values())
+        return f"{type(self).__name__}(fields=[{fields_repr}])"

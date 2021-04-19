@@ -13,6 +13,7 @@ from typing import (
 
 from minos.common import (
     MinosAttributeValidationException,
+    MinosMalformedAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
     ModelField,
@@ -49,6 +50,10 @@ class TestModelField(unittest.TestCase):
             ModelField("test", float, [3])
         with self.assertRaises(MinosTypeAttributeException):
             ModelField("test", float, "foo")
+
+    def test_value_bytes_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", bytes, 3)
 
     def test_value_list_int(self):
         field = ModelField("test", list[int], [1, 2, 3])
@@ -125,7 +130,9 @@ class TestModelField(unittest.TestCase):
     def test_value_dict_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
             ModelField("test", dict[str, int], 3)
-        with self.assertRaises(MinosTypeAttributeException):
+
+    def test_dict_keys_raises(self):
+        with self.assertRaises(MinosMalformedAttributeException):
             ModelField("test", dict[int, int], {1: 2, 3: 4})
 
     def test_value_model_ref(self):
