@@ -19,14 +19,16 @@ from ..logs import (
     log,
 )
 from .types import (
+    BOOLEAN,
+    BYTES,
+    FLOAT,
+    INT,
+    NULL,
+    PYTHON_IMMUTABLE_TYPES,
+    STRING,
     MissingSentinel,
     ModelRef,
 )
-
-PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
-PYTHON_LIST_TYPES = (list, tuple)
-PYTHON_ARRAY_TYPES = (dict,)
-PYTHON_NULL_TYPE = type(None)
 
 T = t.TypeVar("T")
 
@@ -180,15 +182,21 @@ class ModelField:
         if type_field is int and self._is_int(data):
             log.debug("the Value passed is an integer")
             return int(data)
+
         if type_field is float and self._is_float(data):
             log.debug("the Value passed is an integer")
             return float(data)
+
         if type_field is bool and self._is_bool(data):
             log.debug("the Value passed is an integer")
             return data
 
         if type_field is str and self._is_string(data):
             log.debug("the Value passed is a string")
+            return data
+
+        if type_field is bytes and self._is_bytes(data):
+            log.debug("the Value passed is a bytes")
             return data
 
         raise MinosTypeAttributeException(
@@ -222,6 +230,10 @@ class ModelField:
     @staticmethod
     def _is_string(data: str) -> bool:
         return isinstance(data, str)
+
+    @staticmethod
+    def _is_bytes(data: str) -> bool:
+        return isinstance(data, bytes)
 
     @staticmethod
     def _is_bool(data: bool) -> bool:
@@ -320,44 +332,21 @@ class ModelField:
                 return False
         return converted
 
-    # def get_avro(self):
-    #     """
-    #     return the avro format of the field
-    #     """
-    #     origin = t.get_origin(self.type)
-    #     if self.type in PYTHON_INMUTABLE_TYPES:
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[self.type]}
-    #
-    #     # check with origin
-    #     if origin in PYTHON_ARRAY_TYPES:
-    #         args = t.get_args(self.type)
-    #         type_dict = args[1]
-    #         default_val = {}
-    #         if self.value:
-    #             default_val = self.value
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[origin],
-    #                 "values": PYTHON_TYPE_TO_AVRO[type_dict], "default": default_val
-    #         }
-    #
-    #     if origin in PYTHON_LIST_TYPES:
-    #         args = t.get_args(self.type)
-    #         type_list = args[0]
-    #         default_val = []
-    #         if self.value:
-    #             default_val = self.value
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[origin],
-    #                 "items": PYTHON_TYPE_TO_AVRO[type_list], "default": default_val
-    #                 }
-    #
-    #     # case of Optional
-    #     if isinstance(self.type, typing._UnionGenericAlias):
-    #         # this is an optional value
-    #         origin = t.get_origin(self.type)
-    #         if origin is typing.Union:
-    #             # this is an Optional value
-    #             args = t.get_args(self.type)
-    #             type_union = args[0]
-    #             return {"name": self.name, "type": ["null", PYTHON_TYPE_TO_AVRO[type_union]]}
+    @property
+    def avro_schema(self) -> dict[str, t.Any]:
+        """Compute the avro schema of the field.
+
+        :return: A dictionary object.
+        """
+        return _MinosModelAvroSchemaBuilder(self).build()
+
+    @property
+    def avro_data(self):
+        """Compute the avro data of the model.
+
+        :return: A dictionary object.
+        """
+        return _MinosModelAvroDataBuilder(self).build()
 
     def __eq__(self, other: "ModelField") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -366,6 +355,7 @@ class ModelField:
         return hash(tuple(self))
 
     def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
         yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
 
     def __repr__(self):
@@ -373,3 +363,124 @@ class ModelField:
             f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
             f"parser={self._parser_name}, validator={self._validator_name})"
         )
+
+
+class _MinosModelAvroSchemaBuilder(object):
+    def __init__(self, field: ModelField):
+        self._field = field
+
+    @property
+    def _name(self):
+        return self._field.name
+
+    @property
+    def _type(self):
+        return self._field.type
+
+    def build(self) -> dict[str, t.Any]:
+        """Build the avro schema for the given field.
+
+        :return: A dictionary object.
+        """
+
+        return {"name": self._name, "type": self._build_schema(self._type)}
+
+    def _build_schema(self, type_field: t.Type) -> t.Any:
+        origin = t.get_origin(type_field)
+        if origin is not t.Union:
+            return self._build_single_schema(type_field)
+        return self._build_union_schema(type_field)
+
+    def _build_union_schema(self, type_field: t.Type) -> t.Any:
+        ans = list()
+        alternatives = t.get_args(type_field)
+        for alternative_type in alternatives:
+            step = self._build_single_schema(alternative_type)
+            ans.append(step)
+        return ans
+
+    def _build_single_schema(self, type_field: t.Type) -> t.Any:
+        if type_field is type(None):
+            return self._build_none_schema(type_field)
+
+        if type_field in PYTHON_IMMUTABLE_TYPES:
+            return self._build_simple_schema(type_field)
+
+        return self._build_composed_schema(type_field)
+
+    @staticmethod
+    def _build_none_schema(type_field: t.Type) -> t.Any:
+        if type_field is type(None):
+            return NULL
+
+        raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
+
+    @staticmethod
+    def _build_simple_schema(type_field: t.Type) -> t.Any:
+        if type_field is int:
+            return INT
+
+        if type_field is bool:
+            return BOOLEAN
+
+        if type_field is float:
+            return FLOAT
+
+        if type_field is str:
+            return STRING
+
+        if type_field is bytes:
+            return BYTES
+
+        raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
+
+    def _build_composed_schema(self, type_field: t.Type) -> t.Any:
+        origin_type = t.get_origin(type_field)
+
+        if origin_type is list:
+            return self._build_list_schema(type_field)
+
+        if origin_type is dict:
+            return self._build_dict_schema(type_field)
+
+        if origin_type is ModelRef:
+            return self._build_model_ref_schema(type_field)
+
+        raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
+
+    def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
+        return {"type": "array", "items": self._build_schema(t.get_args(type_field)[0]), "default": []}
+
+    def _build_dict_schema(self, type_field: t.Type) -> dict[str, t.Any]:
+        return {"type": "map", "values": self._build_schema(t.get_args(type_field)[1]), "default": {}}
+
+    @staticmethod
+    def _build_model_ref_schema(type_field: t.Type) -> t.Union[bool, t.Any]:
+        return t.get_args(type_field)[0].__name__
+
+
+class _MinosModelAvroDataBuilder(object):
+    def __init__(self, field: ModelField):
+        self._field = field
+
+    @property
+    def _value(self):
+        return self._field.value
+
+    def build(self):
+        """Build a avro data representation based on the content of the given field.
+
+        :return: A `avro`-compatible data.
+        """
+        return self._to_avro_raw(self._value)
+
+    def _to_avro_raw(self, value: t.Any) -> t.Any:
+        if value is None:
+            return None
+        if type(value) in PYTHON_IMMUTABLE_TYPES:
+            return value
+        if isinstance(value, list):
+            return [self._to_avro_raw(v) for v in value]
+        if isinstance(value, dict):
+            return {k: self._to_avro_raw(v) for k, v in value.items()}
+        return value.avro_data

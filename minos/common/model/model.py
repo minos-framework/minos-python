@@ -5,68 +5,28 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import datetime
 import typing as t
-import uuid
 from itertools import (
     zip_longest,
 )
 
 from ..exceptions import (
+    EmptyMinosModelSequenceException,
     MinosModelException,
+    MultiTypeMinosModelSequenceException,
 )
 from ..logs import (
     log,
+)
+from ..protocol import (
+    MinosAvroValuesDatabase,
 )
 from .fields import (
     ModelField,
 )
 from .types import (
-    Enum,
-    Fixed,
     MissingSentinel,
 )
-
-BOOLEAN = "boolean"
-NULL = "null"
-INT = "int"
-FLOAT = "float"
-LONG = "long"
-DOUBLE = "double"
-BYTES = "bytes"
-STRING = "string"
-ARRAY = "array"
-ENUM = "enum"
-MAP = "map"
-FIXED = "fixed"
-DATE = "date"
-TIME_MILLIS = "time-millis"
-TIMESTAMP_MILLIS = "timestamp-millis"
-UUID = "uuid"
-DECIMAL = "decimal"
-
-PYTHON_TYPE_TO_AVRO = {
-    bool: BOOLEAN,
-    type(None): NULL,
-    int: LONG,
-    float: DOUBLE,
-    bytes: BYTES,
-    str: STRING,
-    list: ARRAY,
-    tuple: ARRAY,
-    dict: MAP,
-    Fixed: {"type": FIXED},
-    Enum: {"type": ENUM},
-    datetime.date: {"type": INT, "logicalType": DATE},
-    datetime.time: {"type": INT, "logicalType": TIME_MILLIS},
-    datetime.datetime: {"type": LONG, "logicalType": TIMESTAMP_MILLIS},
-    uuid.uuid4: {"type": STRING, "logicalType": UUID},
-}
-
-PYTHON_INMUTABLE_TYPES = (str, int, bool, float, bytes, type(None))
-PYTHON_LIST_TYPES = (list, tuple)
-PYTHON_ARRAY_TYPES = (dict,)
-
 
 # def _process_aggregate(cls):
 #     """
@@ -84,7 +44,7 @@ PYTHON_ARRAY_TYPES = (dict,)
 #     # g get metaclass
 #     meta_class = getattr(cls, "Meta", None)
 #     if meta_class:
-#         # meta class exist so get the informations related
+#         # meta class exist so get the information related
 #         ...
 #     return cls
 #
@@ -111,6 +71,47 @@ class MinosModel(object):
         """
         self._fields = dict()
         self._list_fields(*args, **kwargs)
+
+    @classmethod
+    def from_avro_bytes(cls, raw: bytes) -> t.Union["MinosModel", list["MinosModel"]]:
+        """Build a single instance or a sequence of instances from bytes
+
+        :param raw: A bytes data.
+        :return: A single instance or a sequence of instances.
+        """
+
+        decoded = MinosAvroValuesDatabase().decode(raw, content_root=False)
+        if isinstance(decoded, list):
+            return [cls.from_dict(d) for d in decoded]
+        return cls.from_dict(decoded)
+
+    @classmethod
+    def from_dict(cls, d: dict[str, t.Any]) -> "MinosModel":
+        """Build a new instance from a dictionary.
+
+        :param d: A dictionary object.
+        :return: A new ``MinosModel`` instance.
+        """
+        return cls(**d)
+
+    @classmethod
+    def to_avro_bytes(cls, models: list["MinosModel"]) -> bytes:
+        """Create a bytes representation of the given object instances.
+
+        :param models: A sequence of minos models.
+        :return: A bytes object.
+        """
+        if len(models) == 0:
+            raise EmptyMinosModelSequenceException("'models' parameter cannot be empty.")
+
+        model_type = type(models[0])
+        if not all(model_type == type(model) for model in models):
+            raise MultiTypeMinosModelSequenceException(
+                f"Every model must have type {model_type} to be valid. Found types: {[type(model) for model in models]}"
+            )
+
+        avro_schema = models[0].avro_schema
+        return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
 
     @property
     def fields(self) -> dict[str, ModelField]:
@@ -165,6 +166,31 @@ class MinosModel(object):
                     ans |= list_fields
         ans |= fields
         return ans
+
+    @property
+    def avro_schema(self) -> dict[str, t.Any]:
+        """Compute the avro schema of the model.
+
+        :return: A dictionary object.
+        """
+        fields = [field.avro_schema for field in self.fields.values()]
+        return {"name": type(self).__name__, "namespace": __name__, "type": "record", "fields": fields}
+
+    @property
+    def avro_data(self) -> t.Any:
+        """Compute the avro data of the model.
+
+        :return: A dictionary object.
+        """
+        return {name: field.avro_data for name, field in self.fields.items()}
+
+    @property
+    def avro_bytes(self) -> bytes:
+        """Generate bytes representation of the current instance.
+
+        :return: A bytes object.
+        """
+        return MinosAvroValuesDatabase().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self, other: "MinosModel") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

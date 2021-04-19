@@ -40,6 +40,10 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", float, 3.14)
         self.assertEqual(3.14, field.value)
 
+    def test_value_bytes(self):
+        field = ModelField("test", bytes, bytes("foo", "utf-8"))
+        self.assertEqual(bytes("foo", "utf-8"), field.value)
+
     def test_value_float_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
             ModelField("test", float, [3])
@@ -57,6 +61,54 @@ class TestModelField(unittest.TestCase):
     def test_value_list_model_ref(self):
         field = ModelField("test", list[ModelRef[User]], [User(123), User(456)])
         self.assertEqual([User(123), User(456)], field.value)
+
+    def test_avro_schema_int(self):
+        field = ModelField("test", int, 1)
+        expected = {"name": "test", "type": "int"}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_bool(self):
+        field = ModelField("test", bool, True)
+        expected = {"name": "test", "type": "boolean"}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_float(self):
+        field = ModelField("test", float, 3.4)
+        expected = {"name": "test", "type": "float"}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_string(self):
+        field = ModelField("test", str, "foo")
+        expected = {"name": "test", "type": "string"}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_bytes(self):
+        field = ModelField("test", bytes, bytes("foo", "utf-8"))
+        expected = {"name": "test", "type": "bytes"}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_dict(self):
+        field = ModelField("test", dict[str, int], {"foo": 1, "bar": 2})
+        expected = {"name": "test", "type": {"default": {}, "type": "map", "values": "int"}}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_list_model_ref(self):
+        field = ModelField("test", list[Optional[ModelRef[User]]], [User(123), User(456)])
+        expected = {"name": "test", "type": {"default": [], "items": ["User", "null"], "type": "array"}}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_data_list_model_ref(self):
+        field = ModelField("test", list[Optional[ModelRef[User]]], [User(123), User(456)])
+        expected = [{"id": 123, "username": None}, {"id": 456, "username": None}]
+        self.assertEqual(expected, field.avro_data)
+
+    def test_avro_data_dict(self):
+        field = ModelField("test", dict[str, int], {"foo": 1, "bar": 2})
+        self.assertEqual({"bar": 2, "foo": 1}, field.avro_data)
+
+    def test_avro_data_bytes(self):
+        field = ModelField("test", bytes, bytes("foo", "utf-8"))
+        self.assertEqual(b"foo", field.avro_data)
 
     def test_value_list_optional(self):
         field = ModelField("test", list[Optional[int]], [1, None, 3, 4])
