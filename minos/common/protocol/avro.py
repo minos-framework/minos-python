@@ -144,12 +144,17 @@ class MinosAvroProtocol(MinosBinaryProtocol):
 
 
 class MinosAvroValuesDatabase(MinosBinaryProtocol):
+    """Encoder/Decoder class for values to be stored on the database with avro format."""
+
     @classmethod
     def encode(cls, value: t.Any, schema: t.Dict = None) -> bytes:
-        """
-        encoder in avro for database Values
-        all the headers are converted in fields with doble underscore name
+        """Encoder in avro for database Values
+        all the headers are converted in fields with double underscore name
         the body is a set fields coming from the data type.
+
+        :param value: The data to be stored.
+        :param schema: The schema relative to the data.
+        :return: A bytes object.
         """
 
         # prepare the headers
@@ -239,7 +244,16 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
             return content_bytes
 
     @classmethod
-    def decode(cls, data: bytes, content_root: bool = True) -> t.Union[dict[str, t.Any], list[dict[str, t.Any]]]:
+    def decode(
+        cls, data: bytes, content_root: bool = True, flatten: bool = True
+    ) -> t.Union[dict[str, t.Any], list[dict[str, t.Any]]]:
+        """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
+
+        :param data: A bytes object.
+        :param content_root: If ``True``
+        :param flatten: If ``True`` tries to return the values as flat as possible.
+        :return: A dictionary or a list of dictionaries.
+        """
         try:
             ans = list()
             message_avro = DataFileReader(io.BytesIO(data), DatumReader())
@@ -248,7 +262,7 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
                 if content_root:
                     schema_dict = schema_dict["content"]
                 ans.append(schema_dict)
-            if len(ans) == 1:
+            if flatten and len(ans) == 1:
                 return ans[0]
             return ans
         except Exception:
