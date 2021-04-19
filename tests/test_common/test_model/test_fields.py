@@ -13,13 +13,15 @@ from typing import (
 
 from minos.common import (
     MinosAttributeValidationException,
+    MinosMalformedAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
     ModelField,
     ModelRef,
-    MinosMalformedAttributeException,
 )
-from tests.modelClasses import User
+from tests.modelClasses import (
+    User,
+)
 
 
 class TestModelField(unittest.TestCase):
