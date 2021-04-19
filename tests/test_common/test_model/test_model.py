@@ -210,6 +210,17 @@ class TestMinosModel(unittest.TestCase):
         )
         self.assertEqual(expected, hash(user))
 
+    def test_repr(self):
+        shopping_list = ShoppingList(User(1234), cost="1.234,56")
+        expected = (
+            "ShoppingList(fields=[ModelField(name='user', type=typing.Optional[minos.common.model.types.ModelRef[tests."
+            "modelClasses.User]], value=User(fields=[ModelField(name='id', type=<class 'int'>, value=1234, parser=None,"
+            " validator=validate_id), ModelField(name='username', type=typing.Optional[str], value=None, parser=parse_"
+            "username, validator=validate_username)]), parser=None, validator=None), ModelField(name='cost', type=<cla"
+            "ss 'float'>, value=1234.56, parser=parse_cost, validator=None)])"
+        )
+        self.assertEqual(expected, repr(shopping_list))
+
 
 if __name__ == "__main__":
     unittest.main()
