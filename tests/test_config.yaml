@@ -25,6 +25,13 @@ events:
         - name: OrderAdded
           controller: minos.services.CQRSService
           action: order_added
+    queue:
+        database: broker_db
+        user: broker
+        password: br0k3r
+        host: localhost
+        port: 5432
+        records: 10
 commands:
     broker: localhost
     port: 9092
@@ -44,3 +51,10 @@ commands:
         - name: GetOrder
           controller: minos.service.OrderService
           action: get_order
+    queue:
+        database: broker_db
+        user: broker
+        password: br0k3r
+        host: localhost
+        port: 5432
+        records: 10

@@ -1,17 +1,29 @@
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
 import abc
 import typing as t
 
-from minos.common.exceptions import MinosMessageException
-from minos.common.protocol.abstract import MinosBinaryProtocol
-from minos.common.protocol.avro import MinosAvroProtocol
+from ..exceptions import (
+    MinosMessageException,
+)
+from ..protocol import (
+    MinosAvroProtocol,
+    MinosBinaryProtocol,
+)
 
 
 class MinosBaseResponse(abc.ABC):
-    __slots__ = 'binary_class', '_encoder', '_decoder', '_headers', '_body'
+    __slots__ = "binary_class", "_encoder", "_decoder", "_headers", "_body"
 
     @property
     def id(self):
-        return self._headers['id']
+        return self._headers["id"]
 
     @property
     def body(self):
@@ -39,7 +51,7 @@ class MinosBaseResponse(abc.ABC):
         return self
 
     def addId(self, id: int):
-        self._headers['id'] = id
+        self._headers["id"] = id
         return self
 
     def sub_build(self):
@@ -60,12 +72,12 @@ class MinosBaseResponse(abc.ABC):
         self._prepare_binary_encoder_decoder()
         decoded_dict = self._decoder(data)
         self._headers = {}
-        if "id" not in decoded_dict['headers']:
+        if "id" not in decoded_dict["headers"]:
             raise AttributeError("The Response dosn't have any ID configured, not valid!")
 
-        self._headers = decoded_dict['headers']
+        self._headers = decoded_dict["headers"]
         if "body" in decoded_dict:
-            self._body = decoded_dict['body']
+            self._body = decoded_dict["body"]
 
     def _prepare_binary_encoder_decoder(self):
         """
@@ -87,7 +99,6 @@ class MinosRPCResponse(MinosBaseResponse):
 
 
 class MinosResponse(object):
-
     @staticmethod
     def build(response_class: MinosBaseResponse, binary: MinosBinaryProtocol = MinosAvroProtocol):
         request_instance = response_class()

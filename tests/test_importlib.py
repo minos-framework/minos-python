@@ -1,7 +1,16 @@
-import pytest
+"""
+Copyright (C) 2021 Clariteia SL
 
-from minos.common.exceptions import MinosImportException
-from minos.common.importlib import import_module
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
+import pytest
+from minos.common import (
+    MinosImportException,
+    import_module,
+)
 
 
 def test_import_module():

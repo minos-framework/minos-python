@@ -1,18 +1,29 @@
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
 import shutil
 
 import pytest
-from minos.common.storage.lmdb import MinosStorageLmdb
+from minos.common import (
+    MinosStorageLmdb,
+)
+
 
 @pytest.fixture
 def path():
     return "./tests/test_db.lmdb"
+
 
 @pytest.fixture(autouse=True)
 def clear_database(path):
     yield
     # Code that will run after your test, for example:
     shutil.rmtree(path, ignore_errors=True)
-
 
 
 def test_storage_add_text(path):
