@@ -16,11 +16,10 @@ from minos.common import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     ModelField,
-    ModelRef, MinosMalformedAttributeException,
+    ModelRef,
+    MinosMalformedAttributeException,
 )
-from tests.modelClasses import (
-    User,
-)
+from tests.modelClasses import User
 
 
 class TestModelField(unittest.TestCase):
