@@ -34,7 +34,7 @@ pycodestyle==2.7.0
 pyflakes==2.3.1
 Pygments==2.8.1
 pyparsing==2.4.7
-pytest==4.6.5
+pytest==5.4.0
 pytest-asyncio==0.14.0
 pytest-runner==5.1
 pytz==2021.1
