@@ -15,6 +15,9 @@ from minos.common import (
     MinosParseAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
+    MinosModelException,
+    MultiTypeMinosModelSequenceException,
+    EmptyMinosModelSequenceException,
 )
 
 
@@ -29,6 +32,15 @@ class TestExceptions(unittest.TestCase):
     def test_base_str(self):
         exception = MinosException("test")
         self.assertEqual("test", str(exception))
+
+    def test_model(self):
+        self.assertTrue(issubclass(MinosModelException, MinosException))
+
+    def test_model_emtpy_sequence(self):
+        self.assertTrue(issubclass(EmptyMinosModelSequenceException, MinosModelException))
+
+    def test_model_multi_type_sequence(self):
+        self.assertTrue(issubclass(MultiTypeMinosModelSequenceException, MinosModelException))
 
     def test_model_attribute(self):
         self.assertTrue(issubclass(MinosModelAttributeException, MinosException))
@@ -45,7 +57,7 @@ class TestExceptions(unittest.TestCase):
     def test_parse_attribute(self):
         self.assertTrue(issubclass(MinosParseAttributeException, MinosModelAttributeException))
 
-    def test_attribute_validation_repr(self):
+    def test_attribute_parse_repr(self):
         exception = MinosParseAttributeException("foo", 34, ValueError())
         message = (
             'MinosParseAttributeException(message="ValueError() '

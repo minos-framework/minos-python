@@ -11,7 +11,7 @@ from itertools import (
 )
 
 from ..exceptions import (
-    MinosModelException,
+    MinosModelException, MultiTypeMinosModelSequenceException, EmptyMinosModelSequenceException,
 )
 from ..logs import (
     log,
@@ -83,7 +83,15 @@ class MinosModel(object):
         return cls(**d)
 
     @classmethod
-    def to_avro_bytes(cls, models: t.Iterable["MinosModel"]) -> bytes:
+    def to_avro_bytes(cls, models: list["MinosModel"]) -> bytes:
+        if len(models) == 0:
+            raise EmptyMinosModelSequenceException("'models' parameter cannot be empty.")
+        model_type = type(models[0])
+        if not all(model_type == type(model) for model in models):
+            raise MultiTypeMinosModelSequenceException(
+                f"Every model must have type {model_type} to be valid. Found types: {[type(model) for model in models]}"
+            )
+
         avro_schema = models[0].avro_schema
         return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
 

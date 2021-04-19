@@ -34,6 +34,8 @@ from .exceptions import (
     MinosProtocolException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
+    MultiTypeMinosModelSequenceException,
+    EmptyMinosModelSequenceException,
 )
 from .importlib import (
     import_module,
