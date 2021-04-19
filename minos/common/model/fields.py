@@ -19,15 +19,15 @@ from ..logs import (
     log,
 )
 from .types import (
+    BOOLEAN,
+    BYTES,
+    FLOAT,
+    INT,
+    NULL,
+    PYTHON_IMMUTABLE_TYPES,
+    STRING,
     MissingSentinel,
     ModelRef,
-    PYTHON_IMMUTABLE_TYPES,
-    INT,
-    BOOLEAN,
-    FLOAT,
-    STRING,
-    BYTES,
-    NULL,
 )
 
 T = t.TypeVar("T")
