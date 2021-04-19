@@ -12,6 +12,7 @@ from typing import (
 
 import pytest
 from minos.common import (
+    EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
     MinosModelException,
@@ -19,6 +20,7 @@ from minos.common import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     ModelField,
+    MultiTypeMinosModelSequenceException,
 )
 from tests.modelClasses import (
     Analytics,
@@ -177,6 +179,28 @@ class TestMinosModel(unittest.TestCase):
             "username": None,
         }
         self.assertEqual(expected, customer.avro_data)
+
+    def test_avro_bytes_single(self):
+        customer = Customer(1234)
+        avro_bytes = customer.avro_bytes
+        self.assertIsInstance(avro_bytes, bytes)
+        decoded_customer = Customer.from_avro_bytes(avro_bytes)
+        self.assertEqual(customer, decoded_customer)
+
+    def test_avro_bytes_sequence(self):
+        customers = [Customer(1234), Customer(5678)]
+        avro_bytes = Customer.to_avro_bytes(customers)
+        self.assertIsInstance(avro_bytes, bytes)
+        decoded_customer = Customer.from_avro_bytes(avro_bytes)
+        self.assertEqual(customers, decoded_customer)
+
+    def test_avro_bytes_empty_sequence(self):
+        with self.assertRaises(EmptyMinosModelSequenceException):
+            Customer.to_avro_bytes([])
+
+    def test_avro_bytes_multi_type_sequence(self):
+        with self.assertRaises(MultiTypeMinosModelSequenceException):
+            Customer.to_avro_bytes([User(1234), Customer(5678)])
 
     def test_model_ref_raises(self):
         shopping_list = ShoppingList(cost=3.14)

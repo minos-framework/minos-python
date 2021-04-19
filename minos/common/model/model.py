@@ -11,10 +11,15 @@ from itertools import (
 )
 
 from ..exceptions import (
+    EmptyMinosModelSequenceException,
     MinosModelException,
+    MultiTypeMinosModelSequenceException,
 )
 from ..logs import (
     log,
+)
+from ..protocol import (
+    MinosAvroValuesDatabase,
 )
 from .fields import (
     ModelField,
@@ -66,6 +71,47 @@ class MinosModel(object):
         """
         self._fields = dict()
         self._list_fields(*args, **kwargs)
+
+    @classmethod
+    def from_avro_bytes(cls, raw: bytes) -> t.Union["MinosModel", list["MinosModel"]]:
+        """Build a single instance or a sequence of instances from bytes
+
+        :param raw: A bytes data.
+        :return: A single instance or a sequence of instances.
+        """
+
+        decoded = MinosAvroValuesDatabase().decode(raw, content_root=False)
+        if isinstance(decoded, list):
+            return [cls.from_dict(d) for d in decoded]
+        return cls.from_dict(decoded)
+
+    @classmethod
+    def from_dict(cls, d: dict[str, t.Any]) -> "MinosModel":
+        """Build a new instance from a dictionary.
+
+        :param d: A dictionary object.
+        :return: A new ``MinosModel`` instance.
+        """
+        return cls(**d)
+
+    @classmethod
+    def to_avro_bytes(cls, models: list["MinosModel"]) -> bytes:
+        """Create a bytes representation of the given object instances.
+
+        :param models: A sequence of minos models.
+        :return: A bytes object.
+        """
+        if len(models) == 0:
+            raise EmptyMinosModelSequenceException("'models' parameter cannot be empty.")
+
+        model_type = type(models[0])
+        if not all(model_type == type(model) for model in models):
+            raise MultiTypeMinosModelSequenceException(
+                f"Every model must have type {model_type} to be valid. Found types: {[type(model) for model in models]}"
+            )
+
+        avro_schema = models[0].avro_schema
+        return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
 
     @property
     def fields(self) -> dict[str, ModelField]:
@@ -137,6 +183,14 @@ class MinosModel(object):
         :return: A dictionary object.
         """
         return {name: field.avro_data for name, field in self.fields.items()}
+
+    @property
+    def avro_bytes(self) -> bytes:
+        """Generate bytes representation of the current instance.
+
+        :return: A bytes object.
+        """
+        return MinosAvroValuesDatabase().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self, other: "MinosModel") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
