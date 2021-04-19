@@ -141,8 +141,8 @@ class TestMinosModel(unittest.TestCase):
 
     def test_recursive_type_composition(self):
         orders = {
-            User(1): [ShoppingList(User(1)), ShoppingList(User(1))],
-            User(2): [ShoppingList(User(2)), ShoppingList(User(2))],
+            "foo": [ShoppingList(User(1)), ShoppingList(User(1))],
+            "bar": [ShoppingList(User(2)), ShoppingList(User(2))],
         }
 
         analytics = Analytics(1, orders)

@@ -80,7 +80,7 @@ class ShoppingList(MinosModel):
 class Analytics(Base):
     """Class to test ``MinosModel`` recursive type validation."""
 
-    orders: dict[ModelRef[User], list[ModelRef[ShoppingList]]]
+    orders: dict[str, list[ModelRef[ShoppingList]]]
 
 
 class Customer(User):
