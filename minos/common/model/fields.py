@@ -77,6 +77,7 @@ class ModelField:
         if self.parser is None:
             return None
         if inspect.ismethod(self.parser):
+            # noinspection PyUnresolvedReferences
             return self.parser.__func__
         return self.parser
 
@@ -96,6 +97,7 @@ class ModelField:
         if self.validator is None:
             return None
         if inspect.ismethod(self.validator):
+            # noinspection PyUnresolvedReferences
             return self.validator.__func__
 
     @property
@@ -119,12 +121,88 @@ class ModelField:
         log.debug(f"Name val {self._name}")
         log.debug(f"Type val {self._type}")
 
-        value = self._cast_value(self._type, data)
+        value = _ModelFieldCaster(self).cast(data)
 
         if self.validator is not None and value is not None and not self.validator(value):
             raise MinosAttributeValidationException(self.name, value)
 
         self._value = value
+
+    # def get_avro(self):
+    #     """
+    #     return the avro format of the field
+    #     """
+    #     origin = t.get_origin(self.type)
+    #     if self.type in PYTHON_INMUTABLE_TYPES:
+    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[self.type]}
+    #
+    #     # check with origin
+    #     if origin in PYTHON_ARRAY_TYPES:
+    #         args = t.get_args(self.type)
+    #         type_dict = args[1]
+    #         default_val = {}
+    #         if self.value:
+    #             default_val = self.value
+    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[origin],
+    #                 "values": PYTHON_TYPE_TO_AVRO[type_dict], "default": default_val
+    #         }
+    #
+    #     if origin in PYTHON_LIST_TYPES:
+    #         args = t.get_args(self.type)
+    #         type_list = args[0]
+    #         default_val = []
+    #         if self.value:
+    #             default_val = self.value
+    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[origin],
+    #                 "items": PYTHON_TYPE_TO_AVRO[type_list], "default": default_val
+    #                 }
+    #
+    #     # case of Optional
+    #     if isinstance(self.type, typing._UnionGenericAlias):
+    #         # this is an optional value
+    #         origin = t.get_origin(self.type)
+    #         if origin is typing.Union:
+    #             # this is an Optional value
+    #             args = t.get_args(self.type)
+    #             type_union = args[0]
+    #             return {"name": self.name, "type": ["null", PYTHON_TYPE_TO_AVRO[type_union]]}
+
+    def __eq__(self, other: "ModelField") -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
+        yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
+
+    def __repr__(self):
+        return (
+            f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
+            f"parser={self._parser_name}, validator={self._validator_name})"
+        )
+
+
+class _ModelFieldCaster(object):
+    def __init__(self, field: ModelField):
+        self._field = field
+
+    @property
+    def _name(self):
+        return self._field.name
+
+    @property
+    def _type(self):
+        return self._field.type
+
+    def cast(self, data: t.Any) -> t.Any:
+        """Cast data type according to the field definition..
+
+        :param data: Data to be casted.
+        :return: Casted object.
+        """
+        return self._cast_value(self._type, data)
 
     def _cast_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         origin = t.get_origin(type_field)
@@ -140,12 +218,12 @@ class ModelField:
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
-        if type_field != type(None):
+        if type_field is not type(None):
             if data is None:
-                raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
+                raise MinosReqAttributeException(f"'{self._name}' field is 'None'.")
 
             if data is MissingSentinel:
-                raise MinosReqAttributeException(f"'{self.name}' field is missing.")
+                raise MinosReqAttributeException(f"'{self._name}' field is missing.")
 
         raise MinosTypeAttributeException(
             f"The '{type_field}' type does not match with the given data type: {type(data)}"
@@ -172,10 +250,10 @@ class ModelField:
 
     def _cast_simple_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         if data is None:
-            raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
+            raise MinosReqAttributeException(f"'{self._name}' field is 'None'.")
 
         if data is MissingSentinel:
-            raise MinosReqAttributeException(f"'{self.name}' field is missing.")
+            raise MinosReqAttributeException(f"'{self._name}' field is missing.")
 
         if type_field is int and self._is_int(data):
             log.debug("the Value passed is an integer")
@@ -230,13 +308,13 @@ class ModelField:
     def _cast_composed_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         origin_type = t.get_origin(type_field)
         if origin_type is None:
-            raise MinosMalformedAttributeException(f"'{self.name}' field is malformed. Type: '{type_field}'.")
+            raise MinosMalformedAttributeException(f"'{self._name}' field is malformed. Type: '{type_field}'.")
 
         if data is None:
-            raise MinosReqAttributeException(f"'{self.name}' field is 'None'.")
+            raise MinosReqAttributeException(f"'{self._name}' field is 'None'.")
 
         if data is MissingSentinel:
-            raise MinosReqAttributeException(f"'{self.name}' field is missing.")
+            raise MinosReqAttributeException(f"'{self._name}' field is missing.")
 
         if origin_type is list:
             converted_data = self._convert_list(data, t.get_args(type_field)[0])
@@ -319,57 +397,3 @@ class ModelField:
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 return False
         return converted
-
-    # def get_avro(self):
-    #     """
-    #     return the avro format of the field
-    #     """
-    #     origin = t.get_origin(self.type)
-    #     if self.type in PYTHON_INMUTABLE_TYPES:
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[self.type]}
-    #
-    #     # check with origin
-    #     if origin in PYTHON_ARRAY_TYPES:
-    #         args = t.get_args(self.type)
-    #         type_dict = args[1]
-    #         default_val = {}
-    #         if self.value:
-    #             default_val = self.value
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[origin],
-    #                 "values": PYTHON_TYPE_TO_AVRO[type_dict], "default": default_val
-    #         }
-    #
-    #     if origin in PYTHON_LIST_TYPES:
-    #         args = t.get_args(self.type)
-    #         type_list = args[0]
-    #         default_val = []
-    #         if self.value:
-    #             default_val = self.value
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[origin],
-    #                 "items": PYTHON_TYPE_TO_AVRO[type_list], "default": default_val
-    #                 }
-    #
-    #     # case of Optional
-    #     if isinstance(self.type, typing._UnionGenericAlias):
-    #         # this is an optional value
-    #         origin = t.get_origin(self.type)
-    #         if origin is typing.Union:
-    #             # this is an Optional value
-    #             args = t.get_args(self.type)
-    #             type_union = args[0]
-    #             return {"name": self.name, "type": ["null", PYTHON_TYPE_TO_AVRO[type_union]]}
-
-    def __eq__(self, other: "ModelField") -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
-
-    def __hash__(self) -> int:
-        return hash(tuple(self))
-
-    def __iter__(self) -> t.Iterable:
-        yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
-
-    def __repr__(self):
-        return (
-            f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
-            f"parser={self._parser_name}, validator={self._validator_name})"
-        )
