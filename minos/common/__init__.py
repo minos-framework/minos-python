@@ -22,6 +22,7 @@ from .configuration import (
     MinosConfigAbstract,
 )
 from .exceptions import (
+    EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
     MinosConfigException,
     MinosException,
@@ -34,6 +35,7 @@ from .exceptions import (
     MinosProtocolException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
+    MultiTypeMinosModelSequenceException,
 )
 from .importlib import (
     import_module,

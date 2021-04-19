@@ -12,6 +12,7 @@ from typing import (
 
 import pytest
 from minos.common import (
+    EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
     MinosModelException,
@@ -19,6 +20,7 @@ from minos.common import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     ModelField,
+    MultiTypeMinosModelSequenceException,
 )
 from tests.modelClasses import (
     Analytics,
@@ -134,6 +136,72 @@ class TestMinosModel(unittest.TestCase):
         shopping_list.user = user
         self.assertEqual(user, shopping_list.user)
 
+    def test_avro_schema(self):
+        shopping_list = ShoppingList(User(1234))
+        expected = {
+            "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "float"}],
+            "name": "ShoppingList",
+            "namespace": "minos.common.model.model",
+            "type": "record",
+        }
+        self.assertEqual(expected, shopping_list.avro_schema)
+
+    def test_avro_data(self):
+        shopping_list = ShoppingList(User(1234))
+        expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
+        self.assertEqual(expected, shopping_list.avro_data)
+
+    def test_avro_schema_simple(self):
+        customer = Customer(1234)
+        expected = {
+            "fields": [
+                {"name": "id", "type": "int"},
+                {"name": "username", "type": ["string", "null"]},
+                {"name": "name", "type": ["string", "null"]},
+                {"name": "surname", "type": ["string", "null"]},
+                {"name": "is_admin", "type": ["boolean", "null"]},
+                {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
+            ],
+            "name": "Customer",
+            "namespace": "minos.common.model.model",
+            "type": "record",
+        }
+        self.assertEqual(expected, customer.avro_schema)
+
+    def test_avro_data_simple(self):
+        customer = Customer(1234)
+        expected = {
+            "id": 1234,
+            "is_admin": None,
+            "lists": None,
+            "name": None,
+            "surname": None,
+            "username": None,
+        }
+        self.assertEqual(expected, customer.avro_data)
+
+    def test_avro_bytes_single(self):
+        customer = Customer(1234)
+        avro_bytes = customer.avro_bytes
+        self.assertIsInstance(avro_bytes, bytes)
+        decoded_customer = Customer.from_avro_bytes(avro_bytes)
+        self.assertEqual(customer, decoded_customer)
+
+    def test_avro_bytes_sequence(self):
+        customers = [Customer(1234), Customer(5678)]
+        avro_bytes = Customer.to_avro_bytes(customers)
+        self.assertIsInstance(avro_bytes, bytes)
+        decoded_customer = Customer.from_avro_bytes(avro_bytes)
+        self.assertEqual(customers, decoded_customer)
+
+    def test_avro_bytes_empty_sequence(self):
+        with self.assertRaises(EmptyMinosModelSequenceException):
+            Customer.to_avro_bytes([])
+
+    def test_avro_bytes_multi_type_sequence(self):
+        with self.assertRaises(MultiTypeMinosModelSequenceException):
+            Customer.to_avro_bytes([User(1234), Customer(5678)])
+
     def test_model_ref_raises(self):
         shopping_list = ShoppingList(cost=3.14)
         with self.assertRaises(MinosTypeAttributeException):
@@ -141,8 +209,8 @@ class TestMinosModel(unittest.TestCase):
 
     def test_recursive_type_composition(self):
         orders = {
-            User(1): [ShoppingList(User(1)), ShoppingList(User(1))],
-            User(2): [ShoppingList(User(2)), ShoppingList(User(2))],
+            "foo": [ShoppingList(User(1)), ShoppingList(User(1))],
+            "bar": [ShoppingList(User(2)), ShoppingList(User(2))],
         }
 
         analytics = Analytics(1, orders)
