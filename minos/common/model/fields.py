@@ -416,45 +416,6 @@ class ModelField:
             return {k: self._to_avro_raw(v) for k, v in value.items()}
         return value.avro_data
 
-    # def get_avro(self):
-    #     """
-    #     return the avro format of the field
-    #     """
-    #     origin = t.get_origin(self.type)
-    #     if self.type in PYTHON_I<MUTABLE_TYPES:
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[self.type]}
-    #
-    #     # check with origin
-    #     if origin in PYTHON_ARRAY_TYPES:
-    #         args = t.get_args(self.type)
-    #         type_dict = args[1]
-    #         default_val = {}
-    #         if self.value:
-    #             default_val = self.value
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[origin],
-    #                 "values": PYTHON_TYPE_TO_AVRO[type_dict], "default": default_val
-    #         }
-    #
-    #     if origin in PYTHON_LIST_TYPES:
-    #         args = t.get_args(self.type)
-    #         type_list = args[0]
-    #         default_val = []
-    #         if self.value:
-    #             default_val = self.value
-    #         return {"name": self.name, "type": PYTHON_TYPE_TO_AVRO[origin],
-    #                 "items": PYTHON_TYPE_TO_AVRO[type_list], "default": default_val
-    #                 }
-    #
-    #     # case of Optional
-    #     if isinstance(self.type, typing._UnionGenericAlias):
-    #         # this is an optional value
-    #         origin = t.get_origin(self.type)
-    #         if origin is typing.Union:
-    #             # this is an Optional value
-    #             args = t.get_args(self.type)
-    #             type_union = args[0]
-    #             return {"name": self.name, "type": ["null", PYTHON_TYPE_TO_AVRO[type_union]]}
-
     def __eq__(self, other: "ModelField") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
@@ -462,6 +423,7 @@ class ModelField:
         return hash(tuple(self))
 
     def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
         yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
 
     def __repr__(self):
