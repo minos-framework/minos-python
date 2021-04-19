@@ -15,7 +15,9 @@ from ..exceptions import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
 )
-from ..logs import log
+from ..logs import (
+    log,
+)
 from .types import (
     MissingSentinel,
     ModelRef,

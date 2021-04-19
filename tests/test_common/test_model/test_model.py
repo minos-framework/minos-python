@@ -6,7 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from typing import Optional
+from typing import (
+    Optional,
+)
 
 import pytest
 from minos.common import (
