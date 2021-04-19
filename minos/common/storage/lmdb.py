@@ -6,11 +6,16 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-import lmdb
 import typing as t
 
-from ..protocol import MinosAvroValuesDatabase
-from .abstract import MinosStorage
+import lmdb
+
+from ..protocol import (
+    MinosAvroValuesDatabase,
+)
+from .abstract import (
+    MinosStorage,
+)
 
 
 def _encode_values(value: t.Any) -> bytes:

@@ -7,8 +7,10 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import pytest
-
-from minos.common import MinosImportException, import_module
+from minos.common import (
+    MinosImportException,
+    import_module,
+)
 
 
 def test_import_module():

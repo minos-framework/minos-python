@@ -8,9 +8,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import logging
 
-from aiomisc.log import basic_config
-
-basic_config(
-        level=logging.DEBUG, buffered=False, log_format='color'
+from aiomisc.log import (
+    basic_config,
 )
+
+basic_config(level=logging.DEBUG, buffered=False, log_format="color")
 log = logging.getLogger(__name__)

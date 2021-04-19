@@ -8,12 +8,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 from .request import (
     MinosBaseRequest,
-    MinosRPCHeadersRequest,
-    MinosRPCBodyRequest,
     MinosRequest,
+    MinosRPCBodyRequest,
+    MinosRPCHeadersRequest,
 )
 from .response import (
     MinosBaseResponse,
-    MinosRPCResponse,
     MinosResponse,
+    MinosRPCResponse,
 )
