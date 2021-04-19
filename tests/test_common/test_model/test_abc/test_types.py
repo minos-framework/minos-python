@@ -7,7 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import Generic
+from typing import (
+    Generic,
+)
 
 from minos.common import (
     CUSTOM_TYPES,

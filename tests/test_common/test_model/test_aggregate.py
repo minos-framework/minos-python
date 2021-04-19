@@ -7,7 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
-from tests.aggregate_classes import Car
+from tests.aggregate_classes import (
+    Car,
+)
 
 
 class TestAggregate(unittest.TestCase):
