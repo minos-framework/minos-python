@@ -14,5 +14,5 @@ class BrokerBase(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def save(self):
+    def send(self):
         raise NotImplementedError
