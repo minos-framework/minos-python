@@ -12,13 +12,15 @@ from typing import (
 
 import pytest
 from minos.common import (
+    EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
     MinosModelException,
     MinosParseAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    ModelField, EmptyMinosModelSequenceException, MultiTypeMinosModelSequenceException,
+    ModelField,
+    MultiTypeMinosModelSequenceException,
 )
 from tests.modelClasses import (
     Analytics,

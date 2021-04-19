@@ -8,19 +8,30 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import io
 import typing as t
+
 import avro
 import orjson
-from avro.datafile import DataFileReader, DataFileWriter
-from avro.io import DatumReader, DatumWriter
+from avro.datafile import (
+    DataFileReader,
+    DataFileWriter,
+)
+from avro.io import (
+    DatumReader,
+    DatumWriter,
+)
 
-from ..exceptions import MinosProtocolException
-from ..logs import log
-from .abstract import MinosBinaryProtocol
+from ..exceptions import (
+    MinosProtocolException,
+)
+from ..logs import (
+    log,
+)
+from .abstract import (
+    MinosBinaryProtocol,
+)
 
 
 class MinosAvroProtocol(MinosBinaryProtocol):
-
-
     @classmethod
     def encode(cls, headers: t.Dict, body: t.Any = None) -> bytes:
         """
@@ -29,50 +40,79 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         the body is a set fields coming from the data type.
         """
 
-        #prepare the headers
+        # prepare the headers
         schema = {
             "type": "record",
-            "namespace": 'org.minos.protocol',
+            "namespace": "org.minos.protocol",
             "name": "message",
             "fields": [
                 {
                     "name": "headers",
-                    "type": {
-                        "type": "map",
-                        "values": ["string", "int", "bytes", "long", "float", "boolean"]
-                    }
+                    "type": {"type": "map", "values": ["string", "int", "bytes", "long", "float", "boolean"]},
                 },
                 {
                     "name": "body",
                     "type": [
-                        "null", "string", "int", "bytes", "boolean", "float", "long",
+                        "null",
+                        "string",
+                        "int",
+                        "bytes",
+                        "boolean",
+                        "float",
+                        "long",
+                        {"type": "array", "items": ["int", "string", "bytes", "long", "boolean", "float"]},
                         {
-                            "type": "array",
-                            "items": ["int", "string", "bytes", "long", "boolean", "float"]
+                            "type": "map",
+                            "values": [
+                                "null",
+                                "int",
+                                "string",
+                                "bytes",
+                                "boolean",
+                                "float",
+                                "long",
+                                {
+                                    "type": "array",
+                                    "items": [
+                                        "string",
+                                        "int",
+                                        "bytes",
+                                        "long",
+                                        "boolean",
+                                        "float",
+                                        {
+                                            "type": "map",
+                                            "values": ["string", "int", "bytes", "long", "boolean", "float"],
+                                        },
+                                    ],
+                                },
+                                {
+                                    "type": "map",
+                                    "values": [
+                                        "string",
+                                        "int",
+                                        "bytes",
+                                        "long",
+                                        "boolean",
+                                        "float",
+                                        {
+                                            "type": "map",
+                                            "values": ["string", "int", "bytes", "long", "boolean", "float"],
+                                        },
+                                    ],
+                                },
+                            ],
                         },
-                         {
-                             "type": "map",
-                             "values": [
-                                 "null", "int", "string", "bytes", "boolean", "float", "long",
-                                 {"type": "array", "items": [
-                                     "string", "int", "bytes", "long", "boolean", "float",
-                                     {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]}
-                                 ]},
-                                 {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float",
-                                                            {"type": "map", "values": ["string", "int", "bytes", "long",
-                                                                                       "boolean", "float"]}]}
-                             ]
-                         }
-                    ]
-                }
-            ]
+                    ],
+                },
+            ],
         }
         schema_json = orjson.dumps(schema)
         schema_bytes = avro.schema.parse(schema_json)
         final_data = {}
-        final_data['headers'] = headers
+        final_data["headers"] = headers
         if body:
-            final_data['body'] = body
+            final_data["body"] = body
         with io.BytesIO() as f:
             writer = DataFileWriter(f, DatumWriter(), schema_bytes)
             writer.append(final_data)
@@ -82,30 +122,28 @@ class MinosAvroProtocol(MinosBinaryProtocol):
             writer.close()
             return content_bytes
 
-
     @classmethod
     def decode(cls, data: bytes) -> t.Dict:
         data_return: t.Dict = {}
         try:
             message_avro = DataFileReader(io.BytesIO(data), DatumReader())
-            data_return['headers'] = {}
+            data_return["headers"] = {}
             for schema_dict in message_avro:
                 log.debug(f"Avro: get the request/response in dict format")
-                data_return['headers'] = schema_dict['headers']
+                data_return["headers"] = schema_dict["headers"]
                 # check wich type is body
                 if "body" in schema_dict:
-                    if isinstance(schema_dict['body'], dict):
-                        data_return['body'] = {}
-                    elif isinstance(schema_dict['body'], list):
-                        data_return['body'] = []
-                    data_return['body'] = schema_dict['body']
+                    if isinstance(schema_dict["body"], dict):
+                        data_return["body"] = {}
+                    elif isinstance(schema_dict["body"], list):
+                        data_return["body"] = []
+                    data_return["body"] = schema_dict["body"]
             return data_return
         except Exception:
             raise MinosProtocolException("Error decoding string, check if is a correct Avro Binary data")
 
 
 class MinosAvroValuesDatabase(MinosBinaryProtocol):
-
     @classmethod
     def encode(cls, value: t.Any, schema: t.Dict = None) -> bytes:
         """
@@ -118,37 +156,68 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
         if not schema:
             schema_val = {
                 "type": "record",
-                "namespace": 'org.minos.protocol.database',
+                "namespace": "org.minos.protocol.database",
                 "name": "value",
                 "fields": [
                     {
                         "name": "content",
                         "type": [
-                            "null", "string", "int", "bytes", "boolean", "float", "long",
-                            {
-                                "type": "array",
-                                "items": ["int", "string", "bytes", "long", "boolean", "float"]
-                            },
+                            "null",
+                            "string",
+                            "int",
+                            "bytes",
+                            "boolean",
+                            "float",
+                            "long",
+                            {"type": "array", "items": ["int", "string", "bytes", "long", "boolean", "float"]},
                             {
                                 "type": "map",
                                 "values": [
-                                    "null", "int", "string", "bytes", "boolean", "float", "long",
-                                    {"type": "array", "items": [
-                                        "string", "int", "bytes", "long", "boolean", "float",
-                                        {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]}
-                                    ]},
-                                    {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float",
-                                                               {"type": "map",
-                                                                "values": ["string", "int", "bytes", "long",
-                                                                           "boolean", "float"]}]}
-                                ]
-                            }
-                        ]
+                                    "null",
+                                    "int",
+                                    "string",
+                                    "bytes",
+                                    "boolean",
+                                    "float",
+                                    "long",
+                                    {
+                                        "type": "array",
+                                        "items": [
+                                            "string",
+                                            "int",
+                                            "bytes",
+                                            "long",
+                                            "boolean",
+                                            "float",
+                                            {
+                                                "type": "map",
+                                                "values": ["string", "int", "bytes", "long", "boolean", "float"],
+                                            },
+                                        ],
+                                    },
+                                    {
+                                        "type": "map",
+                                        "values": [
+                                            "string",
+                                            "int",
+                                            "bytes",
+                                            "long",
+                                            "boolean",
+                                            "float",
+                                            {
+                                                "type": "map",
+                                                "values": ["string", "int", "bytes", "long", "boolean", "float"],
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
                     }
-                ]
+                ],
             }
             final_data = {}
-            final_data['content'] = value
+            final_data["content"] = value
         else:
             schema_val = schema
             final_data = value
@@ -177,7 +246,7 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
             for schema_dict in message_avro:
                 log.debug(f"Avro Database: get the values data")
                 if content_root:
-                    schema_dict = schema_dict['content']
+                    schema_dict = schema_dict["content"]
                 ans.append(schema_dict)
             if len(ans) == 1:
                 return ans[0]

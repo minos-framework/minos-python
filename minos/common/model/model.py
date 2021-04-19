@@ -11,7 +11,9 @@ from itertools import (
 )
 
 from ..exceptions import (
-    MinosModelException, MultiTypeMinosModelSequenceException, EmptyMinosModelSequenceException,
+    EmptyMinosModelSequenceException,
+    MinosModelException,
+    MultiTypeMinosModelSequenceException,
 )
 from ..logs import (
     log,
@@ -25,7 +27,6 @@ from .fields import (
 from .types import (
     MissingSentinel,
 )
-
 
 # def _process_aggregate(cls):
 #     """
