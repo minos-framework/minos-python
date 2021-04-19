@@ -60,7 +60,7 @@ class TestModelField(unittest.TestCase):
 
     def test_avro_schema_int(self):
         field = ModelField("test", int, 1)
-        expected = {"name": "test", "type": "long"}
+        expected = {"name": "test", "type": "int"}
         self.assertEqual(expected, field.avro_schema)
 
     def test_avro_schema_bool(self):
@@ -70,7 +70,7 @@ class TestModelField(unittest.TestCase):
 
     def test_avro_schema_float(self):
         field = ModelField("test", float, 3.4)
-        expected = {"name": "test", "type": "double"}
+        expected = {"name": "test", "type": "float"}
         self.assertEqual(expected, field.avro_schema)
 
     def test_avro_schema_string(self):

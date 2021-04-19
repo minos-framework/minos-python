@@ -22,6 +22,12 @@ from .types import (
     MissingSentinel,
     ModelRef,
     PYTHON_IMMUTABLE_TYPES,
+    INT,
+    BOOLEAN,
+    FLOAT,
+    STRING,
+    BYTES,
+    NULL,
 )
 
 T = t.TypeVar("T")
@@ -349,23 +355,29 @@ class ModelField:
 
     @staticmethod
     def _build_none_schema(type_field: t.Type) -> t.Any:
-        return "null"
+        if type_field is type(None):
+            return NULL
+
+        raise ValueError(f"Given field type is not supported: {type_field}")
 
     @staticmethod
     def _build_simple_schema(type_field: t.Type) -> t.Any:
         if type_field is int:
-            return "long"
+            return INT
 
         if type_field is bool:
-            return "boolean"
+            return BOOLEAN
 
         if type_field is float:
-            return "double"
+            return FLOAT
 
         if type_field is str:
-            return "string"
+            return STRING
 
-        raise Exception()
+        if type_field is bytes:
+            return BYTES
+
+        raise ValueError(f"Given field type is not supported: {type_field}")
 
     def _build_composed_schema(self, type_field: t.Type) -> t.Any:
         origin_type = t.get_origin(type_field)
@@ -381,7 +393,7 @@ class ModelField:
         if origin_type is ModelRef:
             return self._build_model_ref_schema(type_field)
 
-        raise Exception
+        raise ValueError(f"Given field type is not supported: {type_field}")
 
     def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
         return {"type": "array", "items": self._build_schema(t.get_args(type_field)[0]), "default": []}

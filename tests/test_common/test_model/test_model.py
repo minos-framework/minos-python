@@ -137,7 +137,7 @@ class TestMinosModel(unittest.TestCase):
     def test_avro_schema(self):
         shopping_list = ShoppingList(User(1234))
         expected = {
-            "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "double"}],
+            "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "float"}],
             "name": "ShoppingList",
             "namespace": "minos.common.model.model",
             "type": "record",
@@ -153,12 +153,12 @@ class TestMinosModel(unittest.TestCase):
         customer = Customer(1234)
         expected = {
             "fields": [
-                {"name": "id", "type": "long"},
+                {"name": "id", "type": "int"},
                 {"name": "username", "type": ["string", "null"]},
                 {"name": "name", "type": ["string", "null"]},
                 {"name": "surname", "type": ["string", "null"]},
                 {"name": "is_admin", "type": ["boolean", "null"]},
-                {"name": "lists", "type": [{"default": [], "items": "long", "type": "array"}, "null"]},
+                {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
             ],
             "name": "Customer",
             "namespace": "minos.common.model.model",
