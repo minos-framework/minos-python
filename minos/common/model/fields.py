@@ -385,8 +385,6 @@ class ModelField:
 
     def _build_composed_schema(self, type_field: t.Type) -> t.Any:
         origin_type = t.get_origin(type_field)
-        if origin_type is None:
-            raise MinosMalformedAttributeException(f"'{self.name}' field is malformed. Type: '{type_field}'.")
 
         if origin_type is list:
             return self._build_list_schema(type_field)
