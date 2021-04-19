@@ -125,6 +125,8 @@ class TestModelField(unittest.TestCase):
     def test_value_dict_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
             ModelField("test", dict[str, int], 3)
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", dict[int, int], {1: 2, 3: 4})
 
     def test_value_model_ref(self):
         user = User(1234)

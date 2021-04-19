@@ -289,9 +289,12 @@ class ModelField:
 
         return data_converted
 
-    def _convert_dict(self, data: list, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, dict[t.Any, t.Any]]:
+    def _convert_dict(self, data: list, type_keys: t.Type, type_values: t.Type) -> t.Union[bool, dict[str, t.Any]]:
         if not isinstance(data, dict):
             return False
+
+        if type_keys is not str:
+            raise MinosTypeAttributeException(f"dictionary keys must be {type(str)}. Obtained: {type_keys}")
 
         data_converted = self._convert_dict_params(data, type_keys, type_values)
 
