@@ -18,6 +18,7 @@ class MissingSentinel(t.Generic[T]):
     """
     Class to detect when a field is not initialized
     """
+
     pass
 
 
@@ -129,4 +130,9 @@ PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
 PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
 PYTHON_NULL_TYPE = type(None)
-CUSTOM_TYPES = ("Fixed", "Enum", "Decimal", "ModelRef",)
+CUSTOM_TYPES = (
+    "Fixed",
+    "Enum",
+    "Decimal",
+    "ModelRef",
+)
