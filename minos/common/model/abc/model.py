@@ -174,7 +174,7 @@ class MinosModel(object):
         :return: A dictionary object.
         """
         fields = [field.avro_schema for field in self.fields.values()]
-        return {"name": type(self).__name__, "namespace": __name__, "type": "record", "fields": fields}
+        return {"name": type(self).__name__, "namespace": type(self).__module__, "type": "record", "fields": fields}
 
     @property
     def avro_data(self) -> t.Any:
