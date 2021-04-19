@@ -6,12 +6,12 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
+import abc
 import collections
 import os
 import typing as t
 
 import yaml
-import abc
 
 from ..exceptions import MinosConfigException
 
