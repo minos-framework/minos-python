@@ -273,9 +273,9 @@ class _ModelFieldCaster(object):
             raise MinosTypeAttributeException(self._name, str, data)
         return data
 
-    def _cast_bytes(self, data: str) -> bytes:
+    def _cast_bytes(self, data: t.Any) -> bytes:
         if not isinstance(data, bytes):
-            raise MinosTypeAttributeException(self._name, str, data)
+            raise MinosTypeAttributeException(self._name, bytes, data)
         return data
 
     def _cast_composed_value(self, type_field: t.Type, data: t.Any) -> t.Any:

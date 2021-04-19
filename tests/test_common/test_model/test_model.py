@@ -250,6 +250,10 @@ class TestMinosModel(unittest.TestCase):
         a, b = User(123), User(123)
         self.assertEqual(a, b)
 
+    def test_complex_equal(self):
+        a, b = ShoppingList(User(1234), cost="1.234,56"), ShoppingList(User(1234), cost="1.234,56")
+        self.assertEqual(a, b)
+
     def test_not_equal(self):
         a, b = User(123), User(456)
         self.assertNotEqual(a, b)
