@@ -7,14 +7,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import pytest
-
 from minos.common import (
-    MinosRequest,
-    MinosRPCHeadersRequest,
-    MinosRPCBodyRequest,
-    MinosRPCResponse,
-    MinosResponse,
     MinosAvroProtocol,
+    MinosRequest,
+    MinosResponse,
+    MinosRPCBodyRequest,
+    MinosRPCHeadersRequest,
+    MinosRPCResponse,
 )
 
 

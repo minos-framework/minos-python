@@ -7,8 +7,10 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import pytest
-
-from minos.common import MinosAvroProtocol, MinosAvroValuesDatabase
+from minos.common import (
+    MinosAvroProtocol,
+    MinosAvroValuesDatabase,
+)
 
 
 def test_encoder_decoder_with_body_dict():

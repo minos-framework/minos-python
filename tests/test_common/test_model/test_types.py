@@ -7,9 +7,18 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import Generic
+from typing import (
+    Generic,
+)
 
-from minos.common import MissingSentinel, Fixed, Enum, Decimal, ModelRef, CUSTOM_TYPES
+from minos.common import (
+    CUSTOM_TYPES,
+    Decimal,
+    Enum,
+    Fixed,
+    MissingSentinel,
+    ModelRef,
+)
 
 
 class TestMissingSentinel(unittest.TestCase):

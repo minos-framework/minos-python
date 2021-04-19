@@ -9,8 +9,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 import abc
 import typing as t
 
-from ..exceptions import MinosMessageException
-from ..protocol import MinosBinaryProtocol, MinosAvroProtocol
+from ..exceptions import (
+    MinosMessageException,
+)
+from ..protocol import (
+    MinosAvroProtocol,
+    MinosBinaryProtocol,
+)
 
 
 class MinosBaseResponse(abc.ABC):
