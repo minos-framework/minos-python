@@ -1,7 +1,8 @@
 import pytest
 
 from minos.common.logs import log
-from minos.networks.broker import create_event_tables, create_command_tables, drop_event_tables, drop_commands_tables, Queue
+from minos.networks.broker import create_event_tables, create_command_tables,\
+    drop_event_tables, drop_commands_tables, Queue, MinosEventBroker, MinosCommandBroker, AggregateModel
 from minos.common.configuration.config import MinosConfig
 from peewee import *
 
@@ -55,9 +56,31 @@ def test_broker_commands_database_connection(commands_database):
     assert commands_database.connect() is True
 
 
+def test_events_broker_insertion(config, events_database):
+    a = AggregateModel()
+    a.name = "EventBroker"
+
+    result = MinosEventBroker("EventBroker", a, config).send()
+
+    query = Queue.select().where(Queue.topic == "EventBroker")
+
+    assert result is not None
+    assert query.get() is not None
+
+
+def test_commands_broker_insertion(config, commands_database):
+    a = AggregateModel()
+    a.name = "CommandBroker"
+
+    result = MinosCommandBroker("CommandBroker", a, config).send()
+
+    query = Queue.select().where(Queue.topic == "CommandBroker")
+
+    assert result is not None
+    assert query.get() is not None
+
+
+# Olways leave on end
 def test_broker_commands_tables_deletion(config, commands_database):
     drop_commands_tables(config)
     assert commands_database.table_exists(table_name="queue") is False
-
-
-
