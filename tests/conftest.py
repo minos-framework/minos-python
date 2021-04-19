@@ -1,2 +1,0 @@
-class CallBackReturn:
-    content = None

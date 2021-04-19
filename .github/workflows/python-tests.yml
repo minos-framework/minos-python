@@ -1,8 +1,4 @@
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: push
 
 jobs:
   build:
@@ -33,11 +29,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-          apt-get update -y
           apt-get install -y libc6 build-essential
           python -m pip install --upgrade pip
           if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
-          pip install minos-microservice-common aiokafka aiomisc
+          python setup.py install
     - name: Test with pytest
       run: |
           make test
