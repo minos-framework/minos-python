@@ -8,19 +8,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 import datetime
 import typing as t
 import uuid
-from itertools import (
-    zip_longest,
-)
+from itertools import zip_longest
 
-from ..exceptions import (
-    MinosModelException,
-)
-from ..logs import (
-    log,
-)
-from .fields import (
-    ModelField,
-)
+from ..exceptions import MinosModelException
+from ..logs import log
+from .fields import ModelField
 from .types import (
     Enum,
     Fixed,
@@ -178,6 +170,4 @@ class MinosModel(object):
 
     def __repr__(self):
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
-        return (
-            f"{type(self).__name__}(fields=[{fields_repr}])"
-        )
+        return f"{type(self).__name__}(fields=[{fields_repr}])"
