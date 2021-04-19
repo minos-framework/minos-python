@@ -42,3 +42,13 @@ History
 ------------------
 
 * Modified the schema structure of Avro generic encoder and decoder
+
+
+0.0.2 (2021-04-19)
+------------------
+
+* Added support for Model classe
+* Added Custom Fields for Minos Model Class
+* Added validation attributes for model class ( validation from typing )
+* Modified Avro Encoder/Decoder
+* Lot of improvements and corrections

@@ -7,11 +7,6 @@ Minos Microservice Common
 
 Python Package with common Classes and Utilities used in Minos Microservices
 
-Features
---------
-
-* TODO
-
 Credits
 -------
 
