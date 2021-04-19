@@ -102,6 +102,10 @@ class TestModelField(unittest.TestCase):
         expected = [{"id": 123, "username": "null"}, {"id": 456, "username": "null"}]
         self.assertEqual(expected, field.avro_data)
 
+    def test_avro_data_dict(self):
+        field = ModelField("test", dict[str, int], {"foo": 1, "bar": 2})
+        self.assertEqual({'bar': 2, 'foo': 1}, field.avro_data)
+
     def test_avro_data_bytes(self):
         field = ModelField("test", bytes, bytes("foo", "utf-8"))
         self.assertEqual(b'foo', field.avro_data)
