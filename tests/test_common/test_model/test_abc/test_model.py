@@ -141,7 +141,7 @@ class TestMinosModel(unittest.TestCase):
         expected = {
             "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "float"}],
             "name": "ShoppingList",
-            'namespace': 'tests.modelClasses',
+            "namespace": "tests.modelClasses",
             "type": "record",
         }
         self.assertEqual(expected, shopping_list.avro_schema)
@@ -163,7 +163,7 @@ class TestMinosModel(unittest.TestCase):
                 {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
             ],
             "name": "Customer",
-            'namespace': 'tests.modelClasses',
+            "namespace": "tests.modelClasses",
             "type": "record",
         }
         self.assertEqual(expected, customer.avro_schema)
