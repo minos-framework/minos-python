@@ -99,7 +99,7 @@ class TestModelField(unittest.TestCase):
 
     def test_avro_data_list_model_ref(self):
         field = ModelField("test", list[Optional[ModelRef[User]]], [User(123), User(456)])
-        expected = [{"id": 123, "username": "null"}, {"id": 456, "username": "null"}]
+        expected = [{"id": 123, "username": None}, {"id": 456, "username": None}]
         self.assertEqual(expected, field.avro_data)
 
     def test_avro_data_dict(self):

@@ -427,7 +427,7 @@ class ModelField:
 
     def _to_avro_raw(self, value: t.Any) -> t.Any:
         if value is None:
-            return NULL
+            return None
         if type(value) in PYTHON_IMMUTABLE_TYPES:
             return value
         if isinstance(value, list):
