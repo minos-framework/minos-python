@@ -87,6 +87,7 @@ class MinosModel(object):
     def to_avro_bytes(cls, models: list["MinosModel"]) -> bytes:
         if len(models) == 0:
             raise EmptyMinosModelSequenceException("'models' parameter cannot be empty.")
+
         model_type = type(models[0])
         if not all(model_type == type(model) for model in models):
             raise MultiTypeMinosModelSequenceException(
