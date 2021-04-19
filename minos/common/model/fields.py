@@ -182,15 +182,21 @@ class ModelField:
         if type_field is int and self._is_int(data):
             log.debug("the Value passed is an integer")
             return int(data)
+
         if type_field is float and self._is_float(data):
             log.debug("the Value passed is an integer")
             return float(data)
+
         if type_field is bool and self._is_bool(data):
             log.debug("the Value passed is an integer")
             return data
 
         if type_field is str and self._is_string(data):
             log.debug("the Value passed is a string")
+            return data
+
+        if type_field is bytes and self._is_bytes(data):
+            log.debug("the Value passed is a bytes")
             return data
 
         raise MinosTypeAttributeException(
@@ -224,6 +230,10 @@ class ModelField:
     @staticmethod
     def _is_string(data: str) -> bool:
         return isinstance(data, str)
+
+    @staticmethod
+    def _is_bytes(data: str) -> bool:
+        return isinstance(data, bytes)
 
     @staticmethod
     def _is_bool(data: bool) -> bool:
