@@ -37,9 +37,7 @@ from .exceptions import (
     MultiTypeMinosModelSequenceException,
     EmptyMinosModelSequenceException,
 )
-from .importlib import (
-    import_module,
-)
+from .importlib import import_module
 from .messages import (
     MinosBaseRequest,
     MinosBaseResponse,

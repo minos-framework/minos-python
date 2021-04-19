@@ -5,9 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from typing import (
-    Any,
-)
+from typing import Any
 
 
 class MinosException(Exception):
@@ -44,16 +42,19 @@ class MinosConfigException(MinosException):
 
 class MinosModelException(MinosException):
     """Exception to be raised when some mandatory condition is not satisfied by a model."""
+
     pass
 
 
 class EmptyMinosModelSequenceException(MinosModelException):
     """Exception to be raised when a sequence must be not empty, but it is empty."""
+
     pass
 
 
 class MultiTypeMinosModelSequenceException(MinosModelException):
     """Exception to be raised when a sequence doesn't satisfy the condition to have the same type for each item."""
+
     pass
 
 
