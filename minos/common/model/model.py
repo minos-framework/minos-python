@@ -6,18 +6,27 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import typing as t
-from itertools import zip_longest
+from itertools import (
+    zip_longest,
+)
 
 from ..exceptions import (
+    EmptyMinosModelSequenceException,
     MinosModelException,
     MultiTypeMinosModelSequenceException,
-    EmptyMinosModelSequenceException,
 )
-from ..logs import log
-from ..protocol import MinosAvroValuesDatabase
-from .fields import ModelField
-from .types import MissingSentinel
-
+from ..logs import (
+    log,
+)
+from ..protocol import (
+    MinosAvroValuesDatabase,
+)
+from .fields import (
+    ModelField,
+)
+from .types import (
+    MissingSentinel,
+)
 
 # def _process_aggregate(cls):
 #     """

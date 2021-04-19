@@ -8,14 +8,27 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import io
 import typing as t
+
 import avro
 import orjson
-from avro.datafile import DataFileReader, DataFileWriter
-from avro.io import DatumReader, DatumWriter
+from avro.datafile import (
+    DataFileReader,
+    DataFileWriter,
+)
+from avro.io import (
+    DatumReader,
+    DatumWriter,
+)
 
-from ..exceptions import MinosProtocolException
-from ..logs import log
-from .abstract import MinosBinaryProtocol
+from ..exceptions import (
+    MinosProtocolException,
+)
+from ..logs import (
+    log,
+)
+from .abstract import (
+    MinosBinaryProtocol,
+)
 
 
 class MinosAvroProtocol(MinosBinaryProtocol):
