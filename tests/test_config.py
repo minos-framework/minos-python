@@ -5,10 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 import pytest
 
-from minos.common import MinosConfig, MinosConfigException
+from minos.common import MinosConfig
+from minos.common import MinosConfigException
 
 
 def test_config_ini_fail():
