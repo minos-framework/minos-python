@@ -7,8 +7,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import dataclasses
-import typing as t
 import datetime
+import typing as t
 import uuid
 
 T = t.TypeVar("T")
