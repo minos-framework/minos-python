@@ -5,15 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
-from itertools import count
+from itertools import (
+    count,
+)
 from typing import (
     NoReturn,
     Optional,
 )
 
-from .abc import MinosRepository
+from .abc import (
+    MinosRepository,
+)
 from .entries import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
