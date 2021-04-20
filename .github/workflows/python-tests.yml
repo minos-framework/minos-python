@@ -13,7 +13,7 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgres
+        image: postgres:11
         # Provide the password for postgres
         env:
           POSTGRES_USER: postgres
@@ -41,8 +41,8 @@ jobs:
           python setup.py install
     - name: Create database
       run: |
-          PGPASSWORD=postgres psql -U postgres -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
-          PGPASSWORD=postgres psql -U postgres -tc "CREATE DATABASE broker_db OWNER broker;"
+          PGPASSWORD=postgres psql -U postgres -h localhost -p 5432 -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
+          PGPASSWORD=postgres psql -U postgres -h localhost -p 5432 -tc "CREATE DATABASE broker_db OWNER broker;"
     - name: Test with pytest
       run: |
           make test
