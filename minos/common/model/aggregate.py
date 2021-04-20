@@ -16,7 +16,6 @@ from ..exceptions import (
 from ..repository import (
     MinosRepository,
     MinosRepositoryAction,
-    MinosRepositoryEntry,
 )
 from .abc import (
     MinosModel,
@@ -42,6 +41,7 @@ class Aggregate(MinosModel):
     version: int
 
     # FIXME: The ``broker`` attribute should be a reference to a ``MinosBaseBroker`` class instance.
+    # noinspection PyShadowingBuiltins
     def __init__(
         self, id: int, version: int, *args, _broker: str = None, _repository: MinosRepository = None, **kwargs,
     ):
@@ -51,7 +51,7 @@ class Aggregate(MinosModel):
         self._repository = _repository
 
     @classmethod
-    def _get_namespace(cls) -> str:
+    def get_namespace(cls) -> str:
         """TODO
 
         :return: TODO
@@ -67,8 +67,10 @@ class Aggregate(MinosModel):
         :param _repository: TODO
         :return: TODO
         """
+        # noinspection PyShadowingBuiltins
         return [cls.get_one(id, _broker, _repository) for id in ids]
 
+    # noinspection PyShadowingBuiltins
     @classmethod
     def get_one(cls, id: int, _broker: str = None, _repository: MinosRepository = None) -> "Aggregate":
         """TODO
@@ -79,7 +81,7 @@ class Aggregate(MinosModel):
         :return: TODO
         """
 
-        entries = _repository.select(aggregate_name=cls._get_namespace(), aggregate_id=id)
+        entries = _repository.select(aggregate_name=cls.get_namespace(), aggregate_id=id)
         if not len(entries):
             raise MinosRepositoryAggregateNotFoundException("TODO")
 
@@ -114,16 +116,13 @@ class Aggregate(MinosModel):
         if _repository is None:
             raise Exception()
 
-        id = _repository.generate_aggregate_id(cls._get_namespace())
+        instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
-        instance = cls(id, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
-
-        entry = MinosRepositoryEntry.from_aggregate(instance)
-        _repository.insert(entry)
+        _repository.insert(instance)
 
         return instance
 
-    # noinspection PyMethodParameters
+    # noinspection PyMethodParameters,PyShadowingBuiltins
     @class_or_instancemethod
     def update(self_or_cls, id: int = None, _repository: MinosRepository = None, **kwargs) -> "Aggregate":
         """TODO
@@ -149,9 +148,7 @@ class Aggregate(MinosModel):
         for key, value in kwargs.items():
             setattr(instance, key, value)
 
-        instance.version = _repository.get_next_version_id(instance._get_namespace(), instance.id)
-        entry = MinosRepositoryEntry.from_aggregate(instance)
-        _repository.update(entry)
+        _repository.update(instance)
 
         return instance
 
@@ -160,7 +157,7 @@ class Aggregate(MinosModel):
         new = type(self).get_one(self.id, _repository=self._repository)
         self._fields |= new.fields
 
-    # noinspection PyMethodParameters
+    # noinspection PyMethodParameters,PyShadowingBuiltins
     @class_or_instancemethod
     def delete(self_or_cls, id: int = None, _repository: MinosRepository = None):
         """TODO
@@ -175,8 +172,7 @@ class Aggregate(MinosModel):
         else:
             instance = self_or_cls
 
-        repository = instance._repository
+        if _repository is None:
+            _repository = instance._repository
 
-        instance.version = repository.get_next_version_id(instance._get_namespace(), instance.id)
-        entry = MinosRepositoryEntry.from_aggregate(instance)
-        repository.delete(entry)
+        _repository.delete(instance)

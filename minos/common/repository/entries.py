@@ -15,11 +15,17 @@ from enum import (
 from typing import (
     Iterable,
     Optional,
+    TYPE_CHECKING
 )
+
+if TYPE_CHECKING:
+    from ..model import (
+        Aggregate,
+    )
 
 
 class MinosRepositoryAction(Enum):
-    """TODO"""
+    """Enum class that describes the available repository actions."""
 
     INSERT = "insert"
     UPDATE = "update"
@@ -27,10 +33,11 @@ class MinosRepositoryAction(Enum):
 
 
 class MinosRepositoryEntry(object):
-    """TODO"""
+    """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
 
     __slots__ = "id", "action", "aggregate_id", "aggregate_name", "version", "data"
 
+    # noinspection PyShadowingBuiltins
     def __init__(
         self,
         aggregate_id: int,
@@ -49,13 +56,13 @@ class MinosRepositoryEntry(object):
         self.data = data
 
     @classmethod
-    def from_aggregate(cls, aggregate) -> MinosRepositoryEntry:
-        """TODO
+    def from_aggregate(cls, aggregate: Aggregate) -> MinosRepositoryEntry:
+        """Build a new instance from an ``Aggregate``.
 
-        :param aggregate: TODO
-        :return: TODO
+        :param aggregate: The aggregate instance.
+        :return: A new ``MinosRepositoryEntry`` instance.
         """
-        return cls(aggregate.id, type(aggregate).__name__, aggregate.version, aggregate.avro_bytes)
+        return cls(aggregate.id, aggregate.get_namespace(), aggregate.version, aggregate.avro_bytes)
 
     def __eq__(self, other: "MinosRepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

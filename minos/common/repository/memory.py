@@ -12,7 +12,7 @@ from itertools import (
     count,
 )
 from typing import (
-    Optional,
+    Optional, NoReturn,
 )
 
 from .abc import (
@@ -25,7 +25,7 @@ from .entries import (
 
 
 class MinosInMemoryRepository(MinosRepository):
-    """TODO"""
+    """Memory-based implementation of the repository class in ``minos``."""
 
     def __init__(self):
         self._storage = list()
@@ -37,39 +37,40 @@ class MinosInMemoryRepository(MinosRepository):
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
 
-    def insert(self, entry: MinosRepositoryEntry):
-        """TODO
+    def _submit(self, entry: MinosRepositoryEntry) -> NoReturn:
+        """Store new deletion entry into de repository.
 
-        :param entry: TODO
-        :return: TODO
+        :param entry: Entry to be stored.
+        :return: This method does not return anything.
         """
-        self._set_id(entry)
-        entry.action = MinosRepositoryAction.INSERT
         self._storage.append(entry)
 
-    def update(self, entry: MinosRepositoryEntry):
-        """TODO
+    def _generate_next_id(self) -> int:
+        return next(self._id_generator) + 1
 
-        :param entry: TODO
-        :return: TODO
+    # noinspection PyShadowingBuiltins
+    def _generate_next_aggregate_id(self, aggregate_name: str) -> int:
+        """Generate a new unique id for the given aggregate name.
+
+        :param aggregate_name: The name of the aggregate.
+        :return: A positive-integer value.
         """
-        self._set_id(entry)
-        entry.action = MinosRepositoryAction.UPDATE
-        self._storage.append(entry)
+        iterable = iter(self._storage)
+        iterable = filter(lambda entry: entry.aggregate_name == aggregate_name, iterable)
+        return len(list(iterable)) + 1
 
-    def delete(self, entry: MinosRepositoryEntry):
-        """TODO
+    def _get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
+        """Generate a new version number for the given aggregate name and identifier.
 
-        :param entry: TODO
-        :return: TODO
+        :param aggregate_name: The name of the aggregate.
+        :param aggregate_id: The identifier of the aggregate.
+        :return: A positive-integer value.
         """
-        self._set_id(entry)
-        entry.action = MinosRepositoryAction.DELETE
-        self._storage.append(entry)
-
-    def _set_id(self, entry: MinosRepositoryEntry):
-        entry.id = next(self._id_generator)
-        return entry
+        iterable = iter(self._storage)
+        iterable = filter(
+            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id, iterable,
+        )
+        return len(list(iterable)) + 1
 
     def select(
         self,
@@ -88,23 +89,23 @@ class MinosInMemoryRepository(MinosRepository):
         *args,
         **kwargs
     ) -> list[MinosRepositoryEntry]:
-        """TODO
+        """Perform a selection query of entries stored in to the repository.
 
-        :param aggregate_id: TODO
-        :param aggregate_name: TODO
-        :param version: TODO
-        :param version_lt: TODO
-        :param version_gt: TODO
-        :param version_le: TODO
-        :param version_ge: TODO
-        :param id: TODO
-        :param id_lt: TODO
-        :param id_gt: TODO
-        :param id_le: TODO
-        :param id_ge: TODO
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param aggregate_id: Aggregate identifier.
+        :param aggregate_name: Aggregate name.
+        :param version: Aggregate version.
+        :param version_lt: Aggregate version lower than the given value.
+        :param version_gt: Aggregate version greater than the given value.
+        :param version_le: Aggregate version lower or equal to the given value.
+        :param version_ge: Aggregate version greater or equal to the given value.
+        :param id: Entry identifier.
+        :param id_lt: Entry identifier lower than the given value.
+        :param id_gt: Entry identifier greater than the given value.
+        :param id_le: Entry identifier lower or equal to the given value.
+        :param id_ge: Entry identifier greater or equal to the given value.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A list of entries.
         """
 
         # noinspection DuplicatedCode
@@ -138,26 +139,3 @@ class MinosInMemoryRepository(MinosRepository):
         iterable = iter(self._storage)
         iterable = filter(_fn_filter, iterable)
         return list(iterable)
-
-    def generate_aggregate_id(self, aggregate_name: str) -> int:
-        """TODO
-
-        :param aggregate_name: TODO
-        :return: TODO
-        """
-        iterable = iter(self._storage)
-        iterable = filter(lambda entry: entry.aggregate_name == aggregate_name, iterable)
-        return len(list(iterable))
-
-    def get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
-        """TODO
-
-        :param aggregate_name: TODO
-        :param aggregate_id: TODO
-        :return: TODO
-        """
-        iterable = iter(self._storage)
-        iterable = filter(
-            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id, iterable,
-        )
-        return len(list(iterable))
