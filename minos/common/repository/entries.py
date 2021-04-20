@@ -13,9 +13,9 @@ from enum import (
     Enum,
 )
 from typing import (
+    TYPE_CHECKING,
     Iterable,
     Optional,
-    TYPE_CHECKING
 )
 
 if TYPE_CHECKING:

@@ -8,11 +8,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 from __future__ import (
     annotations,
 )
+
 from itertools import (
     count,
 )
 from typing import (
-    Optional, NoReturn,
+    NoReturn,
+    Optional,
 )
 
 from .abc import (
