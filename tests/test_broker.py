@@ -1,7 +1,13 @@
 import pytest
 
 from minos.common.logs import log
-from minos.networks.broker import MinosEventBroker, MinosCommandBroker, AggregateModel, BrokerDatabaseInitializer, MinosBrokerDatabase
+from minos.networks.broker import (
+    MinosEventBroker,
+    MinosCommandBroker,
+    AggregateModel,
+    BrokerDatabaseInitializer,
+    MinosBrokerDatabase,
+)
 from minos.common.configuration.config import MinosConfig
 import aiopg
 import asyncio
@@ -9,21 +15,17 @@ import aiomisc
 from aiomisc.service.periodic import Service
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def config():
-    return MinosConfig(path='./tests/test_config_.yaml')
+    return MinosConfig(path="./tests/test_config_.yaml")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def services(config):
-    return (
-        BrokerDatabaseInitializer(
-            config=config
-        ),
-    )
+    return (BrokerDatabaseInitializer(config=config),)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def run_services(services, config):
     with aiomisc.entrypoint(*services) as loop:
         loop.run_forever()
@@ -32,6 +34,7 @@ def run_services(services, config):
 @pytest.fixture()
 async def database(config):
     return await MinosBrokerDatabase().get_connection(config)
+
 
 """
 async def test_create_database(database):
@@ -49,7 +52,9 @@ async def test_create_database(database):
 async def test_if_queue_table_exists(database):
     cur = await database.cursor()
 
-    await cur.execute("SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'queue';")
+    await cur.execute(
+        "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'queue';"
+    )
     ret = []
     async for row in cur:
         ret.append(row)
