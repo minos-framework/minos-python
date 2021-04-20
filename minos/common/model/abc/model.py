@@ -10,15 +10,15 @@ from itertools import (
     zip_longest,
 )
 
-from ..exceptions import (
+from ...exceptions import (
     EmptyMinosModelSequenceException,
     MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
-from ..logs import (
+from ...logs import (
     log,
 )
-from ..protocol import (
+from ...protocol import (
     MinosAvroValuesDatabase,
 )
 from .fields import (
@@ -123,7 +123,7 @@ class MinosModel(object):
             field_class: ModelField = self._fields[key]
             field_class.value = value
             self._fields[key] = field_class
-        elif key == "_fields":
+        elif key.startswith("_"):
             super().__setattr__(key, value)
         else:
             raise MinosModelException(f"model attribute {key} doesn't exist")
@@ -174,7 +174,7 @@ class MinosModel(object):
         :return: A dictionary object.
         """
         fields = [field.avro_schema for field in self.fields.values()]
-        return {"name": type(self).__name__, "namespace": __name__, "type": "record", "fields": fields}
+        return {"name": type(self).__name__, "namespace": type(self).__module__, "type": "record", "fields": fields}
 
     @property
     def avro_data(self) -> t.Any:

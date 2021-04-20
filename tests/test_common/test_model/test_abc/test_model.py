@@ -141,7 +141,7 @@ class TestMinosModel(unittest.TestCase):
         expected = {
             "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "float"}],
             "name": "ShoppingList",
-            "namespace": "minos.common.model.model",
+            "namespace": "tests.modelClasses",
             "type": "record",
         }
         self.assertEqual(expected, shopping_list.avro_schema)
@@ -163,7 +163,7 @@ class TestMinosModel(unittest.TestCase):
                 {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
             ],
             "name": "Customer",
-            "namespace": "minos.common.model.model",
+            "namespace": "tests.modelClasses",
             "type": "record",
         }
         self.assertEqual(expected, customer.avro_schema)
@@ -285,11 +285,11 @@ class TestMinosModel(unittest.TestCase):
     def test_repr(self):
         shopping_list = ShoppingList(User(1234), cost="1.234,56")
         expected = (
-            "ShoppingList(fields=[ModelField(name='user', type=typing.Optional[minos.common.model.types.ModelRef[tests."
-            "modelClasses.User]], value=User(fields=[ModelField(name='id', type=<class 'int'>, value=1234, parser=None,"
-            " validator=validate_id), ModelField(name='username', type=typing.Optional[str], value=None, parser=parse_"
-            "username, validator=validate_username)]), parser=None, validator=None), ModelField(name='cost', type=<cla"
-            "ss 'float'>, value=1234.56, parser=parse_cost, validator=None)])"
+            "ShoppingList(fields=[ModelField(name='user', type=typing.Optional[minos.common.model.abc.types.ModelRef"
+            "[tests.modelClasses.User]], value=User(fields=[ModelField(name='id', type=<class 'int'>, value=1234, "
+            "parser=None, validator=validate_id), ModelField(name='username', type=typing.Optional[str], value=None, "
+            "parser=parse_username, validator=validate_username)]), parser=None, validator=None), ModelField(name="
+            "'cost', type=<class 'float'>, value=1234.56, parser=parse_cost, validator=None)])"
         )
         self.assertEqual(expected, repr(shopping_list))
 
