@@ -21,6 +21,8 @@ from minos.common import (
     MinosRepositoryException,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
+    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateVersionException
 )
 
 
@@ -44,6 +46,12 @@ class TestExceptions(unittest.TestCase):
 
     def test_repository_deleted_aggregate(self):
         self.assertTrue(issubclass(MinosRepositoryDeletedAggregateException, MinosRepositoryException))
+
+    def test_repository_manually_set_aggregate_id(self):
+        self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateIdException, MinosRepositoryException))
+
+    def test_repository_manually_set_aggregate_version(self):
+        self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateVersionException, MinosRepositoryException))
 
     def test_model(self):
         self.assertTrue(issubclass(MinosModelException, MinosException))

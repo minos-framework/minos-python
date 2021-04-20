@@ -55,6 +55,14 @@ class MinosRepositoryDeletedAggregateException(MinosRepositoryException):
     """Exception to be raised when some aggregate is already deleted from the repository."""
 
 
+class MinosRepositoryManuallySetAggregateIdException(MinosRepositoryException):
+    """Exception to be raised when some aggregate is trying to be created with a manually set id."""
+
+
+class MinosRepositoryManuallySetAggregateVersionException(MinosRepositoryException):
+    """Exception to be raised when some aggregate is trying to be created with a manually set version."""
+
+
 class MinosModelException(MinosException):
     """Exception to be raised when some mandatory condition is not satisfied by a model."""
 

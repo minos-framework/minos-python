@@ -11,6 +11,8 @@ from minos.common import (
     MinosInMemoryRepository,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryAggregateNotFoundException,
+    MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryManuallySetAggregateIdException,
 )
 from tests.aggregate_classes import (
     Car,
@@ -22,6 +24,13 @@ class TestAggregate(unittest.TestCase):
         with MinosInMemoryRepository() as repository:
             car = Car.create(doors=3, color="blue", _repository=repository)
             self.assertEqual(Car(1, 1, 3, "blue"), car)
+
+    def test_create_raises(self):
+        with MinosInMemoryRepository() as repository:
+            with self.assertRaises(MinosRepositoryManuallySetAggregateIdException):
+                Car.create(id=1, doors=3, color="blue", _repository=repository)
+            with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
+                Car.create(version=1, doors=3, color="blue", _repository=repository)
 
     def test_get_namespace(self):
         self.assertEqual("tests.aggregate_classes.Car", Car.get_namespace())
