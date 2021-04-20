@@ -1,10 +1,5 @@
-import asyncio
 import time
-
-import aiomisc
-import aiopg
 import pytest
-from aiomisc.service.periodic import Service
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 from minos.networks.broker import (AggregateModel, BrokerDatabaseInitializer,
@@ -12,7 +7,7 @@ from minos.networks.broker import (AggregateModel, BrokerDatabaseInitializer,
                                    MinosEventBroker)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def config():
     return MinosConfig(path="./tests/test_config_.yaml")
 
