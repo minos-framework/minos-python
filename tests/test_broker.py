@@ -11,7 +11,7 @@ from aiomisc.service.periodic import Service
 
 @pytest.fixture(scope='session')
 def config():
-    return MinosConfig(path='./tests/test_config.yaml')
+    return MinosConfig(path='./tests/test_config_.yaml')
 
 
 @pytest.fixture(scope='session')
