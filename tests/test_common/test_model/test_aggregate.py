@@ -9,10 +9,10 @@ import unittest
 
 from minos.common import (
     MinosInMemoryRepository,
-    MinosRepositoryDeletedAggregateException,
     MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateVersionException,
 )
 from tests.aggregate_classes import (
     Car,

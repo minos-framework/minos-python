@@ -15,14 +15,14 @@ from minos.common import (
     MinosModelAttributeException,
     MinosModelException,
     MinosParseAttributeException,
+    MinosRepositoryAggregateNotFoundException,
+    MinosRepositoryDeletedAggregateException,
+    MinosRepositoryException,
+    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateVersionException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
-    MinosRepositoryException,
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
-    MinosRepositoryManuallySetAggregateIdException,
-    MinosRepositoryManuallySetAggregateVersionException
 )
 
 
