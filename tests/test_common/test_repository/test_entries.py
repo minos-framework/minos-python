@@ -7,7 +7,10 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
-from minos.common import MinosRepositoryEntry, MinosRepositoryAction
+from minos.common import (
+    MinosRepositoryAction,
+    MinosRepositoryEntry,
+)
 
 
 class TestMinosRepositoryEntry(unittest.TestCase):
