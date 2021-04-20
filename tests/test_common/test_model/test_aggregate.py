@@ -23,6 +23,9 @@ class TestAggregate(unittest.TestCase):
             car = Car.create(doors=3, color="blue", _repository=repository)
             self.assertEqual(Car(1, 1, 3, "blue"), car)
 
+    def test_get_namespace(self):
+        self.assertEqual("tests.aggregate_classes.Car", Car.get_namespace())
+
     def test_get(self):
         with MinosInMemoryRepository() as repository:
             originals = [

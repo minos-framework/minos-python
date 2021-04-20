@@ -56,7 +56,7 @@ class Aggregate(MinosModel):
 
         :return: TODO
         """
-        return cls.__name__
+        return f"{cls.__module__}.{cls.__qualname__}"
 
     @classmethod
     def get(cls, ids: list[int], _broker: str = None, _repository: MinosRepository = None) -> list["Aggregate"]:
