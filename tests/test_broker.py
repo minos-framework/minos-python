@@ -35,19 +35,6 @@ async def database(config):
     return await MinosBrokerDatabase().get_connection(config)
 
 
-"""
-async def test_create_database(database):
-    cur = await database.cursor()
-    await cur.execute(
-        'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
-        '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
-        '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
-    )
-
-    database.close()
-"""
-
-
 async def test_if_queue_table_exists(database):
     cur = await database.cursor()
 
