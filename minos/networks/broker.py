@@ -4,17 +4,18 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-
-from minos.common.logs import log
-from minos.common.configuration.config import MinosConfig
-import typing as t
 import abc
+import asyncio
 import datetime
+import typing as t
 
 import aiomisc
 import aiopg
-import asyncio
-from aiomisc.service.periodic import Service, PeriodicService
+from aiomisc.service.periodic import PeriodicService
+from aiomisc.service.periodic import Service
+
+from minos.common.configuration.config import MinosConfig
+from minos.common.logs import log
 
 
 class MinosBrokerDatabase:
