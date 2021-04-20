@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
 from itertools import (
     count,
 )
@@ -21,26 +24,18 @@ from .entries import (
 )
 
 
-def _int_generator():
-    yield from count()
-
-
 class MinosInMemoryRepository(MinosRepository):
     """TODO"""
 
     def __init__(self):
         self._storage = list()
-        self._id_generator = _int_generator()
+        self._id_generator = count()
 
-    def __enter__(self):
+    def __enter__(self) -> MinosInMemoryRepository:
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
-
-    def _set_id(self, entry: MinosRepositoryEntry):
-        entry.id = next(self._id_generator)
-        return entry
 
     def insert(self, entry: MinosRepositoryEntry):
         """TODO
@@ -71,6 +66,10 @@ class MinosInMemoryRepository(MinosRepository):
         self._set_id(entry)
         entry.action = MinosRepositoryAction.DELETE
         self._storage.append(entry)
+
+    def _set_id(self, entry: MinosRepositoryEntry):
+        entry.id = next(self._id_generator)
+        return entry
 
     def select(
         self,
@@ -108,6 +107,7 @@ class MinosInMemoryRepository(MinosRepository):
         :return: TODO
         """
 
+        # noinspection DuplicatedCode
         def _fn_filter(entry: MinosRepositoryEntry) -> bool:
             if aggregate_id is not None and aggregate_id != entry.aggregate_id:
                 return False
@@ -133,7 +133,6 @@ class MinosInMemoryRepository(MinosRepository):
                 return False
             if id_ge is not None and id_ge > entry.id:
                 return False
-
             return True
 
         iterable = iter(self._storage)
