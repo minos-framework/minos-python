@@ -47,12 +47,12 @@ class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
 
-class MinosRepositoryEntryNotFoundException(MinosException):
-    """TODO"""
+class MinosRepositoryAggregateNotFoundException(MinosRepositoryException):
+    """Exception to be raised when some aggregate is not found on the repository."""
 
 
 class MinosRepositoryDeletedAggregateException(MinosRepositoryException):
-    """TODO"""
+    """Exception to be raised when some aggregate is already deleted from the repository."""
 
 
 class MinosModelException(MinosException):

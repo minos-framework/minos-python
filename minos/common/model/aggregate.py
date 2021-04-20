@@ -11,7 +11,7 @@ from operator import (
 
 from ..exceptions import (
     MinosRepositoryDeletedAggregateException,
-    MinosRepositoryEntryNotFoundException,
+    MinosRepositoryAggregateNotFoundException,
 )
 from ..repository import (
     MinosRepository,
@@ -81,7 +81,7 @@ class Aggregate(MinosModel):
 
         entries = _repository.select(aggregate_name=cls._get_namespace(), aggregate_id=id)
         if not len(entries):
-            raise MinosRepositoryEntryNotFoundException("TODO")
+            raise MinosRepositoryAggregateNotFoundException("TODO")
 
         entry = max(entries, key=attrgetter("version"))
         if entry.action == MinosRepositoryAction.DELETE:

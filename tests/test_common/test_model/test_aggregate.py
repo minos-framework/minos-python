@@ -10,6 +10,7 @@ import unittest
 from minos.common import (
     MinosInMemoryRepository,
     MinosRepositoryDeletedAggregateException,
+    MinosRepositoryAggregateNotFoundException,
 )
 from tests.aggregate_classes import (
     Car,
@@ -39,6 +40,11 @@ class TestAggregate(unittest.TestCase):
             recovered = Car.get_one(original.id, _repository=repository)
 
             self.assertEqual(original, recovered)
+
+    def test_get_one_raises(self):
+        with MinosInMemoryRepository() as repository:
+            with self.assertRaises(MinosRepositoryAggregateNotFoundException):
+                Car.get_one(0, _repository=repository)
 
     def test_update(self):
         with MinosInMemoryRepository() as repository:
