@@ -1,18 +1,15 @@
-import pytest
-
-from minos.common.logs import log
-from minos.networks.broker import (
-    MinosEventBroker,
-    MinosCommandBroker,
-    AggregateModel,
-    BrokerDatabaseInitializer,
-    MinosBrokerDatabase,
-)
-from minos.common.configuration.config import MinosConfig
-import aiopg
 import asyncio
+
 import aiomisc
+import aiopg
+import pytest
 from aiomisc.service.periodic import Service
+from minos.common.configuration.config import MinosConfig
+from minos.common.logs import log
+
+from minos.networks.broker import (AggregateModel, BrokerDatabaseInitializer,
+                                   MinosBrokerDatabase, MinosCommandBroker,
+                                   MinosEventBroker)
 
 
 @pytest.fixture(scope="session")
