@@ -39,14 +39,8 @@ class TestStringMethods(unittest.TestCase):
         expected = [MinosRepositoryEntry(0, "example.Car", 1, bytes(), 0, MinosRepositoryAction.DELETE)]
         self.assertEqual(expected, repository.select())
 
-    def test_combined(self):
-        repository = MinosInMemoryRepository()
-        repository.insert(MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8")))
-        repository.update(MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8")))
-        repository.insert(MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8")))
-        repository.update(MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8")))
-        repository.delete(MinosRepositoryEntry(0, "example.Car", 3))
-        repository.update(MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8")))
+    def test_select(self):
+        repository = self._build_repository()
         expected = [
             MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8"), 0, MinosRepositoryAction.INSERT),
             MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8"), 1, MinosRepositoryAction.UPDATE),
@@ -54,8 +48,89 @@ class TestStringMethods(unittest.TestCase):
             MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
             MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
             MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
         ]
         self.assertEqual(expected, repository.select())
+
+    def test_select_id(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8"), 1, MinosRepositoryAction.UPDATE),
+        ]
+        self.assertEqual(expected, repository.select(id=1))
+
+    def test_select_id_lt(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
+            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
+        ]
+        self.assertEqual(expected, repository.select(id_lt=4))
+
+    def test_select_id_gt(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8"), 0, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8"), 1, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8"), 2, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
+        ]
+        self.assertEqual(expected, repository.select(id_gt=3))
+
+    def test_select_aggregate_id(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8"), 2, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+        ]
+        self.assertEqual(expected, repository.select(aggregate_id=1))
+
+    def test_select_aggregate_name(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
+        ]
+        self.assertEqual(expected, repository.select(aggregate_name="example.MotorCycle"))
+
+    def test_select_version(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
+        ]
+        self.assertEqual(expected, repository.select(version=3))
+
+    def test_select_version_lt(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8"), 1, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
+            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+        ]
+        self.assertEqual(expected, repository.select(version_lt=1))
+
+    def test_select_version_gt(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8"), 0, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8"), 2, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
+        ]
+        self.assertEqual(expected, repository.select(version_gt=0))
+
+    @staticmethod
+    def _build_repository():
+        repository = MinosInMemoryRepository()
+        repository.insert(MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8")))
+        repository.update(MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8")))
+        repository.insert(MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8")))
+        repository.update(MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8")))
+        repository.delete(MinosRepositoryEntry(0, "example.Car", 3))
+        repository.update(MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8")))
+        repository.insert(MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8")))
+
+        return repository
 
 
 if __name__ == "__main__":
