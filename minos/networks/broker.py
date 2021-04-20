@@ -8,67 +8,25 @@
 from minos.common.logs import log
 from minos.common.configuration.config import MinosConfig
 import typing as t
-from peewee import *
 import abc
 import datetime
 
-
-database_proxy = DatabaseProxy()
+import aiomisc
+import aiopg
+import asyncio
+from aiomisc.service.periodic import Service, PeriodicService
 
 
 class MinosBrokerDatabase:
-    def __init__(self, conf):
-        self.database = PostgresqlDatabase(
-            conf.queue.database,
-            user=conf.queue.user,
-            password=conf.queue.password,
-            host=conf.queue.host,
-            port=conf.queue.port,
+    async def get_connection(self, conf):
+        conn = await aiopg.connect(
+            database=conf.events.queue.database,
+            user=conf.events.queue.user,
+            password=conf.events.queue.password,
+            host=conf.events.queue.host,
+            port=conf.events.queue.port,
         )
-
-    def get_connection(self):
-        database_proxy.initialize(self.database)
-        return self.database
-
-
-class BrokerQueueBaseModel(Model):
-    class Meta:
-        database = database_proxy
-
-
-class Queue(BrokerQueueBaseModel):
-    queue_id = AutoField()
-    topic = CharField()
-    model = BlobField()
-    retry = IntegerField(default=0)
-    creation_date = DateTimeField(default=datetime.datetime.now)
-    update_date = DateTimeField(default=datetime.datetime.now)
-
-
-def create_event_tables(config: MinosConfig):
-    database = MinosBrokerDatabase(config.events).get_connection()
-
-    with database:
-        database.create_tables([Queue])
-
-
-def create_command_tables(config: MinosConfig):
-    database = MinosBrokerDatabase(config.commands).get_connection()
-
-    with database:
-        database.create_tables([Queue])
-
-
-def drop_event_tables(config: MinosConfig):
-    database = MinosBrokerDatabase(config.events).get_connection()
-    with database:
-        database.drop_tables([Queue])
-
-
-def drop_commands_tables(config: MinosConfig):
-    database = MinosBrokerDatabase(config.commands).get_connection()
-    with database:
-        database.drop_tables([Queue])
+        return conn
 
 
 class AggregateModel:
@@ -94,11 +52,11 @@ class CommandModel(ModelBase):
 
 class BrokerBase(abc.ABC):
     @abc.abstractmethod
-    def _database(self):
+    def _database(self):  # pragma: no cover
         raise NotImplementedError
 
     @abc.abstractmethod
-    def send(self):
+    def send(self):  # pragma: no cover
         raise NotImplementedError
 
 
@@ -110,10 +68,9 @@ class MinosEventBroker(BrokerBase):
         self._database()
 
     def _database(self):
-        self.database = MinosBrokerDatabase(self.config.events).get_connection()
+        pass
 
-    def send(self):
-        self.database.connect()
+    async def send(self):
 
         # TODO: Change
         event_instance = EventModel()
@@ -121,13 +78,23 @@ class MinosEventBroker(BrokerBase):
         event_instance.name = self.model.name
         event_instance.items = self.model
 
-        query = Queue.insert(topic=self.topic, model=hex(10))
-        result = query.execute()
-        log.debug(result)
+        bin_data = b"bytes object"
 
-        self.database.close()
+        conn = await MinosBrokerDatabase().get_connection(self.config)
 
-        return result
+        cur = await conn.cursor()
+        await cur.execute(
+            "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
+            (
+                event_instance.topic,
+                bin_data,
+                0,
+                datetime.datetime.now(),
+                datetime.datetime.now(),
+            ),
+        )
+
+        conn.close()
 
 
 class MinosCommandBroker(BrokerBase):
@@ -138,10 +105,9 @@ class MinosCommandBroker(BrokerBase):
         self._database()
 
     def _database(self):
-        self.database = MinosBrokerDatabase(self.config.events).get_connection()
+        pass
 
-    def send(self):
-        self.database.connect()
+    async def send(self):
 
         # TODO: Change
         event_instance = CommandModel()
@@ -149,10 +115,39 @@ class MinosCommandBroker(BrokerBase):
         event_instance.name = self.model.name
         event_instance.items = self.model
 
-        query = Queue.insert(topic=self.topic, model=hex(10))
-        result = query.execute()
-        log.debug(result)
+        bin_data = b"bytes object"
 
-        self.database.close()
+        conn = await MinosBrokerDatabase().get_connection(self.config)
 
-        return result
+        cur = await conn.cursor()
+        await cur.execute(
+            "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
+            (
+                event_instance.topic,
+                bin_data,
+                0,
+                datetime.datetime.now(),
+                datetime.datetime.now(),
+            ),
+        )
+
+        conn.close()
+
+
+class BrokerDatabaseInitializer(Service):
+    async def start(self):
+        # Send signal to entrypoint for continue running
+        self.start_event.set()
+
+        conn = await MinosBrokerDatabase().get_connection(self.config)
+
+        cur = await conn.cursor()
+        await cur.execute(
+            'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
+            '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
+            '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
+        )
+
+        conn.close()
+
+        return

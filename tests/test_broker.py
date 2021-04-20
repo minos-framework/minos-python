@@ -1,86 +1,109 @@
 import pytest
 
 from minos.common.logs import log
-from minos.networks.broker import create_event_tables, create_command_tables,\
-    drop_event_tables, drop_commands_tables, Queue, MinosEventBroker, MinosCommandBroker, AggregateModel
+from minos.networks.broker import MinosEventBroker, MinosCommandBroker, AggregateModel, BrokerDatabaseInitializer, MinosBrokerDatabase
 from minos.common.configuration.config import MinosConfig
-from peewee import *
+import aiopg
+import asyncio
+import aiomisc
+from aiomisc.service.periodic import Service
 
-# create role broker with createdb login password 'br0k3r';
-# CREATE DATABASE broker_db OWNER broker;
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def config():
     return MinosConfig(path='./tests/test_config.yaml')
 
-@pytest.fixture()
-def events_database(config):
-    return PostgresqlDatabase(
-        config.events.queue.database,
-        user=config.events.queue.user,
-        password=config.events.queue.password,
-        host=config.events.queue.host,
-        port=config.events.queue.port)
+
+@pytest.fixture(scope='session')
+def services(config):
+    return (
+        BrokerDatabaseInitializer(
+            config=config
+        ),
+    )
+
+
+@pytest.fixture(scope='session')
+def run_services(services, config):
+    with aiomisc.entrypoint(*services) as loop:
+        loop.run_forever()
 
 
 @pytest.fixture()
-def commands_database(config):
-    return PostgresqlDatabase(
-        config.events.queue.database,
-        user=config.events.queue.user,
-        password=config.events.queue.password,
-        host=config.events.queue.host,
-        port=config.events.queue.port)
+async def database(config):
+    return await MinosBrokerDatabase().get_connection(config)
+
+"""
+async def test_create_database(database):
+    cur = await database.cursor()
+    await cur.execute(
+        'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
+        '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
+        '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
+    )
+
+    database.close()
+"""
+
+async def test_if_queue_table_exists(database):
+    cur = await database.cursor()
+
+    await cur.execute("SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'queue';")
+    ret = []
+    async for row in cur:
+        ret.append(row)
+
+    database.close()
+    assert ret == [(1,)]
 
 
-def test_broker_events_tables_creation(config, events_database):
-    create_event_tables(config)
-    assert events_database.table_exists(table_name="queue") is True
-
-
-def test_broker_events_database_connection(events_database):
-    assert events_database.connect() is True
-
-
-def test_broker_event_tables_deletion(config, events_database):
-    drop_event_tables(config)
-    assert events_database.table_exists(table_name="queue") is False
-
-
-def test_broker_commands_tables_creation(config, commands_database):
-    create_command_tables(config)
-    assert commands_database.table_exists(table_name="queue") is True
-
-
-def test_broker_commands_database_connection(commands_database):
-    assert commands_database.connect() is True
-
-
-def test_events_broker_insertion(config, events_database):
+async def test_events_broker_insertion(config, database):
     a = AggregateModel()
     a.name = "EventBroker"
 
-    result = MinosEventBroker("EventBroker", a, config).send()
+    m = MinosEventBroker("EventBroker", a, config)
+    await m.send()
 
-    query = Queue.select().where(Queue.topic == "EventBroker")
+    cur = await database.cursor()
 
-    assert result is not None
-    assert query.get() is not None
+    await cur.execute("SELECT 1 FROM queue WHERE topic = 'EventBroker' LIMIT 1;")
+    ret = []
+    async for row in cur:
+        ret.append(row)
+
+    database.close()
+    assert ret == [(1,)]
 
 
-def test_commands_broker_insertion(config, commands_database):
+async def test_commands_broker_insertion(config, database):
     a = AggregateModel()
     a.name = "CommandBroker"
 
-    result = MinosCommandBroker("CommandBroker", a, config).send()
+    m = MinosCommandBroker("CommandBroker", a, config)
+    await m.send()
 
-    query = Queue.select().where(Queue.topic == "CommandBroker")
+    cur = await database.cursor()
 
-    assert result is not None
-    assert query.get() is not None
+    await cur.execute("SELECT 1 FROM queue WHERE topic = 'CommandBroker' LIMIT 1;")
+    ret = []
+    async for row in cur:
+        ret.append(row)
+
+    database.close()
+    assert ret == [(1,)]
 
 
-# Olways leave on end
-def test_broker_commands_tables_deletion(config, commands_database):
-    drop_commands_tables(config)
-    assert commands_database.table_exists(table_name="queue") is False
+
+async def test_drop_database(database):
+    cur = await database.cursor()
+    await cur.execute("DROP TABLE IF EXISTS queue;")
+    database.close()
+
+
+
+
+# create role broker with createdb login password 'br0k3r';
+# CREATE DATABASE broker_db OWNER broker;
+# 'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, "topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, "creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL)', []
+# 'SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = %s ORDER BY tablename', ('public',)
+# 'DROP TABLE IF EXISTS "queue"'
