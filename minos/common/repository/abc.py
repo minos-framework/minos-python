@@ -41,7 +41,6 @@ class MinosRepository(ABC):
         :param entry: TODO
         :return: TODO
         """
-        pass
 
     @abstractmethod
     def select(self, *args, **kwargs) -> list[MinosRepositoryEntry]:

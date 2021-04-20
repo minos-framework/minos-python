@@ -25,12 +25,7 @@ class MinosRepositoryAction(Enum):
 class MinosRepositoryEntry(object):
     """TODO"""
 
-    id: Optional[int]
-    action: Optional[MinosRepositoryAction]
-    aggregate_id: int
-    aggregate_name: str
-    version: int
-    data: bytes
+    __slots__ = "id", "action", "aggregate_id", "aggregate_name", "version", "data"
 
     def __init__(
         self,
