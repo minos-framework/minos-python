@@ -1,0 +1,60 @@
+service:
+    name: Order
+rest:
+    host: localhost
+    port: 8900
+    endpoints:
+        - name: AddOrder
+          route: /order
+          method: POST
+          controller: minos.services.OrderService
+          action: add_order
+events:
+    broker: localhost
+    port: 9092
+    database:
+        path: ./tests/local_db.lmdb
+        name: database_events_test
+    items:
+        - name: TicketAdded
+          controller: minos.services.CQRSService
+          action: ticket_added
+        - name: TicketDeleted
+          controller: minos.services.CQRSService
+          action: ticket_deleted
+        - name: OrderAdded
+          controller: minos.services.CQRSService
+          action: order_added
+    queue:
+        database: broker_db
+        user: broker
+        password: br0k3r
+        host: localhost
+        port: 5432
+        records: 10
+commands:
+    broker: localhost
+    port: 9092
+    database:
+        path: ./tests/local_db.lmdb
+        name: database_commands_test
+    items:
+        - name: AddOrder
+          controller: minos.services.OrderService
+          action: add_order
+        - name: DeleteOrder
+          controller: minos.services.OrderService
+          action: delete_order
+        - name: UpdateOrder
+          controller: minos.services.OrderService
+          action: update_order
+        - name: GetOrder
+          controller: minos.service.OrderService
+          action: get_order
+    queue:
+        database: broker_db
+        user: broker
+        password: br0k3r
+        host: localhost
+        port: 5432
+        records: 10
