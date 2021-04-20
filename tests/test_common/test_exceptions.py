@@ -22,7 +22,7 @@ from minos.common import (
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
-    MinosRepositoryManuallySetAggregateVersionException
+    MinosRepositoryManuallySetAggregateVersionException,
 )
 
 
