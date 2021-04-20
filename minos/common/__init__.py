@@ -33,6 +33,11 @@ from .exceptions import (
     MinosModelException,
     MinosParseAttributeException,
     MinosProtocolException,
+    MinosRepositoryAggregateNotFoundException,
+    MinosRepositoryDeletedAggregateException,
+    MinosRepositoryException,
+    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateVersionException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
@@ -86,6 +91,12 @@ from .protocol import (
     MinosAvroProtocol,
     MinosAvroValuesDatabase,
     MinosBinaryProtocol,
+)
+from .repository import (
+    MinosInMemoryRepository,
+    MinosRepository,
+    MinosRepositoryAction,
+    MinosRepositoryEntry,
 )
 from .storage import (
     MinosStorage,
