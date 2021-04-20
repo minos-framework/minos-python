@@ -37,8 +37,10 @@ jobs:
           python setup.py install
     - name: Create database
       run: |
-          PGPASSWORD=postgres psql -U postgres -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
-          PGPASSWORD=postgres psql -U postgres -tc "CREATE DATABASE broker_db OWNER broker;"
+          psql -h postgres -U postgres -c "CREATE ROLE broker with createdb login password 'br0k3r';"
+          psql -h postgres -U postgres -c "CREATE DATABASE broker_db OWNER broker;"
+      env:
+         PGPASSWORD: postgres
     - name: Test with pytest
       run: |
           make test
