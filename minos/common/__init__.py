@@ -87,13 +87,13 @@ from .protocol import (
     MinosAvroValuesDatabase,
     MinosBinaryProtocol,
 )
+from .repository import (
+    MinosInMemoryRepository,
+    MinosRepository,
+    MinosRepositoryAction,
+    MinosRepositoryEntry,
+)
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,
-)
-from .repository import (
-    MinosRepository,
-    MinosRepositoryEntry,
-    MinosRepositoryAction,
-    MinosInMemoryRepository,
 )
