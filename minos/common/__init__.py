@@ -37,7 +37,9 @@ from .exceptions import (
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
-from .importlib import import_module
+from .importlib import (
+    import_module,
+)
 from .messages import (
     MinosBaseRequest,
     MinosBaseResponse,
@@ -85,13 +87,13 @@ from .protocol import (
     MinosAvroValuesDatabase,
     MinosBinaryProtocol,
 )
+from .repository import (
+    MinosInMemoryRepository,
+    MinosRepository,
+    MinosRepositoryAction,
+    MinosRepositoryEntry,
+)
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,
-)
-from .repository import (
-    MinosRepository,
-    MinosRepositoryEntry,
-    MinosRepositoryAction,
-    MinosInMemoryRepository,
 )
