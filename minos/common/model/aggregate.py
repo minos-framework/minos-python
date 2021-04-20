@@ -5,9 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from operator import (
-    attrgetter,
-)
+from operator import attrgetter
 
 from ..exceptions import (
     MinosRepositoryDeletedAggregateException,
@@ -18,9 +16,7 @@ from ..repository import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
 )
-from .abc import (
-    MinosModel,
-)
+from .abc import MinosModel
 
 
 # noinspection PyPep8Naming
@@ -43,13 +39,7 @@ class Aggregate(MinosModel):
 
     # FIXME: The ``broker`` attribute should be a reference to a ``MinosBaseBroker`` class instance.
     def __init__(
-        self,
-        id: int,
-        version: int,
-        *args,
-        _broker: str = None,
-        _repository: MinosRepository = None,
-        **kwargs,
+        self, id: int, version: int, *args, _broker: str = None, _repository: MinosRepository = None, **kwargs,
     ):
 
         super().__init__(id, version, *args, **kwargs)

@@ -5,16 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from itertools import (
-    count,
-)
-from typing import (
-    Optional,
-)
+from itertools import count
+from typing import Optional
 
-from .abc import (
-    MinosRepository,
-)
+from .abc import MinosRepository
 from .entries import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
@@ -159,7 +153,6 @@ class MinosInMemoryRepository(MinosRepository):
         """
         iterable = iter(self._storage)
         iterable = filter(
-            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id,
-            iterable,
+            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id, iterable,
         )
         return len(list(iterable))

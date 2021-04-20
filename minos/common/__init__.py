@@ -40,9 +40,7 @@ from .exceptions import (
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryEntryNotFoundException,
 )
-from .importlib import (
-    import_module,
-)
+from .importlib import import_module
 from .messages import (
     MinosBaseRequest,
     MinosBaseResponse,

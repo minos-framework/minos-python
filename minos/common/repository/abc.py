@@ -10,9 +10,7 @@ from abc import (
     abstractmethod,
 )
 
-from .entries import (
-    MinosRepositoryEntry,
-)
+from .entries import MinosRepositoryEntry
 
 
 class MinosRepository(ABC):

@@ -11,9 +11,7 @@ from minos.common import (
     MinosInMemoryRepository,
     MinosRepositoryDeletedAggregateException,
 )
-from tests.aggregate_classes import (
-    Car,
-)
+from tests.aggregate_classes import Car
 
 
 class TestAggregate(unittest.TestCase):
