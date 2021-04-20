@@ -7,11 +7,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
-from minos.common import MinosRepositoryEntry, MinosRepositoryAction
+from minos.common import (
+    MinosRepositoryAction,
+    MinosRepositoryEntry,
+)
 
 
 class TestMinosRepositoryEntry(unittest.TestCase):
-
     def test_constructor(self):
         entry = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(1234, entry.aggregate_id)
@@ -43,5 +45,5 @@ class TestMinosRepositoryEntry(unittest.TestCase):
         self.assertEqual(MinosRepositoryAction.INSERT, entry.action)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
