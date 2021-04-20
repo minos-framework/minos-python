@@ -10,7 +10,7 @@ with open('README.md') as readme_file:
 with open('HISTORY.md') as history_file:
     history = history_file.read()
 
-requirements = ['minos-microservice-common', 'aiokafka', 'aiomisc']
+requirements = ['minos-microservice-common', 'aiokafka', 'aiomisc', 'aiopg']
 
 setup_requirements = ['pytest-runner',]
 
