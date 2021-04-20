@@ -5,19 +5,22 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from typing import (
-    NoReturn,
-)
 
 from minos.common.model.abc.model import (
     MinosModel,
 )
 
 
+# noinspection PyPep8Naming
 class class_or_instancemethod(classmethod):
+    """TODO"""
+
+    # noinspection PyMethodOverriding
     def __get__(self, instance, type_):
-        descr_get = super().__get__ if instance is None else self.__func__.__get__
-        return descr_get(instance, type_)
+        # noinspection PyUnresolvedReferences
+        get = super().__get__ if instance is None else self.__func__.__get__
+        # noinspection PyArgumentList
+        return get(instance, type_)
 
 
 class Aggregate(MinosModel):
@@ -73,11 +76,12 @@ class Aggregate(MinosModel):
 
         return cls(id=0, version=0, *args, broker="MinosBaseBroker()", repository="PostgreSqlRepository()", **kwargs)
 
+    # noinspection PyMethodParameters
     @class_or_instancemethod
     def update(self_or_cls, id: int = None, **kwargs) -> "Aggregate":
         """TODO
 
-        :param identifier:TODO
+        :param id:TODO
         :param kwargs:TODO
         :return: TODO
         """
@@ -85,6 +89,7 @@ class Aggregate(MinosModel):
             raise Exception()
 
         if isinstance(self_or_cls, type):
+            assert issubclass(self_or_cls, Aggregate)
             instance = self_or_cls.get_one(id)
         else:
             instance = self_or_cls
@@ -96,8 +101,9 @@ class Aggregate(MinosModel):
 
         return instance
 
+    # noinspection PyMethodParameters
     @class_or_instancemethod
-    def delete(self_or_cls, id: int = None) -> NoReturn:
+    def delete(self_or_cls, id: int = None):
         """TODO
 
         :param id: TODO
