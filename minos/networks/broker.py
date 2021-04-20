@@ -4,7 +4,6 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-
 import abc
 import asyncio
 import datetime
@@ -12,7 +11,9 @@ import typing as t
 
 import aiomisc
 import aiopg
-from aiomisc.service.periodic import PeriodicService, Service
+from aiomisc.service.periodic import PeriodicService
+from aiomisc.service.periodic import Service
+
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 
