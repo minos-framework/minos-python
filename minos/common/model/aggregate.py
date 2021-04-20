@@ -5,7 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from operator import attrgetter
+from operator import (
+    attrgetter,
+)
 
 from ..exceptions import (
     MinosRepositoryDeletedAggregateException,
@@ -16,7 +18,9 @@ from ..repository import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
 )
-from .abc import MinosModel
+from .abc import (
+    MinosModel,
+)
 
 
 # noinspection PyPep8Naming
