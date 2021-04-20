@@ -62,13 +62,23 @@ class TestStringMethods(unittest.TestCase):
     def test_select_id_lt(self):
         repository = self._build_repository()
         expected = [
-            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
-            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
-            MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8"), 0, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8"), 1, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8"), 2, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
         ]
         self.assertEqual(expected, repository.select(id_lt=4))
 
     def test_select_id_gt(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
+            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
+        ]
+        self.assertEqual(expected, repository.select(id_gt=3))
+
+    def test_select_id_le(self):
         repository = self._build_repository()
         expected = [
             MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8"), 0, MinosRepositoryAction.INSERT),
@@ -76,7 +86,16 @@ class TestStringMethods(unittest.TestCase):
             MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8"), 2, MinosRepositoryAction.INSERT),
             MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
         ]
-        self.assertEqual(expected, repository.select(id_gt=3))
+        self.assertEqual(expected, repository.select(id_le=3))
+
+    def test_select_id_ge(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
+            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
+        ]
+        self.assertEqual(expected, repository.select(id_ge=4))
 
     def test_select_aggregate_id(self):
         repository = self._build_repository()
@@ -103,21 +122,49 @@ class TestStringMethods(unittest.TestCase):
     def test_select_version_lt(self):
         repository = self._build_repository()
         expected = [
-            MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8"), 1, MinosRepositoryAction.UPDATE),
-            MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
-            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
-            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8"), 0, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8"), 2, MinosRepositoryAction.INSERT),
+            MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
         ]
         self.assertEqual(expected, repository.select(version_lt=1))
 
     def test_select_version_gt(self):
         repository = self._build_repository()
         expected = [
+            MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8"), 1, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
+            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+        ]
+        self.assertEqual(expected, repository.select(version_gt=0))
+
+    def test_select_version_le(self):
+        repository = self._build_repository()
+        expected = [
             MinosRepositoryEntry(0, "example.Car", 0, bytes("foo", "utf-8"), 0, MinosRepositoryAction.INSERT),
             MinosRepositoryEntry(1, "example.Car", 0, bytes("hello", "utf-8"), 2, MinosRepositoryAction.INSERT),
             MinosRepositoryEntry(0, "example.MotorCycle", 0, bytes("one", "utf-8"), 6, MinosRepositoryAction.INSERT),
         ]
-        self.assertEqual(expected, repository.select(version_gt=0))
+        self.assertEqual(expected, repository.select(version_le=0))
+
+    def test_select_version_ge(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 1, bytes("bar", "utf-8"), 1, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
+            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+        ]
+        self.assertEqual(expected, repository.select(version_ge=1))
+
+    def test_select_combine(self):
+        repository = self._build_repository()
+        expected = [
+            MinosRepositoryEntry(0, "example.Car", 2, bytes("foobar", "utf-8"), 3, MinosRepositoryAction.UPDATE),
+            MinosRepositoryEntry(0, "example.Car", 3, bytes(), 4, MinosRepositoryAction.DELETE),
+            MinosRepositoryEntry(1, "example.Car", 1, bytes("bye", "utf-8"), 5, MinosRepositoryAction.UPDATE),
+        ]
+        self.assertEqual(expected, repository.select(aggregate_name="example.Car", id_ge=3))
 
     @staticmethod
     def _build_repository():

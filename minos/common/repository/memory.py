@@ -73,9 +73,13 @@ class MinosInMemoryRepository(MinosRepository):
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
         version_gt: Optional[int] = None,
+        version_le: Optional[int] = None,
+        version_ge: Optional[int] = None,
         id: Optional[int] = None,
         id_lt: Optional[int] = None,
         id_gt: Optional[int] = None,
+        id_le: Optional[int] = None,
+        id_ge: Optional[int] = None,
         *args,
         **kwargs
     ) -> list[MinosRepositoryEntry]:
@@ -86,9 +90,13 @@ class MinosInMemoryRepository(MinosRepository):
         :param version: TODO
         :param version_lt: TODO
         :param version_gt: TODO
+        :param version_le: TODO
+        :param version_ge: TODO
         :param id: TODO
         :param id_lt: TODO
         :param id_gt: TODO
+        :param id_le: TODO
+        :param id_ge: TODO
         :param args: TODO
         :param kwargs: TODO
         :return: TODO
@@ -101,15 +109,23 @@ class MinosInMemoryRepository(MinosRepository):
                 return False
             if version is not None and version != entry.version:
                 return False
-            if version_lt is not None and version_lt > entry.version:
+            if version_lt is not None and version_lt <= entry.version:
                 return False
-            if version_gt is not None and version_gt < entry.version:
+            if version_gt is not None and version_gt >= entry.version:
+                return False
+            if version_le is not None and version_le < entry.version:
+                return False
+            if version_ge is not None and version_ge > entry.version:
                 return False
             if id is not None and id != entry.id:
                 return False
-            if id_lt is not None and id_lt > entry.id:
+            if id_lt is not None and id_lt <= entry.id:
                 return False
-            if id_gt is not None and id_gt < entry.id:
+            if id_gt is not None and id_gt >= entry.id:
+                return False
+            if id_le is not None and id_le < entry.id:
+                return False
+            if id_ge is not None and id_ge > entry.id:
                 return False
 
             return True
