@@ -5,6 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from enum import (
     Enum,
 )
@@ -30,7 +34,7 @@ class MinosRepositoryEntry(object):
     def __init__(
         self,
         aggregate_id: int,
-        name: str,
+        aggregate_name: str,
         version: int,
         data: bytes = bytes(),
         id: Optional[int] = None,
@@ -40,9 +44,18 @@ class MinosRepositoryEntry(object):
         self.action = action
 
         self.aggregate_id = aggregate_id
-        self.aggregate_name = name
+        self.aggregate_name = aggregate_name
         self.version = version
         self.data = data
+
+    @classmethod
+    def from_aggregate(cls, aggregate) -> MinosRepositoryEntry:
+        """TODO
+
+        :param aggregate: TODO
+        :return: TODO
+        """
+        return cls(aggregate.id, type(aggregate).__name__, aggregate.version, aggregate.avro_bytes)
 
     def __eq__(self, other: "MinosRepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

@@ -36,6 +36,9 @@ from .exceptions import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
+    MinosRepositoryException,
+    MinosRepositoryDeletedAggregateException,
+    MinosRepositoryEntryNotFoundException,
 )
 from .importlib import (
     import_module,

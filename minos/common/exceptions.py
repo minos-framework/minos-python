@@ -43,6 +43,18 @@ class MinosConfigException(MinosException):
     pass
 
 
+class MinosRepositoryException(MinosException):
+    """Base repository exception."""
+
+
+class MinosRepositoryEntryNotFoundException(MinosException):
+    """TODO"""
+
+
+class MinosRepositoryDeletedAggregateException(MinosRepositoryException):
+    """TODO"""
+
+
 class MinosModelException(MinosException):
     """Exception to be raised when some mandatory condition is not satisfied by a model."""
 

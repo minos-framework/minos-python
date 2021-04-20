@@ -28,4 +28,4 @@ class Car(Aggregate):
 
     doors: int
     color: str
-    owner: Optional[ModelRef[Owner]]
+    # owner: Optional[ModelRef[Owner]]  # FIXME: There is a bug on the schema generation.

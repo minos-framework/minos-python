@@ -32,6 +32,12 @@ class MinosInMemoryRepository(MinosRepository):
         self._storage = list()
         self._id_generator = _int_generator()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        pass
+
     def _set_id(self, entry: MinosRepositoryEntry):
         entry.id = next(self._id_generator)
         return entry
@@ -133,3 +139,27 @@ class MinosInMemoryRepository(MinosRepository):
         iterable = iter(self._storage)
         iterable = filter(_fn_filter, iterable)
         return list(iterable)
+
+    def generate_aggregate_id(self, aggregate_name: str) -> int:
+        """TODO
+
+        :param aggregate_name: TODO
+        :return: TODO
+        """
+        iterable = iter(self._storage)
+        iterable = filter(lambda entry: entry.aggregate_name == aggregate_name, iterable)
+        return len(list(iterable))
+
+    def get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
+        """TODO
+
+        :param aggregate_name: TODO
+        :param aggregate_id: TODO
+        :return: TODO
+        """
+        iterable = iter(self._storage)
+        iterable = filter(
+            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id,
+            iterable,
+        )
+        return len(list(iterable))

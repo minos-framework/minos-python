@@ -50,3 +50,20 @@ class MinosRepository(ABC):
         :param kwargs: TODO
         :return: TODO
         """
+
+    @abstractmethod
+    def generate_aggregate_id(self, aggregate_name: str) -> int:
+        """TODO
+
+        :param aggregate_name: TODO
+        :return: TODO
+        """
+
+    @abstractmethod
+    def get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
+        """TODO
+
+        :param aggregate_name: TODO
+        :param aggregate_id: TODO
+        :return: TODO
+        """
