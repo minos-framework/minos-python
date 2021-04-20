@@ -91,3 +91,9 @@ from .storage import (
     MinosStorage,
     MinosStorageLmdb,
 )
+from .repository import (
+    MinosRepository,
+    MinosRepositoryEntry,
+    MinosRepositoryAction,
+    MinosInMemoryRepository,
+)
