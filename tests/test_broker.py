@@ -3,6 +3,7 @@ import asyncio
 import aiomisc
 import aiopg
 import pytest
+import time
 from aiomisc.service.periodic import Service
 
 from minos.common.configuration.config import MinosConfig
@@ -19,15 +20,13 @@ def config():
     return MinosConfig(path="./tests/test_config_.yaml")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def services(config):
-    return (BrokerDatabaseInitializer(config=config), )
-
-
-@pytest.fixture(scope="session")
-def run_services(services, config):
-    with aiomisc.entrypoint(*services) as loop:
-        loop.run_forever()
+    return [
+        BrokerDatabaseInitializer(
+            config=config
+        )
+    ]
 
 
 @pytest.fixture()
@@ -35,20 +34,8 @@ async def database(config):
     return await MinosBrokerDatabase().get_connection(config)
 
 
-"""
-async def test_create_database(database):
-    cur = await database.cursor()
-    await cur.execute(
-        'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
-        '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
-        '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
-    )
-
-    database.close()
-"""
-
-
 async def test_if_queue_table_exists(database):
+    time.sleep(1)
     cur = await database.cursor()
 
     await cur.execute(
