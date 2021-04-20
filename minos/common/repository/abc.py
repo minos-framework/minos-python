@@ -19,28 +19,28 @@ class MinosRepository(ABC):
     """TODO"""
 
     @abstractmethod
-    def insert(self, value: MinosRepositoryEntry):
+    def insert(self, entry: MinosRepositoryEntry):
         """TODO
 
-        :param value: TODO
+        :param entry: TODO
         :return: TODO
         """
         pass
 
     @abstractmethod
-    def update(self, value: MinosRepositoryEntry):
+    def update(self, entry: MinosRepositoryEntry):
         """TODO
 
-        :param value: TODO
+        :param entry: TODO
         :return: TODO
         """
         pass
 
     @abstractmethod
-    def delete(self, value: MinosRepositoryEntry):
+    def delete(self, entry: MinosRepositoryEntry):
         """TODO
 
-        :param value: TODO
+        :param entry: TODO
         :return: TODO
         """
         pass

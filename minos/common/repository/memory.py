@@ -32,39 +32,39 @@ class MinosInMemoryRepository(MinosRepository):
         self._storage = list()
         self._id_generator = _int_generator()
 
-    def _set_id(self, value):
-        value.id = next(self._id_generator)
-        return value
+    def _set_id(self, entry: MinosRepositoryEntry):
+        entry.id = next(self._id_generator)
+        return entry
 
-    def insert(self, value: MinosRepositoryEntry):
+    def insert(self, entry: MinosRepositoryEntry):
         """TODO
 
-        :param value: TODO
+        :param entry: TODO
         :return: TODO
         """
-        self._set_id(value)
-        value.action = MinosRepositoryAction.INSERT
-        self._storage.append(value)
+        self._set_id(entry)
+        entry.action = MinosRepositoryAction.INSERT
+        self._storage.append(entry)
 
-    def update(self, value: MinosRepositoryEntry):
+    def update(self, entry: MinosRepositoryEntry):
         """TODO
 
-        :param value: TODO
+        :param entry: TODO
         :return: TODO
         """
-        self._set_id(value)
-        value.action = MinosRepositoryAction.UPDATE
-        self._storage.append(value)
+        self._set_id(entry)
+        entry.action = MinosRepositoryAction.UPDATE
+        self._storage.append(entry)
 
-    def delete(self, value: MinosRepositoryEntry):
+    def delete(self, entry: MinosRepositoryEntry):
         """TODO
 
-        :param value: TODO
+        :param entry: TODO
         :return: TODO
         """
-        self._set_id(value)
-        value.action = MinosRepositoryAction.DELETE
-        self._storage.append(value)
+        self._set_id(entry)
+        entry.action = MinosRepositoryAction.DELETE
+        self._storage.append(entry)
 
     def select(
         self,
