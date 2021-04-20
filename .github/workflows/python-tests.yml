@@ -35,6 +35,10 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
           python setup.py install
+    - name: Create database
+      run: |
+          PGPASSWORD=postgres psql -U postgres -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
+          PGPASSWORD=postgres psql -U postgres -tc "CREATE DATABASE broker_db OWNER broker;"
     - name: Test with pytest
       run: |
           make test
@@ -47,9 +51,4 @@ jobs:
             token: ${{ secrets.CODECOV_TOKEN }}
             files: ./coverage.xml
             fail_ci_if_error: true
-
-    -   name: Create database
-        run: |
-            PGPASSWORD=postgres psql -U postgres -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
-            PGPASSWORD=postgres psql -U postgres -tc "CREATE DATABASE broker_db OWNER broker;"
 
