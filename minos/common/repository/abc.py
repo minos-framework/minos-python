@@ -32,6 +32,12 @@ if TYPE_CHECKING:
 class MinosRepository(ABC):
     """Base repository class in ``minos``."""
 
+    def __enter__(self) -> MinosRepository:
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        pass
+
     def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
         """Store new insertion entry into de repository.
 
@@ -74,8 +80,11 @@ class MinosRepository(ABC):
         return entry
 
     @abstractmethod
-    def _generate_next_id(self) -> NoReturn:
-        ...
+    def _generate_next_id(self) -> int:
+        """Generate next id to be used for a new entry.
+
+        :return: A positive-integer value.
+        """
 
     @abstractmethod
     def _generate_next_aggregate_id(self, aggregate_name: str) -> int:

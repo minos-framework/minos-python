@@ -33,12 +33,6 @@ class MinosInMemoryRepository(MinosRepository):
         self._storage = list()
         self._id_generator = count()
 
-    def __enter__(self) -> MinosInMemoryRepository:
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        pass
-
     def _submit(self, entry: MinosRepositoryEntry) -> NoReturn:
         """Store new deletion entry into de repository.
 
