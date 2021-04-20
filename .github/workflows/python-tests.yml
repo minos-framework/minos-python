@@ -8,6 +8,22 @@ jobs:
       matrix:
         python-version: [3.9]
 
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -31,4 +47,9 @@ jobs:
             token: ${{ secrets.CODECOV_TOKEN }}
             files: ./coverage.xml
             fail_ci_if_error: true
+
+    -   name: Create database
+        run: |
+            PGPASSWORD=postgres psql -U postgres -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
+            PGPASSWORD=postgres psql -U postgres -tc "CREATE DATABASE broker_db OWNER broker;"
 
