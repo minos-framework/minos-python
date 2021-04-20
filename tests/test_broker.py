@@ -45,6 +45,7 @@ async def test_create_database(database):
     database.close()
 """
 
+
 async def test_if_queue_table_exists(database):
     cur = await database.cursor()
 
@@ -93,13 +94,10 @@ async def test_commands_broker_insertion(config, database):
     assert ret == [(1,)]
 
 
-
 async def test_drop_database(database):
     cur = await database.cursor()
     await cur.execute("DROP TABLE IF EXISTS queue;")
     database.close()
-
-
 
 
 # create role broker with createdb login password 'br0k3r';
