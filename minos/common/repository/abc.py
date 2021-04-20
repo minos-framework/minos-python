@@ -25,7 +25,6 @@ class MinosRepository(ABC):
         :param entry: TODO
         :return: TODO
         """
-        pass
 
     @abstractmethod
     def update(self, entry: MinosRepositoryEntry):
@@ -34,7 +33,6 @@ class MinosRepository(ABC):
         :param entry: TODO
         :return: TODO
         """
-        pass
 
     @abstractmethod
     def delete(self, entry: MinosRepositoryEntry):
@@ -53,4 +51,3 @@ class MinosRepository(ABC):
         :param kwargs: TODO
         :return: TODO
         """
-        pass
