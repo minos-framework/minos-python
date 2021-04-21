@@ -5,6 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import os
 import unittest
 
 import aiopg
@@ -13,9 +14,11 @@ import aiopg
 class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self._meta_kwargs = {
-            "database": "postgres",
-            "user": "postgres",
-            "password": "postgres",
+            "host": os.getenv("POSTGRES_HOST", "localhost"),
+            "port": os.getenv("POSTGRES_PORT", 5432),
+            "database": os.getenv("POSTGRES_DATABASE", "postgres"),
+            "user": os.getenv("POSTGRES_USER", "postgres"),
+            "password": os.getenv("POSTGRES_PASSWORD", "postgres"),
         }
 
         self.kwargs = self._meta_kwargs | {
