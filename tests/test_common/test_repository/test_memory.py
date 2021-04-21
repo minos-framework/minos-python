@@ -155,7 +155,7 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
             MinosRepositoryEntry(1, "example.Car", 3, bytes(), 5, MinosRepositoryAction.DELETE),
             MinosRepositoryEntry(2, "example.Car", 1, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
         ]
-        self.assertEqual(expected, await  repository.select(version_ge=1))
+        self.assertEqual(expected, await repository.select(version_ge=1))
 
     async def test_select_combine(self):
         repository = await self._build_repository()
