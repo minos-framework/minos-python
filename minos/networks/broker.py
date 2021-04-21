@@ -152,7 +152,7 @@ class BrokerDatabaseInitializer(Service):
 
         conn.close()
 
-        return
+        await self.stop(self)
 
 
 
