@@ -3,10 +3,9 @@ import time
 import pytest
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
-from minos.common.model.model import MinosModel
 from minos.networks.broker import (Aggregate, BrokerDatabaseInitializer,
                                    Dispatcher, MinosBrokerDatabase,
-                                   MinosEventBroker)
+                                   MinosEventBroker, MinosCommandBroker)
 
 
 @pytest.fixture()
@@ -58,13 +57,11 @@ async def test_events_broker_insertion(config, database):
     assert ret == [(1,)]
 
 
-"""
 async def test_commands_broker_insertion(config, database):
-    a = AggregateModel()
-    a.name = "CommandBroker"
+    a = AgregateTest(test_id=1, test=2)
 
-    m = MinosCommandBroker("CommandBroker", a, config)
-    await m.send()
+    m = MinosCommandBroker("CommandBroker", config)
+    await m.send(model=a, callback="test")
 
     cur = await database.cursor()
 
@@ -75,15 +72,15 @@ async def test_commands_broker_insertion(config, database):
 
     database.close()
     assert ret == [(1,)]
+
+
 """
-
-
 async def test_queue_dispatcher(config):
     d = Dispatcher(config)
     await d.run()
 
 
-"""
+
 async def test_drop_database(database):
     cur = await database.cursor()
     await cur.execute("DROP TABLE IF EXISTS queue;")

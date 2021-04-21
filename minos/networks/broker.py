@@ -42,6 +42,14 @@ class EventModel(MinosModel):
     items: list[str]
 
 
+class CommandModel(MinosModel):
+    topic: str
+    model: str
+    # items: list[ModelRef[Aggregate]]
+    items: list[str]
+    callback: str
+
+
 class MinosEventBroker(MinosBaseBroker):
     def __init__(self, topic: str, config: MinosConfig):
         self.config = config
@@ -68,43 +76,30 @@ class MinosEventBroker(MinosBaseBroker):
         conn.close()
 
 
-"""
-class MinosCommandBroker(BrokerBase):
-    def __init__(self, topic: str, model: AggregateModel, config: MinosConfig):
+class MinosCommandBroker(MinosBaseBroker):
+    def __init__(self, topic: str, config: MinosConfig):
         self.config = config
         self.topic = topic
-        self.model = model
         self._database()
 
     def _database(self):
         pass
 
-    async def send(self):
-
+    async def send(self, model: Aggregate, callback):
         # TODO: Change
-        event_instance = CommandModel()
-        event_instance.topic = self.topic
-        event_instance.name = self.model.name
-        event_instance.items = self.model
-
-        bin_data = b"bytes object"
+        event_instance = CommandModel(topic=self.topic, model="Change", items=[str(model)], callback=callback)
+        bin_data = event_instance.avro_bytes
 
         conn = await MinosBrokerDatabase().get_connection(self.config)
 
         cur = await conn.cursor()
         await cur.execute(
             "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
-            (
-                event_instance.topic,
-                bin_data,
-                0,
-                datetime.datetime.now(),
-                datetime.datetime.now(),
-            ),
+            (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
         )
 
         conn.close()
-"""
+
 
 
 class BrokerDatabaseInitializer(Service):
