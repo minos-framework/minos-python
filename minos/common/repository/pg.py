@@ -81,11 +81,7 @@ class PostgreSqlMinosRepository(MinosRepository):
 
     def _connection(self):
         return aiopg.connect(
-            host=self.host,
-            port=self.port,
-            dbname=self.database,
-            user=self.user,
-            password=self.password,
+            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
         )
 
 
