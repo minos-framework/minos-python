@@ -24,13 +24,17 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
         async with MinosInMemoryRepository() as repository:
             await repository.insert(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
 
-            expected = [MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT)]
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT)
+            ]
             self.assertEqual(expected, await repository.select())
 
     async def test_update(self):
         async with MinosInMemoryRepository() as repository:
             await repository.update(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
-            expected = [MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.UPDATE)]
+            expected = [
+                MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.UPDATE)
+            ]
             self.assertEqual(expected, await repository.select())
 
     async def test_delete(self):
@@ -156,7 +160,7 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
             MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
             MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
         ]
-        self.assertEqual(expected, await  repository.select(version_ge=2))
+        self.assertEqual(expected, await repository.select(version_ge=2))
 
     async def test_select_combine(self):
         repository = await self._build_repository()
