@@ -4,9 +4,29 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
+    container: python:3.9-buster
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:latest
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: localhost
+          POSTGRES_HOST_AUTH_METHOD: trust
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
 
     steps:
     - uses: actions/checkout@v2
@@ -16,9 +36,13 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
-        python setup.py install
+          python -m pip install --upgrade pip
+          if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
+          python setup.py install
+    - name: Create database
+      run: |
+          PGPASSWORD=postgres psql -U postgres -h postgres -p 5432 -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
+          PGPASSWORD=postgres psql -U postgres -h postgres -p 5432 -tc "CREATE DATABASE broker_db OWNER broker;"
     - name: Test with pytest
       run: |
           make test
@@ -31,4 +55,3 @@ jobs:
             token: ${{ secrets.CODECOV_TOKEN }}
             files: ./coverage.xml
             fail_ci_if_error: true
-
