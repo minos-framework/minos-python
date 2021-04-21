@@ -50,13 +50,7 @@ class PostgreSqlMinosRepository(MinosRepository):
     async def _get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
         await self._create_events_table()
 
-        response = await self._submit_sql(
-            _SELECT_NEXT_VERSION_QUERY,
-            (
-                aggregate_name,
-                aggregate_id,
-            ),
-        )
+        response = await self._submit_sql(_SELECT_NEXT_VERSION_QUERY, (aggregate_name, aggregate_id,),)
         next_version_id = response[0][0]
         return next_version_id
 
@@ -100,11 +94,7 @@ class PostgreSqlMinosRepository(MinosRepository):
 
     def _connection(self):
         return aiopg.connect(
-            host=self.host,
-            port=self.port,
-            dbname=self.database,
-            user=self.user,
-            password=self.password,
+            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
         )
 
 
