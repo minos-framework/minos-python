@@ -7,10 +7,16 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import aiopg
-from psycopg2 import ProgrammingError
+from psycopg2 import (
+    ProgrammingError,
+)
 
-from .abc import MinosRepository
-from .entries import MinosRepositoryEntry
+from .abc import (
+    MinosRepository,
+)
+from .entries import (
+    MinosRepositoryEntry,
+)
 
 
 class PostgreSqlMinosRepository(MinosRepository):

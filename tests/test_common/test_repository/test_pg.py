@@ -9,16 +9,19 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 import aiopg
-
 from minos.common import (
-    MinosRepository,
-    PostgreSqlMinosRepository,
-    MinosRepositoryEntry,
-    MinosRepositoryAction,
     MinosInMemoryRepository,
+    MinosRepository,
+    MinosRepositoryAction,
+    MinosRepositoryEntry,
+    PostgreSqlMinosRepository,
 )
-from tests.aggregate_classes import Car
-from tests.database_testcase import PostgresAsyncTestCase
+from tests.aggregate_classes import (
+    Car,
+)
+from tests.database_testcase import (
+    PostgresAsyncTestCase,
+)
 
 
 class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
