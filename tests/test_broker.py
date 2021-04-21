@@ -4,8 +4,8 @@ import pytest
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 from minos.networks.broker import (Aggregate, BrokerDatabaseInitializer,
-                                   Dispatcher, MinosBrokerDatabase,
-                                   MinosEventBroker, MinosCommandBroker)
+                                   MinosBrokerDatabase, MinosEventBroker,
+                                   MinosCommandBroker)
 
 
 @pytest.fixture()

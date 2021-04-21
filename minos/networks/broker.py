@@ -120,7 +120,7 @@ class BrokerDatabaseInitializer(Service):
 
         await self.stop(self)
 
-
+"""
 class Dispatcher:
     def __init__(self, config):
         self.config = config
@@ -174,3 +174,5 @@ class Dispatcher:
 class EventBrokerQueueDispatcher(PeriodicService):
     async def callback(self):
         pass
+
+"""
