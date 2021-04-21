@@ -32,6 +32,9 @@ jobs:
     - name: Test with pytest
       run: |
         make test
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
 
     - name: Generate coverage report
       run: |
