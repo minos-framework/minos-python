@@ -30,7 +30,7 @@ jobs:
         python setup.py install
     - name: Create database
       run: |
-          psql postgres -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
+          psql postgres -h postgres -p 5432 -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
     - name: Test with pytest
       run: |
           make test
