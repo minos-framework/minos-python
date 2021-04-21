@@ -32,10 +32,18 @@ if TYPE_CHECKING:
 class MinosRepository(ABC):
     """Base repository class in ``minos``."""
 
-    def __enter__(self) -> MinosRepository:
+    async def __aenter__(self) -> MinosRepository:
+        await self.setup()
         return self
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+    async def __aexit__(self, exc_type, exc_value, exc_traceback):
+        pass
+
+    async def setup(self):
+        """TODO
+
+        :return: TODO
+        """
         pass
 
     async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
