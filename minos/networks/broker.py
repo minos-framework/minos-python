@@ -101,7 +101,6 @@ class MinosCommandBroker(MinosBaseBroker):
         conn.close()
 
 
-
 class BrokerDatabaseInitializer(Service):
     async def start(self):
         # Send signal to entrypoint for continue running
@@ -119,6 +118,7 @@ class BrokerDatabaseInitializer(Service):
         conn.close()
 
         await self.stop(self)
+
 
 """
 class Dispatcher:
