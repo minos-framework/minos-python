@@ -3,6 +3,7 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: python:3.9
 
     services:
       postgres:
@@ -18,11 +19,6 @@ jobs:
     - name: Check out repository code
       uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -33,7 +29,7 @@ jobs:
       run: |
         make test
       env:
-        POSTGRES_HOST: localhost
+        POSTGRES_HOST: postgres
         POSTGRES_PORT: 5432
 
     - name: Generate coverage report
