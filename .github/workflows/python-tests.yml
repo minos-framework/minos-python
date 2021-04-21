@@ -39,6 +39,10 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
           python setup.py install
+    - name: Install Postgresql client
+      run: |
+          apt-get update
+          apt-get install --yes postgresql-client
     - name: Create database
       run: |
           PGPASSWORD=postgres psql -U postgres -h postgres -p 5432 -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
