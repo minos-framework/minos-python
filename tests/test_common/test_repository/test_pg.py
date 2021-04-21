@@ -26,13 +26,13 @@ from tests.database_testcase import (
 
 class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     def test_constructor(self):
-        repository = PostgreSqlMinosRepository(**self.kwargs)
+        repository = PostgreSqlMinosRepository("host", 1234, "database", "user", "password")
         self.assertIsInstance(repository, MinosRepository)
-        self.assertEqual(self.kwargs["host"], repository.host)
-        self.assertEqual(self.kwargs["port"], repository.port)
-        self.assertEqual(self.kwargs["database"], repository.database)
-        self.assertEqual(self.kwargs["user"], repository.user)
-        self.assertEqual(self.kwargs["password"], repository.password)
+        self.assertEqual("host", repository.host)
+        self.assertEqual(1234, repository.port)
+        self.assertEqual("database", repository.database)
+        self.assertEqual("user", repository.user)
+        self.assertEqual("password", repository.password)
 
     async def test_setup(self):
         async with aiopg.connect(**self.kwargs) as connection:

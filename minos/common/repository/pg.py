@@ -22,7 +22,9 @@ from .entries import (
 class PostgreSqlMinosRepository(MinosRepository):
     """TODO"""
 
-    def __init__(self, host: str, port: int, database: str, user: str, password: str):
+    def __init__(
+        self, host: str = None, port: int = None, database: str = None, user: str = None, password: str = None
+    ):
         self.host = host
         self.port = port
         self.database = database
