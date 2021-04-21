@@ -73,7 +73,7 @@ class MinosModel(object):
         self._list_fields(*args, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls, raw: bytes) -> t.Union["MinosModel", list["MinosModel"]]:
+    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union["MinosModel", list["MinosModel"]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -82,8 +82,8 @@ class MinosModel(object):
 
         decoded = MinosAvroValuesDatabase().decode(raw, content_root=False)
         if isinstance(decoded, list):
-            return [cls.from_dict(d) for d in decoded]
-        return cls.from_dict(decoded)
+            return [cls.from_dict(d | kwargs) for d in decoded]
+        return cls.from_dict(decoded | kwargs)
 
     @classmethod
     def from_dict(cls, d: dict[str, t.Any]) -> "MinosModel":

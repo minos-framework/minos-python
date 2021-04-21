@@ -100,7 +100,7 @@ class Aggregate(MinosModel):
         if entry.action == MinosRepositoryAction.DELETE:
             raise MinosRepositoryDeletedAggregateException(f"The {id} id points to an already deleted aggregate.")
 
-        instance = cls.from_avro_bytes(entry.data)
+        instance = cls.from_avro_bytes(entry.data, id=entry.aggregate_id, version=entry.version)
         instance._broker = _broker
         instance._repository = _repository
         return instance
@@ -133,7 +133,10 @@ class Aggregate(MinosModel):
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
-        await _repository.insert(instance)
+        entry = await _repository.insert(instance)
+
+        instance.id = entry.aggregate_id
+        instance.version = entry.version
 
         return instance
 
@@ -164,8 +167,9 @@ class Aggregate(MinosModel):
         for key, value in kwargs.items():
             setattr(instance, key, value)
 
-        await _repository.update(instance)
-
+        entry = await _repository.update(instance)
+        instance.id = entry.aggregate_id
+        instance.version = entry.version
         return instance
 
     async def refresh(self) -> NoReturn:

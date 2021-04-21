@@ -15,15 +15,19 @@ from itertools import (
 from typing import (
     NoReturn,
     Optional,
+    TYPE_CHECKING,
+    Union,
 )
 
 from .abc import (
     MinosRepository,
 )
 from .entries import (
-    MinosRepositoryAction,
     MinosRepositoryEntry,
 )
+
+if TYPE_CHECKING:
+    from ..model import Aggregate
 
 
 class MinosInMemoryRepository(MinosRepository):
@@ -33,19 +37,23 @@ class MinosInMemoryRepository(MinosRepository):
         self._storage = list()
         self._id_generator = count()
 
-    async def _submit(self, entry: MinosRepositoryEntry) -> NoReturn:
+    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
+        if entry.aggregate_id == 0:
+            entry.aggregate_id = self._generate_next_aggregate_id(entry.aggregate_name)
+        entry.version = self._get_next_version_id(entry.aggregate_name, entry.aggregate_id)
+        entry.id = self._generate_next_id()
         self._storage.append(entry)
+        return entry
 
-    async def _generate_next_id(self) -> int:
+    def _generate_next_id(self) -> int:
         return next(self._id_generator) + 1
 
-    # noinspection PyShadowingBuiltins
-    async def _generate_next_aggregate_id(self, aggregate_name: str) -> int:
+    def _generate_next_aggregate_id(self, aggregate_name: str) -> int:
         """Generate a new unique id for the given aggregate name.
 
         :param aggregate_name: The name of the aggregate.
@@ -55,7 +63,7 @@ class MinosInMemoryRepository(MinosRepository):
         iterable = filter(lambda entry: entry.aggregate_name == aggregate_name, iterable)
         return len(list(iterable)) + 1
 
-    async def _get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
+    def _get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
         """Generate a new version number for the given aggregate name and identifier.
 
         :param aggregate_name: The name of the aggregate.

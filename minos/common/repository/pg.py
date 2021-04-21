@@ -32,41 +32,22 @@ class PostgreSqlMinosRepository(MinosRepository):
         self.user = user
         self.password = password
 
-    async def _generate_next_id(self) -> int:
+    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         await self._create_events_table()
 
-        response = await self._submit_sql(_SELECT_NEXT_ID_QUERY)
-        next_id = response[0][0]
-        return next_id
+        params = {
+            "action": entry.action.value,
+            "aggregate_id": entry.aggregate_id,
+            "aggregate_name": entry.aggregate_name,
+            "data": entry.data,
+        }
+        response = await self._submit_sql(_INSERT_VALUES_QUERY, params)
+        entry.id = response[0][0]
+        entry.aggregate_id = response[0][1]
+        entry.version = response[0][2]
+        return entry
 
-    async def _generate_next_aggregate_id(self, aggregate_name: str) -> int:
-        await self._create_events_table()
-
-        response = await self._submit_sql(_SELECT_NEXT_AGGREGATE_ID_QUERY, (aggregate_name,))
-
-        next_aggregate_id = response[0][0]
-        return next_aggregate_id
-
-    async def _get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
-        await self._create_events_table()
-
-        response = await self._submit_sql(
-            _SELECT_NEXT_VERSION_QUERY,
-            (
-                aggregate_name,
-                aggregate_id,
-            ),
-        )
-        next_version_id = response[0][0]
-        return next_version_id
-
-    async def _submit(self, entry: MinosRepositoryEntry) -> NoReturn:
-        await self._create_events_table()
-
-        params = (entry.id, entry.action.value, entry.aggregate_id, entry.aggregate_name, entry.version, entry.data)
-        await self._submit_sql(_INSERT_VALUES_QUERY, params)
-
-    async def select(self, aggregate_id, aggregate_name, *args, **kwargs) -> list[MinosRepositoryEntry]:
+    async def select(self, aggregate_id: int, aggregate_name: str, *args, **kwargs) -> list[MinosRepositoryEntry]:
         """TODO
         :param aggregate_id: TODO
         :param aggregate_name: TODO
@@ -109,13 +90,16 @@ class PostgreSqlMinosRepository(MinosRepository):
 
 
 _CREATE_TABLE_QUERY = """
+/*CREATE TYPE action_type AS ENUM ('insert', 'update', 'delete');*/
+
 CREATE TABLE IF NOT EXISTS events (
-    id integer,
-    action text,
-    aggregate_id integer,
-    aggregate_name text,
-    version integer,
-    data bytea
+    id BIGSERIAL PRIMARY KEY,
+    action ACTION_TYPE NOT NULL,
+    aggregate_id BIGINT NOT NULL,
+    aggregate_name TEXT NOT NULL,
+    version INT NOT NULL,
+    data BYTEA NOT NULL,
+    UNIQUE (aggregate_id, aggregate_name, version)
 );
 """.strip()
 
@@ -137,7 +121,27 @@ WHERE aggregate_name = %s AND aggregate_id = %s;
 """.strip()
 
 _INSERT_VALUES_QUERY = """
-INSERT INTO events (id, action, aggregate_id, aggregate_name, version, data) VALUES (%s, %s, %s, %s, %s, %s)
+INSERT INTO events (id, action, aggregate_id, aggregate_name, version, data)
+VALUES (default,
+        %(action)s,
+        (
+            CASE %(aggregate_id)s
+                WHEN 0 THEN (
+                    SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(aggregate_id) + 1 END)
+                    FROM events
+                    WHERE aggregate_name = %(aggregate_name)s
+                )
+                ELSE %(aggregate_id)s END
+            ),
+        %(aggregate_name)s,
+        (
+            SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(version) + 1 END)
+            FROM events
+            WHERE aggregate_id = %(aggregate_id)s
+              AND aggregate_name = %(aggregate_name)s
+        ),
+        %(data)s)
+RETURNING id, aggregate_id, version;
 """.strip()
 
 _SELECT_ENTRIES_QUERY = """
