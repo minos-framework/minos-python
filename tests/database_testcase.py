@@ -12,11 +12,7 @@ import aiopg
 
 class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self._meta_kwargs = {
-            "host": "localhost",
-            "port": 5432,
-            "database": "postgres"
-        }
+        self._meta_kwargs = {"host": "localhost", "port": 5432, "database": "postgres"}
 
         self.kwargs = self._meta_kwargs | {
             "database": "test_db",

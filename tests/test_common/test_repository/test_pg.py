@@ -9,10 +9,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 import aiopg
-
 from minos.common import (
+    MinosInMemoryRepository,
     MinosRepository,
-    PostgreSqlMinosRepository, MinosRepositoryEntry, MinosRepositoryAction, MinosInMemoryRepository,
+    MinosRepositoryAction,
+    MinosRepositoryEntry,
+    PostgreSqlMinosRepository,
 )
 from tests.aggregate_classes import (
     Car,
@@ -66,14 +68,16 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             await repository.insert(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
 
             expected = [
-                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT)]
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT)
+            ]
             self.assertEqual(expected, await repository.select())
 
     async def test_update(self):
         async with PostgreSqlMinosRepository(**self.kwargs) as repository:
             await repository.update(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
             expected = [
-                MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.UPDATE)]
+                MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.UPDATE)
+            ]
             self.assertEqual(expected, await repository.select())
 
     async def test_delete(self):

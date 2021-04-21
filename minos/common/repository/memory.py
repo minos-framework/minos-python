@@ -13,9 +13,9 @@ from itertools import (
     count,
 )
 from typing import (
+    TYPE_CHECKING,
     NoReturn,
     Optional,
-    TYPE_CHECKING,
     Union,
 )
 
