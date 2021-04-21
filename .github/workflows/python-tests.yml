@@ -35,6 +35,9 @@ jobs:
     - name: Generate coverage report
       run: |
         make coverage
+      env:
+        POSTGRES_HOST: postgres
+        POSTGRES_PORT: 5432
 
     - name: Codecov
       uses: codecov/codecov-action@v1.3.1
