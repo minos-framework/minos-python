@@ -29,7 +29,7 @@ events:
         database: broker_db
         user: broker
         password: br0k3r
-        host: postgres
+        host: localhost
         port: 5432
         records: 10
 commands:
