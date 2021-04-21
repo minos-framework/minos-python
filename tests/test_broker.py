@@ -4,7 +4,7 @@ from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 from minos.networks.broker import (AggregateModel, BrokerDatabaseInitializer,
                                    MinosBrokerDatabase, MinosCommandBroker,
-                                   MinosEventBroker)
+                                   MinosEventBroker, Dispatcher)
 
 
 @pytest.fixture()
@@ -70,6 +70,10 @@ async def test_commands_broker_insertion(config, database):
     database.close()
     assert ret == [(1,)]
 
+
+async def test_queue_dispatcher(config):
+    d = Dispatcher(config)
+    await d.run()
 
 async def test_drop_database(database):
     cur = await database.cursor()

@@ -13,6 +13,7 @@ import aiomisc
 import aiopg
 from aiomisc.service.periodic import PeriodicService
 from aiomisc.service.periodic import Service
+from aiokafka import AIOKafkaProducer
 
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
@@ -152,3 +153,59 @@ class BrokerDatabaseInitializer(Service):
         conn.close()
 
         return
+
+
+
+class Dispatcher:
+    def __init__(self, config):
+        self.config = config
+
+    async def run(self):
+        conn = await MinosBrokerDatabase().get_connection(self.config)
+
+        async with conn.cursor() as cur:
+            await cur.execute("SELECT * FROM queue WHERE retry <= 2 ORDER BY creation_date ASC LIMIT 10;")
+            async for row in cur:
+
+                log.debug(row)
+                log.debug("id = %s", row[0])
+                log.debug("topic = %s", row[1])
+                log.debug("model  = %s", row[2])
+                log.debug("retry  = %s", row[3])
+                log.debug("creation_date  = %s", row[4])
+                log.debug("update_date  = %s", row[5])
+
+                sent_to_kafka = await self._send_to_kafka()
+                if sent_to_kafka:
+                    # Delete from database If the event was sent successfully to Kafka.
+                    async with conn.cursor() as cur2:
+                        await cur2.execute("DELETE FROM queue WHERE queue_id=%d;" % row[0])
+                else:
+                    # Update queue retry column. Increase by 1.
+                    async with conn.cursor() as cur3:
+                        await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
+
+        conn.commit()
+        conn.close()
+
+    async def _send_to_kafka(self):
+        flag = False
+        producer = AIOKafkaProducer(bootstrap_servers='localhost:9092')
+        # Get cluster layout and initial topic/partition leadership information
+        await producer.start()
+        try:
+            # Produce message
+            await producer.send_and_wait("my_topic", b"Super message")
+            flag = True
+        except Exception as e:
+            flag = False
+        finally:
+            # Wait for all pending messages to be delivered or expire.
+            await producer.stop()
+
+        return flag
+
+
+class EventBrokerQueueDispatcher(PeriodicService):
+    async def callback(self):
+        pass
