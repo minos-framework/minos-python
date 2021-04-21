@@ -31,15 +31,15 @@ jobs:
 
     - name: Test with pytest
       run: |
-          make test
+        make test
 
-    -   name: Generate coverage report
-        run: |
-            make coverage
+    - name: Generate coverage report
+      run: |
+        make coverage
 
-    -   name: Codecov
-        uses: codecov/codecov-action@v1.3.1
-        with:
-            token: ${{ secrets.CODECOV_TOKEN }}
-            files: ./coverage.xml
-            fail_ci_if_error: true
+    - name: Codecov
+      uses: codecov/codecov-action@v1.3.1
+      with:
+         token: ${{ secrets.CODECOV_TOKEN }}
+         files: ./coverage.xml
+         fail_ci_if_error: true
