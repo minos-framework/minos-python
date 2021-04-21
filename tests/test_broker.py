@@ -3,9 +3,13 @@ import time
 import pytest
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
-from minos.networks.broker import (Aggregate, BrokerDatabaseInitializer,
-                                   MinosBrokerDatabase, MinosEventBroker,
-                                   MinosCommandBroker)
+from minos.networks.broker import (
+    Aggregate,
+    BrokerDatabaseInitializer,
+    MinosBrokerDatabase,
+    MinosEventBroker,
+    MinosCommandBroker,
+)
 
 
 @pytest.fixture()
