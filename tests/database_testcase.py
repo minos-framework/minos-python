@@ -15,7 +15,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self._meta_kwargs = {
             "host": "localhost",
             "port": 5432,
-            "database": "postgres"
+            "database": "postgres",
         }
 
         self.kwargs = self._meta_kwargs | {
