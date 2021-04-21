@@ -8,15 +8,12 @@ jobs:
         image: postgres
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
+    container: python:3.9
 
     steps:
     - uses: actions/checkout@v2
@@ -29,9 +26,6 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
         python setup.py install
-    - name: Create database
-      run: |
-          psql postgres -h postgres -p 5432 -tc "CREATE ROLE broker with createdb login password 'br0k3r';"
     - name: Test with pytest
       run: |
           make test
