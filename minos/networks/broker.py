@@ -16,6 +16,8 @@ from aiomisc.service.periodic import Service
 from aiokafka import AIOKafkaProducer
 
 from minos.common.configuration.config import MinosConfig
+from minos.common import MinosModel, ModelRef
+from minos.common.broker import MinosBaseBroker
 from minos.common.logs import log
 
 
@@ -30,57 +32,31 @@ class MinosBrokerDatabase:
         )
         return conn
 
-
-class AggregateModel:
-    name: str
-    pass
+class Aggregate(MinosModel):
+    test_id: int
 
 
-class ModelBase:
-    pass
-
-
-class EventModel(ModelBase):
+class EventModel(MinosModel):
     topic: str
     model: str
-    items: AggregateModel
+    #items: list[ModelRef[Aggregate]]
+    items: list[str]
 
 
-class CommandModel(ModelBase):
-    topic: str
-    model: str
-    items: AggregateModel
-
-
-class BrokerBase(abc.ABC):
-    @abc.abstractmethod
-    def _database(self):  # pragma: no cover
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def send(self):  # pragma: no cover
-        raise NotImplementedError
-
-
-class MinosEventBroker(BrokerBase):
-    def __init__(self, topic: str, model: AggregateModel, config: MinosConfig):
+class MinosEventBroker(MinosBaseBroker):
+    def __init__(self, topic: str, config: MinosConfig):
         self.config = config
         self.topic = topic
-        self.model = model
         self._database()
 
     def _database(self):
         pass
 
-    async def send(self):
+    async def send(self, model: Aggregate):
 
         # TODO: Change
-        event_instance = EventModel()
-        event_instance.topic = self.topic
-        event_instance.name = self.model.name
-        event_instance.items = self.model
-
-        bin_data = b"bytes object"
+        event_instance = EventModel(topic=self.topic, model="Change", items=[str(model)])
+        bin_data = event_instance.avro_bytes
 
         conn = await MinosBrokerDatabase().get_connection(self.config)
 
@@ -98,7 +74,7 @@ class MinosEventBroker(BrokerBase):
 
         conn.close()
 
-
+"""
 class MinosCommandBroker(BrokerBase):
     def __init__(self, topic: str, model: AggregateModel, config: MinosConfig):
         self.config = config
@@ -134,7 +110,7 @@ class MinosCommandBroker(BrokerBase):
         )
 
         conn.close()
-
+"""
 
 class BrokerDatabaseInitializer(Service):
     async def start(self):
