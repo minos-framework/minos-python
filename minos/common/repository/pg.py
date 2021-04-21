@@ -5,13 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from typing import NoReturn
+from typing import (
+    NoReturn,
+)
 
 import aiopg
-from psycopg2 import ProgrammingError
+from psycopg2 import (
+    ProgrammingError,
+)
 
-from .abc import MinosRepository
-from .entries import MinosRepositoryEntry
+from .abc import (
+    MinosRepository,
+)
+from .entries import (
+    MinosRepositoryEntry,
+)
 
 
 class PostgreSqlMinosRepository(MinosRepository):

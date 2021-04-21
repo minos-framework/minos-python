@@ -12,7 +12,9 @@ from minos.common import (
     MinosRepository,
     PostgreSqlMinosRepository,
 )
-from tests.aggregate_classes import Car
+from tests.aggregate_classes import (
+    Car,
+)
 
 
 class TestPostgreSqlMinosRepository(unittest.IsolatedAsyncioTestCase):
