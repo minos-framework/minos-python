@@ -1,11 +1,12 @@
 import time
+
 import pytest
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 from minos.common.model.model import MinosModel
-from minos.networks.broker import (BrokerDatabaseInitializer,
-                                   MinosBrokerDatabase, Aggregate,
-                                   MinosEventBroker, Dispatcher)
+from minos.networks.broker import (Aggregate, BrokerDatabaseInitializer,
+                                   Dispatcher, MinosBrokerDatabase,
+                                   MinosEventBroker)
 
 
 @pytest.fixture()
@@ -56,6 +57,7 @@ async def test_events_broker_insertion(config, database):
     database.close()
     assert ret == [(1,)]
 
+
 """
 async def test_commands_broker_insertion(config, database):
     a = AggregateModel()
@@ -75,9 +77,11 @@ async def test_commands_broker_insertion(config, database):
     assert ret == [(1,)]
 """
 
+
 async def test_queue_dispatcher(config):
     d = Dispatcher(config)
     await d.run()
+
 
 """
 async def test_drop_database(database):

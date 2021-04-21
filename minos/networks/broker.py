@@ -11,13 +11,11 @@ import typing as t
 
 import aiomisc
 import aiopg
-from aiomisc.service.periodic import PeriodicService
-from aiomisc.service.periodic import Service
 from aiokafka import AIOKafkaProducer
-
-from minos.common.configuration.config import MinosConfig
+from aiomisc.service.periodic import PeriodicService, Service
 from minos.common import MinosModel, ModelRef
 from minos.common.broker import MinosBaseBroker
+from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 
 
@@ -32,6 +30,7 @@ class MinosBrokerDatabase:
         )
         return conn
 
+
 class Aggregate(MinosModel):
     test_id: int
 
@@ -39,7 +38,7 @@ class Aggregate(MinosModel):
 class EventModel(MinosModel):
     topic: str
     model: str
-    #items: list[ModelRef[Aggregate]]
+    # items: list[ModelRef[Aggregate]]
     items: list[str]
 
 
@@ -63,16 +62,11 @@ class MinosEventBroker(MinosBaseBroker):
         cur = await conn.cursor()
         await cur.execute(
             "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
-            (
-                event_instance.topic,
-                bin_data,
-                0,
-                datetime.datetime.now(),
-                datetime.datetime.now(),
-            ),
+            (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
         )
 
         conn.close()
+
 
 """
 class MinosCommandBroker(BrokerBase):
@@ -112,6 +106,7 @@ class MinosCommandBroker(BrokerBase):
         conn.close()
 """
 
+
 class BrokerDatabaseInitializer(Service):
     async def start(self):
         # Send signal to entrypoint for continue running
@@ -129,7 +124,6 @@ class BrokerDatabaseInitializer(Service):
         conn.close()
 
         await self.stop(self)
-
 
 
 class Dispatcher:
@@ -166,7 +160,7 @@ class Dispatcher:
 
     async def _send_to_kafka(self):
         flag = False
-        producer = AIOKafkaProducer(bootstrap_servers='localhost:9092')
+        producer = AIOKafkaProducer(bootstrap_servers="localhost:9092")
         # Get cluster layout and initial topic/partition leadership information
         await producer.start()
         try:
