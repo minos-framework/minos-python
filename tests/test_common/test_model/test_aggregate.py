@@ -19,90 +19,90 @@ from tests.aggregate_classes import (
 )
 
 
-class TestAggregate(unittest.TestCase):
-    def test_create(self):
+class TestAggregate(unittest.IsolatedAsyncioTestCase):
+    async def test_create(self):
         with MinosInMemoryRepository() as repository:
-            car = Car.create(doors=3, color="blue", _repository=repository)
+            car = await Car.create(doors=3, color="blue", _repository=repository)
             self.assertEqual(Car(1, 1, 3, "blue"), car)
 
-    def test_create_raises(self):
+    async def test_create_raises(self):
         with MinosInMemoryRepository() as repository:
             with self.assertRaises(MinosRepositoryManuallySetAggregateIdException):
-                Car.create(id=1, doors=3, color="blue", _repository=repository)
+                await Car.create(id=1, doors=3, color="blue", _repository=repository)
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
-                Car.create(version=1, doors=3, color="blue", _repository=repository)
+                await Car.create(version=1, doors=3, color="blue", _repository=repository)
 
-    def test_get_namespace(self):
+    async def test_get_namespace(self):
         self.assertEqual("tests.aggregate_classes.Car", Car.get_namespace())
 
-    def test_get(self):
+    async def test_get(self):
         with MinosInMemoryRepository() as repository:
             originals = [
-                Car.create(doors=3, color="blue", _repository=repository),
-                Car.create(doors=3, color="red", _repository=repository),
-                Car.create(doors=5, color="blue", _repository=repository),
+                await Car.create(doors=3, color="blue", _repository=repository),
+                await Car.create(doors=3, color="red", _repository=repository),
+                await Car.create(doors=5, color="blue", _repository=repository),
             ]
-            recovered = Car.get([o.id for o in originals], _repository=repository)
+            recovered = await Car.get([o.id for o in originals], _repository=repository)
 
             self.assertEqual(originals, recovered)
 
-    def test_get_one(self):
+    async def test_get_one(self):
         with MinosInMemoryRepository() as repository:
-            original = Car.create(doors=3, color="blue", _repository=repository)
-            recovered = Car.get_one(original.id, _repository=repository)
+            original = await Car.create(doors=3, color="blue", _repository=repository)
+            recovered = await Car.get_one(original.id, _repository=repository)
 
             self.assertEqual(original, recovered)
 
-    def test_get_one_raises(self):
+    async def test_get_one_raises(self):
         with MinosInMemoryRepository() as repository:
             with self.assertRaises(MinosRepositoryAggregateNotFoundException):
-                Car.get_one(0, _repository=repository)
+                await Car.get_one(0, _repository=repository)
 
-    def test_update(self):
+    async def test_update(self):
         with MinosInMemoryRepository() as repository:
-            car = Car.create(doors=3, color="blue", _repository=repository)
+            car = await Car.create(doors=3, color="blue", _repository=repository)
 
-            car.update(color="red")
+            await car.update(color="red")
             self.assertEqual(Car(1, 2, 3, "red"), car)
-            self.assertEqual(car, Car.get_one(car.id, _repository=repository))
+            self.assertEqual(car, await Car.get_one(car.id, _repository=repository))
 
-            car.update(doors=5)
+            await car.update(doors=5)
             self.assertEqual(Car(1, 3, 5, "red"), car)
-            self.assertEqual(car, Car.get_one(car.id, _repository=repository))
+            self.assertEqual(car, await Car.get_one(car.id, _repository=repository))
 
-    def test_update_cls(self):
+    async def test_update_cls(self):
         with MinosInMemoryRepository() as repository:
-            car = Car.create(doors=3, color="blue", _repository=repository)
+            car = await Car.create(doors=3, color="blue", _repository=repository)
 
-            Car.update(car.id, color="red", _repository=repository)
-            self.assertEqual(Car(1, 2, 3, "red"), Car.get_one(car.id, _repository=repository))
+            await Car.update(car.id, color="red", _repository=repository)
+            self.assertEqual(Car(1, 2, 3, "red"), await Car.get_one(car.id, _repository=repository))
 
-            Car.update(car.id, doors=5, _repository=repository)
-            self.assertEqual(Car(1, 3, 5, "red"), Car.get_one(car.id, _repository=repository))
+            await Car.update(car.id, doors=5, _repository=repository)
+            self.assertEqual(Car(1, 3, 5, "red"), await Car.get_one(car.id, _repository=repository))
 
-    def test_refresh(self):
+    async def test_refresh(self):
         with MinosInMemoryRepository() as repository:
-            car = Car.create(doors=3, color="blue", _repository=repository)
-            Car.update(car.id, color="red", _repository=repository)
-            Car.update(car.id, doors=5, _repository=repository)
+            car = await Car.create(doors=3, color="blue", _repository=repository)
+            await Car.update(car.id, color="red", _repository=repository)
+            await Car.update(car.id, doors=5, _repository=repository)
 
             self.assertEqual(Car(1, 1, 3, "blue"), car)
-            car.refresh()
+            await car.refresh()
             self.assertEqual(Car(1, 3, 5, "red"), car)
 
-    def test_delete(self):
+    async def test_delete(self):
         with MinosInMemoryRepository() as repository:
-            car = Car.create(doors=3, color="blue", _repository=repository)
-            car.delete()
+            car = await Car.create(doors=3, color="blue", _repository=repository)
+            await car.delete()
             with self.assertRaises(MinosRepositoryDeletedAggregateException):
-                Car.get_one(car.id, _repository=repository)
+                await Car.get_one(car.id, _repository=repository)
 
-    def test_delete_cls(self):
+    async def test_delete_cls(self):
         with MinosInMemoryRepository() as repository:
-            car = Car.create(doors=3, color="blue", _repository=repository)
-            Car.delete(car.id, _repository=repository)
+            car = await Car.create(doors=3, color="blue", _repository=repository)
+            await Car.delete(car.id, _repository=repository)
             with self.assertRaises(MinosRepositoryDeletedAggregateException):
-                Car.get_one(car.id, _repository=repository)
+                await Car.get_one(car.id, _repository=repository)
 
 
 if __name__ == "__main__":

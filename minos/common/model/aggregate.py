@@ -153,7 +153,7 @@ class Aggregate(MinosModel):
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
-            instance = self_or_cls.get_one(id, _repository=_repository)
+            instance = await self_or_cls.get_one(id, _repository=_repository)
         else:
             instance = self_or_cls
 
@@ -168,12 +168,12 @@ class Aggregate(MinosModel):
 
         return instance
 
-    def refresh(self) -> NoReturn:
+    async def refresh(self) -> NoReturn:
         """Refresh the state of the given instance.
 
         :return: This method does not return anything.
         """
-        new = type(self).get_one(self.id, _repository=self._repository)
+        new = await type(self).get_one(self.id, _repository=self._repository)
         self._fields |= new.fields
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
@@ -188,7 +188,7 @@ class Aggregate(MinosModel):
         """
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
-            instance = self_or_cls.get_one(id, _repository=_repository)
+            instance = await self_or_cls.get_one(id, _repository=_repository)
         else:
             instance = self_or_cls
 

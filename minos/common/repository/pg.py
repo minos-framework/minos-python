@@ -68,7 +68,8 @@ class PostgreSqlMinosRepository(MinosRepository):
 
     async def select(self, aggregate_id, aggregate_name, *args, **kwargs) -> list[MinosRepositoryEntry]:
         """TODO
-
+        :param aggregate_id: TODO
+        :param aggregate_name: TODO
         :param args: TODO
         :param kwargs: TODO
         :return: TODO
@@ -115,7 +116,7 @@ CREATE TABLE IF NOT EXISTS events (
     aggregate_name text,
     version integer,
     data bytea
-)
+);
 """.strip()
 
 _SELECT_NEXT_ID_QUERY = """
@@ -124,7 +125,7 @@ FROM events;
 """.strip()
 
 _SELECT_NEXT_AGGREGATE_ID_QUERY = """
-SELECT CASE count(*) WHEN 0 THEN 1 ELSE MAX(aggregate_id) + 1 END
+SELECT CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(aggregate_id) + 1 END
 FROM events
 WHERE aggregate_name = %s;
 """.strip()

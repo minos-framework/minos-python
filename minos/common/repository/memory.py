@@ -33,7 +33,7 @@ class MinosInMemoryRepository(MinosRepository):
         self._storage = list()
         self._id_generator = count()
 
-    def _submit(self, entry: MinosRepositoryEntry) -> NoReturn:
+    async def _submit(self, entry: MinosRepositoryEntry) -> NoReturn:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
@@ -41,11 +41,11 @@ class MinosInMemoryRepository(MinosRepository):
         """
         self._storage.append(entry)
 
-    def _generate_next_id(self) -> int:
+    async def _generate_next_id(self) -> int:
         return next(self._id_generator) + 1
 
     # noinspection PyShadowingBuiltins
-    def _generate_next_aggregate_id(self, aggregate_name: str) -> int:
+    async def _generate_next_aggregate_id(self, aggregate_name: str) -> int:
         """Generate a new unique id for the given aggregate name.
 
         :param aggregate_name: The name of the aggregate.
@@ -55,7 +55,7 @@ class MinosInMemoryRepository(MinosRepository):
         iterable = filter(lambda entry: entry.aggregate_name == aggregate_name, iterable)
         return len(list(iterable)) + 1
 
-    def _get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
+    async def _get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
         """Generate a new version number for the given aggregate name and identifier.
 
         :param aggregate_name: The name of the aggregate.
@@ -68,7 +68,7 @@ class MinosInMemoryRepository(MinosRepository):
         )
         return len(list(iterable)) + 1
 
-    def select(
+    async def select(
         self,
         aggregate_id: Optional[int] = None,
         aggregate_name: Optional[str] = None,

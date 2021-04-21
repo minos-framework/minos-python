@@ -24,6 +24,7 @@ class TestPostgreSqlMinosRepository(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("aiopg", repository.user)
         self.assertEqual("secret", repository.password)
 
+    @unittest.skip
     async def test_connection(self):
         with PostgreSqlMinosRepository("localhost", 5432, "postgres", "aiopg", "secret") as repository:
             car = await Car.create(doors=3, color="blue", _repository=repository)
