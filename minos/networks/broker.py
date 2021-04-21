@@ -11,13 +11,11 @@ import typing as t
 
 import aiomisc
 import aiopg
-from aiomisc.service.periodic import PeriodicService
-from aiomisc.service.periodic import Service
 from aiokafka import AIOKafkaProducer
-
-from minos.common.configuration.config import MinosConfig
+from aiomisc.service.periodic import PeriodicService, Service
 from minos.common import MinosModel, ModelRef
 from minos.common.broker import MinosBaseBroker
+from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 
 
