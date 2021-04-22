@@ -32,8 +32,8 @@ class TestAggregate(unittest.TestCase):
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
                 Car.create(version=1, doors=3, color="blue", _repository=repository)
 
-    def test_get_namespace(self):
-        self.assertEqual("tests.aggregate_classes.Car", Car.get_namespace())
+    def test_classname(self):
+        self.assertEqual("tests.aggregate_classes.Car", Car.classname())
 
     def test_get(self):
         with MinosInMemoryRepository() as repository:
@@ -69,6 +69,11 @@ class TestAggregate(unittest.TestCase):
             car.update(doors=5)
             self.assertEqual(Car(1, 3, 5, "red"), car)
             self.assertEqual(car, Car.get_one(car.id, _repository=repository))
+
+    def test_update_raises(self):
+        with MinosInMemoryRepository() as repository:
+            with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
+                Car.update(version=1, _repository=repository)
 
     def test_update_cls(self):
         with MinosInMemoryRepository() as repository:

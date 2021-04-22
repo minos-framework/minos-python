@@ -65,7 +65,7 @@ class MinosRepository(ABC):
     def _enrich(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
         if not isinstance(entry, MinosRepositoryEntry):
             aggregate = entry
-            namespace = aggregate.get_namespace()
+            namespace = aggregate.classname()
             if aggregate.id == 0:
                 aggregate.id = self._generate_next_aggregate_id(namespace)
             aggregate.version = self._get_next_version_id(namespace, aggregate.id)

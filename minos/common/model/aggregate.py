@@ -61,14 +61,6 @@ class Aggregate(MinosModel):
         self._repository = _repository
 
     @classmethod
-    def get_namespace(cls) -> str:
-        """Compute the current class namespace.
-
-        :return: An string object.
-        """
-        return f"{cls.__module__}.{cls.__qualname__}"
-
-    @classmethod
     def get(cls, ids: list[int], _broker: str = None, _repository: MinosRepository = None) -> list[Aggregate]:
         """Get a sequence of aggregates based on a list of identifiers.
 
@@ -92,7 +84,7 @@ class Aggregate(MinosModel):
         :return: An aggregate instance.
         """
 
-        entries = _repository.select(aggregate_name=cls.get_namespace(), aggregate_id=id)
+        entries = _repository.select(aggregate_name=cls.classname(), aggregate_id=id)
         if not len(entries):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
 
@@ -149,7 +141,9 @@ class Aggregate(MinosModel):
         :return: An updated ``Aggregate``  instance.
         """
         if "version" in kwargs:
-            raise Exception()
+            raise MinosRepositoryManuallySetAggregateVersionException(
+                f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
+            )
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)

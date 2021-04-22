@@ -43,6 +43,7 @@ from .exceptions import (
     MultiTypeMinosModelSequenceException,
 )
 from .importlib import (
+    classname,
     import_module,
 )
 from .messages import (
