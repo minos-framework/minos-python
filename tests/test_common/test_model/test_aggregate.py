@@ -13,6 +13,7 @@ from minos.common import (
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryNonProvidedException,
 )
 from tests.aggregate_classes import (
     Car,
@@ -31,6 +32,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 await Car.create(id=1, doors=3, color="blue", _repository=repository)
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
                 await Car.create(version=1, doors=3, color="blue", _repository=repository)
+        with self.assertRaises(MinosRepositoryNonProvidedException):
+            await Car.create(doors=3, color="blue")
 
     async def test_classname(self):
         self.assertEqual("tests.aggregate_classes.Car", Car.classname())
@@ -57,6 +60,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
         async with MinosInMemoryRepository() as repository:
             with self.assertRaises(MinosRepositoryAggregateNotFoundException):
                 await Car.get_one(0, _repository=repository)
+        with self.assertRaises(MinosRepositoryNonProvidedException):
+            await Car.get_one(1)
 
     async def test_update(self):
         async with MinosInMemoryRepository() as repository:
@@ -74,6 +79,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
         async with MinosInMemoryRepository() as repository:
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
                 await Car.update(version=1, _repository=repository)
+        with self.assertRaises(MinosRepositoryNonProvidedException):
+            await Car(1, 1, 3, "blue").update(1, doors=1)
 
     async def test_update_cls(self):
         async with MinosInMemoryRepository() as repository:
@@ -101,6 +108,10 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             await car.delete()
             with self.assertRaises(MinosRepositoryDeletedAggregateException):
                 await Car.get_one(car.id, _repository=repository)
+
+    async def test_delete_raises(self):
+        with self.assertRaises(MinosRepositoryNonProvidedException):
+            await Car(1, 1, 3, "blue").delete(1)
 
     async def test_delete_cls(self):
         async with MinosInMemoryRepository() as repository:

@@ -19,6 +19,10 @@ from typing import (
     Union,
 )
 
+from ..exceptions import (
+    MinosRepositoryUnknownActionException,
+)
+
 if TYPE_CHECKING:
     from ..model import Aggregate
 
@@ -36,7 +40,9 @@ class MinosRepositoryAction(Enum):
         for item in cls.__members__.values():
             if item.value == value:
                 return item
-        raise ValueError(f"The given value does not match with any enum items. Obtained {value}")
+        raise MinosRepositoryUnknownActionException(
+            f"The given value does not match with any enum items. Obtained {value}"
+        )
 
 
 class MinosRepositoryEntry(object):
