@@ -43,8 +43,8 @@ from .exceptions import (
     MultiTypeMinosModelSequenceException,
 )
 from .importlib import (
-    import_module,
     classname,
+    import_module,
 )
 from .messages import (
     MinosBaseRequest,

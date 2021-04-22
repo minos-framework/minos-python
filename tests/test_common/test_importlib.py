@@ -7,10 +7,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
+
 from minos.common import (
     MinosImportException,
-    import_module,
     classname,
+    import_module,
 )
 
 
