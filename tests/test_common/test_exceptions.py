@@ -23,6 +23,7 @@ from minos.common import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
+    MinosRepositoryUnknownActionException,
 )
 
 
@@ -52,6 +53,9 @@ class TestExceptions(unittest.TestCase):
 
     def test_repository_manually_set_aggregate_version(self):
         self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateVersionException, MinosRepositoryException))
+
+    def test_repository_bad_actioon(self):
+        self.assertTrue(issubclass(MinosRepositoryUnknownActionException, MinosRepositoryException))
 
     def test_model(self):
         self.assertTrue(issubclass(MinosModelException, MinosException))

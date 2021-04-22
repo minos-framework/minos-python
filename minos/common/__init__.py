@@ -34,6 +34,7 @@ from .exceptions import (
     MinosParseAttributeException,
     MinosProtocolException,
     MinosRepositoryAggregateNotFoundException,
+    MinosRepositoryUnknownActionException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,

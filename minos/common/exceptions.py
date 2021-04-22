@@ -63,6 +63,10 @@ class MinosRepositoryManuallySetAggregateVersionException(MinosRepositoryExcepti
     """Exception to be raised when some aggregate is trying to be created with a manually set version."""
 
 
+class MinosRepositoryUnknownActionException(MinosRepositoryException):
+    """Exception to be raised when some entry tries to perform an unknown action."""
+
+
 class MinosModelException(MinosException):
     """Exception to be raised when some mandatory condition is not satisfied by a model."""
 
