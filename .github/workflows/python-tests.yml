@@ -27,7 +27,18 @@ jobs:
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
-
+      zookeeper:
+          image: bitnami/zookeeper:latest
+          ports:
+              - "2181:2181"
+      kafka:
+          image: bitnami/kafka:latest
+          ports:
+              - "9092:9092"
+          env:
+              KAFKA_BROKER_ID: 1
+              KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+              KAFKA_ADVERTISED_HOST_NAME: localhost
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}

@@ -73,7 +73,11 @@ class MinosEventBroker(MinosBaseBroker):
             (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
         )
 
+        queue_id = await cur.fetchone()
+        affected_rows = cur.rowcount
         conn.close()
+
+        return affected_rows, queue_id[0]
 
 
 class MinosCommandBroker(MinosBaseBroker):
@@ -85,7 +89,7 @@ class MinosCommandBroker(MinosBaseBroker):
     def _database(self):
         pass
 
-    async def send(self, model: Aggregate, callback):
+    async def send(self, model: Aggregate, callback: t.Callable):
         # TODO: Change
         event_instance = CommandModel(topic=self.topic, model="Change", items=[str(model)], callback=callback)
         bin_data = event_instance.avro_bytes
@@ -98,7 +102,11 @@ class MinosCommandBroker(MinosBaseBroker):
             (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
         )
 
+        queue_id = await cur.fetchone()
+        affected_rows = cur.rowcount
         conn.close()
+
+        return affected_rows, queue_id[0]
 
 
 class BrokerDatabaseInitializer(Service):
@@ -120,12 +128,8 @@ class BrokerDatabaseInitializer(Service):
         await self.stop(self)
 
 
-"""
-class Dispatcher:
-    def __init__(self, config):
-        self.config = config
-
-    async def run(self):
+class EventBrokerQueueDispatcher(PeriodicService):
+    async def callback(self):
         conn = await MinosBrokerDatabase().get_connection(self.config)
 
         async with conn.cursor() as cur:
@@ -140,7 +144,7 @@ class Dispatcher:
                 log.debug("creation_date  = %s", row[4])
                 log.debug("update_date  = %s", row[5])
 
-                sent_to_kafka = await self._send_to_kafka()
+                sent_to_kafka = await self._send_to_kafka(topic=row[1], message=row[2])
                 if sent_to_kafka:
                     # Delete from database If the event was sent successfully to Kafka.
                     async with conn.cursor() as cur2:
@@ -153,14 +157,14 @@ class Dispatcher:
         conn.commit()
         conn.close()
 
-    async def _send_to_kafka(self):
+    async def _send_to_kafka(self, topic: str, message: bytes):
         flag = False
         producer = AIOKafkaProducer(bootstrap_servers="localhost:9092")
         # Get cluster layout and initial topic/partition leadership information
         await producer.start()
         try:
             # Produce message
-            await producer.send_and_wait("my_topic", b"Super message")
+            await producer.send_and_wait(topic, message)
             flag = True
         except Exception as e:
             flag = False
@@ -171,8 +175,4 @@ class Dispatcher:
         return flag
 
 
-class EventBrokerQueueDispatcher(PeriodicService):
-    async def callback(self):
-        pass
 
-"""

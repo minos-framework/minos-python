@@ -1,26 +1,35 @@
 import time
 
 import pytest
+import asyncio
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 from minos.networks.broker import (Aggregate, BrokerDatabaseInitializer,
                                    MinosBrokerDatabase, MinosCommandBroker,
-                                   MinosEventBroker)
+                                   MinosEventBroker, EventBrokerQueueDispatcher)
 
 
-@pytest.fixture()
+@pytest.fixture
 def config():
-    return MinosConfig(path="./tests/test_config_.yaml")
+    return MinosConfig(path="./tests/test_config.yaml")
 
 
 @pytest.fixture
 def services(config):
-    return [BrokerDatabaseInitializer(config=config)]
+    return [
+        BrokerDatabaseInitializer(config=config),
+        EventBrokerQueueDispatcher(interval=0.5, delay=0, config=config)
+    ]
 
 
-@pytest.fixture()
+@pytest.fixture
 async def database(config):
     return await MinosBrokerDatabase().get_connection(config)
+
+
+async def test_database_connection(database):
+    assert database.closed == 0
+    database.close()
 
 
 async def test_if_queue_table_exists(database):
@@ -36,16 +45,20 @@ async def test_if_queue_table_exists(database):
     assert ret == [(1,)]
 
 
-class AgregateTest(Aggregate):
+class AggregateTest(Aggregate):
     test: int
 
 
-async def test_events_broker_insertion(config, database):
-    a = AgregateTest(test_id=1, test=2)
+async def test_events_broker_insertion(config):
+    a = AggregateTest(test_id=1, test=2)
 
     m = MinosEventBroker("EventBroker", config)
-    await m.send(a)
 
+    affected_rows, queue_id = await m.send(a)
+
+    assert affected_rows == 1
+    assert queue_id > 0
+    """
     cur = await database.cursor()
 
     await cur.execute("SELECT 1 FROM queue WHERE topic = 'EventBroker' LIMIT 1;")
@@ -55,32 +68,20 @@ async def test_events_broker_insertion(config, database):
 
     database.close()
     assert ret == [(1,)]
+    """
 
 
-async def test_commands_broker_insertion(config, database):
-    a = AgregateTest(test_id=1, test=2)
+async def test_commands_broker_insertion(config):
+    a = AggregateTest(test_id=1, test=2)
 
     m = MinosCommandBroker("CommandBroker", config)
-    await m.send(model=a, callback="test")
 
-    cur = await database.cursor()
-
-    await cur.execute("SELECT 1 FROM queue WHERE topic = 'CommandBroker' LIMIT 1;")
-    ret = []
-    async for row in cur:
-        ret.append(row)
-
-    database.close()
-    assert ret == [(1,)]
+    affected_rows, queue_id = await m.send(model=a, callback="test")
+    assert affected_rows == 1
+    assert queue_id > 0
 
 
 """
-async def test_queue_dispatcher(config):
-    d = Dispatcher(config)
-    await d.run()
-
-
-
 async def test_drop_database(database):
     cur = await database.cursor()
     await cur.execute("DROP TABLE IF EXISTS queue;")
