@@ -69,7 +69,7 @@ class Aggregate(MinosModel):
         return f"{cls.__module__}.{cls.__qualname__}"
 
     @classmethod
-    def get(cls, ids: list[int], _broker: str = None, _repository: MinosRepository = None) -> list[Aggregate]:
+    async def get(cls, ids: list[int], _broker: str = None, _repository: MinosRepository = None) -> list[Aggregate]:
         """Get a sequence of aggregates based on a list of identifiers.
 
         :param ids: list of identifiers.
@@ -78,11 +78,11 @@ class Aggregate(MinosModel):
         :return: A list of aggregate instances.
         """
         # noinspection PyShadowingBuiltins
-        return [cls.get_one(id, _broker, _repository) for id in ids]
+        return [await cls.get_one(id, _broker, _repository) for id in ids]
 
     # noinspection PyShadowingBuiltins
     @classmethod
-    def get_one(cls, id: int, _broker: str = None, _repository: MinosRepository = None) -> Aggregate:
+    async def get_one(cls, id: int, _broker: str = None, _repository: MinosRepository = None) -> Aggregate:
         """Get one aggregate based on an identifier.
 
         :param id: aggregate identifier.
@@ -92,7 +92,7 @@ class Aggregate(MinosModel):
         :return: An aggregate instance.
         """
 
-        entries = _repository.select(aggregate_name=cls.get_namespace(), aggregate_id=id)
+        entries = await _repository.select(aggregate_name=cls.get_namespace(), aggregate_id=id)
         if not len(entries):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
 
@@ -100,13 +100,13 @@ class Aggregate(MinosModel):
         if entry.action == MinosRepositoryAction.DELETE:
             raise MinosRepositoryDeletedAggregateException(f"The {id} id points to an already deleted aggregate.")
 
-        instance = cls.from_avro_bytes(entry.data)
+        instance = cls.from_avro_bytes(entry.data, id=entry.aggregate_id, version=entry.version)
         instance._broker = _broker
         instance._repository = _repository
         return instance
 
     @classmethod
-    def create(cls, *args, _broker: str = None, _repository: MinosRepository = None, **kwargs) -> Aggregate:
+    async def create(cls, *args, _broker: str = None, _repository: MinosRepository = None, **kwargs) -> Aggregate:
         """Create a new ``Aggregate`` instance.
 
         :param args: Additional positional arguments.
@@ -133,13 +133,16 @@ class Aggregate(MinosModel):
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
-        _repository.insert(instance)
+        entry = await _repository.insert(instance)
+
+        instance.id = entry.aggregate_id
+        instance.version = entry.version
 
         return instance
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
     @class_or_instancemethod
-    def update(self_or_cls, id: int = None, _repository: MinosRepository = None, **kwargs) -> Aggregate:
+    async def update(self_or_cls, id: int = None, _repository: MinosRepository = None, **kwargs) -> Aggregate:
         """Update an existing ``Aggregate`` instance.
 
         :param id: If the method call is performed from an instance the identifier is ignored, otherwise it is used to
@@ -153,7 +156,7 @@ class Aggregate(MinosModel):
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
-            instance = self_or_cls.get_one(id, _repository=_repository)
+            instance = await self_or_cls.get_one(id, _repository=_repository)
         else:
             instance = self_or_cls
 
@@ -164,21 +167,22 @@ class Aggregate(MinosModel):
         for key, value in kwargs.items():
             setattr(instance, key, value)
 
-        _repository.update(instance)
-
+        entry = await _repository.update(instance)
+        instance.id = entry.aggregate_id
+        instance.version = entry.version
         return instance
 
-    def refresh(self) -> NoReturn:
+    async def refresh(self) -> NoReturn:
         """Refresh the state of the given instance.
 
         :return: This method does not return anything.
         """
-        new = type(self).get_one(self.id, _repository=self._repository)
+        new = await type(self).get_one(self.id, _repository=self._repository)
         self._fields |= new.fields
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
     @class_or_instancemethod
-    def delete(self_or_cls, id: Optional[int] = None, _repository: MinosRepository = None):
+    async def delete(self_or_cls, id: Optional[int] = None, _repository: MinosRepository = None):
         """Delete the given aggregate instance.
 
         :param id: If the method call is performed from an instance the identifier is ignored, otherwise it is used to
@@ -188,11 +192,11 @@ class Aggregate(MinosModel):
         """
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
-            instance = self_or_cls.get_one(id, _repository=_repository)
+            instance = await self_or_cls.get_one(id, _repository=_repository)
         else:
             instance = self_or_cls
 
         if _repository is None:
             _repository = instance._repository
 
-        _repository.delete(instance)
+        await _repository.delete(instance)

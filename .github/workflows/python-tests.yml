@@ -2,32 +2,46 @@ on: push
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
+    container: python:3.9
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    env:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
+    - name: Check out repository code
+      uses: actions/checkout@v2
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
         python setup.py install
+
     - name: Test with pytest
       run: |
-          make test
-    -   name: Generate coverage report
-        run: |
-            make coverage
-    -   name: Codecov
-        uses: codecov/codecov-action@v1.3.1
-        with:
-            token: ${{ secrets.CODECOV_TOKEN }}
-            files: ./coverage.xml
-            fail_ci_if_error: true
+        make test
+
+    - name: Generate coverage report
+      run: |
+        make coverage
+
+    - name: Codecov
+      uses: codecov/codecov-action@v1.3.1
+      with:
+         token: ${{ secrets.CODECOV_TOKEN }}
+         files: ./coverage.xml
+         fail_ci_if_error: true

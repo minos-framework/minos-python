@@ -15,3 +15,6 @@ from .entries import (
 from .memory import (
     MinosInMemoryRepository,
 )
+from .pg import (
+    PostgreSqlMinosRepository,
+)

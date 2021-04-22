@@ -16,6 +16,7 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     Optional,
+    Union,
 )
 
 if TYPE_CHECKING:
@@ -29,6 +30,14 @@ class MinosRepositoryAction(Enum):
     UPDATE = "update"
     DELETE = "delete"
 
+    @classmethod
+    def value_of(cls, value: str) -> Optional[MinosRepositoryAction]:
+        """Get the action based on its text representation."""
+        for item in cls.__members__.values():
+            if item.value == value:
+                return item
+        raise ValueError(f"The given value does not match with any enum items. Obtained {value}")
+
 
 class MinosRepositoryEntry(object):
     """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
@@ -41,10 +50,15 @@ class MinosRepositoryEntry(object):
         aggregate_id: int,
         aggregate_name: str,
         version: int,
-        data: bytes = bytes(),
+        data: Union[bytes, memoryview] = bytes(),
         id: Optional[int] = None,
-        action: Optional[MinosRepositoryAction] = None,
+        action: Optional[Union[str, MinosRepositoryAction]] = None,
     ):
+        if isinstance(data, memoryview):
+            data = data.tobytes()
+        if action is not None and isinstance(action, str):
+            action = MinosRepositoryAction.value_of(action)
+
         self.id = id
         self.action = action
 
