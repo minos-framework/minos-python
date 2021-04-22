@@ -5,22 +5,16 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 import abc
 import collections
 import os
 import typing as t
-from pathlib import (
-    Path,
-)
+from pathlib import Path
 
 import yaml
 
-from ..exceptions import (
-    MinosConfigException,
-)
+from ..exceptions import MinosConfigException
 
 BROKER = collections.namedtuple("Broker", "host port")
 DATABASE = collections.namedtuple("Database", "path name")
@@ -193,6 +187,7 @@ class MinosConfig(MinosConfigAbstract):
 
         if "repository" not in self._instances:
             from ..repository import PostgreSqlMinosRepository
+
             self._instances["repository"] = PostgreSqlMinosRepository(**self.repository._asdict())
 
         return self._instances["repository"]
