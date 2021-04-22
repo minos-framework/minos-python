@@ -1,33 +1,21 @@
-import asyncio
+import time
 
-import aiomisc
-import aiopg
 import pytest
-from aiomisc.service.periodic import Service
-
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
-from minos.networks.broker import AggregateModel
-from minos.networks.broker import BrokerDatabaseInitializer
-from minos.networks.broker import MinosBrokerDatabase
-from minos.networks.broker import MinosCommandBroker
-from minos.networks.broker import MinosEventBroker
+from minos.networks.broker import (Aggregate, BrokerDatabaseInitializer,
+                                   MinosBrokerDatabase, MinosCommandBroker,
+                                   MinosEventBroker)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def config():
     return MinosConfig(path="./tests/test_config_.yaml")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def services(config):
-    return (BrokerDatabaseInitializer(config=config), )
-
-
-@pytest.fixture(scope="session")
-def run_services(services, config):
-    with aiomisc.entrypoint(*services) as loop:
-        loop.run_forever()
+    return [BrokerDatabaseInitializer(config=config)]
 
 
 @pytest.fixture()
@@ -36,62 +24,68 @@ async def database(config):
 
 
 async def test_if_queue_table_exists(database):
+    time.sleep(1)
     cur = await database.cursor()
 
-    await cur.execute(
-        "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'queue';"
-    )
+    await cur.execute("SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'queue';")
     ret = []
     async for row in cur:
         ret.append(row)
 
     database.close()
-    assert ret == [(1, )]
+    assert ret == [(1,)]
+
+
+class AgregateTest(Aggregate):
+    test: int
 
 
 async def test_events_broker_insertion(config, database):
-    a = AggregateModel()
-    a.name = "EventBroker"
+    a = AgregateTest(test_id=1, test=2)
 
-    m = MinosEventBroker("EventBroker", a, config)
-    await m.send()
+    m = MinosEventBroker("EventBroker", config)
+    await m.send(a)
 
     cur = await database.cursor()
 
-    await cur.execute(
-        "SELECT 1 FROM queue WHERE topic = 'EventBroker' LIMIT 1;")
+    await cur.execute("SELECT 1 FROM queue WHERE topic = 'EventBroker' LIMIT 1;")
     ret = []
     async for row in cur:
         ret.append(row)
 
     database.close()
-    assert ret == [(1, )]
+    assert ret == [(1,)]
 
 
 async def test_commands_broker_insertion(config, database):
-    a = AggregateModel()
-    a.name = "CommandBroker"
+    a = AgregateTest(test_id=1, test=2)
 
-    m = MinosCommandBroker("CommandBroker", a, config)
-    await m.send()
+    m = MinosCommandBroker("CommandBroker", config)
+    await m.send(model=a, callback="test")
 
     cur = await database.cursor()
 
-    await cur.execute(
-        "SELECT 1 FROM queue WHERE topic = 'CommandBroker' LIMIT 1;")
+    await cur.execute("SELECT 1 FROM queue WHERE topic = 'CommandBroker' LIMIT 1;")
     ret = []
     async for row in cur:
         ret.append(row)
 
     database.close()
-    assert ret == [(1, )]
+    assert ret == [(1,)]
+
+
+"""
+async def test_queue_dispatcher(config):
+    d = Dispatcher(config)
+    await d.run()
+
 
 
 async def test_drop_database(database):
     cur = await database.cursor()
     await cur.execute("DROP TABLE IF EXISTS queue;")
     database.close()
-
+"""
 
 # create role broker with createdb login password 'br0k3r';
 # CREATE DATABASE broker_db OWNER broker;
