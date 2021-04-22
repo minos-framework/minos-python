@@ -9,11 +9,16 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+            POSTGRES_HOST: localhost
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_PASSWORD: postgres
 
     steps:
     - name: Check out repository code
@@ -28,16 +33,10 @@ jobs:
     - name: Test with pytest
       run: |
         make test
-      env:
-        POSTGRES_HOST: postgres
-        POSTGRES_PORT: 5432
 
     - name: Generate coverage report
       run: |
         make coverage
-      env:
-        POSTGRES_HOST: postgres
-        POSTGRES_PORT: 5432
 
     - name: Codecov
       uses: codecov/codecov-action@v1.3.1
