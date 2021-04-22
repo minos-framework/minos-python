@@ -1,12 +1,13 @@
+import asyncio
 import time
 
 import pytest
-import asyncio
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 from minos.networks.broker import (Aggregate, BrokerDatabaseInitializer,
+                                   EventBrokerQueueDispatcher,
                                    MinosBrokerDatabase, MinosCommandBroker,
-                                   MinosEventBroker, EventBrokerQueueDispatcher)
+                                   MinosEventBroker)
 
 
 @pytest.fixture
@@ -16,10 +17,7 @@ def config():
 
 @pytest.fixture
 def services(config):
-    return [
-        BrokerDatabaseInitializer(config=config),
-        EventBrokerQueueDispatcher(interval=0.5, delay=0, config=config)
-    ]
+    return [BrokerDatabaseInitializer(config=config), EventBrokerQueueDispatcher(interval=0.5, delay=0, config=config)]
 
 
 @pytest.fixture
