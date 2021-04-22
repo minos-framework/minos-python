@@ -5,15 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
-from operator import attrgetter
+from operator import (
+    attrgetter,
+)
 from typing import (
     NoReturn,
     Optional,
 )
 
-from ..configuration import MinosConfig
+from ..configuration import (
+    MinosConfig,
+)
 from ..exceptions import (
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
@@ -21,12 +27,16 @@ from ..exceptions import (
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNonProvidedException,
 )
-from ..meta import self_or_classmethod
+from ..meta import (
+    self_or_classmethod,
+)
 from ..repository import (
     MinosRepository,
     MinosRepositoryAction,
 )
-from .abc import MinosModel
+from .abc import (
+    MinosModel,
+)
 
 
 class Aggregate(MinosModel):

@@ -16,9 +16,15 @@ from minos.common import (
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNonProvidedException,
 )
-from tests.aggregate_classes import Car
-from tests.database_testcase import PostgresAsyncTestCase
-from tests.utils import BASE_PATH
+from tests.aggregate_classes import (
+    Car,
+)
+from tests.database_testcase import (
+    PostgresAsyncTestCase,
+)
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestAggregate(unittest.IsolatedAsyncioTestCase):
