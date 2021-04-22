@@ -15,7 +15,6 @@ from minos.common import (
 
 
 class TestImportlib(unittest.TestCase):
-
     def test_import_module(self):
         object_class = import_module("tests.ImportedModule.ImportedClassTest")
         self.assertEqual("tests.ImportedModule.ImportedClassTest", classname(object_class))
@@ -29,5 +28,5 @@ class TestImportlib(unittest.TestCase):
         self.assertEqual("minos.common.exceptions.MinosImportException", classname(MinosImportException))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
