@@ -5,13 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
-from operator import (
-    attrgetter,
-)
+from operator import attrgetter
 from typing import (
     NoReturn,
     Optional,
@@ -23,16 +19,12 @@ from ..exceptions import (
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
 )
-from ..meta import (
-    self_or_classmethod,
-)
+from ..meta import self_or_classmethod
 from ..repository import (
     MinosRepository,
     MinosRepositoryAction,
 )
-from .abc import (
-    MinosModel,
-)
+from .abc import MinosModel
 
 
 class Aggregate(MinosModel):
@@ -44,13 +36,7 @@ class Aggregate(MinosModel):
     # FIXME: The ``broker`` attribute should be a reference to a ``MinosBaseBroker`` class instance.
     # noinspection PyShadowingBuiltins
     def __init__(
-        self,
-        id: int,
-        version: int,
-        *args,
-        _broker: str = None,
-        _repository: MinosRepository = None,
-        **kwargs,
+        self, id: int, version: int, *args, _broker: str = None, _repository: MinosRepository = None, **kwargs,
     ):
 
         super().__init__(id, version, *args, **kwargs)
