@@ -21,21 +21,24 @@ from .entries import (
 
 
 class PostgreSqlMinosRepository(MinosRepository):
-    """TODO"""
+    """PostgreSQL-based implementation of the repository class in ``minos``."""
 
     def __init__(
         self, host: str = None, port: int = None, database: str = None, user: str = None, password: str = None
     ):
+        super().__init__()
         self.host = host
         self.port = port
         self.database = database
         self.user = user
         self.password = password
 
-    async def setup(self):
-        """TODO
+    async def _setup(self):
+        """Setup miscellaneous repository thing.
 
-        :return: TODO
+        In the PostgreSQL case, configures the needed table to be used to store the data.
+
+        :return: This method does not return anything.
         """
         await self._create_events_table()
 
@@ -56,16 +59,9 @@ class PostgreSqlMinosRepository(MinosRepository):
         entry.version = response[0][2]
         return entry
 
-    async def select(
+    async def _select(
         self, aggregate_id: int = None, aggregate_name: str = None, *args, **kwargs,
     ) -> list[MinosRepositoryEntry]:
-        """TODO
-        :param aggregate_id: TODO
-        :param aggregate_name: TODO
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
-        """
         if aggregate_id is None and aggregate_name is None:
             response = await self._submit_sql(_SELECT_ALL_ENTRIES_QUERY)
             entries = [MinosRepositoryEntry(*row) for row in response]

@@ -34,6 +34,7 @@ class MinosInMemoryRepository(MinosRepository):
     """Memory-based implementation of the repository class in ``minos``."""
 
     def __init__(self):
+        super().__init__()
         self._storage = list()
         self._id_generator = count()
 
@@ -76,7 +77,7 @@ class MinosInMemoryRepository(MinosRepository):
         )
         return len(list(iterable)) + 1
 
-    async def select(
+    async def _select(
         self,
         aggregate_id: Optional[int] = None,
         aggregate_name: Optional[str] = None,
@@ -93,24 +94,6 @@ class MinosInMemoryRepository(MinosRepository):
         *args,
         **kwargs
     ) -> list[MinosRepositoryEntry]:
-        """Perform a selection query of entries stored in to the repository.
-
-        :param aggregate_id: Aggregate identifier.
-        :param aggregate_name: Aggregate name.
-        :param version: Aggregate version.
-        :param version_lt: Aggregate version lower than the given value.
-        :param version_gt: Aggregate version greater than the given value.
-        :param version_le: Aggregate version lower or equal to the given value.
-        :param version_ge: Aggregate version greater or equal to the given value.
-        :param id: Entry identifier.
-        :param id_lt: Entry identifier lower than the given value.
-        :param id_gt: Entry identifier greater than the given value.
-        :param id_le: Entry identifier lower or equal to the given value.
-        :param id_ge: Entry identifier greater or equal to the given value.
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: A list of entries.
-        """
 
         # noinspection DuplicatedCode
         def _fn_filter(entry: MinosRepositoryEntry) -> bool:
