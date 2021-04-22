@@ -8,6 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 from __future__ import (
     annotations,
 )
+
 import typing as t
 from itertools import (
     zip_longest,
