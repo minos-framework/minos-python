@@ -82,7 +82,6 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
 
     async def test_delete(self):
         async with PostgreSqlMinosRepository(**self.kwargs) as repository:
-            repository = MinosInMemoryRepository()
             await repository.delete(MinosRepositoryEntry(0, "example.Car", 1, bytes()))
             expected = [MinosRepositoryEntry(0, "example.Car", 1, bytes(), 1, MinosRepositoryAction.DELETE)]
             self.assertEqual(expected, await repository.select())
@@ -99,6 +98,10 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.INSERT),
         ]
         self.assertEqual(expected, await repository.select())
+
+    async def test_select_empty(self):
+        repository = PostgreSqlMinosRepository(**self.kwargs)
+        self.assertEqual([], await repository.select())
 
     async def test_select_filtered(self):
         repository = await self._build_repository()

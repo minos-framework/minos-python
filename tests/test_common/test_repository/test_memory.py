@@ -57,6 +57,10 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
         ]
         self.assertEqual(expected, await repository.select())
 
+    async def test_select_empty(self):
+        repository = MinosInMemoryRepository()
+        self.assertEqual([], await repository.select())
+
     async def test_select_id(self):
         repository = await self._build_repository()
         expected = [
