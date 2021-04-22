@@ -11,6 +11,7 @@ from typing import (
 )
 
 import pytest
+
 from minos.common import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
@@ -139,7 +140,21 @@ class TestMinosModel(unittest.TestCase):
     def test_avro_schema(self):
         shopping_list = ShoppingList(User(1234))
         expected = {
-            "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "float"}],
+            "fields": [
+                {
+                    "name": "user",
+                    "type": [
+                        {
+                            "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
+                            "name": "User",
+                            "namespace": "tests.modelClasses",
+                            "type": "record",
+                        },
+                        "null",
+                    ],
+                },
+                {"name": "cost", "type": "float"},
+            ],
             "name": "ShoppingList",
             "namespace": "tests.modelClasses",
             "type": "record",
@@ -151,7 +166,6 @@ class TestMinosModel(unittest.TestCase):
         expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
         self.assertEqual(expected, shopping_list.avro_data)
 
-    @unittest.skip
     def test_avro_bytes(self):
         shopping_list = ShoppingList(User(1234))
         self.assertIsInstance(shopping_list.avro_bytes, bytes)
