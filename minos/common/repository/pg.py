@@ -6,14 +6,18 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
-    Optional,
     Any,
+    Optional,
 )
 
 import aiopg
 
-from .abc import MinosRepository
-from .entries import MinosRepositoryEntry
+from .abc import (
+    MinosRepository,
+)
+from .entries import (
+    MinosRepositoryEntry,
+)
 
 
 class PostgreSqlMinosRepository(MinosRepository):
