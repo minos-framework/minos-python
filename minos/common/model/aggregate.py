@@ -44,13 +44,7 @@ class Aggregate(MinosModel):
     # FIXME: The ``broker`` attribute should be a reference to a ``MinosBaseBroker`` class instance.
     # noinspection PyShadowingBuiltins
     def __init__(
-        self,
-        id: int,
-        version: int,
-        *args,
-        _broker: str = None,
-        _repository: MinosRepository = None,
-        **kwargs,
+        self, id: int, version: int, *args, _broker: str = None, _repository: MinosRepository = None, **kwargs,
     ):
 
         super().__init__(id, version, *args, **kwargs)
