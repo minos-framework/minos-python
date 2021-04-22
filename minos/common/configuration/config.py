@@ -8,6 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 from __future__ import (
     annotations,
 )
+
 import abc
 import collections
 import os
@@ -193,6 +194,7 @@ class MinosConfig(MinosConfigAbstract):
 
         if "repository" not in self._instances:
             from ..repository import PostgreSqlMinosRepository
+
             self._instances["repository"] = PostgreSqlMinosRepository(**self.repository._asdict())
 
         return self._instances["repository"]

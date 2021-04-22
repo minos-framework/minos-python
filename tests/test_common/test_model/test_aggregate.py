@@ -19,10 +19,12 @@ from minos.common import (
 from tests.aggregate_classes import (
     Car,
 )
+from tests.database_testcase import (
+    PostgresAsyncTestCase,
+)
 from tests.utils import (
     BASE_PATH,
 )
-from tests.database_testcase import PostgresAsyncTestCase
 
 
 class TestAggregate(unittest.IsolatedAsyncioTestCase):
