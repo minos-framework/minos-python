@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
 import typing as t
 from itertools import (
     zip_longest,
@@ -80,7 +83,7 @@ class MinosModel(object):
         self._list_fields(*args, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union["MinosModel", list["MinosModel"]]:
+    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[MinosModel, list[MinosModel]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -93,7 +96,7 @@ class MinosModel(object):
         return cls.from_dict(decoded | kwargs)
 
     @classmethod
-    def from_dict(cls, d: dict[str, t.Any]) -> "MinosModel":
+    def from_dict(cls, d: dict[str, t.Any]) -> MinosModel:
         """Build a new instance from a dictionary.
 
         :param d: A dictionary object.
@@ -102,7 +105,7 @@ class MinosModel(object):
         return cls(**d)
 
     @classmethod
-    def to_avro_bytes(cls, models: list["MinosModel"]) -> bytes:
+    def to_avro_bytes(cls, models: list[MinosModel]) -> bytes:
         """Create a bytes representation of the given object instances.
 
         :param models: A sequence of minos models.
@@ -202,7 +205,7 @@ class MinosModel(object):
         """
         return MinosAvroValuesDatabase().encode(self.avro_data, self.avro_schema)
 
-    def __eq__(self, other: "MinosModel") -> bool:
+    def __eq__(self, other: MinosModel) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:
