@@ -4,9 +4,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: python:3.9
-    strategy:
-      matrix:
-        python-version: [3.9]
 
     services:
       postgres:
@@ -27,11 +24,6 @@ jobs:
     steps:
     - name: Check out repository code
       uses: actions/checkout@v2
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
