@@ -5,11 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from typing import (
+    Optional,
+    Any,
+)
 
 import aiopg
-from psycopg2 import (
-    ProgrammingError,
-)
 
 from .abc import (
     MinosRepository,
@@ -75,16 +76,13 @@ class PostgreSqlMinosRepository(MinosRepository):
 
         return entries
 
-    async def _submit_sql(self, query: str, *args, fetch: bool = True, **kwargs):
+    async def _submit_sql(self, query: str, *args, fetch: bool = True, **kwargs) -> Optional[list[tuple[Any, ...]]]:
         async with self._connection() as connect:
             async with connect.cursor() as cursor:
                 await cursor.execute(query, *args, **kwargs)
                 if not fetch:
                     return None
-                try:
-                    return await cursor.fetchall()
-                except ProgrammingError:
-                    return None
+                return await cursor.fetchall()
 
     def _connection(self):
         return aiopg.connect(
