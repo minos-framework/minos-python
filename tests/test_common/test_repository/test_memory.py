@@ -174,7 +174,6 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
     @staticmethod
     async def _build_repository():
         repository = MinosInMemoryRepository()
-        await repository.setup()
         await repository.insert(MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8")))
         await repository.update(MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8")))
         await repository.insert(MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8")))

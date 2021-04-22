@@ -43,7 +43,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
                 self.assertFalse(response)
 
         repository = PostgreSqlMinosRepository(**self.kwargs)
-        await repository.setup()
+        await repository._setup()
 
         async with aiopg.connect(**self.kwargs) as connection:
             async with connection.cursor() as cursor:
@@ -110,7 +110,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
 
     async def _build_repository(self):
         repository = PostgreSqlMinosRepository(**self.kwargs)
-        await repository.setup()
+        await repository._setup()
         await repository.insert(MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8")))
         await repository.update(MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8")))
         await repository.insert(MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8")))
