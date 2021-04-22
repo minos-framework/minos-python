@@ -38,6 +38,4 @@ def classname(cls: t.Type) -> str:
     :param cls: Target class.
     :return: An string object.
     """
-    if cls.__module__ in (None, "__builtin__"):
-        return cls.__qualname__
     return f"{cls.__module__}.{cls.__qualname__}"

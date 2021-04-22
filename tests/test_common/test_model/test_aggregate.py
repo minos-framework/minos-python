@@ -70,6 +70,11 @@ class TestAggregate(unittest.TestCase):
             self.assertEqual(Car(1, 3, 5, "red"), car)
             self.assertEqual(car, Car.get_one(car.id, _repository=repository))
 
+    def test_update_raises(self):
+        with MinosInMemoryRepository() as repository:
+            with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
+                Car.update(version=1, _repository=repository)
+
     def test_update_cls(self):
         with MinosInMemoryRepository() as repository:
             car = Car.create(doors=3, color="blue", _repository=repository)

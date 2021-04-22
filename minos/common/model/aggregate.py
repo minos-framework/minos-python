@@ -141,7 +141,9 @@ class Aggregate(MinosModel):
         :return: An updated ``Aggregate``  instance.
         """
         if "version" in kwargs:
-            raise Exception()
+            raise MinosRepositoryManuallySetAggregateVersionException(
+                f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
+            )
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
