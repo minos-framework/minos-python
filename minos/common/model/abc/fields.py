@@ -5,9 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import inspect
 import typing as t
@@ -19,9 +17,7 @@ from ...exceptions import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
 )
-from ...logs import (
-    log,
-)
+from ...logs import log
 from .types import (
     BOOLEAN,
     BYTES,

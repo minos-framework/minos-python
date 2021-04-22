@@ -19,9 +19,7 @@ from minos.common import (
     ModelField,
     ModelRef,
 )
-from tests.modelClasses import (
-    User,
-)
+from tests.modelClasses import User
 
 
 class TestModelField(unittest.TestCase):
