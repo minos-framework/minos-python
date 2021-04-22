@@ -5,9 +5,13 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
-from operator import attrgetter
+from operator import (
+    attrgetter,
+)
 from typing import (
     NoReturn,
     Optional,
@@ -23,7 +27,9 @@ from ..repository import (
     MinosRepository,
     MinosRepositoryAction,
 )
-from .abc import MinosModel
+from .abc import (
+    MinosModel,
+)
 
 
 # noinspection PyPep8Naming

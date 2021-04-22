@@ -16,8 +16,12 @@ from minos.common import (
     MinosRepositoryEntry,
     PostgreSqlMinosRepository,
 )
-from tests.aggregate_classes import Car
-from tests.database_testcase import PostgresAsyncTestCase
+from tests.aggregate_classes import (
+    Car,
+)
+from tests.database_testcase import (
+    PostgresAsyncTestCase,
+)
 
 
 class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
