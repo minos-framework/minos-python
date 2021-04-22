@@ -20,11 +20,11 @@ from minos.common import (
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryNonProvidedException,
+    MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
-    MinosRepositoryUnknownActionException,
-    MinosRepositoryNonProvidedException,
 )
 
 
