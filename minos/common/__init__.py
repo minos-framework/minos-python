@@ -44,6 +44,7 @@ from .exceptions import (
 )
 from .importlib import (
     import_module,
+    classname,
 )
 from .messages import (
     MinosBaseRequest,

@@ -15,6 +15,9 @@ from ...exceptions import (
     MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
+from ...importlib import (
+    classname,
+)
 from ...logs import (
     log,
 )
@@ -112,6 +115,14 @@ class MinosModel(object):
 
         avro_schema = models[0].avro_schema
         return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
+
+    @classmethod
+    def classname(cls) -> str:
+        """Compute the current class namespace.
+
+        :return: An string object.
+        """
+        return classname(cls)
 
     @property
     def fields(self) -> dict[str, ModelField]:
