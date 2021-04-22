@@ -78,7 +78,7 @@ class Aggregate(MinosModel):
         if _repository is None:
             raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
-        entries = await _repository.select(aggregate_name=cls.classname(), aggregate_id=id)
+        entries = await _repository.select(aggregate_name=cls.classname, aggregate_id=id)
         if not len(entries):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
 

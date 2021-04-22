@@ -123,12 +123,14 @@ class MinosModel(object):
         avro_schema = models[0].avro_schema
         return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
 
-    @classmethod
+    # noinspection PyMethodParameters
+    @classproperty
     def classname(cls) -> str:
         """Compute the current class namespace.
 
         :return: An string object.
         """
+        # noinspection PyTypeChecker
         return classname(cls)
 
     @property
