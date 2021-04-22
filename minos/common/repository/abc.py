@@ -17,8 +17,8 @@ from abc import (
 from typing import (
     TYPE_CHECKING,
     NoReturn,
-    Union,
     Optional,
+    Union,
 )
 
 from .entries import (
