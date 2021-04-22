@@ -25,11 +25,13 @@ async def database(config):
     return await MinosBrokerDatabase().get_connection(config)
 
 
+@pytest.mark.asyncio
 async def test_database_connection(database):
     assert database.closed == 0
     database.close()
 
 
+@pytest.mark.asyncio
 async def test_if_queue_table_exists(database):
     time.sleep(1)
     cur = await database.cursor()
@@ -47,6 +49,7 @@ class AggregateTest(Aggregate):
     test: int
 
 
+@pytest.mark.asyncio
 async def test_events_broker_insertion(config):
     a = AggregateTest(test_id=1, test=2)
 
@@ -69,6 +72,7 @@ async def test_events_broker_insertion(config):
     """
 
 
+@pytest.mark.asyncio
 async def test_commands_broker_insertion(config):
     a = AggregateTest(test_id=1, test=2)
 

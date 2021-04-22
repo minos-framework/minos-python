@@ -20,8 +20,8 @@ from minos.common.logs import log
 
 
 class MinosBrokerDatabase:
-    async def get_connection(self, conf):
-        conn = await aiopg.connect(
+    def get_connection(self, conf):
+        conn = aiopg.connect(
             database=conf.events.queue.database,
             user=conf.events.queue.user,
             password=conf.events.queue.password,
@@ -65,17 +65,15 @@ class MinosEventBroker(MinosBaseBroker):
         event_instance = EventModel(topic=self.topic, model="Change", items=[str(model)])
         bin_data = event_instance.avro_bytes
 
-        conn = await MinosBrokerDatabase().get_connection(self.config)
+        async with MinosBrokerDatabase().get_connection(self.config) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
+                    (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
+                )
 
-        cur = await conn.cursor()
-        await cur.execute(
-            "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
-            (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
-        )
-
-        queue_id = await cur.fetchone()
-        affected_rows = cur.rowcount
-        conn.close()
+                queue_id = await cur.fetchone()
+                affected_rows = cur.rowcount
 
         return affected_rows, queue_id[0]
 
@@ -94,17 +92,15 @@ class MinosCommandBroker(MinosBaseBroker):
         event_instance = CommandModel(topic=self.topic, model="Change", items=[str(model)], callback=callback)
         bin_data = event_instance.avro_bytes
 
-        conn = await MinosBrokerDatabase().get_connection(self.config)
+        async with MinosBrokerDatabase().get_connection(self.config) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
+                    (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
+                )
 
-        cur = await conn.cursor()
-        await cur.execute(
-            "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
-            (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
-        )
-
-        queue_id = await cur.fetchone()
-        affected_rows = cur.rowcount
-        conn.close()
+                queue_id = await cur.fetchone()
+                affected_rows = cur.rowcount
 
         return affected_rows, queue_id[0]
 
@@ -114,48 +110,43 @@ class BrokerDatabaseInitializer(Service):
         # Send signal to entrypoint for continue running
         self.start_event.set()
 
-        conn = await MinosBrokerDatabase().get_connection(self.config)
-
-        cur = await conn.cursor()
-        await cur.execute(
-            'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
-            '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
-            '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
-        )
-
-        conn.close()
+        async with MinosBrokerDatabase().get_connection(self.config) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
+                    '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
+                    '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
+                )
 
         await self.stop(self)
 
 
 class EventBrokerQueueDispatcher(PeriodicService):
     async def callback(self):
-        conn = await MinosBrokerDatabase().get_connection(self.config)
+        async with MinosBrokerDatabase().get_connection(self.config) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("SELECT * FROM queue WHERE retry <= 2 ORDER BY creation_date ASC LIMIT 10;")
+                async for row in cur:
 
-        async with conn.cursor() as cur:
-            await cur.execute("SELECT * FROM queue WHERE retry <= 2 ORDER BY creation_date ASC LIMIT 10;")
-            async for row in cur:
+                    log.debug(row)
+                    log.debug("id = %s", row[0])
+                    log.debug("topic = %s", row[1])
+                    log.debug("model  = %s", row[2])
+                    log.debug("retry  = %s", row[3])
+                    log.debug("creation_date  = %s", row[4])
+                    log.debug("update_date  = %s", row[5])
 
-                log.debug(row)
-                log.debug("id = %s", row[0])
-                log.debug("topic = %s", row[1])
-                log.debug("model  = %s", row[2])
-                log.debug("retry  = %s", row[3])
-                log.debug("creation_date  = %s", row[4])
-                log.debug("update_date  = %s", row[5])
+                    sent_to_kafka = await self._send_to_kafka(topic=row[1], message=row[2])
+                    if sent_to_kafka:
+                        # Delete from database If the event was sent successfully to Kafka.
+                        async with connect.cursor() as cur2:
+                            await cur2.execute("DELETE FROM queue WHERE queue_id=%d;" % row[0])
+                    else:
+                        # Update queue retry column. Increase by 1.
+                        async with connect.cursor() as cur3:
+                            await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
 
-                sent_to_kafka = await self._send_to_kafka(topic=row[1], message=row[2])
-                if sent_to_kafka:
-                    # Delete from database If the event was sent successfully to Kafka.
-                    async with conn.cursor() as cur2:
-                        await cur2.execute("DELETE FROM queue WHERE queue_id=%d;" % row[0])
-                else:
-                    # Update queue retry column. Increase by 1.
-                    async with conn.cursor() as cur3:
-                        await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
-
-        conn.commit()
-        conn.close()
+            connect.commit()
 
     async def _send_to_kafka(self, topic: str, message: bytes):
         flag = False
