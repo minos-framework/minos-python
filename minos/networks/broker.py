@@ -173,6 +173,3 @@ class EventBrokerQueueDispatcher(PeriodicService):
             await producer.stop()
 
         return flag
-
-
-
