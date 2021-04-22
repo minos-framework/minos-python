@@ -5,6 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 import inspect
 import typing as t
 
@@ -136,7 +140,7 @@ class ModelField:
 
         :return: A dictionary object.
         """
-        return _MinosModelAvroSchemaBuilder(self).build()
+        return _MinosModelAvroSchemaBuilder.from_field(self).build()
 
     @property
     def avro_data(self):
@@ -337,16 +341,18 @@ class _ModelFieldCaster(object):
 
 
 class _MinosModelAvroSchemaBuilder(object):
-    def __init__(self, field: ModelField):
-        self._field = field
+    def __init__(self, field_name: str, field_type: t.Type):
+        self._name = field_name
+        self._type = field_type
 
-    @property
-    def _name(self):
-        return self._field.name
+    @classmethod
+    def from_field(cls, field: ModelField) -> _MinosModelAvroSchemaBuilder:
+        """Build a new instance from a ``ModelField``.
 
-    @property
-    def _type(self):
-        return self._field.type
+        :param field: The model field.
+        :return: A new avro schema builder instance.
+        """
+        return cls(field.name, field.type)
 
     def build(self) -> dict[str, t.Any]:
         """Build the avro schema for the given field.
@@ -427,7 +433,8 @@ class _MinosModelAvroSchemaBuilder(object):
 
     @staticmethod
     def _build_model_ref_schema(type_field: t.Type) -> t.Union[bool, t.Any]:
-        return t.get_args(type_field)[0].__name__
+        type_value = t.get_args(type_field)[0]
+        return type_value.avro_schema
 
 
 class _MinosModelAvroDataBuilder(object):
