@@ -14,7 +14,6 @@ from minos.common import (
 
 
 class TestMinosRepositoryAction(unittest.TestCase):
-
     def test_value_of(self):
         self.assertEqual(MinosRepositoryAction.INSERT, MinosRepositoryAction.value_of("insert"))
         self.assertEqual(MinosRepositoryAction.UPDATE, MinosRepositoryAction.value_of("update"))
