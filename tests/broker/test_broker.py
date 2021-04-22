@@ -3,6 +3,7 @@ import time
 
 import pytest
 
+from aiokafka import AIOKafkaConsumer
 from minos.common.logs import log
 from minos.networks.broker import (Aggregate, MinosCommandBroker, MinosEventBroker)
 from tests.broker.database_testcase import (
@@ -15,6 +16,7 @@ class AggregateTest(Aggregate):
 
 
 class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
+
     async def test_database_connection(self):
         database = await self._database()
         async with database as connect:
@@ -50,6 +52,7 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         affected_rows, queue_id = await m.send(model=a, callback="test")
         assert affected_rows == 1
         assert queue_id > 0
+
 
 
 
