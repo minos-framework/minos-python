@@ -1,17 +1,13 @@
+import asyncio
 import time
 
 import pytest
-import asyncio
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
-from minos.networks.broker import (
-    Aggregate,
-    BrokerDatabaseInitializer,
-    MinosBrokerDatabase,
-    MinosCommandBroker,
-    MinosEventBroker,
-    EventBrokerQueueDispatcher,
-)
+from minos.networks.broker import (Aggregate, BrokerDatabaseInitializer,
+                                   EventBrokerQueueDispatcher,
+                                   MinosBrokerDatabase, MinosCommandBroker,
+                                   MinosEventBroker)
 
 
 @pytest.fixture
