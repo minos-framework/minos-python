@@ -19,7 +19,9 @@ from typing import (
     Union,
 )
 
-from ..exceptions import MinosRepositoryUnknownActionException
+from ..exceptions import (
+    MinosRepositoryUnknownActionException,
+)
 
 if TYPE_CHECKING:
     from ..model import Aggregate

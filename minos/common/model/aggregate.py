@@ -21,7 +21,8 @@ from ..exceptions import (
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
-    MinosRepositoryManuallySetAggregateVersionException, MinosRepositoryNonProvidedException,
+    MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryNonProvidedException,
 )
 from ..repository import (
     MinosRepository,
