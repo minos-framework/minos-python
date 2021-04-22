@@ -70,14 +70,14 @@ class MinosConfigAbstract(abc.ABC):
     def __exit__(self, exc_type, exc_val, exc_tb) -> t.NoReturn:
         self.unset_default()
 
-    @classmethod
-    def set_default(cls, value: t.Optional[MinosConfigAbstract]) -> t.NoReturn:
+    @staticmethod
+    def set_default(value: t.Optional[MinosConfigAbstract]) -> t.NoReturn:
         """TODO
 
         :param value: TODO
         :return: TODO
         """
-        if cls.get_default() is not None:
+        if MinosConfigAbstract.get_default() is not None:
             raise Exception("There is already another config set as default.")  # TODO: Convert into a minos exception
         MinosConfigAbstract._default = value
 
@@ -89,7 +89,12 @@ class MinosConfigAbstract(abc.ABC):
         """
         return cls._default
 
-    def unset_default(self):
+    @staticmethod
+    def unset_default()  -> t.NoReturn:
+        """TODO
+
+        :return: TODO
+        """
         MinosConfigAbstract._default = None
 
 
@@ -178,11 +183,11 @@ class MinosConfig(MinosConfigAbstract):
         """
         command_info = self._get("repository")
         return REPOSITORY(
-            database=command_info["database"],
-            user=command_info["user"],
-            password=command_info["password"],
-            host=command_info["host"],
-            port=command_info["port"],
+            database=os.getenv("POSTGRES_DATABASE", command_info["database"]),
+            user=os.getenv("POSTGRES_USER", command_info["user"]),
+            password=os.getenv("POSTGRES_PASSWORD", command_info["password"]),
+            host=os.getenv("POSTGRES_HOST", command_info["host"]),
+            port=os.getenv("POSTGRES_PORT", command_info["port"]),
         )
 
     @property
