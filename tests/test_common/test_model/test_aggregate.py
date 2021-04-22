@@ -41,7 +41,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             await Car.create(doors=3, color="blue")
 
     async def test_classname(self):
-        self.assertEqual("tests.aggregate_classes.Car", Car.classname())
+        self.assertEqual("tests.aggregate_classes.Car", Car.classname)
 
     async def test_get(self):
         async with MinosInMemoryRepository() as repository:

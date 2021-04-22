@@ -5,6 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 import typing as t
 from itertools import (
     zip_longest,
@@ -21,11 +25,15 @@ from ...importlib import (
 from ...logs import (
     log,
 )
+from ...meta import (
+    classproperty,
+)
 from ...protocol import (
     MinosAvroValuesDatabase,
 )
 from .fields import (
     ModelField,
+    _MinosModelAvroSchemaBuilder,
 )
 from .types import (
     MissingSentinel,
@@ -76,7 +84,7 @@ class MinosModel(object):
         self._list_fields(*args, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union["MinosModel", list["MinosModel"]]:
+    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[MinosModel, list[MinosModel]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -89,7 +97,7 @@ class MinosModel(object):
         return cls.from_dict(decoded | kwargs)
 
     @classmethod
-    def from_dict(cls, d: dict[str, t.Any]) -> "MinosModel":
+    def from_dict(cls, d: dict[str, t.Any]) -> MinosModel:
         """Build a new instance from a dictionary.
 
         :param d: A dictionary object.
@@ -98,7 +106,7 @@ class MinosModel(object):
         return cls(**d)
 
     @classmethod
-    def to_avro_bytes(cls, models: list["MinosModel"]) -> bytes:
+    def to_avro_bytes(cls, models: list[MinosModel]) -> bytes:
         """Create a bytes representation of the given object instances.
 
         :param models: A sequence of minos models.
@@ -116,12 +124,14 @@ class MinosModel(object):
         avro_schema = models[0].avro_schema
         return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
 
-    @classmethod
+    # noinspection PyMethodParameters
+    @classproperty
     def classname(cls) -> str:
         """Compute the current class namespace.
 
         :return: An string object.
         """
+        # noinspection PyTypeChecker
         return classname(cls)
 
     @property
@@ -146,46 +156,41 @@ class MinosModel(object):
             raise AttributeError
 
     def _list_fields(self, *args, **kwargs) -> t.NoReturn:
-        fields: dict[str, t.Any] = t.get_type_hints(self)
-        fields = self._update_from_inherited_class(fields)
-
-        empty = MissingSentinel  # artificial value to discriminate between None and empty.
-        for (name, type_val), value in zip_longest(fields.items(), args, fillvalue=empty):
-            if name in kwargs and value is not empty:
+        for (name, type_val), value in zip_longest(self._type_hints.items(), args, fillvalue=MissingSentinel):
+            if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
 
-            if value is empty:
-                value = kwargs.get(name, MissingSentinel)
+            if value is MissingSentinel and name in kwargs:
+                value = kwargs[name]
 
             self._fields[name] = ModelField(
                 name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
             )
 
-    def _update_from_inherited_class(self, fields: dict[str, t.Any]) -> dict[str, t.Any]:
-        """
-        get all the child class __annotations__ and update the FIELD base attribute
-        """
-        ans = dict()
-        for b in self.__class__.__mro__[-1:0:-1]:
+    # noinspection PyMethodParameters
+    @classproperty
+    def _type_hints(cls) -> dict[str, t.Type]:
+        fields = dict()
+        for b in cls.__mro__[::-1]:
             base_fields = getattr(b, "_fields", None)
             if base_fields is not None:
-                list_fields = t.get_type_hints(b)
-                list_fields.pop("_fields")
+                list_fields = {k: v for k, v in t.get_type_hints(b).items() if not k.startswith("_")}
                 log.debug(f"Fields Derivative {list_fields}")
-                if "_fields" not in list_fields:
-                    # the class is a derivative of MinosModel class
-                    ans |= list_fields
-        ans |= fields
-        return ans
+                fields |= list_fields
+        return fields
 
-    @property
-    def avro_schema(self) -> dict[str, t.Any]:
+    # noinspection PyMethodParameters
+    @classproperty
+    def avro_schema(cls) -> dict[str, t.Any]:
         """Compute the avro schema of the model.
 
         :return: A dictionary object.
         """
-        fields = [field.avro_schema for field in self.fields.values()]
-        return {"name": type(self).__name__, "namespace": type(self).__module__, "type": "record", "fields": fields}
+        fields = [
+            _MinosModelAvroSchemaBuilder(field_name, field_type).build()
+            for field_name, field_type in cls._type_hints.items()
+        ]
+        return {"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}
 
     @property
     def avro_data(self) -> t.Any:
@@ -203,7 +208,7 @@ class MinosModel(object):
         """
         return MinosAvroValuesDatabase().encode(self.avro_data, self.avro_schema)
 
-    def __eq__(self, other: "MinosModel") -> bool:
+    def __eq__(self, other: MinosModel) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:

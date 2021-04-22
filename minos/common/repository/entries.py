@@ -80,7 +80,7 @@ class MinosRepositoryEntry(object):
         :param aggregate: The aggregate instance.
         :return: A new ``MinosRepositoryEntry`` instance.
         """
-        return cls(aggregate.id, aggregate.classname(), aggregate.version, aggregate.avro_bytes)
+        return cls(aggregate.id, aggregate.classname, aggregate.version, aggregate.avro_bytes)
 
     def __eq__(self, other: "MinosRepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

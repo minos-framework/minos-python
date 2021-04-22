@@ -27,6 +27,9 @@ from ..exceptions import (
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNonProvidedException,
 )
+from ..meta import (
+    self_or_classmethod,
+)
 from ..repository import (
     MinosRepository,
     MinosRepositoryAction,
@@ -34,18 +37,6 @@ from ..repository import (
 from .abc import (
     MinosModel,
 )
-
-
-# noinspection PyPep8Naming
-class class_or_instancemethod(classmethod):
-    """Decorator to use the same method as instance or as class based on the caller."""
-
-    # noinspection PyMethodOverriding
-    def __get__(self, instance, type_):
-        # noinspection PyUnresolvedReferences
-        get = super().__get__ if instance is None else self.__func__.__get__
-        # noinspection PyArgumentList
-        return get(instance, type_)
 
 
 class Aggregate(MinosModel):
@@ -94,7 +85,7 @@ class Aggregate(MinosModel):
             if _repository is None:
                 raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
-        entries = await _repository.select(aggregate_name=cls.classname(), aggregate_id=id)
+        entries = await _repository.select(aggregate_name=cls.classname, aggregate_id=id)
         if not len(entries):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
 
@@ -147,7 +138,7 @@ class Aggregate(MinosModel):
         return instance
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
-    @class_or_instancemethod
+    @self_or_classmethod
     async def update(self_or_cls, id: int = None, _repository: MinosRepository = None, **kwargs) -> Aggregate:
         """Update an existing ``Aggregate`` instance.
 
@@ -198,7 +189,7 @@ class Aggregate(MinosModel):
         self._fields |= new.fields
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
-    @class_or_instancemethod
+    @self_or_classmethod
     async def delete(self_or_cls, id: Optional[int] = None, _repository: MinosRepository = None):
         """Delete the given aggregate instance.
 
