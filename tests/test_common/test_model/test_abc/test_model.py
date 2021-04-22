@@ -137,7 +137,6 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(user, shopping_list.user)
 
     def test_avro_schema(self):
-        shopping_list = ShoppingList(User(1234))
         expected = {
             "fields": [
                 {
@@ -158,7 +157,7 @@ class TestMinosModel(unittest.TestCase):
             "namespace": "tests.modelClasses",
             "type": "record",
         }
-        self.assertEqual(expected, shopping_list.avro_schema)
+        self.assertEqual(expected, ShoppingList.avro_schema)
 
     def test_avro_data(self):
         shopping_list = ShoppingList(User(1234))
