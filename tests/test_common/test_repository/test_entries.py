@@ -13,6 +13,17 @@ from minos.common import (
 )
 
 
+class TestMinosRepositoryAction(unittest.TestCase):
+    def test_value_of(self):
+        self.assertEqual(MinosRepositoryAction.INSERT, MinosRepositoryAction.value_of("insert"))
+        self.assertEqual(MinosRepositoryAction.UPDATE, MinosRepositoryAction.value_of("update"))
+        self.assertEqual(MinosRepositoryAction.DELETE, MinosRepositoryAction.value_of("delete"))
+
+    def test_value_of_raises(self):
+        with self.assertRaises(ValueError):
+            MinosRepositoryAction.value_of("foo")
+
+
 class TestMinosRepositoryEntry(unittest.TestCase):
     def test_constructor(self):
         entry = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))

@@ -98,6 +98,7 @@ from .repository import (
     MinosRepository,
     MinosRepositoryAction,
     MinosRepositoryEntry,
+    PostgreSqlMinosRepository,
 )
 from .storage import (
     MinosStorage,
