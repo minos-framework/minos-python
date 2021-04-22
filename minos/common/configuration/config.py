@@ -13,9 +13,7 @@ from pathlib import Path
 
 import yaml
 
-from ..exceptions import (
-    MinosConfigException,
-)
+from ..exceptions import MinosConfigException
 
 BROKER = collections.namedtuple("Broker", "host port")
 DATABASE = collections.namedtuple("Database", "path name")
@@ -106,7 +104,7 @@ class MinosConfig(MinosConfigAbstract):
         )
         events = []
         for event in event_info["items"]:
-            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"], ))
+            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"],))
         return EVENTS(broker=broker, items=events, database=database, queue=queue)
 
     @property
@@ -124,5 +122,5 @@ class MinosConfig(MinosConfigAbstract):
         )
         commands = []
         for command in command_info["items"]:
-            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"], ))
+            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"],))
         return COMMANDS(broker=broker, items=commands, database=database, queue=queue)
