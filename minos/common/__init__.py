@@ -43,6 +43,7 @@ from .exceptions import (
     MultiTypeMinosModelSequenceException,
 )
 from .importlib import (
+    classname,
     import_module,
 )
 from .messages import (
@@ -97,6 +98,7 @@ from .repository import (
     MinosRepository,
     MinosRepositoryAction,
     MinosRepositoryEntry,
+    PostgreSqlMinosRepository,
 )
 from .storage import (
     MinosStorage,

@@ -311,6 +311,13 @@ class TestMinosModel(unittest.TestCase):
         )
         self.assertEqual(expected, repr(shopping_list))
 
+    def test_classname_cls(self):
+        self.assertEqual("tests.modelClasses.Customer", Customer.classname())
+
+    def test_classname_instance(self):
+        model = Customer(1234, "johndoe", "John", "Doe")
+        self.assertEqual("tests.modelClasses.Customer", model.classname())
+
 
 if __name__ == "__main__":
     unittest.main()

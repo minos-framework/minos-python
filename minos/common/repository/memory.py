@@ -13,44 +13,47 @@ from itertools import (
     count,
 )
 from typing import (
+    TYPE_CHECKING,
     NoReturn,
     Optional,
+    Union,
 )
 
 from .abc import (
     MinosRepository,
 )
 from .entries import (
-    MinosRepositoryAction,
     MinosRepositoryEntry,
 )
+
+if TYPE_CHECKING:
+    from ..model import Aggregate
 
 
 class MinosInMemoryRepository(MinosRepository):
     """Memory-based implementation of the repository class in ``minos``."""
 
     def __init__(self):
+        super().__init__()
         self._storage = list()
         self._id_generator = count()
 
-    def __enter__(self) -> MinosInMemoryRepository:
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        pass
-
-    def _submit(self, entry: MinosRepositoryEntry) -> NoReturn:
+    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
+        if entry.aggregate_id == 0:
+            entry.aggregate_id = self._generate_next_aggregate_id(entry.aggregate_name)
+        entry.version = self._get_next_version_id(entry.aggregate_name, entry.aggregate_id)
+        entry.id = self._generate_next_id()
         self._storage.append(entry)
+        return entry
 
     def _generate_next_id(self) -> int:
         return next(self._id_generator) + 1
 
-    # noinspection PyShadowingBuiltins
     def _generate_next_aggregate_id(self, aggregate_name: str) -> int:
         """Generate a new unique id for the given aggregate name.
 
@@ -74,7 +77,7 @@ class MinosInMemoryRepository(MinosRepository):
         )
         return len(list(iterable)) + 1
 
-    def select(
+    async def _select(
         self,
         aggregate_id: Optional[int] = None,
         aggregate_name: Optional[str] = None,
@@ -91,24 +94,6 @@ class MinosInMemoryRepository(MinosRepository):
         *args,
         **kwargs
     ) -> list[MinosRepositoryEntry]:
-        """Perform a selection query of entries stored in to the repository.
-
-        :param aggregate_id: Aggregate identifier.
-        :param aggregate_name: Aggregate name.
-        :param version: Aggregate version.
-        :param version_lt: Aggregate version lower than the given value.
-        :param version_gt: Aggregate version greater than the given value.
-        :param version_le: Aggregate version lower or equal to the given value.
-        :param version_ge: Aggregate version greater or equal to the given value.
-        :param id: Entry identifier.
-        :param id_lt: Entry identifier lower than the given value.
-        :param id_gt: Entry identifier greater than the given value.
-        :param id_le: Entry identifier lower or equal to the given value.
-        :param id_ge: Entry identifier greater or equal to the given value.
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: A list of entries.
-        """
 
         # noinspection DuplicatedCode
         def _fn_filter(entry: MinosRepositoryEntry) -> bool:
