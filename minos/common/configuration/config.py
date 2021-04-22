@@ -9,11 +9,15 @@ import abc
 import collections
 import os
 import typing as t
-from pathlib import Path
+from pathlib import (
+    Path,
+)
 
 import yaml
 
-from ..exceptions import MinosConfigException
+from ..exceptions import (
+    MinosConfigException,
+)
 
 BROKER = collections.namedtuple("Broker", "host port")
 DATABASE = collections.namedtuple("Database", "path name")
