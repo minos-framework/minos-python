@@ -13,7 +13,9 @@ from minos.common import (
     MinosConfigException,
     PostgreSqlMinosRepository,
 )
-from tests.utils import BASE_PATH
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestMinosConfig(unittest.TestCase):
