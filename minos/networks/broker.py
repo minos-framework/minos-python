@@ -105,18 +105,22 @@ class MinosCommandBroker(MinosBaseBroker):
         return affected_rows, queue_id[0]
 
 
+async def broker_table_creation(config: MinosConfig):
+    async with MinosBrokerDatabase().get_connection(config) as connect:
+        async with connect.cursor() as cur:
+            await cur.execute(
+                'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
+                '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
+                '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
+            )
+
+
 class BrokerDatabaseInitializer(Service):
     async def start(self):
         # Send signal to entrypoint for continue running
         self.start_event.set()
 
-        async with MinosBrokerDatabase().get_connection(self.config) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
-                    '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
-                    '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
-                )
+        await broker_table_creation(self.config)
 
         await self.stop(self)
 
@@ -145,8 +149,6 @@ class EventBrokerQueueDispatcher(PeriodicService):
                         # Update queue retry column. Increase by 1.
                         async with connect.cursor() as cur3:
                             await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
-
-            connect.commit()
 
     async def _send_to_kafka(self, topic: str, message: bytes):
         flag = False
