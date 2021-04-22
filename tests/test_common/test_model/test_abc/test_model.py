@@ -151,6 +151,11 @@ class TestMinosModel(unittest.TestCase):
         expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
         self.assertEqual(expected, shopping_list.avro_data)
 
+    @unittest.skip
+    def test_avro_bytes(self):
+        shopping_list = ShoppingList(User(1234))
+        self.assertIsInstance(shopping_list.avro_bytes, bytes)
+
     def test_avro_schema_simple(self):
         customer = Customer(1234)
         expected = {
