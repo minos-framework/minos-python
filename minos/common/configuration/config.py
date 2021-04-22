@@ -12,7 +12,9 @@ import abc
 import collections
 import os
 import typing as t
-from pathlib import Path
+from pathlib import (
+    Path,
+)
 
 import yaml
 
@@ -146,7 +148,7 @@ class MinosConfig(MinosConfigAbstract):
         )
         events = []
         for event in event_info["items"]:
-            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"], ))
+            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"],))
         return EVENTS(broker=broker, items=events, database=database, queue=queue)
 
     @property
@@ -164,7 +166,7 @@ class MinosConfig(MinosConfigAbstract):
         )
         commands = []
         for command in command_info["items"]:
-            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"], ))
+            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"],))
         return COMMANDS(broker=broker, items=commands, database=database, queue=queue)
 
     @property

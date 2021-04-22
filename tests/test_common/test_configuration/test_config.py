@@ -19,7 +19,6 @@ from tests.utils import (
 
 
 class TestMinosConfig(unittest.TestCase):
-
     def setUp(self) -> None:
         self.config_file_path = BASE_PATH / "test_config.yaml"
 
