@@ -21,7 +21,7 @@ from ..exceptions import (
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
-    MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryManuallySetAggregateVersionException, MinosRepositoryNonProvidedException,
 )
 from ..repository import (
     MinosRepository,
@@ -83,6 +83,8 @@ class Aggregate(MinosModel):
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
+        if _repository is None:
+            raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         entries = await _repository.select(aggregate_name=cls.classname(), aggregate_id=id)
         if not len(entries):
@@ -121,7 +123,7 @@ class Aggregate(MinosModel):
             _broker = "MinosBaseBroker()"
 
         if _repository is None:
-            raise Exception()
+            raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
@@ -154,8 +156,11 @@ class Aggregate(MinosModel):
         else:
             instance = self_or_cls
 
-        if _repository is None:
-            _repository = instance._repository
+            if _repository is None:
+                _repository = instance._repository
+
+                if _repository is None:
+                    raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         # Update model...
         for key, value in kwargs.items():
@@ -190,7 +195,10 @@ class Aggregate(MinosModel):
         else:
             instance = self_or_cls
 
-        if _repository is None:
-            _repository = instance._repository
+            if _repository is None:
+                _repository = instance._repository
+
+                if _repository is None:
+                    raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         await _repository.delete(instance)
