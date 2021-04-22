@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
 import abc
 import collections
 import os
@@ -29,9 +32,13 @@ EVENTS = collections.namedtuple("Events", "broker database items queue")
 COMMANDS = collections.namedtuple("Commands", "broker database items queue")
 REST = collections.namedtuple("Rest", "broker endpoints")
 
+REPOSITORY = collections.namedtuple("Repository", "database user password host port")
+
 
 class MinosConfigAbstract(abc.ABC):
     __slots__ = "_services", "_path"
+
+    _default: t.Optional[MinosConfigAbstract] = None
 
     def __init__(self, path: t.Union[Path, str]):
         if isinstance(path, Path):
@@ -53,9 +60,42 @@ class MinosConfigAbstract(abc.ABC):
             return True
         return False
 
+    def __enter__(self) -> MinosConfigAbstract:
+        self.set_default(self)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> t.NoReturn:
+        self.unset_default()
+
+    @classmethod
+    def set_default(cls, value: t.Optional[MinosConfigAbstract]) -> t.NoReturn:
+        """TODO
+
+        :param value: TODO
+        :return: TODO
+        """
+        if cls.get_default() is not None:
+            raise Exception("There is already another config set as default.")  # TODO: Convert into a minos exception
+        MinosConfigAbstract._default = value
+
+    @classmethod
+    def get_default(cls) -> MinosConfigAbstract:
+        """TODO
+
+        :return: TODO
+        """
+        return cls._default
+
+    def unset_default(self):
+        MinosConfigAbstract._default = None
+
 
 class MinosConfig(MinosConfigAbstract):
-    __slots__ = "_data"
+    __slots__ = "_data", "_instances"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._instances = dict()
 
     def _load(self, path):
         if self._file_exit(path):
@@ -126,3 +166,31 @@ class MinosConfig(MinosConfigAbstract):
         for command in command_info["items"]:
             commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"], ))
         return COMMANDS(broker=broker, items=commands, database=database, queue=queue)
+
+    @property
+    def repository(self) -> t.NamedTuple:
+        """TODO
+
+        :return: TODO
+        """
+        command_info = self._get("repository")
+        return REPOSITORY(
+            database=command_info["database"],
+            user=command_info["user"],
+            password=command_info["password"],
+            host=command_info["host"],
+            port=command_info["port"],
+        )
+
+    @property
+    def repository_instance(self) -> t.Any:
+        """TODO
+
+        :return: TODO
+        """
+
+        if "repository" not in self._instances:
+            from ..repository import PostgreSqlMinosRepository
+            self._instances["repository"] = PostgreSqlMinosRepository(**self.repository._asdict())
+
+        return self._instances["repository"]

@@ -8,6 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
+    MinosConfig,
     MinosInMemoryRepository,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
@@ -18,6 +19,10 @@ from minos.common import (
 from tests.aggregate_classes import (
     Car,
 )
+from tests.utils import (
+    BASE_PATH,
+)
+from tests.database_testcase import PostgresAsyncTestCase
 
 
 class TestAggregate(unittest.IsolatedAsyncioTestCase):
@@ -119,6 +124,28 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             await Car.delete(car.id, _repository=repository)
             with self.assertRaises(MinosRepositoryDeletedAggregateException):
                 await Car.get_one(car.id, _repository=repository)
+
+
+class TestAggregateWithConfig(PostgresAsyncTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.config_file_path = BASE_PATH / "test_config.yaml"
+
+    async def test_update(self):
+        with MinosConfig(path=self.config_file_path):
+            car = await Car.create(doors=3, color="blue")
+
+            await car.update(color="red")
+            self.assertEqual(Car(1, 2, 3, "red"), car)
+            self.assertEqual(car, await Car.get_one(car.id))
+
+            await car.update(doors=5)
+            self.assertEqual(Car(1, 3, 5, "red"), car)
+            self.assertEqual(car, await Car.get_one(car.id))
+
+            await car.delete()
+            with self.assertRaises(MinosRepositoryDeletedAggregateException):
+                await Car.get_one(car.id)
 
 
 if __name__ == "__main__":

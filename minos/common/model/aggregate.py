@@ -17,6 +17,9 @@ from typing import (
     Optional,
 )
 
+from ..configuration import (
+    MinosConfig,
+)
 from ..exceptions import (
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
@@ -85,7 +88,11 @@ class Aggregate(MinosModel):
         :return: An aggregate instance.
         """
         if _repository is None:
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+            config = MinosConfig.get_default()
+            if config is not None:
+                _repository = config.repository_instance
+            if _repository is None:
+                raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         entries = await _repository.select(aggregate_name=cls.classname(), aggregate_id=id)
         if not len(entries):
@@ -124,7 +131,11 @@ class Aggregate(MinosModel):
             _broker = "MinosBaseBroker()"
 
         if _repository is None:
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+            config = MinosConfig.get_default()
+            if config is not None:
+                _repository = config.repository_instance
+            if _repository is None:
+                raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
@@ -151,7 +162,13 @@ class Aggregate(MinosModel):
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
 
+        # FIXME: Avoid duplicated code with the ``Aggregate.delete`` function.
         if isinstance(self_or_cls, type):
+            if _repository is None:
+                config = MinosConfig.get_default()
+                if config is not None:
+                    _repository = config.repository_instance
+
             assert issubclass(self_or_cls, Aggregate)
             instance = await self_or_cls.get_one(id, _repository=_repository)
         else:
@@ -190,7 +207,13 @@ class Aggregate(MinosModel):
         :param _repository: Repository to be set to the aggregate.
         :return: This method does not return anything.
         """
+        # FIXME: Avoid duplicated code with the ``Aggregate.update`` function.
         if isinstance(self_or_cls, type):
+            if _repository is None:
+                config = MinosConfig.get_default()
+                if config is not None:
+                    _repository = config.repository_instance
+
             assert issubclass(self_or_cls, Aggregate)
             instance = await self_or_cls.get_one(id, _repository=_repository)
         else:
