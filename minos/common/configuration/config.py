@@ -90,7 +90,7 @@ class MinosConfigAbstract(abc.ABC):
         return cls._default
 
     @staticmethod
-    def unset_default()  -> t.NoReturn:
+    def unset_default() -> t.NoReturn:
         """TODO
 
         :return: TODO
