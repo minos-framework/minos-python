@@ -149,6 +149,14 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
             with self.assertRaises(MinosRepositoryDeletedAggregateException):
                 await Car.get_one(car.id)
 
+            car = await Car.create(doors=3, color="blue")
+            await Car.update(car.id, color="red")
+            self.assertEqual(Car(2, 2, 3, "red"), await Car.get_one(car.id))
+
+            await Car.delete(car.id)
+            with self.assertRaises(MinosRepositoryDeletedAggregateException):
+                await Car.get_one(car.id)
+
 
 if __name__ == "__main__":
     unittest.main()
