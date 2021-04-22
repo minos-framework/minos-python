@@ -26,10 +26,42 @@ from ...protocol import (
 )
 from .fields import (
     ModelField,
+    _MinosModelAvroSchemaBuilder,
 )
 from .types import (
     MissingSentinel,
 )
+
+
+class ClassPropertyDescriptor(object):
+    def __init__(self, fget, fset=None):
+        self.fget = fget
+        self.fset = fset
+
+    def __get__(self, obj, klass=None):
+        if klass is None:
+            klass = type(obj)
+        return self.fget.__get__(obj, klass)()
+
+    def __set__(self, obj, value):
+        if not self.fset:
+            raise AttributeError("can't set attribute")
+        type_ = type(obj)
+        return self.fset.__get__(obj, type_)(value)
+
+    def setter(self, func):
+        if not isinstance(func, (classmethod, staticmethod)):
+            func = classmethod(func)
+        self.fset = func
+        return self
+
+
+def classproperty(func):
+    if not isinstance(func, (classmethod, staticmethod)):
+        func = classmethod(func)
+
+    return ClassPropertyDescriptor(func)
+
 
 # def _process_aggregate(cls):
 #     """
@@ -146,46 +178,41 @@ class MinosModel(object):
             raise AttributeError
 
     def _list_fields(self, *args, **kwargs) -> t.NoReturn:
-        fields: dict[str, t.Any] = t.get_type_hints(self)
-        fields = self._update_from_inherited_class(fields)
-
-        empty = MissingSentinel  # artificial value to discriminate between None and empty.
-        for (name, type_val), value in zip_longest(fields.items(), args, fillvalue=empty):
-            if name in kwargs and value is not empty:
+        for (name, type_val), value in zip_longest(self._type_hints.items(), args, fillvalue=MissingSentinel):
+            if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
 
-            if value is empty:
-                value = kwargs.get(name, MissingSentinel)
+            if value is MissingSentinel and name in kwargs:
+                value = kwargs[name]
 
             self._fields[name] = ModelField(
                 name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
             )
 
-    def _update_from_inherited_class(self, fields: dict[str, t.Any]) -> dict[str, t.Any]:
-        """
-        get all the child class __annotations__ and update the FIELD base attribute
-        """
-        ans = dict()
-        for b in self.__class__.__mro__[-1:0:-1]:
+    # noinspection PyMethodParameters
+    @classproperty
+    def _type_hints(cls) -> dict[str, t.Type]:
+        fields = dict()
+        for b in cls.__mro__[::-1]:
             base_fields = getattr(b, "_fields", None)
             if base_fields is not None:
-                list_fields = t.get_type_hints(b)
-                list_fields.pop("_fields")
+                list_fields = {k: v for k, v in t.get_type_hints(b).items() if not k.startswith("_")}
                 log.debug(f"Fields Derivative {list_fields}")
-                if "_fields" not in list_fields:
-                    # the class is a derivative of MinosModel class
-                    ans |= list_fields
-        ans |= fields
-        return ans
+                fields |= list_fields
+        return fields
 
-    @property
-    def avro_schema(self) -> dict[str, t.Any]:
+    # noinspection PyMethodParameters
+    @classproperty
+    def avro_schema(cls) -> dict[str, t.Any]:
         """Compute the avro schema of the model.
 
         :return: A dictionary object.
         """
-        fields = [field.avro_schema for field in self.fields.values()]
-        return {"name": type(self).__name__, "namespace": type(self).__module__, "type": "record", "fields": fields}
+        fields = [
+            _MinosModelAvroSchemaBuilder(field_name, field_type).build()
+            for field_name, field_type in cls._type_hints.items()
+        ]
+        return {"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}
 
     @property
     def avro_data(self) -> t.Any:
