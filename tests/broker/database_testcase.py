@@ -7,7 +7,6 @@ import os
 import unittest
 
 import aiopg
-
 from minos.common.configuration.config import MinosConfig
 from minos.networks.broker import MinosBrokerDatabase, broker_table_creation
 
@@ -63,4 +62,3 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 template = "DROP TABLE IF EXISTS queue"
                 await cursor.execute(template)
         """
-

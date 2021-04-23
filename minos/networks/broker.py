@@ -124,7 +124,9 @@ class BrokerDatabaseInitializer(Service):
 
 async def send_to_kafka(topic: str, message: bytes, config: MinosConfig):
     flag = False
-    producer = AIOKafkaProducer(bootstrap_servers="{host}:{port}".format(host=config.events.broker.host, port=config.events.broker.port))
+    producer = AIOKafkaProducer(
+        bootstrap_servers="{host}:{port}".format(host=config.events.broker.host, port=config.events.broker.port)
+    )
     # Get cluster layout and initial topic/partition leadership information
     await producer.start()
     try:
@@ -162,4 +164,3 @@ async def broker_queue_dispatcher(config: MinosConfig):
 class EventBrokerQueueDispatcher(PeriodicService):
     async def callback(self):
         await broker_queue_dispatcher(self.config)
-
