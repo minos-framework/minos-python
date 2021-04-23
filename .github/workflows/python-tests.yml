@@ -38,7 +38,7 @@ jobs:
           env:
               KAFKA_BROKER_ID: 1
               KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-              KAFKA_ADVERTISED_HOST_NAME: localhost
+              KAFKA_ADVERTISED_HOST_NAME: kafka
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
