@@ -11,7 +11,7 @@ rest:
           action: add_order
 events:
     broker: kafka
-    port: 9093
+    port: 9092
     database:
         path: ./tests/local_db.lmdb
         name: database_events_test
@@ -31,7 +31,7 @@ events:
         records: 10
 commands:
     broker: kafka
-    port: 9093
+    port: 9092
     items:
         - name: AddOrder
           controller: minos.services.OrderService
