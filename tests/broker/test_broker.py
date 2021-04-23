@@ -4,9 +4,13 @@ import time
 import pytest
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
-from minos.networks.broker import (Aggregate, MinosCommandBroker,
-                                   MinosEventBroker, broker_queue_dispatcher,
-                                   send_to_kafka)
+from minos.networks.broker import (
+    Aggregate,
+    MinosCommandBroker,
+    MinosEventBroker,
+    broker_queue_dispatcher,
+    send_to_kafka,
+)
 from tests.broker.database_testcase import PostgresAsyncTestCase
 
 
@@ -156,6 +160,7 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         assert records[0] == 2
         assert retry_1[0] > 0
         assert retry_2[0] > 0
+
 
 """
 create role broker with createdb login password 'br0k3r';
