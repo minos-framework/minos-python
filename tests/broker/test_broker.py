@@ -157,6 +157,7 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         assert retry_1[0] > 0
         assert retry_2[0] > 0
 
+
 """
 create role broker with createdb login password 'br0k3r';
 CREATE DATABASE broker_db OWNER broker;
