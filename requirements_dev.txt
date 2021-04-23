@@ -24,6 +24,7 @@ flake8==3.9.0
 idna==2.10
 imagesize==1.2.0
 importlib-metadata==3.10.1
+iniconfig==1.1.1
 Jinja2==2.11.3
 kafka-python==2.0.2
 keyring==23.0.1
@@ -46,7 +47,8 @@ pycodestyle==2.7.0
 pyflakes==2.3.1
 Pygments==2.8.1
 pyparsing==2.4.7
-pytest==4.6.5
+pytest==6.2.3
+pytest-asyncio==0.15.1
 pytest-runner==5.1
 pytz==2021.1
 PyYAML==5.4.1
