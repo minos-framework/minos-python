@@ -125,44 +125,40 @@ class BrokerDatabaseInitializer(Service):
         await self.stop(self)
 
 
+async def send_to_kafka(topic: str, message: bytes, config: MinosConfig):
+    flag = False
+    log.debug(config.events.broker)
+    producer = AIOKafkaProducer(bootstrap_servers="{host}:{port}".format(host=config.events.broker.host, port=config.events.broker.port))
+    # Get cluster layout and initial topic/partition leadership information
+    await producer.start()
+    try:
+        # Produce message
+        await producer.send_and_wait(topic, message)
+        flag = True
+    finally:
+        # Wait for all pending messages to be delivered or expire.
+        await producer.stop()
+
+    return flag
+
+
+async def broker_queue_dispatcher(config: MinosConfig):
+    async with MinosBrokerDatabase().get_connection(config) as connect:
+        async with connect.cursor() as cur:
+            await cur.execute("SELECT * FROM queue WHERE retry <= 2 ORDER BY creation_date ASC LIMIT 10;")
+            async for row in cur:
+                sent_to_kafka = await send_to_kafka(topic=row[1], message=row[2], config=config)
+                if sent_to_kafka:
+                    # Delete from database If the event was sent successfully to Kafka.
+                    async with connect.cursor() as cur2:
+                        await cur2.execute("DELETE FROM queue WHERE queue_id=%d;" % row[0])
+                else:
+                    # Update queue retry column. Increase by 1.
+                    async with connect.cursor() as cur3:
+                        await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
+
+
 class EventBrokerQueueDispatcher(PeriodicService):
     async def callback(self):
-        async with MinosBrokerDatabase().get_connection(self.config) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute("SELECT * FROM queue WHERE retry <= 2 ORDER BY creation_date ASC LIMIT 10;")
-                async for row in cur:
+        await broker_queue_dispatcher(self.config)
 
-                    log.debug(row)
-                    log.debug("id = %s", row[0])
-                    log.debug("topic = %s", row[1])
-                    log.debug("model  = %s", row[2])
-                    log.debug("retry  = %s", row[3])
-                    log.debug("creation_date  = %s", row[4])
-                    log.debug("update_date  = %s", row[5])
-
-                    sent_to_kafka = await self._send_to_kafka(topic=row[1], message=row[2])
-                    if sent_to_kafka:
-                        # Delete from database If the event was sent successfully to Kafka.
-                        async with connect.cursor() as cur2:
-                            await cur2.execute("DELETE FROM queue WHERE queue_id=%d;" % row[0])
-                    else:
-                        # Update queue retry column. Increase by 1.
-                        async with connect.cursor() as cur3:
-                            await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
-
-    async def _send_to_kafka(self, topic: str, message: bytes):
-        flag = False
-        producer = AIOKafkaProducer(bootstrap_servers="localhost:9092")
-        # Get cluster layout and initial topic/partition leadership information
-        await producer.start()
-        try:
-            # Produce message
-            await producer.send_and_wait(topic, message)
-            flag = True
-        except Exception as e:
-            flag = False
-        finally:
-            # Wait for all pending messages to be delivered or expire.
-            await producer.stop()
-
-        return flag

@@ -19,7 +19,7 @@ async def database(broker_config):
 
 @pytest.fixture
 def services(broker_config):
-    return [KafkaConsumer(), BrokerDatabaseInitializer(config=broker_config), EventBrokerQueueDispatcher(interval=0.5, delay=0, config=broker_config)]
+    return [BrokerDatabaseInitializer(config=broker_config), EventBrokerQueueDispatcher(interval=0.5, delay=0, config=broker_config)]
 
 
 class KafkaConsumer(Service):
@@ -46,5 +46,5 @@ class KafkaConsumer(Service):
         finally:
             # Will leave consumer group; perform autocommit if enabled.
             await consumer.stop()
-            
+
         await self.stop(self)
