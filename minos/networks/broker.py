@@ -60,8 +60,6 @@ class MinosEventBroker(MinosBaseBroker):
         pass
 
     async def send(self, model: Aggregate):
-
-        # TODO: Change
         event_instance = EventModel(topic=self.topic, model="Change", items=[str(model)])
         bin_data = event_instance.avro_bytes
 
@@ -88,7 +86,6 @@ class MinosCommandBroker(MinosBaseBroker):
         pass
 
     async def send(self, model: Aggregate, callback: t.Callable):
-        # TODO: Change
         event_instance = CommandModel(topic=self.topic, model="Change", items=[str(model)], callback=callback)
         bin_data = event_instance.avro_bytes
 
@@ -127,7 +124,6 @@ class BrokerDatabaseInitializer(Service):
 
 async def send_to_kafka(topic: str, message: bytes, config: MinosConfig):
     flag = False
-    log.debug(config.events.broker)
     producer = AIOKafkaProducer(bootstrap_servers="{host}:{port}".format(host=config.events.broker.host, port=config.events.broker.port))
     # Get cluster layout and initial topic/partition leadership information
     await producer.start()
@@ -147,15 +143,20 @@ async def broker_queue_dispatcher(config: MinosConfig):
         async with connect.cursor() as cur:
             await cur.execute("SELECT * FROM queue WHERE retry <= 2 ORDER BY creation_date ASC LIMIT 10;")
             async for row in cur:
-                sent_to_kafka = await send_to_kafka(topic=row[1], message=row[2], config=config)
-                if sent_to_kafka:
-                    # Delete from database If the event was sent successfully to Kafka.
-                    async with connect.cursor() as cur2:
-                        await cur2.execute("DELETE FROM queue WHERE queue_id=%d;" % row[0])
-                else:
-                    # Update queue retry column. Increase by 1.
-                    async with connect.cursor() as cur3:
-                        await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
+                sent_to_kafka = False
+                try:
+                    sent_to_kafka = await send_to_kafka(topic=row[1], message=row[2], config=config)
+                    if sent_to_kafka:
+                        # Delete from database If the event was sent successfully to Kafka.
+                        async with connect.cursor() as cur2:
+                            await cur2.execute("DELETE FROM queue WHERE queue_id=%d;" % row[0])
+                except:
+                    sent_to_kafka = False
+                finally:
+                    if not sent_to_kafka:
+                        # Update queue retry column. Increase by 1.
+                        async with connect.cursor() as cur3:
+                            await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
 
 
 class EventBrokerQueueDispatcher(PeriodicService):
