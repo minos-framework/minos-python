@@ -63,4 +63,3 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 template = "DROP TABLE IF EXISTS queue"
                 await cursor.execute(template)
         """
-

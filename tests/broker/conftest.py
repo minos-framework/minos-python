@@ -19,17 +19,17 @@ async def database(broker_config):
 
 @pytest.fixture
 def services(broker_config):
-    return [BrokerDatabaseInitializer(config=broker_config), EventBrokerQueueDispatcher(interval=0.5, delay=0, config=broker_config)]
+    return [
+        BrokerDatabaseInitializer(config=broker_config),
+        EventBrokerQueueDispatcher(interval=0.5, delay=0, config=broker_config),
+    ]
 
 
 class KafkaConsumer(Service):
     async def start(self):
         self.start_event.set()
 
-        consumer = AIOKafkaConsumer(
-            'EventBroker', "CommandBroker",
-            loop=self.loop,
-            bootstrap_servers='localhost:9092')
+        consumer = AIOKafkaConsumer("EventBroker", "CommandBroker", loop=self.loop, bootstrap_servers="localhost:9092")
         # Get cluster layout and join group `my-group`
 
         await consumer.start()
@@ -41,7 +41,7 @@ class KafkaConsumer(Service):
                 log.debug(msg.key)
                 log.debug(msg.value)
                 log.debug("++++++++++++++++++++++++++++++++++++++++++++++++")
-                #log.debug("consumed: ", msg.topic, msg.partition, msg.offset,
+                # log.debug("consumed: ", msg.topic, msg.partition, msg.offset,
                 #      msg.key, msg.value, msg.timestamp)
         finally:
             # Will leave consumer group; perform autocommit if enabled.
