@@ -8,7 +8,6 @@ import abc
 import asyncio
 import datetime
 import typing as t
-
 from enum import Enum
 
 import aiopg
