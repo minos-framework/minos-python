@@ -8,10 +8,7 @@ import abc
 import asyncio
 import datetime
 import typing as t
-
-from enum import (
-    Enum,
-)
+from enum import Enum
 
 import aiopg
 from aiokafka import AIOKafkaProducer
@@ -150,7 +147,10 @@ async def send_to_kafka(topic: str, message: bytes, config: MinosConfig):
 async def broker_queue_dispatcher(config: MinosConfig):
     async with MinosBrokerDatabase().get_connection(config) as connect:
         async with connect.cursor() as cur:
-            await cur.execute("SELECT * FROM queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;", (config.events.queue.retry, config.events.queue.records))
+            await cur.execute(
+                "SELECT * FROM queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;",
+                (config.events.queue.retry, config.events.queue.records),
+            )
             async for row in cur:
                 sent_to_kafka = False
                 try:
