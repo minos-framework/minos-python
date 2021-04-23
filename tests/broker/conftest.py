@@ -1,10 +1,11 @@
 import pytest
-
-from minos.common.configuration.config import MinosConfig
-from minos.networks.broker import MinosBrokerDatabase, BrokerDatabaseInitializer, EventBrokerQueueDispatcher
-from aiomisc.service.periodic import Service
 from aiokafka import AIOKafkaConsumer
+from aiomisc.service.periodic import Service
+from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
+from minos.networks.broker import (BrokerDatabaseInitializer,
+                                   EventBrokerQueueDispatcher,
+                                   MinosBrokerDatabase)
 
 
 @pytest.fixture
