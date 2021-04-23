@@ -34,6 +34,10 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
 
         assert ret == [(1,)]
 
+    async def test_send_to_kafka_ok(self):
+        response = await send_to_kafka(topic="TestKafkaSend", message=bytes(), config=self._broker_config())
+        assert response is True
+
     async def test_events_broker_insertion(self):
         a = AggregateTest(test_id=1, test=2)
 
@@ -64,37 +68,6 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         assert affected_rows_2 == 1
         assert queue_id_2 > 0
         assert records[0] == 0
-
-    async def test_if_events_retry_was_incremented(self):
-        a = AggregateTest(test_id=1, test=2)
-        m = MinosEventBroker("EventBroker-Delete", self._broker_config())
-        affected_rows_1, queue_id_1 = await m.send(a)
-        affected_rows_2, queue_id_2 = await m.send(a)
-
-        config = MinosConfig(path="./tests/wrong_test_config.yaml")
-
-        await broker_queue_dispatcher(config)
-
-        database = await self._database()
-        async with database as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    "SELECT COUNT(*) FROM queue WHERE topic = '%s'" % "EventBroker-Delete")
-                records = await cur.fetchone()
-
-                await cur.execute("SELECT retry FROM queue WHERE queue_id=%d;" % queue_id_1)
-                retry_1 = await cur.fetchone()
-
-                await cur.execute("SELECT retry FROM queue WHERE queue_id=%d;" % queue_id_2)
-                retry_2 = await cur.fetchone()
-
-        assert affected_rows_1 == 1
-        assert queue_id_1 > 0
-        assert affected_rows_2 == 1
-        assert queue_id_2 > 0
-        assert records[0] == 2
-        assert retry_1[0] > 0
-        assert retry_2[0] > 0
 
     async def test_commands_broker_insertion(self):
         a = AggregateTest(test_id=1, test=2)
@@ -157,9 +130,36 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         assert retry_1[0] > 0
         assert retry_2[0] > 0
 
-    async def test_send_to_kafka_ok(self):
-        response = await send_to_kafka(topic="TestKafkaSend", message=bytes(), config=self._broker_config())
-        assert response is True
+    async def test_if_events_retry_was_incremented(self):
+        a = AggregateTest(test_id=1, test=2)
+        m = MinosEventBroker("EventBroker-Delete", self._broker_config())
+        affected_rows_1, queue_id_1 = await m.send(a)
+        affected_rows_2, queue_id_2 = await m.send(a)
+
+        config = MinosConfig(path="./tests/wrong_test_config.yaml")
+
+        await broker_queue_dispatcher(config)
+
+        database = await self._database()
+        async with database as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    "SELECT COUNT(*) FROM queue WHERE topic = '%s'" % "EventBroker-Delete")
+                records = await cur.fetchone()
+
+                await cur.execute("SELECT retry FROM queue WHERE queue_id=%d;" % queue_id_1)
+                retry_1 = await cur.fetchone()
+
+                await cur.execute("SELECT retry FROM queue WHERE queue_id=%d;" % queue_id_2)
+                retry_2 = await cur.fetchone()
+
+        assert affected_rows_1 == 1
+        assert queue_id_1 > 0
+        assert affected_rows_2 == 1
+        assert queue_id_2 > 0
+        assert records[0] == 2
+        assert retry_1[0] > 0
+        assert retry_2[0] > 0
 
 
 # create role broker with createdb login password 'br0k3r';
