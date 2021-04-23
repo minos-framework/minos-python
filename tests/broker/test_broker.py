@@ -157,9 +157,10 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         assert retry_1[0] > 0
         assert retry_2[0] > 0
 
-
-# create role broker with createdb login password 'br0k3r';
-# CREATE DATABASE broker_db OWNER broker;
-# 'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, "topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, "creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL)', []
-# 'SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = %s ORDER BY tablename', ('public',)
-# 'DROP TABLE IF EXISTS "queue"'
+"""
+create role broker with createdb login password 'br0k3r';
+CREATE DATABASE broker_db OWNER broker;
+'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, "topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, "creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL)', []
+'SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = %s ORDER BY tablename', ('public',)
+'DROP TABLE IF EXISTS "queue"'
+"""
