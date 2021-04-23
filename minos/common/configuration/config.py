@@ -18,7 +18,7 @@ from ..exceptions import (
 
 BROKER = collections.namedtuple("Broker", "host port")
 DATABASE = collections.namedtuple("Database", "path name")
-QUEUE = collections.namedtuple("Queue", "database user password host port records")
+QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
 ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
 EVENT = collections.namedtuple("Event", "name controller action")
 COMMAND = collections.namedtuple("Command", "name controller action")
@@ -100,6 +100,7 @@ class MinosConfig(MinosConfigAbstract):
             host=event_info["queue"]["host"],
             port=event_info["queue"]["port"],
             records=event_info["queue"]["records"],
+            retry=event_info["queue"]["retry"],
         )
         events = []
         for event in event_info["items"]:
@@ -118,6 +119,7 @@ class MinosConfig(MinosConfigAbstract):
             host=command_info["queue"]["host"],
             port=command_info["queue"]["port"],
             records=command_info["queue"]["records"],
+            retry=command_info["queue"]["retry"],
         )
         commands = []
         for command in command_info["items"]:
