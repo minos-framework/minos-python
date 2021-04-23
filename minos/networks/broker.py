@@ -9,7 +9,10 @@ import asyncio
 import datetime
 import typing as t
 
-import aiomisc
+from enum import (
+    Enum,
+)
+
 import aiopg
 from aiokafka import AIOKafkaProducer
 from aiomisc.service.periodic import PeriodicService, Service
@@ -51,6 +54,8 @@ class CommandModel(MinosModel):
 
 
 class MinosEventBroker(MinosBaseBroker):
+    ACTION = "event"
+
     def __init__(self, topic: str, config: MinosConfig):
         self.config = config
         self.topic = topic
@@ -66,8 +71,8 @@ class MinosEventBroker(MinosBaseBroker):
         async with MinosBrokerDatabase().get_connection(self.config) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
-                    (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
+                    "INSERT INTO queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING queue_id;",
+                    (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
                 )
 
                 queue_id = await cur.fetchone()
@@ -77,6 +82,8 @@ class MinosEventBroker(MinosBaseBroker):
 
 
 class MinosCommandBroker(MinosBaseBroker):
+    ACTION = "command"
+
     def __init__(self, topic: str, config: MinosConfig):
         self.config = config
         self.topic = topic
@@ -92,8 +99,8 @@ class MinosCommandBroker(MinosBaseBroker):
         async with MinosBrokerDatabase().get_connection(self.config) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO queue (topic, model, retry, creation_date, update_date) VALUES (%s, %s, %s, %s, %s) RETURNING queue_id;",
-                    (event_instance.topic, bin_data, 0, datetime.datetime.now(), datetime.datetime.now(),),
+                    "INSERT INTO queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING queue_id;",
+                    (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
                 )
 
                 queue_id = await cur.fetchone()
@@ -106,9 +113,9 @@ async def broker_table_creation(config: MinosConfig):
     async with MinosBrokerDatabase().get_connection(config) as connect:
         async with connect.cursor() as cur:
             await cur.execute(
-                'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" SERIAL NOT NULL PRIMARY KEY, '
+                'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" BIGSERIAL NOT NULL PRIMARY KEY, '
                 '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
-                '"creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
+                '"action" VARCHAR(255) NOT NULL, "creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
             )
 
 
