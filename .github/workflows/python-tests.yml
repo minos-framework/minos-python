@@ -30,11 +30,11 @@ jobs:
       zookeeper:
           image: wurstmeister/zookeeper:latest
           ports:
-              - "2181:2181"
+              - 2181:2181
       kafka:
           image: wurstmeister/kafka:latest
           ports:
-              - "9092:9092"
+              - 9092:9092
           env:
               KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
               KAFKA_ADVERTISED_HOST_NAME: kafka
