@@ -9,7 +9,7 @@ import unittest
 
 from minos.common import (
     MinosAvroProtocol,
-    MinosAvroValuesDatabase,
+    MinosAvroValuesDatabase, MinosProtocolException,
 )
 
 
@@ -74,6 +74,14 @@ class TestMinosAvroProtocol(unittest.TestCase):
         self.assertEqual("get", returned_dict["headers"]["action"])
         self.assertEqual(123, returned_dict["headers"]["id"])
 
+    def test_encode_raises(self):
+        with self.assertRaises(MinosProtocolException):
+            MinosAvroProtocol.encode(3)
+
+    def test_decode_raises(self):
+        with self.assertRaises(MinosProtocolException):
+            MinosAvroValuesDatabase.decode(bytes())
+
 
 class TestMinosAvroValuesDatabase(unittest.TestCase):
 
@@ -105,6 +113,14 @@ class TestMinosAvroValuesDatabase(unittest.TestCase):
         returned_string = MinosAvroValuesDatabase.decode(data_return_bytes)
         self.assertEqual("first", returned_string[0])
         self.assertEqual("second", returned_string[1])
+
+    def test_encode_raises(self):
+        with self.assertRaises(MinosProtocolException):
+            MinosAvroValuesDatabase.encode({}, schema={"": ""})
+
+    def test_decode_raises(self):
+        with self.assertRaises(MinosProtocolException):
+            MinosAvroValuesDatabase.decode(bytes())
 
 
 if __name__ == "__main__":

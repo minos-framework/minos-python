@@ -114,12 +114,17 @@ class MinosAvroProtocol(MinosBinaryProtocol):
 
     @classmethod
     def _encode(cls, schema_val: dict[str, t.Any], final_data: list[dict[str, t.Any]]) -> bytes:
-        schema_bytes = parse_schema(schema_val)
-        with io.BytesIO() as file:
-            writer(file, schema_bytes, final_data)
-            file.seek(0)
-            content_bytes = file.getvalue()
-            return content_bytes
+        try:
+            schema_bytes = parse_schema(schema_val)
+            with io.BytesIO() as file:
+                writer(file, schema_bytes, final_data)
+                file.seek(0)
+                content_bytes = file.getvalue()
+                return content_bytes
+        except Exception:
+            raise MinosProtocolException(
+                "Error encoding data, check if is a correct Avro Schema and Datum is provided."
+            )
 
     @classmethod
     def decode(cls, data: bytes) -> t.Dict:
