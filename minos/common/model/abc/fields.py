@@ -218,6 +218,7 @@ class _ModelFieldCaster(object):
             return self._cast_simple_value(type_field, data)
 
         from .model import MinosModel
+
         if inspect.isclass(type_field) and issubclass(type_field, MinosModel):
             return self._cast_minos_model(type_field, data)
 
@@ -394,6 +395,7 @@ class _MinosModelAvroSchemaBuilder(object):
             return self._build_simple_schema(type_field)
 
         from .model import MinosModel
+
         if inspect.isclass(type_field) and issubclass(type_field, MinosModel):
             return self._build_minos_model_schema(type_field)
 
