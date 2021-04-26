@@ -10,11 +10,10 @@ import unittest
 from minos.common import (
     MinosConfig,
     MinosConfigAbstract,
-    MinosConfigException, MinosConfigDefaultAlreadySetException,
+    MinosConfigException,
+    MinosConfigDefaultAlreadySetException,
 )
-from tests.utils import (
-    BASE_PATH,
-)
+from tests.utils import BASE_PATH
 
 
 class TestMinosConfig(unittest.TestCase):
