@@ -42,6 +42,7 @@ from .abc import (
 class Aggregate(MinosModel):
     """Base aggregate class."""
 
+    id: int
     version: int
 
     # FIXME: The ``broker`` attribute should be a reference to a ``MinosBaseBroker`` class instance.
