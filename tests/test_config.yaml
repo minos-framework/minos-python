@@ -29,6 +29,7 @@ events:
         host: postgres
         port: 5432
         records: 10
+        retry: 2
 commands:
     broker: kafka
     port: 9092
@@ -52,3 +53,4 @@ commands:
         host: postgres
         port: 5432
         records: 10
+        retry: 2
