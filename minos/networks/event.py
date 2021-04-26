@@ -41,6 +41,9 @@ class MinosEventServer(Service):
                 topic = msg.topic
                 partition = msg.partition
                 event_binary = msg.value
+                # check if the event binary string is well formatted
+                
+
 
     async def start(self) -> t.Any:
         self.start_event.set()
