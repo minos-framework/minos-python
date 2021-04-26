@@ -73,7 +73,7 @@ from .types import (
 class MinosModel(object):
     """Base class for ``minos`` model entities."""
 
-    # id: int
+    id: int
 
     _fields: dict[str, ModelField] = {}
 

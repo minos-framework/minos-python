@@ -66,11 +66,11 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual("John", model.name)
 
     def test_attribute_parser_different_type(self):
-        model = ShoppingList(User(1234), cost="1.234,56")
+        model = ShoppingList(123, User(1234), cost="1.234,56")
         self.assertEqual(1234.56, model.cost)
 
     def test_attribute_parser_attribute(self):
-        model = ShoppingList(User(1234, "admin"), cost="1.234,56")
+        model = ShoppingList(123, User(1234, "admin"), cost="1.234,56")
         self.assertEqual(0.0, model.cost)
 
     def test_aggregate_int_as_string_type_setter(self):
@@ -131,7 +131,7 @@ class TestMinosModel(unittest.TestCase):
             model.lists = [1, "hola", 8, 6]
 
     def test_model_ref(self):
-        shopping_list = ShoppingList(cost=3.14)
+        shopping_list = ShoppingList(123, cost=3.14)
         user = User(1234)
         shopping_list.user = user
         self.assertEqual(user, shopping_list.user)
@@ -139,6 +139,7 @@ class TestMinosModel(unittest.TestCase):
     def test_avro_schema(self):
         expected = {
             "fields": [
+                {"name": "id", "type": "int"},
                 {
                     "name": "user",
                     "type": [
@@ -161,12 +162,12 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(expected, ShoppingList.avro_schema)
 
     def test_avro_data(self):
-        shopping_list = ShoppingList(User(1234))
-        expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
+        shopping_list = ShoppingList(123, User(1234))
+        expected = {"id": 123, "cost": float("inf"), "user": {"id": 1234, "username": None}}
         self.assertEqual(expected, shopping_list.avro_data)
 
     def test_avro_bytes(self):
-        shopping_list = ShoppingList(User(1234))
+        shopping_list = ShoppingList(123, User(1234))
         self.assertIsInstance(shopping_list.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):
@@ -221,14 +222,14 @@ class TestMinosModel(unittest.TestCase):
             Customer.to_avro_bytes([User(1234), Customer(5678)])
 
     def test_model_ref_raises(self):
-        shopping_list = ShoppingList(cost=3.14)
+        shopping_list = ShoppingList(123, cost=3.14)
         with self.assertRaises(MinosTypeAttributeException):
             shopping_list.user = "foo"
 
     def test_recursive_type_composition(self):
         orders = {
-            "foo": [ShoppingList(User(1)), ShoppingList(User(1))],
-            "bar": [ShoppingList(User(2)), ShoppingList(User(2))],
+            "foo": [ShoppingList(123, User(1)), ShoppingList(456, User(1))],
+            "bar": [ShoppingList(789, User(2)), ShoppingList(101112, User(2))],
         }
 
         analytics = Analytics(1, orders)
@@ -269,7 +270,7 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(a, b)
 
     def test_complex_equal(self):
-        a, b = ShoppingList(User(1234), cost="1.234,56"), ShoppingList(User(1234), cost="1.234,56")
+        a, b = ShoppingList(123, User(1234), cost="1.234,56"), ShoppingList(123, User(1234), cost="1.234,56")
         self.assertEqual(a, b)
 
     def test_not_equal(self):
@@ -301,9 +302,10 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(expected, hash(user))
 
     def test_repr(self):
-        shopping_list = ShoppingList(User(1234), cost="1.234,56")
+        shopping_list = ShoppingList(123, User(1234), cost="1.234,56")
         expected = (
-            "ShoppingList(fields=[ModelField(name='user', type=typing.Optional[minos.common.model.abc.types.ModelRef"
+            "ShoppingList(fields=[ModelField(name='id', type=<class 'int'>, value=123, parser=None, validator=None), "
+            "ModelField(name='user', type=typing.Optional[minos.common.model.abc.types.ModelRef"
             "[tests.modelClasses.User]], value=User(fields=[ModelField(name='id', type=<class 'int'>, value=1234, "
             "parser=None, validator=validate_id), ModelField(name='username', type=typing.Optional[str], value=None, "
             "parser=parse_username, validator=validate_username)]), parser=None, validator=None), ModelField(name="
