@@ -10,9 +10,9 @@ import io
 import typing as t
 
 from fastavro import (
-    writer,
-    reader,
     parse_schema,
+    reader,
+    writer,
 )
 
 from ..exceptions import (
