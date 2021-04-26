@@ -12,9 +12,7 @@ import typing as t
 
 import yaml
 
-from ..exceptions import (
-    MinosConfigException,
-)
+from ..exceptions import MinosConfigException
 
 BROKER = collections.namedtuple("Broker", "host port")
 DATABASE = collections.namedtuple("Database", "path name")
