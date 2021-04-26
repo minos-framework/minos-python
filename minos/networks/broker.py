@@ -47,7 +47,7 @@ class CommandModel(MinosModel):
     model: str
     # items: list[ModelRef[Aggregate]]
     items: list[str]
-    callback: str
+    reply_on: str
 
 
 class MinosEventBroker(MinosBaseBroker):
@@ -89,8 +89,8 @@ class MinosCommandBroker(MinosBaseBroker):
     def _database(self):
         pass
 
-    async def send(self, model: Aggregate, callback: t.Callable):
-        event_instance = CommandModel(topic=self.topic, model="Change", items=[str(model)], callback=callback)
+    async def send(self, model: Aggregate, reply_on: str):
+        event_instance = CommandModel(topic=self.topic, model="Change", items=[str(model)], reply_on=reply_on)
         bin_data = event_instance.avro_bytes
 
         async with MinosBrokerDatabase().get_connection(self.config) as connect:

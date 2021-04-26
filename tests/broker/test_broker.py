@@ -73,15 +73,15 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
 
         m = MinosCommandBroker("CommandBroker", self._broker_config())
 
-        affected_rows, queue_id = await m.send(model=a, callback="test")
+        affected_rows, queue_id = await m.send(model=a, reply_on="test_reply_on")
         assert affected_rows == 1
         assert queue_id > 0
 
     async def test_if_commands_was_deleted(self):
         a = AggregateTest(test_id=1, test=2)
         m = MinosCommandBroker("CommandBroker-Delete", self._broker_config())
-        affected_rows_1, queue_id_1 = await m.send(a, callback="test1")
-        affected_rows_2, queue_id_2 = await m.send(a, callback="test2")
+        affected_rows_1, queue_id_1 = await m.send(a, reply_on="test_reply_on")
+        affected_rows_2, queue_id_2 = await m.send(a, reply_on="test_reply_on")
 
         await broker_queue_dispatcher(self._broker_config())
 
@@ -100,8 +100,8 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
     async def test_if_commands_retry_was_incremented(self):
         a = AggregateTest(test_id=1, test=2)
         m = MinosCommandBroker("CommandBroker-Delete", self._broker_config())
-        affected_rows_1, queue_id_1 = await m.send(a, callback="test1")
-        affected_rows_2, queue_id_2 = await m.send(a, callback="test2")
+        affected_rows_1, queue_id_1 = await m.send(a, reply_on="test_reply_on")
+        affected_rows_2, queue_id_2 = await m.send(a, reply_on="test_reply_on")
 
         config = MinosConfig(path="./tests/wrong_test_config.yaml")
 
