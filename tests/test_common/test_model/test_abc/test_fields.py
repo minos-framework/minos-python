@@ -150,10 +150,15 @@ class TestModelField(unittest.TestCase):
         with self.assertRaises(MinosMalformedAttributeException):
             ModelField("test", dict[int, int], {1: 2, 3: 4})
 
-    def test_value_model_ref(self):
+    def test_value_model_ref_value(self):
         user = User(1234)
         field = ModelField("test", ModelRef[User], user)
         self.assertEqual(user, field.value)
+
+    @unittest.skip
+    def test_value_model_ref_reference(self):
+        field = ModelField("test", ModelRef[User], 1234)
+        self.assertEqual(1234, field.value)
 
     def test_value_model_ref_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
@@ -169,7 +174,7 @@ class TestModelField(unittest.TestCase):
 
     def test_value_unsupported(self):
         with self.assertRaises(MinosTypeAttributeException):
-            ModelField("test", set[int], {3,})
+            ModelField("test", set[int], {3, })
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
