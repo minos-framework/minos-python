@@ -217,9 +217,7 @@ class _ModelFieldCaster(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._cast_simple_value(type_field, data)
 
-        from .model import MinosModel
-
-        if inspect.isclass(type_field) and issubclass(type_field, MinosModel):
+        if _is_minos_model_cls(type_field):
             return self._cast_minos_model(type_field, data)
 
         return self._cast_composed_value(type_field, data)
@@ -396,9 +394,7 @@ class _MinosModelAvroSchemaBuilder(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._build_simple_schema(type_field)
 
-        from .model import MinosModel
-
-        if inspect.isclass(type_field) and issubclass(type_field, MinosModel):
+        if _is_minos_model_cls(type_field):
             return self._build_minos_model_schema(type_field)
 
         return self._build_composed_schema(type_field)
@@ -483,3 +479,8 @@ class _MinosModelAvroDataBuilder(object):
         if isinstance(value, dict):
             return {k: self._to_avro_raw(v) for k, v in value.items()}
         return value.avro_data
+
+
+def _is_minos_model_cls(type_field: t.Type) -> bool:
+    from .model import MinosModel
+    return inspect.isclass(type_field) and issubclass(type_field, MinosModel)
