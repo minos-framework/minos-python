@@ -14,7 +14,7 @@ import aiopg
 from aiokafka import AIOKafkaProducer
 from aiomisc.service.periodic import PeriodicService, Service
 from minos.common import Aggregate
-from minos.common.broker import MinosBaseBroker, Event, Command
+from minos.common.broker import Command, Event, MinosBaseBroker
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 
@@ -129,8 +129,8 @@ async def broker_queue_dispatcher(config: MinosConfig):
     async with MinosBrokerDatabase().get_connection(config) as connect:
         async with connect.cursor() as cur:
             await cur.execute(
-                "SELECT * FROM producer_queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;" %
-                (config.events.queue.retry, config.events.queue.records),
+                "SELECT * FROM producer_queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;"
+                % (config.events.queue.retry, config.events.queue.records),
             )
             async for row in cur:
                 sent_to_kafka = False
