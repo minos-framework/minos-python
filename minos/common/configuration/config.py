@@ -38,11 +38,11 @@ REST = collections.namedtuple("Rest", "broker endpoints")
 
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 
+_default: t.Optional[MinosConfigAbstract] = None
+
 
 class MinosConfigAbstract(abc.ABC):
     __slots__ = "_services", "_path"
-
-    _default: t.Optional[MinosConfigAbstract] = None
 
     def __init__(self, path: t.Union[Path, str]):
         if isinstance(path, Path):
@@ -80,7 +80,8 @@ class MinosConfigAbstract(abc.ABC):
         """
         if MinosConfigAbstract.get_default() is not None:
             raise MinosConfigDefaultAlreadySetException("There is already another config set as default.")
-        MinosConfigAbstract._default = value
+        global _default
+        _default = value
 
     @classmethod
     def get_default(cls) -> MinosConfigAbstract:
@@ -88,7 +89,8 @@ class MinosConfigAbstract(abc.ABC):
 
         :return: A ``MinosConfigAbstract`` instance.
         """
-        return cls._default
+        global _default
+        return _default
 
     @staticmethod
     def unset_default() -> t.NoReturn:
@@ -96,7 +98,8 @@ class MinosConfigAbstract(abc.ABC):
 
         :return: This method does not return anything.
         """
-        MinosConfigAbstract._default = None
+        global _default
+        _default = None
 
 
 class MinosConfig(MinosConfigAbstract):
