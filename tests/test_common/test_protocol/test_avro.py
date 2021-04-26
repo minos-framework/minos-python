@@ -9,12 +9,12 @@ import unittest
 
 from minos.common import (
     MinosAvroProtocol,
-    MinosAvroValuesDatabase, MinosProtocolException,
+    MinosAvroValuesDatabase,
+    MinosProtocolException,
 )
 
 
 class TestMinosAvroProtocol(unittest.TestCase):
-
     def test_encoder_decoder_with_body_dict(self):
         headers = {"id": 123, "action": "get"}
         body = {"message": "this is a message"}
@@ -84,7 +84,6 @@ class TestMinosAvroProtocol(unittest.TestCase):
 
 
 class TestMinosAvroValuesDatabase(unittest.TestCase):
-
     def test_encoder_decoder_database_values_string(self):
         value = "String Test"
         data_return_bytes = MinosAvroValuesDatabase.encode(value)
