@@ -9,15 +9,10 @@ Minos framework can not be copied and/or distributed without the express permiss
 import io
 import typing as t
 
-import avro
-import orjson
-from avro.datafile import (
-    DataFileReader,
-    DataFileWriter,
-)
-from avro.io import (
-    DatumReader,
-    DatumWriter,
+from fastavro import (
+    writer,
+    reader,
+    parse_schema,
 )
 
 from ..exceptions import (
@@ -107,28 +102,31 @@ class MinosAvroProtocol(MinosBinaryProtocol):
                 },
             ],
         }
-        schema_json = orjson.dumps(schema)
-        schema_bytes = avro.schema.parse(schema_json)
         final_data = {}
         final_data["headers"] = headers
         if body:
             final_data["body"] = body
-        with io.BytesIO() as f:
-            writer = DataFileWriter(f, DatumWriter(), schema_bytes)
-            writer.append(final_data)
-            writer.flush()
-            f.seek(0)
-            content_bytes = f.getvalue()
-            writer.close()
+
+        if not isinstance(final_data, list):
+            final_data = [final_data]
+
+        return cls._encode(schema, final_data)
+
+    @classmethod
+    def _encode(cls, schema_val: dict[str, t.Any], final_data: list[dict[str, t.Any]]) -> bytes:
+        schema_bytes = parse_schema(schema_val)
+        with io.BytesIO() as file:
+            writer(file, schema_bytes, final_data)
+            file.seek(0)
+            content_bytes = file.getvalue()
             return content_bytes
 
     @classmethod
     def decode(cls, data: bytes) -> t.Dict:
         data_return: t.Dict = {}
         try:
-            message_avro = DataFileReader(io.BytesIO(data), DatumReader())
             data_return["headers"] = {}
-            for schema_dict in message_avro:
+            for schema_dict in cls._decode(data):
                 log.debug(f"Avro: get the request/response in dict format")
                 data_return["headers"] = schema_dict["headers"]
                 # check wich type is body
@@ -142,8 +140,13 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         except Exception:
             raise MinosProtocolException("Error decoding string, check if is a correct Avro Binary data")
 
+    @classmethod
+    def _decode(cls, data: bytes) -> list[dict[str, t.Any]]:
+        with io.BytesIO(data) as file:
+            return list(reader(file))
 
-class MinosAvroValuesDatabase(MinosBinaryProtocol):
+
+class MinosAvroValuesDatabase(MinosAvroProtocol):
     """Encoder/Decoder class for values to be stored on the database with avro format."""
 
     @classmethod
@@ -230,18 +233,7 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
         if not isinstance(final_data, list):
             final_data = [final_data]
 
-        schema_json = orjson.dumps(schema_val)
-        schema_bytes = avro.schema.parse(schema_json)
-
-        with io.BytesIO() as f:
-            writer = DataFileWriter(f, DatumWriter(), schema_bytes)
-            for d in final_data:
-                writer.append(d)
-            writer.flush()
-            f.seek(0)
-            content_bytes = f.getvalue()
-            writer.close()
-            return content_bytes
+        return cls._encode(schema_val, final_data)
 
     @classmethod
     def decode(
@@ -256,8 +248,7 @@ class MinosAvroValuesDatabase(MinosBinaryProtocol):
         """
         try:
             ans = list()
-            message_avro = DataFileReader(io.BytesIO(data), DatumReader())
-            for schema_dict in message_avro:
+            for schema_dict in cls._decode(data):
                 log.debug(f"Avro Database: get the values data")
                 if content_root:
                     schema_dict = schema_dict["content"]
