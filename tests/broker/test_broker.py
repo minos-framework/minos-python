@@ -26,7 +26,7 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
             async with connect.cursor() as cur:
 
                 await cur.execute(
-                    "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'queue';"
+                    "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'producer_queue';"
                 )
                 ret = []
                 async for row in cur:
@@ -59,7 +59,7 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         database = await self._database()
         async with database as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM queue WHERE topic = '%s'" % "EventBroker-Delete")
+                await cur.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "EventBroker-Delete")
                 records = await cur.fetchone()
 
         assert affected_rows_1 == 1
@@ -88,7 +88,7 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         database = await self._database()
         async with database as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM queue WHERE topic = '%s'" % "CommandBroker-Delete")
+                await cur.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandBroker-Delete")
                 records = await cur.fetchone()
 
         assert affected_rows_1 == 1
@@ -110,13 +110,13 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         database = await self._database()
         async with database as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM queue WHERE topic = '%s'" % "CommandBroker-Delete")
+                await cur.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandBroker-Delete")
                 records = await cur.fetchone()
 
-                await cur.execute("SELECT retry FROM queue WHERE queue_id=%d;" % queue_id_1)
+                await cur.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_1)
                 retry_1 = await cur.fetchone()
 
-                await cur.execute("SELECT retry FROM queue WHERE queue_id=%d;" % queue_id_2)
+                await cur.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_2)
                 retry_2 = await cur.fetchone()
 
         assert affected_rows_1 == 1
@@ -140,13 +140,13 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
         database = await self._database()
         async with database as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM queue WHERE topic = '%s'" % "EventBroker-Delete")
+                await cur.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "EventBroker-Delete")
                 records = await cur.fetchone()
 
-                await cur.execute("SELECT retry FROM queue WHERE queue_id=%d;" % queue_id_1)
+                await cur.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_1)
                 retry_1 = await cur.fetchone()
 
-                await cur.execute("SELECT retry FROM queue WHERE queue_id=%d;" % queue_id_2)
+                await cur.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_2)
                 retry_2 = await cur.fetchone()
 
         assert affected_rows_1 == 1

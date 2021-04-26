@@ -68,7 +68,7 @@ class MinosEventBroker(MinosBaseBroker):
         async with MinosBrokerDatabase().get_connection(self.config) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING queue_id;",
+                    "INSERT INTO queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
                     (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
                 )
 
@@ -96,7 +96,7 @@ class MinosCommandBroker(MinosBaseBroker):
         async with MinosBrokerDatabase().get_connection(self.config) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING queue_id;",
+                    "INSERT INTO queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
                     (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
                 )
 
@@ -110,7 +110,7 @@ async def broker_table_creation(config: MinosConfig):
     async with MinosBrokerDatabase().get_connection(config) as connect:
         async with connect.cursor() as cur:
             await cur.execute(
-                'CREATE TABLE IF NOT EXISTS "queue" ("queue_id" BIGSERIAL NOT NULL PRIMARY KEY, '
+                'CREATE TABLE IF NOT EXISTS "producer_queue" ("id" BIGSERIAL NOT NULL PRIMARY KEY, '
                 '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
                 '"action" VARCHAR(255) NOT NULL, "creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
             )
@@ -148,7 +148,7 @@ async def broker_queue_dispatcher(config: MinosConfig):
     async with MinosBrokerDatabase().get_connection(config) as connect:
         async with connect.cursor() as cur:
             await cur.execute(
-                "SELECT * FROM queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;",
+                "SELECT * FROM producer_queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;",
                 (config.events.queue.retry, config.events.queue.records),
             )
             async for row in cur:
@@ -158,14 +158,14 @@ async def broker_queue_dispatcher(config: MinosConfig):
                     if sent_to_kafka:
                         # Delete from database If the event was sent successfully to Kafka.
                         async with connect.cursor() as cur2:
-                            await cur2.execute("DELETE FROM queue WHERE queue_id=%d;" % row[0])
+                            await cur2.execute("DELETE FROM producer_queue WHERE id=%d;" % row[0])
                 except:
                     sent_to_kafka = False
                 finally:
                     if not sent_to_kafka:
                         # Update queue retry column. Increase by 1.
                         async with connect.cursor() as cur3:
-                            await cur3.execute("UPDATE queue SET retry = retry + 1 WHERE queue_id=%d;" % row[0])
+                            await cur3.execute("UPDATE producer_queue SET retry = retry + 1 WHERE id=%d;" % row[0])
 
 
 class EventBrokerQueueDispatcher(PeriodicService):
