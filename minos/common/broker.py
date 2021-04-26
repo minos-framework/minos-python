@@ -6,7 +6,12 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import abc
-from ..common import MinosModel, ModelRef, Aggregate
+
+from .model import (
+    Aggregate,
+    MinosModel,
+    ModelRef,
+)
 
 
 class MinosBaseBroker(abc.ABC):
