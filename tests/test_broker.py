@@ -1,5 +1,5 @@
 import pytest
-from minos.common.broker import (
+from minos.common import (
     MinosBaseBroker,
 )
 
