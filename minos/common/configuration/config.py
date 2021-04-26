@@ -20,8 +20,8 @@ from pathlib import (
 import yaml
 
 from ..exceptions import (
-    MinosConfigException,
     MinosConfigDefaultAlreadySetException,
+    MinosConfigException,
 )
 
 BROKER = collections.namedtuple("Broker", "host port")
@@ -103,7 +103,7 @@ class MinosConfigAbstract(abc.ABC):
 
 
 class MinosConfig(MinosConfigAbstract):
-    __slots__ = "_data",
+    __slots__ = ("_data",)
 
     def _load(self, path):
         if self._file_exit(path):

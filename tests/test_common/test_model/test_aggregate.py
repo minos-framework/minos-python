@@ -14,7 +14,8 @@ from minos.common import (
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException, PostgreSqlMinosRepository,
+    MinosRepositoryNonProvidedException,
+    PostgreSqlMinosRepository,
 )
 from tests.aggregate_classes import (
     Car,

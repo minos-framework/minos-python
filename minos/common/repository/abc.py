@@ -21,11 +21,13 @@ from typing import (
     Union,
 )
 
+from ..configuration import (
+    MinosConfig,
+)
 from .entries import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
 )
-from ..configuration import MinosConfig
 
 if TYPE_CHECKING:
     from ..model import Aggregate
