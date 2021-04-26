@@ -10,14 +10,20 @@ import io
 import typing as t
 
 from fastavro import (
-    writer,
-    reader,
     parse_schema,
+    reader,
+    writer,
 )
 
-from ..exceptions import MinosProtocolException
-from ..logs import log
-from .abstract import MinosBinaryProtocol
+from ..exceptions import (
+    MinosProtocolException,
+)
+from ..logs import (
+    log,
+)
+from .abstract import (
+    MinosBinaryProtocol,
+)
 
 
 class MinosAvroProtocol(MinosBinaryProtocol):

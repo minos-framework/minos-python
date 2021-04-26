@@ -15,7 +15,9 @@ from minos.common import (
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNonProvidedException,
 )
-from tests.aggregate_classes import Car
+from tests.aggregate_classes import (
+    Car,
+)
 
 
 class TestAggregate(unittest.IsolatedAsyncioTestCase):
