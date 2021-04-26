@@ -483,4 +483,5 @@ class _MinosModelAvroDataBuilder(object):
 
 def _is_minos_model_cls(type_field: t.Type) -> bool:
     from .model import MinosModel
+
     return inspect.isclass(type_field) and issubclass(type_field, MinosModel)
