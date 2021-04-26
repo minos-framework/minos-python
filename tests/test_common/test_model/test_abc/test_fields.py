@@ -110,6 +110,7 @@ class TestModelField(unittest.TestCase):
                         "namespace": "tests.modelClasses",
                         "type": "record",
                     },
+                    "int",
                     "null",
                 ],
                 "type": "array",
@@ -155,7 +156,6 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", ModelRef[User], user)
         self.assertEqual(user, field.value)
 
-    @unittest.skip
     def test_value_model_ref_reference(self):
         field = ModelField("test", ModelRef[User], 1234)
         self.assertEqual(1234, field.value)

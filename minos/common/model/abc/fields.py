@@ -217,6 +217,10 @@ class _ModelFieldCaster(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._cast_simple_value(type_field, data)
 
+        from .model import MinosModel
+        if inspect.isclass(type_field) and issubclass(type_field, MinosModel):
+            return self._cast_minos_model(type_field, data)
+
         return self._cast_composed_value(type_field, data)
 
     def _cast_none_value(self, type_field: t.Type, data: t.Any) -> t.Any:
@@ -282,6 +286,11 @@ class _ModelFieldCaster(object):
             raise MinosTypeAttributeException(self._name, bytes, data)
         return data
 
+    def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
+        if not isinstance(data, type_field):
+            raise MinosTypeAttributeException(self._name, type_field, data)
+        return data
+
     def _cast_composed_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         origin_type = t.get_origin(type_field)
         if origin_type is None:
@@ -300,7 +309,7 @@ class _ModelFieldCaster(object):
             return self._convert_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1])
 
         if origin_type is ModelRef:
-            return self._convert_model_ref(data, t.get_args(type_field)[0])
+            return self._convert_model_ref(data, type_field)
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 
@@ -324,10 +333,8 @@ class _ModelFieldCaster(object):
         values = self._convert_list_params(data.values(), type_values)
         return dict(zip(keys, values))
 
-    def _convert_model_ref(self, data: t.Any, model_type: t.Type) -> t.Any:
-        if not isinstance(data, model_type):
-            raise MinosTypeAttributeException(self._name, model_type, data)
-        return data
+    def _convert_model_ref(self, data: t.Any, type_field: t.Type) -> t.Any:
+        return self._cast_value(t.Union[t.get_args(type_field)[0], int], data)
 
     def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> list[t.Any]:
         """
@@ -373,7 +380,10 @@ class _MinosModelAvroSchemaBuilder(object):
         alternatives = t.get_args(type_field)
         for alternative_type in alternatives:
             step = self._build_single_schema(alternative_type)
-            ans.append(step)
+            if isinstance(step, list):
+                ans += step
+            else:
+                ans.append(step)
         return ans
 
     def _build_single_schema(self, type_field: t.Type) -> t.Any:
@@ -382,6 +392,10 @@ class _MinosModelAvroSchemaBuilder(object):
 
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._build_simple_schema(type_field)
+
+        from .model import MinosModel
+        if inspect.isclass(type_field) and issubclass(type_field, MinosModel):
+            return self._build_minos_model_schema(type_field)
 
         return self._build_composed_schema(type_field)
 
@@ -411,6 +425,10 @@ class _MinosModelAvroSchemaBuilder(object):
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
+    @staticmethod
+    def _build_minos_model_schema(type_field: t.Type) -> t.Any:
+        return type_field.avro_schema
+
     def _build_composed_schema(self, type_field: t.Type) -> t.Any:
         origin_type = t.get_origin(type_field)
 
@@ -431,10 +449,8 @@ class _MinosModelAvroSchemaBuilder(object):
     def _build_dict_schema(self, type_field: t.Type) -> dict[str, t.Any]:
         return {"type": "map", "values": self._build_schema(t.get_args(type_field)[1]), "default": {}}
 
-    @staticmethod
-    def _build_model_ref_schema(type_field: t.Type) -> t.Union[bool, t.Any]:
-        type_value = t.get_args(type_field)[0]
-        return type_value.avro_schema
+    def _build_model_ref_schema(self, type_field: t.Type) -> t.Union[bool, t.Any]:
+        return self._build_schema(t.Union[t.get_args(type_field)[0], int])
 
 
 class _MinosModelAvroDataBuilder(object):

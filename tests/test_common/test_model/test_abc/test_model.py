@@ -148,6 +148,7 @@ class TestMinosModel(unittest.TestCase):
                             "namespace": "tests.modelClasses",
                             "type": "record",
                         },
+                        "int",
                         "null",
                     ],
                 },
