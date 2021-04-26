@@ -40,7 +40,11 @@ class MinosMessageException(MinosException):
 
 
 class MinosConfigException(MinosException):
-    pass
+    """Base config exception."""
+
+
+class MinosConfigDefaultAlreadySetException(MinosConfigException):
+    """Exception to be raised when some config is already set as default."""
 
 
 class MinosRepositoryException(MinosException):

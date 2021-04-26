@@ -43,6 +43,7 @@ from .exceptions import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
+    MinosConfigDefaultAlreadySetException,
 )
 from .importlib import (
     classname,

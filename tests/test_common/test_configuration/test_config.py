@@ -10,7 +10,7 @@ import unittest
 from minos.common import (
     MinosConfig,
     MinosConfigAbstract,
-    MinosConfigException,
+    MinosConfigException, MinosConfigDefaultAlreadySetException,
 )
 from tests.utils import (
     BASE_PATH,
@@ -87,6 +87,12 @@ class TestMinosConfig(unittest.TestCase):
     def test_get_default_default(self):
         with MinosConfig(path=self.config_file_path) as config:
             self.assertEqual(config, MinosConfigAbstract.get_default())
+
+    def test_multiple_default_config_raises(self):
+        with self.assertRaises(MinosConfigDefaultAlreadySetException):
+            with MinosConfig(path=self.config_file_path):
+                with MinosConfig(path=self.config_file_path):
+                    pass
 
 
 if __name__ == "__main__":

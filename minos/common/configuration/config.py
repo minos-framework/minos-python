@@ -21,6 +21,7 @@ import yaml
 
 from ..exceptions import (
     MinosConfigException,
+    MinosConfigDefaultAlreadySetException,
 )
 
 BROKER = collections.namedtuple("Broker", "host port")
@@ -71,29 +72,29 @@ class MinosConfigAbstract(abc.ABC):
         self.unset_default()
 
     @staticmethod
-    def set_default(value: t.Optional[MinosConfigAbstract]) -> t.NoReturn:
-        """TODO
+    def set_default(value: MinosConfigAbstract) -> t.NoReturn:
+        """Set default config.
 
-        :param value: TODO
-        :return: TODO
+        :param value: Default config.
+        :return: This method does not return anything.
         """
         if MinosConfigAbstract.get_default() is not None:
-            raise Exception("There is already another config set as default.")  # TODO: Convert into a minos exception
+            raise MinosConfigDefaultAlreadySetException("There is already another config set as default.")
         MinosConfigAbstract._default = value
 
     @classmethod
     def get_default(cls) -> MinosConfigAbstract:
-        """TODO
+        """Get default config.
 
-        :return: TODO
+        :return: A ``MinosConfigAbstract`` instance.
         """
         return cls._default
 
     @staticmethod
     def unset_default() -> t.NoReturn:
-        """TODO
+        """Unset the default config.
 
-        :return: TODO
+        :return: This method does not return anything.
         """
         MinosConfigAbstract._default = None
 
@@ -173,9 +174,9 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def repository(self) -> t.NamedTuple:
-        """TODO
+        """Get the repository config.
 
-        :return: TODO
+        :return: A ``Repository`` NamedTuple instance.
         """
         command_info = self._get("repository")
         return REPOSITORY(

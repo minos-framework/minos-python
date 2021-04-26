@@ -25,6 +25,8 @@ from minos.common import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
+    MinosConfigException,
+    MinosConfigDefaultAlreadySetException,
 )
 
 
@@ -40,8 +42,11 @@ class TestExceptions(unittest.TestCase):
         exception = MinosException("test")
         self.assertEqual("test", str(exception))
 
-    def test_repository(self):
-        self.assertTrue(issubclass(MinosRepositoryException, MinosException))
+    def test_config(self):
+        self.assertTrue(issubclass(MinosConfigException, MinosException))
+
+    def test_config_default_already_set(self):
+        self.assertTrue(issubclass(MinosConfigDefaultAlreadySetException, MinosConfigException))
 
     def test_repository_aggregate_not_found(self):
         self.assertTrue(issubclass(MinosRepositoryAggregateNotFoundException, MinosRepositoryException))

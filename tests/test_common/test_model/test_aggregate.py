@@ -14,7 +14,7 @@ from minos.common import (
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException,
+    MinosRepositoryNonProvidedException, PostgreSqlMinosRepository,
 )
 from tests.aggregate_classes import (
     Car,
@@ -135,6 +135,8 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
 
     async def test_update(self):
         with MinosConfig(path=self.config_file_path):
+            await PostgreSqlMinosRepository.from_config().setup()
+
             car = await Car.create(doors=3, color="blue")
 
             await car.update(color="red")
