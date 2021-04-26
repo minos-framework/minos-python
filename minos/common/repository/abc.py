@@ -21,6 +21,9 @@ from typing import (
     Union,
 )
 
+from ..configuration import (
+    MinosConfig,
+)
 from .entries import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
@@ -33,24 +36,30 @@ if TYPE_CHECKING:
 class MinosRepository(ABC):
     """Base repository class in ``minos``."""
 
-    def __init__(self):
-        self._already_setup = False
+    def __init__(self, already_setup: bool = False, *args, **kwargs):
+        self._already_setup = already_setup
+
+    @classmethod
+    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosRepository]:
+        """Build a new repository from config.
+
+        :param args: Additional positional arguments.
+        :param config: Config instance. If `None` is provided, default config is chosen.
+        :param kwargs: Additional named arguments.
+        :return: A `MinosRepository` instance.
+        """
+        if config is None:
+            config = MinosConfig.get_default()
+        if config is None:
+            return None
+        # noinspection PyProtectedMember
+        return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def __aenter__(self) -> MinosRepository:
-        if not self._already_setup:
-            await self._setup()
-            self._already_setup = True
-
+        await self.setup()
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
-        pass
-
-    async def _setup(self) -> NoReturn:
-        """Setup miscellaneous repository thing.
-
-        :return: This method does not return anything.
-        """
         pass
 
     async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
@@ -59,6 +68,8 @@ class MinosRepository(ABC):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
+        await self.setup()
+
         if not isinstance(entry, MinosRepositoryEntry):
             entry = MinosRepositoryEntry.from_aggregate(entry)
 
@@ -71,9 +82,7 @@ class MinosRepository(ABC):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        if not self._already_setup:
-            await self._setup()
-            self._already_setup = True
+        await self.setup()
 
         if not isinstance(entry, MinosRepositoryEntry):
             entry = MinosRepositoryEntry.from_aggregate(entry)
@@ -87,9 +96,7 @@ class MinosRepository(ABC):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        if not self._already_setup:
-            await self._setup()
-            self._already_setup = True
+        await self.setup()
 
         if not isinstance(entry, MinosRepositoryEntry):
             entry = MinosRepositoryEntry.from_aggregate(entry)
@@ -137,9 +144,7 @@ class MinosRepository(ABC):
         :param id_ge: Entry identifier greater or equal to the given value.
         :return: A list of entries.
         """
-        if not self._already_setup:
-            await self._setup()
-            self._already_setup = True
+        await self.setup()
 
         return await self._select(
             aggregate_id=aggregate_id,
@@ -159,3 +164,15 @@ class MinosRepository(ABC):
     @abstractmethod
     async def _select(self, *args, **kwargs) -> list[MinosRepositoryEntry]:
         """Perform a selection query of entries stored in to the repository."""
+
+    async def setup(self) -> NoReturn:
+        """Setup miscellaneous repository thing.
+
+        :return: This method does not return anything.
+        """
+        if not self._already_setup:
+            await self._setup()
+            self._already_setup = True
+
+    async def _setup(self) -> NoReturn:
+        """Setup miscellaneous repository thing."""

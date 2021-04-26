@@ -10,6 +10,7 @@ import unittest
 from minos.common import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
+    MinosRepositoryUnknownActionException,
 )
 
 
@@ -20,7 +21,7 @@ class TestMinosRepositoryAction(unittest.TestCase):
         self.assertEqual(MinosRepositoryAction.DELETE, MinosRepositoryAction.value_of("delete"))
 
     def test_value_of_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(MinosRepositoryUnknownActionException):
             MinosRepositoryAction.value_of("foo")
 
 

@@ -19,6 +19,10 @@ from typing import (
     Union,
 )
 
+from ..exceptions import (
+    MinosRepositoryUnknownActionException,
+)
+
 if TYPE_CHECKING:
     from ..model import Aggregate
 
@@ -36,7 +40,9 @@ class MinosRepositoryAction(Enum):
         for item in cls.__members__.values():
             if item.value == value:
                 return item
-        raise ValueError(f"The given value does not match with any enum items. Obtained {value}")
+        raise MinosRepositoryUnknownActionException(
+            f"The given value does not match with any enum items. Obtained {value}"
+        )
 
 
 class MinosRepositoryEntry(object):
@@ -74,7 +80,7 @@ class MinosRepositoryEntry(object):
         :param aggregate: The aggregate instance.
         :return: A new ``MinosRepositoryEntry`` instance.
         """
-        return cls(aggregate.id, aggregate.get_namespace(), aggregate.version, aggregate.avro_bytes)
+        return cls(aggregate.id, aggregate.classname, aggregate.version, aggregate.avro_bytes)
 
     def __eq__(self, other: "MinosRepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

@@ -13,7 +13,7 @@ with open("README.md") as readme_file:
 with open("HISTORY.md") as history_file:
     history = history_file.read()
 
-requirements = ["aiomisc", "six", "avro", "orjson", "lmdb", "pyyaml", "aiopg"]
+requirements = ["aiomisc", "six", "fastavro", "orjson", "lmdb", "pyyaml", "aiopg"]
 
 setup_requirements = [
     "pytest-runner",

@@ -24,6 +24,7 @@ from .configuration import (
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
+    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
     MinosException,
     MinosImportException,
@@ -38,11 +39,14 @@ from .exceptions import (
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryNonProvidedException,
+    MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
 from .importlib import (
+    classname,
     import_module,
 )
 from .messages import (

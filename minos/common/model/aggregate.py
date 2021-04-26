@@ -17,11 +17,18 @@ from typing import (
     Optional,
 )
 
+from ..configuration import (
+    MinosConfig,
+)
 from ..exceptions import (
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryNonProvidedException,
+)
+from ..meta import (
+    self_or_classmethod,
 )
 from ..repository import (
     MinosRepository,
@@ -30,18 +37,6 @@ from ..repository import (
 from .abc import (
     MinosModel,
 )
-
-
-# noinspection PyPep8Naming
-class class_or_instancemethod(classmethod):
-    """Decorator to use the same method as instance or as class based on the caller."""
-
-    # noinspection PyMethodOverriding
-    def __get__(self, instance, type_):
-        # noinspection PyUnresolvedReferences
-        get = super().__get__ if instance is None else self.__func__.__get__
-        # noinspection PyArgumentList
-        return get(instance, type_)
 
 
 class Aggregate(MinosModel):
@@ -61,38 +56,39 @@ class Aggregate(MinosModel):
         self._repository = _repository
 
     @classmethod
-    def get_namespace(cls) -> str:
-        """Compute the current class namespace.
-
-        :return: An string object.
-        """
-        return f"{cls.__module__}.{cls.__qualname__}"
-
-    @classmethod
-    async def get(cls, ids: list[int], _broker: str = None, _repository: MinosRepository = None) -> list[Aggregate]:
+    async def get(
+        cls, ids: list[int], _config: MinosConfig = None, _broker: str = None, _repository: MinosRepository = None
+    ) -> list[Aggregate]:
         """Get a sequence of aggregates based on a list of identifiers.
 
         :param ids: list of identifiers.
+        :param _config: Current minos config.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :return: A list of aggregate instances.
         """
         # noinspection PyShadowingBuiltins
-        return [await cls.get_one(id, _broker, _repository) for id in ids]
+        return [await cls.get_one(id, _broker, _config, _repository) for id in ids]
 
     # noinspection PyShadowingBuiltins
     @classmethod
-    async def get_one(cls, id: int, _broker: str = None, _repository: MinosRepository = None) -> Aggregate:
+    async def get_one(
+        cls, id: int, _config: MinosConfig = None, _broker: str = None, _repository: MinosRepository = None
+    ) -> Aggregate:
         """Get one aggregate based on an identifier.
 
         :param id: aggregate identifier.
+        :param _config: Current minos config.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
+        if _repository is None:
+            _repository = cls._build_repository(_config)
 
-        entries = await _repository.select(aggregate_name=cls.get_namespace(), aggregate_id=id)
+        # noinspection PyTypeChecker
+        entries = await _repository.select(aggregate_name=cls.classname, aggregate_id=id)
         if not len(entries):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
 
@@ -106,10 +102,13 @@ class Aggregate(MinosModel):
         return instance
 
     @classmethod
-    async def create(cls, *args, _broker: str = None, _repository: MinosRepository = None, **kwargs) -> Aggregate:
+    async def create(
+        cls, *args, _config: MinosConfig = None, _broker: str = None, _repository: MinosRepository = None, **kwargs
+    ) -> Aggregate:
         """Create a new ``Aggregate`` instance.
 
         :param args: Additional positional arguments.
+        :param _config: Current minos config.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param kwargs: Additional named arguments.
@@ -129,7 +128,7 @@ class Aggregate(MinosModel):
             _broker = "MinosBaseBroker()"
 
         if _repository is None:
-            raise Exception()
+            _repository = cls._build_repository(_config)
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
@@ -141,27 +140,32 @@ class Aggregate(MinosModel):
         return instance
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
-    @class_or_instancemethod
-    async def update(self_or_cls, id: int = None, _repository: MinosRepository = None, **kwargs) -> Aggregate:
+    @self_or_classmethod
+    async def update(
+        self_or_cls, id: int = None, _config: MinosConfig = None, _repository: MinosRepository = None, **kwargs
+    ) -> Aggregate:
         """Update an existing ``Aggregate`` instance.
 
         :param id: If the method call is performed from an instance the identifier is ignored, otherwise it is used to
             identify the target instance.
+        :param _config: Current minos config.
         :param _repository: Repository to be set to the aggregate.
         :param kwargs: Additional named arguments.
         :return: An updated ``Aggregate``  instance.
         """
         if "version" in kwargs:
-            raise Exception()
+            raise MinosRepositoryManuallySetAggregateVersionException(
+                f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
+            )
+
+        if _repository is None:
+            _repository = self_or_cls._build_repository(_config)
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
             instance = await self_or_cls.get_one(id, _repository=_repository)
         else:
             instance = self_or_cls
-
-        if _repository is None:
-            _repository = instance._repository
 
         # Update model...
         for key, value in kwargs.items():
@@ -181,22 +185,44 @@ class Aggregate(MinosModel):
         self._fields |= new.fields
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
-    @class_or_instancemethod
-    async def delete(self_or_cls, id: Optional[int] = None, _repository: MinosRepository = None):
+    @self_or_classmethod
+    async def delete(
+        self_or_cls, id: Optional[int] = None, _config: MinosConfig = None, _repository: MinosRepository = None
+    ):
         """Delete the given aggregate instance.
 
         :param id: If the method call is performed from an instance the identifier is ignored, otherwise it is used to
             identify the target instance.
+        :param _config: Current minos config.
         :param _repository: Repository to be set to the aggregate.
         :return: This method does not return anything.
         """
+        if _repository is None:
+            _repository = self_or_cls._build_repository(_config)
+
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
             instance = await self_or_cls.get_one(id, _repository=_repository)
         else:
             instance = self_or_cls
 
-        if _repository is None:
-            _repository = instance._repository
-
         await _repository.delete(instance)
+
+    # noinspection PyMethodParameters
+    @self_or_classmethod
+    def _build_repository(self_or_cls, config: MinosConfig) -> MinosRepository:
+        repository = None
+
+        if not isinstance(self_or_cls, type):
+            repository = self_or_cls._repository
+
+        if repository is None:
+            # FIXME: In the future, this could be parameterized.
+            from ..repository import PostgreSqlMinosRepository
+
+            repository = PostgreSqlMinosRepository.from_config(already_setup=True, config=config)
+
+        if repository is None:
+            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+
+        return repository

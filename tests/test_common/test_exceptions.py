@@ -10,6 +10,8 @@ import unittest
 from minos.common import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
+    MinosConfigDefaultAlreadySetException,
+    MinosConfigException,
     MinosException,
     MinosMalformedAttributeException,
     MinosModelAttributeException,
@@ -20,6 +22,8 @@ from minos.common import (
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryNonProvidedException,
+    MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
@@ -38,8 +42,11 @@ class TestExceptions(unittest.TestCase):
         exception = MinosException("test")
         self.assertEqual("test", str(exception))
 
-    def test_repository(self):
-        self.assertTrue(issubclass(MinosRepositoryException, MinosException))
+    def test_config(self):
+        self.assertTrue(issubclass(MinosConfigException, MinosException))
+
+    def test_config_default_already_set(self):
+        self.assertTrue(issubclass(MinosConfigDefaultAlreadySetException, MinosConfigException))
 
     def test_repository_aggregate_not_found(self):
         self.assertTrue(issubclass(MinosRepositoryAggregateNotFoundException, MinosRepositoryException))
@@ -52,6 +59,12 @@ class TestExceptions(unittest.TestCase):
 
     def test_repository_manually_set_aggregate_version(self):
         self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateVersionException, MinosRepositoryException))
+
+    def test_repository_bad_action(self):
+        self.assertTrue(issubclass(MinosRepositoryUnknownActionException, MinosRepositoryException))
+
+    def test_repository_non_set(self):
+        self.assertTrue(issubclass(MinosRepositoryNonProvidedException, MinosRepositoryException))
 
     def test_model(self):
         self.assertTrue(issubclass(MinosModelException, MinosException))

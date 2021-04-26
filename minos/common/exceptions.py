@@ -40,7 +40,11 @@ class MinosMessageException(MinosException):
 
 
 class MinosConfigException(MinosException):
-    pass
+    """Base config exception."""
+
+
+class MinosConfigDefaultAlreadySetException(MinosConfigException):
+    """Exception to be raised when some config is already set as default."""
 
 
 class MinosRepositoryException(MinosException):
@@ -61,6 +65,14 @@ class MinosRepositoryManuallySetAggregateIdException(MinosRepositoryException):
 
 class MinosRepositoryManuallySetAggregateVersionException(MinosRepositoryException):
     """Exception to be raised when some aggregate is trying to be created with a manually set version."""
+
+
+class MinosRepositoryUnknownActionException(MinosRepositoryException):
+    """Exception to be raised when some entry tries to perform an unknown action."""
+
+
+class MinosRepositoryNonProvidedException(MinosRepositoryException):
+    """Exception to be raised when a repository is needed but none is set."""
 
 
 class MinosModelException(MinosException):

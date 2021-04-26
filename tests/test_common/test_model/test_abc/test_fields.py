@@ -99,7 +99,22 @@ class TestModelField(unittest.TestCase):
 
     def test_avro_schema_list_model_ref(self):
         field = ModelField("test", list[Optional[ModelRef[User]]], [User(123), User(456)])
-        expected = {"name": "test", "type": {"default": [], "items": ["User", "null"], "type": "array"}}
+        expected = {
+            "name": "test",
+            "type": {
+                "default": [],
+                "items": [
+                    {
+                        "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
+                        "name": "User",
+                        "namespace": "tests.modelClasses",
+                        "type": "record",
+                    },
+                    "null",
+                ],
+                "type": "array",
+            },
+        }
         self.assertEqual(expected, field.avro_schema)
 
     def test_avro_data_list_model_ref(self):

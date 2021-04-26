@@ -137,19 +137,36 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(user, shopping_list.user)
 
     def test_avro_schema(self):
-        shopping_list = ShoppingList(User(1234))
         expected = {
-            "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "float"}],
+            "fields": [
+                {
+                    "name": "user",
+                    "type": [
+                        {
+                            "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
+                            "name": "User",
+                            "namespace": "tests.modelClasses",
+                            "type": "record",
+                        },
+                        "null",
+                    ],
+                },
+                {"name": "cost", "type": "float"},
+            ],
             "name": "ShoppingList",
             "namespace": "tests.modelClasses",
             "type": "record",
         }
-        self.assertEqual(expected, shopping_list.avro_schema)
+        self.assertEqual(expected, ShoppingList.avro_schema)
 
     def test_avro_data(self):
         shopping_list = ShoppingList(User(1234))
         expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
         self.assertEqual(expected, shopping_list.avro_data)
+
+    def test_avro_bytes(self):
+        shopping_list = ShoppingList(User(1234))
+        self.assertIsInstance(shopping_list.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):
         customer = Customer(1234)
@@ -292,6 +309,13 @@ class TestMinosModel(unittest.TestCase):
             "'cost', type=<class 'float'>, value=1234.56, parser=parse_cost, validator=None)])"
         )
         self.assertEqual(expected, repr(shopping_list))
+
+    def test_classname_cls(self):
+        self.assertEqual("tests.modelClasses.Customer", Customer.classname)
+
+    def test_classname_instance(self):
+        model = Customer(1234, "johndoe", "John", "Doe")
+        self.assertEqual("tests.modelClasses.Customer", model.classname)
 
 
 if __name__ == "__main__":
