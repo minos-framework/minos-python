@@ -304,10 +304,10 @@ class _ModelFieldCaster(object):
             raise MinosReqAttributeException(f"'{self._name}' field is missing.")
 
         if origin_type is list:
-            return self._convert_list(data, t.get_args(type_field)[0])
+            return self._convert_list(data, type_field)
 
         if origin_type is dict:
-            return self._convert_dict(data, t.get_args(type_field)[0], t.get_args(type_field)[1])
+            return self._convert_dict(data, type_field)
 
         if origin_type is ModelRef:
             return self._convert_model_ref(data, type_field)
@@ -315,12 +315,14 @@ class _ModelFieldCaster(object):
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _convert_list(self, data: list, type_values: t.Any) -> list[t.Any]:
+        type_values = t.get_args(type_values)[0]
         if not isinstance(data, list):
             raise MinosTypeAttributeException(self._name, list, data)
 
         return self._convert_list_params(data, type_values)
 
-    def _convert_dict(self, data: list, type_keys: t.Type, type_values: t.Type) -> dict[str, t.Any]:
+    def _convert_dict(self, data: list, type_field: t.Type) -> dict[str, t.Any]:
+        type_keys, type_values = t.get_args(type_field)
         if not isinstance(data, dict):
             raise MinosTypeAttributeException(self._name, dict, data)
 
@@ -429,6 +431,7 @@ class _MinosModelAvroSchemaBuilder(object):
 
     @staticmethod
     def _build_minos_model_schema(type_field: t.Type) -> t.Any:
+        # noinspection PyUnresolvedReferences
         return type_field.avro_schema
 
     def _build_composed_schema(self, type_field: t.Type) -> t.Any:
