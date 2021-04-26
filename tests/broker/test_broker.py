@@ -2,11 +2,12 @@ import asyncio
 import time
 
 import pytest
+from minos.common import Aggregate
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
-from minos.networks.broker import MinosCommandBroker, MinosEventBroker, broker_queue_dispatcher, send_to_kafka
+from minos.networks.broker import (MinosCommandBroker, MinosEventBroker,
+                                   broker_queue_dispatcher, send_to_kafka)
 from tests.broker.database_testcase import PostgresAsyncTestCase
-from minos.common import Aggregate
 
 
 class AggregateTest(Aggregate):

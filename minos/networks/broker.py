@@ -14,7 +14,7 @@ import aiopg
 from aiokafka import AIOKafkaProducer
 from aiomisc.service.periodic import PeriodicService, Service
 from minos.common import Aggregate
-from minos.common.broker import MinosBaseBroker, Event, Command
+from minos.common.broker import Command, Event, MinosBaseBroker
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 
