@@ -24,9 +24,16 @@ class PostgreSqlMinosRepository(MinosRepository):
     """PostgreSQL-based implementation of the repository class in ``minos``."""
 
     def __init__(
-        self, host: str = None, port: int = None, database: str = None, user: str = None, password: str = None
+        self,
+        host: str = None,
+        port: int = None,
+        database: str = None,
+        user: str = None,
+        password: str = None,
+        *args,
+        **kwargs,
     ):
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self.host = host
         self.port = port
         self.database = database

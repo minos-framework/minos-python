@@ -24,6 +24,7 @@ from .configuration import (
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
+    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
     MinosException,
     MinosImportException,
