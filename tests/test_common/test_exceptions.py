@@ -10,6 +10,8 @@ import unittest
 from minos.common import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
+    MinosConfigDefaultAlreadySetException,
+    MinosConfigException,
     MinosException,
     MinosMalformedAttributeException,
     MinosModelAttributeException,
@@ -25,8 +27,6 @@ from minos.common import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
-    MinosConfigException,
-    MinosConfigDefaultAlreadySetException,
 )
 
 

@@ -12,8 +12,12 @@ from typing import (
 
 import aiopg
 
-from .abc import MinosRepository
-from .entries import MinosRepositoryEntry
+from .abc import (
+    MinosRepository,
+)
+from .entries import (
+    MinosRepositoryEntry,
+)
 
 
 class PostgreSqlMinosRepository(MinosRepository):
