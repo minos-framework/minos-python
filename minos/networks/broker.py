@@ -13,8 +13,8 @@ from enum import Enum
 import aiopg
 from aiokafka import AIOKafkaProducer
 from aiomisc.service.periodic import PeriodicService, Service
-from minos.common import MinosModel, ModelRef
-from minos.common.broker import MinosBaseBroker
+from minos.common import Aggregate
+from minos.common.broker import MinosBaseBroker, Event, Command
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
 
@@ -31,25 +31,6 @@ class MinosBrokerDatabase:
         return conn
 
 
-class Aggregate(MinosModel):
-    test_id: int
-
-
-class EventModel(MinosModel):
-    topic: str
-    model: str
-    # items: list[ModelRef[Aggregate]]
-    items: list[str]
-
-
-class CommandModel(MinosModel):
-    topic: str
-    model: str
-    # items: list[ModelRef[Aggregate]]
-    items: list[str]
-    reply_on: str
-
-
 class MinosEventBroker(MinosBaseBroker):
     ACTION = "event"
 
@@ -62,13 +43,13 @@ class MinosEventBroker(MinosBaseBroker):
         pass
 
     async def send(self, model: Aggregate):
-        event_instance = EventModel(topic=self.topic, model="Change", items=[str(model)])
+        event_instance = Event(topic=self.topic, model=model.classname, items=[model])
         bin_data = event_instance.avro_bytes
 
         async with MinosBrokerDatabase().get_connection(self.config) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
+                    "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
                     (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
                 )
 
@@ -90,13 +71,13 @@ class MinosCommandBroker(MinosBaseBroker):
         pass
 
     async def send(self, model: Aggregate, reply_on: str):
-        event_instance = CommandModel(topic=self.topic, model="Change", items=[str(model)], reply_on=reply_on)
+        event_instance = Command(topic=self.topic, model=model.classname, items=[model], reply_on=reply_on)
         bin_data = event_instance.avro_bytes
 
         async with MinosBrokerDatabase().get_connection(self.config) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
+                    "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
                     (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
                 )
 
@@ -148,7 +129,7 @@ async def broker_queue_dispatcher(config: MinosConfig):
     async with MinosBrokerDatabase().get_connection(config) as connect:
         async with connect.cursor() as cur:
             await cur.execute(
-                "SELECT * FROM producer_queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;",
+                "SELECT * FROM producer_queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;" %
                 (config.events.queue.retry, config.events.queue.records),
             )
             async for row in cur:
