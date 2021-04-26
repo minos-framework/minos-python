@@ -4,9 +4,7 @@ import time
 import pytest
 from minos.common.configuration.config import MinosConfig
 from minos.common.logs import log
-from minos.networks.broker import (MinosCommandBroker,
-                                   MinosEventBroker, broker_queue_dispatcher,
-                                   send_to_kafka)
+from minos.networks.broker import MinosCommandBroker, MinosEventBroker, broker_queue_dispatcher, send_to_kafka
 from tests.broker.database_testcase import PostgresAsyncTestCase
 from minos.common import Aggregate
 
@@ -35,11 +33,9 @@ class TestPostgreSqlMinosBroker(PostgresAsyncTestCase):
 
         assert ret == [(1,)]
 
-
     async def test_send_to_kafka_ok(self):
         response = await send_to_kafka(topic="TestKafkaSend", message=bytes(), config=self._broker_config())
         assert response is True
-
 
     async def test_events_broker_insertion(self):
         a = AggregateTest(test_id=1, test=2, id=1, version=1)
