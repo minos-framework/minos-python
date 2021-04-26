@@ -52,3 +52,14 @@ History
 * Added validation attributes for model class ( validation from typing )
 * Modified Avro Encoder/Decoder
 * Lot of improvements and corrections
+
+
+0.0.3 (2021-04-26)
+------------------
+
+* Added fastavro support
+* Completed Aggregate Model
+* Added EventModel and CommandModel classes
+* Improved MinosConfig
+* added some utilities for internal use
+* added Storage Event support for Aggregate
