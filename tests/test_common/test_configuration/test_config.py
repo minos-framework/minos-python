@@ -65,6 +65,7 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", queue.host)
         self.assertEqual(5432, queue.port)
         self.assertEqual(10, queue.records)
+        self.assertEqual(2, queue.retry)
 
     def test_config_commands_database(self):
         config = MinosConfig(path=self.config_file_path)
@@ -83,6 +84,7 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", queue.host)
         self.assertEqual(5432, queue.port)
         self.assertEqual(10, queue.records)
+        self.assertEqual(2, queue.retry)
 
     def test_get_default_default(self):
         with MinosConfig(path=self.config_file_path) as config:
