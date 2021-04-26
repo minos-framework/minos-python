@@ -99,11 +99,7 @@ class MinosConfigAbstract(abc.ABC):
 
 
 class MinosConfig(MinosConfigAbstract):
-    __slots__ = "_data", "_instances"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._instances = dict()
+    __slots__ = "_data",
 
     def _load(self, path):
         if self._file_exit(path):
@@ -189,17 +185,3 @@ class MinosConfig(MinosConfigAbstract):
             host=os.getenv("POSTGRES_HOST", command_info["host"]),
             port=os.getenv("POSTGRES_PORT", command_info["port"]),
         )
-
-    @property
-    def repository_instance(self) -> t.Any:
-        """TODO
-
-        :return: TODO
-        """
-
-        if "repository" not in self._instances:
-            from ..repository import PostgreSqlMinosRepository
-
-            self._instances["repository"] = PostgreSqlMinosRepository(**self.repository._asdict())
-
-        return self._instances["repository"]

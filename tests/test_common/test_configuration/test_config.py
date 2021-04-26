@@ -11,7 +11,6 @@ from minos.common import (
     MinosConfig,
     MinosConfigAbstract,
     MinosConfigException,
-    PostgreSqlMinosRepository,
 )
 from tests.utils import (
     BASE_PATH,
@@ -88,11 +87,6 @@ class TestMinosConfig(unittest.TestCase):
     def test_get_default_default(self):
         with MinosConfig(path=self.config_file_path) as config:
             self.assertEqual(config, MinosConfigAbstract.get_default())
-
-    def test_repository_instance(self):
-        config = MinosConfig(path=self.config_file_path)
-        repository = config.repository_instance
-        self.assertIsInstance(repository, PostgreSqlMinosRepository)
 
 
 if __name__ == "__main__":
