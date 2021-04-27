@@ -12,7 +12,6 @@ from typing import (
 from minos.common import (
     MinosModel,
     MissingSentinel,
-    ModelRef,
 )
 
 
@@ -57,7 +56,7 @@ class User(Base):
 class ShoppingList(MinosModel):
     """Class to test ``MinosModel`` composition."""
 
-    user: Optional[ModelRef[User]]
+    user: Optional[User]
     cost: float
 
     def parse_cost(self, value: Optional[str]) -> float:
@@ -80,7 +79,7 @@ class ShoppingList(MinosModel):
 class Analytics(Base):
     """Class to test ``MinosModel`` recursive type validation."""
 
-    orders: dict[str, list[ModelRef[ShoppingList]]]
+    orders: dict[str, list[ShoppingList]]
 
 
 class Customer(User):

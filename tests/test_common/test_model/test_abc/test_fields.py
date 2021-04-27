@@ -19,7 +19,10 @@ from minos.common import (
     ModelField,
     ModelRef,
 )
-from tests.modelClasses import (
+from tests.aggregate_classes import (
+    Owner,
+)
+from tests.model_classes import (
     User,
 )
 
@@ -63,9 +66,13 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", list[str], ["foo", "bar", "foobar"])
         self.assertEqual(["foo", "bar", "foobar"], field.value)
 
-    def test_value_list_model_ref(self):
-        field = ModelField("test", list[ModelRef[User]], [User(123), User(456)])
+    def test_value_list_model(self):
+        field = ModelField("test", list[User], [User(123), User(456)])
         self.assertEqual([User(123), User(456)], field.value)
+
+    def test_value_list_model_ref(self):
+        field = ModelField("test", list[ModelRef[Owner]], [1, 2, Owner(3, 1, "Foo", "Bar", 56)])
+        self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56)], field.value)
 
     def test_avro_schema_int(self):
         field = ModelField("test", int, 1)
@@ -97,8 +104,31 @@ class TestModelField(unittest.TestCase):
         expected = {"name": "test", "type": {"default": {}, "type": "map", "values": "int"}}
         self.assertEqual(expected, field.avro_schema)
 
-    def test_avro_schema_list_model_ref(self):
-        field = ModelField("test", list[Optional[ModelRef[User]]], [User(123), User(456)])
+    def test_avro_schema_model_ref(self):
+        field = ModelField("test", Optional[ModelRef[Owner]], 1)
+        expected = {
+            "name": "test",
+            "type": [
+                {
+                    "fields": [
+                        {"name": "id", "type": "int"},
+                        {"name": "version", "type": "int"},
+                        {"name": "name", "type": "string"},
+                        {"name": "surname", "type": "string"},
+                        {"name": "age", "type": ["int", "null"]},
+                    ],
+                    "name": "Owner",
+                    "namespace": "tests.aggregate_classes",
+                    "type": "record",
+                },
+                "int",
+                "null",
+            ],
+        }
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_list_model(self):
+        field = ModelField("test", list[Optional[User]], [User(123), User(456)])
         expected = {
             "name": "test",
             "type": {
@@ -107,7 +137,7 @@ class TestModelField(unittest.TestCase):
                     {
                         "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
                         "name": "User",
-                        "namespace": "tests.modelClasses",
+                        "namespace": "tests.model_classes",
                         "type": "record",
                     },
                     "null",
@@ -117,8 +147,8 @@ class TestModelField(unittest.TestCase):
         }
         self.assertEqual(expected, field.avro_schema)
 
-    def test_avro_data_list_model_ref(self):
-        field = ModelField("test", list[Optional[ModelRef[User]]], [User(123), User(456)])
+    def test_avro_data_list_model(self):
+        field = ModelField("test", list[Optional[User]], [User(123), User(456)])
         expected = [{"id": 123, "username": None}, {"id": 456, "username": None}]
         self.assertEqual(expected, field.avro_data)
 
@@ -150,17 +180,30 @@ class TestModelField(unittest.TestCase):
         with self.assertRaises(MinosMalformedAttributeException):
             ModelField("test", dict[int, int], {1: 2, 3: 4})
 
-    def test_value_model_ref(self):
+    def test_value_model(self):
         user = User(1234)
-        field = ModelField("test", ModelRef[User], user)
+        field = ModelField("test", User, user)
         self.assertEqual(user, field.value)
 
-    def test_value_model_ref_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            ModelField("test", ModelRef[User], "foo")
+    def test_value_model_ref_value(self):
+        user = Owner(0, 0, "Foo", "Bar")
+        field = ModelField("test", ModelRef[Owner], user)
+        self.assertEqual(user, field.value)
 
-    def test_value_model_ref_optional(self):
-        field = ModelField("test", Optional[ModelRef[User]], None)
+    def test_value_model_ref_reference(self):
+        field = ModelField("test", ModelRef[Owner], 1234)
+        self.assertEqual(1234, field.value)
+
+    def test_value_model_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", User, "foo")
+
+    def test_value_model_ref_raises(self):
+        with self.assertRaises(MinosMalformedAttributeException):
+            ModelField("test", ModelRef[User], User(1234))
+
+    def test_value_model_optional(self):
+        field = ModelField("test", Optional[User], None)
         self.assertIsNone(field.value)
 
         user = User(1234)
@@ -169,7 +212,7 @@ class TestModelField(unittest.TestCase):
 
     def test_value_unsupported(self):
         with self.assertRaises(MinosTypeAttributeException):
-            ModelField("test", set[int], {3,})
+            ModelField("test", set[int], {3})
 
     def test_value_setter(self):
         field = ModelField("test", int, 3)
