@@ -81,7 +81,7 @@ async def event_handler_table_creation(conf: MinosConfig):
         async with connect.cursor() as cur:
             await cur.execute(
                 'CREATE TABLE IF NOT EXISTS "event_queue" ("id" SERIAL NOT NULL PRIMARY KEY, '
-                '"topic" VARCHAR(255) NOT NULL, "binary" BYTEA NOT NULL, "creation_date" TIMESTAMP NOT NULL);'
+                '"topic" VARCHAR(255) NOT NULL, "partition" INTEGER , "binary" BYTEA NOT NULL, "creation_date" TIMESTAMP NOT NULL);'
             )
 
 
