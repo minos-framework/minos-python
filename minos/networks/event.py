@@ -19,15 +19,17 @@ class MinosEventServer(Service):
     Consumer for the Broker ( at the moment only Kafka is supported )
 
     """
-    __slots__ = "_tasks", "_handlers", "_topics", "_broker_group_name"
+    __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_kafka_conn_data", "_broker_group_name"
 
     def __init__(self, *, conf: MinosConfig, **kwargs: t.Any):
         self._tasks = set()  # type: t.Set[asyncio.Task]
         self._db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
                        f"password={conf.events.queue.password} host={conf.events.queue.host}"
-        self._handler = {item['name']: {'controller': item['controller'], 'action': item['action']}
+        self._handler = {item.name: {'controller': item.controller, 'action': item.action}
                          for item in conf.events.items}
         self._topics = list(self._handler.keys())
+        self._kafka_conn_data = f"{conf.events.broker.host}:{conf.events.broker.port}"
+        self._broker_group_name = f"event_{conf.service.name}"
         super().__init__(**kwargs)
 
     def create_task(self, coro: t.Awaitable[t.Any]):
@@ -44,16 +46,14 @@ class MinosEventServer(Service):
                 event_binary = msg.value
                 # check if the event binary string is well formatted
 
-
-
     async def start(self) -> t.Any:
         self.start_event.set()
         log.debug("Event Consumer Manager: Started")
         # start the Service Event Consumer for Kafka
         consumer = AIOKafkaConsumer(loop=self.loop,
-                                    group_id=self._broker_group,
+                                    group_id=self._broker_group_name,
                                     auto_offset_reset="latest",
-                                    bootstrap_servers=f"{self._broker_host}:{self._broker_port}",
+                                    bootstrap_servers=self._kafka_conn_data,
                                     )
 
         await consumer.start()
