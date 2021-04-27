@@ -112,6 +112,4 @@ from .storage import (
     MinosStorage,
     MinosStorageLmdb,
 )
-from .setup import (
-    MinosSetup,
-)
+from .setup import MinosSetup
