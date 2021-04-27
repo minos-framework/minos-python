@@ -71,7 +71,7 @@ class TestModelField(unittest.TestCase):
         self.assertEqual([User(123), User(456)], field.value)
 
     def test_value_list_model_ref(self):
-        field = ModelField("test", list[Owner], [1, 2, Owner(3, 1, "Foo", "Bar", 56)])
+        field = ModelField("test", list[ModelRef[Owner]], [1, 2, Owner(3, 1, "Foo", "Bar", 56)])
         self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56)], field.value)
 
     def test_avro_schema_int(self):
