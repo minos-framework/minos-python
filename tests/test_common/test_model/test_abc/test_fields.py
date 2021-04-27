@@ -19,12 +19,8 @@ from minos.common import (
     ModelField,
     ModelRef,
 )
-from tests.aggregate_classes import (
-    Owner,
-)
-from tests.modelClasses import (
-    User,
-)
+from tests.aggregate_classes import Owner
+from tests.modelClasses import User
 
 
 class TestModelField(unittest.TestCase):
@@ -342,8 +338,7 @@ class TestModelField(unittest.TestCase):
     def test_repr_empty_parser(self):
         field = ModelField("test", Optional[int], 1)
         self.assertEqual(
-            "ModelField(name='test', type=typing.Optional[int], value=1, parser=None, validator=None)",
-            repr(field),
+            "ModelField(name='test', type=typing.Optional[int], value=1, parser=None, validator=None)", repr(field),
         )
 
 
