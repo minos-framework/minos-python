@@ -38,6 +38,9 @@ class MinosInMemoryRepository(MinosRepository):
         self._storage = list()
         self._id_generator = count()
 
+    async def _setup(self) -> NoReturn:
+        pass
+
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         """Store new deletion entry into de repository.
 
