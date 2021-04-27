@@ -105,7 +105,7 @@ class TestModelField(unittest.TestCase):
         self.assertEqual(expected, field.avro_schema)
 
     def test_avro_schema_model_ref(self):
-        field = ModelField("test", ModelRef[Owner], 1)
+        field = ModelField("test", Optional[ModelRef[Owner]], 1)
         expected = {
             "name": "test",
             "type": [
@@ -122,6 +122,7 @@ class TestModelField(unittest.TestCase):
                     "type": "record",
                 },
                 "int",
+                "null",
             ],
         }
         self.assertEqual(expected, field.avro_schema)
