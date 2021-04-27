@@ -4,6 +4,7 @@ import typing as t
 
 from aiokafka import AIOKafkaConsumer
 from aiomisc import Service
+import aiopg
 from minos.common.configuration.config import MinosConfig
 from minos.common.importlib import import_module
 from minos.common.logs import log
@@ -42,7 +43,7 @@ class MinosEventServer(Service):
                 partition = msg.partition
                 event_binary = msg.value
                 # check if the event binary string is well formatted
-                
+
 
 
     async def start(self) -> t.Any:
@@ -71,3 +72,24 @@ class MinosEventServer(Service):
                 return functools.partial(instance_class.action)
         raise MinosNetworkException(f"topic {topic} have no controller/action configured, "
                                     f"please review th configuration file")
+
+
+async def event_handler_table_creation(conf: MinosConfig):
+    db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
+                   f"password={conf.events.queue.password} host={conf.events.queue.host}"
+    async with aiopg.connect(db_dsn) as connect:
+        async with connect.cursor() as cur:
+            await cur.execute(
+                'CREATE TABLE IF NOT EXISTS "event_queue" ("id" SERIAL NOT NULL PRIMARY KEY, '
+                '"topic" VARCHAR(255) NOT NULL, "binary" BYTEA NOT NULL, "creation_date" TIMESTAMP NOT NULL);'
+            )
+
+
+class EventHandlerDatabaseInitializer(Service):
+    async def start(self):
+        # Send signal to entrypoint for continue running
+        self.start_event.set()
+
+        await event_handler_table_creation(conf=self.config)
+
+        await self.stop(self)
