@@ -24,6 +24,9 @@ from typing import (
 from ..configuration import (
     MinosConfig,
 )
+from ..setup import (
+    MinosSetup,
+)
 from .entries import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
@@ -33,11 +36,8 @@ if TYPE_CHECKING:
     from ..model import Aggregate
 
 
-class MinosRepository(ABC):
+class MinosRepository(ABC, MinosSetup):
     """Base repository class in ``minos``."""
-
-    def __init__(self, already_setup: bool = False, *args, **kwargs):
-        self._already_setup = already_setup
 
     @classmethod
     def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosRepository]:
@@ -164,15 +164,3 @@ class MinosRepository(ABC):
     @abstractmethod
     async def _select(self, *args, **kwargs) -> list[MinosRepositoryEntry]:
         """Perform a selection query of entries stored in to the repository."""
-
-    async def setup(self) -> NoReturn:
-        """Setup miscellaneous repository thing.
-
-        :return: This method does not return anything.
-        """
-        if not self._already_setup:
-            await self._setup()
-            self._already_setup = True
-
-    async def _setup(self) -> NoReturn:
-        """Setup miscellaneous repository thing."""
