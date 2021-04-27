@@ -49,13 +49,6 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", broker.host)
         self.assertEqual(9092, broker.port)
 
-    def test_config_events_database(self):
-        config = MinosConfig(path=self.config_file_path)
-        events = config.events
-        database = events.database
-        self.assertEqual("./tests/local_db.lmdb", database.path)
-        self.assertEqual("database_events_test", database.name)
-
     def test_config_events_queue_database(self):
         config = MinosConfig(path=self.config_file_path)
         events = config.events
@@ -67,13 +60,6 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(5432, queue.port)
         self.assertEqual(10, queue.records)
         self.assertEqual(2, queue.retry)
-
-    def test_config_commands_database(self):
-        config = MinosConfig(path=self.config_file_path)
-        commands = config.commands
-        database = commands.database
-        self.assertEqual("./tests/local_db.lmdb", database.path)
-        self.assertEqual("database_commands_test", database.name)
 
     def test_config_commands_queue_database(self):
         config = MinosConfig(path=self.config_file_path)

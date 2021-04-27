@@ -17,7 +17,6 @@ from .configuration import (
     BROKER,
     COMMAND,
     COMMANDS,
-    DATABASE,
     ENDPOINT,
     EVENT,
     EVENTS,
