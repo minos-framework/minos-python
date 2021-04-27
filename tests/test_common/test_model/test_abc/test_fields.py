@@ -19,8 +19,12 @@ from minos.common import (
     ModelField,
     ModelRef,
 )
-from tests.aggregate_classes import Owner
-from tests.modelClasses import User
+from tests.aggregate_classes import (
+    Owner,
+)
+from tests.modelClasses import (
+    User,
+)
 
 
 class TestModelField(unittest.TestCase):
