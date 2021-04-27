@@ -335,12 +335,10 @@ class _ModelFieldCaster(object):
         return dict(zip(keys, values))
 
     def _convert_model_ref(self, data: t.Any, type_field: t.Type) -> t.Any:
-        from ..aggregate import Aggregate
-
         inner_type = t.get_args(type_field)[0]
-        if not issubclass(inner_type, Aggregate):
+        if not _is_aggregate_cls(inner_type):
             raise MinosMalformedAttributeException(
-                f"ModelRef[T] T type must be a descendant of {type(Aggregate)}. Obtained: {inner_type}"
+                f"'ModelRef[T]' T type must be a descendant of 'Aggregate'. Obtained: {repr(inner_type)}"
             )
 
         return self._cast_value(t.Union[inner_type, int], data)
@@ -493,3 +491,9 @@ def _is_minos_model_cls(type_field: t.Type) -> bool:
     from .model import MinosModel
 
     return inspect.isclass(type_field) and issubclass(type_field, MinosModel)
+
+
+def _is_aggregate_cls(type_field: t.Type) -> bool:
+    from ..aggregate import Aggregate
+
+    return inspect.isclass(type_field) and issubclass(type_field, Aggregate)
