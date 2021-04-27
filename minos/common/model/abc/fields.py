@@ -335,7 +335,15 @@ class _ModelFieldCaster(object):
         return dict(zip(keys, values))
 
     def _convert_model_ref(self, data: t.Any, type_field: t.Type) -> t.Any:
-        return self._cast_value(t.Union[t.get_args(type_field)[0], int], data)
+        from ..aggregate import Aggregate
+
+        inner_type = t.get_args(type_field)[0]
+        if not issubclass(inner_type, Aggregate):
+            raise MinosMalformedAttributeException(
+                f"ModelRef[T] T type must be a descendant of {type(Aggregate)}. Obtained: {inner_type}"
+            )
+
+        return self._cast_value(t.Union[inner_type, int], data)
 
     def _convert_list_params(self, data: t.Iterable, type_params: t.Type) -> list[t.Any]:
         """

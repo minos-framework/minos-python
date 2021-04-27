@@ -22,6 +22,10 @@ from minos.common import (
     ModelField,
     MultiTypeMinosModelSequenceException,
 )
+from tests.aggregate_classes import (
+    Car,
+    Owner,
+)
 from tests.modelClasses import (
     Analytics,
     Customer,
@@ -148,7 +152,6 @@ class TestMinosModel(unittest.TestCase):
                             "namespace": "tests.modelClasses",
                             "type": "record",
                         },
-                        "int",
                         "null",
                     ],
                 },
@@ -168,6 +171,64 @@ class TestMinosModel(unittest.TestCase):
     def test_avro_bytes(self):
         shopping_list = ShoppingList(User(1234))
         self.assertIsInstance(shopping_list.avro_bytes, bytes)
+
+    def test_avro_schema_model_ref(self):
+        # noinspection DuplicatedCode
+        expected = {
+            "fields": [
+                {"name": "id", "type": "int"},
+                {"name": "version", "type": "int"},
+                {"name": "doors", "type": "int"},
+                {"name": "color", "type": "string"},
+                {
+                    "name": "owner",
+                    "type": [
+                        {
+                            "default": [],
+                            "items": [
+                                {
+                                    "fields": [
+                                        {"name": "id", "type": "int"},
+                                        {"name": "version", "type": "int"},
+                                        {"name": "name", "type": "string"},
+                                        {"name": "surname", "type": "string"},
+                                        {"name": "age", "type": ["int", "null"]},
+                                    ],
+                                    "name": "Owner",
+                                    "namespace": "tests.aggregate_classes",
+                                    "type": "record",
+                                },
+                                "int",
+                            ],
+                            "type": "array",
+                        },
+                        "null",
+                    ],
+                },
+            ],
+            "name": "Car",
+            "namespace": "tests.aggregate_classes",
+            "type": "record",
+        }
+        self.assertEqual(expected, Car.avro_schema)
+
+    def test_avro_data_model_ref(self):
+        car = Car(1, 1, 5, "blue", [Owner(1, 1, "Hello", "Good Bye"), Owner(2, 1, "Foo", "Bar")])
+        expected = {
+            "color": "blue",
+            "doors": 5,
+            "id": 1,
+            "owner": [
+                {"age": None, "id": 1, "name": "Hello", "surname": "Good Bye", "version": 1},
+                {"age": None, "id": 2, "name": "Foo", "surname": "Bar", "version": 1},
+            ],
+            "version": 1,
+        }
+        self.assertEqual(expected, car.avro_data)
+
+    def test_avro_bytes_model_ref(self):
+        car = Car(1, 1, 5, "blue", [Owner(1, 1, "Hello", "Good Bye"), Owner(2, 1, "Foo", "Bar")])
+        self.assertIsInstance(car.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):
         customer = Customer(1234)
@@ -303,8 +364,8 @@ class TestMinosModel(unittest.TestCase):
     def test_repr(self):
         shopping_list = ShoppingList(User(1234), cost="1.234,56")
         expected = (
-            "ShoppingList(fields=[ModelField(name='user', type=typing.Optional[minos.common.model.abc.types.ModelRef"
-            "[tests.modelClasses.User]], value=User(fields=[ModelField(name='id', type=<class 'int'>, value=1234, "
+            "ShoppingList(fields=[ModelField(name='user', type=typing.Optional["
+            "tests.modelClasses.User], value=User(fields=[ModelField(name='id', type=<class 'int'>, value=1234, "
             "parser=None, validator=validate_id), ModelField(name='username', type=typing.Optional[str], value=None, "
             "parser=parse_username, validator=validate_username)]), parser=None, validator=None), ModelField(name="
             "'cost', type=<class 'float'>, value=1234.56, parser=parse_cost, validator=None)])"
