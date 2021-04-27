@@ -24,12 +24,12 @@ from typing import (
 from ..configuration import (
     MinosConfig,
 )
+from ..setup import (
+    MinosSetup,
+)
 from .entries import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
-)
-from ..setup import (
-    MinosSetup,
 )
 
 if TYPE_CHECKING:

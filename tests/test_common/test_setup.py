@@ -7,9 +7,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import NoReturn
+from typing import (
+    NoReturn,
+)
 
-from minos.common import MinosSetup
+from minos.common import (
+    MinosSetup,
+)
 
 
 class TestMinosSetup(unittest.IsolatedAsyncioTestCase):
@@ -48,5 +52,5 @@ class _MinosSetupMock(MinosSetup):
         self.calls += 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
