@@ -6,7 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 from abc import (
     ABC,
@@ -19,12 +21,16 @@ from typing import (
     Union,
 )
 
-from ..configuration import MinosConfig
+from ..configuration import (
+    MinosConfig,
+)
+from ..setup import (
+    MinosSetup,
+)
 from .entries import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
 )
-from ..setup import MinosSetup
 
 if TYPE_CHECKING:
     from ..model import Aggregate
