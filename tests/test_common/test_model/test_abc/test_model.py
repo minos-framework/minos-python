@@ -149,7 +149,7 @@ class TestMinosModel(unittest.TestCase):
                         {
                             "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
                             "name": "User",
-                            "namespace": "tests.modelClasses",
+                            "namespace": "tests.model_classes",
                             "type": "record",
                         },
                         "null",
@@ -158,7 +158,7 @@ class TestMinosModel(unittest.TestCase):
                 {"name": "cost", "type": "float"},
             ],
             "name": "ShoppingList",
-            "namespace": "tests.modelClasses",
+            "namespace": "tests.model_classes",
             "type": "record",
         }
         self.assertEqual(expected, ShoppingList.avro_schema)
@@ -242,7 +242,7 @@ class TestMinosModel(unittest.TestCase):
                 {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
             ],
             "name": "Customer",
-            "namespace": "tests.modelClasses",
+            "namespace": "tests.model_classes",
             "type": "record",
         }
         self.assertEqual(expected, customer.avro_schema)
@@ -365,7 +365,7 @@ class TestMinosModel(unittest.TestCase):
         shopping_list = ShoppingList(User(1234), cost="1.234,56")
         expected = (
             "ShoppingList(fields=[ModelField(name='user', type=typing.Optional["
-            "tests.modelClasses.User], value=User(fields=[ModelField(name='id', type=<class 'int'>, value=1234, "
+            "tests.model_classes.User], value=User(fields=[ModelField(name='id', type=<class 'int'>, value=1234, "
             "parser=None, validator=validate_id), ModelField(name='username', type=typing.Optional[str], value=None, "
             "parser=parse_username, validator=validate_username)]), parser=None, validator=None), ModelField(name="
             "'cost', type=<class 'float'>, value=1234.56, parser=parse_cost, validator=None)])"
@@ -373,11 +373,11 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(expected, repr(shopping_list))
 
     def test_classname_cls(self):
-        self.assertEqual("tests.modelClasses.Customer", Customer.classname)
+        self.assertEqual("tests.model_classes.Customer", Customer.classname)
 
     def test_classname_instance(self):
         model = Customer(1234, "johndoe", "John", "Doe")
-        self.assertEqual("tests.modelClasses.Customer", model.classname)
+        self.assertEqual("tests.model_classes.Customer", model.classname)
 
 
 if __name__ == "__main__":

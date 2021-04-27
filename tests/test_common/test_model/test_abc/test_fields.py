@@ -137,7 +137,7 @@ class TestModelField(unittest.TestCase):
                     {
                         "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
                         "name": "User",
-                        "namespace": "tests.modelClasses",
+                        "namespace": "tests.model_classes",
                         "type": "record",
                     },
                     "null",
