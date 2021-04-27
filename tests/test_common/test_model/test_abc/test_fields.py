@@ -22,7 +22,7 @@ from minos.common import (
 from tests.aggregate_classes import (
     Owner,
 )
-from tests.modelClasses import (
+from tests.model_classes import (
     User,
 )
 

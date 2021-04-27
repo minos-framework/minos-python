@@ -26,7 +26,7 @@ from tests.aggregate_classes import (
     Car,
     Owner,
 )
-from tests.modelClasses import (
+from tests.model_classes import (
     Analytics,
     Customer,
     CustomerFailDict,
