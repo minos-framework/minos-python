@@ -7,7 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import os
 import unittest
-from unittest import mock
+from unittest import (
+    mock,
+)
 
 from minos.common import (
     MinosConfig,
