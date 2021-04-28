@@ -8,7 +8,8 @@ import random
 
 from aiomisc.log import basic_config
 from minos.common.configuration.config import MinosConfig
-
+from minos.common import Aggregate
+from minos.common.broker import Event
 from minos.networks.event import MinosEventServer, EventHandlerDatabaseInitializer
 from tests.database_testcase import EventHandlerPostgresAsyncTestCase
 
@@ -16,11 +17,13 @@ from tests.database_testcase import EventHandlerPostgresAsyncTestCase
 def config():
  return MinosConfig(path='./tests/test_config.yaml')
 
-
+"""
 @pytest.fixture()
 def services(config):
  return [EventHandlerDatabaseInitializer(config=config), MinosEventServer(conf=config)]
-
+"""
+class AggregateTest(Aggregate):
+    test: int
 
 class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
     async def test_database_connection(self):
@@ -42,6 +45,18 @@ class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
 
         assert ret == [(1,)]
 
+    async def test_event_queue_add(self):
+        model = AggregateTest(test_id=1, test=2, id=1, version=1)
+        event_instance = Event(topic="TestEventQueueAdd", model=model.classname, items=[])
+        bin_data = event_instance.avro_bytes
+        Event.from_avro_bytes(bin_data)
+
+        m = MinosEventServer(conf=self._broker_config())
+        affected_rows, id = await m.event_queue_add(topic=event_instance.topic, partition=0, binary=bin_data)
+
+        assert affected_rows == 1
+        assert id > 0
+
 
 async def test_producer_kafka(loop):
     basic_config(
@@ -55,12 +70,18 @@ async def test_producer_kafka(loop):
     # Get cluster layout and topic/partition allocation
     await producer.start()
     # Produce messages
-    string_to_send = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
-    await producer.send_and_wait("TicketAdded", string_to_send.encode())
+
+    model = AggregateTest(test_id=1, test=2, id=1, version=1)
+    event_instance = Event(topic="TicketAdded", model=model.classname, items=[])
+    bin_data = event_instance.avro_bytes
+
+    await producer.send_and_wait(event_instance.topic, bin_data)
     await asyncio.sleep(1)
 
-    other_string_to_send = ''.join(random.choices(string.ascii_uppercase + string.digits, k=40))
-    await producer.send_and_wait("TicketDeleted", other_string_to_send.encode())
+    model2 = AggregateTest(test_id=2, test=2, id=1, version=1)
+    event_instance_2 = Event(topic="TicketDeleted", model=model2.classname, items=[])
+    bin_data2 = event_instance_2.avro_bytes
+    await producer.send_and_wait(event_instance_2.topic, bin_data2)
     await asyncio.sleep(1)
     await producer.stop()
 
@@ -83,3 +104,5 @@ async def test_event_handle_message(config, loop):
     consumer.subscribe(topics)
 
     await m.handle_message(consumer)
+
+

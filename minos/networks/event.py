@@ -1,6 +1,14 @@
+# Copyright (C) 2020 Clariteia SL
+#
+# This file is part of minos framework.
+#
+# Minos framework can not be copied and/or distributed without the express
+# permission of Clariteia SL.
+
 import asyncio
 import functools
 import typing as t
+import datetime
 
 from aiokafka import AIOKafkaConsumer
 from aiomisc import Service
@@ -10,7 +18,7 @@ from minos.common.importlib import import_module
 from minos.common.logs import log
 
 from minos.networks.exceptions import MinosNetworkException
-
+from minos.common.broker import Event
 
 class MinosEventServer(Service):
     """
@@ -37,14 +45,62 @@ class MinosEventServer(Service):
         self._tasks.add(task)
         task.add_done_callback(self._tasks.remove)
 
+    async def event_queue_add(self, topic: str, partition: int, binary: bytes):
+        """Insert row to event_queue table.
+
+        Retrieves number of affected rows and row ID.
+
+        Args:
+            topic: Kafka topic. Example: "TicketAdded"
+            partition: Kafka partition number.
+            binary: Event Model in bytes.
+
+        Returns:
+            Affected rows and queue ID.
+
+            Example: 1, 12
+
+        Raises:
+            Exception: An error occurred inserting record.
+        """
+
+        async with aiopg.create_pool(self._db_dsn) as pool:
+            async with pool.acquire() as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute(
+                        "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                        (topic, partition, binary, datetime.datetime.now(),),
+                    )
+
+                    queue_id = await cur.fetchone()
+                    affected_rows = cur.rowcount
+
+        return affected_rows, queue_id[0]
+
     async def handle_message(self, consumer: t.Any):
-        while True:
-            async for msg in consumer:
-                # the handler receive a message and store in the queue database
-                topic = msg.topic
-                partition = msg.partition
-                event_binary = msg.value
-                # check if the event binary string is well formatted
+        """Handle Kafka messages.
+
+        For each message evaluate if the binary is an Event instance.
+        Add Event instance to the event_queue table.
+
+        Args:
+            consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
+
+        Raises:
+            Exception: An error occurred inserting record.
+        """
+
+        async for msg in consumer:
+            # the handler receive a message and store in the queue database
+            topic = msg.topic
+            partition = msg.partition
+            event_binary = msg.value
+            # check if the event binary string is well formatted
+            try:
+                event_instance = Event.from_avro_bytes(event_binary)
+                await self.event_queue_add(msg.topic, msg.partition, event_binary)
+            except:
+                pass
 
     async def start(self) -> t.Any:
         self.start_event.set()
@@ -77,12 +133,13 @@ class MinosEventServer(Service):
 async def event_handler_table_creation(conf: MinosConfig):
     db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
                    f"password={conf.events.queue.password} host={conf.events.queue.host}"
-    async with aiopg.connect(db_dsn) as connect:
-        async with connect.cursor() as cur:
-            await cur.execute(
-                'CREATE TABLE IF NOT EXISTS "event_queue" ("id" SERIAL NOT NULL PRIMARY KEY, '
-                '"topic" VARCHAR(255) NOT NULL, "partition" INTEGER , "binary" BYTEA NOT NULL, "creation_date" TIMESTAMP NOT NULL);'
-            )
+    async with aiopg.create_pool(db_dsn) as pool:
+        async with pool.acquire() as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    'CREATE TABLE IF NOT EXISTS "event_queue" ("id" SERIAL NOT NULL PRIMARY KEY, '
+                    '"topic" VARCHAR(255) NOT NULL, "partition_id" INTEGER , "binary_data" BYTEA NOT NULL, "creation_date" TIMESTAMP NOT NULL);'
+                )
 
 
 class EventHandlerDatabaseInitializer(Service):
@@ -93,3 +150,4 @@ class EventHandlerDatabaseInitializer(Service):
         await event_handler_table_creation(conf=self.config)
 
         await self.stop(self)
+
