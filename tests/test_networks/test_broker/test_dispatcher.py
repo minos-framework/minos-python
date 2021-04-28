@@ -1,17 +1,9 @@
 import unittest
 
-from minos.common import (
-    Aggregate,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from minos.networks import (
-    MinosQueueDispatcher,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from minos.common import Aggregate
+from minos.common.testing import PostgresAsyncTestCase
+from minos.networks import MinosQueueDispatcher
+from tests.utils import BASE_PATH
 
 
 class AggregateTest(Aggregate):
