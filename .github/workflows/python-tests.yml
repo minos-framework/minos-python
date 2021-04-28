@@ -16,10 +16,10 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     env:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      MINOS_REPOSITORY_HOST: postgres
+      MINOS_REPOSITORY_PORT: 5432
+      MINOS_REPOSITORY_USER: postgres
+      MINOS_REPOSITORY_PASSWORD: postgres
 
     steps:
     - name: Check out repository code
