@@ -6,21 +6,15 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from itertools import (
-    starmap,
-)
+from itertools import starmap
 from typing import (
     Any,
     NoReturn,
 )
 
 import aiopg
-from minos.common import (
-    MinosConfig,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from minos.common import MinosConfig
+from tests.utils import BASE_PATH
 
 
 class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
