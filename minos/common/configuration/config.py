@@ -42,6 +42,7 @@ _default: t.Optional[MinosConfigAbstract] = None
 
 class MinosConfigAbstract(abc.ABC):
     """TODO"""
+
     __slots__ = "_services", "_path"
 
     def __init__(self, path: t.Union[Path, str]):
@@ -105,6 +106,7 @@ class MinosConfigAbstract(abc.ABC):
 
 class MinosConfig(MinosConfigAbstract):
     """TODO"""
+
     __slots__ = ("_data",)
 
     def _load(self, path):
