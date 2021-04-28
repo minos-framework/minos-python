@@ -9,21 +9,29 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: minos
+          POSTGRES_PASSWORD: min0s
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     env:
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      MINOS_COMMANDS_QUEUE_HOST: postgres
+      MINOS_EVENTS_QUEUE_HOST: postgres
+      MINOS_REPOSITORY_HOST: postgres
 
     steps:
     - name: Check out repository code
       uses: actions/checkout@v2
+
+    - name: Install Postgresql client
+      run: |
+          apt-get update
+          apt-get install --yes postgresql-client
+
+    - name: Create database
+      run: |
+          PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_db OWNER minos;"
 
     - name: Install dependencies
       run: |

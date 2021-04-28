@@ -37,10 +37,56 @@ REST = collections.namedtuple("Rest", "broker endpoints")
 
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 
+_ENVIRONMENT_MAPPER = {
+    "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
+    "commands.queue.port": "MINOS_COMMANDS_QUEUE_PORT",
+    "commands.queue.database": "MINOS_COMMANDS_QUEUE_DATABASE",
+    "commands.queue.user": "MINOS_COMMANDS_QUEUE_USER",
+    "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
+    "commands.broker": "MINOS_COMMANDS_BROKER",
+    "commands.port": "MINOS_COMMANDS_PORT",
+    "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
+    "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
+    "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
+    "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
+    "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
+    "events.broker": "MINOS_EVENTS_BROKER",
+    "events.port": "MINOS_EVENTS_PORT",
+    "repository.host": "MINOS_REPOSITORY_HOST",
+    "repository.port": "MINOS_REPOSITORY_PORT",
+    "repository.database": "MINOS_REPOSITORY_DATABASE",
+    "repository.user": "MINOS_REPOSITORY_USER",
+    "repository.password": "MINOS_REPOSITORY_PASSWORD",
+}
+
+_PARAMETERIZED_MAPPER = {
+    "commands.queue.host": "commands_queue_host",
+    "commands.queue.port": "commands_queue_port",
+    "commands.queue.database": "commands_queue_database",
+    "commands.queue.user": "commands_queue_user",
+    "commands.queue.password": "commands_queue_password",
+    "commands.broker": "commands_broker",
+    "commands.port": "commands_port",
+    "events.queue.host": "events_queue_host",
+    "events.queue.port": "events_queue_port",
+    "events.queue.database": "events_queue_database",
+    "events.queue.user": "events_queue_user",
+    "events.queue.password": "events_queue_password",
+    "events.broker": "events_broker",
+    "events.port": "events_port",
+    "repository.host": "repository_host",
+    "repository.port": "repository_port",
+    "repository.database": "repository_database",
+    "repository.user": "repository_user",
+    "repository.password": "repository_password",
+}
+
 _default: t.Optional[MinosConfigAbstract] = None
 
 
 class MinosConfigAbstract(abc.ABC):
+    """Minos abstract config class."""
+
     __slots__ = "_services", "_path"
 
     def __init__(self, path: t.Union[Path, str]):
@@ -58,7 +104,8 @@ class MinosConfigAbstract(abc.ABC):
     def _get(self, key: str, **kwargs: t.Any):
         raise NotImplementedError
 
-    def _file_exit(self, path: str) -> bool:
+    @staticmethod
+    def _file_exit(path: str) -> bool:
         if os.path.isfile(path):
             return True
         return False
@@ -102,7 +149,14 @@ class MinosConfigAbstract(abc.ABC):
 
 
 class MinosConfig(MinosConfigAbstract):
-    __slots__ = ("_data",)
+    """Minos config class."""
+
+    __slots__ = ("_data", "_with_environment", "_parameterized")
+
+    def __init__(self, path: t.Union[Path, str], with_environment: bool = True, **kwargs):
+        super().__init__(path)
+        self._with_environment = with_environment
+        self._parameterized = kwargs
 
     def _load(self, path):
         if self._file_exit(path):
@@ -111,80 +165,149 @@ class MinosConfig(MinosConfigAbstract):
         else:
             raise MinosConfigException(f"Check if this path: {path} is correct")
 
-    def _get(self, key: str, **kwargs: t.Any) -> t.Union[str, int, t.Dict[str, t.Any], None]:
-        if key in self._data:
-            return self._data[key]
-        return None
+    def _get(self, key: str, **kwargs: t.Any) -> t.Any:
+        if key in _PARAMETERIZED_MAPPER and _PARAMETERIZED_MAPPER[key] in self._parameterized:
+            return self._parameterized[_PARAMETERIZED_MAPPER[key]]
+
+        if self._with_environment and key in _ENVIRONMENT_MAPPER and _ENVIRONMENT_MAPPER[key] in os.environ:
+            return os.environ[_ENVIRONMENT_MAPPER[key]]
+
+        def _fn(k: str, data: dict[str, t.Any]) -> t.Any:
+            current, _, following = k.partition(".")
+
+            part = data[current]
+            if not following:
+                return part
+
+            return _fn(following, part)
+
+        return _fn(key, self._data)
 
     @property
-    def service(self):
-        service = self._get("service")
-        return SERVICE(name=service["name"])
+    def service(self) -> SERVICE:
+        """Get the service config.
+
+         :return: A ``SERVICE`` NamedTuple instance.
+         """
+        return SERVICE(name=self._get("service.name"))
 
     @property
-    def rest(self):
-        rest_info = self._get("rest")
-        broker = BROKER(host=rest_info["host"], port=rest_info["port"])
-        endpoints = []
-        for endpoint in rest_info["endpoints"]:
-            endpoints.append(
-                ENDPOINT(
-                    name=endpoint["name"],
-                    route=endpoint["route"],
-                    method=endpoint["method"].upper(),
-                    controller=endpoint["controller"],
-                    action=endpoint["action"],
-                )
-            )
+    def rest(self) -> REST:
+        """Get the rest config.
+
+         :return: A ``REST`` NamedTuple instance.
+         """
+        broker = self._rest_broker
+        endpoints = self._rest_endpoints
         return REST(broker=broker, endpoints=endpoints)
 
     @property
-    def events(self):
-        event_info = self._get("events")
-        broker = BROKER(host=event_info["broker"], port=event_info["port"])
-        queue = QUEUE(
-            database=event_info["queue"]["database"],
-            user=event_info["queue"]["user"],
-            password=event_info["queue"]["password"],
-            host=event_info["queue"]["host"],
-            port=event_info["queue"]["port"],
-            records=event_info["queue"]["records"],
-            retry=event_info["queue"]["retry"],
+    def _rest_broker(self):
+        broker = BROKER(host=self._get("rest.host"), port=int(self._get("rest.port")))
+        return broker
+
+    @property
+    def _rest_endpoints(self) -> list[ENDPOINT]:
+        info = self._get("rest.endpoints")
+        endpoints = [self._rest_endpoints_entry(endpoint) for endpoint in info]
+        return endpoints
+
+    @staticmethod
+    def _rest_endpoints_entry(endpoint: dict[str, t.Any]) -> ENDPOINT:
+        return ENDPOINT(
+            name=endpoint["name"],
+            route=endpoint["route"],
+            method=endpoint["method"].upper(),
+            controller=endpoint["controller"],
+            action=endpoint["action"],
         )
-        events = []
-        for event in event_info["items"]:
-            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"]))
+
+    @property
+    def events(self) -> EVENTS:
+        """Get the events config.
+
+         :return: A ``EVENTS`` NamedTuple instance.
+         """
+        broker = self._events_broker
+        queue = self._events_queue
+        events = self._events_items
         return EVENTS(broker=broker, items=events, queue=queue)
 
     @property
-    def commands(self):
-        command_info = self._get("commands")
-        broker = BROKER(host=command_info["broker"], port=command_info["port"])
-        queue = QUEUE(
-            database=command_info["queue"]["database"],
-            user=command_info["queue"]["user"],
-            password=command_info["queue"]["password"],
-            host=command_info["queue"]["host"],
-            port=command_info["queue"]["port"],
-            records=command_info["queue"]["records"],
-            retry=command_info["queue"]["retry"],
+    def _events_broker(self) -> BROKER:
+        return BROKER(host=self._get("events.broker"), port=int(self._get("events.port")))
+
+    @property
+    def _events_queue(self) -> QUEUE:
+        return QUEUE(
+            database=self._get("events.queue.database"),
+            user=self._get("events.queue.user"),
+            password=self._get("events.queue.password"),
+            host=self._get("events.queue.host"),
+            port=int(self._get("events.queue.port")),
+            records=int(self._get("events.queue.records")),
+            retry=int(self._get("events.queue.retry")),
         )
-        commands = []
-        for command in command_info["items"]:
-            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"]))
+
+    @property
+    def _events_items(self) -> list[EVENT]:
+        info = self._get("events.items")
+        events = [self._events_items_entry(event) for event in info]
+        return events
+
+    @staticmethod
+    def _events_items_entry(event: dict[str, t.Any]) -> EVENT:
+        return EVENT(name=event["name"], controller=event["controller"], action=event["action"])
+
+    @property
+    def commands(self) -> COMMANDS:
+        """Get the commands config.
+
+         :return: A ``COMMAND`` NamedTuple instance.
+         """
+        broker = self._commands_broker
+        queue = self._commands_queue
+        commands = self._commands_items
         return COMMANDS(broker=broker, items=commands, queue=queue)
 
     @property
-    def repository(self) -> t.NamedTuple:
+    def _commands_broker(self) -> BROKER:
+        broker = BROKER(host=self._get("commands.broker"), port=int(self._get("commands.port")))
+        return broker
+
+    @property
+    def _commands_queue(self) -> QUEUE:
+        queue = QUEUE(
+            database=self._get("commands.queue.database"),
+            user=self._get("commands.queue.user"),
+            password=self._get("commands.queue.password"),
+            host=self._get("commands.queue.host"),
+            port=int(self._get("commands.queue.port")),
+            records=int(self._get("commands.queue.records")),
+            retry=int(self._get("commands.queue.retry")),
+        )
+        return queue
+
+    @property
+    def _commands_items(self) -> list[COMMAND]:
+        info = self._get("commands.items")
+        commands = [self._commands_items_entry(command) for command in info]
+        return commands
+
+    @staticmethod
+    def _commands_items_entry(command: dict[str, t.Any]) -> COMMAND:
+        return COMMAND(name=command["name"], controller=command["controller"], action=command["action"])
+
+    @property
+    def repository(self) -> REPOSITORY:
         """Get the repository config.
 
-        :return: A ``Repository`` NamedTuple instance.
+        :return: A ``REPOSITORY`` NamedTuple instance.
         """
-        command_info = self._get("repository")
         return REPOSITORY(
-            database=os.getenv("POSTGRES_DATABASE", command_info["database"]),
-            user=os.getenv("POSTGRES_USER", command_info["user"]),
-            password=os.getenv("POSTGRES_PASSWORD", command_info["password"]),
-            host=os.getenv("POSTGRES_HOST", command_info["host"]),
-            port=os.getenv("POSTGRES_PORT", command_info["port"]),
+            database=self._get("repository.database"),
+            user=self._get("repository.user"),
+            password=self._get("repository.password"),
+            host=self._get("repository.host"),
+            port=int(self._get("repository.port")),
         )
