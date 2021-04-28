@@ -176,7 +176,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _rest_broker(self):
-        broker = BROKER(host=self._get("rest.host"), port=self._get("rest.port"))
+        broker = BROKER(host=self._get("rest.host"), port=int(self._get("rest.port")))
         return broker
 
     @property
@@ -208,8 +208,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _events_broker(self) -> BROKER:
-        event_info = self._get("events")
-        return BROKER(host=event_info["broker"], port=event_info["port"])
+        return BROKER(host=self._get("events.broker"), port=int(self._get("events.port")))
 
     @property
     def _events_queue(self) -> QUEUE:
@@ -218,9 +217,9 @@ class MinosConfig(MinosConfigAbstract):
             user=self._get("events.queue.user"),
             password=self._get("events.queue.password"),
             host=self._get("events.queue.host"),
-            port=self._get("events.queue.port"),
-            records=self._get("events.queue.records"),
-            retry=self._get("events.queue.retry"),
+            port=int(self._get("events.queue.port")),
+            records=int(self._get("events.queue.records")),
+            retry=int(self._get("events.queue.retry")),
         )
 
     @property
@@ -246,7 +245,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _commands_broker(self) -> BROKER:
-        broker = BROKER(host=self._get("commands.broker"), port=self._get("commands.port"))
+        broker = BROKER(host=self._get("commands.broker"), port=int(self._get("commands.port")))
         return broker
 
     @property
@@ -256,9 +255,9 @@ class MinosConfig(MinosConfigAbstract):
             user=self._get("commands.queue.user"),
             password=self._get("commands.queue.password"),
             host=self._get("commands.queue.host"),
-            port=self._get("commands.queue.port"),
-            records=self._get("commands.queue.records"),
-            retry=self._get("commands.queue.retry"),
+            port=int(self._get("commands.queue.port")),
+            records=int(self._get("commands.queue.records")),
+            retry=int(self._get("commands.queue.retry")),
         )
         return queue
 
@@ -283,5 +282,5 @@ class MinosConfig(MinosConfigAbstract):
             user=self._get("repository.user"),
             password=self._get("repository.password"),
             host=self._get("repository.host"),
-            port=self._get("repository.port"),
+            port=int(self._get("repository.port")),
         )

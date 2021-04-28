@@ -73,6 +73,15 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(10, queue.records)
         self.assertEqual(2, queue.retry)
 
+    def test_config_repository(self):
+        config = MinosConfig(path=self.config_file_path)
+        repository = config.repository
+        self.assertEqual("test_db", repository.database)
+        self.assertEqual("test_user", repository.user)
+        self.assertEqual("test_password", repository.password)
+        self.assertEqual("localhost", repository.host)
+        self.assertEqual(5432, repository.port)
+
     def test_get_default_default(self):
         with MinosConfig(path=self.config_file_path) as config:
             self.assertEqual(config, MinosConfigAbstract.get_default())
