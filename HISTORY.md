@@ -63,3 +63,11 @@ History
 * Improved MinosConfig
 * added some utilities for internal use
 * added Storage Event support for Aggregate
+
+0.0.4 (2021-04-28)
+------------------
+
+* Bug Corrections
+* EventModel and CommandModel reformat
+* Added support for ModelRef in MinosModel
+* Improved MinosConfig
