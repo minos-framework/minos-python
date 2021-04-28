@@ -9,8 +9,14 @@ rest:
           method: POST
           controller: minos.services.OrderService
           action: add_order
+repository:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
 events:
-    broker: kafka
+    broker: localhost
     port: 9092
     database:
         path: ./tests/local_db.lmdb
@@ -23,15 +29,15 @@ events:
           controller: tests.services.CqrsTestService.CqrsService
           action: ticket_deleted
     queue:
-        database: broker_db
-        user: broker
-        password: br0k3r
-        host: postgres
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
         port: 5432
         records: 10
         retry: 2
 commands:
-    broker: kafka
+    broker: localhost
     port: 9092
     items:
         - name: AddOrder
@@ -47,10 +53,10 @@ commands:
           controller: minos.service.OrderService
           action: get_order
     queue:
-        database: broker_db
-        user: broker
-        password: br0k3r
-        host: postgres
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
         port: 5432
         records: 10
         retry: 2
