@@ -1,4 +1,4 @@
-from minos.common.exceptions import MinosException
+from minos.common import MinosException
 
 
 class MinosNetworkException(MinosException): pass

@@ -10,7 +10,6 @@ from __future__ import (
 )
 
 from typing import (
-    Any,
     Optional,
 )
 
@@ -30,6 +29,8 @@ from .abc import (
 
 
 class EventBrokerQueueDispatcher(PeriodicService):
+    """TODO"""
+
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
         self.dispatcher = MinosQueueDispatcher.from_config(config=config)

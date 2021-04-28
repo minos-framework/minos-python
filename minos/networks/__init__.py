@@ -6,3 +6,6 @@ from .broker import (
     MinosEventBroker,
     MinosQueueDispatcher,
 )
+from .exceptions import (
+    MinosNetworkException,
+)

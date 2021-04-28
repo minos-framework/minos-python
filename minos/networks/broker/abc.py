@@ -17,6 +17,8 @@ from minos.common import (
 
 
 class MinosBrokerSetup(MinosSetup):
+    """TODO"""
+
     def __init__(
         self,
         *args,
@@ -54,6 +56,8 @@ class MinosBrokerSetup(MinosSetup):
 
 
 class MinosBroker(MinosBaseBroker, MinosBrokerSetup):
+    """TODO"""
+
     def __init__(self, topic: str, *args, **kwargs):
         MinosBaseBroker.__init__(self, topic)
         MinosBrokerSetup.__init__(self, *args, **kwargs)

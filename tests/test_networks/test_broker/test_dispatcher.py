@@ -6,7 +6,7 @@ from minos.common import (
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
-from minos.networks.broker import (
+from minos.networks import (
     MinosQueueDispatcher,
 )
 from tests.utils import (
