@@ -106,3 +106,6 @@ class Command(Event):
     """Base Command class."""
 
     reply_on: str
+
+    def __init__(self, topic: str, items: list[Aggregate], reply_on: str, *args, **kwargs):
+        super().__init__(topic, items, *args, reply_on=reply_on, **kwargs)
