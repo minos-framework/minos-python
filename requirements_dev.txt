@@ -19,6 +19,7 @@ colorlog==5.0.1
 coverage==5.5
 distlib==0.3.1
 docutils==0.16
+fastavro==1.4.0
 filelock==3.0.12
 flake8==3.9.0
 idna==2.10
@@ -31,7 +32,7 @@ keyring==23.0.1
 lmdb==1.1.1
 MarkupSafe==1.1.1
 mccabe==0.6.1
-minos-microservice-common==0.0.2
+minos-microservice-common==0.0.4
 more-itertools==8.7.0
 mypy-extensions==0.4.3
 orjson==3.5.1
