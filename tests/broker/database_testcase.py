@@ -7,8 +7,13 @@ import os
 import unittest
 
 import aiopg
-from minos.common.configuration.config import MinosConfig
-from minos.networks.broker import MinosBrokerDatabase, broker_table_creation
+from minos.common.configuration.config import (
+    MinosConfig,
+)
+from minos.networks.broker import (
+    MinosBrokerDatabase,
+    broker_table_creation,
+)
 
 
 class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):

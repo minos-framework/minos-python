@@ -8,15 +8,32 @@ import abc
 import asyncio
 import datetime
 import typing as t
-from enum import Enum
+from enum import (
+    Enum,
+)
 
 import aiopg
-from aiokafka import AIOKafkaProducer
-from aiomisc.service.periodic import PeriodicService, Service
-from minos.common import Aggregate
-from minos.common.broker import Command, Event, MinosBaseBroker
-from minos.common.configuration.config import MinosConfig
-from minos.common.logs import log
+from aiokafka import (
+    AIOKafkaProducer,
+)
+from aiomisc.service.periodic import (
+    PeriodicService,
+    Service,
+)
+from minos.common import (
+    Aggregate,
+)
+from minos.common.broker import (
+    Command,
+    Event,
+    MinosBaseBroker,
+)
+from minos.common.configuration.config import (
+    MinosConfig,
+)
+from minos.common.logs import (
+    log,
+)
 
 
 class MinosBrokerDatabase:
