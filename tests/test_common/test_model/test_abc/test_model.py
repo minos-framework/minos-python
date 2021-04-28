@@ -273,6 +273,13 @@ class TestMinosModel(unittest.TestCase):
         decoded_customer = Customer.from_avro_bytes(avro_bytes)
         self.assertEqual(customers, decoded_customer)
 
+    def test_avro_bytes_composed(self):
+        shopping_list = ShoppingList(User(1234), cost="1.234")
+        avro_bytes = shopping_list.avro_bytes
+        self.assertIsInstance(avro_bytes, bytes)
+        decoded_shopping_list = ShoppingList.from_avro_bytes(avro_bytes)
+        self.assertEqual(shopping_list, decoded_shopping_list)
+
     def test_avro_bytes_empty_sequence(self):
         with self.assertRaises(EmptyMinosModelSequenceException):
             Customer.to_avro_bytes([])
