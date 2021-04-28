@@ -13,12 +13,8 @@ from typing import (
 )
 
 import aiopg
-from minos.common import (
-    MinosConfig,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from minos.common import MinosConfig
+from tests.utils import BASE_PATH
 
 
 class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
@@ -59,11 +55,13 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def asyncSetUp(self):
-        pairs = self._drop_duplicates([
-            (self._meta_repository_db, self.repository_db),
-            (self._meta_events_queue_db, self.events_queue_db),
-            (self._meta_commands_queue_db, self.commands_queue_db),
-        ])
+        pairs = self._drop_duplicates(
+            [
+                (self._meta_repository_db, self.repository_db),
+                (self._meta_events_queue_db, self.events_queue_db),
+                (self._meta_commands_queue_db, self.commands_queue_db),
+            ]
+        )
         for meta, test in pairs:
             await self._setup(dict(meta), dict(test))
 
@@ -84,11 +82,13 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 await cursor.execute(template.format(**test))
 
     async def asyncTearDown(self):
-        pairs = self._drop_duplicates([
-            (self._meta_repository_db, self.repository_db),
-            (self._meta_events_queue_db, self.events_queue_db),
-            (self._meta_commands_queue_db, self.commands_queue_db),
-        ])
+        pairs = self._drop_duplicates(
+            [
+                (self._meta_repository_db, self.repository_db),
+                (self._meta_events_queue_db, self.events_queue_db),
+                (self._meta_commands_queue_db, self.commands_queue_db),
+            ]
+        )
 
         for meta, test in pairs:
             await self._teardown(meta, test)
