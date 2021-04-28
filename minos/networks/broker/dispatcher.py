@@ -8,7 +8,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 from __future__ import (
     annotations,
 )
-from typing import Optional, Any
+
+from typing import (
+    Any,
+    Optional,
+)
 
 from aiokafka import (
     AIOKafkaProducer,
@@ -20,11 +24,12 @@ from minos.common import (
     MinosConfig,
 )
 
-from .abc import MinosBrokerSetup
+from .abc import (
+    MinosBrokerSetup,
+)
 
 
 class EventBrokerQueueDispatcher(PeriodicService):
-
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
         self.dispatcher = MinosQueueDispatcher.from_config(config=config)
