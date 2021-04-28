@@ -37,6 +37,50 @@ REST = collections.namedtuple("Rest", "broker endpoints")
 
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 
+_ENVIRONMENT_MAPPER = {
+    "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
+    "commands.queue.port": "MINOS_COMMANDS_QUEUE_PORT",
+    "commands.queue.database": "MINOS_COMMANDS_QUEUE_DATABASE",
+    "commands.queue.user": "MINOS_COMMANDS_QUEUE_USER",
+    "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
+    "commands.broker": "MINOS_COMMANDS_BROKER",
+    "commands.port": "MINOS_COMMANDS_PORT",
+    "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
+    "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
+    "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
+    "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
+    "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
+    "events.broker": "MINOS_EVENTS_BROKER",
+    "events.port": "MINOS_EVENTS_PORT",
+    "repository.host": "MINOS_REPOSITORY_HOST",
+    "repository.port": "MINOS_REPOSITORY_PORT",
+    "repository.database": "MINOS_REPOSITORY_DATABASE",
+    "repository.user": "MINOS_REPOSITORY_USER",
+    "repository.password": "MINOS_REPOSITORY_PASSWORD",
+}
+
+_PARAMETERIZED_MAPPER = {
+    "commands.queue.host": "commands_queue_host",
+    "commands.queue.port": "commands_queue_port",
+    "commands.queue.database": "commands_queue_database",
+    "commands.queue.user": "commands_queue_user",
+    "commands.queue.password": "commands_queue_password",
+    "commands.broker": "commands_broker",
+    "commands.port": "commands_port",
+    "events.queue.host": "events_queue_host",
+    "events.queue.port": "events_queue_port",
+    "events.queue.database": "events_queue_database",
+    "events.queue.user": "events_queue_user",
+    "events.queue.password": "events_queue_password",
+    "events.broker": "events_broker",
+    "events.port": "events_port",
+    "repository.host": "repository_host",
+    "repository.port": "repository_port",
+    "repository.database": "repository_database",
+    "repository.user": "repository_user",
+    "repository.password": "repository_password",
+}
+
 _default: t.Optional[MinosConfigAbstract] = None
 
 
@@ -102,50 +146,6 @@ class MinosConfigAbstract(abc.ABC):
         """
         global _default
         _default = None
-
-
-_ENVIRONMENT_MAPPER = {
-    "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
-    "commands.queue.port": "MINOS_COMMANDS_QUEUE_PORT",
-    "commands.queue.database": "MINOS_COMMANDS_QUEUE_DATABASE",
-    "commands.queue.user": "MINOS_COMMANDS_QUEUE_USER",
-    "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
-    "commands.broker": "MINOS_COMMANDS_BROKER",
-    "commands.port": "MINOS_COMMANDS_PORT",
-    "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
-    "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
-    "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
-    "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
-    "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
-    "events.broker": "MINOS_EVENTS_BROKER",
-    "events.port": "MINOS_EVENTS_PORT",
-    "repository.host": "MINOS_REPOSITORY_HOST",
-    "repository.port": "MINOS_REPOSITORY_PORT",
-    "repository.database": "MINOS_REPOSITORY_DATABASE",
-    "repository.user": "MINOS_REPOSITORY_USER",
-    "repository.password": "MINOS_REPOSITORY_PASSWORD",
-}
-_PARAMETERIZED_MAPPER = {
-    "commands.queue.host": "commands_queue_host",
-    "commands.queue.port": "commands_queue_port",
-    "commands.queue.database": "commands_queue_database",
-    "commands.queue.user": "commands_queue_user",
-    "commands.queue.password": "commands_queue_password",
-    "commands.broker": "commands_broker",
-    "commands.port": "commands_port",
-    "events.queue.host": "events_queue_host",
-    "events.queue.port": "events_queue_port",
-    "events.queue.database": "events_queue_database",
-    "events.queue.user": "events_queue_user",
-    "events.queue.password": "events_queue_password",
-    "events.broker": "events_broker",
-    "events.port": "events_port",
-    "repository.host": "repository_host",
-    "repository.port": "repository_port",
-    "repository.database": "repository_database",
-    "repository.user": "repository_user",
-    "repository.password": "repository_password",
-}
 
 
 class MinosConfig(MinosConfigAbstract):

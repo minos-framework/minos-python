@@ -5,7 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import os
 import unittest
+from unittest import mock
 
 from minos.common import (
     MinosConfig,
@@ -81,6 +83,29 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("min0s", repository.password)
         self.assertEqual("localhost", repository.host)
         self.assertEqual(5432, repository.port)
+
+    @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
+    def test_overwrite_with_environment(self):
+        config = MinosConfig(path=self.config_file_path)
+        repository = config.repository
+        self.assertEqual("foo", repository.database)
+
+    @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
+    def test_overwrite_with_environment_false(self):
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        repository = config.repository
+        self.assertEqual("order_db", repository.database)
+
+    def test_overwrite_with_parameter(self):
+        config = MinosConfig(path=self.config_file_path, repository_database="foo")
+        repository = config.repository
+        self.assertEqual("foo", repository.database)
+
+    @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
+    def test_overwrite_with_parameter_priority(self):
+        config = MinosConfig(path=self.config_file_path, repository_database="bar")
+        repository = config.repository
+        self.assertEqual("bar", repository.database)
 
     def test_get_default_default(self):
         with MinosConfig(path=self.config_file_path) as config:
