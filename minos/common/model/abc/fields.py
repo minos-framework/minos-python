@@ -286,6 +286,10 @@ class _ModelFieldCaster(object):
         return data
 
     def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
+        if isinstance(data, dict):
+            # noinspection PyUnresolvedReferences
+            return type_field.from_dict(data)
+
         if not isinstance(data, type_field):
             raise MinosTypeAttributeException(self._name, type_field, data)
         return data

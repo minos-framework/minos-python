@@ -27,6 +27,8 @@ from ...logs import (
 )
 from ...meta import (
     classproperty,
+    property_or_classproperty,
+    self_or_classmethod,
 )
 from ...protocol import (
     MinosAvroValuesDatabase,
@@ -38,6 +40,7 @@ from .fields import (
 from .types import (
     MissingSentinel,
 )
+
 
 # def _process_aggregate(cls):
 #     """
@@ -122,6 +125,7 @@ class MinosModel(object):
             )
 
         avro_schema = models[0].avro_schema
+        # noinspection PyTypeChecker
         return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
 
     # noinspection PyMethodParameters
@@ -156,7 +160,7 @@ class MinosModel(object):
             raise AttributeError
 
     def _list_fields(self, *args, **kwargs) -> t.NoReturn:
-        for (name, type_val), value in zip_longest(self._type_hints.items(), args, fillvalue=MissingSentinel):
+        for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
             if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
 
@@ -168,27 +172,36 @@ class MinosModel(object):
             )
 
     # noinspection PyMethodParameters
-    @classproperty
-    def _type_hints(cls) -> dict[str, t.Type]:
+    @self_or_classmethod
+    def _type_hints(self_or_cls):
         fields = dict()
+        if isinstance(self_or_cls, type):
+            cls = self_or_cls
+        else:
+            cls = type(self_or_cls)
         for b in cls.__mro__[::-1]:
             base_fields = getattr(b, "_fields", None)
             if base_fields is not None:
                 list_fields = {k: v for k, v in t.get_type_hints(b).items() if not k.startswith("_")}
                 log.debug(f"Fields Derivative {list_fields}")
                 fields |= list_fields
-        return fields
+        yield from fields.items()
 
     # noinspection PyMethodParameters
-    @classproperty
-    def avro_schema(cls) -> dict[str, t.Any]:
+    @property_or_classproperty
+    def avro_schema(self_or_cls) -> dict[str, t.Any]:
         """Compute the avro schema of the model.
 
         :return: A dictionary object.
         """
+        if isinstance(self_or_cls, type):
+            cls = self_or_cls
+        else:
+            cls = type(self_or_cls)
+
         fields = [
             _MinosModelAvroSchemaBuilder(field_name, field_type).build()
-            for field_name, field_type in cls._type_hints.items()
+            for field_name, field_type in self_or_cls._type_hints()
         ]
         return {"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}
 
@@ -206,6 +219,7 @@ class MinosModel(object):
 
         :return: A bytes object.
         """
+        # noinspection PyTypeChecker
         return MinosAvroValuesDatabase().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self, other: MinosModel) -> bool:
