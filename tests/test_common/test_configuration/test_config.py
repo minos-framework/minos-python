@@ -14,7 +14,9 @@ from minos.common import (
     MinosConfigDefaultAlreadySetException,
     MinosConfigException,
 )
-from tests.utils import BASE_PATH
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestMinosConfig(unittest.TestCase):
