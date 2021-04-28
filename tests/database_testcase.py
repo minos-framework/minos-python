@@ -6,7 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from itertools import starmap
+from itertools import (
+    starmap,
+)
 from typing import (
     Any,
     NoReturn,
@@ -59,11 +61,13 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def asyncSetUp(self):
-        pairs = self._drop_duplicates([
-            (self._meta_repository_db, self.repository_db),
-            (self._meta_events_queue_db, self.events_queue_db),
-            (self._meta_commands_queue_db, self.commands_queue_db),
-        ])
+        pairs = self._drop_duplicates(
+            [
+                (self._meta_repository_db, self.repository_db),
+                (self._meta_events_queue_db, self.events_queue_db),
+                (self._meta_commands_queue_db, self.commands_queue_db),
+            ]
+        )
         for meta, test in pairs:
             await self._setup(dict(meta), dict(test))
 
@@ -84,11 +88,13 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 await cursor.execute(template.format(**test))
 
     async def asyncTearDown(self):
-        pairs = self._drop_duplicates([
-            (self._meta_repository_db, self.repository_db),
-            (self._meta_events_queue_db, self.events_queue_db),
-            (self._meta_commands_queue_db, self.commands_queue_db),
-        ])
+        pairs = self._drop_duplicates(
+            [
+                (self._meta_repository_db, self.repository_db),
+                (self._meta_events_queue_db, self.events_queue_db),
+                (self._meta_commands_queue_db, self.commands_queue_db),
+            ]
+        )
 
         for meta, test in pairs:
             await self._teardown(meta, test)
