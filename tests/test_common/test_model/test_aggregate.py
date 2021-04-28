@@ -8,7 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
-    MinosConfig,
     MinosInMemoryRepository,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
@@ -20,7 +19,7 @@ from minos.common import (
 from tests.aggregate_classes import (
     Car,
 )
-from tests.database_testcase import (
+from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.utils import (
@@ -130,9 +129,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
 
 class TestAggregateWithConfig(PostgresAsyncTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.config_file_path = BASE_PATH / "test_config.yaml"
+    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_update(self):
         with self.config:

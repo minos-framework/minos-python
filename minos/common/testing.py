@@ -9,23 +9,26 @@ import unittest
 from itertools import (
     starmap,
 )
+from pathlib import (
+    Path,
+)
 from typing import (
     Any,
     NoReturn,
 )
 
 import aiopg
-from minos.common import (
+
+from .configuration import (
     MinosConfig,
-)
-from tests.utils import (
-    BASE_PATH,
 )
 
 
 class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
+    CONFIG_FILE_PATH: Path
+
     def setUp(self) -> None:
-        self._config = MinosConfig(BASE_PATH / "test_config.yaml")
+        self._config = MinosConfig(self.CONFIG_FILE_PATH)
 
         self._meta_repository_db = self._config.repository._asdict()
 
@@ -37,21 +40,14 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self._meta_commands_queue_db.pop("records")
         self._meta_commands_queue_db.pop("retry")
 
-        self.repository_db = self._meta_repository_db | {
-            "database": "test_repository_db",
-            "user": "test_repository_user",
-        }
-        self.events_queue_db = self._meta_events_queue_db | {
-            "database": "test_events_queue_db",
-            "user": "test_events_queue_user",
-        }
-        self.commands_queue_db = self._meta_commands_queue_db | {
-            "database": "test_commands_queue_db",
-            "user": "test_commands_queue_user",
-        }
+        self._test_db = {"database": "test_db", "user": "test_user"}
+
+        self.repository_db = self._meta_repository_db | self._test_db
+        self.events_queue_db = self._meta_events_queue_db | self._test_db
+        self.commands_queue_db = self._meta_commands_queue_db | self._test_db
 
         self.config = MinosConfig(
-            BASE_PATH / "test_config.yaml",
+            self.CONFIG_FILE_PATH,
             repository_database=self.repository_db["database"],
             repository_user=self.repository_db["user"],
             events_queue_database=self.events_queue_db["database"],
@@ -69,10 +65,10 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
             ]
         )
         for meta, test in pairs:
-            await self._setup(dict(meta), dict(test))
+            await self._setup_database(dict(meta), dict(test))
 
     @staticmethod
-    async def _setup(meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
+    async def _setup_database(meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
         async with aiopg.connect(**meta) as connection:
             async with connection.cursor() as cursor:
                 template = "DROP DATABASE IF EXISTS {database};"
@@ -97,7 +93,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
         for meta, test in pairs:
-            await self._teardown(meta, test)
+            await self._teardown_database(meta, test)
 
     @staticmethod
     def _drop_duplicates(items: list[(dict, dict)]):
@@ -108,7 +104,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         return items
 
     @staticmethod
-    async def _teardown(meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
+    async def _teardown_database(meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
         async with aiopg.connect(**meta) as connection:
             async with connection.cursor() as cursor:
                 template = "DROP DATABASE IF EXISTS {database}"

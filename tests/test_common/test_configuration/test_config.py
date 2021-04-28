@@ -22,7 +22,7 @@ from tests.utils import (
 
 class TestMinosConfig(unittest.TestCase):
     def setUp(self) -> None:
-        self.config_file_path = BASE_PATH / "test_config.yaml"
+        self.config_file_path = BASE_PATH / "test_config.yml"
 
     def test_config_ini_fail(self):
         with self.assertRaises(MinosConfigException):

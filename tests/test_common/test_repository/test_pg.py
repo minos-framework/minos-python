@@ -18,12 +18,17 @@ from minos.common import (
 from tests.aggregate_classes import (
     Car,
 )
-from tests.database_testcase import (
+from minos.common.testing import (
     PostgresAsyncTestCase,
+)
+from tests.utils import (
+    BASE_PATH,
 )
 
 
 class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
+    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+
     def test_constructor(self):
         repository = PostgreSqlMinosRepository("host", 1234, "database", "user", "password")
         self.assertIsInstance(repository, MinosRepository)
