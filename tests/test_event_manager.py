@@ -6,22 +6,23 @@ import string
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
 import random
 
+from minos.common.logs import log
 from aiomisc.log import basic_config
 from minos.common.configuration.config import MinosConfig
 from minos.common import Aggregate
 from minos.common.broker import Event
-from minos.networks.event import MinosEventServer, EventHandlerDatabaseInitializer
+from minos.networks.event import MinosEventServer, EventHandlerDatabaseInitializer, MinosEventHandlerPeriodicService
 from tests.database_testcase import EventHandlerPostgresAsyncTestCase
 
 @pytest.fixture()
 def config():
  return MinosConfig(path='./tests/test_config.yaml')
 
-"""
+
 @pytest.fixture()
 def services(config):
- return [EventHandlerDatabaseInitializer(config=config), MinosEventServer(conf=config)]
-"""
+ return [EventHandlerDatabaseInitializer(config=config), MinosEventServer(conf=config), MinosEventHandlerPeriodicService(interval=0.5, delay=0, conf=config)]
+
 class AggregateTest(Aggregate):
     test: int
 
@@ -57,6 +58,35 @@ class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
         assert affected_rows == 1
         assert id > 0
 
+    async def test_get_event_handler(self):
+        model = AggregateTest(test_id=1, test=2, id=1, version=1)
+        event_instance = Event(topic="TestEventQueueAdd", model=model.classname, items=[])
+        m = MinosEventHandlerPeriodicService(conf=self._broker_config(), interval=0.5)
+
+        cls = m.get_event_handler(topic="TicketAdded")
+        result = await cls(topic="TicketAdded", event=event_instance)
+
+        assert result == 'request_added'
+
+    async def test_event_queue_checker(self):
+        database = await self._database()
+        async with database as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("SELECT COUNT(*) FROM event_queue")
+                records = await cur.fetchone()
+
+        assert records[0] > 0
+
+        m = MinosEventHandlerPeriodicService(conf=self._broker_config(), interval=0.5)
+        await m.event_queue_checker()
+
+        database = await self._database()
+        async with database as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("SELECT COUNT(*) FROM event_queue")
+                records = await cur.fetchone()
+
+        assert records[0] == 0
 
 async def test_producer_kafka(loop):
     basic_config(
@@ -104,5 +134,4 @@ async def test_event_handle_message(config, loop):
     consumer.subscribe(topics)
 
     await m.handle_message(consumer)
-
 
