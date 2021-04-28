@@ -6,6 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from itertools import starmap
 from typing import (
     Any,
     NoReturn,
@@ -23,25 +24,26 @@ from tests.utils import (
 class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self._config = MinosConfig(BASE_PATH / "test_config.yaml")
-        self._repository_db = self._config.repository._asdict()
 
-        self._events_queue_db = self._config.events.queue._asdict()
-        self._events_queue_db.pop("records")
-        self._events_queue_db.pop("retry")
+        self._meta_repository_db = self._config.repository._asdict()
 
-        self._commands_queue_db = self._config.commands.queue._asdict()
-        self._commands_queue_db.pop("records")
-        self._commands_queue_db.pop("retry")
+        self._meta_events_queue_db = self._config.events.queue._asdict()
+        self._meta_events_queue_db.pop("records")
+        self._meta_events_queue_db.pop("retry")
 
-        self.repository_db = self._repository_db | {
+        self._meta_commands_queue_db = self._config.commands.queue._asdict()
+        self._meta_commands_queue_db.pop("records")
+        self._meta_commands_queue_db.pop("retry")
+
+        self.repository_db = self._meta_repository_db | {
             "database": "test_repository_db",
             "user": "test_repository_user",
         }
-        self.events_queue_db = self._events_queue_db | {
+        self.events_queue_db = self._meta_events_queue_db | {
             "database": "test_events_queue_db",
             "user": "test_events_queue_user",
         }
-        self.commands_queue_db = self._commands_queue_db | {
+        self.commands_queue_db = self._meta_commands_queue_db | {
             "database": "test_commands_queue_db",
             "user": "test_commands_queue_user",
         }
@@ -57,9 +59,13 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def asyncSetUp(self):
-        await self._setup(self._repository_db, self.repository_db)
-        await self._setup(self._events_queue_db, self.events_queue_db)
-        await self._setup(self._commands_queue_db, self.commands_queue_db)
+        pairs = self._drop_duplicates([
+            (self._meta_repository_db, self.repository_db),
+            (self._meta_events_queue_db, self.events_queue_db),
+            (self._meta_commands_queue_db, self.commands_queue_db),
+        ])
+        for meta, test in pairs:
+            await self._setup(dict(meta), dict(test))
 
     @staticmethod
     async def _setup(meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
@@ -78,9 +84,22 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 await cursor.execute(template.format(**test))
 
     async def asyncTearDown(self):
-        await self._teardown(self._repository_db, self.repository_db)
-        await self._teardown(self._events_queue_db, self.commands_queue_db)
-        await self._teardown(self._commands_queue_db, self.commands_queue_db)
+        pairs = self._drop_duplicates([
+            (self._meta_repository_db, self.repository_db),
+            (self._meta_events_queue_db, self.events_queue_db),
+            (self._meta_commands_queue_db, self.commands_queue_db),
+        ])
+
+        for meta, test in pairs:
+            await self._teardown(meta, test)
+
+    @staticmethod
+    def _drop_duplicates(items: list[(dict, dict)]):
+        items = starmap(lambda a, b: (tuple(a.items()), tuple(b.items())), items)
+        items = set(items)
+        items = starmap(lambda a, b: (dict(a), dict(b)), items)
+        items = list(items)
+        return items
 
     @staticmethod
     async def _teardown(meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:

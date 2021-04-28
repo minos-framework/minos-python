@@ -10,7 +10,7 @@ rest:
           controller: minos.services.OrderService
           action: add_order
 repository:
-    database: order_repository
+    database: order_db
     user: minos
     password: min0s
     host: localhost
@@ -29,7 +29,7 @@ events:
           controller: minos.services.CQRSService
           action: order_added
     queue:
-        database: order_events_queue
+        database: order_db
         user: minos
         password: min0s
         host: localhost
@@ -53,7 +53,7 @@ commands:
           controller: minos.service.OrderService
           action: get_order
     queue:
-        database: order_commands_queue
+        database: order_db
         user: minos
         password: min0s
         host: localhost

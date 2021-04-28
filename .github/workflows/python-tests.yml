@@ -29,11 +29,9 @@ jobs:
           apt-get update
           apt-get install --yes postgresql-client
 
-    - name: Create databases
+    - name: Create database
       run: |
-          PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_repository OWNER minos;"
-          PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_events_queue OWNER minos;"
-          PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_commands_queue OWNER minos;"
+          PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_db OWNER minos;"
 
     - name: Install dependencies
       run: |
