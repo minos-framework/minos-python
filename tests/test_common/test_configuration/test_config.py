@@ -5,6 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import os
 import unittest
 
 from minos.common import (
@@ -50,7 +51,7 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(9092, broker.port)
 
     def test_config_events_queue_database(self):
-        config = MinosConfig(path=self.config_file_path)
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
         events = config.events
         queue = events.queue
         self.assertEqual("order_events_queue", queue.database)
@@ -62,7 +63,7 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(2, queue.retry)
 
     def test_config_commands_queue_database(self):
-        config = MinosConfig(path=self.config_file_path)
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
         commands = config.commands
         queue = commands.queue
         self.assertEqual("order_commands_queue", queue.database)
@@ -74,7 +75,7 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(2, queue.retry)
 
     def test_config_repository(self):
-        config = MinosConfig(path=self.config_file_path)
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
         repository = config.repository
         self.assertEqual("order_repository", repository.database)
         self.assertEqual("minos", repository.user)

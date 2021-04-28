@@ -151,10 +151,11 @@ _PARAMETERIZED_MAPPER = {
 class MinosConfig(MinosConfigAbstract):
     """TODO"""
 
-    __slots__ = ("_data", "_parameterized")
+    __slots__ = ("_data", "_with_environment","_parameterized")
 
-    def __init__(self, path: t.Union[Path, str], **kwargs):
+    def __init__(self, path: t.Union[Path, str], with_environment: bool = True, **kwargs):
         super().__init__(path)
+        self._with_environment = with_environment
         self._parameterized = kwargs
 
     def _load(self, path):
@@ -168,7 +169,7 @@ class MinosConfig(MinosConfigAbstract):
         if key in _PARAMETERIZED_MAPPER and _PARAMETERIZED_MAPPER[key] in self._parameterized:
             return self._parameterized[_PARAMETERIZED_MAPPER[key]]
 
-        if key in _ENVIRONMENT_MAPPER and _ENVIRONMENT_MAPPER[key] in os.environ:
+        if self._with_environment and key in _ENVIRONMENT_MAPPER and _ENVIRONMENT_MAPPER[key] in os.environ:
             return os.environ[_ENVIRONMENT_MAPPER[key]]
 
         def _fn(k: str, data: dict[str, t.Any]) -> t.Any:
