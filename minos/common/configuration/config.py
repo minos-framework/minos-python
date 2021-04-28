@@ -182,18 +182,18 @@ class MinosConfig(MinosConfigAbstract):
     @property
     def _rest_endpoints(self) -> list[ENDPOINT]:
         info = self._get("rest.endpoints")
-        endpoints = []
-        for endpoint in info:
-            endpoints.append(
-                ENDPOINT(
-                    name=endpoint["name"],
-                    route=endpoint["route"],
-                    method=endpoint["method"].upper(),
-                    controller=endpoint["controller"],
-                    action=endpoint["action"],
-                )
-            )
+        endpoints = [self._rest_endpoints_entry(endpoint) for endpoint in info]
         return endpoints
+
+    @staticmethod
+    def _rest_endpoints_entry(endpoint: dict[str, t.Any]) -> ENDPOINT:
+        return ENDPOINT(
+            name=endpoint["name"],
+            route=endpoint["route"],
+            method=endpoint["method"].upper(),
+            controller=endpoint["controller"],
+            action=endpoint["action"],
+        )
 
     @property
     def events(self) -> EVENTS:
