@@ -5,7 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import os
 import unittest
 
 from minos.common import (
@@ -54,7 +53,7 @@ class TestMinosConfig(unittest.TestCase):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         events = config.events
         queue = events.queue
-        self.assertEqual("order_events_queue", queue.database)
+        self.assertEqual("order_db", queue.database)
         self.assertEqual("minos", queue.user)
         self.assertEqual("min0s", queue.password)
         self.assertEqual("localhost", queue.host)
@@ -66,7 +65,7 @@ class TestMinosConfig(unittest.TestCase):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         commands = config.commands
         queue = commands.queue
-        self.assertEqual("order_commands_queue", queue.database)
+        self.assertEqual("order_db", queue.database)
         self.assertEqual("minos", queue.user)
         self.assertEqual("min0s", queue.password)
         self.assertEqual("localhost", queue.host)
@@ -77,7 +76,7 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_repository(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         repository = config.repository
-        self.assertEqual("order_repository", repository.database)
+        self.assertEqual("order_db", repository.database)
         self.assertEqual("minos", repository.user)
         self.assertEqual("min0s", repository.password)
         self.assertEqual("localhost", repository.host)
