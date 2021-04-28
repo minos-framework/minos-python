@@ -60,7 +60,7 @@ class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
 
 async def test_producer_kafka(loop):
     basic_config(
-        level=logging.DEBUG,
+        level=logging.INFO,
         buffered=True,
         log_format='color',
         flush_interval=2
@@ -72,14 +72,14 @@ async def test_producer_kafka(loop):
     # Produce messages
 
     model = AggregateTest(test_id=1, test=2, id=1, version=1)
-    event_instance = Event(topic="TicketAdded", model=model.classname, items=[])
+    event_instance = Event(topic="TicketAdded", model=model.classname, items=[model])
     bin_data = event_instance.avro_bytes
 
     await producer.send_and_wait(event_instance.topic, bin_data)
     await asyncio.sleep(1)
 
     model2 = AggregateTest(test_id=2, test=2, id=1, version=1)
-    event_instance_2 = Event(topic="TicketDeleted", model=model2.classname, items=[])
+    event_instance_2 = Event(topic="TicketDeleted", model=model2.classname, items=[model2])
     bin_data2 = event_instance_2.avro_bytes
     await producer.send_and_wait(event_instance_2.topic, bin_data2)
     await asyncio.sleep(1)
