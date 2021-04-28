@@ -104,6 +104,29 @@ class MinosConfigAbstract(abc.ABC):
         _default = None
 
 
+_ENVIRONMENT_MAPPER = {
+    "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
+    "commands.queue.port": "MINOS_COMMANDS_QUEUE_PORT",
+    "commands.queue.database": "MINOS_COMMANDS_QUEUE_DATABASE",
+    "commands.queue.user": "MINOS_COMMANDS_QUEUE_USER",
+    "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
+    "commands.broker": "MINOS_COMMANDS_BROKER",
+    "commands.port": "MINOS_COMMANDS_PORT",
+    "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
+    "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
+    "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
+    "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
+    "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
+    "events.broker": "MINOS_EVENTS_BROKER",
+    "events.port": "MINOS_EVENTS_PORT",
+    "repository.host": "MINOS_REPOSITORY_HOST",
+    "repository.port": "MINOS_REPOSITORY_PORT",
+    "repository.database": "MINOS_REPOSITORY_DATABASE",
+    "repository.user": "MINOS_REPOSITORY_USER",
+    "repository.password": "MINOS_REPOSITORY_PASSWORD",
+}
+
+
 class MinosConfig(MinosConfigAbstract):
     """TODO"""
 
@@ -116,17 +139,22 @@ class MinosConfig(MinosConfigAbstract):
         else:
             raise MinosConfigException(f"Check if this path: {path} is correct")
 
-    def _get(self, key: str, data: dict[str, t.Any] = None, **kwargs: t.Any) -> t.Any:
-        if data is None:
-            data = self._data
+    def _get(self, key: str, **kwargs: t.Any) -> t.Any:
+        if key in _ENVIRONMENT_MAPPER:
+            env = os.getenv(_ENVIRONMENT_MAPPER[key])
+            if env is not None:
+                return env
 
-        current, _, following = key.partition(".")
+        def _fn(k: str, data: dict[str, t.Any]) -> t.Any:
+            current, _, following = k.partition(".")
 
-        part = data[current]
-        if not following:
-            return part
+            part = data[current]
+            if not following:
+                return part
 
-        return self._get(following, part)
+            return _fn(following, part)
+
+        return _fn(key, self._data)
 
     @property
     def service(self) -> SERVICE:
@@ -134,8 +162,7 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: TODO
         """
-        service = self._get("service")
-        return SERVICE(name=service["name"])
+        return SERVICE(name=self._get("service.name"))
 
     @property
     def rest(self):
@@ -149,8 +176,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _rest_broker(self):
-        rest_info = self._get("rest")
-        broker = BROKER(host=rest_info["host"], port=rest_info["port"])
+        broker = BROKER(host=self._get("rest.host"), port=self._get("rest.port"))
         return broker
 
     @property
@@ -187,15 +213,14 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _events_queue(self) -> QUEUE:
-        info = self._get("events.queue")
         return QUEUE(
-            database=info["database"],
-            user=info["user"],
-            password=info["password"],
-            host=info["host"],
-            port=info["port"],
-            records=info["records"],
-            retry=info["retry"],
+            database=self._get("events.queue.database"),
+            user=self._get("events.queue.user"),
+            password=self._get("events.queue.password"),
+            host=self._get("events.queue.host"),
+            port=self._get("events.queue.port"),
+            records=self._get("events.queue.records"),
+            retry=self._get("events.queue.retry"),
         )
 
     @property
@@ -221,21 +246,19 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _commands_broker(self) -> BROKER:
-        info = self._get("commands")
-        broker = BROKER(host=info["broker"], port=info["port"])
+        broker = BROKER(host=self._get("commands.broker"), port=self._get("commands.port"))
         return broker
 
     @property
     def _commands_queue(self) -> QUEUE:
-        info = self._get("commands.queue")
         queue = QUEUE(
-            database=info["database"],
-            user=info["user"],
-            password=info["password"],
-            host=info["host"],
-            port=info["port"],
-            records=info["records"],
-            retry=info["retry"],
+            database=self._get("commands.queue.database"),
+            user=self._get("commands.queue.user"),
+            password=self._get("commands.queue.password"),
+            host=self._get("commands.queue.host"),
+            port=self._get("commands.queue.port"),
+            records=self._get("commands.queue.records"),
+            retry=self._get("commands.queue.retry"),
         )
         return queue
 
@@ -255,11 +278,10 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``Repository`` NamedTuple instance.
         """
-        info = self._get("repository")
         return REPOSITORY(
-            database=os.getenv("POSTGRES_DATABASE", info["database"]),
-            user=os.getenv("POSTGRES_USER", info["user"]),
-            password=os.getenv("POSTGRES_PASSWORD", info["password"]),
-            host=os.getenv("POSTGRES_HOST", info["host"]),
-            port=os.getenv("POSTGRES_PORT", info["port"]),
+            database=self._get("repository.database"),
+            user=self._get("repository.user"),
+            password=self._get("repository.password"),
+            host=self._get("repository.host"),
+            port=self._get("repository.port"),
         )
