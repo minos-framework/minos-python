@@ -41,6 +41,7 @@ _default: t.Optional[MinosConfigAbstract] = None
 
 
 class MinosConfigAbstract(abc.ABC):
+    """TODO"""
     __slots__ = "_services", "_path"
 
     def __init__(self, path: t.Union[Path, str]):
@@ -58,7 +59,8 @@ class MinosConfigAbstract(abc.ABC):
     def _get(self, key: str, **kwargs: t.Any):
         raise NotImplementedError
 
-    def _file_exit(self, path: str) -> bool:
+    @staticmethod
+    def _file_exit(path: str) -> bool:
         if os.path.isfile(path):
             return True
         return False
@@ -102,6 +104,7 @@ class MinosConfigAbstract(abc.ABC):
 
 
 class MinosConfig(MinosConfigAbstract):
+    """TODO"""
     __slots__ = ("_data",)
 
     def _load(self, path):
@@ -111,22 +114,41 @@ class MinosConfig(MinosConfigAbstract):
         else:
             raise MinosConfigException(f"Check if this path: {path} is correct")
 
-    def _get(self, key: str, **kwargs: t.Any) -> t.Union[str, int, t.Dict[str, t.Any], None]:
+    def _get(self, key: str, **kwargs: t.Any) -> t.Any:
         if key in self._data:
             return self._data[key]
         return None
 
     @property
-    def service(self):
+    def service(self) -> SERVICE:
+        """TODO
+
+        :return: TODO
+        """
         service = self._get("service")
         return SERVICE(name=service["name"])
 
     @property
     def rest(self):
+        """TODO
+
+        :return: TODO
+        """
+        broker = self._rest_broker
+        endpoints = self._rest_endpoints
+        return REST(broker=broker, endpoints=endpoints)
+
+    @property
+    def _rest_broker(self):
         rest_info = self._get("rest")
         broker = BROKER(host=rest_info["host"], port=rest_info["port"])
+        return broker
+
+    @property
+    def _rest_endpoints(self) -> list[ENDPOINT]:
+        info = self._get("rest")["endpoints"]
         endpoints = []
-        for endpoint in rest_info["endpoints"]:
+        for endpoint in info:
             endpoints.append(
                 ENDPOINT(
                     name=endpoint["name"],
@@ -136,55 +158,95 @@ class MinosConfig(MinosConfigAbstract):
                     action=endpoint["action"],
                 )
             )
-        return REST(broker=broker, endpoints=endpoints)
+        return endpoints
 
     @property
-    def events(self):
-        event_info = self._get("events")
-        broker = BROKER(host=event_info["broker"], port=event_info["port"])
-        queue = QUEUE(
-            database=event_info["queue"]["database"],
-            user=event_info["queue"]["user"],
-            password=event_info["queue"]["password"],
-            host=event_info["queue"]["host"],
-            port=event_info["queue"]["port"],
-            records=event_info["queue"]["records"],
-            retry=event_info["queue"]["retry"],
-        )
-        events = []
-        for event in event_info["items"]:
-            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"]))
+    def events(self) -> EVENTS:
+        """TODO
+
+        :return: TODO
+        """
+        broker = self._events_broker
+        queue = self._events_queue
+        events = self._events_items
         return EVENTS(broker=broker, items=events, queue=queue)
 
     @property
-    def commands(self):
-        command_info = self._get("commands")
-        broker = BROKER(host=command_info["broker"], port=command_info["port"])
-        queue = QUEUE(
-            database=command_info["queue"]["database"],
-            user=command_info["queue"]["user"],
-            password=command_info["queue"]["password"],
-            host=command_info["queue"]["host"],
-            port=command_info["queue"]["port"],
-            records=command_info["queue"]["records"],
-            retry=command_info["queue"]["retry"],
+    def _events_broker(self) -> BROKER:
+        event_info = self._get("events")
+        return BROKER(host=event_info["broker"], port=event_info["port"])
+
+    @property
+    def _events_queue(self) -> QUEUE:
+        info = self._get("events")["queue"]
+        return QUEUE(
+            database=info["database"],
+            user=info["user"],
+            password=info["password"],
+            host=info["host"],
+            port=info["port"],
+            records=info["records"],
+            retry=info["retry"],
         )
-        commands = []
-        for command in command_info["items"]:
-            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"]))
+
+    @property
+    def _events_items(self) -> list[EVENT]:
+        info = self._get("events")["items"]
+        events = []
+        for event in info:
+            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"]))
+        return events
+
+    @property
+    def commands(self) -> COMMANDS:
+        """TODO
+
+        :return: TODO
+        """
+        broker = self._commands_broker
+        queue = self._commands_queue
+        commands = self._commands_items
         return COMMANDS(broker=broker, items=commands, queue=queue)
 
     @property
-    def repository(self) -> t.NamedTuple:
+    def _commands_broker(self) -> BROKER:
+        info = self._get("commands")
+        broker = BROKER(host=info["broker"], port=info["port"])
+        return broker
+
+    @property
+    def _commands_queue(self) -> QUEUE:
+        info = self._get("commands")["queue"]
+        queue = QUEUE(
+            database=info["database"],
+            user=info["user"],
+            password=info["password"],
+            host=info["host"],
+            port=info["port"],
+            records=info["records"],
+            retry=info["retry"],
+        )
+        return queue
+
+    @property
+    def _commands_items(self) -> list[COMMAND]:
+        command_info = self._get("commands")
+        commands = []
+        for command in command_info["items"]:
+            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"]))
+        return commands
+
+    @property
+    def repository(self) -> REPOSITORY:
         """Get the repository config.
 
         :return: A ``Repository`` NamedTuple instance.
         """
-        command_info = self._get("repository")
+        info = self._get("repository")
         return REPOSITORY(
-            database=os.getenv("POSTGRES_DATABASE", command_info["database"]),
-            user=os.getenv("POSTGRES_USER", command_info["user"]),
-            password=os.getenv("POSTGRES_PASSWORD", command_info["password"]),
-            host=os.getenv("POSTGRES_HOST", command_info["host"]),
-            port=os.getenv("POSTGRES_PORT", command_info["port"]),
+            database=os.getenv("POSTGRES_DATABASE", info["database"]),
+            user=os.getenv("POSTGRES_USER", info["user"]),
+            password=os.getenv("POSTGRES_PASSWORD", info["password"]),
+            host=os.getenv("POSTGRES_HOST", info["host"]),
+            port=os.getenv("POSTGRES_PORT", info["port"]),
         )
