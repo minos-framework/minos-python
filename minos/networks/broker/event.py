@@ -4,7 +4,10 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
+
 import datetime
 from typing import (
     NoReturn,
@@ -17,7 +20,9 @@ from minos.common import (
     MinosConfig,
 )
 
-from .abc import MinosBroker
+from .abc import (
+    MinosBroker,
+)
 
 
 class MinosEventBroker(MinosBroker):
