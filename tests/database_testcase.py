@@ -50,10 +50,10 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
             BASE_PATH / "test_config.yaml",
             repository_database=self.repository_db["database"],
             repository_user=self.repository_db["user"],
-            events_queue_database=self.repository_db["database"],
-            events_queue_user=self.repository_db["user"],
-            commands_queue_database=self.repository_db["database"],
-            commands_queue_user=self.repository_db["user"],
+            events_queue_database=self.events_queue_db["database"],
+            events_queue_user=self.events_queue_db["user"],
+            commands_queue_database=self.commands_queue_db["database"],
+            commands_queue_user=self.commands_queue_db["user"],
         )
 
     async def asyncSetUp(self):
