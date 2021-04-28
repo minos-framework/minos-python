@@ -12,11 +12,14 @@ from typing import (
 
 from minos.common import (
     Aggregate,
+    Command,
     Event,
-    MinosBaseBroker, MultiTypeMinosModelSequenceException, Command,
+    MinosBaseBroker,
+    MultiTypeMinosModelSequenceException,
 )
 from tests.aggregate_classes import (
-    Car, Owner,
+    Car,
+    Owner,
 )
 
 

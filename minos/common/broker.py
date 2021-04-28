@@ -10,9 +10,15 @@ from __future__ import (
 )
 
 import abc
-from typing import Type, Any, NoReturn
+from typing import (
+    Any,
+    NoReturn,
+    Type,
+)
 
-from .exceptions import MultiTypeMinosModelSequenceException
+from .exceptions import (
+    MultiTypeMinosModelSequenceException,
+)
 from .importlib import (
     import_module,
 )

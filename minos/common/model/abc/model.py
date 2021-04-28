@@ -41,7 +41,6 @@ from .types import (
     MissingSentinel,
 )
 
-
 # def _process_aggregate(cls):
 #     """
 #     Get the list of the class arguments and define it as an AggregateField class
