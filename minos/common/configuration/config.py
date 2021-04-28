@@ -41,7 +41,7 @@ _default: t.Optional[MinosConfigAbstract] = None
 
 
 class MinosConfigAbstract(abc.ABC):
-    """TODO"""
+    """Minos abstract config class."""
 
     __slots__ = "_services", "_path"
 
@@ -149,7 +149,7 @@ _PARAMETERIZED_MAPPER = {
 
 
 class MinosConfig(MinosConfigAbstract):
-    """TODO"""
+    """Minos config class."""
 
     __slots__ = ("_data", "_with_environment", "_parameterized")
 
@@ -185,18 +185,18 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def service(self) -> SERVICE:
-        """TODO
+        """Get the service config.
 
-        :return: TODO
-        """
+         :return: A ``SERVICE`` NamedTuple instance.
+         """
         return SERVICE(name=self._get("service.name"))
 
     @property
-    def rest(self):
-        """TODO
+    def rest(self) -> REST:
+        """Get the rest config.
 
-        :return: TODO
-        """
+         :return: A ``REST`` NamedTuple instance.
+         """
         broker = self._rest_broker
         endpoints = self._rest_endpoints
         return REST(broker=broker, endpoints=endpoints)
@@ -224,10 +224,10 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def events(self) -> EVENTS:
-        """TODO
+        """Get the events config.
 
-        :return: TODO
-        """
+         :return: A ``EVENTS`` NamedTuple instance.
+         """
         broker = self._events_broker
         queue = self._events_queue
         events = self._events_items
@@ -261,10 +261,10 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def commands(self) -> COMMANDS:
-        """TODO
+        """Get the commands config.
 
-        :return: TODO
-        """
+         :return: A ``COMMAND`` NamedTuple instance.
+         """
         broker = self._commands_broker
         queue = self._commands_queue
         commands = self._commands_items
@@ -302,7 +302,7 @@ class MinosConfig(MinosConfigAbstract):
     def repository(self) -> REPOSITORY:
         """Get the repository config.
 
-        :return: A ``Repository`` NamedTuple instance.
+        :return: A ``REPOSITORY`` NamedTuple instance.
         """
         return REPOSITORY(
             database=self._get("repository.database"),
