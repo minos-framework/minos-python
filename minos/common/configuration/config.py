@@ -114,10 +114,17 @@ class MinosConfig(MinosConfigAbstract):
         else:
             raise MinosConfigException(f"Check if this path: {path} is correct")
 
-    def _get(self, key: str, **kwargs: t.Any) -> t.Any:
-        if key in self._data:
-            return self._data[key]
-        return None
+    def _get(self, key: str, data: dict[str, t.Any] = None, **kwargs: t.Any) -> t.Any:
+        if data is None:
+            data = self._data
+
+        current, _, following = key.partition(".")
+
+        part = data[current]
+        if not following:
+            return part
+
+        return self._get(following, part)
 
     @property
     def service(self) -> SERVICE:
@@ -146,7 +153,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _rest_endpoints(self) -> list[ENDPOINT]:
-        info = self._get("rest")["endpoints"]
+        info = self._get("rest.endpoints")
         endpoints = []
         for endpoint in info:
             endpoints.append(
@@ -178,7 +185,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _events_queue(self) -> QUEUE:
-        info = self._get("events")["queue"]
+        info = self._get("events.queue")
         return QUEUE(
             database=info["database"],
             user=info["user"],
@@ -191,11 +198,13 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _events_items(self) -> list[EVENT]:
-        info = self._get("events")["items"]
-        events = []
-        for event in info:
-            events.append(EVENT(name=event["name"], controller=event["controller"], action=event["action"]))
+        info = self._get("events.items")
+        events = [self._events_items_entry(event) for event in info]
         return events
+
+    @staticmethod
+    def _events_items_entry(event: dict[str, t.Any]) -> EVENT:
+        return EVENT(name=event["name"], controller=event["controller"], action=event["action"])
 
     @property
     def commands(self) -> COMMANDS:
@@ -216,7 +225,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _commands_queue(self) -> QUEUE:
-        info = self._get("commands")["queue"]
+        info = self._get("commands.queue")
         queue = QUEUE(
             database=info["database"],
             user=info["user"],
@@ -230,11 +239,13 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _commands_items(self) -> list[COMMAND]:
-        command_info = self._get("commands")
-        commands = []
-        for command in command_info["items"]:
-            commands.append(COMMAND(name=command["name"], controller=command["controller"], action=command["action"]))
+        info = self._get("commands.items")
+        commands = [self._commands_items_entry(command) for command in info]
         return commands
+
+    @staticmethod
+    def _commands_items_entry(command: dict[str, t.Any]) -> COMMAND:
+        return COMMAND(name=command["name"], controller=command["controller"], action=command["action"])
 
     @property
     def repository(self) -> REPOSITORY:
