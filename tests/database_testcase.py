@@ -10,15 +10,20 @@ import unittest
 
 import aiopg
 
+from minos.common import MinosConfig
+from minos.common.configuration.config import REPOSITORY
+from tests.utils import BASE_PATH
+
 
 class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
+        self.config = MinosConfig(BASE_PATH / "test_config.yaml")
         self._meta_kwargs = {
-            "host": os.getenv("POSTGRES_HOST", "localhost"),
-            "port": os.getenv("POSTGRES_PORT", 5432),
-            "database": os.getenv("POSTGRES_DATABASE", "postgres"),
-            "user": os.getenv("POSTGRES_USER", "postgres"),
-            "password": os.getenv("POSTGRES_PASSWORD", "postgres"),
+            "host": os.getenv("MINOS_REPOSITORY_HOST", "localhost"),
+            "port": os.getenv("MINOS_REPOSITORY_PORT", 5432),
+            "database": os.getenv("MINOS_REPOSITORY_DATABASE", "postgres"),
+            "user": os.getenv("MINOS_REPOSITORY_USER", "postgres"),
+            "password": os.getenv("MINOS_REPOSITORY_PASSWORD", "postgres"),
         }
 
         self.kwargs = self._meta_kwargs | {
