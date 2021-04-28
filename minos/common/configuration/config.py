@@ -5,17 +5,13 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import abc
 import collections
 import os
 import typing as t
-from pathlib import (
-    Path,
-)
+from pathlib import Path
 
 import yaml
 
@@ -151,7 +147,7 @@ _PARAMETERIZED_MAPPER = {
 class MinosConfig(MinosConfigAbstract):
     """TODO"""
 
-    __slots__ = ("_data", "_with_environment","_parameterized")
+    __slots__ = ("_data", "_with_environment", "_parameterized")
 
     def __init__(self, path: t.Union[Path, str], with_environment: bool = True, **kwargs):
         super().__init__(path)
