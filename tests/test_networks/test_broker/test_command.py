@@ -12,17 +12,13 @@ from minos.common import (
     Aggregate,
     MinosConfig,
 )
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common.testing import PostgresAsyncTestCase
 
 from minos.networks import (
     MinosCommandBroker,
     MinosQueueDispatcher,
 )
-from tests.utils import (
-    BASE_PATH,
-)
+from tests.utils import BASE_PATH
 
 
 class AggregateTest(Aggregate):

@@ -5,12 +5,8 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from .event import (
-    MinosEventBroker,
-)
-from .command import (
-    MinosCommandBroker,
-)
+from .event import MinosEventBroker
+from .command import MinosCommandBroker
 from .dispatcher import (
     MinosQueueDispatcher,
     EventBrokerQueueDispatcher,

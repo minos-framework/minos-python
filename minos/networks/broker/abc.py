@@ -5,9 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from typing import (
-    NoReturn,
-)
+from typing import NoReturn
 
 import aiopg
 from minos.common import (
@@ -49,11 +47,7 @@ class MinosBrokerSetup(MinosSetup):
 
     def _connection(self):
         return aiopg.connect(
-            host=self.host,
-            port=self.port,
-            dbname=self.database,
-            user=self.user,
-            password=self.password,
+            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
         )
 
 

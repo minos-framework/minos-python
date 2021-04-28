@@ -5,12 +5,11 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 import datetime
 from typing import (
-    NoReturn, Optional,
+    NoReturn,
+    Optional,
 )
 
 from minos.common import (
@@ -19,9 +18,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from .abc import (
-    MinosBroker,
-)
+from .abc import MinosBroker
 
 
 class MinosCommandBroker(MinosBroker):
@@ -56,14 +53,7 @@ class MinosCommandBroker(MinosBroker):
             async with connect.cursor() as cur:
                 await cur.execute(
                     "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
-                    (
-                        event_instance.topic,
-                        bin_data,
-                        0,
-                        self.ACTION,
-                        datetime.datetime.now(),
-                        datetime.datetime.now(),
-                    ),
+                    (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
                 )
 
                 queue_id = await cur.fetchone()
