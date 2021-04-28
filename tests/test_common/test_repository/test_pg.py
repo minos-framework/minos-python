@@ -10,7 +10,6 @@ import unittest
 
 import aiopg
 from minos.common import (
-    MinosInMemoryRepository,
     MinosRepository,
     MinosRepositoryAction,
     MinosRepositoryEntry,
@@ -35,25 +34,25 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
         self.assertEqual("password", repository.password)
 
     async def test_setup(self):
-        async with aiopg.connect(**self.kwargs) as connection:
+        async with aiopg.connect(**self.repository_db) as connection:
             async with connection.cursor() as cursor:
                 template = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'events');"
-                await cursor.execute(template.format(**self.kwargs))
+                await cursor.execute(template.format(**self.repository_db))
                 response = (await cursor.fetchone())[0]
                 self.assertFalse(response)
 
-        repository = PostgreSqlMinosRepository(**self.kwargs)
+        repository = PostgreSqlMinosRepository(**self.repository_db)
         await repository._setup()
 
-        async with aiopg.connect(**self.kwargs) as connection:
+        async with aiopg.connect(**self.repository_db) as connection:
             async with connection.cursor() as cursor:
                 template = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'events');"
-                await cursor.execute(template.format(**self.kwargs))
+                await cursor.execute(template.format(**self.repository_db))
                 response = (await cursor.fetchone())[0]
                 self.assertTrue(response)
 
     async def test_aggregate(self):
-        async with PostgreSqlMinosRepository(**self.kwargs) as repository:
+        async with PostgreSqlMinosRepository(**self.repository_db) as repository:
             car = await Car.create(doors=3, color="blue", _repository=repository)
             await car.update(color="red")
             await car.update(doors=5)
@@ -64,7 +63,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             await car.delete()
 
     async def test_insert(self):
-        async with PostgreSqlMinosRepository(**self.kwargs) as repository:
+        async with PostgreSqlMinosRepository(**self.repository_db) as repository:
             await repository.insert(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
 
             expected = [
@@ -73,7 +72,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             self.assertEqual(expected, await repository.select())
 
     async def test_update(self):
-        async with PostgreSqlMinosRepository(**self.kwargs) as repository:
+        async with PostgreSqlMinosRepository(**self.repository_db) as repository:
             await repository.update(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
             expected = [
                 MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.UPDATE)
@@ -81,7 +80,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             self.assertEqual(expected, await repository.select())
 
     async def test_delete(self):
-        async with PostgreSqlMinosRepository(**self.kwargs) as repository:
+        async with PostgreSqlMinosRepository(**self.repository_db) as repository:
             await repository.delete(MinosRepositoryEntry(0, "example.Car", 1, bytes()))
             expected = [MinosRepositoryEntry(0, "example.Car", 1, bytes(), 1, MinosRepositoryAction.DELETE)]
             self.assertEqual(expected, await repository.select())
@@ -100,7 +99,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
         self.assertEqual(expected, await repository.select())
 
     async def test_select_empty(self):
-        repository = PostgreSqlMinosRepository(**self.kwargs)
+        repository = PostgreSqlMinosRepository(**self.repository_db)
         self.assertEqual([], await repository.select())
 
     async def test_select_filtered(self):
@@ -112,7 +111,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
         self.assertEqual(expected, await repository.select(aggregate_name="example.Car", aggregate_id=2))
 
     async def _build_repository(self):
-        repository = PostgreSqlMinosRepository(**self.kwargs)
+        repository = PostgreSqlMinosRepository(**self.repository_db)
         await repository._setup()
         await repository.insert(MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8")))
         await repository.update(MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8")))

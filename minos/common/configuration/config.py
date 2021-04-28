@@ -125,12 +125,37 @@ _ENVIRONMENT_MAPPER = {
     "repository.user": "MINOS_REPOSITORY_USER",
     "repository.password": "MINOS_REPOSITORY_PASSWORD",
 }
+_PARAMETERIZED_MAPPER = {
+    "commands.queue.host": "commands_queue_host",
+    "commands.queue.port": "commands_queue_port",
+    "commands.queue.database": "commands_queue_database",
+    "commands.queue.user": "commands_queue_user",
+    "commands.queue.password": "commands_queue_password",
+    "commands.broker": "commands_broker",
+    "commands.port": "commands_port",
+    "events.queue.host": "events_queue_host",
+    "events.queue.port": "events_queue_port",
+    "events.queue.database": "events_queue_database",
+    "events.queue.user": "events_queue_user",
+    "events.queue.password": "events_queue_password",
+    "events.broker": "events_broker",
+    "events.port": "events_port",
+    "repository.host": "repository_host",
+    "repository.port": "repository_port",
+    "repository.database": "repository_database",
+    "repository.user": "repository_user",
+    "repository.password": "repository_password",
+}
 
 
 class MinosConfig(MinosConfigAbstract):
     """TODO"""
 
-    __slots__ = ("_data",)
+    __slots__ = ("_data", "_parameterized")
+
+    def __init__(self, path: t.Union[Path, str], **kwargs):
+        super().__init__(path)
+        self._parameterized = kwargs
 
     def _load(self, path):
         if self._file_exit(path):
@@ -140,10 +165,11 @@ class MinosConfig(MinosConfigAbstract):
             raise MinosConfigException(f"Check if this path: {path} is correct")
 
     def _get(self, key: str, **kwargs: t.Any) -> t.Any:
-        if key in _ENVIRONMENT_MAPPER:
-            env = os.getenv(_ENVIRONMENT_MAPPER[key])
-            if env is not None:
-                return env
+        if key in _PARAMETERIZED_MAPPER and _PARAMETERIZED_MAPPER[key] in self._parameterized:
+            return self._parameterized[_PARAMETERIZED_MAPPER[key]]
+
+        if key in _ENVIRONMENT_MAPPER and _ENVIRONMENT_MAPPER[key] in os.environ:
+            return os.environ[_ENVIRONMENT_MAPPER[key]]
 
         def _fn(k: str, data: dict[str, t.Any]) -> t.Any:
             current, _, following = k.partition(".")

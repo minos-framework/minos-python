@@ -53,9 +53,9 @@ class TestMinosConfig(unittest.TestCase):
         config = MinosConfig(path=self.config_file_path)
         events = config.events
         queue = events.queue
-        self.assertEqual("broker_db", queue.database)
-        self.assertEqual("broker", queue.user)
-        self.assertEqual("br0k3r", queue.password)
+        self.assertEqual("order_events_queue", queue.database)
+        self.assertEqual("minos", queue.user)
+        self.assertEqual("min0s", queue.password)
         self.assertEqual("localhost", queue.host)
         self.assertEqual(5432, queue.port)
         self.assertEqual(10, queue.records)
@@ -65,9 +65,9 @@ class TestMinosConfig(unittest.TestCase):
         config = MinosConfig(path=self.config_file_path)
         commands = config.commands
         queue = commands.queue
-        self.assertEqual("broker_db", queue.database)
-        self.assertEqual("broker", queue.user)
-        self.assertEqual("br0k3r", queue.password)
+        self.assertEqual("order_commands_queue", queue.database)
+        self.assertEqual("minos", queue.user)
+        self.assertEqual("min0s", queue.password)
         self.assertEqual("localhost", queue.host)
         self.assertEqual(5432, queue.port)
         self.assertEqual(10, queue.records)
@@ -76,9 +76,9 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_repository(self):
         config = MinosConfig(path=self.config_file_path)
         repository = config.repository
-        self.assertEqual("test_db", repository.database)
-        self.assertEqual("test_user", repository.user)
-        self.assertEqual("test_password", repository.password)
+        self.assertEqual("order_repository", repository.database)
+        self.assertEqual("minos", repository.user)
+        self.assertEqual("min0s", repository.password)
         self.assertEqual("localhost", repository.host)
         self.assertEqual(5432, repository.port)
 

@@ -135,7 +135,7 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
         self.config_file_path = BASE_PATH / "test_config.yaml"
 
     async def test_update(self):
-        with MinosConfig(path=self.config_file_path):
+        with self.config:
             await PostgreSqlMinosRepository.from_config().setup()
 
             car = await Car.create(doors=3, color="blue")
