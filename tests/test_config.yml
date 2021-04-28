@@ -10,17 +10,14 @@ rest:
           controller: minos.services.OrderService
           action: add_order
 repository:
-    database: test_db
-    user: test_user
-    password: test_password
+    database: order_db
+    user: minos
+    password: min0s
     host: localhost
     port: 5432
 events:
     broker: localhost
     port: 9092
-    database:
-        path: ./tests/local_db.lmdb
-        name: database_events_test
     items:
         - name: TicketAdded
           controller: minos.services.CQRSService
@@ -32,9 +29,9 @@ events:
           controller: minos.services.CQRSService
           action: order_added
     queue:
-        database: broker_db
-        user: broker
-        password: br0k3r
+        database: order_db
+        user: minos
+        password: min0s
         host: localhost
         port: 5432
         records: 10
@@ -42,9 +39,6 @@ events:
 commands:
     broker: localhost
     port: 9092
-    database:
-        path: ./tests/local_db.lmdb
-        name: database_commands_test
     items:
         - name: AddOrder
           controller: minos.services.OrderService
@@ -59,9 +53,9 @@ commands:
           controller: minos.service.OrderService
           action: get_order
     queue:
-        database: broker_db
-        user: broker
-        password: br0k3r
+        database: order_db
+        user: minos
+        password: min0s
         host: localhost
         port: 5432
         records: 10

@@ -17,7 +17,6 @@ from .configuration import (
     BROKER,
     COMMAND,
     COMMANDS,
-    DATABASE,
     ENDPOINT,
     EVENT,
     EVENTS,
@@ -107,6 +106,9 @@ from .repository import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
     PostgreSqlMinosRepository,
+)
+from .setup import (
+    MinosSetup,
 )
 from .storage import (
     MinosStorage,

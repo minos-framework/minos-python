@@ -7,6 +7,14 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 
+def property_or_classproperty(func):
+    """Decorator to use class properties"""
+    if not isinstance(func, (classmethod, staticmethod)):
+        func = self_or_classmethod(func)
+
+    return _ClassPropertyDescriptor(func)
+
+
 def classproperty(func):
     """Decorator to use class properties"""
     if not isinstance(func, (classmethod, staticmethod)):
