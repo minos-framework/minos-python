@@ -175,9 +175,10 @@ async def test_consumer_kafka(config,loop):
     await consumer.start()
     consumer.subscribe(topics)
 
-    for i in range(0, 2):
-        msg = await consumer.getone()
-        await m.handle_single_message(msg)
+    msg = await consumer.getone()
+    affected_rows, id = await m.handle_single_message(msg)
+    assert affected_rows > 0
+    assert id > 0
 
     await consumer.stop()
 

@@ -115,7 +115,8 @@ class MinosEventServer(Service):
         # check if the event binary string is well formatted
         try:
             Event.from_avro_bytes(msg.value)
-            await self.event_queue_add(msg.topic, msg.partition, msg.value)
+            affected_rows, id = await self.event_queue_add(msg.topic, msg.partition, msg.value)
+            return affected_rows, id
         finally:
             pass
 
@@ -251,8 +252,6 @@ class MinosEventHandlerPeriodicService(PeriodicService):
                             event_instance = Event.from_avro_bytes(row[3])
                             await reply_on(topic=row[1], event=event_instance)
                             call_ok = True
-                        except:
-                            call_ok = False
                         finally:
                             if call_ok:
                                 # Delete from database If the event was sent successfully to Kafka.
