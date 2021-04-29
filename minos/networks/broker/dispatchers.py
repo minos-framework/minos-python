@@ -18,9 +18,6 @@ from typing import (
 from aiokafka import (
     AIOKafkaProducer,
 )
-from aiomisc.service.periodic import (
-    PeriodicService,
-)
 from minos.common import (
     MinosConfig,
 )
@@ -28,21 +25,6 @@ from minos.common import (
 from .abc import (
     MinosBrokerSetup,
 )
-
-
-class MinosQueueDispatcherService(PeriodicService):
-    """Minos QueueDispatcherService class."""
-
-    def __init__(self, config: MinosConfig = None, **kwargs):
-        super().__init__(**kwargs)
-        self.dispatcher = MinosQueueDispatcher.from_config(config=config)
-
-    async def callback(self) -> None:
-        """Method to be called periodically by the internal ``aiomisc`` logic.
-
-        :return:This method does not return anything.
-        """
-        await self.dispatcher.dispatch()
 
 
 class MinosQueueDispatcher(MinosBrokerSetup):
@@ -99,7 +81,7 @@ class MinosQueueDispatcher(MinosBrokerSetup):
                                 await cur2.execute("UPDATE producer_queue SET retry = retry + 1 WHERE id=%d;" % row[0])
 
     async def publish(self, topic: str, message: bytes) -> bool:
-        """ Publish a new item in in the broker (kafka).
+        """Publish a new item in in the broker (kafka).
 
         :param topic: The topic in which the message will be published.
         :param message: The message to be published.
