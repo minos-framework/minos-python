@@ -103,7 +103,7 @@ class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
         assert records[0] == 0
 
 
-async def test_producer_kafka(loop):
+async def test_producer_kafka(config, loop):
 
     #basic_config(
     #    level=logging.INFO,
@@ -111,8 +111,8 @@ async def test_producer_kafka(loop):
     #    log_format='color',
     #    flush_interval=2
     #)
-
-    producer = AIOKafkaProducer(loop=loop, bootstrap_servers='localhost:9092')
+    kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
+    producer = AIOKafkaProducer(loop=loop, bootstrap_servers=kafka_conn_data)
     # Get cluster layout and topic/partition allocation
     await producer.start()
     # Produce messages
@@ -125,7 +125,7 @@ async def test_producer_kafka(loop):
     event_instance_2 = Event(topic="TicketDeleted", model=model2.classname, items=[model2])
     bin_data2 = event_instance_2.avro_bytes
 
-    for i in range(0, 100):
+    for i in range(0, 10):
         await producer.send_and_wait(event_instance.topic, bin_data)
         await producer.send_and_wait(event_instance_2.topic, bin_data2)
 
@@ -144,7 +144,7 @@ async def test_consumer_kafka(config,loop):
                                 loop=loop,
                                 group_id=broker_group_name,
                                 auto_offset_reset="latest",
-                                bootstrap_servers=kafka_conn_data, consumer_timeout_ms=3600
+                                bootstrap_servers=kafka_conn_data, consumer_timeout_ms=500
                                 )
 
     await consumer.start()
