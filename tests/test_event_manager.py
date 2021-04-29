@@ -131,7 +131,7 @@ async def test_producer_kafka(config, loop):
 
     await producer.stop()
 
-
+"""
 async def test_consumer_kafka(config,loop):
     handler = {item.name: {'controller': item.controller, 'action': item.action}
                      for item in config.events.items}
@@ -155,6 +155,6 @@ async def test_consumer_kafka(config,loop):
         await m.handle_single_message(msg)
 
     await consumer.stop()
-
+"""
 
 
