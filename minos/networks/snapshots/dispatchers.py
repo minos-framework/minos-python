@@ -10,7 +10,7 @@ from __future__ import (
 )
 
 from typing import (
-    Any,
+    Generator,
     NoReturn,
     Optional,
     Type,
@@ -75,7 +75,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         await self._create_broker_table()
 
     async def _create_broker_table(self) -> NoReturn:
-        await self._submit_sql(_CREATE_TABLE_QUERY, fetch=False)
+        await self._submit_sql(_CREATE_TABLE_QUERY)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> list[MinosSnapshotEntry]:
@@ -85,8 +85,8 @@ class MinosSnapshotDispatcher(MinosSetup):
         :param kwargs: TODO
         :return:
         """
-        response = await self._submit_sql(_SELECT_ALL_ENTRIES_QUERY)
-        entries = [MinosSnapshotEntry(*row) for row in response]
+        response = self._submit_and_iter_sql(_SELECT_ALL_ENTRIES_QUERY)
+        entries = [MinosSnapshotEntry(*row) async for row in response]
         return entries
 
     async def dispatch(self) -> NoReturn:
@@ -96,7 +96,7 @@ class MinosSnapshotDispatcher(MinosSetup):
 
     @property
     async def _new_entries(self):
-        for raw in await self._submit_sql(_SELECT_EVENT_ENTRIES_QUERY, (self.offset,)):
+        async for raw in self._submit_and_iter_sql(_SELECT_EVENT_ENTRIES_QUERY, (self.offset,)):
             yield MinosRepositoryEntry(*raw)
 
     async def _dispatch_one(self, event_entry: MinosRepositoryEntry) -> Optional[MinosSnapshotEntry]:
@@ -108,7 +108,7 @@ class MinosSnapshotDispatcher(MinosSetup):
 
     async def _submit_delete(self, entry: MinosRepositoryEntry) -> NoReturn:
         params = {"aggregate_id": entry.aggregate_id, "aggregate_name": entry.aggregate_name}
-        await self._submit_sql(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params, fetch=False)
+        await self._submit_sql(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params)
 
     async def _build_instance(self, event_entry: MinosRepositoryEntry) -> Aggregate:
         # noinspection PyTypeChecker
@@ -130,7 +130,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         return snapshot_entry.aggregate
 
     async def _select_one(self, aggregate_id: int, aggregate_name: str) -> MinosSnapshotEntry:
-        raw = (await self._submit_sql(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_id, aggregate_name)))[0]
+        raw = await self._submit_and_fetchone_sql(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_id, aggregate_name))
         return MinosSnapshotEntry(aggregate_id, aggregate_name, *raw)
 
     async def _submit_instance(self, aggregate: Aggregate) -> MinosSnapshotEntry:
@@ -145,19 +145,26 @@ class MinosSnapshotDispatcher(MinosSetup):
             "version": entry.version,
             "data": entry.data,
         }
-        response = (await self._submit_sql(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params))[0]
+        response = await self._submit_and_fetchone_sql(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params)
 
         entry.created_at, entry.updated_at = response
 
         return entry
 
-    async def _submit_sql(self, query: str, *args, fetch: bool = True, **kwargs) -> Optional[list[tuple[Any, ...]]]:
+    async def _submit_and_fetchone_sql(self, *args, **kwargs) -> tuple:
+        return await self._submit_and_iter_sql(*args, **kwargs).__anext__()
+
+    async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> Generator[tuple, None, None]:
         async with self._connection() as connect:
             async with connect.cursor() as cursor:
                 await cursor.execute(query, *args, **kwargs)
-                if not fetch:
-                    return
-                return await cursor.fetchall()
+                async for row in cursor:
+                    yield row
+
+    async def _submit_sql(self, query: str, *args, **kwargs) -> NoReturn:
+        async with self._connection() as connect:
+            async with connect.cursor() as cursor:
+                await cursor.execute(query, *args, **kwargs)
 
     def _connection(self):
         return aiopg.connect(
