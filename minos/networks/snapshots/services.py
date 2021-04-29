@@ -15,6 +15,7 @@ from aiomisc.service.periodic import (
 from minos.common import (
     MinosConfig,
 )
+
 from .dispatchers import (
     MinosSnapshotDispatcher,
 )
