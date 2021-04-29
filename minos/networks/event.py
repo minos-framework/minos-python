@@ -30,14 +30,18 @@ class MinosEventServer(Service):
     Consumer for the Broker ( at the moment only Kafka is supported )
 
     """
+
     __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_kafka_conn_data", "_broker_group_name"
 
     def __init__(self, *, conf: MinosConfig, **kwargs: t.Any):
         self._tasks = set()  # type: t.Set[asyncio.Task]
-        self._db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
-                       f"password={conf.events.queue.password} host={conf.events.queue.host}"
-        self._handler = {item.name: {'controller': item.controller, 'action': item.action}
-                         for item in conf.events.items}
+        self._db_dsn = (
+            f"dbname={conf.events.queue.database} user={conf.events.queue.user} "
+            f"password={conf.events.queue.password} host={conf.events.queue.host}"
+        )
+        self._handler = {
+            item.name: {"controller": item.controller, "action": item.action} for item in conf.events.items
+        }
         self._topics = list(self._handler.keys())
         self._kafka_conn_data = f"{conf.events.broker.host}:{conf.events.broker.port}"
         self._broker_group_name = f"event_{conf.service.name}"
@@ -100,7 +104,6 @@ class MinosEventServer(Service):
         finally:
             pass
 
-
     async def handle_message(self, consumer: t.Any):
         """Message consumer.
 
@@ -113,16 +116,16 @@ class MinosEventServer(Service):
         async for msg in consumer:
             await self.handle_single_message(msg)
 
-
     async def start(self) -> t.Any:
         self.start_event.set()
         log.debug("Event Consumer Manager: Started")
         # start the Service Event Consumer for Kafka
-        consumer = AIOKafkaConsumer(loop=self.loop,
-                                    group_id=self._broker_group_name,
-                                    auto_offset_reset="latest",
-                                    bootstrap_servers=self._kafka_conn_data,
-                                    )
+        consumer = AIOKafkaConsumer(
+            loop=self.loop,
+            group_id=self._broker_group_name,
+            auto_offset_reset="latest",
+            bootstrap_servers=self._kafka_conn_data,
+        )
 
         await consumer.start()
         consumer.subscribe(self._topics)
@@ -130,10 +133,11 @@ class MinosEventServer(Service):
         self.create_task(self.handle_message(consumer))
 
 
-
 async def event_handler_table_creation(conf: MinosConfig):
-    db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
-                   f"password={conf.events.queue.password} host={conf.events.queue.host}"
+    db_dsn = (
+        f"dbname={conf.events.queue.database} user={conf.events.queue.user} "
+        f"password={conf.events.queue.password} host={conf.events.queue.host}"
+    )
     async with aiopg.create_pool(db_dsn) as pool:
         async with pool.acquire() as connect:
             async with connect.cursor() as cur:
@@ -158,14 +162,18 @@ class MinosEventHandlerPeriodicService(PeriodicService):
     Periodic Service Event Handler
 
     """
-    __slots__ = "_db_dsn", "_handlers", "_event_items", "_topics" , "_conf"
+
+    __slots__ = "_db_dsn", "_handlers", "_event_items", "_topics", "_conf"
 
     def __init__(self, *, conf: MinosConfig, **kwargs: t.Any):
         super().__init__(**kwargs)
-        self._db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
-                       f"password={conf.events.queue.password} host={conf.events.queue.host}"
-        self._handlers = {item.name: {'controller': item.controller, 'action': item.action}
-                         for item in conf.events.items}
+        self._db_dsn = (
+            f"dbname={conf.events.queue.database} user={conf.events.queue.user} "
+            f"password={conf.events.queue.password} host={conf.events.queue.host}"
+        )
+        self._handlers = {
+            item.name: {"controller": item.controller, "action": item.action} for item in conf.events.items
+        }
         self._event_items = conf.events.items
         self._topics = list(self._handlers.keys())
         self._conf = conf
@@ -194,8 +202,9 @@ class MinosEventHandlerPeriodicService(PeriodicService):
                 class_method = getattr(instance_class, action)
 
                 return class_method
-        raise MinosNetworkException(f"topic {topic} have no controller/action configured, "
-                                    f"please review th configuration file")
+        raise MinosNetworkException(
+            f"topic {topic} have no controller/action configured, " f"please review th configuration file"
+        )
 
     async def event_queue_checker(self):
         """Event Queue Checker and dispatcher.
@@ -209,8 +218,10 @@ class MinosEventHandlerPeriodicService(PeriodicService):
         Raises:
             Exception: An error occurred inserting record.
         """
-        db_dsn = f"dbname={self._conf.events.queue.database} user={self._conf.events.queue.user} " \
-                 f"password={self._conf.events.queue.password} host={self._conf.events.queue.host}"
+        db_dsn = (
+            f"dbname={self._conf.events.queue.database} user={self._conf.events.queue.user} "
+            f"password={self._conf.events.queue.password} host={self._conf.events.queue.host}"
+        )
         async with aiopg.create_pool(db_dsn) as pool:
             async with pool.acquire() as connect:
                 async with connect.cursor() as cur:

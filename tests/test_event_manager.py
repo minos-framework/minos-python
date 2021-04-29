@@ -17,12 +17,16 @@ from tests.database_testcase import EventHandlerPostgresAsyncTestCase
 
 @pytest.fixture()
 def config():
- return MinosConfig(path='./tests/test_config.yml')
+    return MinosConfig(path="./tests/test_config.yml")
 
 
 @pytest.fixture()
 def services(config):
- return [EventHandlerDatabaseInitializer(config=config), MinosEventServer(conf=config), MinosEventHandlerPeriodicService(interval=0.5, delay=0, conf=config)]
+    return [
+        EventHandlerDatabaseInitializer(config=config),
+        MinosEventServer(conf=config),
+        MinosEventHandlerPeriodicService(interval=0.5, delay=0, conf=config),
+    ]
 
 
 class AggregateTest(Aggregate):
@@ -69,7 +73,7 @@ class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
         cls = m.get_event_handler(topic="TicketAdded")
         result = await cls(topic="TicketAdded", event=event_instance)
 
-        assert result == 'request_added'
+        assert result == "request_added"
 
     async def test_event_queue_checker(self):
         model = AggregateTest(test_id=1, test=2, id=1, version=1)
@@ -105,12 +109,12 @@ class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
 
 async def test_producer_kafka(config, loop):
 
-    #basic_config(
+    # basic_config(
     #    level=logging.INFO,
     #    buffered=True,
     #    log_format='color',
     #    flush_interval=2
-    #)
+    # )
     kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
     producer = AIOKafkaProducer(loop=loop, bootstrap_servers=kafka_conn_data)
     # Get cluster layout and topic/partition allocation
@@ -130,6 +134,7 @@ async def test_producer_kafka(config, loop):
         await producer.send_and_wait(event_instance_2.topic, bin_data2)
 
     await producer.stop()
+
 
 """
 async def test_consumer_kafka(config,loop):
@@ -156,5 +161,3 @@ async def test_consumer_kafka(config,loop):
 
     await consumer.stop()
 """
-
-
