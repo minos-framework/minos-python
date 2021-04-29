@@ -5,13 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
-from typing import (
-    Optional,
-)
+from typing import Optional
 
 from minos.common import (
     Aggregate,
@@ -19,9 +15,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from .abc import (
-    MinosBroker,
-)
+from .abc import MinosBroker
 
 
 class MinosEventBroker(MinosBroker):
