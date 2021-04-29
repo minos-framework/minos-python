@@ -15,5 +15,5 @@ from .event import (
     MinosEventBroker,
 )
 from .services import (
-    MinosQueueDispatcherService,
+    MinosQueueService,
 )

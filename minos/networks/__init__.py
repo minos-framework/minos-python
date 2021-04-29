@@ -11,7 +11,7 @@ from .broker import (
     MinosCommandBroker,
     MinosEventBroker,
     MinosQueueDispatcher,
-    MinosQueueDispatcherService,
+    MinosQueueService,
 )
 from .exceptions import (
     MinosNetworkException,

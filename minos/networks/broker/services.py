@@ -21,7 +21,7 @@ from .dispatcher import (
 )
 
 
-class MinosQueueDispatcherService(PeriodicService):
+class MinosQueueService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
