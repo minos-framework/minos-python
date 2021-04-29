@@ -13,4 +13,6 @@ from .broker import (
     MinosQueueDispatcher,
     MinosQueueDispatcherService,
 )
-from .exceptions import MinosNetworkException
+from .exceptions import (
+    MinosNetworkException,
+)

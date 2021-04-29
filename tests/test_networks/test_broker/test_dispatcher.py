@@ -1,8 +1,14 @@
 import unittest
 
-from minos.common.testing import PostgresAsyncTestCase
-from minos.networks import MinosQueueDispatcher
-from tests.utils import BASE_PATH
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
+from minos.networks import (
+    MinosQueueDispatcher,
+)
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestQueueDispatcher(PostgresAsyncTestCase):
