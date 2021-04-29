@@ -11,7 +11,6 @@ import unittest
 from aiomisc.service.periodic import (
     PeriodicService,
 )
-
 from minos.networks import (
     MinosSnapshotService,
 )
