@@ -11,3 +11,6 @@ from .dispatchers import (
 from .services import (
     MinosSnapshotService,
 )
+from .entries import (
+    MinosSnapshotEntry,
+)
