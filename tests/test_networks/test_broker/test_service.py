@@ -6,13 +6,23 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import (
+    MagicMock,
+)
 
-from aiomisc.service.periodic import PeriodicService
-from minos.common.testing import PostgresAsyncTestCase
-
-from minos.networks import MinosQueueService, MinosQueueDispatcher
-from tests.utils import BASE_PATH
+from aiomisc.service.periodic import (
+    PeriodicService,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
+from minos.networks import (
+    MinosQueueDispatcher,
+    MinosQueueService,
+)
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestMinosQueueService(PostgresAsyncTestCase):
@@ -52,5 +62,5 @@ class TestMinosQueueService(PostgresAsyncTestCase):
             self.assertEqual(1, service.dispatcher.dispatch.call_count)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
