@@ -28,6 +28,14 @@ class MinosQueueService(PeriodicService):
         super().__init__(**kwargs)
         self.dispatcher = MinosQueueDispatcher.from_config(config=config)
 
+    async def start(self) -> None:
+        """Method to be called at the startup by the internal ``aiomisc`` loigc.
+
+        :return: This method does not return anything.
+        """
+        await super().start()
+        await self.dispatcher.setup()
+
     async def callback(self) -> None:
         """Method to be called periodically by the internal ``aiomisc`` logic.
 
