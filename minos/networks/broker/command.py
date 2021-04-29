@@ -9,7 +9,6 @@ from __future__ import (
     annotations,
 )
 
-import datetime
 from typing import (
     NoReturn,
     Optional,
@@ -56,19 +55,5 @@ class MinosCommandBroker(MinosBroker):
         :param items: A list of aggregates.
         :return: This method does not return anything.
         """
-        event_instance = Command(self.topic, items, self.reply_on)
-        bin_data = event_instance.avro_bytes
-
-        async with self._connection() as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    "INSERT INTO producer_queue ("
-                    "topic, model, retry, action, creation_date, update_date"
-                    ") VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
-                    (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
-                )
-
-                queue_id = await cur.fetchone()
-                affected_rows = cur.rowcount
-
-        return affected_rows, queue_id[0]
+        command = Command(self.topic, items, self.reply_on)
+        return await self._send_bytes(command.topic, command.avro_bytes)

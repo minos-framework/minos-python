@@ -6,6 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from abc import ABC
+from datetime import datetime
 from typing import (
     NoReturn,
 )
@@ -67,7 +68,23 @@ class MinosBrokerSetup(MinosSetup):
 
 class MinosBroker(MinosBaseBroker, MinosBrokerSetup, ABC):
     """TODO"""
+    ACTION: str
 
     def __init__(self, topic: str, *args, **kwargs):
         MinosBaseBroker.__init__(self, topic)
         MinosBrokerSetup.__init__(self, *args, **kwargs)
+
+    async def _send_bytes(self, topic: str, raw: bytes) -> (int, int):
+        async with self._connection() as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    "INSERT INTO producer_queue ("
+                    "topic, model, retry, action, creation_date, update_date"
+                    ") VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
+                    (topic, raw, 0, self.ACTION, datetime.now(), datetime.now()),
+                )
+
+                queue_id = await cur.fetchone()
+                affected_rows = cur.rowcount
+
+        return affected_rows, queue_id[0]
