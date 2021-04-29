@@ -62,6 +62,6 @@ class EventHandlerPostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         database = await self._database()
         async with database as connection:
             async with connection.cursor() as cursor:
-                template = "DROP TABLE IF EXISTS queue"
+                template = "DROP TABLE IF EXISTS event_queue"
                 await cursor.execute(template)
         """

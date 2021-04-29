@@ -80,30 +80,39 @@ class MinosEventServer(Service):
 
         return affected_rows, queue_id[0]
 
-    async def handle_message(self, consumer: t.Any):
+    async def handle_single_message(self, msg):
         """Handle Kafka messages.
 
-        For each message evaluate if the binary is an Event instance.
+        Evaluate if the binary of message is an Event instance.
         Add Event instance to the event_queue table.
 
         Args:
-            consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
+            msg: Kafka message.
 
         Raises:
             Exception: An error occurred inserting record.
         """
+        # the handler receive a message and store in the queue database
+        # check if the event binary string is well formatted
+        try:
+            Event.from_avro_bytes(msg.value)
+            await self.event_queue_add(msg.topic, msg.partition, msg.value)
+        finally:
+            pass
+
+
+    async def handle_message(self, consumer: t.Any):
+        """Message consumer.
+
+        It consumes the messages and sends them for processing.
+
+        Args:
+            consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
+        """
 
         async for msg in consumer:
-            # the handler receive a message and store in the queue database
-            topic = msg.topic
-            partition = msg.partition
-            event_binary = msg.value
-            # check if the event binary string is well formatted
-            try:
-                event_instance = Event.from_avro_bytes(event_binary)
-                await self.event_queue_add(msg.topic, msg.partition, event_binary)
-            except:
-                pass
+            await self.handle_single_message(msg)
+
 
     async def start(self) -> t.Any:
         self.start_event.set()
@@ -162,6 +171,7 @@ class MinosEventHandlerPeriodicService(PeriodicService):
         self._conf = conf
 
     def get_event_handler(self, topic: str) -> t.Callable:
+
         """Get Event instance to call.
 
         Gets the instance of the class and method to call.
