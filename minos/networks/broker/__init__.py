@@ -10,8 +10,10 @@ from .command import (
 )
 from .dispatcher import (
     MinosQueueDispatcher,
-    MinosQueueDispatcherService,
 )
 from .event import (
     MinosEventBroker,
+)
+from .services import (
+    MinosQueueDispatcherService,
 )
