@@ -19,7 +19,6 @@ from minos.common import (
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
-
 from minos.networks import (
     MinosSnapshotDispatcher,
     MinosSnapshotEntry,
