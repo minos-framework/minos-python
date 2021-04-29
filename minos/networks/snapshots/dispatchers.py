@@ -12,7 +12,7 @@ from __future__ import (
 from typing import (
     NoReturn,
     Optional,
-    Type,
+    Type, Any,
 )
 
 import aiopg
@@ -74,9 +74,19 @@ class MinosSnapshotDispatcher(MinosSetup):
         await self._create_broker_table()
 
     async def _create_broker_table(self) -> NoReturn:
-        async with self._connection() as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(_CREATE_TABLE_QUERY)
+        await self._submit_sql(_CREATE_TABLE_QUERY, fetch=False)
+
+    # noinspection PyUnusedLocal
+    async def select(self, *args, **kwargs) -> list[MinosSnapshotEntry]:
+        """TODO
+
+        :param args: TODO
+        :param kwargs: TODO
+        :return:
+        """
+        response = await self._submit_sql(_SELECT_ALL_ENTRIES_QUERY)
+        entries = [MinosSnapshotEntry(*row) for row in response]
+        return entries
 
     async def dispatch(self) -> NoReturn:
         """TODO"""
@@ -85,11 +95,8 @@ class MinosSnapshotDispatcher(MinosSetup):
 
     @property
     async def _new_entries(self):
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(_SELECT_EVENT_ENTRIES_QUERY, (self.offset,))
-                async for raw in cursor:
-                    yield MinosRepositoryEntry(*raw)
+        for raw in await self._submit_sql(_SELECT_EVENT_ENTRIES_QUERY, (self.offset,)):
+            yield MinosRepositoryEntry(*raw)
 
     async def _dispatch_one(self, event_entry: MinosRepositoryEntry) -> Optional[MinosSnapshotEntry]:
         if event_entry.action is MinosRepositoryAction.DELETE:
@@ -100,9 +107,7 @@ class MinosSnapshotDispatcher(MinosSetup):
 
     async def _submit_delete(self, entry: MinosRepositoryEntry) -> NoReturn:
         params = {"aggregate_id": entry.aggregate_id, "aggregate_name": entry.aggregate_name}
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params)
+        await self._submit_sql(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params, fetch=False)
 
     async def _build_instance(self, event_entry: MinosRepositoryEntry) -> Aggregate:
         # noinspection PyTypeChecker
@@ -124,13 +129,8 @@ class MinosSnapshotDispatcher(MinosSetup):
         return snapshot_entry.aggregate
 
     async def _select_one(self, aggregate_id: int, aggregate_name: str) -> MinosSnapshotEntry:
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_id, aggregate_name))
-                raw = await cursor.fetchone()
-                if raw is None:
-                    raise Exception()
-                return MinosSnapshotEntry(aggregate_id, aggregate_name, *raw)
+        raw = (await self._submit_sql(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_id, aggregate_name)))[0]
+        return MinosSnapshotEntry(aggregate_id, aggregate_name, *raw)
 
     async def _submit_instance(self, aggregate: Aggregate) -> MinosSnapshotEntry:
         snapshot_entry = MinosSnapshotEntry.from_aggregate(aggregate)
@@ -144,14 +144,19 @@ class MinosSnapshotDispatcher(MinosSetup):
             "version": entry.version,
             "data": entry.data,
         }
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params)
-                response = await cursor.fetchone()
+        response = (await self._submit_sql(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params))[0]
 
         entry.created_at, entry.updated_at = response
 
         return entry
+
+    async def _submit_sql(self, query: str, *args, fetch: bool = True, **kwargs) -> Optional[list[tuple[Any, ...]]]:
+        async with self._connection() as connect:
+            async with connect.cursor() as cursor:
+                await cursor.execute(query, *args, **kwargs)
+                if not fetch:
+                    return
+                return await cursor.fetchall()
 
     def _connection(self):
         return aiopg.connect(
@@ -169,6 +174,11 @@ CREATE TABLE IF NOT EXISTS snapshot (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (aggregate_id, aggregate_name)
 );
+""".strip()
+
+_SELECT_ALL_ENTRIES_QUERY = """
+SELECT aggregate_id, aggregate_name, version, data, created_at, updated_at
+FROM snapshot;
 """.strip()
 
 _SELECT_EVENT_ENTRIES_QUERY = """
