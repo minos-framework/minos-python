@@ -19,7 +19,8 @@ from minos.networks import (
     MinosQueueDispatcher,
 )
 from tests.utils import (
-    BASE_PATH, NaiveAggregate,
+    BASE_PATH,
+    NaiveAggregate,
 )
 
 
