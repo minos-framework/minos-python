@@ -12,14 +12,30 @@ import inspect
 import typing as t
 
 import aiopg
-from aiokafka import AIOKafkaConsumer
-from aiomisc import Service
-from aiomisc.service.periodic import PeriodicService
-from minos.common.broker import Event
-from minos.common.configuration.config import MinosConfig
-from minos.common.importlib import import_module
-from minos.common.logs import log
-from minos.networks.exceptions import MinosNetworkException
+from aiokafka import (
+    AIOKafkaConsumer,
+)
+from aiomisc import (
+    Service,
+)
+from aiomisc.service.periodic import (
+    PeriodicService,
+)
+from minos.common.broker import (
+    Event,
+)
+from minos.common.configuration.config import (
+    MinosConfig,
+)
+from minos.common.importlib import (
+    import_module,
+)
+from minos.common.logs import (
+    log,
+)
+from minos.networks.exceptions import (
+    MinosNetworkException,
+)
 
 
 class MinosEventServer(Service):
