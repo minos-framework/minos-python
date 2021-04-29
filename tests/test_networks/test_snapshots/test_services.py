@@ -8,13 +8,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import unittest
 
-from aiomisc.service.periodic import (
-    PeriodicService,
-)
+from aiomisc.service.periodic import PeriodicService
 
-from minos.networks import (
-    MinosSnapshotService,
-)
+from minos.networks import MinosSnapshotService
 
 
 class TestMinosSnapshotService(unittest.TestCase):
