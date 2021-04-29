@@ -7,7 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from datetime import datetime
+from datetime import (
+    datetime,
+)
 
 from minos.common import (
     MinosConfigException,
@@ -19,7 +21,8 @@ from minos.common.testing import (
 )
 
 from minos.networks import (
-    MinosSnapshotDispatcher, MinosSnapshotEntry,
+    MinosSnapshotDispatcher,
+    MinosSnapshotEntry,
 )
 from tests.aggregate_classes import (
     Car,

@@ -10,9 +10,10 @@ from __future__ import (
 )
 
 from typing import (
+    Any,
     NoReturn,
     Optional,
-    Type, Any,
+    Type,
 )
 
 import aiopg
