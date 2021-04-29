@@ -57,11 +57,8 @@ class EventHandlerPostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         return await aiopg.connect(db_dsn)
 
     async def asyncTearDown(self):
-        pass
-        """
         database = await self._database()
         async with database as connection:
             async with connection.cursor() as cursor:
                 template = "DROP TABLE IF EXISTS event_queue"
                 await cursor.execute(template)
-        """

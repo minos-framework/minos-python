@@ -126,7 +126,7 @@ class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
         assert records[0] == 0
 
 
-async def test_producer_kafka(config, loop):
+async def kafka_producer(config, loop):
 
     # basic_config(
     #    level=logging.INFO,
@@ -155,8 +155,9 @@ async def test_producer_kafka(config, loop):
     await producer.stop()
 
 
-"""
+
 async def test_consumer_kafka(config,loop):
+    await kafka_producer(config, loop)
     handler = {item.name: {'controller': item.controller, 'action': item.action}
                      for item in config.events.items}
     topics = list(handler.keys())
@@ -179,4 +180,4 @@ async def test_consumer_kafka(config,loop):
         await m.handle_single_message(msg)
 
     await consumer.stop()
-"""
+
