@@ -13,9 +13,11 @@ from .broker import (
     MinosQueueDispatcher,
     MinosQueueService,
 )
-from .exceptions import MinosNetworkException
+from .exceptions import (
+    MinosNetworkException,
+)
 from .snapshots import (
     MinosSnapshotDispatcher,
-    MinosSnapshotService,
     MinosSnapshotEntry,
+    MinosSnapshotService,
 )
