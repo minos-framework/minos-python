@@ -9,13 +9,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 from unittest.mock import MagicMock
 
-from aiomisc.service.periodic import (
-    PeriodicService,
-)
+from aiomisc.service.periodic import PeriodicService
 from minos.common.testing import PostgresAsyncTestCase
 
 from minos.networks import (
-    MinosSnapshotService, MinosSnapshotDispatcher,
+    MinosSnapshotService,
+    MinosSnapshotDispatcher,
 )
 from tests.utils import BASE_PATH
 

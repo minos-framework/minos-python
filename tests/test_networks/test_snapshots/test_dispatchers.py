@@ -8,9 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import unittest
 
-from minos.networks import (
-    MinosSnapshotDispatcher,
-)
+from minos.networks import MinosSnapshotDispatcher
 
 
 class TestMinosSnapshotDispatcher(unittest.TestCase):
