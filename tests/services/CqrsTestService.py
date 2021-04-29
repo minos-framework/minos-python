@@ -1,4 +1,6 @@
-from minos.common.broker import Event
+from minos.common.broker import (
+    Event,
+)
 
 
 class CqrsService(object):
