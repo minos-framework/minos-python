@@ -1,4 +1,4 @@
-from minos.common.broker import (
+from minos.common import (
     Event,
 )
 
