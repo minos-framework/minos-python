@@ -30,22 +30,22 @@ from .abc import (
 
 
 class MinosQueueDispatcherService(PeriodicService):
-    """TODO"""
+    """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
         self.dispatcher = MinosQueueDispatcher.from_config(config=config)
 
-    async def callback(self):
-        """TODO
+    async def callback(self) -> None:
+        """Method to be called periodically by the internal ``aiomisc`` logic.
 
-        :return:TODO
+        :return:This method does not return anything.
         """
         await self.dispatcher.dispatch()
 
 
 class MinosQueueDispatcher(MinosBrokerSetup):
-    """TODO"""
+    """Minos Queue Dispatcher Class."""
 
     # noinspection PyUnresolvedReferences
     def __init__(self, *args, queue: NamedTuple, broker, **kwargs):
@@ -71,9 +71,9 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         return cls(*args, **config.events._asdict(), **kwargs)
 
     async def dispatch(self) -> NoReturn:
-        """TODO
+        """Dispatch the items in the publishing queue.
 
-        :return: TODO
+        :return: This method does not return anything.
         """
         async with self._connection() as connect:
             async with connect.cursor() as cur:
@@ -83,32 +83,28 @@ class MinosQueueDispatcher(MinosBrokerSetup):
                     % (self.retry, self.records),
                 )
                 async for row in cur:
-                    published = False
                     # noinspection PyBroadException
                     try:
                         published = await self.publish(topic=row[1], message=row[2])
-                        if published:
-                            # Delete from database If the event was sent successfully to Kafka.
-                            async with connect.cursor() as cur2:
-                                await cur2.execute("DELETE FROM producer_queue WHERE id=%d;" % row[0])
                     except Exception:
                         published = False
                     finally:
-                        if not published:
-                            # Update queue retry column. Increase by 1.
-                            async with connect.cursor() as cur3:
-                                await cur3.execute("UPDATE producer_queue SET retry = retry + 1 WHERE id=%d;" % row[0])
+                        async with connect.cursor() as cur2:
+                            if published:
+                                # Delete from database If the event was sent successfully to Kafka.
+                                await cur2.execute("DELETE FROM producer_queue WHERE id=%d;" % row[0])
+                            else:
+                                # Update queue retry column. Increase by 1.
+                                await cur2.execute("UPDATE producer_queue SET retry = retry + 1 WHERE id=%d;" % row[0])
 
     async def publish(self, topic: str, message: bytes) -> bool:
-        """ TODO
+        """ Publish a new item in in the broker (kafka).
 
-        :param topic:TODO
-        :param message: TODO
-        :return: TODO
+        :param topic: The topic in which the message will be published.
+        :param message: The message to be published.
+        :return: A boolean flag, ``True`` when the message is properly published or ``False`` otherwise.
         """
-        producer = AIOKafkaProducer(
-            bootstrap_servers="{host}:{port}".format(host=self.broker.host, port=self.broker.port)
-        )
+        producer = AIOKafkaProducer(bootstrap_servers=f"{self.host}:{self.port}")
         # Get cluster layout and initial topic/partition leadership information
         await producer.start()
         # noinspection PyBroadException

@@ -26,7 +26,7 @@ from .abc import (
 
 
 class MinosCommandBroker(MinosBroker):
-    """TODO"""
+    """Minos Command Broker Class."""
 
     ACTION = "command"
 

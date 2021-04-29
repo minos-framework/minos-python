@@ -19,7 +19,7 @@ from minos.common import (
 
 
 class MinosBrokerSetup(MinosSetup):
-    """TODO"""
+    """Minos Broker Setup Class"""
 
     def __init__(
         self,
@@ -40,13 +40,9 @@ class MinosBrokerSetup(MinosSetup):
         self.password = password
 
     async def _setup(self) -> NoReturn:
-        await self.broker_table_creation()
+        await self._create_broker_table()
 
-    async def broker_table_creation(self):
-        """TODO
-
-        :return:TODO
-        """
+    async def _create_broker_table(self) -> NoReturn:
         async with self._connection() as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
@@ -67,7 +63,8 @@ class MinosBrokerSetup(MinosSetup):
 
 
 class MinosBroker(MinosBaseBroker, MinosBrokerSetup, ABC):
-    """TODO"""
+    """Minos Broker Class."""
+
     ACTION: str
 
     def __init__(self, topic: str, *args, **kwargs):

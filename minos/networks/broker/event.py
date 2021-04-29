@@ -25,7 +25,7 @@ from .abc import (
 
 
 class MinosEventBroker(MinosBroker):
-    """TODO"""
+    """Minos Event broker class."""
 
     ACTION = "event"
 
