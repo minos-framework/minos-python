@@ -18,4 +18,5 @@ BASE_PATH = Path(__file__).parent
 
 class NaiveAggregate(Aggregate):
     """Naive aggregate class to be used for testing purposes."""
+
     test: int

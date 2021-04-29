@@ -11,7 +11,8 @@ from __future__ import (
 
 from typing import (
     NamedTuple,
-    Optional, NoReturn,
+    NoReturn,
+    Optional,
 )
 
 from aiokafka import (
