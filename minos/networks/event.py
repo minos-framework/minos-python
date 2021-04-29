@@ -1,94 +1,26 @@
+# Copyright (C) 2020 Clariteia SL
+#
+# This file is part of minos framework.
+#
+# Minos framework can not be copied and/or distributed without the express
+# permission of Clariteia SL.
+
 import asyncio
 import functools
 import typing as t
-from collections import Counter
+import datetime
+import inspect
 
-from aiokafka import AIOKafkaConsumer, ConsumerRebalanceListener
+from aiokafka import AIOKafkaConsumer
 from aiomisc import Service
-from kafka.errors import OffsetOutOfRangeError
+from aiomisc.service.periodic import PeriodicService
+import aiopg
 from minos.common.configuration.config import MinosConfig
 from minos.common.importlib import import_module
 from minos.common.logs import log
-from minos.common.storage.abstract import MinosStorage
-from minos.common.storage.lmdb import MinosStorageLmdb
 
 from minos.networks.exceptions import MinosNetworkException
-
-
-class MinosLocalState:
-    __slots__ = "_counts", "_offsets", "_storage", "_dbname"
-
-    def __init__(self, storage: MinosStorage, db_name="LocalState"):
-        self._counts = {}
-        self._offsets = {}
-        self._dbname = db_name
-        self._storage = storage
-
-    def dump_local_state(self):
-
-        for tp in self._counts:
-            key = f"{tp.topic}:{tp.partition}"
-            state = {
-                "last_offset": self._offsets[tp],
-                "counts": dict(self._counts[tp])
-            }
-            actual_state = self._storage.get(self._dbname, key)
-            if actual_state is not None:
-                self._storage.update(self._dbname, key, state)
-            else:
-                self._storage.add(self._dbname, key, state)
-
-    def load_local_state(self, partitions):
-        self._counts.clear()
-        self._offsets.clear()
-        for tp in partitions:
-            # prepare the default state
-            state = {
-                "last_offset": -1,  # Non existing, will reset
-                "counts": {}
-            }
-            key = f"{tp.topic}:{tp.partition}"
-            returned_val = self._storage.get(self._dbname, key)
-            if returned_val is not None:
-                state = returned_val
-            self._counts[tp] = Counter(state['counts'])
-            self._offsets[tp] = state['last_offset']
-
-    def discard_state(self, tps):
-        """
-        reset the entire memory database with the default values
-        """
-        for tp in tps:
-            self._offsets[tp] = -1
-            self._counts[tp] = Counter()
-
-    def get_last_offset(self, tp):
-        return self._offsets[tp]
-
-    def add_counts(self, tp, counts, las_offset):
-        self._counts[tp] += counts
-        self._offsets[tp] = las_offset
-
-
-class MinosRebalanceListener(ConsumerRebalanceListener):
-
-    def __init__(self, consumer, database_state: MinosLocalState):
-        self._consumer = consumer
-        self._state = database_state
-
-    async def on_partitions_revoked(self, revoked):
-        log.debug("KAFKA Consumer: Revoked %s", revoked)
-        self._state.dump_local_state()
-
-    async def on_partitions_assigned(self, assigned):
-        log.debug("KAFKA Consumer: Assigned %s", assigned)
-        self._state.load_local_state(partitions=assigned)
-        for tp in assigned:
-            last_offset = self._state.get_last_offset(tp)
-            if last_offset < 0:
-                await self._consumer.seek_to_beginning(tp)
-            else:
-                self._consumer.seek(tp, last_offset + 1)
+from minos.common.broker import Event
 
 
 class MinosEventServer(Service):
@@ -98,17 +30,17 @@ class MinosEventServer(Service):
     Consumer for the Broker ( at the moment only Kafka is supported )
 
     """
-    __slots__ = "_tasks", "_local_state", "_storage", "_handlers", "_broker_host", "_broker_port", "_broker_group"
+    __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_kafka_conn_data", "_broker_group_name"
 
-    def __init__(self, *, conf: MinosConfig, storage: MinosStorage = MinosStorageLmdb, **kwargs: t.Any):
+    def __init__(self, *, conf: MinosConfig, **kwargs: t.Any):
         self._tasks = set()  # type: t.Set[asyncio.Task]
-        self._broker_host = conf.events.broker.host
-        self._broker_port = conf.events.broker.port
-        self._broker_group = f"{conf.service.name}_group_id"
-        self._handler = conf.events.items
-        self._storage = storage.build(conf.events.database.path)
-        self._local_state = MinosLocalState(storage=self._storage, db_name=conf.events.database.name)
-
+        self._db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
+                       f"password={conf.events.queue.password} host={conf.events.queue.host}"
+        self._handler = {item.name: {'controller': item.controller, 'action': item.action}
+                         for item in conf.events.items}
+        self._topics = list(self._handler.keys())
+        self._kafka_conn_data = f"{conf.events.broker.host}:{conf.events.broker.port}"
+        self._broker_group_name = f"event_{conf.service.name}"
         super().__init__(**kwargs)
 
     def create_task(self, coro: t.Awaitable[t.Any]):
@@ -116,64 +48,190 @@ class MinosEventServer(Service):
         self._tasks.add(task)
         task.add_done_callback(self._tasks.remove)
 
-    async def save_state_every_second(self):
-        while True:
-            try:
-                await asyncio.sleep(1)
-            except asyncio.CancelledError:
-                break
-            self._local_state.dump_local_state()
+    async def event_queue_add(self, topic: str, partition: int, binary: bytes):
+        """Insert row to event_queue table.
+
+        Retrieves number of affected rows and row ID.
+
+        Args:
+            topic: Kafka topic. Example: "TicketAdded"
+            partition: Kafka partition number.
+            binary: Event Model in bytes.
+
+        Returns:
+            Affected rows and queue ID.
+
+            Example: 1, 12
+
+        Raises:
+            Exception: An error occurred inserting record.
+        """
+
+        async with aiopg.create_pool(self._db_dsn) as pool:
+            async with pool.acquire() as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute(
+                        "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                        (topic, partition, binary, datetime.datetime.now(),),
+                    )
+
+                    queue_id = await cur.fetchone()
+                    affected_rows = cur.rowcount
+
+        return affected_rows, queue_id[0]
+
+    async def handle_single_message(self, msg):
+        """Handle Kafka messages.
+
+        Evaluate if the binary of message is an Event instance.
+        Add Event instance to the event_queue table.
+
+        Args:
+            msg: Kafka message.
+
+        Raises:
+            Exception: An error occurred inserting record.
+        """
+        # the handler receive a message and store in the queue database
+        # check if the event binary string is well formatted
+        try:
+            Event.from_avro_bytes(msg.value)
+            await self.event_queue_add(msg.topic, msg.partition, msg.value)
+        finally:
+            pass
+
 
     async def handle_message(self, consumer: t.Any):
-        while True:
-            try:
-                msg_set = await consumer.getmany(timeout_ms=1000)
-            except OffsetOutOfRangeError as err:
-                # this is the case that the database is not updated and must be reset
-                tps = err.args[0].keys()
-                self._local_state.discard_state(tps)
-                await consumer.seek_to_beginning(*tps)
-                continue
-            for tp, msgs in msg_set.items():
-                log.debug(f"EVENT Manager topic: {tp}")
-                log.debug(f"EVENT Manager msg: {msgs}")
-                # check if the topic is managed by the handler
-                if tp.topic in self._handlers:
-                    counts = Counter()
-                    for msg in msgs:
-                        counts[msg.key] += 1
-                        func = self._get_event_handler(tp.topic)
-                        func(msg.value)
-                        self._local_state.add_counts(tp, counts, msg.offset)
+        """Message consumer.
+
+        It consumes the messages and sends them for processing.
+
+        Args:
+            consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
+        """
+
+        async for msg in consumer:
+            await self.handle_single_message(msg)
+
 
     async def start(self) -> t.Any:
         self.start_event.set()
         log.debug("Event Consumer Manager: Started")
         # start the Service Event Consumer for Kafka
         consumer = AIOKafkaConsumer(loop=self.loop,
-                                    enable_auto_commit=False,
-                                    auto_offset_reset="none",
-                                    group_id=self._broker_group,
-                                    bootstrap_servers=f"{self._broker_host}:{self._broker_port}",
-                                    key_deserializer=lambda key: key.decode("utf-8") if key else "", )
+                                    group_id=self._broker_group_name,
+                                    auto_offset_reset="latest",
+                                    bootstrap_servers=self._kafka_conn_data,
+                                    )
 
         await consumer.start()
-        # prepare the database interface
-        listener = MinosRebalanceListener(consumer, self._local_state)
-        topics: t.List = list(self._handlers.keys())
-        consumer.subscribe(topics=topics, listener=listener)
+        consumer.subscribe(self._topics)
 
-        self.create_task(self.save_state_every_second())
         self.create_task(self.handle_message(consumer))
 
-    def _get_event_handler(self, topic: str) -> t.Callable:
-        for event in self._handlers:
+
+
+async def event_handler_table_creation(conf: MinosConfig):
+    db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
+                   f"password={conf.events.queue.password} host={conf.events.queue.host}"
+    async with aiopg.create_pool(db_dsn) as pool:
+        async with pool.acquire() as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    'CREATE TABLE IF NOT EXISTS "event_queue" ("id" SERIAL NOT NULL PRIMARY KEY, '
+                    '"topic" VARCHAR(255) NOT NULL, "partition_id" INTEGER , "binary_data" BYTEA NOT NULL, "creation_date" TIMESTAMP NOT NULL);'
+                )
+
+
+class EventHandlerDatabaseInitializer(Service):
+    async def start(self):
+        # Send signal to entrypoint for continue running
+        self.start_event.set()
+
+        await event_handler_table_creation(conf=self.config)
+
+        await self.stop(self)
+
+
+class MinosEventHandlerPeriodicService(PeriodicService):
+    """
+    Periodic Service Event Handler
+
+    """
+    __slots__ = "_db_dsn", "_handlers", "_event_items", "_topics" , "_conf"
+
+    def __init__(self, *, conf: MinosConfig, **kwargs: t.Any):
+        super().__init__(**kwargs)
+        self._db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
+                       f"password={conf.events.queue.password} host={conf.events.queue.host}"
+        self._handlers = {item.name: {'controller': item.controller, 'action': item.action}
+                         for item in conf.events.items}
+        self._event_items = conf.events.items
+        self._topics = list(self._handlers.keys())
+        self._conf = conf
+
+    def get_event_handler(self, topic: str) -> t.Callable:
+
+        """Get Event instance to call.
+
+        Gets the instance of the class and method to call.
+
+        Args:
+            topic: Kafka topic. Example: "TicketAdded"
+
+        Raises:
+            MinosNetworkException: topic TicketAdded have no controller/action configured, please review th configuration file.
+        """
+        for event in self._event_items:
             if event.name == topic:
                 # the topic exist, get the controller and the action
                 controller = event.controller
                 action = event.action
+
                 object_class = import_module(controller)
+                log.debug(object_class())
                 instance_class = object_class()
-                return functools.partial(instance_class.action)
+                class_method = getattr(instance_class, action)
+
+                return class_method
         raise MinosNetworkException(f"topic {topic} have no controller/action configured, "
                                     f"please review th configuration file")
+
+    async def event_queue_checker(self):
+        """Event Queue Checker and dispatcher.
+
+        It is in charge of querying the database and calling the action according to the topic.
+
+            1. Get periodically 10 records (or as many as defined in config > queue > records).
+            2. Instantiate the action (asynchronous) by passing it the model.
+            3. If the invoked function terminates successfully, remove the event from the database.
+
+        Raises:
+            Exception: An error occurred inserting record.
+        """
+        db_dsn = f"dbname={self._conf.events.queue.database} user={self._conf.events.queue.user} " \
+                 f"password={self._conf.events.queue.password} host={self._conf.events.queue.host}"
+        async with aiopg.create_pool(db_dsn) as pool:
+            async with pool.acquire() as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute(
+                        "SELECT * FROM event_queue ORDER BY creation_date ASC LIMIT %d;"
+                        % (self._conf.events.queue.records),
+                    )
+                    async for row in cur:
+                        call_ok = False
+                        try:
+                            reply_on = self.get_event_handler(topic=row[1])
+                            event_instance = Event.from_avro_bytes(row[3])
+                            await reply_on(topic=row[1], event=event_instance)
+                            call_ok = True
+                        except:
+                            call_ok = False
+                        finally:
+                            if call_ok:
+                                # Delete from database If the event was sent successfully to Kafka.
+                                async with connect.cursor() as cur2:
+                                    await cur2.execute("DELETE FROM event_queue WHERE id=%d;" % row[0])
+
+    async def callback(self):
+        await self.event_queue_checker()
