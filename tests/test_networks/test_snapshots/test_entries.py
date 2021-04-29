@@ -6,12 +6,16 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from datetime import datetime
+from datetime import (
+    datetime,
+)
 
 from minos.networks import (
     MinosSnapshotEntry,
 )
-from tests.aggregate_classes import Car
+from tests.aggregate_classes import (
+    Car,
+)
 
 
 class TestMinosSnapshotEntry(unittest.TestCase):
