@@ -10,7 +10,8 @@ from __future__ import (
 )
 
 from typing import (
-    Optional,
+    NamedTuple,
+    Optional, NoReturn,
 )
 
 from aiokafka import (
@@ -28,7 +29,7 @@ from .abc import (
 )
 
 
-class EventBrokerQueueDispatcher(PeriodicService):
+class MinosQueueDispatcherService(PeriodicService):
     """TODO"""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
@@ -36,11 +37,19 @@ class EventBrokerQueueDispatcher(PeriodicService):
         self.dispatcher = MinosQueueDispatcher.from_config(config=config)
 
     async def callback(self):
+        """TODO
+
+        :return:TODO
+        """
         await self.dispatcher.dispatch()
 
 
 class MinosQueueDispatcher(MinosBrokerSetup):
-    def __init__(self, *args, queue=None, broker, **kwargs):
+    """TODO"""
+
+    # noinspection PyUnresolvedReferences
+    def __init__(self, *args, queue: NamedTuple, broker, **kwargs):
+        # noinspection PyProtectedMember
         super().__init__(*args, **queue._asdict(), **kwargs)
         self.retry = queue.retry
         self.records = queue.records
@@ -61,40 +70,54 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         # noinspection PyProtectedMember
         return cls(*args, **config.events._asdict(), **kwargs)
 
-    async def dispatch(self):
+    async def dispatch(self) -> NoReturn:
+        """TODO
+
+        :return: TODO
+        """
         async with self._connection() as connect:
             async with connect.cursor() as cur:
+                # noinspection SqlRedundantOrderingDirection
                 await cur.execute(
                     "SELECT * FROM producer_queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;"
                     % (self.retry, self.records),
                 )
                 async for row in cur:
-                    sent_to_kafka = False
+                    published = False
+                    # noinspection PyBroadException
                     try:
-                        sent_to_kafka = await self.send_to_kafka(topic=row[1], message=row[2])
-                        if sent_to_kafka:
+                        published = await self.publish(topic=row[1], message=row[2])
+                        if published:
                             # Delete from database If the event was sent successfully to Kafka.
                             async with connect.cursor() as cur2:
                                 await cur2.execute("DELETE FROM producer_queue WHERE id=%d;" % row[0])
-                    except:
-                        sent_to_kafka = False
+                    except Exception:
+                        published = False
                     finally:
-                        if not sent_to_kafka:
+                        if not published:
                             # Update queue retry column. Increase by 1.
                             async with connect.cursor() as cur3:
                                 await cur3.execute("UPDATE producer_queue SET retry = retry + 1 WHERE id=%d;" % row[0])
 
-    async def send_to_kafka(self, topic: str, message: bytes):
-        flag = False
+    async def publish(self, topic: str, message: bytes) -> bool:
+        """ TODO
+
+        :param topic:TODO
+        :param message: TODO
+        :return: TODO
+        """
         producer = AIOKafkaProducer(
             bootstrap_servers="{host}:{port}".format(host=self.broker.host, port=self.broker.port)
         )
         # Get cluster layout and initial topic/partition leadership information
         await producer.start()
+        # noinspection PyBroadException
         try:
             # Produce message
             await producer.send_and_wait(topic, message)
             flag = True
+        except Exception:
+            flag = False
         finally:
             # Wait for all pending messages to be delivered or expire.
             await producer.stop()

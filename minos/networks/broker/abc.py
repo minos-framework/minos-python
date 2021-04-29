@@ -5,6 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from abc import ABC
 from typing import (
     NoReturn,
 )
@@ -41,12 +42,21 @@ class MinosBrokerSetup(MinosSetup):
         await self.broker_table_creation()
 
     async def broker_table_creation(self):
+        """TODO
+
+        :return:TODO
+        """
         async with self._connection() as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    'CREATE TABLE IF NOT EXISTS "producer_queue" ("id" BIGSERIAL NOT NULL PRIMARY KEY, '
-                    '"topic" VARCHAR(255) NOT NULL, "model" BYTEA NOT NULL, "retry" INTEGER NOT NULL, '
-                    '"action" VARCHAR(255) NOT NULL, "creation_date" TIMESTAMP NOT NULL, "update_date" TIMESTAMP NOT NULL);'
+                    'CREATE TABLE IF NOT EXISTS "producer_queue" ('
+                    '"id" BIGSERIAL NOT NULL PRIMARY KEY, '
+                    '"topic" VARCHAR(255) NOT NULL, '
+                    '"model" BYTEA NOT NULL, '
+                    '"retry" INTEGER NOT NULL, '
+                    '"action" VARCHAR(255) NOT NULL, '
+                    '"creation_date" TIMESTAMP NOT NULL, '
+                    '"update_date" TIMESTAMP NOT NULL);'
                 )
 
     def _connection(self):
@@ -55,7 +65,7 @@ class MinosBrokerSetup(MinosSetup):
         )
 
 
-class MinosBroker(MinosBaseBroker, MinosBrokerSetup):
+class MinosBroker(MinosBaseBroker, MinosBrokerSetup, ABC):
     """TODO"""
 
     def __init__(self, topic: str, *args, **kwargs):

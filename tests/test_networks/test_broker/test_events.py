@@ -2,27 +2,24 @@ import unittest
 
 import aiopg
 from minos.common import (
-    Aggregate,
     MinosConfig,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
+
 from minos.networks import (
     MinosEventBroker,
     MinosQueueDispatcher,
 )
 from tests.utils import (
     BASE_PATH,
+    NaiveAggregate,
 )
 
 
-class AggregateTest(Aggregate):
-    test: int
-
-
 class TestMinosEventBroker(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yaml"
+    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_if_queue_table_exists(self):
         broker = MinosEventBroker.from_config("EventBroker", config=self.config)
@@ -39,17 +36,12 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
 
         assert ret == [(1,)]
 
-    async def test_send_to_kafka_ok(self):
-        dispatcher = MinosQueueDispatcher.from_config(config=self.config)
-        response = await dispatcher.send_to_kafka(topic="TestKafkaSend", message=bytes())
-        assert response is True
-
     async def test_events_broker_insertion(self):
         broker = MinosEventBroker.from_config("EventBroker", config=self.config)
         await broker.setup()
 
-        a = AggregateTest(test_id=1, test=2, id=1, version=1)
-        affected_rows, queue_id = await broker.send_one(a)
+        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        affected_rows, queue_id = await broker.send_one(item)
 
         assert affected_rows == 1
         assert queue_id > 0
@@ -58,9 +50,9 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
         broker = MinosEventBroker.from_config("EventBroker-Delete", config=self.config)
         await broker.setup()
 
-        a = AggregateTest(test_id=1, test=2, id=1, version=1)
-        affected_rows_1, queue_id_1 = await broker.send_one(a)
-        affected_rows_2, queue_id_2 = await broker.send_one(a)
+        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        affected_rows_1, queue_id_1 = await broker.send_one(item)
+        affected_rows_2, queue_id_2 = await broker.send_one(item)
 
         await MinosQueueDispatcher.from_config(config=self.config).dispatch()
 
@@ -79,13 +71,13 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
         broker = MinosEventBroker.from_config("EventBroker-Delete", config=self.config)
         await broker.setup()
 
-        a = AggregateTest(test_id=1, test=2, id=1, version=1)
+        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
-        affected_rows_1, queue_id_1 = await broker.send_one(a)
-        affected_rows_2, queue_id_2 = await broker.send_one(a)
+        affected_rows_1, queue_id_1 = await broker.send_one(item)
+        affected_rows_2, queue_id_2 = await broker.send_one(item)
 
         config = MinosConfig(
-            path=BASE_PATH / "wrong_test_config.yaml", events_queue_database="test_db", events_queue_user="test_user"
+            path=BASE_PATH / "wrong_test_config.yml", events_queue_database="test_db", events_queue_user="test_user"
         )
 
         await MinosQueueDispatcher.from_config(config=config).dispatch()

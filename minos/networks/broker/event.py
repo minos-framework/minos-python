@@ -1,9 +1,10 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
 from __future__ import (
     annotations,
 )
@@ -46,13 +47,20 @@ class MinosEventBroker(MinosBroker):
         return cls(*args, **config.events.queue._asdict(), **kwargs)
 
     async def send(self, items: list[Aggregate]) -> NoReturn:
+        """Send a list of ``Aggregate`` instances.
+
+        :param items: A list of aggregates.
+        :return: This method does not return anything.
+        """
         event_instance = Event(self.topic, items)
         bin_data = event_instance.avro_bytes
 
         async with self._connection() as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
+                    "INSERT INTO producer_queue ("
+                    "topic, model, retry, action, creation_date, update_date"
+                    ") VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
                     (event_instance.topic, bin_data, 0, self.ACTION, datetime.datetime.now(), datetime.datetime.now(),),
                 )
 

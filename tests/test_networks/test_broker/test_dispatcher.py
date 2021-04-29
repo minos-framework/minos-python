@@ -1,8 +1,5 @@
 import unittest
 
-from minos.common import (
-    Aggregate,
-)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -14,16 +11,17 @@ from tests.utils import (
 )
 
 
-class AggregateTest(Aggregate):
-    test: int
-
-
 class TestQueueDispatcher(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yaml"
+    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
         dispatcher = MinosQueueDispatcher.from_config(config=self.config)
         self.assertIsInstance(dispatcher, MinosQueueDispatcher)
+
+    async def test_send_to_kafka_ok(self):
+        dispatcher = MinosQueueDispatcher.from_config(config=self.config)
+        response = await dispatcher.publish(topic="TestKafkaSend", message=bytes())
+        assert response is True
 
 
 if __name__ == "__main__":

@@ -9,7 +9,6 @@ import unittest
 
 import aiopg
 from minos.common import (
-    Aggregate,
     MinosConfig,
 )
 from minos.common.testing import (
@@ -20,24 +19,20 @@ from minos.networks import (
     MinosQueueDispatcher,
 )
 from tests.utils import (
-    BASE_PATH,
+    BASE_PATH, NaiveAggregate,
 )
 
 
-class AggregateTest(Aggregate):
-    test: int
-
-
 class TestMinosCommandBroker(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yaml"
+    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_commands_broker_insertion(self):
         broker = MinosCommandBroker.from_config("CommandBroker", config=self.config, reply_on="test_reply_on")
         await broker.setup()
 
-        a = AggregateTest(test_id=1, test=2, id=1, version=1)
+        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
-        affected_rows, queue_id = await broker.send_one(a)
+        affected_rows, queue_id = await broker.send_one(item)
         assert affected_rows == 1
         assert queue_id > 0
 
@@ -45,10 +40,10 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
         broker = MinosCommandBroker.from_config("CommandBroker-Delete", config=self.config, reply_on="test_reply_on")
         await broker.setup()
 
-        a = AggregateTest(test_id=1, test=2, id=1, version=1)
+        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
-        affected_rows_1, queue_id_1 = await broker.send_one(a)
-        affected_rows_2, queue_id_2 = await broker.send_one(a)
+        affected_rows_1, queue_id_1 = await broker.send_one(item)
+        affected_rows_2, queue_id_2 = await broker.send_one(item)
 
         await MinosQueueDispatcher.from_config(config=self.config).dispatch()
 
@@ -67,13 +62,13 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
         broker = MinosCommandBroker.from_config("CommandBroker-Delete", config=self.config, reply_on="test_reply_on")
         await broker.setup()
 
-        a = AggregateTest(test_id=1, test=2, id=1, version=1)
+        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
-        affected_rows_1, queue_id_1 = await broker.send_one(a)
-        affected_rows_2, queue_id_2 = await broker.send_one(a)
+        affected_rows_1, queue_id_1 = await broker.send_one(item)
+        affected_rows_2, queue_id_2 = await broker.send_one(item)
 
         config = MinosConfig(
-            path=BASE_PATH / "wrong_test_config.yaml", events_queue_database="test_db", events_queue_user="test_user"
+            path=BASE_PATH / "wrong_test_config.yml", events_queue_database="test_db", events_queue_user="test_user"
         )
         await MinosQueueDispatcher.from_config(config=config).dispatch()
 

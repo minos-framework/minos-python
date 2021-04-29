@@ -9,7 +9,7 @@ from .command import (
     MinosCommandBroker,
 )
 from .dispatcher import (
-    EventBrokerQueueDispatcher,
+    MinosQueueDispatcherService,
     MinosQueueDispatcher,
 )
 from .event import (

@@ -8,7 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 __version__ = "0.0.1.1-alpha"
 
 from .broker import (
-    EventBrokerQueueDispatcher,
+    MinosQueueDispatcherService,
     MinosCommandBroker,
     MinosEventBroker,
     MinosQueueDispatcher,
