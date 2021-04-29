@@ -8,19 +8,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import unittest
 
-from minos.common import (
-    MinosConfigException,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common import MinosConfigException
+from minos.common.testing import PostgresAsyncTestCase
 
-from minos.networks import (
-    MinosSnapshotDispatcher,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from minos.networks import MinosSnapshotDispatcher
+from tests.utils import BASE_PATH
 
 
 class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
