@@ -14,6 +14,7 @@ from unittest.mock import (
 from aiomisc.service.periodic import (
     PeriodicService,
 )
+from minos.common import MinosConfigException
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -30,12 +31,13 @@ class TestMinosSnapshotService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
-        service = MinosSnapshotService(interval=10)
-        self.assertIsInstance(service, PeriodicService)
+        with self.config:
+            service = MinosSnapshotService(interval=10)
+            self.assertIsInstance(service, PeriodicService)
 
-    def test_dispatcher_empty(self):
-        service = MinosSnapshotService(interval=10)
-        self.assertIsNone(service.dispatcher)
+    def test_dispatcher_config_raises(self):
+        with self.assertRaises(MinosConfigException):
+            MinosSnapshotService(interval=10)
 
     def test_dispatcher_config(self):
         service = MinosSnapshotService(interval=10, config=self.config)

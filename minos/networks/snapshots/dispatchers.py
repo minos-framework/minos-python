@@ -19,6 +19,7 @@ import aiopg
 from minos.common import (
     Aggregate,
     MinosConfig,
+    MinosConfigException,
     MinosRepositoryAction,
     MinosRepositoryEntry,
     MinosSetup,
@@ -55,7 +56,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         self.offset = offset
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosSnapshotDispatcher]:
+    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSnapshotDispatcher:
         """Build a new Snapshot Dispatcher from config.
         :param args: Additional positional arguments.
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -65,7 +66,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         if config is None:
             config = MinosConfig.get_default()
         if config is None:
-            return None
+            raise MinosConfigException("The config object must be setup.")
         # noinspection PyProtectedMember
         return cls(*args, **config.repository._asdict(), **kwargs)
 
