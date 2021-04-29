@@ -27,6 +27,14 @@ class MinosSnapshotService(PeriodicService):
         super().__init__(**kwargs)
         self.dispatcher = MinosSnapshotDispatcher.from_config(config=config)
 
+    async def start(self) -> None:
+        """TODO
+
+        :return: TODO
+        """
+        await super().start()
+        await self.dispatcher.setup()
+
     async def callback(self) -> Any:
         """TODO
 
