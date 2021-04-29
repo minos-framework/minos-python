@@ -5,10 +5,18 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from minos.common import (
-    MinosException,
+from pathlib import (
+    Path,
 )
 
+from minos.common import (
+    Aggregate,
+)
 
-class MinosNetworkException(MinosException):
-    """Base network exception."""
+BASE_PATH = Path(__file__).parent
+
+
+class NaiveAggregate(Aggregate):
+    """Naive aggregate class to be used for testing purposes."""
+
+    test: int

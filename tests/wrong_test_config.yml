@@ -9,6 +9,12 @@ rest:
           method: POST
           controller: minos.services.OrderService
           action: add_order
+repository:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
 events:
     broker: localhost
     port: 4092
@@ -23,10 +29,10 @@ events:
           controller: tests.services.CqrsTestService.CqrsService
           action: ticket_deleted
     queue:
-        database: broker_db
-        user: broker
-        password: br0k3r
-        host: postgres
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
         port: 5432
         records: 10
         retry: 2
@@ -47,10 +53,10 @@ commands:
           controller: minos.service.OrderService
           action: get_order
     queue:
-        database: broker_db
-        user: broker
-        password: br0k3r
-        host: postgres
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
         port: 5432
         records: 10
         retry: 2
