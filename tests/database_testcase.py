@@ -7,8 +7,12 @@ import os
 import unittest
 
 import aiopg
-from minos.common.configuration.config import MinosConfig
-from minos.networks.event import event_handler_table_creation
+from minos.common.configuration.config import (
+    MinosConfig,
+)
+from minos.networks.event import (
+    event_handler_table_creation,
+)
 
 
 class EventHandlerPostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
@@ -52,8 +56,10 @@ class EventHandlerPostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def _database(self):
         conf = self._broker_config()
-        db_dsn = f"dbname={conf.events.queue.database} user={conf.events.queue.user} " \
-                 f"password={conf.events.queue.password} host={conf.events.queue.host}"
+        db_dsn = (
+            f"dbname={conf.events.queue.database} user={conf.events.queue.user} "
+            f"password={conf.events.queue.password} host={conf.events.queue.host}"
+        )
         return await aiopg.connect(db_dsn)
 
     async def asyncTearDown(self):
