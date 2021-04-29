@@ -16,11 +16,13 @@ from datetime import (
 from typing import (
     Iterable,
     Optional,
-    Union, Type,
+    Type,
+    Union,
 )
 
 from minos.common import (
-    Aggregate, import_module,
+    Aggregate,
+    import_module,
 )
 
 

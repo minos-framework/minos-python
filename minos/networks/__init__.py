@@ -18,6 +18,6 @@ from .exceptions import (
 )
 from .snapshots import (
     MinosSnapshotDispatcher,
-    MinosSnapshotService,
     MinosSnapshotEntry,
+    MinosSnapshotService,
 )

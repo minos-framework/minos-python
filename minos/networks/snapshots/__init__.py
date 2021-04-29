@@ -8,9 +8,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .dispatchers import (
     MinosSnapshotDispatcher,
 )
-from .services import (
-    MinosSnapshotService,
-)
 from .entries import (
     MinosSnapshotEntry,
+)
+from .services import (
+    MinosSnapshotService,
 )
