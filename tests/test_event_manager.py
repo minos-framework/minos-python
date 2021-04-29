@@ -1,18 +1,36 @@
 import asyncio
 import logging
+import random
+import string
 
 import pytest
-import string
-from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
-import random
-
-from minos.common.logs import log
-from aiomisc.log import basic_config
-from minos.common.configuration.config import MinosConfig
-from minos.common import Aggregate
-from minos.common.broker import Event
-from minos.networks.event import MinosEventServer, EventHandlerDatabaseInitializer, MinosEventHandlerPeriodicService
-from tests.database_testcase import EventHandlerPostgresAsyncTestCase
+from aiokafka import (
+    AIOKafkaConsumer,
+    AIOKafkaProducer,
+)
+from aiomisc.log import (
+    basic_config,
+)
+from minos.common import (
+    Aggregate,
+)
+from minos.common.broker import (
+    Event,
+)
+from minos.common.configuration.config import (
+    MinosConfig,
+)
+from minos.common.logs import (
+    log,
+)
+from minos.networks.event import (
+    EventHandlerDatabaseInitializer,
+    MinosEventHandlerPeriodicService,
+    MinosEventServer,
+)
+from tests.database_testcase import (
+    EventHandlerPostgresAsyncTestCase,
+)
 
 
 @pytest.fixture()

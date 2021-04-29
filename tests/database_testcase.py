@@ -7,8 +7,12 @@ import os
 import unittest
 
 import aiopg
-from minos.common.configuration.config import MinosConfig
-from minos.networks.event import event_handler_table_creation
+from minos.common.configuration.config import (
+    MinosConfig,
+)
+from minos.networks.event import (
+    event_handler_table_creation,
+)
 
 
 class EventHandlerPostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
