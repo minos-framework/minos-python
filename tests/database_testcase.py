@@ -48,7 +48,7 @@ class EventHandlerPostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
 
     @staticmethod
     def _broker_config():
-        return MinosConfig(path="./tests/test_config.yaml")
+        return MinosConfig(path="./tests/test_config.yml")
 
     async def _database(self):
         conf = self._broker_config()

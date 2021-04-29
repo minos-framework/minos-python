@@ -17,7 +17,7 @@ from tests.database_testcase import EventHandlerPostgresAsyncTestCase
 
 @pytest.fixture()
 def config():
- return MinosConfig(path='./tests/test_config.yaml')
+ return MinosConfig(path='./tests/test_config.yml')
 
 
 @pytest.fixture()
