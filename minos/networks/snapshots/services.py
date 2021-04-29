@@ -32,4 +32,4 @@ class MinosSnapshotService(PeriodicService):
 
         :return: TODO
         """
-        pass
+        await self.dispatcher.dispatch()

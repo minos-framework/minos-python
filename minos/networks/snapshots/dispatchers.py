@@ -40,5 +40,5 @@ class MinosSnapshotDispatcher(object):
         # noinspection PyProtectedMember
         return cls(*args, **kwargs)
 
-    def dispatch(self) -> NoReturn:
+    async def dispatch(self) -> NoReturn:
         """TODO"""
