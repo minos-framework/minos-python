@@ -92,12 +92,7 @@ class MinosEventServer(Service):
                 async with connect.cursor() as cur:
                     await cur.execute(
                         "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
-                        (
-                            topic,
-                            partition,
-                            binary,
-                            datetime.datetime.now(),
-                        ),
+                        (topic, partition, binary, datetime.datetime.now(),),
                     )
 
                     queue_id = await cur.fetchone()
