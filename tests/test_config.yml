@@ -18,9 +18,6 @@ repository:
 events:
     broker: localhost
     port: 9092
-    database:
-        path: ./tests/local_db.lmdb
-        name: database_events_test
     items:
         - name: TicketAdded
           controller: tests.services.CqrsTestService.CqrsService
