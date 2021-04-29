@@ -52,5 +52,5 @@ class TestMinosQueueService(PostgresAsyncTestCase):
             self.assertEqual(1, service.dispatcher.dispatch.call_count)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
