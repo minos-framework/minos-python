@@ -105,7 +105,7 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         :param message: The message to be published.
         :return: A boolean flag, ``True`` when the message is properly published or ``False`` otherwise.
         """
-        producer = AIOKafkaProducer(bootstrap_servers=f"{self.host}:{self.port}")
+        producer = AIOKafkaProducer(bootstrap_servers=f"{self.broker.host}:{self.broker.port}")
         # Get cluster layout and initial topic/partition leadership information
         await producer.start()
         # noinspection PyBroadException
