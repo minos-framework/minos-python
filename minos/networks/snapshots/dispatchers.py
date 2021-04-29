@@ -94,7 +94,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         if event_entry.action is MinosRepositoryAction.DELETE:
             await self._submit_delete(event_entry)
             return
-        instance = self._build_instance(event_entry)
+        instance = await self._build_instance(event_entry)
         return await self._submit_instance(instance)
 
     async def _submit_delete(self, entry: MinosRepositoryEntry) -> NoReturn:
@@ -103,14 +103,14 @@ class MinosSnapshotDispatcher(MinosSetup):
             async with connect.cursor() as cursor:
                 await cursor.execute(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params)
 
-    def _build_instance(self, event_entry: MinosRepositoryEntry) -> Aggregate:
+    async def _build_instance(self, event_entry: MinosRepositoryEntry) -> Aggregate:
         # noinspection PyTypeChecker
         cls: Type[Aggregate] = import_module(event_entry.aggregate_name)
         instance = cls.from_avro_bytes(event_entry.data, id=event_entry.aggregate_id, version=event_entry.version)
-        instance = self._update_if_exists(instance)
+        instance = await self._update_if_exists(instance)
         return instance
 
-    def _update_if_exists(self, new: Aggregate) -> Aggregate:
+    async def _update_if_exists(self, new: Aggregate) -> Aggregate:
         try:
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(new.id, new.classname)
