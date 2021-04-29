@@ -16,7 +16,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from .dispatcher import (
+from .dispatchers import (
     MinosQueueDispatcher,
 )
 
