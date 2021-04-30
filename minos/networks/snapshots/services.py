@@ -5,9 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from typing import (
-    Any,
-)
 
 from aiomisc.service.periodic import (
     PeriodicService,
@@ -22,23 +19,23 @@ from .dispatchers import (
 
 
 class MinosSnapshotService(PeriodicService):
-    """TODO"""
+    """Minos Snapshot Service class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
         self.dispatcher = MinosSnapshotDispatcher.from_config(config=config)
 
     async def start(self) -> None:
-        """TODO
+        """Start the service execution.
 
-        :return: TODO
+        :return: This method does not return anything.
         """
         await super().start()
         await self.dispatcher.setup()
 
-    async def callback(self) -> Any:
-        """TODO
+    async def callback(self) -> None:
+        """Callback implementation to be executed periodically.
 
-        :return: TODO
+        :return: This method does not return anything.
         """
         await self.dispatcher.dispatch()

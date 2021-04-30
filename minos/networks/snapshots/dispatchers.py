@@ -35,7 +35,7 @@ from .entries import (
 
 
 class MinosSnapshotDispatcher(MinosSetup):
-    """TODO"""
+    """Minos Snapshot Dispatcher class."""
 
     def __init__(
         self,
@@ -84,18 +84,21 @@ class MinosSnapshotDispatcher(MinosSetup):
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> list[MinosSnapshotEntry]:
-        """TODO
+        """Select a sequence of ``MinosSnapshotEntry`` objects.
 
-        :param args: TODO
-        :param kwargs: TODO
-        :return:
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A sequence of ``MinosSnapshotEntry`` objects.
         """
         response = self._submit_and_iter_sql(_SELECT_ALL_ENTRIES_QUERY)
         entries = [MinosSnapshotEntry(*row) async for row in response]
         return entries
 
     async def dispatch(self) -> NoReturn:
-        """TODO"""
+        """Perform a dispatching step, based on the sequence of non already processed ``MinosRepositoryEntry`` objects.
+
+        :return: This method does not return anything.
+        """
         async for entry in self._new_entries:
             await self._dispatch_one(entry)
 

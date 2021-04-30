@@ -27,7 +27,10 @@ from minos.common import (
 
 
 class MinosSnapshotEntry(object):
-    """TODO"""
+    """Minos Snapshot Entry class.
+
+    Is the python object representation of a row in the ``snapshot`` storage system.
+    """
 
     __slots__ = "aggregate_id", "aggregate_name", "version", "data", "created_at", "updated_at"
 
@@ -64,9 +67,9 @@ class MinosSnapshotEntry(object):
 
     @property
     def aggregate(self) -> Aggregate:
-        """TODO
+        """Rebuild the stored ``Aggregate`` object instance from the internal state.
 
-        :return: TODO
+        :return: A ``Aggregate`` instance.
         """
         cls = self.aggregate_cls
         instance = cls.from_avro_bytes(self.data, id=self.aggregate_id, version=self.version)
@@ -74,9 +77,9 @@ class MinosSnapshotEntry(object):
 
     @property
     def aggregate_cls(self) -> Type[Aggregate]:
-        """TODO
+        """Load the concrete ``Aggregate`` class.
 
-        :return: TODO
+        :return: A ``Type`` object.
         """
         # noinspection PyTypeChecker
         return import_module(self.aggregate_name)
