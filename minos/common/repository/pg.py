@@ -10,7 +10,7 @@ from typing import (
 )
 
 from ..database import (
-    PostgreSqlMinosDataBase,
+    PostgreSqlMinosDatabase,
 )
 from .abc import (
     MinosRepository,
@@ -20,7 +20,7 @@ from .entries import (
 )
 
 
-class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDataBase):
+class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
     """PostgreSQL-based implementation of the repository class in ``minos``."""
 
     async def _setup(self):

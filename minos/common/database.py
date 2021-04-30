@@ -23,7 +23,7 @@ from .setup import (
 )
 
 
-class PostgreSqlMinosDataBase(ABC, MinosSetup):
+class PostgreSqlMinosDatabase(ABC, MinosSetup):
     """PostgreSql Minos Database base class."""
 
     def __init__(
