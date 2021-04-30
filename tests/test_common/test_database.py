@@ -14,7 +14,6 @@ import aiopg
 from aiopg import (
     Pool,
 )
-
 from minos.common import (
     PostgreSqlMinosDatabase,
 )
