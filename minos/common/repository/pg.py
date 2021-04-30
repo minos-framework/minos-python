@@ -88,17 +88,17 @@ class PostgreSqlMinosRepository(MinosRepository):
         raise IndexError("Given query did not returned any entry.")
 
     async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
-        async with self._connection.cursor() as cursor:
+        async with (await self._connection).cursor() as cursor:
             await cursor.execute(query, *args, **kwargs)
             async for row in cursor:
                 yield row
 
     async def _submit_sql(self, query: str, *args, **kwargs) -> NoReturn:
-        async with self._connection.cursor() as cursor:
+        async with (await self._connection).cursor() as cursor:
             await cursor.execute(query, *args, **kwargs)
 
     @property
-    def _connection(self):
+    async def _connection(self):
         if self.__connection is None:
             self.__connection = await aiopg.connect(
                 host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
