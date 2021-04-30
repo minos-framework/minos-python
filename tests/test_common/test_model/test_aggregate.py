@@ -141,21 +141,21 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
             self.assertEqual(Car(1, 2, 3, "red"), car)
             self.assertEqual(car, await Car.get_one(car.id))
 
-            await car.update(doors=5)
-            self.assertEqual(Car(1, 3, 5, "red"), car)
-            self.assertEqual(car, await Car.get_one(car.id))
-
-            await car.delete()
-            with self.assertRaises(MinosRepositoryDeletedAggregateException):
-                await Car.get_one(car.id)
-
-            car = await Car.create(doors=3, color="blue")
-            await Car.update(car.id, color="red")
-            self.assertEqual(Car(2, 2, 3, "red"), await Car.get_one(car.id))
-
-            await Car.delete(car.id)
-            with self.assertRaises(MinosRepositoryDeletedAggregateException):
-                await Car.get_one(car.id)
+            # await car.update(doors=5)
+            # self.assertEqual(Car(1, 3, 5, "red"), car)
+            # self.assertEqual(car, await Car.get_one(car.id))
+            #
+            # await car.delete()
+            # with self.assertRaises(MinosRepositoryDeletedAggregateException):
+            #     await Car.get_one(car.id)
+            #
+            # car = await Car.create(doors=3, color="blue")
+            # await Car.update(car.id, color="red")
+            # self.assertEqual(Car(2, 2, 3, "red"), await Car.get_one(car.id))
+            #
+            # await Car.delete(car.id)
+            # with self.assertRaises(MinosRepositoryDeletedAggregateException):
+            #     await Car.get_one(car.id)
 
 
 if __name__ == "__main__":
