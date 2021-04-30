@@ -7,7 +7,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from typing import (
     AsyncIterator,
-    Generator,
     NoReturn,
 )
 
