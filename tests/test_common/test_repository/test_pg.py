@@ -66,6 +66,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             # self.assertEqual(car, another)
 
             # await car.delete()
+        repository, car = None, None
 
     async def test_insert(self):
         async with PostgreSqlMinosRepository(**self.repository_db) as repository:
