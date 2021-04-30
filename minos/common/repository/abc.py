@@ -16,6 +16,7 @@ from abc import (
 )
 from typing import (
     TYPE_CHECKING,
+    AsyncIterator,
     NoReturn,
     Optional,
     Union,
@@ -33,7 +34,9 @@ from .entries import (
 )
 
 if TYPE_CHECKING:
-    from ..model import Aggregate
+    from ..model import (
+        Aggregate,
+    )
 
 
 class MinosRepository(ABC, MinosSetup):
@@ -127,7 +130,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
-    ) -> list[MinosRepositoryEntry]:
+    ) -> AsyncIterator[MinosRepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
 
         :param aggregate_id: Aggregate identifier.
@@ -146,7 +149,7 @@ class MinosRepository(ABC, MinosSetup):
         """
         await self.setup()
 
-        return await self._select(
+        generator = self._select(
             aggregate_id=aggregate_id,
             aggregate_name=aggregate_name,
             version=version,
@@ -160,7 +163,10 @@ class MinosRepository(ABC, MinosSetup):
             id_le=id_le,
             id_ge=id_ge,
         )
+        # noinspection PyTypeChecker
+        async for entry in generator:
+            yield entry
 
     @abstractmethod
-    async def _select(self, *args, **kwargs) -> list[MinosRepositoryEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
         """Perform a selection query of entries stored in to the repository."""

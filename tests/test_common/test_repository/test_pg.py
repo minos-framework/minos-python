@@ -74,7 +74,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             expected = [
                 MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT)
             ]
-            self.assertEqual(expected, await repository.select())
+            self.assertEqual(expected, [v async for v in repository.select()])
 
     async def test_update(self):
         async with PostgreSqlMinosRepository(**self.repository_db) as repository:
@@ -82,13 +82,13 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             expected = [
                 MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.UPDATE)
             ]
-            self.assertEqual(expected, await repository.select())
+            self.assertEqual(expected, [v async for v in repository.select()])
 
     async def test_delete(self):
         async with PostgreSqlMinosRepository(**self.repository_db) as repository:
             await repository.delete(MinosRepositoryEntry(0, "example.Car", 1, bytes()))
             expected = [MinosRepositoryEntry(0, "example.Car", 1, bytes(), 1, MinosRepositoryAction.DELETE)]
-            self.assertEqual(expected, await repository.select())
+            self.assertEqual(expected, [v async for v in repository.select()])
 
     async def test_select(self):
         repository = await self._build_repository()
@@ -101,11 +101,11 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
             MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.INSERT),
         ]
-        self.assertEqual(expected, await repository.select())
+        self.assertEqual(expected, [v async for v in repository.select()])
 
     async def test_select_empty(self):
         repository = PostgreSqlMinosRepository(**self.repository_db)
-        self.assertEqual([], await repository.select())
+        self.assertEqual([], [v async for v in repository.select()])
 
     async def test_select_filtered(self):
         repository = await self._build_repository()
@@ -113,7 +113,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
             MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
         ]
-        self.assertEqual(expected, await repository.select(aggregate_name="example.Car", aggregate_id=2))
+        self.assertEqual(expected, [v async for v in repository.select(aggregate_name="example.Car", aggregate_id=2)])
 
     async def _build_repository(self):
         repository = PostgreSqlMinosRepository(**self.repository_db)

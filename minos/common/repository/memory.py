@@ -13,10 +13,9 @@ from itertools import (
     count,
 )
 from typing import (
-    TYPE_CHECKING,
+    AsyncIterator,
     NoReturn,
     Optional,
-    Union,
 )
 
 from .abc import (
@@ -25,9 +24,6 @@ from .abc import (
 from .entries import (
     MinosRepositoryEntry,
 )
-
-if TYPE_CHECKING:
-    from ..model import Aggregate
 
 
 class MinosInMemoryRepository(MinosRepository):
@@ -96,7 +92,7 @@ class MinosInMemoryRepository(MinosRepository):
         id_ge: Optional[int] = None,
         *args,
         **kwargs
-    ) -> list[MinosRepositoryEntry]:
+    ) -> AsyncIterator[MinosRepositoryEntry]:
 
         # noinspection DuplicatedCode
         def _fn_filter(entry: MinosRepositoryEntry) -> bool:
@@ -128,4 +124,5 @@ class MinosInMemoryRepository(MinosRepository):
 
         iterable = iter(self._storage)
         iterable = filter(_fn_filter, iterable)
-        return list(iterable)
+        for item in iterable:
+            yield item
