@@ -65,7 +65,8 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        with (await (await self.pool).cursor()) as cursor:
+        pool = await self.pool
+        with await pool.cursor() as cursor:
             await cursor.execute(*args, **kwargs)
             async for row in cursor:
                 yield row
@@ -77,7 +78,8 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        with (await (await self.pool).cursor()) as cursor:
+        pool = await self.pool
+        with await pool.cursor() as cursor:
             await cursor.execute(*args, **kwargs)
 
     @property
