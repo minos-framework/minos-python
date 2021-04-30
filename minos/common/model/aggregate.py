@@ -53,7 +53,7 @@ class Aggregate(MinosModel):
 
         super().__init__(id, version, *args, **kwargs)
         self._broker = _broker
-        self._repository = None
+        self._repository = _repository
 
     @classmethod
     async def get(
