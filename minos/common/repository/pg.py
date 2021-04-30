@@ -84,9 +84,7 @@ class PostgreSqlMinosRepository(MinosRepository):
                 yield MinosRepositoryEntry(aggregate_id, aggregate_name, *row)
 
     async def _submit_and_fetchone_sql(self, *args, **kwargs) -> tuple:
-        async for entry in self._submit_and_iter_sql(*args, **kwargs):
-            return entry
-        raise IndexError("Given query did not returned any entry.")
+        return await self._submit_and_iter_sql(*args, **kwargs).__anext__()
 
     async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
         with (await (await self._pool).cursor()) as cursor:
