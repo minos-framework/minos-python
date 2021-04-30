@@ -107,13 +107,9 @@ from .repository import (
     MinosRepositoryEntry,
     PostgreSqlMinosRepository,
 )
-from .setup import (
-    MinosSetup,
-)
+from .setup import MinosSetup
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,
 )
-from .database import (
-    PostgreSqlMinosDataBase,
-)
+from .database import PostgreSqlMinosDataBase
