@@ -58,7 +58,8 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
 
     async def test_aggregate(self):
         async with PostgreSqlMinosRepository(**self.repository_db) as repository:
-            car = await Car.create(doors=3, color="blue", _repository=repository)
+            pass
+            # car = await Car.create(doors=3, color="blue", _repository=repository)
             # await car.update(color="red")
             # await car.update(doors=5)
             #
@@ -66,7 +67,6 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             # self.assertEqual(car, another)
 
             # await car.delete()
-        repository, car = None, None
 
     async def test_insert(self):
         async with PostgreSqlMinosRepository(**self.repository_db) as repository:
