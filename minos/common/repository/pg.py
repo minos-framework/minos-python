@@ -80,9 +80,9 @@ class PostgreSqlMinosRepository(MinosRepository):
     async def _submit_and_fetchone_sql(self, *args, **kwargs) -> tuple:
         async for entry in self._submit_and_iter_sql(*args, **kwargs):
             return entry
-        raise Exception
+        raise IndexError("Given query did not returned any entry.")
 
-    async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> Generator[tuple, None, None]:
+    async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
         async with self._connection() as connect:
             async with connect.cursor() as cursor:
                 await cursor.execute(query, *args, **kwargs)
