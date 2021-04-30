@@ -23,7 +23,6 @@ from minos.common.configuration.config import (
 from minos.common.logs import (
     log,
 )
-
 from minos.networks.event import (
     EventHandlerDatabaseInitializer,
     MinosEventHandlerPeriodicService,

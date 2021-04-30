@@ -5,19 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-__version__ = "0.0.1.1-alpha"
-
-from .broker import (
-    MinosCommandBroker,
-    MinosEventBroker,
-    MinosQueueDispatcher,
-    MinosQueueService,
-)
-from .exceptions import (
-    MinosNetworkException,
-)
-from .snapshots import (
+from .dispatchers import (
     MinosSnapshotDispatcher,
+)
+from .entries import (
     MinosSnapshotEntry,
+)
+from .services import (
     MinosSnapshotService,
 )
