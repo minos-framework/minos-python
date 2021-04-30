@@ -39,7 +39,7 @@ class PostgreSqlMinosRepository(MinosRepository):
         self.database = database
         self.user = user
         self.password = password
-        self.__connection = None
+        self._pool = None
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
@@ -55,9 +55,8 @@ class PostgreSqlMinosRepository(MinosRepository):
         await self._submit_sql(_CREATE_TABLE_QUERY)
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
-        if self.__connection is not None:
-            await self.__connection.close()
-        pass
+        if self._pool is not None:
+            self._pool.close()
 
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         params = {
@@ -88,22 +87,22 @@ class PostgreSqlMinosRepository(MinosRepository):
         raise IndexError("Given query did not returned any entry.")
 
     async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
-        async with (await self._connection).cursor() as cursor:
+        if self._pool is None:
+            self._pool = await aiopg.create_pool(
+                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
+            )
+        with (await self._pool.cursor()) as cursor:
             await cursor.execute(query, *args, **kwargs)
             async for row in cursor:
                 yield row
 
     async def _submit_sql(self, query: str, *args, **kwargs) -> NoReturn:
-        async with (await self._connection).cursor() as cursor:
-            await cursor.execute(query, *args, **kwargs)
-
-    @property
-    async def _connection(self):
-        if self.__connection is None:
-            self.__connection = await aiopg.connect(
+        if self._pool is None:
+            self._pool = await aiopg.create_pool(
                 host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
             )
-        return self.__connection
+        with (await self._pool.cursor()) as cursor:
+            await cursor.execute(query, *args, **kwargs)
 
 
 _CREATE_ACTION_ENUM_QUERY = """
