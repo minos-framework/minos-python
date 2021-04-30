@@ -11,7 +11,9 @@ from typing import (
 )
 
 import aiopg
-from aiopg import Pool
+from aiopg import (
+    Pool,
+)
 
 from .abc import (
     MinosRepository,
