@@ -72,6 +72,7 @@ class TestEventServer(PostgresAsyncTestCase):
         assert affected_rows == 1
         assert id > 0
 
+    """
     async def test_consumer_kafka(self):
         await kafka_producer(self.config)
         handler = {item.name: {'controller': item.controller, 'action': item.action}
@@ -100,7 +101,7 @@ class TestEventServer(PostgresAsyncTestCase):
 
         await consumer.stop()
 
-    """
+
     async def test_handle_message(self):
         await kafka_producer(self.config)
         handler = {item.name: {'controller': item.controller, 'action': item.action}
