@@ -114,3 +114,6 @@ from .storage import (
     MinosStorage,
     MinosStorageLmdb,
 )
+from .database import (
+    PostgreSqlMinosDataBase,
+)

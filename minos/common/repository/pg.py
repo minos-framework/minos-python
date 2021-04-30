@@ -7,14 +7,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from typing import (
     AsyncIterator,
-    NoReturn,
 )
 
-import aiopg
-from aiopg import (
-    Pool,
+from ..database import (
+    PostgreSqlMinosDataBase,
 )
-
 from .abc import (
     MinosRepository,
 )
@@ -23,26 +20,8 @@ from .entries import (
 )
 
 
-class PostgreSqlMinosRepository(MinosRepository):
+class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDataBase):
     """PostgreSQL-based implementation of the repository class in ``minos``."""
-
-    def __init__(
-        self,
-        host: str = None,
-        port: int = None,
-        database: str = None,
-        user: str = None,
-        password: str = None,
-        *args,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        self.host = host
-        self.port = port
-        self.database = database
-        self.user = user
-        self.password = password
-        self.__pool = None
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
@@ -54,13 +33,8 @@ class PostgreSqlMinosRepository(MinosRepository):
         await self._create_events_table()
 
     async def _create_events_table(self):
-        await self._submit_sql(_CREATE_ACTION_ENUM_QUERY)
-        await self._submit_sql(_CREATE_TABLE_QUERY)
-
-    async def _destroy(self) -> NoReturn:
-        if self.__pool is not None:
-            self.__pool.close()
-            await self.__pool.wait_closed()
+        await self.submit_query(_CREATE_ACTION_ENUM_QUERY)
+        await self.submit_query(_CREATE_TABLE_QUERY)
 
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         params = {
@@ -69,7 +43,7 @@ class PostgreSqlMinosRepository(MinosRepository):
             "aggregate_name": entry.aggregate_name,
             "data": entry.data,
         }
-        response = await self._submit_and_fetchone_sql(_INSERT_VALUES_QUERY, params)
+        response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params)
         entry.id = response[0]
         entry.aggregate_id = response[1]
         entry.version = response[2]
@@ -79,32 +53,11 @@ class PostgreSqlMinosRepository(MinosRepository):
         self, aggregate_id: int = None, aggregate_name: str = None, *args, **kwargs,
     ) -> AsyncIterator[MinosRepositoryEntry]:
         if aggregate_id is None and aggregate_name is None:
-            async for row in self._submit_and_iter_sql(_SELECT_ALL_ENTRIES_QUERY):
+            async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY):
                 yield MinosRepositoryEntry(*row)
         else:
-            async for row in self._submit_and_iter_sql(_SELECT_ENTRIES_QUERY, (aggregate_id, aggregate_name)):
+            async for row in self.submit_query_and_iter(_SELECT_ENTRIES_QUERY, (aggregate_id, aggregate_name)):
                 yield MinosRepositoryEntry(aggregate_id, aggregate_name, *row)
-
-    async def _submit_and_fetchone_sql(self, *args, **kwargs) -> tuple:
-        return await self._submit_and_iter_sql(*args, **kwargs).__anext__()
-
-    async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
-        with (await (await self._pool).cursor()) as cursor:
-            await cursor.execute(query, *args, **kwargs)
-            async for row in cursor:
-                yield row
-
-    async def _submit_sql(self, query: str, *args, **kwargs) -> NoReturn:
-        with (await (await self._pool).cursor()) as cursor:
-            await cursor.execute(query, *args, **kwargs)
-
-    @property
-    async def _pool(self) -> Pool:
-        if self.__pool is None:
-            self.__pool = await aiopg.create_pool(
-                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
-            )
-        return self.__pool
 
 
 _CREATE_ACTION_ENUM_QUERY = """
