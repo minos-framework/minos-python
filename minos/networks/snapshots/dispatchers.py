@@ -29,6 +29,9 @@ from minos.common import (
     import_module,
 )
 
+from ..exceptions import (
+    MinosPreviousVersionSnapshotException,
+)
 from .entries import (
     MinosSnapshotEntry,
 )
@@ -99,7 +102,10 @@ class MinosSnapshotDispatcher(MinosSetup):
         :return: This method does not return anything.
         """
         async for entry in self._new_entries:
-            await self._dispatch_one(entry)
+            try:
+                await self._dispatch_one(entry)
+            except MinosPreviousVersionSnapshotException:
+                continue
 
     @property
     async def _new_entries(self):
@@ -125,12 +131,18 @@ class MinosSnapshotDispatcher(MinosSetup):
         return instance
 
     async def _update_if_exists(self, new: Aggregate) -> Aggregate:
+        # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(new.id, new.classname)
-            new._fields = previous.fields | new.fields
-        finally:
+        except Exception:
             return new
+
+        if previous.version >= new.version:
+            raise MinosPreviousVersionSnapshotException(previous, new)
+
+        new._fields = previous.fields | new.fields
+        return new
 
     async def _select_one_aggregate(self, aggregate_id: int, aggregate_name: str) -> Aggregate:
         snapshot_entry = await self._select_one(aggregate_id, aggregate_name)
