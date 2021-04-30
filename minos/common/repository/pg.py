@@ -13,12 +13,8 @@ from typing import (
 import aiopg
 from aiopg import Pool
 
-from .abc import (
-    MinosRepository,
-)
-from .entries import (
-    MinosRepositoryEntry,
-)
+from .abc import MinosRepository
+from .entries import MinosRepositoryEntry
 
 
 class PostgreSqlMinosRepository(MinosRepository):
