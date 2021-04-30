@@ -132,10 +132,10 @@ class Aggregate(MinosModel):
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
-        entry = await _repository.insert(instance)
+        await _repository.insert(instance)
 
-        instance.id = entry.aggregate_id
-        instance.version = entry.version
+        # instance.id = entry.aggregate_id
+        # instance.version = entry.version
 
         return instance
 
