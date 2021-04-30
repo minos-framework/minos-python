@@ -11,7 +11,7 @@ from __future__ import (
 
 from typing import (
     Any,
-    Generator,
+    AsyncIterator,
     NoReturn,
     Optional,
     Type,
@@ -83,16 +83,15 @@ class MinosSnapshotDispatcher(MinosSetup):
         await self._submit_sql(_CREATE_TABLE_QUERY)
 
     # noinspection PyUnusedLocal
-    async def select(self, *args, **kwargs) -> list[MinosSnapshotEntry]:
+    async def select(self, *args, **kwargs) -> AsyncIterator[MinosSnapshotEntry]:
         """Select a sequence of ``MinosSnapshotEntry`` objects.
 
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A sequence of ``MinosSnapshotEntry`` objects.
         """
-        response = self._submit_and_iter_sql(_SELECT_ALL_ENTRIES_QUERY)
-        entries = [MinosSnapshotEntry(*row) async for row in response]
-        return entries
+        async for row in self._submit_and_iter_sql(_SELECT_ALL_ENTRIES_QUERY):
+            yield MinosSnapshotEntry(*row)
 
     async def dispatch(self) -> NoReturn:
         """Perform a dispatching step, based on the sequence of non already processed ``MinosRepositoryEntry`` objects.
@@ -162,7 +161,7 @@ class MinosSnapshotDispatcher(MinosSetup):
     async def _submit_and_fetchone_sql(self, *args, **kwargs) -> tuple:
         return await self._submit_and_iter_sql(*args, **kwargs).__anext__()
 
-    async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> Generator[tuple, None, None]:
+    async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
         async with self._connection() as connect:
             async with connect.cursor() as cursor:
                 await cursor.execute(query, *args, **kwargs)

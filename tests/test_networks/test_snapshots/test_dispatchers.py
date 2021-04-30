@@ -56,7 +56,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
             dispatcher = MinosSnapshotDispatcher.from_config()
             await dispatcher.setup()
             await dispatcher.dispatch()
-            observed = await dispatcher.select()
+            observed = [v async for v in dispatcher.select()]
 
         expected = [
             MinosSnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
