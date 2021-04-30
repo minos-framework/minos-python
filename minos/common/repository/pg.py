@@ -57,6 +57,7 @@ class PostgreSqlMinosRepository(MinosRepository):
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
         if self._pool is not None:
             self._pool.close()
+            await self._pool.wait_closed()
 
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         params = {
