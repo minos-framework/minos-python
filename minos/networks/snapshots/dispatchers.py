@@ -10,6 +10,7 @@ from __future__ import (
 )
 
 from typing import (
+    Any,
     Generator,
     NoReturn,
     Optional,
@@ -24,6 +25,7 @@ from minos.common import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
     MinosSetup,
+    PostgreSqlMinosRepository,
     import_module,
 )
 
@@ -43,6 +45,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         database: str = None,
         user: str = None,
         password: str = None,
+        repository: dict[str, Any] = None,
         offset: int = 0,
         **kwargs
     ):
@@ -55,6 +58,8 @@ class MinosSnapshotDispatcher(MinosSetup):
         self.password = password
 
         self.offset = offset
+
+        self.repository = PostgreSqlMinosRepository(**repository)
 
     @classmethod
     def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSnapshotDispatcher:
@@ -69,7 +74,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         if config is None:
             raise MinosConfigException("The config object must be setup.")
         # noinspection PyProtectedMember
-        return cls(*args, **config.repository._asdict(), **kwargs)
+        return cls(*args, **config.repository._asdict(), repository=config.repository._asdict(), **kwargs)
 
     async def _setup(self) -> NoReturn:
         await self._create_broker_table()
@@ -96,8 +101,8 @@ class MinosSnapshotDispatcher(MinosSetup):
 
     @property
     async def _new_entries(self):
-        async for raw in self._submit_and_iter_sql(_SELECT_EVENT_ENTRIES_QUERY, (self.offset,)):
-            yield MinosRepositoryEntry(*raw)
+        for entry in await self.repository.select(id_ge=self.offset):
+            yield entry
 
     async def _dispatch_one(self, event_entry: MinosRepositoryEntry) -> Optional[MinosSnapshotEntry]:
         if event_entry.action is MinosRepositoryAction.DELETE:
@@ -187,12 +192,6 @@ CREATE TABLE IF NOT EXISTS snapshot (
 _SELECT_ALL_ENTRIES_QUERY = """
 SELECT aggregate_id, aggregate_name, version, data, created_at, updated_at
 FROM snapshot;
-""".strip()
-
-_SELECT_EVENT_ENTRIES_QUERY = """
-SELECT aggregate_id, aggregate_name, version, data, id, action
-FROM events
-WHERE id >= %s;
 """.strip()
 
 _DELETE_ONE_SNAPSHOT_ENTRY_QUERY = """
