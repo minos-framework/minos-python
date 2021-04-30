@@ -68,11 +68,7 @@ class PostgreSqlMinosRepository(MinosRepository):
         return entry
 
     async def _select(
-        self,
-        aggregate_id: int = None,
-        aggregate_name: str = None,
-        *args,
-        **kwargs,
+        self, aggregate_id: int = None, aggregate_name: str = None, *args, **kwargs,
     ) -> AsyncIterator[MinosRepositoryEntry]:
         if aggregate_id is None and aggregate_name is None:
             async for row in self._submit_and_iter_sql(_SELECT_ALL_ENTRIES_QUERY):
@@ -98,11 +94,7 @@ class PostgreSqlMinosRepository(MinosRepository):
 
     def _connection(self):
         return aiopg.connect(
-            host=self.host,
-            port=self.port,
-            dbname=self.database,
-            user=self.user,
-            password=self.password,
+            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
         )
 
 
