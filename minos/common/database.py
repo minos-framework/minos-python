@@ -26,16 +26,7 @@ from .setup import (
 class PostgreSqlMinosDatabase(ABC, MinosSetup):
     """PostgreSql Minos Database base class."""
 
-    def __init__(
-        self,
-        host: str = None,
-        port: int = None,
-        database: str = None,
-        user: str = None,
-        password: str = None,
-        *args,
-        **kwargs,
-    ):
+    def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.host = host
         self.port = port
