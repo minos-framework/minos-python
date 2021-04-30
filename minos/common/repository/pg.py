@@ -55,7 +55,7 @@ class PostgreSqlMinosRepository(MinosRepository):
         await self._submit_sql(_CREATE_ACTION_ENUM_QUERY)
         await self._submit_sql(_CREATE_TABLE_QUERY)
 
-    async def __aexit__(self, exc_type, exc_value, exc_traceback):
+    async def _destroy(self) -> NoReturn:
         if self.__pool is not None:
             self.__pool.close()
             await self.__pool.wait_closed()

@@ -55,13 +55,6 @@ class MinosRepository(ABC, MinosSetup):
         # noinspection PyProtectedMember
         return cls(*args, **config.repository._asdict(), **kwargs)
 
-    async def __aenter__(self) -> MinosRepository:
-        await self.setup()
-        return self
-
-    async def __aexit__(self, exc_type, exc_value, exc_traceback):
-        pass
-
     async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
         """Store new insertion entry into de repository.
 
