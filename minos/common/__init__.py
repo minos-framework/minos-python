@@ -25,6 +25,9 @@ from .configuration import (
     MinosConfig,
     MinosConfigAbstract,
 )
+from .database import (
+    PostgreSqlMinosDataBase,
+)
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
@@ -113,7 +116,4 @@ from .setup import (
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,
-)
-from .database import (
-    PostgreSqlMinosDataBase,
 )
