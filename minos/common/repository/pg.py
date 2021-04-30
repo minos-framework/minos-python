@@ -11,6 +11,7 @@ from typing import (
 )
 
 import aiopg
+from aiopg import Pool
 
 from .abc import (
     MinosRepository,
@@ -39,7 +40,7 @@ class PostgreSqlMinosRepository(MinosRepository):
         self.database = database
         self.user = user
         self.password = password
-        self._pool = None
+        self.__pool = None
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
@@ -55,9 +56,9 @@ class PostgreSqlMinosRepository(MinosRepository):
         await self._submit_sql(_CREATE_TABLE_QUERY)
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
-        if self._pool is not None:
-            self._pool.close()
-            await self._pool.wait_closed()
+        if self.__pool is not None:
+            self.__pool.close()
+            await self.__pool.wait_closed()
 
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         params = {
@@ -88,22 +89,22 @@ class PostgreSqlMinosRepository(MinosRepository):
         raise IndexError("Given query did not returned any entry.")
 
     async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
-        if self._pool is None:
-            self._pool = await aiopg.create_pool(
-                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
-            )
-        with (await self._pool.cursor()) as cursor:
+        with (await (await self._pool).cursor()) as cursor:
             await cursor.execute(query, *args, **kwargs)
             async for row in cursor:
                 yield row
 
     async def _submit_sql(self, query: str, *args, **kwargs) -> NoReturn:
-        if self._pool is None:
-            self._pool = await aiopg.create_pool(
+        with (await (await self._pool).cursor()) as cursor:
+            await cursor.execute(query, *args, **kwargs)
+
+    @property
+    async def _pool(self) -> Pool:
+        if self.__pool is None:
+            self.__pool = await aiopg.create_pool(
                 host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
             )
-        with (await self._pool.cursor()) as cursor:
-            await cursor.execute(query, *args, **kwargs)
+        return self.__pool
 
 
 _CREATE_ACTION_ENUM_QUERY = """
