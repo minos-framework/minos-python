@@ -17,7 +17,6 @@ from abc import (
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
-    NoReturn,
     Optional,
     Union,
 )
@@ -63,7 +62,7 @@ class MinosRepository(ABC, MinosSetup):
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
         pass
 
-    async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
+    async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
         """Store new insertion entry into de repository.
 
         :param entry: Entry to be stored.
@@ -77,7 +76,7 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = MinosRepositoryAction.INSERT
         return await self._submit(entry)
 
-    async def update(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
+    async def update(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
         """Store new update entry into de repository.
 
         :param entry: Entry to be stored.
@@ -91,7 +90,7 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = MinosRepositoryAction.UPDATE
         return await self._submit(entry)
 
-    async def delete(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
+    async def delete(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
