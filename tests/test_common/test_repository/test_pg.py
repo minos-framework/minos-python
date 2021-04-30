@@ -58,7 +58,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
 
     async def test_aggregate(self):
         async with PostgreSqlMinosRepository(**self.repository_db) as repository:
-            pass
+            await Car.create(doors=3, color="blue", _repository=repository)
             # car = await Car.create(doors=3, color="blue", _repository=repository)
             # await car.update(color="red")
             # await car.update(doors=5)
