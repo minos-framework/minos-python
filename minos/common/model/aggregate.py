@@ -130,7 +130,7 @@ class Aggregate(MinosModel):
         if _repository is None:
             _repository = cls._build_repository(_config)
 
-        instance = cls(0, 0, *args, _broker=_broker, **kwargs)
+        instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
         entry = await _repository.insert(instance)
 
