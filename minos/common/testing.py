@@ -16,6 +16,7 @@ from typing import (
     Any,
     NoReturn,
 )
+from uuid import uuid4
 
 import aiopg
 
@@ -28,6 +29,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH: Path
 
     def setUp(self) -> None:
+        self._uuid = uuid4()
         self._config = MinosConfig(self.CONFIG_FILE_PATH)
 
         self._meta_repository_db = self._config.repository._asdict()
@@ -40,7 +42,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self._meta_commands_queue_db.pop("records")
         self._meta_commands_queue_db.pop("retry")
 
-        self._test_db = {"database": "test_db", "user": "test_user"}
+        self._test_db = {"database": f"test_db_{self._uuid.hex}", "user": f"test_user_{self._uuid.hex}"}
 
         self.repository_db = self._meta_repository_db | self._test_db
         self.events_queue_db = self._meta_events_queue_db | self._test_db
