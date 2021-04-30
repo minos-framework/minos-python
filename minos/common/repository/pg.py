@@ -39,6 +39,7 @@ class PostgreSqlMinosRepository(MinosRepository):
         self.database = database
         self.user = user
         self.password = password
+        self.__connection = None
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
@@ -52,6 +53,11 @@ class PostgreSqlMinosRepository(MinosRepository):
     async def _create_events_table(self):
         await self._submit_sql(_CREATE_ACTION_ENUM_QUERY)
         await self._submit_sql(_CREATE_TABLE_QUERY)
+
+    async def __aexit__(self, exc_type, exc_value, exc_traceback):
+        if self.__connection is not None:
+            await self.__connection.close()
+        pass
 
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         params = {
@@ -82,21 +88,22 @@ class PostgreSqlMinosRepository(MinosRepository):
         raise IndexError("Given query did not returned any entry.")
 
     async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(query, *args, **kwargs)
-                async for row in cursor:
-                    yield row
+        async with self._connection.cursor() as cursor:
+            await cursor.execute(query, *args, **kwargs)
+            async for row in cursor:
+                yield row
 
     async def _submit_sql(self, query: str, *args, **kwargs) -> NoReturn:
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(query, *args, **kwargs)
+        async with self._connection.cursor() as cursor:
+            await cursor.execute(query, *args, **kwargs)
 
+    @property
     def _connection(self):
-        return aiopg.connect(
-            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
-        )
+        if self.__connection is None:
+            self.__connection = await aiopg.connect(
+                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
+            )
+        return self.__connection
 
 
 _CREATE_ACTION_ENUM_QUERY = """
