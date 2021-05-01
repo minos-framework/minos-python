@@ -88,7 +88,7 @@ class Aggregate(MinosModel):
             _repository = cls._build_repository(_config)
 
         # noinspection PyTypeChecker
-        entries = await _repository.select(aggregate_name=cls.classname, aggregate_id=id)
+        entries = [v async for v in _repository.select(aggregate_name=cls.classname, aggregate_id=id)]
         if not len(entries):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
 

@@ -6,12 +6,12 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
-    Any,
-    Optional,
+    AsyncIterator,
 )
 
-import aiopg
-
+from ..database import (
+    PostgreSqlMinosDatabase,
+)
 from .abc import (
     MinosRepository,
 )
@@ -20,25 +20,8 @@ from .entries import (
 )
 
 
-class PostgreSqlMinosRepository(MinosRepository):
+class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
     """PostgreSQL-based implementation of the repository class in ``minos``."""
-
-    def __init__(
-        self,
-        host: str = None,
-        port: int = None,
-        database: str = None,
-        user: str = None,
-        password: str = None,
-        *args,
-        **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-        self.host = host
-        self.port = port
-        self.database = database
-        self.user = user
-        self.password = password
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
@@ -50,8 +33,8 @@ class PostgreSqlMinosRepository(MinosRepository):
         await self._create_events_table()
 
     async def _create_events_table(self):
-        await self._submit_sql(_CREATE_ACTION_ENUM_QUERY, fetch=False)
-        await self._submit_sql(_CREATE_TABLE_QUERY, fetch=False)
+        await self.submit_query(_CREATE_ACTION_ENUM_QUERY)
+        await self.submit_query(_CREATE_TABLE_QUERY)
 
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         params = {
@@ -60,37 +43,21 @@ class PostgreSqlMinosRepository(MinosRepository):
             "aggregate_name": entry.aggregate_name,
             "data": entry.data,
         }
-        response = await self._submit_sql(_INSERT_VALUES_QUERY, params)
-        entry.id = response[0][0]
-        entry.aggregate_id = response[0][1]
-        entry.version = response[0][2]
+        response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params)
+        entry.id = response[0]
+        entry.aggregate_id = response[1]
+        entry.version = response[2]
         return entry
 
     async def _select(
         self, aggregate_id: int = None, aggregate_name: str = None, *args, **kwargs,
-    ) -> list[MinosRepositoryEntry]:
+    ) -> AsyncIterator[MinosRepositoryEntry]:
         if aggregate_id is None and aggregate_name is None:
-            response = await self._submit_sql(_SELECT_ALL_ENTRIES_QUERY)
-            entries = [MinosRepositoryEntry(*row) for row in response]
+            async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY):
+                yield MinosRepositoryEntry(*row)
         else:
-            params = (aggregate_id, aggregate_name)
-            response = await self._submit_sql(_SELECT_ENTRIES_QUERY, params)
-            entries = [MinosRepositoryEntry(aggregate_id, aggregate_name, *row) for row in response]
-
-        return entries
-
-    async def _submit_sql(self, query: str, *args, fetch: bool = True, **kwargs) -> Optional[list[tuple[Any, ...]]]:
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(query, *args, **kwargs)
-                if not fetch:
-                    return None
-                return await cursor.fetchall()
-
-    def _connection(self):
-        return aiopg.connect(
-            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
-        )
+            async for row in self.submit_query_and_iter(_SELECT_ENTRIES_QUERY, (aggregate_id, aggregate_name)):
+                yield MinosRepositoryEntry(aggregate_id, aggregate_name, *row)
 
 
 _CREATE_ACTION_ENUM_QUERY = """
