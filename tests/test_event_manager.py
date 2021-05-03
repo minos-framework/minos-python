@@ -1,15 +1,13 @@
-import asyncio
-import logging
-import random
-import string
+"""
+Copyright (C) 2021 Clariteia SL
 
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
 import pytest
 from aiokafka import (
-    AIOKafkaConsumer,
     AIOKafkaProducer,
-)
-from aiomisc.log import (
-    basic_config,
 )
 from minos.common import (
     Aggregate,
@@ -19,9 +17,6 @@ from minos.common.broker import (
 )
 from minos.common.configuration.config import (
     MinosConfig,
-)
-from minos.common.logs import (
-    log,
 )
 from minos.networks.event import (
     EventHandlerDatabaseInitializer,
@@ -33,12 +28,12 @@ from tests.database_testcase import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def config():
     return MinosConfig(path="./tests/test_config.yml")
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def services(config):
     return [
         EventHandlerDatabaseInitializer(config=config),
@@ -61,7 +56,6 @@ class TestPostgreSqlMinosEventHandler(EventHandlerPostgresAsyncTestCase):
         database = await self._database()
         async with database as connect:
             async with connect.cursor() as cur:
-
                 await cur.execute(
                     "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'event_queue';"
                 )
