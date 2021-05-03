@@ -7,9 +7,17 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
-from minos.common import MinosException
-from minos.networks import MinosNetworkException, MinosSnapshotException, MinosPreviousVersionSnapshotException
-from tests.aggregate_classes import Car
+from minos.common import (
+    MinosException,
+)
+from minos.networks import (
+    MinosNetworkException,
+    MinosPreviousVersionSnapshotException,
+    MinosSnapshotException,
+)
+from tests.aggregate_classes import (
+    Car,
+)
 
 
 class TestExceptions(unittest.TestCase):
@@ -28,7 +36,7 @@ class TestExceptions(unittest.TestCase):
         exception = MinosPreviousVersionSnapshotException(previous, new)
         expected = (
             "MinosPreviousVersionSnapshotException(message=\"Version for 'tests.aggregate_classes.Car' "
-            "aggregate must be greater than 2. Obtained: 1\")"
+            'aggregate must be greater than 2. Obtained: 1")'
         )
         self.assertEqual(expected, repr(exception))
 
