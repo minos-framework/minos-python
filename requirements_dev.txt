@@ -1,5 +1,5 @@
 aiokafka==0.7.0
-aiomisc==12.1.0
+aiomisc==14.0.3
 aiopg==1.2.1
 alabaster==0.7.12
 appdirs==1.4.4
