@@ -34,33 +34,33 @@ class TestMinosSnapshotService(PostgresAsyncTestCase):
 
     def test_is_instance(self):
         with self.config:
-            service = MinosSnapshotService(interval=10)
+            service = MinosSnapshotService(interval=0.1)
             self.assertIsInstance(service, PeriodicService)
 
     def test_dispatcher_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            MinosSnapshotService(interval=10)
+            MinosSnapshotService(interval=0.1)
 
     def test_dispatcher_config(self):
-        service = MinosSnapshotService(interval=10, config=self.config)
+        service = MinosSnapshotService(interval=0.1, config=self.config)
         dispatcher = service.dispatcher
         self.assertIsInstance(dispatcher, MinosSnapshotDispatcher)
         self.assertFalse(dispatcher.already_setup)
 
     def test_dispatcher_config_context(self):
         with self.config:
-            service = MinosSnapshotService(interval=10)
+            service = MinosSnapshotService(interval=0.1)
             self.assertIsInstance(service.dispatcher, MinosSnapshotDispatcher)
 
     async def test_start(self):
-        service = MinosSnapshotService(interval=1, loop=None, config=self.config)
+        service = MinosSnapshotService(interval=0.1, loop=None, config=self.config)
         service.dispatcher.setup = MagicMock(side_effect=service.dispatcher.setup)
         await service.start()
         self.assertTrue(1, service.dispatcher.setup.call_count)
         await service.stop()
 
     async def test_callback(self):
-        service = MinosSnapshotService(interval=1, loop=None, config=self.config)
+        service = MinosSnapshotService(interval=0.1, loop=None, config=self.config)
         service.dispatcher.dispatch = MagicMock(side_effect=service.dispatcher.dispatch)
         await service.start()
         self.assertEqual(1, service.dispatcher.dispatch.call_count)
