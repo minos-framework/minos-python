@@ -76,9 +76,7 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         :param kwargs: Additional named arguments.
         :return: A sequence of ``MinosSnapshotEntry`` objects.
         """
-        # FIXME: Don't 'materialize' the full query, iterate over the generator.
-        entries = tuple(v async for v in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY))
-        for row in entries:
+        async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY):
             yield MinosSnapshotEntry(*row)
 
     async def dispatch(self) -> NoReturn:
