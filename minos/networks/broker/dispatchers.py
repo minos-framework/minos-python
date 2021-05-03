@@ -98,12 +98,12 @@ class MinosQueueDispatcher(MinosBrokerSetup):
             await producer.start()
             # Produce message
             await producer.send_and_wait(topic, message)
-            # Wait for all pending messages to be delivered or expire.
-            await producer.stop()
-
             published = True
         except Exception:
             published = False
+        finally:
+            # Wait for all pending messages to be delivered or expire.
+            await producer.stop()
 
         return published
 
