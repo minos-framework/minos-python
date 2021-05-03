@@ -55,11 +55,6 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         # noinspection PyProtectedMember
         return cls(*args, **config.events._asdict(), **kwargs)
 
-    async def _destroy(self) -> NoReturn:
-        await super()._destroy()
-        if self._pool is not None:
-            self._pool.terminate()
-
     async def dispatch(self) -> NoReturn:
         """Dispatch the items in the publishing queue.
 

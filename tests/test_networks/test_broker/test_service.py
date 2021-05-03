@@ -53,7 +53,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
 
     async def test_start(self):
         with self.config:
-            service = MinosQueueService(interval=1, loop=None)
+            service = MinosQueueService(interval=10, loop=None)
             service.dispatcher.setup = MagicMock(side_effect=service.dispatcher.setup)
             await service.start()
             self.assertTrue(1, service.dispatcher.setup.call_count)
@@ -61,7 +61,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
 
     async def test_callback(self):
         with self.config:
-            service = MinosQueueService(interval=1, loop=None)
+            service = MinosQueueService(interval=10, loop=None)
             service.dispatcher.dispatch = MagicMock(side_effect=service.dispatcher.dispatch)
             await service.start()
             self.assertEqual(1, service.dispatcher.dispatch.call_count)
