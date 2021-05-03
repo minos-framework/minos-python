@@ -44,9 +44,7 @@ class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
             "data": entry.data,
         }
         response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params)
-        entry.id = response[0]
-        entry.aggregate_id = response[1]
-        entry.version = response[2]
+        entry.id, entry.aggregate_id, entry.version, entry.created_at = response
         return entry
 
     async def _select(
@@ -78,48 +76,52 @@ LANGUAGE plpgsql;
 """.strip()
 
 _CREATE_TABLE_QUERY = """
-CREATE TABLE IF NOT EXISTS events (
+CREATE TABLE IF NOT EXISTS aggregate_event (
     id BIGSERIAL PRIMARY KEY,
     action ACTION_TYPE NOT NULL,
     aggregate_id BIGINT NOT NULL,
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
     data BYTEA NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (aggregate_id, aggregate_name, version)
 );
 """.strip()
 
 _INSERT_VALUES_QUERY = """
-INSERT INTO events (id, action, aggregate_id, aggregate_name, version, data)
-VALUES (default,
-        %(action)s,
-        (
-            CASE %(aggregate_id)s
-                WHEN 0 THEN (
-                    SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(aggregate_id) + 1 END)
-                    FROM events
-                    WHERE aggregate_name = %(aggregate_name)s
-                )
-                ELSE %(aggregate_id)s END
-            ),
-        %(aggregate_name)s,
-        (
-            SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(version) + 1 END)
-            FROM events
-            WHERE aggregate_id = %(aggregate_id)s
-              AND aggregate_name = %(aggregate_name)s
+INSERT INTO aggregate_event (id, action, aggregate_id, aggregate_name, version, data, created_at)
+VALUES (
+    default,
+    %(action)s,
+    (
+        CASE %(aggregate_id)s
+            WHEN 0 THEN (
+                SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(aggregate_id) + 1 END)
+                FROM aggregate_event
+                WHERE aggregate_name = %(aggregate_name)s
+            )
+            ELSE %(aggregate_id)s END
         ),
-        %(data)s)
-RETURNING id, aggregate_id, version;
+    %(aggregate_name)s,
+    (
+        SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(version) + 1 END)
+        FROM aggregate_event
+        WHERE aggregate_id = %(aggregate_id)s
+          AND aggregate_name = %(aggregate_name)s
+    ),
+    %(data)s,
+    default
+)
+RETURNING id, aggregate_id, version, created_at;
 """.strip()
 
 _SELECT_ENTRIES_QUERY = """
-SELECT version, data, id, action
-FROM events
+SELECT version, data, id, action, created_at
+FROM aggregate_event
 WHERE aggregate_id = %s AND aggregate_name = %s;
 """.strip()
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_id, aggregate_name, version, data, id, action
-FROM events
+SELECT aggregate_id, aggregate_name, version, data, id, action, created_at
+FROM aggregate_event
 """.strip()
