@@ -10,9 +10,10 @@ from __future__ import (
 )
 
 from typing import (
+    AsyncIterator,
     NamedTuple,
     NoReturn,
-    Optional, AsyncIterator,
+    Optional,
 )
 
 from aiokafka import (
