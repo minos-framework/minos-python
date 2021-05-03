@@ -6,14 +6,18 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from datetime import datetime
+from datetime import (
+    datetime,
+)
 
 from minos.common import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
     MinosRepositoryUnknownActionException,
 )
-from tests.aggregate_classes import Car
+from tests.aggregate_classes import (
+    Car,
+)
 
 
 class TestMinosRepositoryAction(unittest.TestCase):
