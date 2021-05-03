@@ -46,5 +46,5 @@ class MinosSnapshotService(PeriodicService):
         :param err: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
-        await self.dispatcher.destroy()
         await super().stop(err)
+        await self.dispatcher.destroy()
