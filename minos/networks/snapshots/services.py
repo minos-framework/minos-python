@@ -6,17 +6,11 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-from aiomisc.service.periodic import (
-    PeriodicService,
-)
+from aiomisc.service.periodic import PeriodicService
 
-from minos.common import (
-    MinosConfig,
-)
+from minos.common import MinosConfig
 
-from .dispatchers import (
-    MinosSnapshotDispatcher,
-)
+from .dispatchers import MinosSnapshotDispatcher
 
 
 class MinosSnapshotService(PeriodicService):
