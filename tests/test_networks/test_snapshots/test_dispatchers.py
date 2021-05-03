@@ -39,11 +39,11 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     def test_from_config(self):
         dispatcher = MinosSnapshotDispatcher.from_config(config=self.config)
-        self.assertEqual(self.config.repository.host, dispatcher.host)
-        self.assertEqual(self.config.repository.port, dispatcher.port)
-        self.assertEqual(self.config.repository.database, dispatcher.database)
-        self.assertEqual(self.config.repository.user, dispatcher.user)
-        self.assertEqual(self.config.repository.password, dispatcher.password)
+        self.assertEqual(self.config.snapshot.host, dispatcher.host)
+        self.assertEqual(self.config.snapshot.port, dispatcher.port)
+        self.assertEqual(self.config.snapshot.database, dispatcher.database)
+        self.assertEqual(self.config.snapshot.user, dispatcher.user)
+        self.assertEqual(self.config.snapshot.password, dispatcher.password)
         self.assertEqual(0, dispatcher.offset)
 
     def test_from_config_raises(self):
@@ -53,10 +53,9 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
     async def test_dispatch_select(self):
         await self._populate()
         with self.config:
-            dispatcher = MinosSnapshotDispatcher.from_config()
-            await dispatcher.setup()
-            await dispatcher.dispatch()
-            observed = [v async for v in dispatcher.select()]
+            async with MinosSnapshotDispatcher.from_config() as dispatcher:
+                await dispatcher.dispatch()
+                observed = [v async for v in dispatcher.select()]
 
         expected = [
             MinosSnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),

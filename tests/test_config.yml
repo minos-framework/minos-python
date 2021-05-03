@@ -15,6 +15,12 @@ repository:
     password: min0s
     host: localhost
     port: 5432
+snapshot:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
 events:
     broker: localhost
     port: 9092
