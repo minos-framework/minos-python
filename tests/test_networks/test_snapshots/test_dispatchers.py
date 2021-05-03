@@ -10,6 +10,9 @@ import unittest
 from datetime import (
     datetime,
 )
+from unittest.mock import (
+    patch,
+)
 
 from minos.common import (
     MinosConfigException,
@@ -62,6 +65,30 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
             MinosSnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
             MinosSnapshotEntry.from_aggregate(Car(3, 1, 3, "blue")),
         ]
+        self._assert_equal_snapshot_entries(expected, observed)
+
+    async def test_dispatch_ignore_previous_version(self):
+        with self.config:
+            dispatcher = MinosSnapshotDispatcher.from_config()
+            await dispatcher.setup()
+
+            car = Car(1, 1, 3, "blue")
+            # noinspection PyTypeChecker
+            aggregate_name: str = car.classname
+
+            async def _fn(*args, **kwargs):
+                yield MinosRepositoryEntry(1, aggregate_name, 1, car.avro_bytes)
+                yield MinosRepositoryEntry(1, aggregate_name, 3, car.avro_bytes)
+                yield MinosRepositoryEntry(1, aggregate_name, 2, car.avro_bytes)
+
+            with patch("minos.common.PostgreSqlMinosRepository.select", _fn):
+                await dispatcher.dispatch()
+                observed = [v async for v in dispatcher.select()]
+
+            expected = [MinosSnapshotEntry(1, aggregate_name, 3, car.avro_bytes)]
+            self._assert_equal_snapshot_entries(expected, observed)
+
+    def _assert_equal_snapshot_entries(self, expected: list[MinosSnapshotEntry], observed: list[MinosSnapshotEntry]):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             self.assertEqual(exp.aggregate, obs.aggregate)
