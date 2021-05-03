@@ -44,7 +44,6 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
         self.assertEqual(self.config.repository.database, dispatcher.database)
         self.assertEqual(self.config.repository.user, dispatcher.user)
         self.assertEqual(self.config.repository.password, dispatcher.password)
-        self.assertEqual(None, dispatcher.offset)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):

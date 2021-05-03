@@ -36,11 +36,8 @@ from .entries import (
 class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
     """Minos Snapshot Dispatcher class."""
 
-    def __init__(self, *args, repository: dict[str, Any] = None, offset: int = None, **kwargs):
+    def __init__(self, *args, repository: dict[str, Any] = None, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.offset = offset
-
         self.repository = PostgreSqlMinosRepository(**repository)
 
     async def _destroy(self) -> NoReturn:
@@ -71,9 +68,7 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
 
         :return: This method does not return anything.
         """
-        offset = self.offset
-        if offset is None:
-            offset = await self._load_offset()
+        offset = await self._load_offset()
 
         async for entry in self.repository.select(id_ge=offset):
             await self._dispatch_one(entry)
