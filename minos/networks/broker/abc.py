@@ -28,16 +28,7 @@ class MinosBrokerSetup(PostgreSqlMinosDatabase):
         await self._create_broker_table()
 
     async def _create_broker_table(self) -> NoReturn:
-        await self.submit_query(
-            'CREATE TABLE IF NOT EXISTS "producer_queue" ('
-            '"id" BIGSERIAL NOT NULL PRIMARY KEY, '
-            '"topic" VARCHAR(255) NOT NULL, '
-            '"model" BYTEA NOT NULL, '
-            '"retry" INTEGER NOT NULL, '
-            '"action" VARCHAR(255) NOT NULL, '
-            '"creation_date" TIMESTAMP NOT NULL, '
-            '"update_date" TIMESTAMP NOT NULL);'
-        )
+        await self.submit_query(_CREATE_TABLE_QUERY)
 
 
 class MinosBroker(MinosBaseBroker, MinosBrokerSetup, ABC):
@@ -49,17 +40,26 @@ class MinosBroker(MinosBaseBroker, MinosBrokerSetup, ABC):
         MinosBaseBroker.__init__(self, topic)
         MinosBrokerSetup.__init__(self, *args, **kwargs)
 
-    async def _send_bytes(self, topic: str, raw: bytes) -> (int, int):
-        pool = await self.pool
-        with await pool.cursor() as cur:
-            await cur.execute(
-                "INSERT INTO producer_queue ("
-                "topic, model, retry, action, creation_date, update_date"
-                ") VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
-                (topic, raw, 0, self.ACTION, datetime.now(), datetime.now()),
-            )
+    async def _send_bytes(self, topic: str, raw: bytes) -> int:
+        params = (topic, raw, 0, self.ACTION, datetime.now(), datetime.now())
+        raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
+        return raw[0]
 
-            queue_id = await cur.fetchone()
-            affected_rows = cur.rowcount
 
-        return affected_rows, queue_id[0]
+_CREATE_TABLE_QUERY = """
+CREATE TABLE IF NOT EXISTS producer_queue (
+    id BIGSERIAL NOT NULL PRIMARY KEY,
+    topic VARCHAR(255) NOT NULL,
+    model BYTEA NOT NULL,
+    retry INTEGER NOT NULL,
+    action VARCHAR(255) NOT NULL,
+    creation_date TIMESTAMP NOT NULL,
+    update_date TIMESTAMP NOT NULL
+);
+""".strip()
+
+_INSERT_ENTRY_QUERY = """
+INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date)
+VALUES (%s, %s, %s, %s, %s, %s)
+RETURNING id;
+""".strip()
