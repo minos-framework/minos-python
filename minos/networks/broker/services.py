@@ -33,8 +33,8 @@ class MinosQueueService(PeriodicService):
 
         :return: This method does not return anything.
         """
-        await super().start()
         await self.dispatcher.setup()
+        await super().start()
 
     async def callback(self) -> None:
         """Method to be called periodically by the internal ``aiomisc`` logic.

@@ -30,8 +30,8 @@ class MinosSnapshotService(PeriodicService):
 
         :return: This method does not return anything.
         """
-        await super().start()
         await self.dispatcher.setup()
+        await super().start()
 
     async def callback(self) -> None:
         """Callback implementation to be executed periodically.
