@@ -30,12 +30,11 @@ ENDPOINT = collections.namedtuple("Endpoint", "name route method controller acti
 EVENT = collections.namedtuple("Event", "name controller action")
 COMMAND = collections.namedtuple("Command", "name controller action")
 SERVICE = collections.namedtuple("Service", "name")
-
 EVENTS = collections.namedtuple("Events", "broker items queue")
 COMMANDS = collections.namedtuple("Commands", "broker items queue")
 REST = collections.namedtuple("Rest", "broker endpoints")
-
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
+SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
 
 _ENVIRONMENT_MAPPER = {
     "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
@@ -57,6 +56,11 @@ _ENVIRONMENT_MAPPER = {
     "repository.database": "MINOS_REPOSITORY_DATABASE",
     "repository.user": "MINOS_REPOSITORY_USER",
     "repository.password": "MINOS_REPOSITORY_PASSWORD",
+    "snapshot.host": "MINOS_SNAPSHOT_HOST",
+    "snapshot.port": "MINOS_SNAPSHOT_PORT",
+    "snapshot.database": "MINOS_SNAPSHOT_DATABASE",
+    "snapshot.user": "MINOS_SNAPSHOT_USER",
+    "snapshot.password": "MINOS_SNAPSHOT_PASSWORD",
 }
 
 _PARAMETERIZED_MAPPER = {
@@ -79,6 +83,11 @@ _PARAMETERIZED_MAPPER = {
     "repository.database": "repository_database",
     "repository.user": "repository_user",
     "repository.password": "repository_password",
+    "snapshot.host": "snapshot_host",
+    "snapshot.port": "snapshot_port",
+    "snapshot.database": "snapshot_database",
+    "snapshot.user": "snapshot_user",
+    "snapshot.password": "snapshot_password",
 }
 
 _default: t.Optional[MinosConfigAbstract] = None
@@ -310,4 +319,18 @@ class MinosConfig(MinosConfigAbstract):
             password=self._get("repository.password"),
             host=self._get("repository.host"),
             port=int(self._get("repository.port")),
+        )
+
+    @property
+    def snapshot(self) -> SNAPSHOT:
+        """Get the snapshot config.
+
+        :return: A ``SNAPSHOT`` NamedTuple instance.
+        """
+        return SNAPSHOT(
+            database=self._get("snapshot.database"),
+            user=self._get("snapshot.user"),
+            password=self._get("snapshot.password"),
+            host=self._get("snapshot.host"),
+            port=int(self._get("snapshot.port")),
         )

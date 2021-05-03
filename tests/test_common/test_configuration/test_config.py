@@ -86,6 +86,15 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", repository.host)
         self.assertEqual(5432, repository.port)
 
+    def test_config_snapshot(self):
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        snapshot = config.snapshot
+        self.assertEqual("order_db", snapshot.database)
+        self.assertEqual("minos", snapshot.user)
+        self.assertEqual("min0s", snapshot.password)
+        self.assertEqual("localhost", snapshot.host)
+        self.assertEqual(5432, snapshot.port)
+
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_environment(self):
         config = MinosConfig(path=self.config_file_path)

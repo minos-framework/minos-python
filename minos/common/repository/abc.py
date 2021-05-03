@@ -16,7 +16,7 @@ from abc import (
 )
 from typing import (
     TYPE_CHECKING,
-    NoReturn,
+    AsyncIterator,
     Optional,
     Union,
 )
@@ -55,14 +55,7 @@ class MinosRepository(ABC, MinosSetup):
         # noinspection PyProtectedMember
         return cls(*args, **config.repository._asdict(), **kwargs)
 
-    async def __aenter__(self) -> MinosRepository:
-        await self.setup()
-        return self
-
-    async def __aexit__(self, exc_type, exc_value, exc_traceback):
-        pass
-
-    async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
+    async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
         """Store new insertion entry into de repository.
 
         :param entry: Entry to be stored.
@@ -76,7 +69,7 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = MinosRepositoryAction.INSERT
         return await self._submit(entry)
 
-    async def update(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
+    async def update(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
         """Store new update entry into de repository.
 
         :param entry: Entry to be stored.
@@ -90,7 +83,7 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = MinosRepositoryAction.UPDATE
         return await self._submit(entry)
 
-    async def delete(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> NoReturn:
+    async def delete(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
@@ -127,7 +120,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
-    ) -> list[MinosRepositoryEntry]:
+    ) -> AsyncIterator[MinosRepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
 
         :param aggregate_id: Aggregate identifier.
@@ -146,7 +139,7 @@ class MinosRepository(ABC, MinosSetup):
         """
         await self.setup()
 
-        return await self._select(
+        generator = self._select(
             aggregate_id=aggregate_id,
             aggregate_name=aggregate_name,
             version=version,
@@ -160,7 +153,10 @@ class MinosRepository(ABC, MinosSetup):
             id_le=id_le,
             id_ge=id_ge,
         )
+        # noinspection PyTypeChecker
+        async for entry in generator:
+            yield entry
 
     @abstractmethod
-    async def _select(self, *args, **kwargs) -> list[MinosRepositoryEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
         """Perform a selection query of entries stored in to the repository."""
