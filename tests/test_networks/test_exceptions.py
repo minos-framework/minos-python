@@ -28,7 +28,7 @@ class TestExceptions(unittest.TestCase):
         exception = MinosPreviousVersionSnapshotException(previous, new)
         expected = (
             "MinosPreviousVersionSnapshotException(message=\"Version for 'tests.aggregate_classes.Car' "
-            "aggregate must be greater than 2. Obtained: 1\")"
+            'aggregate must be greater than 2. Obtained: 1")'
         )
         self.assertEqual(expected, repr(exception))
 
