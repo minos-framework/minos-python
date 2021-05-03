@@ -18,6 +18,7 @@ from typing import (
 from aiokafka import (
     AIOKafkaProducer,
 )
+
 from minos.common import (
     MinosConfig,
 )
@@ -58,7 +59,8 @@ class MinosQueueDispatcher(MinosBrokerSetup):
 
         :return: This method does not return anything.
         """
-        async with self._connection() as connect:
+        pool = await self.pool
+        async with pool.acquire() as connect:
             async with connect.cursor() as cur:
                 # noinspection SqlRedundantOrderingDirection
                 await cur.execute(

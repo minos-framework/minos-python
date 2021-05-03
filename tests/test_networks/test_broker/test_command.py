@@ -8,6 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 import aiopg
+
 from minos.common import (
     MinosConfig,
 )
@@ -69,7 +70,9 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
         affected_rows_2, queue_id_2 = await broker.send_one(item)
 
         config = MinosConfig(
-            path=BASE_PATH / "wrong_test_config.yml", events_queue_database="test_db", events_queue_user="test_user"
+            path=BASE_PATH / "wrong_test_config.yml",
+            events_queue_database=self.config.events.queue.database,
+            events_queue_user=self.config.events.queue.user,
         )
         await MinosQueueDispatcher.from_config(config=config).dispatch()
 

@@ -12,6 +12,7 @@ from __future__ import (
 from aiomisc.service.periodic import (
     PeriodicService,
 )
+
 from minos.common import (
     MinosConfig,
 )
@@ -42,3 +43,12 @@ class MinosQueueService(PeriodicService):
         :return:This method does not return anything.
         """
         await self.dispatcher.dispatch()
+
+    async def stop(self, err: Exception = None) -> None:
+        """Stop the service execution.
+
+        :param err: Optional exception that stopped the execution.
+        :return: This method does not return anything.
+        """
+        await super().stop(err)
+        await self.dispatcher.destroy()

@@ -13,6 +13,7 @@ from unittest.mock import (
 from aiomisc.service.periodic import (
     PeriodicService,
 )
+
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -53,6 +54,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
             service.dispatcher.setup = MagicMock(side_effect=service.dispatcher.setup)
             await service.start()
             self.assertTrue(1, service.dispatcher.setup.call_count)
+            await service.stop()
 
     async def test_callback(self):
         with self.config:
@@ -60,6 +62,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
             service.dispatcher.dispatch = MagicMock(side_effect=service.dispatcher.dispatch)
             await service.start()
             self.assertEqual(1, service.dispatcher.dispatch.call_count)
+            await service.stop()
 
 
 if __name__ == "__main__":
