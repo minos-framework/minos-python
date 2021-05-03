@@ -33,8 +33,9 @@ class TestMinosQueueService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
-        service = MinosQueueService(interval=10)
-        self.assertIsInstance(service, PeriodicService)
+        with self.config:
+            service = MinosQueueService(interval=10)
+            self.assertIsInstance(service, PeriodicService)
 
     def test_dispatcher_empty(self):
         with self.assertRaises(MinosConfigException):
