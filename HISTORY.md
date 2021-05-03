@@ -71,3 +71,11 @@ History
 * EventModel and CommandModel reformat
 * Added support for ModelRef in MinosModel
 * Improved MinosConfig
+
+0.0.5 (2021-05-03)
+------------------
+
+* Added PostgreSQL base class for pool connections support
+* Added created_at column for Aggregate Event table
+* Modified MinosConfig for Snapshot support
+* Added database tables setup method
