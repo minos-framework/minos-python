@@ -28,18 +28,18 @@ from tests.database_testcase import (
 )
 
 
-# @pytest.fixture(scope="module")
-# def config():
-#     return MinosConfig(path="./tests/test_config.yml")
-#
-#
-# @pytest.fixture(scope="module")
-# def services(config):
-#     return [
-#         EventHandlerDatabaseInitializer(config=config),
-#         MinosEventServer(conf=config),
-#         MinosEventHandlerPeriodicService(interval=0.5, delay=0, conf=config),
-#     ]
+@pytest.fixture(scope="module")
+def config():
+    return MinosConfig(path="./tests/test_config.yml")
+
+
+@pytest.fixture(scope="module")
+def services(config):
+    return [
+        EventHandlerDatabaseInitializer(config=config),
+        MinosEventServer(conf=config),
+        MinosEventHandlerPeriodicService(interval=0.5, delay=0, conf=config),
+    ]
 
 
 class AggregateTest(Aggregate):
