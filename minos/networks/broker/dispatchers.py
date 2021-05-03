@@ -65,11 +65,7 @@ class MinosQueueDispatcher(MinosBrokerSetup):
 
     async def _dispatch_one(self, row: tuple) -> NoReturn:
         # noinspection PyBroadException
-        try:
-            published = await self.publish(topic=row[1], message=row[2])
-        except Exception:
-            published = False
-
+        published = await self.publish(topic=row[1], message=row[2])
         await self._update_queue_state(row, published)
 
     async def _update_queue_state(self, row: tuple, published: bool):
@@ -84,20 +80,20 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         :return: A boolean flag, ``True`` when the message is properly published or ``False`` otherwise.
         """
         producer = AIOKafkaProducer(bootstrap_servers=f"{self.broker.host}:{self.broker.port}")
-        # Get cluster layout and initial topic/partition leadership information
-        await producer.start()
         # noinspection PyBroadException
         try:
+            # Get cluster layout and initial topic/partition leadership information
+            await producer.start()
             # Produce message
             await producer.send_and_wait(topic, message)
-            flag = True
-        except Exception:
-            flag = False
-        finally:
             # Wait for all pending messages to be delivered or expire.
             await producer.stop()
 
-        return flag
+            published = True
+        except Exception:
+            published = False
+
+        return published
 
 
 _SELECT_NON_PROCESSED_ROWS_QUERY = "SELECT * FROM producer_queue WHERE retry <= %s ORDER BY creation_date ASC LIMIT %s;"
