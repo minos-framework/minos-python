@@ -9,23 +9,15 @@ import unittest
 
 import aiopg
 
-from minos.common import (
-    Event,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common import Event
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks.event import (
     MinosEventHandlerPeriodicService,
     MinosEventServer,
     event_handler_table_creation,
 )
-from tests.aggregate_classes import (
-    AggregateTest,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from tests.aggregate_classes import AggregateTest
+from tests.utils import BASE_PATH
 
 
 class TestPostgreSqlMinosEventHandler(PostgresAsyncTestCase):

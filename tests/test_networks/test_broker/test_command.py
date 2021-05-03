@@ -8,12 +8,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 import aiopg
-from minos.common import (
-    MinosConfig,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common import MinosConfig
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     MinosCommandBroker,
     MinosQueueDispatcher,

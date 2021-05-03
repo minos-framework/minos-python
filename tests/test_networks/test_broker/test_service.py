@@ -6,26 +6,16 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from unittest.mock import (
-    MagicMock,
-)
+from unittest.mock import MagicMock
 
-from aiomisc.service.periodic import (
-    PeriodicService,
-)
-from minos.common import (
-    MinosConfigException,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from aiomisc.service.periodic import PeriodicService
+from minos.common import MinosConfigException
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     MinosQueueDispatcher,
     MinosQueueService,
 )
-from tests.utils import (
-    BASE_PATH,
-)
+from tests.utils import BASE_PATH
 
 
 class TestMinosQueueService(PostgresAsyncTestCase):

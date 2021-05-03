@@ -1,12 +1,8 @@
 import unittest
 
 import aiopg
-from minos.common import (
-    MinosConfig,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common import MinosConfig
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     MinosEventBroker,
     MinosQueueDispatcher,
