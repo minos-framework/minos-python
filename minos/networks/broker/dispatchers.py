@@ -107,6 +107,21 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         return published
 
 
-_SELECT_NON_PROCESSED_ROWS_QUERY = "SELECT * FROM producer_queue WHERE retry <= %s ORDER BY creation_date ASC LIMIT %s;"
-_DELETE_PROCESSED_QUERY = "DELETE FROM producer_queue WHERE id=%s;"
-_UPDATE_NON_PROCESSED_QUERY = "UPDATE producer_queue SET retry = retry + 1 WHERE id=%s;"
+_SELECT_NON_PROCESSED_ROWS_QUERY = """
+SELECT *
+FROM producer_queue
+WHERE retry <= %s
+ORDER BY creation_date
+LIMIT %s;
+""".strip()
+
+_DELETE_PROCESSED_QUERY = """
+DELETE FROM producer_queue
+WHERE id = %s;
+""".strip()
+
+_UPDATE_NON_PROCESSED_QUERY = """
+UPDATE producer_queue
+    SET retry = retry + 1
+WHERE id = %s;
+""".strip()
