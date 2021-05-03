@@ -7,16 +7,26 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import (
+    MagicMock,
+)
 
-from aiomisc.service.periodic import PeriodicService
-from minos.common import MinosConfigException
-from minos.common.testing import PostgresAsyncTestCase
+from aiomisc.service.periodic import (
+    PeriodicService,
+)
+from minos.common import (
+    MinosConfigException,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     MinosSnapshotDispatcher,
     MinosSnapshotService,
 )
-from tests.utils import BASE_PATH
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestMinosSnapshotService(PostgresAsyncTestCase):

@@ -6,16 +6,26 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import pytest
-from aiokafka import AIOKafkaProducer
-from minos.common import Aggregate
-from minos.common.broker import Event
-from minos.common.configuration.config import MinosConfig
+from aiokafka import (
+    AIOKafkaProducer,
+)
+from minos.common import (
+    Aggregate,
+)
+from minos.common.broker import (
+    Event,
+)
+from minos.common.configuration.config import (
+    MinosConfig,
+)
 from minos.networks.event import (
     EventHandlerDatabaseInitializer,
     MinosEventHandlerPeriodicService,
     MinosEventServer,
 )
-from tests.database_testcase import EventHandlerPostgresAsyncTestCase
+from tests.database_testcase import (
+    EventHandlerPostgresAsyncTestCase,
+)
 
 
 @pytest.fixture(scope="module")
