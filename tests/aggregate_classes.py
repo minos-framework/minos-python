@@ -33,4 +33,5 @@ class Car(Aggregate):
 
 class AggregateTest(Aggregate):
     """Aggregate for testing purposes"""
+
     test: int
