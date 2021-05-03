@@ -18,7 +18,6 @@ from typing import (
 from aiokafka import (
     AIOKafkaProducer,
 )
-
 from minos.common import (
     MinosConfig,
     MinosConfigException,

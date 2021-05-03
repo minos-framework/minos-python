@@ -14,7 +14,6 @@ from unittest.mock import (
 from aiomisc.service.periodic import (
     PeriodicService,
 )
-
 from minos.common import (
     MinosConfigException,
 )

@@ -8,7 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 import aiopg
-
 from minos.common import (
     MinosConfig,
 )

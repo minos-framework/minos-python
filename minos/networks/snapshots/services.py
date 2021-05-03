@@ -9,7 +9,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 from aiomisc.service.periodic import (
     PeriodicService,
 )
-
 from minos.common import (
     MinosConfig,
 )
