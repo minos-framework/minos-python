@@ -12,7 +12,7 @@ from __future__ import (
 from typing import (
     NamedTuple,
     NoReturn,
-    Optional,
+    Optional, AsyncIterator,
 )
 
 from aiokafka import (
@@ -59,9 +59,20 @@ class MinosQueueDispatcher(MinosBrokerSetup):
 
         :return: This method does not return anything.
         """
+        async for row in self.select():
+            await self._dispatch_one(row)
+
+    # noinspection PyUnusedLocal
+    async def select(self, *args, **kwargs) -> AsyncIterator[tuple]:
+        """Select a sequence of ``MinosSnapshotEntry`` objects.
+
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A sequence of ``MinosSnapshotEntry`` objects.
+        """
         params = (self.retry, self.records)
         async for row in self.submit_query_and_iter(_SELECT_NON_PROCESSED_ROWS_QUERY, params):
-            await self._dispatch_one(row)
+            yield row
 
     async def _dispatch_one(self, row: tuple) -> NoReturn:
         # noinspection PyBroadException
