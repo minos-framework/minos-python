@@ -14,6 +14,9 @@ from aiomisc.service.periodic import (
     PeriodicService,
 )
 
+from minos.common import (
+    MinosConfigException,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -34,8 +37,8 @@ class TestMinosQueueService(PostgresAsyncTestCase):
         self.assertIsInstance(service, PeriodicService)
 
     def test_dispatcher_empty(self):
-        service = MinosQueueService(interval=10)
-        self.assertIsNone(service.dispatcher)
+        with self.assertRaises(MinosConfigException):
+            MinosQueueService(interval=10)
 
     def test_dispatcher_config(self):
         service = MinosQueueService(interval=10, config=self.config)

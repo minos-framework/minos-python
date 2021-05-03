@@ -21,6 +21,7 @@ from aiokafka import (
 
 from minos.common import (
     MinosConfig,
+    MinosConfigException,
 )
 
 from .abc import (
@@ -50,7 +51,7 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         if config is None:
             config = MinosConfig.get_default()
         if config is None:
-            return None
+            raise MinosConfigException("The config object must be setup.")
         # noinspection PyProtectedMember
         return cls(*args, **config.events._asdict(), **kwargs)
 
