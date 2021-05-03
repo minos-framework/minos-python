@@ -29,3 +29,8 @@ class Car(Aggregate):
     doors: int
     color: str
     owner: Optional[list[ModelRef[Owner]]]
+
+
+class AggregateTest(Aggregate):
+    """Aggregate for testing purposes"""
+    test: int
