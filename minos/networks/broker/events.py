@@ -44,7 +44,7 @@ class MinosEventBroker(MinosBroker):
         # noinspection PyProtectedMember
         return cls(*args, **config.events.queue._asdict(), **kwargs)
 
-    async def send(self, items: list[Aggregate]) -> (int, int):
+    async def send(self, items: list[Aggregate]) -> int:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.

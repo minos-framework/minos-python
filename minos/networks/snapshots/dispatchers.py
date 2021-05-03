@@ -17,14 +17,13 @@ from typing import (
     Type,
 )
 
-import aiopg
 from minos.common import (
     Aggregate,
     MinosConfig,
     MinosConfigException,
     MinosRepositoryAction,
     MinosRepositoryEntry,
-    MinosSetup,
+    PostgreSqlMinosDatabase,
     PostgreSqlMinosRepository,
     import_module,
 )
@@ -37,32 +36,19 @@ from .entries import (
 )
 
 
-class MinosSnapshotDispatcher(MinosSetup):
+class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
     """Minos Snapshot Dispatcher class."""
 
-    def __init__(
-        self,
-        *args,
-        host: str = None,
-        port: int = None,
-        database: str = None,
-        user: str = None,
-        password: str = None,
-        repository: dict[str, Any] = None,
-        offset: int = 0,
-        **kwargs
-    ):
+    def __init__(self, *args, repository: dict[str, Any] = None, offset: int = 0, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.host = host
-        self.port = port
-        self.database = database
-        self.user = user
-        self.password = password
 
         self.offset = offset
 
         self.repository = PostgreSqlMinosRepository(**repository)
+
+    async def _destroy(self) -> NoReturn:
+        await super()._destroy()
+        await self.repository.destroy()
 
     @classmethod
     def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSnapshotDispatcher:
@@ -83,7 +69,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         await self._create_broker_table()
 
     async def _create_broker_table(self) -> NoReturn:
-        await self._submit_sql(_CREATE_TABLE_QUERY)
+        await self.submit_query(_CREATE_TABLE_QUERY)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[MinosSnapshotEntry]:
@@ -93,7 +79,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         :param kwargs: Additional named arguments.
         :return: A sequence of ``MinosSnapshotEntry`` objects.
         """
-        async for row in self._submit_and_iter_sql(_SELECT_ALL_ENTRIES_QUERY):
+        async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY):
             yield MinosSnapshotEntry(*row)
 
     async def dispatch(self) -> NoReturn:
@@ -101,16 +87,11 @@ class MinosSnapshotDispatcher(MinosSetup):
 
         :return: This method does not return anything.
         """
-        async for entry in self._new_entries:
+        async for entry in self.repository.select(id_ge=self.offset):
             try:
                 await self._dispatch_one(entry)
             except MinosPreviousVersionSnapshotException:
                 continue
-
-    @property
-    async def _new_entries(self):
-        for entry in await self.repository.select(id_ge=self.offset):
-            yield entry
 
     async def _dispatch_one(self, event_entry: MinosRepositoryEntry) -> Optional[MinosSnapshotEntry]:
         if event_entry.action is MinosRepositoryAction.DELETE:
@@ -121,7 +102,7 @@ class MinosSnapshotDispatcher(MinosSetup):
 
     async def _submit_delete(self, entry: MinosRepositoryEntry) -> NoReturn:
         params = {"aggregate_id": entry.aggregate_id, "aggregate_name": entry.aggregate_name}
-        await self._submit_sql(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params)
+        await self.submit_query(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params)
 
     async def _build_instance(self, event_entry: MinosRepositoryEntry) -> Aggregate:
         # noinspection PyTypeChecker
@@ -149,7 +130,7 @@ class MinosSnapshotDispatcher(MinosSetup):
         return snapshot_entry.aggregate
 
     async def _select_one(self, aggregate_id: int, aggregate_name: str) -> MinosSnapshotEntry:
-        raw = await self._submit_and_fetchone_sql(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_id, aggregate_name))
+        raw = await self.submit_query_and_fetchone(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_id, aggregate_name))
         return MinosSnapshotEntry(aggregate_id, aggregate_name, *raw)
 
     async def _submit_instance(self, aggregate: Aggregate) -> MinosSnapshotEntry:
@@ -164,31 +145,11 @@ class MinosSnapshotDispatcher(MinosSetup):
             "version": entry.version,
             "data": entry.data,
         }
-        response = await self._submit_and_fetchone_sql(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params)
+        response = await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params)
 
         entry.created_at, entry.updated_at = response
 
         return entry
-
-    async def _submit_and_fetchone_sql(self, *args, **kwargs) -> tuple:
-        return await self._submit_and_iter_sql(*args, **kwargs).__anext__()
-
-    async def _submit_and_iter_sql(self, query: str, *args, **kwargs) -> AsyncIterator[tuple]:
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(query, *args, **kwargs)
-                async for row in cursor:
-                    yield row
-
-    async def _submit_sql(self, query: str, *args, **kwargs) -> NoReturn:
-        async with self._connection() as connect:
-            async with connect.cursor() as cursor:
-                await cursor.execute(query, *args, **kwargs)
-
-    def _connection(self):
-        return aiopg.connect(
-            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
-        )
 
 
 _CREATE_TABLE_QUERY = """
