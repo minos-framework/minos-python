@@ -27,6 +27,7 @@ class TestQueueDispatcher(PostgresAsyncTestCase):
 
     async def test_select(self):
         dispatcher = MinosQueueDispatcher.from_config(config=self.config)
+        await dispatcher.setup()
         self.assertEqual([], [v async for v in dispatcher.select()])
 
     async def test_send_to_kafka_ok(self):
