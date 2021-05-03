@@ -59,28 +59,22 @@ class MinosQueueDispatcher(MinosBrokerSetup):
 
         :return: This method does not return anything.
         """
-        pool = await self.pool
-        async with pool.acquire() as connect:
-            async with connect.cursor() as cur:
-                # noinspection SqlRedundantOrderingDirection
-                await cur.execute(
-                    "SELECT * FROM producer_queue WHERE retry <= %d ORDER BY creation_date ASC LIMIT %d;"
-                    % (self.retry, self.records),
-                )
-                async for row in cur:
-                    # noinspection PyBroadException
-                    try:
-                        published = await self.publish(topic=row[1], message=row[2])
-                    except Exception:
-                        published = False
-                    finally:
-                        async with connect.cursor() as cur2:
-                            if published:
-                                # Delete from database If the event was sent successfully to Kafka.
-                                await cur2.execute("DELETE FROM producer_queue WHERE id=%d;" % row[0])
-                            else:
-                                # Update queue retry column. Increase by 1.
-                                await cur2.execute("UPDATE producer_queue SET retry = retry + 1 WHERE id=%d;" % row[0])
+        params = (self.retry, self.records)
+        async for row in self.submit_query_and_iter(_SELECT_NON_PROCESSED_ROWS_QUERY, params):
+            await self._dispatch_one(row)
+
+    async def _dispatch_one(self, row: tuple) -> NoReturn:
+        # noinspection PyBroadException
+        try:
+            published = await self.publish(topic=row[1], message=row[2])
+        except Exception:
+            published = False
+
+        await self._update_queue_state(row, published)
+
+    async def _update_queue_state(self, row: tuple, published: bool):
+        update_query = _DELETE_PROCESSED_QUERY if published else _UPDATE_NON_PROCESSED_QUERY
+        await self.submit_query(update_query, (row[0],))
 
     async def publish(self, topic: str, message: bytes) -> bool:
         """Publish a new item in in the broker (kafka).
@@ -104,3 +98,8 @@ class MinosQueueDispatcher(MinosBrokerSetup):
             await producer.stop()
 
         return flag
+
+
+_SELECT_NON_PROCESSED_ROWS_QUERY = "SELECT * FROM producer_queue WHERE retry <= %s ORDER BY creation_date ASC LIMIT %s;"
+_DELETE_PROCESSED_QUERY = "DELETE FROM producer_queue WHERE id=%s;"
+_UPDATE_NON_PROCESSED_QUERY = "UPDATE producer_queue SET retry = retry + 1 WHERE id=%s;"
