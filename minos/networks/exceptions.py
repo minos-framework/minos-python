@@ -15,7 +15,7 @@ class MinosNetworkException(MinosException):
     """Base network exception."""
 
 
-class MinosSnapshotException(MinosException):
+class MinosSnapshotException(MinosNetworkException):
     """Base snapshot exception"""
 
 
