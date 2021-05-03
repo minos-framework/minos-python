@@ -52,20 +52,18 @@ class TestMinosQueueService(PostgresAsyncTestCase):
             self.assertIsInstance(service.dispatcher, MinosQueueDispatcher)
 
     async def test_start(self):
-        with self.config:
-            service = MinosQueueService(interval=10, loop=None)
-            service.dispatcher.setup = MagicMock(side_effect=service.dispatcher.setup)
-            await service.start()
-            self.assertTrue(1, service.dispatcher.setup.call_count)
-            await service.stop()
+        service = MinosQueueService(interval=10, loop=None, config=self.config)
+        service.dispatcher.setup = MagicMock(side_effect=service.dispatcher.setup)
+        await service.start()
+        self.assertTrue(1, service.dispatcher.setup.call_count)
+        await service.stop()
 
     async def test_callback(self):
-        with self.config:
-            service = MinosQueueService(interval=10, loop=None)
-            service.dispatcher.dispatch = MagicMock(side_effect=service.dispatcher.dispatch)
-            await service.start()
-            self.assertEqual(1, service.dispatcher.dispatch.call_count)
-            await service.stop()
+        service = MinosQueueService(interval=10, loop=None, config=self.config)
+        service.dispatcher.dispatch = MagicMock(side_effect=service.dispatcher.dispatch)
+        await service.start()
+        self.assertEqual(1, service.dispatcher.dispatch.call_count)
+        await service.stop()
 
 
 if __name__ == "__main__":
