@@ -33,14 +33,14 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
         async with MinosInMemoryRepository() as repository:
             await repository.update(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
             expected = [
-                MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.UPDATE)
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.UPDATE)
             ]
             self.assertEqual(expected, [v async for v in repository.select()])
 
     async def test_delete(self):
         async with MinosInMemoryRepository() as repository:
             await repository.delete(MinosRepositoryEntry(0, "example.Car", 1, bytes()))
-            expected = [MinosRepositoryEntry(0, "example.Car", 1, bytes(), 1, MinosRepositoryAction.DELETE)]
+            expected = [MinosRepositoryEntry(1, "example.Car", 1, bytes(), 1, MinosRepositoryAction.DELETE)]
             self.assertEqual(expected, [v async for v in repository.select()])
 
     async def test_select(self):

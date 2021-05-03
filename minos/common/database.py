@@ -39,6 +39,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         if self._pool is not None:
             self._pool.close()
             await self._pool.wait_closed()
+            self._pool = None
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.

@@ -36,6 +36,7 @@ class MinosSetup(Generic[T]):
         if not self.already_setup:
             await self._setup()
             self.already_setup = True
+        self.already_destroyed = False
 
     @abstractmethod
     async def _setup(self) -> NoReturn:
@@ -53,6 +54,7 @@ class MinosSetup(Generic[T]):
         if not self.already_destroyed:
             await self._destroy()
             self.already_destroyed = True
+        self.already_setup = False
 
     async def _destroy(self) -> NoReturn:
         """Destroy miscellaneous repository things."""
