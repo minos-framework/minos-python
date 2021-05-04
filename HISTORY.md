@@ -79,3 +79,6 @@ History
 * Added created_at column for Aggregate Event table
 * Modified MinosConfig for Snapshot support
 * Added database tables setup method
+
+0.0.6 (2021-05-04)
+------------------
