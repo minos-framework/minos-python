@@ -16,12 +16,8 @@ from minos.common import (
     MinosStorageLmdb,
 )
 
-from .abstract import (
-    MinosBaseSagaBuilder,
-)
-from .exceptions import (
-    MinosSagaException,
-)
+from .abstract import MinosBaseSagaBuilder
+from .exceptions import MinosSagaException
 
 
 class MinosLocalState:
@@ -100,7 +96,7 @@ class MinosSagaStepManager:
         return self._local_state.load_state(self.uuid)
 
     def close(self):
-        #self._state = self._local_state.load_state(self.uuid)
+        # self._state = self._local_state.load_state(self.uuid)
         self._local_state.delete_state(self.uuid)
 
 
