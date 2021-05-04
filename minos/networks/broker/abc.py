@@ -15,55 +15,20 @@ from typing import (
     NoReturn,
 )
 
-import aiopg
 from minos.common import (
     MinosBaseBroker,
-    MinosSetup,
+    PostgreSqlMinosDatabase,
 )
 
 
-class MinosBrokerSetup(MinosSetup):
+class MinosBrokerSetup(PostgreSqlMinosDatabase):
     """Minos Broker Setup Class"""
-
-    def __init__(
-        self,
-        *args,
-        host: str = None,
-        port: int = None,
-        database: str = None,
-        user: str = None,
-        password: str = None,
-        **kwargs
-    ):
-        super().__init__(*args, **kwargs)
-
-        self.host = host
-        self.port = port
-        self.database = database
-        self.user = user
-        self.password = password
 
     async def _setup(self) -> NoReturn:
         await self._create_broker_table()
 
     async def _create_broker_table(self) -> NoReturn:
-        async with self._connection() as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    'CREATE TABLE IF NOT EXISTS "producer_queue" ('
-                    '"id" BIGSERIAL NOT NULL PRIMARY KEY, '
-                    '"topic" VARCHAR(255) NOT NULL, '
-                    '"model" BYTEA NOT NULL, '
-                    '"retry" INTEGER NOT NULL, '
-                    '"action" VARCHAR(255) NOT NULL, '
-                    '"creation_date" TIMESTAMP NOT NULL, '
-                    '"update_date" TIMESTAMP NOT NULL);'
-                )
-
-    def _connection(self):
-        return aiopg.connect(
-            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
-        )
+        await self.submit_query(_CREATE_TABLE_QUERY)
 
 
 class MinosBroker(MinosBaseBroker, MinosBrokerSetup, ABC):
@@ -75,17 +40,26 @@ class MinosBroker(MinosBaseBroker, MinosBrokerSetup, ABC):
         MinosBaseBroker.__init__(self, topic)
         MinosBrokerSetup.__init__(self, *args, **kwargs)
 
-    async def _send_bytes(self, topic: str, raw: bytes) -> (int, int):
-        async with self._connection() as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    "INSERT INTO producer_queue ("
-                    "topic, model, retry, action, creation_date, update_date"
-                    ") VALUES (%s, %s, %s, %s, %s, %s) RETURNING id;",
-                    (topic, raw, 0, self.ACTION, datetime.now(), datetime.now()),
-                )
+    async def _send_bytes(self, topic: str, raw: bytes) -> int:
+        params = (topic, raw, 0, self.ACTION, datetime.now(), datetime.now())
+        raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
+        return raw[0]
 
-                queue_id = await cur.fetchone()
-                affected_rows = cur.rowcount
 
-        return affected_rows, queue_id[0]
+_CREATE_TABLE_QUERY = """
+CREATE TABLE IF NOT EXISTS producer_queue (
+    id BIGSERIAL NOT NULL PRIMARY KEY,
+    topic VARCHAR(255) NOT NULL,
+    model BYTEA NOT NULL,
+    retry INTEGER NOT NULL,
+    action VARCHAR(255) NOT NULL,
+    creation_date TIMESTAMP NOT NULL,
+    update_date TIMESTAMP NOT NULL
+);
+""".strip()
+
+_INSERT_ENTRY_QUERY = """
+INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date)
+VALUES (%s, %s, %s, %s, %s, %s)
+RETURNING id;
+""".strip()

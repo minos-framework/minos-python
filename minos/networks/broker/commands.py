@@ -49,7 +49,7 @@ class MinosCommandBroker(MinosBroker):
         # noinspection PyProtectedMember
         return cls(*args, **config.commands.queue._asdict(), **kwargs)
 
-    async def send(self, items: list[Aggregate]) -> NoReturn:
+    async def send(self, items: list[Aggregate]) -> int:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.

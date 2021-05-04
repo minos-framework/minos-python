@@ -33,8 +33,7 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
-        affected_rows, queue_id = await broker.send_one(item)
-        assert affected_rows == 1
+        queue_id = await broker.send_one(item)
         assert queue_id > 0
 
     async def test_if_commands_was_deleted(self):
@@ -43,8 +42,8 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
-        affected_rows_1, queue_id_1 = await broker.send_one(item)
-        affected_rows_2, queue_id_2 = await broker.send_one(item)
+        queue_id_1 = await broker.send_one(item)
+        queue_id_2 = await broker.send_one(item)
 
         await MinosQueueDispatcher.from_config(config=self.config).dispatch()
 
@@ -53,9 +52,7 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
                 await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandBroker-Delete")
                 records = await cursor.fetchone()
 
-        assert affected_rows_1 == 1
         assert queue_id_1 > 0
-        assert affected_rows_2 == 1
         assert queue_id_2 > 0
         assert records[0] == 0
 
@@ -65,11 +62,13 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
-        affected_rows_1, queue_id_1 = await broker.send_one(item)
-        affected_rows_2, queue_id_2 = await broker.send_one(item)
+        queue_id_1 = await broker.send_one(item)
+        queue_id_2 = await broker.send_one(item)
 
         config = MinosConfig(
-            path=BASE_PATH / "wrong_test_config.yml", events_queue_database="test_db", events_queue_user="test_user"
+            path=BASE_PATH / "wrong_test_config.yml",
+            events_queue_database=self.config.events.queue.database,
+            events_queue_user=self.config.events.queue.user,
         )
         await MinosQueueDispatcher.from_config(config=config).dispatch()
 
@@ -84,9 +83,7 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
                 await cursor.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_2)
                 retry_2 = await cursor.fetchone()
 
-        assert affected_rows_1 == 1
         assert queue_id_1 > 0
-        assert affected_rows_2 == 1
         assert queue_id_2 > 0
         assert records[0] == 2
         assert retry_1[0] > 0
