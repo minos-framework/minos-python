@@ -5,9 +5,7 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 from typing import (
     NamedTuple,
@@ -19,27 +17,13 @@ from typing import (
 
 import aiopg
 
-from aiomisc.service.periodic import (
-    PeriodicService,
-)
-from minos.common.broker import (
-    Event,
-)
-from minos.common.configuration.config import (
-    MinosConfig,
-)
-from minos.common.importlib import (
-    import_module,
-)
-from minos.common.logs import (
-    log,
-)
-from minos.networks.exceptions import (
-    MinosNetworkException,
-)
-from .abc import (
-    MinosEventSetup,
-)
+from aiomisc.service.periodic import PeriodicService
+from minos.common.broker import Event
+from minos.common.configuration.config import MinosConfig
+from minos.common.importlib import import_module
+from minos.common.logs import log
+from minos.networks.exceptions import MinosNetworkException
+from .abc import MinosEventSetup
 
 
 class MinosEventHandler(MinosEventSetup):

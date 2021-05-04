@@ -23,9 +23,4 @@ from .snapshots import (
     MinosSnapshotEntry,
     MinosSnapshotService,
 )
-from .event import (
-    MinosEventServer,
-    MinosEventHandler,
-    MinosEventServerService,
-    MinosEventPeriodicService
-)
+from .event import MinosEventServer, MinosEventHandler, MinosEventServerService, MinosEventPeriodicService

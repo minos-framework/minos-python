@@ -2,18 +2,10 @@ from aiomisc.service.periodic import (
     Service,
     PeriodicService,
 )
-from minos.common import (
-    MinosConfig,
-)
-from .dispatcher import (
-    MinosEventHandler,
-)
-from .event_server import (
-    MinosEventServer
-)
-from aiokafka import (
-    AIOKafkaConsumer,
-)
+from minos.common import MinosConfig
+from .dispatcher import MinosEventHandler
+from .event_server import MinosEventServer
+from aiokafka import AIOKafkaConsumer
 from typing import (
     Awaitable,
     Any,
@@ -52,15 +44,13 @@ class MinosEventServerService(Service):
         await self.consumer.start()
         self.consumer.subscribe(self.dispatcher._topics)
 
-        #self.create_task(self.dispatcher.handle_message(self.consumer))
+        # self.create_task(self.dispatcher.handle_message(self.consumer))
 
         await self.dispatcher.handle_message(self.consumer)
 
     async def stop(self, exception: Exception = None) -> Any:
         if self.consumer is not None:
             await self.consumer.stop()
-
-
 
 
 class MinosEventPeriodicService(PeriodicService):

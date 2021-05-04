@@ -1,17 +1,8 @@
 import unittest
-from unittest.mock import (
-    MagicMock,
-)
-from minos.networks import (
-    MinosEventServerService,
-    MinosEventPeriodicService
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from unittest.mock import MagicMock
+from minos.networks import MinosEventServerService, MinosEventPeriodicService
+from minos.common.testing import PostgresAsyncTestCase
+from tests.utils import BASE_PATH
 
 
 class TestMinosEventServer(PostgresAsyncTestCase):
