@@ -44,11 +44,14 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self._meta_commands_queue_db.pop("records")
         self._meta_commands_queue_db.pop("retry")
 
+        self._meta_snapshot_db = self._config.snapshot._asdict()
+
         self._test_db = {"database": f"test_db_{self._uuid.hex}", "user": f"test_user_{self._uuid.hex}"}
 
         self.repository_db = self._meta_repository_db | self._test_db
         self.events_queue_db = self._meta_events_queue_db | self._test_db
         self.commands_queue_db = self._meta_commands_queue_db | self._test_db
+        self.snapshot_db = self._meta_snapshot_db | self._test_db
 
         self.config = MinosConfig(
             self.CONFIG_FILE_PATH,
@@ -58,6 +61,8 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
             events_queue_user=self.events_queue_db["user"],
             commands_queue_database=self.commands_queue_db["database"],
             commands_queue_user=self.commands_queue_db["user"],
+            snapshot_database=self.snapshot_db["database"],
+            snapshot_user=self.snapshot_db["user"],
         )
 
     async def asyncSetUp(self):
@@ -66,6 +71,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 (self._meta_repository_db, self.repository_db),
                 (self._meta_events_queue_db, self.events_queue_db),
                 (self._meta_commands_queue_db, self.commands_queue_db),
+                (self._meta_snapshot_db, self.snapshot_db),
             ]
         )
         for meta, test in pairs:
