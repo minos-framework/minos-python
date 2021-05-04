@@ -121,7 +121,129 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
             observed = [v async for v in repository.select()]
             self._assert_equal_entries(expected, observed)
 
-    async def test_select_filtered(self):
+    async def test_select_id(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, MinosRepositoryAction.UPDATE),
+            ]
+            observed = [v async for v in repository.select(id=2)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_id_lt(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, MinosRepositoryAction.UPDATE),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, MinosRepositoryAction.UPDATE),
+            ]
+            observed = [v async for v in repository.select(id_lt=5)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_id_gt(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
+                MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
+                MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7,
+                                     MinosRepositoryAction.INSERT),
+            ]
+            observed = [v async for v in repository.select(id_gt=4)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_id_le(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, MinosRepositoryAction.UPDATE),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, MinosRepositoryAction.UPDATE),
+            ]
+            observed = [v async for v in repository.select(id_le=4)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_id_ge(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
+                MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
+                MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7,
+                                     MinosRepositoryAction.INSERT),
+            ]
+            observed = [v async for v in repository.select(id_ge=5)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_aggregate_id(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
+            ]
+            observed = [v async for v in repository.select(aggregate_id=2)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_aggregate_name(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7,
+                                     MinosRepositoryAction.INSERT),
+            ]
+            observed = [v async for v in repository.select(aggregate_name="example.MotorCycle")]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_version(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
+            ]
+            observed = [v async for v in repository.select(version=4)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_version_lt(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7,
+                                     MinosRepositoryAction.INSERT),
+            ]
+            observed = [v async for v in repository.select(version_lt=2)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_version_gt(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, MinosRepositoryAction.UPDATE),
+                MinosRepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, MinosRepositoryAction.UPDATE),
+                MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
+                MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
+            ]
+            observed = [v async for v in repository.select(version_gt=1)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_version_le(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7,
+                                     MinosRepositoryAction.INSERT),
+            ]
+            observed = [v async for v in repository.select(version_le=1)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_version_ge(self):
+        async with (await self._build_repository()) as repository:
+            expected = [
+                MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, MinosRepositoryAction.UPDATE),
+                MinosRepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, MinosRepositoryAction.UPDATE),
+                MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
+                MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
+            ]
+            observed = [v async for v in repository.select(version_ge=2)]
+            self._assert_equal_entries(expected, observed)
+
+    async def test_select_combined(self):
         async with (await self._build_repository()) as repository:
             expected = [
                 MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
