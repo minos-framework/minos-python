@@ -82,36 +82,36 @@ def f_callback(response):
 
 
 def test_saga_async_callbacks_ok(db_path):
-    s = Saga("OrdersAdd", db_path) \
+    s = (Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
-            .invokeParticipant("CreateOrder", a_callback) \
-            .withCompensation("DeleteOrder", b_callback) \
-            .onReply(c_callback) \
-        .execute()
+        .invokeParticipant("CreateOrder", a_callback) \
+        .withCompensation("DeleteOrder", b_callback) \
+        .onReply(c_callback) \
+        .execute())
 
     assert s.get_db_state() is None
 
 
 def test_saga_sync_callbacks_ok(db_path):
-    s = Saga("OrdersAdd", db_path) \
+    s = (Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", d_callback) \
             .withCompensation("DeleteOrder", e_callback) \
             .onReply(f_callback) \
-        .execute()
+        .execute())
 
     assert s.get_db_state() is None
 
 def test_saga_async_callbacks_ko(db_path):
-    s = Saga("OrdersAdd", db_path) \
+    s = (Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("Shipping", a_callback) \
             .withCompensation("DeleteOrder", b_callback) \
             .onReply(c_callback) \
-        .execute()
+        .execute())
 
     state = s.get_db_state()
 
@@ -120,13 +120,13 @@ def test_saga_async_callbacks_ko(db_path):
 
 
 def test_saga_sync_callbacks_ko(db_path):
-    s = Saga("OrdersAdd", db_path) \
+    s = (Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("Shipping", d_callback) \
             .withCompensation("DeleteOrder", e_callback) \
             .onReply(f_callback) \
-        .execute()
+        .execute())
 
     state = s.get_db_state()
 
@@ -135,7 +135,7 @@ def test_saga_sync_callbacks_ko(db_path):
 
 
 def test_saga_correct(db_path):
-    s = Saga("OrdersAdd", db_path) \
+    s = (Saga("OrdersAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", create_order_callback) \
@@ -147,14 +147,14 @@ def test_saga_correct(db_path):
         .step() \
             .invokeParticipant("Shopping") \
             .withCompensation(["Failed","BlockOrder"], shipping_callback) \
-        .execute()
+        .execute())
 
     state = s.get_db_state()
 
     assert state is None
 
 def test_saga_execute_all_compensations(db_path):
-    s = Saga("ItemsAdd", db_path) \
+    s = (Saga("ItemsAdd", db_path) \
         .start() \
         .step() \
             .invokeParticipant("CreateOrder", create_order_callback) \
@@ -166,7 +166,7 @@ def test_saga_execute_all_compensations(db_path):
         .step() \
             .invokeParticipant("Shipping") \
             .withCompensation(["Failed","BlockOrder"], shipping_callback) \
-        .execute()
+        .execute())
 
     state = s.get_db_state()
 
@@ -184,7 +184,7 @@ def test_saga_execute_all_compensations(db_path):
 
 def test_saga_empty_step_must_throw_exception(db_path):
     with pytest.raises(Exception) as exc:
-        Saga("OrdersAdd2", db_path) \
+        (Saga("OrdersAdd2", db_path) \
             .start() \
             .step() \
                 .invokeParticipant("CreateOrder") \
@@ -196,14 +196,14 @@ def test_saga_empty_step_must_throw_exception(db_path):
                 .onReply(create_ticket_on_reply_callback) \
             .step() \
                 .invokeParticipant("VerifyConsumer") \
-            .execute()
+            .execute())
 
     assert "The step() cannot be empty." in str(exc.value)
 
 
 def test_saga_wrong_step_action_must_throw_exception(db_path):
     with pytest.raises(Exception) as exc:
-        Saga("OrdersAdd3", db_path) \
+        (Saga("OrdersAdd3", db_path) \
             .start() \
             .step() \
                 .invokeParticipant("CreateOrder") \
@@ -213,7 +213,7 @@ def test_saga_wrong_step_action_must_throw_exception(db_path):
                 .onReply(create_ticket_on_reply_callback) \
             .step() \
                 .invokeParticipant("VerifyConsumer") \
-            .execute()
+            .execute())
 
     assert "The first method of the step must be .invokeParticipant(name, callback (optional))." in str(exc.value)
 
