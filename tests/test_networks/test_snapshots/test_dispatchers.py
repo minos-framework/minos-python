@@ -57,7 +57,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     async def test_setup_snapshot_table(self):
         async with MinosSnapshotDispatcher.from_config(config=self.config):
-            async with aiopg.connect(**self.repository_db) as connection:
+            async with aiopg.connect(**self.snapshot_db) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
                         "SELECT EXISTS (SELECT FROM pg_tables "
@@ -68,7 +68,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     async def test_setup_snapshot_aux_offset_table(self):
         async with MinosSnapshotDispatcher.from_config(config=self.config):
-            async with aiopg.connect(**self.repository_db) as connection:
+            async with aiopg.connect(**self.snapshot_db) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
                         "SELECT EXISTS (SELECT FROM pg_tables WHERE "
