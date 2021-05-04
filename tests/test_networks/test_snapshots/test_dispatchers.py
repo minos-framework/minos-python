@@ -11,6 +11,8 @@ from datetime import (
     datetime,
 )
 
+import aiopg
+
 from minos.common import (
     MinosConfigException,
     MinosRepositoryEntry,
@@ -48,6 +50,28 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
             MinosSnapshotDispatcher.from_config()
+
+    async def test_setup_snapshot_table(self):
+        async with MinosSnapshotDispatcher.from_config(config=self.config):
+            async with aiopg.connect(**self.repository_db) as connection:
+                async with connection.cursor() as cursor:
+                    await cursor.execute(
+                        "SELECT EXISTS (SELECT FROM pg_tables "
+                        "WHERE schemaname = 'public' AND tablename = 'snapshot');"
+                    )
+                    observed = (await cursor.fetchone())[0]
+        self.assertEqual(True, observed)
+
+    async def test_setup_snapshot_aux_offset_table(self):
+        async with MinosSnapshotDispatcher.from_config(config=self.config):
+            async with aiopg.connect(**self.repository_db) as connection:
+                async with connection.cursor() as cursor:
+                    await cursor.execute(
+                        "SELECT EXISTS (SELECT FROM pg_tables WHERE "
+                        "schemaname = 'public' AND tablename = 'snapshot_aux_offset');"
+                    )
+                    observed = (await cursor.fetchone())[0]
+        self.assertEqual(True, observed)
 
     async def test_dispatch_select(self):
         await self._populate()
