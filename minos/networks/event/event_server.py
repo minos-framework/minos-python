@@ -5,25 +5,37 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import asyncio
 import datetime
 from typing import (
-    NoReturn,
-    Optional,
-    Awaitable,
     Any,
     AsyncIterator,
+    Awaitable,
+    NoReturn,
+    Optional,
 )
 
 import aiopg
+from minos.common.broker import (
+    Event,
+)
+from minos.common.configuration.config import (
+    MinosConfig,
+)
+from minos.common.logs import (
+    log,
+)
+from minos.networks.exceptions import (
+    MinosNetworkException,
+)
 
-from minos.common.broker import Event
-from minos.common.configuration.config import MinosConfig
-from minos.common.logs import log
-from minos.networks.exceptions import MinosNetworkException
-from .abc import MinosEventSetup
+from .abc import (
+    MinosEventSetup,
+)
 
 
 class MinosEventServer(MinosEventSetup):

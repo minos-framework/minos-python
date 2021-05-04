@@ -1,14 +1,24 @@
-from aiomisc.service.periodic import (
-    Service,
-    PeriodicService,
-)
-from minos.common import MinosConfig
-from .dispatcher import MinosEventHandler
-from .event_server import MinosEventServer
-from aiokafka import AIOKafkaConsumer
 from typing import (
-    Awaitable,
     Any,
+    Awaitable,
+)
+
+from aiokafka import (
+    AIOKafkaConsumer,
+)
+from aiomisc.service.periodic import (
+    PeriodicService,
+    Service,
+)
+from minos.common import (
+    MinosConfig,
+)
+
+from .dispatcher import (
+    MinosEventHandler,
+)
+from .event_server import (
+    MinosEventServer,
 )
 
 

@@ -1,16 +1,24 @@
 import time
-from collections import namedtuple
-
-from minos.common.testing import PostgresAsyncTestCase
-from minos.networks import MinosEventServer
-from tests.utils import (
-    BASE_PATH,
-    NaiveAggregate,
+from collections import (
+    namedtuple,
 )
-from minos.common import Event
+
 from aiokafka import (
     AIOKafkaConsumer,
     AIOKafkaProducer,
+)
+from minos.common import (
+    Event,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
+from minos.networks import (
+    MinosEventServer,
+)
+from tests.utils import (
+    BASE_PATH,
+    NaiveAggregate,
 )
 
 

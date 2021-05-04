@@ -6,8 +6,13 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-from .dispatcher import MinosEventHandler
-
-from .event_server import MinosEventServer
-
-from .services import MinosEventServerService, MinosEventPeriodicService
+from .dispatcher import (
+    MinosEventHandler,
+)
+from .event_server import (
+    MinosEventServer,
+)
+from .services import (
+    MinosEventPeriodicService,
+    MinosEventServerService,
+)
