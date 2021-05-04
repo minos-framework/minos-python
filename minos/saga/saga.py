@@ -11,97 +11,15 @@ import time
 import typing as t
 import uuid
 
-from minos.common import (
-    MinosStorage,
-    MinosStorageLmdb,
-)
-
 from .abstract import (
     MinosBaseSagaBuilder,
 )
 from .exceptions import (
     MinosSagaException,
 )
-
-
-class MinosLocalState:
-    def __init__(self, storage: MinosStorage, db_name: str):
-        self._storage = storage
-        self.db_name = db_name
-
-    def update(self, key: str, value: str):
-        actual_state = self._storage.get(self.db_name, key)
-        if actual_state is not None:
-            self._storage.update(self.db_name, key, value)
-        else:
-            self._storage.add(self.db_name, key, value)
-
-    def add(self, key: str, value: str):
-        self._storage.add(self.db_name, key, value)
-
-    def load_state(self, key: str):
-        actual_state = self._storage.get(self.db_name, key)
-        return actual_state
-
-    def delete_state(self, key: str):
-        self._storage.delete(self.db_name, key)
-
-
-class MinosSagaStepManager:
-    """
-    Example of how states are stored:
-
-    """
-
-    def __init__(self, name, uuid: str, db_path: str, storage: MinosStorage = MinosStorageLmdb):
-        self.db_name = "LocalState"
-        self.db_path = db_path
-        self._storage = storage.build(path_db=self.db_path)
-        self._local_state = MinosLocalState(storage=self._storage, db_name=self.db_name)
-        self.uuid = uuid
-        self.saga_name = name
-        self._state = {}
-
-    def start(self):
-        structure = {"saga": self.saga_name, "current_step": None, "operations": {}}
-        self._local_state.update(self.uuid, structure)
-
-    def operation(self, step_uuid: str, type: str, name: str = ""):
-        operation = {
-            "id": step_uuid,
-            "type": type,
-            "name": name,
-            "status": 0,
-            "response": "",
-            "error": "",
-        }
-
-        self._state = self._local_state.load_state(self.uuid)
-
-        self._state["current_step"] = step_uuid
-        self._state["operations"][step_uuid] = operation
-        self._local_state.add(self.uuid, self._state)
-
-    def add_response(self, step_uuid: str, response: str):
-        self._state = self._local_state.load_state(self.uuid)
-        self._state["operations"][step_uuid]["response"] = response
-        self._local_state.update(self.uuid, self._state)
-
-    def add_error(self, step_uuid: str, error: str):
-        self._state = self._local_state.load_state(self.uuid)
-        self._state["operations"][step_uuid]["error"] = error
-        self._local_state.update(self.uuid, self._state)
-
-    def get_last_response(self):
-        self._state = self._local_state.load_state(self.uuid)
-        return self._state["operations"][self._state["current_step"]]["response"]
-
-    def get_state(self):
-        return self._local_state.load_state(self.uuid)
-
-    def close(self):
-        # self._state = self._local_state.load_state(self.uuid)
-        self._local_state.delete_state(self.uuid)
+from .step_manager import (
+    MinosSagaStepManager,
+)
 
 
 def _invokeParticipant(name):
@@ -120,7 +38,7 @@ class Saga(MinosBaseSagaBuilder):
         self,
         name,
         db_path: str = "./db.lmdb",
-        step_manager: MinosSagaStepManager = MinosSagaStepManager,
+        step_manager: t.Type[MinosSagaStepManager] = MinosSagaStepManager,
         loop: asyncio.AbstractEventLoop = None,
     ):
         self.saga_name = name
@@ -404,7 +322,7 @@ class Saga(MinosBaseSagaBuilder):
 
     def onReply(self, _callback: t.Callable):
         self.saga_process["steps"][len(self.saga_process["steps"]) - 1].append(
-            {"id": str(uuid.uuid4()), "type": "onReply", "method": self._onReply, "callback": _callback,}
+            {"id": str(uuid.uuid4()), "type": "onReply", "method": self._onReply, "callback": _callback, }
         )
 
         return self
