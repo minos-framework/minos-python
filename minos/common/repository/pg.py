@@ -7,6 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from typing import (
     AsyncIterator,
+    Optional,
 )
 
 from ..database import (
@@ -47,15 +48,59 @@ class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
         entry.id, entry.aggregate_id, entry.version, entry.created_at = response
         return entry
 
-    async def _select(
-        self, aggregate_id: int = None, aggregate_name: str = None, *args, **kwargs,
-    ) -> AsyncIterator[MinosRepositoryEntry]:
-        if aggregate_id is None and aggregate_name is None:
-            async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY):
-                yield MinosRepositoryEntry(*row)
-        else:
-            async for row in self.submit_query_and_iter(_SELECT_ENTRIES_QUERY, (aggregate_id, aggregate_name)):
-                yield MinosRepositoryEntry(aggregate_id, aggregate_name, *row)
+    async def _select(self, **kwargs,) -> AsyncIterator[MinosRepositoryEntry]:
+        query = self._build_select_query(**kwargs)
+        async for row in self.submit_query_and_iter(query, kwargs):
+            yield MinosRepositoryEntry(*row)
+
+    # noinspection PyUnusedLocal
+    @staticmethod
+    def _build_select_query(
+        aggregate_id: Optional[int] = None,
+        aggregate_name: Optional[str] = None,
+        version: Optional[int] = None,
+        version_lt: Optional[int] = None,
+        version_gt: Optional[int] = None,
+        version_le: Optional[int] = None,
+        version_ge: Optional[int] = None,
+        id: Optional[int] = None,
+        id_lt: Optional[int] = None,
+        id_gt: Optional[int] = None,
+        id_le: Optional[int] = None,
+        id_ge: Optional[int] = None,
+        **kwargs,
+    ) -> str:
+        conditions = list()
+
+        if aggregate_id is not None:
+            conditions.append("aggregate_id = %(aggregate_id)s")
+        if aggregate_name is not None:
+            conditions.append("aggregate_name = %(aggregate_name)s")
+        if version is not None:
+            conditions.append("version = %(version)s")
+        if version_lt is not None:
+            conditions.append("version < %(version_lt)s")
+        if version_gt is not None:
+            conditions.append("version > %(version_gt)s")
+        if version_le is not None:
+            conditions.append("version <= %(version_le)s")
+        if version_ge is not None:
+            conditions.append("version >= %(version_ge)s")
+        if id is not None:
+            conditions.append("id = %(id)s")
+        if id_lt is not None:
+            conditions.append("id < %(id_lt)s")
+        if id_gt is not None:
+            conditions.append("id > %(id_gt)s")
+        if id_le is not None:
+            conditions.append("id <= %(id_le)s")
+        if id_ge is not None:
+            conditions.append("id >= %(id_ge)s")
+
+        if not conditions:
+            return _SELECT_ALL_ENTRIES_QUERY
+
+        return f"{_SELECT_ALL_ENTRIES_QUERY} WHERE {' AND '.join(conditions)}"
 
 
 _CREATE_ACTION_ENUM_QUERY = """
@@ -113,12 +158,6 @@ VALUES (
     default
 )
 RETURNING id, aggregate_id, version, created_at;
-""".strip()
-
-_SELECT_ENTRIES_QUERY = """
-SELECT version, data, id, action, created_at
-FROM aggregate_event
-WHERE aggregate_id = %s AND aggregate_name = %s;
 """.strip()
 
 _SELECT_ALL_ENTRIES_QUERY = """
