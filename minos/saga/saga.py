@@ -25,16 +25,19 @@ from .exceptions import (
 
 
 class MinosLocalState:
-    def __init__(self, storage: MinosStorage):
+    def __init__(self, storage: MinosStorage, db_name: str):
         self._storage = storage
-        self.db_name = "LocalState"
+        self.db_name = db_name
 
-    def create(self, key: str, value: str):
+    def update(self, key: str, value: str):
         actual_state = self._storage.get(self.db_name, key)
         if actual_state is not None:
             self._storage.update(self.db_name, key, value)
         else:
             self._storage.add(self.db_name, key, value)
+
+    def add(self, key: str, value: str):
+        self._storage.add(self.db_name, key, value)
 
     def load_state(self, key: str):
         actual_state = self._storage.get(self.db_name, key)
@@ -50,17 +53,18 @@ class MinosSagaStepManager:
 
     """
 
-    def __init__(self, name, uuid: str, storage: MinosStorage = MinosStorageLmdb):
+    def __init__(self, name, uuid: str, db_path: str, storage: MinosStorage = MinosStorageLmdb):
         self.db_name = "LocalState"
-        self._storage = storage.build(path_db=self.db_name)
-        self._local_state = MinosLocalState(storage=self._storage)
+        self.db_path = db_path
+        self._storage = storage.build(path_db=self.db_path)
+        self._local_state = MinosLocalState(storage=self._storage, db_name=self.db_name)
         self.uuid = uuid
         self.saga_name = name
         self._state = {}
 
     def start(self):
         structure = {"saga": self.saga_name, "current_step": None, "operations": {}}
-        self._local_state.create(self.uuid, structure)
+        self._local_state.update(self.uuid, structure)
 
     def operation(self, step_uuid: str, type: str, name: str = ""):
         operation = {
@@ -76,17 +80,17 @@ class MinosSagaStepManager:
 
         self._state["current_step"] = step_uuid
         self._state["operations"][step_uuid] = operation
-        self._local_state.create(self.uuid, self._state)
+        self._local_state.add(self.uuid, self._state)
 
     def add_response(self, step_uuid: str, response: str):
         self._state = self._local_state.load_state(self.uuid)
         self._state["operations"][step_uuid]["response"] = response
-        self._local_state.create(self.uuid, self._state)
+        self._local_state.update(self.uuid, self._state)
 
     def add_error(self, step_uuid: str, error: str):
         self._state = self._local_state.load_state(self.uuid)
         self._state["operations"][step_uuid]["error"] = error
-        self._local_state.create(self.uuid, self._state)
+        self._local_state.update(self.uuid, self._state)
 
     def get_last_response(self):
         self._state = self._local_state.load_state(self.uuid)
@@ -96,7 +100,7 @@ class MinosSagaStepManager:
         return self._local_state.load_state(self.uuid)
 
     def close(self):
-        self._state = self._local_state.load_state(self.uuid)
+        #self._state = self._local_state.load_state(self.uuid)
         self._local_state.delete_state(self.uuid)
 
 
@@ -113,7 +117,11 @@ def _withCompensation(name):
 
 class Saga(MinosBaseSagaBuilder):
     def __init__(
-        self, name, step_manager: MinosSagaStepManager = MinosSagaStepManager, loop: asyncio.AbstractEventLoop = None,
+        self,
+        name,
+        db_path: str = "./db.lmdb",
+        step_manager: MinosSagaStepManager = MinosSagaStepManager,
+        loop: asyncio.AbstractEventLoop = None,
     ):
         self.saga_name = name
         self.uuid = str(uuid.uuid4())
@@ -123,7 +131,7 @@ class Saga(MinosBaseSagaBuilder):
             "steps": [],
             "current_compensations": [],
         }
-        self._step_manager = step_manager(self.saga_name, self.uuid)
+        self._step_manager = step_manager(self.saga_name, self.uuid, db_path)
         self.loop = loop or asyncio.get_event_loop()
         self._response = ""
 
@@ -138,10 +146,9 @@ class Saga(MinosBaseSagaBuilder):
         return self
 
     def callback_function_call(self, func, response):
-        loop = asyncio.get_event_loop()
         task = func(response)
         if inspect.isawaitable(task):
-            result = loop.run_until_complete(task)
+            result = self.loop.run_until_complete(task)
             return result
         else:
             return task
@@ -304,44 +311,44 @@ class Saga(MinosBaseSagaBuilder):
                 (db_op_response_flag, db_op_response_error,) = self._operationResponseDB(operation["id"], response)
 
                 # if the DB was updated with the response of previous operation
-                if db_op_response_flag:
-                    if operation["callback"] is not None:
-
-                        func = operation["callback"]
-                        callback_id = str(uuid.uuid4())
-
-                        (db_op_callback_flag, db_op_callback_error,) = self._createOperationDB(
-                            callback_id, "withCompensation_callback", name
-                        )
-                        # if the DB was updated
-                        if db_op_callback_flag:
-                            try:
-                                response = self.callback_function_call(func, self._response)
-                            except MinosSagaException as error:
-                                self._operationErrorDB(callback_id, error)
-                                raise error
-
-                            # Add response of current operation to lmdb
-                            (db_op_callback_response_flag, db_op_callback_response_error,) = self._operationResponseDB(
-                                callback_id, response
-                            )
-
-                            # If the database could not be updated
-                            if not db_op_callback_response_flag:
-                                self._operationErrorDB(callback_id, db_op_callback_response_error)
-                                raise db_op_callback_response_error
-
-                        # If the database could not be updated
-                        else:
-                            self._operationErrorDB(callback_id, db_op_callback_error)
-                            raise db_op_callback_error
-                else:
+                if not db_op_response_flag:
                     self._operationErrorDB(operation["id"], db_op_response_error)
                     raise db_op_response_error
             # If the database could not be updated
             else:
                 self._operationErrorDB(operation["id"], db_operation_error)
                 raise db_operation_error
+
+        if operation["callback"] is not None:
+
+            func = operation["callback"]
+            callback_id = str(uuid.uuid4())
+
+            (db_op_callback_flag, db_op_callback_error,) = self._createOperationDB(
+                callback_id, "withCompensation_callback", name
+            )
+            # if the DB was updated
+            if db_op_callback_flag:
+                try:
+                    response = self.callback_function_call(func, response)
+                except MinosSagaException as error:
+                    self._operationErrorDB(callback_id, error)
+                    raise error
+
+                # Add response of current operation to lmdb
+                (db_op_callback_response_flag, db_op_callback_response_error,) = self._operationResponseDB(
+                    callback_id, response
+                )
+
+                # If the database could not be updated
+                if not db_op_callback_response_flag:
+                    self._operationErrorDB(callback_id, db_op_callback_response_error)
+                    raise db_op_callback_response_error
+
+            # If the database could not be updated
+            else:
+                self._operationErrorDB(callback_id, db_op_callback_error)
+                raise db_op_callback_error
 
         return response
 
@@ -420,7 +427,7 @@ class Saga(MinosBaseSagaBuilder):
                 raise Exception("The step() cannot be empty.")
 
             for idx, operation in enumerate(step):
-                if idx == 0 and operation["type"] is not "invokeParticipant":
+                if idx == 0 and operation["type"] != "invokeParticipant":
                     raise Exception(
                         "The first method of the step must be .invokeParticipant(name, callback (optional))."
                     )
@@ -435,18 +442,17 @@ class Saga(MinosBaseSagaBuilder):
                     self.saga_process["current_compensations"].insert(0, operation)
 
             for operation in step:
-                func = operation["method"]
 
                 if operation["type"] == "invokeParticipant":
                     try:
-                        self._response = func(operation)
+                        self._response = self._invokeParticipant(operation)
                     except MinosSagaException as error:
                         self._rollback()
                         return self
 
                 if operation["type"] == "onReply":
                     try:
-                        self._response = func(operation)
+                        self._response = self._onReply(operation)
                     except:
                         self._rollback()
                         return self
@@ -455,8 +461,6 @@ class Saga(MinosBaseSagaBuilder):
 
     def _rollback(self):
         for operation in self.saga_process["current_compensations"]:
-            func = operation["method"]
-            func(operation)
-        # self._step_manager.close()
+            self._withCompensation(operation)
 
         return self
