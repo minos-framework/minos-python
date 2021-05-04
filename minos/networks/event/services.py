@@ -26,11 +26,14 @@ class MinosEventServerService(Service):
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
         self.dispatcher = MinosEventServer.from_config(config=config)
+        self.consumer = None
 
+    """
     def create_task(self, coro: Awaitable[Any]):
         task = self.loop.create_task(coro)
         self.dispatcher._tasks.add(task)
         task.add_done_callback(self.dispatcher._tasks.remove)
+    """
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -39,18 +42,25 @@ class MinosEventServerService(Service):
         """
         await self.dispatcher.setup()
 
-        self.start_event.set()
         # start the Service Event Consumer for Kafka
-        consumer = AIOKafkaConsumer(
+        self.consumer = AIOKafkaConsumer(
             group_id=self.dispatcher._broker_group_name,
             auto_offset_reset="latest",
             bootstrap_servers=self.dispatcher._kafka_conn_data,
         )
 
-        await consumer.start()
-        consumer.subscribe(self.dispatcher._topics)
+        await self.consumer.start()
+        self.consumer.subscribe(self.dispatcher._topics)
 
-        self.create_task(self.dispatcher.handle_message(consumer))
+        #self.create_task(self.dispatcher.handle_message(self.consumer))
+
+        await self.dispatcher.handle_message(self.consumer)
+
+    async def stop(self, exception: Exception = None) -> Any:
+        if self.consumer is not None:
+            await self.consumer.stop()
+
+
 
 
 class MinosEventPeriodicService(PeriodicService):

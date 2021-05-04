@@ -90,3 +90,15 @@ class TestEventServer(PostgresAsyncTestCase):
 
         await event_server.handle_message(consumer())
 
+    async def test_handle_message_ko(self):
+        event_server = MinosEventServer.from_config(config=self.config)
+        await event_server.setup()
+
+        bin_data = bytes(b'test')
+
+        Mensaje = namedtuple("Mensaje",["topic", "partition", "value"])
+
+        async def consumer():
+            yield Mensaje(topic="TicketAdded",partition=0, value=bin_data)
+
+        await event_server.handle_message(consumer())
