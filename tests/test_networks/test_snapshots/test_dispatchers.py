@@ -12,7 +12,6 @@ from datetime import (
 )
 
 import aiopg
-
 from minos.common import (
     MinosConfigException,
     MinosRepositoryEntry,
