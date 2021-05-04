@@ -1,22 +1,21 @@
-
 import datetime
-import aiopg
 
+import aiopg
+from minos.common import (
+    Event,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     MinosEventHandler,
 )
+from minos.networks.exceptions import (
+    MinosNetworkException,
+)
 from tests.utils import (
     BASE_PATH,
     NaiveAggregate,
-)
-from minos.common import (
-    Event
-)
-from minos.networks.exceptions import (
-    MinosNetworkException,
 )
 
 
@@ -61,7 +60,10 @@ class TestEventDispatcher(PostgresAsyncTestCase):
             cls = m.get_event_handler(topic=event_instance.topic)
             await cls(topic=event_instance.topic, event=event_instance)
 
-        self.assertTrue("topic NotExisting have no controller/action configured, please review th configuration file" in str(context.exception))
+        self.assertTrue(
+            "topic NotExisting have no controller/action configured, please review th configuration file"
+            in str(context.exception)
+        )
 
     async def test_none_config(self):
         event_handler = MinosEventHandler.from_config(config=None)
@@ -89,7 +91,6 @@ class TestEventDispatcher(PostgresAsyncTestCase):
 
         assert affected_rows == 1
         assert queue_id[0] > 0
-
 
         # Must get the record, call on_reply function and delete the record from DB
         await event_handler.event_queue_checker()

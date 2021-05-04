@@ -10,15 +10,14 @@ from __future__ import (
 )
 
 from typing import (
+    Any,
+    Callable,
     NamedTuple,
     NoReturn,
     Optional,
-    Callable,
-    Any,
 )
 
 import aiopg
-
 from aiomisc.service.periodic import (
     PeriodicService,
 )
@@ -37,6 +36,7 @@ from minos.common.logs import (
 from minos.networks.exceptions import (
     MinosNetworkException,
 )
+
 from .abc import (
     MinosEventSetup,
 )

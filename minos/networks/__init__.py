@@ -13,6 +13,12 @@ from .broker import (
     MinosQueueDispatcher,
     MinosQueueService,
 )
+from .event import (
+    MinosEventHandler,
+    MinosEventPeriodicService,
+    MinosEventServer,
+    MinosEventServerService,
+)
 from .exceptions import (
     MinosNetworkException,
     MinosPreviousVersionSnapshotException,
@@ -22,10 +28,4 @@ from .snapshots import (
     MinosSnapshotDispatcher,
     MinosSnapshotEntry,
     MinosSnapshotService,
-)
-from .event import (
-    MinosEventServer,
-    MinosEventHandler,
-    MinosEventServerService,
-    MinosEventPeriodicService
 )

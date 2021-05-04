@@ -12,14 +12,14 @@ from __future__ import (
 import asyncio
 import datetime
 from typing import (
+    Any,
+    AsyncIterator,
+    Awaitable,
     NoReturn,
     Optional,
-    Awaitable,
-    Any, AsyncIterator,
 )
 
 import aiopg
-
 from minos.common.broker import (
     Event,
 )
@@ -32,6 +32,7 @@ from minos.common.logs import (
 from minos.networks.exceptions import (
     MinosNetworkException,
 )
+
 from .abc import (
     MinosEventSetup,
 )
@@ -127,7 +128,6 @@ class MinosEventServer(MinosEventSetup):
         affected_rows, id = await self.event_queue_add(msg.topic, msg.partition, msg.value)
         return affected_rows, id
 
-
     def _is_valid_event(self, value: bytes):
         try:
             Event.from_avro_bytes(value)
@@ -146,4 +146,3 @@ class MinosEventServer(MinosEventSetup):
 
         async for msg in consumer:
             await self.handle_single_message(msg)
-

@@ -1,6 +1,15 @@
 import time
-from collections import namedtuple
+from collections import (
+    namedtuple,
+)
 
+from aiokafka import (
+    AIOKafkaConsumer,
+    AIOKafkaProducer,
+)
+from minos.common import (
+    Event,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -10,13 +19,6 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     NaiveAggregate,
-)
-from minos.common import (
-    Event
-)
-from aiokafka import (
-    AIOKafkaConsumer,
-    AIOKafkaProducer,
 )
 
 
@@ -83,10 +85,10 @@ class TestEventServer(PostgresAsyncTestCase):
         event_instance = Event(topic="TicketAdded", model=model.classname, items=[model])
         bin_data = event_instance.avro_bytes
 
-        Mensaje = namedtuple("Mensaje",["topic", "partition", "value"])
+        Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
 
         async def consumer():
-            yield Mensaje(topic="TicketAdded",partition=0, value=bin_data)
+            yield Mensaje(topic="TicketAdded", partition=0, value=bin_data)
 
         await event_server.handle_message(consumer())
 
@@ -94,11 +96,11 @@ class TestEventServer(PostgresAsyncTestCase):
         event_server = MinosEventServer.from_config(config=self.config)
         await event_server.setup()
 
-        bin_data = bytes(b'test')
+        bin_data = bytes(b"test")
 
-        Mensaje = namedtuple("Mensaje",["topic", "partition", "value"])
+        Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
 
         async def consumer():
-            yield Mensaje(topic="TicketAdded",partition=0, value=bin_data)
+            yield Mensaje(topic="TicketAdded", partition=0, value=bin_data)
 
         await event_server.handle_message(consumer())
