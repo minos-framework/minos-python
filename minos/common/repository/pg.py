@@ -10,9 +10,15 @@ from typing import (
     Optional,
 )
 
-from ..database import PostgreSqlMinosDatabase
-from .abc import MinosRepository
-from .entries import MinosRepositoryEntry
+from ..database import (
+    PostgreSqlMinosDatabase,
+)
+from .abc import (
+    MinosRepository,
+)
+from .entries import (
+    MinosRepositoryEntry,
+)
 
 
 class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
