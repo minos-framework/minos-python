@@ -15,7 +15,7 @@ from typing import (
     NoReturn,
     Optional,
     Awaitable,
-    Any,
+    Any, AsyncIterator,
 )
 
 import aiopg
@@ -122,14 +122,20 @@ class MinosEventServer(MinosEventSetup):
         """
         # the handler receive a message and store in the queue database
         # check if the event binary string is well formatted
-        try:
-            Event.from_avro_bytes(msg.value)
-            affected_rows, id = await self.event_queue_add(msg.topic, msg.partition, msg.value)
-            return affected_rows, id
-        finally:
-            pass
+        if not self._is_valid_event(msg.value):
+            return
+        affected_rows, id = await self.event_queue_add(msg.topic, msg.partition, msg.value)
+        return affected_rows, id
 
-    async def handle_message(self, consumer: Any):
+
+    def _is_valid_event(self, value: bytes):
+        try:
+            Event.from_avro_bytes(value)
+            return True
+        except:
+            return False
+
+    async def handle_message(self, consumer: AsyncIterator):
         """Message consumer.
 
         It consumes the messages and sends them for processing.

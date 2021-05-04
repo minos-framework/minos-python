@@ -1,3 +1,6 @@
+import time
+from collections import namedtuple
+
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -39,10 +42,10 @@ async def kafka_producer(config):
     event_instance_2 = Event(topic="TicketDeleted", model=model2.classname, items=[model2])
     bin_data2 = event_instance_2.avro_bytes
 
-    for i in range(0, 10):
-        await producer.send_and_wait(event_instance.topic, bin_data)
-        await producer.send_and_wait(event_instance_2.topic, bin_data2)
-
+    await producer.send_and_wait(event_instance.topic, bin_data)
+    time.sleep(1)
+    await producer.send_and_wait(event_instance_2.topic, bin_data2)
+    time.sleep(1)
     await producer.stop()
 
 
@@ -72,58 +75,18 @@ class TestEventServer(PostgresAsyncTestCase):
         assert affected_rows == 1
         assert id > 0
 
-    """
-    async def test_consumer_kafka(self):
-        await kafka_producer(self.config)
-        handler = {item.name: {'controller': item.controller, 'action': item.action}
-                   for item in self.config.events.items}
-        topics = list(handler.keys())
-        kafka_conn_data = f"{self.config.events.broker.host}:{self.config.events.broker.port}"
-        broker_group_name = f"event_{self.config.service.name}"
-
-        event_server = MinosEventServer.from_config(config=self.config)
-        await event_server.setup()
-
-        consumer = AIOKafkaConsumer(
-            loop=None,
-            group_id=broker_group_name,
-            auto_offset_reset="latest",
-            bootstrap_servers=kafka_conn_data, consumer_timeout_ms=500
-        )
-
-        await consumer.start()
-        consumer.subscribe(topics)
-
-        msg = await consumer.getone()
-        affected_rows, id = await event_server.handle_single_message(msg)
-        assert affected_rows > 0
-        assert id > 0
-
-        await consumer.stop()
-
-
     async def test_handle_message(self):
-        await kafka_producer(self.config)
-        handler = {item.name: {'controller': item.controller, 'action': item.action}
-                   for item in self.config.events.items}
-        topics = list(handler.keys())
-        kafka_conn_data = f"{self.config.events.broker.host}:{self.config.events.broker.port}"
-        broker_group_name = f"event_{self.config.service.name}"
-
         event_server = MinosEventServer.from_config(config=self.config)
         await event_server.setup()
 
-        consumer = AIOKafkaConsumer(
-            loop=None,
-            group_id=broker_group_name,
-            auto_offset_reset="latest",
-            bootstrap_servers=kafka_conn_data, consumer_timeout_ms=500
-        )
+        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        event_instance = Event(topic="TicketAdded", model=model.classname, items=[model])
+        bin_data = event_instance.avro_bytes
 
-        await consumer.start()
-        consumer.subscribe(topics)
+        Mensaje = namedtuple("Mensaje",["topic", "partition", "value"])
 
-        await event_server.handle_message(consumer)
+        async def consumer():
+            yield Mensaje(topic="TicketAdded",partition=0, value=bin_data)
 
-        await consumer.stop()
-    """
+        await event_server.handle_message(consumer())
+
