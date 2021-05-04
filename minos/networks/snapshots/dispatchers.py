@@ -39,11 +39,8 @@ from .entries import (
 class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
     """Minos Snapshot Dispatcher class."""
 
-    def __init__(self, *args, repository: dict[str, Any] = None, offset: int = 0, **kwargs):
+    def __init__(self, *args, repository: dict[str, Any] = None, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.offset = offset
-
         self.repository = PostgreSqlMinosRepository(**repository)
 
     async def _destroy(self) -> NoReturn:
@@ -66,10 +63,44 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         return cls(*args, **config.repository._asdict(), repository=config.repository._asdict(), **kwargs)
 
     async def _setup(self) -> NoReturn:
-        await self._create_broker_table()
-
-    async def _create_broker_table(self) -> NoReturn:
         await self.submit_query(_CREATE_TABLE_QUERY)
+        await self.submit_query(_CREATE_OFFSET_TABLE_QUERY)
+
+    async def dispatch(self) -> NoReturn:
+        """Perform a dispatching step, based on the sequence of non already processed ``MinosRepositoryEntry`` objects.
+
+        :return: This method does not return anything.
+        """
+        offset = await self._load_offset()
+
+        ids = set()
+
+        def _update_offset(e: MinosRepositoryEntry, o: int):
+            ids.add(e.id)
+            while o + 1 in ids:
+                o += 1
+                ids.remove(o)
+            return o
+
+        async for entry in self.repository.select(id_ge=offset):
+            try:
+                await self._dispatch_one(entry)
+            except MinosPreviousVersionSnapshotException:
+                pass
+            offset = _update_offset(entry, offset)
+
+        await self._store_offset(offset)
+
+    async def _load_offset(self) -> int:
+        # noinspection PyBroadException
+        try:
+            raw = await self.submit_query_and_fetchone(_SELECT_OFFSET_QUERY)
+            return raw[0]
+        except Exception:
+            return 0
+
+    async def _store_offset(self, offset: int) -> NoReturn:
+        await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset})
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[MinosSnapshotEntry]:
@@ -81,17 +112,6 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         """
         async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY):
             yield MinosSnapshotEntry(*row)
-
-    async def dispatch(self) -> NoReturn:
-        """Perform a dispatching step, based on the sequence of non already processed ``MinosRepositoryEntry`` objects.
-
-        :return: This method does not return anything.
-        """
-        async for entry in self.repository.select(id_ge=self.offset):
-            try:
-                await self._dispatch_one(entry)
-            except MinosPreviousVersionSnapshotException:
-                continue
 
     async def _dispatch_one(self, event_entry: MinosRepositoryEntry) -> Optional[MinosSnapshotEntry]:
         if event_entry.action is MinosRepositoryAction.DELETE:
@@ -194,4 +214,24 @@ ON CONFLICT (aggregate_id, aggregate_name)
 DO
    UPDATE SET version = %(version)s, data = %(data)s, updated_at = NOW()
 RETURNING created_at, updated_at;
+""".strip()
+
+_CREATE_OFFSET_TABLE_QUERY = """
+CREATE TABLE IF NOT EXISTS snapshot_aux_offset (
+    id bool PRIMARY KEY DEFAULT TRUE,
+    value BIGINT NOT NULL,
+    CONSTRAINT id_uni CHECK (id)
+);
+""".strip()
+
+_SELECT_OFFSET_QUERY = """
+SELECT value
+FROM snapshot_aux_offset
+WHERE id = TRUE;
+"""
+_INSERT_OFFSET_QUERY = """
+INSERT INTO snapshot_aux_offset (id, value)
+VALUES (TRUE, %(value)s)
+ON CONFLICT (id)
+DO UPDATE SET value = %(value)s;
 """.strip()
