@@ -5,9 +5,12 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-import pytest
 import shutil
-from minos.saga import Saga
+
+import pytest
+from minos.saga import (
+    Saga,
+)
 
 
 @pytest.fixture

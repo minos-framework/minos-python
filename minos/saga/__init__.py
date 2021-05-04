@@ -7,5 +7,9 @@
 
 __version__ = "0.0.1-alpha"
 
-from .saga import Saga
-from .exceptions import MinosSagaException
+from .exceptions import (
+    MinosSagaException,
+)
+from .saga import (
+    Saga,
+)

@@ -16,8 +16,12 @@ from minos.common import (
     MinosStorageLmdb,
 )
 
-from .abstract import MinosBaseSagaBuilder
-from .exceptions import MinosSagaException
+from .abstract import (
+    MinosBaseSagaBuilder,
+)
+from .exceptions import (
+    MinosSagaException,
+)
 
 
 class MinosLocalState:
