@@ -6,9 +6,7 @@
 # permission of Clariteia SL.
 
 import pytest
-import asyncio
-from minos.common.logs import log
-from minos.microservice.saga.saga import Saga, MinosLocalState
+from minos.saga import Saga
 
 
 def create_ticket_on_reply_callback(response):
