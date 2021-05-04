@@ -10,6 +10,7 @@ import unittest
 from datetime import (
     datetime,
 )
+from unittest.mock import MagicMock, call
 
 import aiopg
 from minos.common import (
@@ -90,13 +91,40 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
             self.assertIsInstance(obs.created_at, datetime)
             self.assertIsInstance(obs.updated_at, datetime)
 
+    async def test_dispatch_with_offset(self):
+        async with await self._populate() as repository:
+            async with MinosSnapshotDispatcher.from_config(config=self.config) as dispatcher:
+                mock = MagicMock(side_effect=dispatcher.repository.select)
+                dispatcher.repository.select = mock
+
+                await dispatcher.dispatch()
+                self.assertEqual(1, mock.call_count)
+                self.assertEqual(call(id_ge=0), mock.call_args)
+                mock.reset_mock()
+
+                # noinspection PyTypeChecker
+                await repository.insert(MinosRepositoryEntry(3, Car.classname, 1, Car(1, 1, 3, "blue").avro_bytes))
+
+                await dispatcher.dispatch()
+                self.assertEqual(1, mock.call_count)
+                self.assertEqual(call(id_ge=7), mock.call_args)
+                mock.reset_mock()
+
+                await dispatcher.dispatch()
+                self.assertEqual(1, mock.call_count)
+                self.assertEqual(call(id_ge=8), mock.call_args)
+                mock.reset_mock()
+
+                await dispatcher.dispatch()
+                self.assertEqual(1, mock.call_count)
+                self.assertEqual(call(id_ge=8), mock.call_args)
+                mock.reset_mock()
+
     async def _populate(self):
-        with self.config:
-            car = Car(1, 1, 3, "blue")
-            # noinspection PyTypeChecker
-            aggregate_name: str = car.classname
-            repository = PostgreSqlMinosRepository.from_config()
-            await repository.setup()
+        car = Car(1, 1, 3, "blue")
+        # noinspection PyTypeChecker
+        aggregate_name: str = car.classname
+        async with PostgreSqlMinosRepository.from_config(config=self.config) as repository:
             await repository.insert(MinosRepositoryEntry(1, aggregate_name, 1, car.avro_bytes))
             await repository.update(MinosRepositoryEntry(1, aggregate_name, 2, car.avro_bytes))
             await repository.insert(MinosRepositoryEntry(2, aggregate_name, 1, car.avro_bytes))
@@ -104,6 +132,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
             await repository.delete(MinosRepositoryEntry(1, aggregate_name, 4))
             await repository.update(MinosRepositoryEntry(2, aggregate_name, 2, car.avro_bytes))
             await repository.insert(MinosRepositoryEntry(3, aggregate_name, 1, car.avro_bytes))
+            return repository
 
 
 if __name__ == "__main__":

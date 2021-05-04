@@ -70,8 +70,13 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         """
         offset = await self._load_offset()
 
+        ids = set()
         async for entry in self.repository.select(id_ge=offset):
             await self._dispatch_one(entry)
+            ids.add(entry.id)
+            while offset + 1 in ids:
+                offset += 1
+                ids.remove(offset)
 
         await self._store_offset(offset)
 
