@@ -15,6 +15,8 @@ from .broker import (
 )
 from .exceptions import (
     MinosNetworkException,
+    MinosPreviousVersionSnapshotException,
+    MinosSnapshotException,
 )
 from .snapshots import (
     MinosSnapshotDispatcher,
