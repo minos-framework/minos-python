@@ -10,7 +10,10 @@ import unittest
 from datetime import (
     datetime,
 )
-from unittest.mock import MagicMock, call
+from unittest.mock import (
+    MagicMock,
+    call,
+)
 
 import aiopg
 from minos.common import (
