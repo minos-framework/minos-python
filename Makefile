@@ -47,8 +47,20 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
+env-dev-install:
+	python -m venv venv; \
+	source venv/bin/activate; $(MAKE) dev-install
+
+dev-install:
+	python -m pip install --upgrade pip
+	if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
+	python setup.py install
+
 lint: ## check style with flake8
 	flake8 minos tests
+
+env-test:
+	source venv/bin/activate; $(MAKE) test
 
 test: ## run tests quickly with the default Python
 	pytest
@@ -56,11 +68,21 @@ test: ## run tests quickly with the default Python
 test-all: ## run tests on every Python version with tox
 	tox
 
+env-coverage:
+	source venv/bin/activate; $(MAKE) coverage
+
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source minos -m pytest
 	coverage report -m
 	coverage xml
 	## $(BROWSER) htmlcov/index.html
+
+env-reformat:
+	source venv/bin/activate; $(MAKE) reformat
+
+reformat: ## check code coverage quickly with the default Python
+	black --line-length 120 .
+	isort --recursive .
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/minos_microservice_saga.rst
