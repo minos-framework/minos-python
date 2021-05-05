@@ -159,7 +159,7 @@ class TestStringMethods(unittest.TestCase):
                 .execute()
             )
 
-            self.assertEqual("The step() cannot be empty.", str(exc))
+            self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
     def test_saga_wrong_step_action_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:
@@ -176,9 +176,7 @@ class TestStringMethods(unittest.TestCase):
                 .execute()
             )
 
-            self.assertEqual(
-                "The first method of the step must be .invokeParticipant(name, callback (optional)).", str(exc)
-            )
+            self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
 
 if __name__ == "__main__":
