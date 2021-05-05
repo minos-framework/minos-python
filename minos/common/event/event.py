@@ -9,10 +9,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 from __future__ import (
     annotations,
 )
+
 from typing import (
     Any,
     Type,
 )
+
 from ..exceptions import (
     MultiTypeMinosModelSequenceException,
 )
