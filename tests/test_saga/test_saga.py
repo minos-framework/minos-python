@@ -176,9 +176,7 @@ class TestStringMethods(unittest.TestCase):
                 .execute()
             )
 
-            self.assertEqual(
-                "A 'SagaStep' can only define one 'with_compensation' method.", str(exc)
-            )
+            self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
 
 if __name__ == "__main__":
