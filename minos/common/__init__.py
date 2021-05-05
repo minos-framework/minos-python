@@ -11,7 +11,7 @@ __version__ = "0.0.6"
 from .broker import (
     MinosBaseBroker,
 )
-from .command import (
+from .model import (
     Command,
 )
 from .configuration import (
@@ -29,7 +29,7 @@ from .configuration import (
 from .database import (
     PostgreSqlMinosDatabase,
 )
-from .event import (
+from .model import (
     Event,
 )
 from .exceptions import (

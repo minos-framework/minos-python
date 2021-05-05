@@ -15,16 +15,16 @@ from typing import (
     Type,
 )
 
-from ..exceptions import (
+from minos.common.exceptions import (
     MultiTypeMinosModelSequenceException,
 )
-from ..importlib import (
+from minos.common.importlib import (
     import_module,
 )
-from ..meta import (
+from minos.common.meta import (
     self_or_classmethod,
 )
-from ..model import (
+from minos.common.model import (
     Aggregate,
     MinosModel,
 )
