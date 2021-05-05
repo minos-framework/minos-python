@@ -10,16 +10,14 @@ from minos.common.model import (
     Aggregate,
 )
 
-from .event import (
-    Event,
+from .command_reply import (
+    CommandReply,
 )
 
 
-class Command(Event):
+class Command(CommandReply):
     """Base Command class."""
 
-    saga_id: str
-    task_id: str
     reply_on: str
 
     def __init__(self, topic: str, items: list[Aggregate], saga_id: str, task_id: str, reply_on: str, *args, **kwargs):
