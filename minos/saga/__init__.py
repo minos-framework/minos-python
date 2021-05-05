@@ -21,9 +21,9 @@ from .exceptions import (
 )
 from .executions import (
     SagaContext,
+    SagaExecutedStep,
     SagaExecution,
     SagaStatus,
-    SagaStepExecution,
 )
 from .local_state import (
     MinosLocalState,

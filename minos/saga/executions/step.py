@@ -11,6 +11,7 @@ from __future__ import (
 
 from typing import (
     TYPE_CHECKING,
+    NoReturn,
 )
 
 from ..definitions import (
@@ -26,15 +27,23 @@ if TYPE_CHECKING:
     )
 
 
-class SagaStepExecution(object):
+class SagaExecutedStep(object):
     """TODO"""
 
     def __init__(self, execution: SagaExecution, definition: SagaStep, status: SagaStatus = SagaStatus.Created):
         self.execution = execution
         self.definition = definition
         self.status = status
+        self.already_rollback = False
 
-    def execute(self):
+    def execute(self) -> NoReturn:
+        """TODO
+
+        :return: TODO
+        """
+        pass
+
+    def rollback(self) -> NoReturn:
         """TODO
 
         :return: TODO
