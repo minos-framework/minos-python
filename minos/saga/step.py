@@ -322,8 +322,10 @@ class SagaStep(object):
         :return TODO:
         """
         if not self.raw:
-            raise Exception("The step() cannot be empty.")
+            raise MinosSagaException("The step() cannot be empty.")
 
         for idx, operation in enumerate(self.raw):
             if idx == 0 and operation["type"] != "invokeParticipant":
-                raise Exception("The first method of the step must be .invokeParticipant(name, callback (optional)).")
+                raise MinosSagaException(
+                    "The first method of the step must be .invokeParticipant(name, callback (optional))."
+                )
