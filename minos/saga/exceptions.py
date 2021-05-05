@@ -18,7 +18,7 @@ class MinosSagaStepException(MinosSagaException):
     """TODO"""
 
 
-class MultipleInvokeParticipantException(MinosSagaStepException):
+class MinosMultipleInvokeParticipantException(MinosSagaStepException):
     """TODO"""
 
     def __init__(self, message: str = None):
@@ -27,7 +27,7 @@ class MultipleInvokeParticipantException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MultipleWithCompensationException(MinosSagaStepException):
+class MinosMultipleWithCompensationException(MinosSagaStepException):
     """TODO"""
 
     def __init__(self, message: str = None):
@@ -36,7 +36,7 @@ class MultipleWithCompensationException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MultipleOnReplyException(MinosSagaStepException):
+class MinosMultipleOnReplyException(MinosSagaStepException):
     """TODO"""
 
     def __init__(self, message: str = None):

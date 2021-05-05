@@ -10,15 +10,18 @@ __version__ = "0.0.1-alpha"
 from .exceptions import (
     MinosSagaException,
     MinosSagaStepException,
-    MultipleInvokeParticipantException,
-    MultipleOnReplyException,
-    MultipleWithCompensationException,
+    MinosMultipleInvokeParticipantException,
+    MinosMultipleOnReplyException,
+    MinosMultipleWithCompensationException,
 )
 from .local_state import (
     MinosLocalState,
 )
 from .saga import (
     Saga,
+)
+from .step import (
+    SagaStep,
 )
 from .step_manager import (
     MinosSagaStepManager,
