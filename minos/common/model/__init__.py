@@ -46,3 +46,6 @@ from .command import (
 from .event import (
     Event,
 )
+from .command_reply import (
+    CommandReply,
+)
