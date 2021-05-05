@@ -5,18 +5,23 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-import typing as t
 import asyncio
-import uuid
 import inspect
-import lmdb
 import time
+import typing as t
+import uuid
 
-from minos.microservice.saga.abstract import MinosBaseSagaBuilder
-from minos.microservice.saga.common.exceptions import MinosSagaException
-from minos.common.logs import log
-from minos.common.storage.abstract import MinosStorage
-from minos.common.storage.lmdb import MinosStorageLmdb
+from minos.common import (
+    MinosStorage,
+    MinosStorageLmdb,
+)
+
+from .abstract import (
+    MinosBaseSagaBuilder,
+)
+from .exceptions import (
+    MinosSagaException,
+)
 
 
 class MinosLocalState:
@@ -95,7 +100,7 @@ class MinosSagaStepManager:
         return self._local_state.load_state(self.uuid)
 
     def close(self):
-        #self._state = self._local_state.load_state(self.uuid)
+        # self._state = self._local_state.load_state(self.uuid)
         self._local_state.delete_state(self.uuid)
 
 
@@ -172,7 +177,7 @@ class Saga(MinosBaseSagaBuilder):
                 flag = True
                 error = ""
                 break
-            except Exception as e:   # pragma: no cover
+            except Exception as e:  # pragma: no cover
                 error = e
                 time.sleep(0.5)
 
@@ -225,10 +230,7 @@ class Saga(MinosBaseSagaBuilder):
                 raise error
 
             # Add response of current operation to lmdb
-            (
-                db_op_response_flag,
-                db_op_response_error,
-            ) = self._operationResponseDB(operation["id"], response)
+            (db_op_response_flag, db_op_response_error,) = self._operationResponseDB(operation["id"], response)
 
             # if the DB was updated with the response of previous operation
             if db_op_response_flag:
@@ -236,10 +238,7 @@ class Saga(MinosBaseSagaBuilder):
                     func = operation["callback"]
                     callback_id = str(uuid.uuid4())
 
-                    (
-                        db_op_callback_flag,
-                        db_op_callback_error,
-                    ) = self._createOperationDB(
+                    (db_op_callback_flag, db_op_callback_error,) = self._createOperationDB(
                         callback_id, "invokeParticipant_callback", operation["name"]
                     )
                     # if the DB was updated
@@ -251,16 +250,13 @@ class Saga(MinosBaseSagaBuilder):
                             raise error
 
                         # Add response of current operation to lmdb
-                        (
-                            db_op_callback_response_flag,
-                            db_op_callback_response_error,
-                        ) = self._operationResponseDB(callback_id, response)
+                        (db_op_callback_response_flag, db_op_callback_response_error,) = self._operationResponseDB(
+                            callback_id, response
+                        )
 
                         # If the database could not be updated
                         if not db_op_callback_response_flag:
-                            self._operationErrorDB(
-                                callback_id, db_op_callback_response_error
-                            )
+                            self._operationErrorDB(callback_id, db_op_callback_response_error)
                             raise db_op_callback_response_error
 
                     # If the database could not be updated
@@ -303,10 +299,7 @@ class Saga(MinosBaseSagaBuilder):
 
         for compensation in operations:
             # Add current operation to lmdb
-            (
-                db_operation_flag,
-                db_operation_error,
-            ) = self._createOperationDB(operation["id"], operation["type"], name)
+            (db_operation_flag, db_operation_error,) = self._createOperationDB(operation["id"], operation["type"], name)
             # if the DB was updated
             if db_operation_flag:
                 try:
@@ -315,10 +308,7 @@ class Saga(MinosBaseSagaBuilder):
                     raise error
 
                 # Add response of current operation to lmdb
-                (
-                    db_op_response_flag,
-                    db_op_response_error,
-                ) = self._operationResponseDB(operation["id"], response)
+                (db_op_response_flag, db_op_response_error,) = self._operationResponseDB(operation["id"], response)
 
                 # if the DB was updated with the response of previous operation
                 if not db_op_response_flag:
@@ -334,33 +324,25 @@ class Saga(MinosBaseSagaBuilder):
             func = operation["callback"]
             callback_id = str(uuid.uuid4())
 
-            (
-                db_op_callback_flag,
-                db_op_callback_error,
-            ) = self._createOperationDB(
+            (db_op_callback_flag, db_op_callback_error,) = self._createOperationDB(
                 callback_id, "withCompensation_callback", name
             )
             # if the DB was updated
             if db_op_callback_flag:
                 try:
-                    response = self.callback_function_call(
-                        func, response
-                    )
+                    response = self.callback_function_call(func, response)
                 except MinosSagaException as error:
                     self._operationErrorDB(callback_id, error)
                     raise error
 
                 # Add response of current operation to lmdb
-                (
-                    db_op_callback_response_flag,
-                    db_op_callback_response_error,
-                ) = self._operationResponseDB(callback_id, response)
+                (db_op_callback_response_flag, db_op_callback_response_error,) = self._operationResponseDB(
+                    callback_id, response
+                )
 
                 # If the database could not be updated
                 if not db_op_callback_response_flag:
-                    self._operationErrorDB(
-                        callback_id, db_op_callback_response_error
-                    )
+                    self._operationErrorDB(callback_id, db_op_callback_response_error)
                     raise db_op_callback_response_error
 
             # If the database could not be updated
@@ -387,20 +369,13 @@ class Saga(MinosBaseSagaBuilder):
         response = None
 
         # Add current operation to lmdb
-        (
-            db_response_flag,
-            db_response_error,
-            db_response,
-        ) = self._getLastResponseDB()
+        (db_response_flag, db_response_error, db_response,) = self._getLastResponseDB()
 
         if db_response_flag:
             func = operation["callback"]
             callback_id = str(uuid.uuid4())
 
-            (
-                db_op_callback_flag,
-                db_op_callback_error,
-            ) = self._createOperationDB(callback_id, operation["type"])
+            (db_op_callback_flag, db_op_callback_error,) = self._createOperationDB(callback_id, operation["type"])
 
             if db_op_callback_flag:
                 try:
@@ -410,10 +385,9 @@ class Saga(MinosBaseSagaBuilder):
                     raise error
 
                 # Add response of current operation to lmdb
-                (
-                    db_op_callback_response_flag,
-                    db_op_callback_response_error,
-                ) = self._operationResponseDB(callback_id, response)
+                (db_op_callback_response_flag, db_op_callback_response_error,) = self._operationResponseDB(
+                    callback_id, response
+                )
 
                 # If the database could not be updated
                 if not db_op_callback_response_flag:
@@ -430,12 +404,7 @@ class Saga(MinosBaseSagaBuilder):
 
     def onReply(self, _callback: t.Callable):
         self.saga_process["steps"][len(self.saga_process["steps"]) - 1].append(
-            {
-                "id": str(uuid.uuid4()),
-                "type": "onReply",
-                "method": self._onReply,
-                "callback": _callback,
-            }
+            {"id": str(uuid.uuid4()), "type": "onReply", "method": self._onReply, "callback": _callback,}
         )
 
         return self
