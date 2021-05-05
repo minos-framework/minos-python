@@ -6,14 +6,20 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import time
-from typing import Any, NoReturn, Type
+from typing import (
+    Any,
+    NoReturn,
+    Type,
+)
 
 from minos.common import (
     MinosStorage,
     MinosStorageLmdb,
 )
 
-from .local_state import MinosLocalState
+from .local_state import (
+    MinosLocalState,
+)
 
 
 class MinosSagaStepManager:

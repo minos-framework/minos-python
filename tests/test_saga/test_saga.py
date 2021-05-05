@@ -6,7 +6,9 @@
 # permission of Clariteia SL.
 
 import unittest
-from shutil import rmtree
+from shutil import (
+    rmtree,
+)
 
 from minos.saga import (
     MinosSagaException,
@@ -25,7 +27,9 @@ from tests.callbacks import (
     f_callback,
     shipping_callback,
 )
-from tests.utils import BASE_PATH
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestStringMethods(unittest.TestCase):
