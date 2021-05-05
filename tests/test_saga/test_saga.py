@@ -6,9 +6,7 @@
 # permission of Clariteia SL.
 
 import unittest
-from shutil import (
-    rmtree,
-)
+from shutil import rmtree
 
 from minos.saga import (
     MinosSagaException,
@@ -27,9 +25,7 @@ from tests.callbacks import (
     f_callback,
     shipping_callback,
 )
-from tests.utils import (
-    BASE_PATH,
-)
+from tests.utils import BASE_PATH
 
 
 class TestStringMethods(unittest.TestCase):
@@ -176,9 +172,7 @@ class TestStringMethods(unittest.TestCase):
                 .execute()
             )
 
-            self.assertEqual(
-                "A 'SagaStep' can only define one 'with_compensation' method.", str(exc)
-            )
+            self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
 
 if __name__ == "__main__":

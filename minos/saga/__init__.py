@@ -14,15 +14,7 @@ from .exceptions import (
     MinosSagaException,
     MinosSagaStepException,
 )
-from .local_state import (
-    MinosLocalState,
-)
-from .saga import (
-    Saga,
-)
-from .step import (
-    SagaStep,
-)
-from .step_manager import (
-    MinosSagaStepManager,
-)
+from .local_state import MinosLocalState
+from .saga import Saga
+from .step import SagaStep
+from .step_manager import MinosSagaStepManager
