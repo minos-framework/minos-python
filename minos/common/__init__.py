@@ -11,9 +11,6 @@ __version__ = "0.0.6"
 from .broker import (
     MinosBaseBroker,
 )
-from .model import (
-    Command,
-)
 from .configuration import (
     BROKER,
     COMMAND,
@@ -28,9 +25,6 @@ from .configuration import (
 )
 from .database import (
     PostgreSqlMinosDatabase,
-)
-from .model import (
-    Event,
 )
 from .exceptions import (
     EmptyMinosModelSequenceException,
@@ -94,8 +88,10 @@ from .model import (
     TIMESTAMP_MILLIS,
     UUID,
     Aggregate,
+    Command,
     Decimal,
     Enum,
+    Event,
     Fixed,
     MinosModel,
     MissingSentinel,
