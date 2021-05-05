@@ -13,7 +13,9 @@ from __future__ import (
 import asyncio
 import typing as t
 import uuid
-from pathlib import Path
+from pathlib import (
+    Path,
+)
 
 from .abstract import (
     MinosBaseSagaBuilder,
