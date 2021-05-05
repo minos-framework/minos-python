@@ -8,20 +8,20 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
-    Command,
+    CommandReply,
 )
 from tests.aggregate_classes import (
     Car,
 )
 
 
-class TestCommand(unittest.TestCase):
+class TestCommandReply(unittest.TestCase):
     def test_avro_serialization(self):
-        command = Command(
-            "CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], "saga_id4234", "task_id324532", "reply_fn()"
+        command_reply = CommandReply(
+            "CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], "saga_id8972348237", "task_id32423432"
         )
-        decoded_command = Command.from_avro_bytes(command.avro_bytes)
-        self.assertEqual(command, decoded_command)
+        decoded_command = CommandReply.from_avro_bytes(command_reply.avro_bytes)
+        self.assertEqual(command_reply, decoded_command)
 
 
 if __name__ == "__main__":

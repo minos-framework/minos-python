@@ -89,6 +89,7 @@ from .model import (
     UUID,
     Aggregate,
     Command,
+    CommandReply,
     Decimal,
     Enum,
     Event,
