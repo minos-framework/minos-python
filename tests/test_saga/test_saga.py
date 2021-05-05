@@ -8,6 +8,7 @@
 import shutil
 
 import pytest
+
 from minos.saga import (
     Saga,
 )

@@ -81,8 +81,8 @@ env-reformat:
 	source venv/bin/activate; $(MAKE) reformat
 
 reformat: ## check code coverage quickly with the default Python
-	black --line-length 120 .
-	isort --recursive .
+	black --line-length 120 minos tests
+	isort --recursive minos tests
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/minos_microservice_saga.rst
