@@ -51,7 +51,28 @@ class SagaStep(object):
 
     def __init__(self, saga: Optional[Saga] = None):
         self.saga = saga
-        self.raw = list()
+        self._invoke_participant = None
+        self._with_compensation = None
+        self._on_reply = None
+        self._execute = None
+
+    @property
+    def raw(self) -> [dict[str, Any]]:
+        """TODO
+
+        :return: TODO
+        """
+        raw = list()
+        if self._invoke_participant is not None:
+            raw.append(self._invoke_participant)
+        if self._with_compensation is not None:
+            raw.append(self._with_compensation)
+        if self._on_reply is not None:
+            raw.append(self._on_reply)
+        if self._execute is not None:
+            raw.append(self._execute)
+
+        return raw
 
     def invoke_participant(self, name: str, callback: Callable = None) -> SagaStep:
         """TODO
@@ -60,15 +81,13 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
-        self.raw.append(
-            {
-                "id": str(uuid4()),
-                "type": "invokeParticipant",
-                "method": self.execute_invoke_participant,
-                "name": name,
-                "callback": callback,
-            }
-        )
+        self._invoke_participant = {
+            "id": str(uuid4()),
+            "type": "invokeParticipant",
+            "method": self.execute_invoke_participant,
+            "name": name,
+            "callback": callback,
+        }
 
         return self
 
@@ -141,7 +160,7 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
-        self.raw.append(
+        self._with_compensation = (
             {
                 "id": str(uuid4()),
                 "type": "withCompensation",
@@ -193,7 +212,6 @@ class SagaStep(object):
                 raise db_operation_error
 
         if operation["callback"] is not None:
-
             func = operation["callback"]
             callback_id = str(uuid4())
 
@@ -210,7 +228,7 @@ class SagaStep(object):
         :param _callback: TODO
         :return: TODO
         """
-        self.raw.append({"id": str(uuid4()), "type": "onReply", "method": self.execute_on_reply, "callback": _callback})
+        self._on_reply = {"id": str(uuid4()), "type": "onReply", "method": self.execute_on_reply, "callback": _callback}
 
         return self
 
@@ -310,11 +328,8 @@ class SagaStep(object):
 
         :return: TODO
         """
-        self.raw.append({"type": "execute", "method": self._execute})
+        self._execute = {"type": "execute", "method": self._execute}
         return self.saga.execute()
-
-    def _execute(self):  # pragma: no cover
-        pass
 
     def validate(self) -> NoReturn:
         """TODO
