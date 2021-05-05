@@ -37,15 +37,7 @@ from .abc import (
     ModelField,
     ModelRef,
 )
-from .aggregate import (
-    Aggregate,
-)
-from .command import (
-    Command,
-)
-from .event import (
-    Event,
-)
-from .command_reply import (
-    CommandReply,
-)
+from .aggregate import Aggregate
+from .command import Command
+from .event import Event
+from .command_reply import CommandReply
