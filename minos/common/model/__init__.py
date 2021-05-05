@@ -37,6 +37,12 @@ from .abc import (
     ModelField,
     ModelRef,
 )
-from .aggregate import Aggregate
-from .command import Command
-from .event import Event
+from .aggregate import (
+    Aggregate,
+)
+from .command import (
+    Command,
+)
+from .event import (
+    Event,
+)
