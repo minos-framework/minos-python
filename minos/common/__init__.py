@@ -8,9 +8,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 __version__ = "0.0.6"
 
-from .broker import (
+from .command import (
     Command,
+)
+from .event import (
     Event,
+)
+from .broker import (
     MinosBaseBroker,
 )
 from .configuration import (
