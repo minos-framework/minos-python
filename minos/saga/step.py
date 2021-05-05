@@ -30,8 +30,12 @@ from .exceptions import (
 )
 
 if TYPE_CHECKING:
-    from .step_manager import MinosSagaStepManager
-    from .saga import Saga
+    from .saga import (
+        Saga,
+    )
+    from .step_manager import (
+        MinosSagaStepManager,
+    )
 
 
 def _invoke_participant(name):
