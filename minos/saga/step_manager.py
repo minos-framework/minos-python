@@ -13,9 +13,7 @@ from minos.common import (
     MinosStorageLmdb,
 )
 
-from .local_state import (
-    MinosLocalState,
-)
+from .local_state import MinosLocalState
 
 
 class MinosSagaStepManager:

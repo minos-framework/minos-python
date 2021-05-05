@@ -5,6 +5,8 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+
+
 def create_ticket_on_reply_callback(response):
     treated_response = "async create_ticket_on_reply_callback response!!!!"
     return treated_response

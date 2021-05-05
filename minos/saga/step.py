@@ -5,28 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import inspect
-from asyncio import (
-    AbstractEventLoop,
-)
+from asyncio import AbstractEventLoop
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     NoReturn,
-    Union, Optional,
+    Union,
+    Optional,
 )
-from uuid import (
-    uuid4,
-)
+from uuid import uuid4
 
-from .exceptions import (
-    MinosSagaException,
-)
+from .exceptions import MinosSagaException
 
 if TYPE_CHECKING:
     from .step_manager import MinosSagaStepManager
@@ -209,9 +202,7 @@ class SagaStep(object):
         :param _callback: TODO
         :return: TODO
         """
-        self.raw.append(
-            {"id": str(uuid4()), "type": "onReply", "method": self.execute_on_reply, "callback": _callback}
-        )
+        self.raw.append({"id": str(uuid4()), "type": "onReply", "method": self.execute_on_reply, "callback": _callback})
 
         return self
 
@@ -323,9 +314,7 @@ class SagaStep(object):
         :return TODO:
         """
         if not self.raw:
-            raise MinosSagaException(
-                "The step() cannot be empty."
-            )
+            raise MinosSagaException("The step() cannot be empty.")
 
         for idx, operation in enumerate(self.raw):
             if idx == 0 and operation["type"] != "invokeParticipant":
