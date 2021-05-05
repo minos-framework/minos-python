@@ -7,12 +7,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
-from minos.common import (
-    Command,
-)
-from tests.aggregate_classes import (
-    Car,
-)
+from minos.common import Command
+from tests.aggregate_classes import Car
 
 
 class TestCommand(unittest.TestCase):
