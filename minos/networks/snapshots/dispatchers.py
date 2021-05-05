@@ -60,7 +60,7 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         if config is None:
             raise MinosConfigException("The config object must be setup.")
         # noinspection PyProtectedMember
-        return cls(*args, **config.repository._asdict(), repository=config.repository._asdict(), **kwargs)
+        return cls(*args, **config.snapshot._asdict(), repository=config.repository._asdict(), **kwargs)
 
     async def _setup(self) -> NoReturn:
         await self.submit_query(_CREATE_TABLE_QUERY)
