@@ -5,18 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import abc
-from typing import (
-    NoReturn,
-)
+from typing import NoReturn
 
-from .model import (
-    Aggregate,
-)
+from .model import Aggregate
 
 
 class MinosBaseBroker(abc.ABC):
@@ -41,9 +35,3 @@ class MinosBaseBroker(abc.ABC):
         :return: This method does not return anything.
         """
         return await self.send([item])
-
-
-
-
-
-
