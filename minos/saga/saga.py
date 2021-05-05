@@ -13,6 +13,7 @@ from __future__ import (
 import asyncio
 import typing as t
 import uuid
+from pathlib import Path
 
 from .abstract import (
     MinosBaseSagaBuilder,
@@ -34,10 +35,13 @@ class Saga(MinosBaseSagaBuilder):
     def __init__(
         self,
         name,
-        db_path: str = "./db.lmdb",
+        db_path: t.Union[Path, str] = "./db.lmdb",
         step_manager: t.Type[MinosSagaStepManager] = MinosSagaStepManager,
         loop: asyncio.AbstractEventLoop = None,
     ):
+        if not isinstance(db_path, str):
+            db_path = str(db_path)
+
         self.saga_name = name
         self.uuid = str(uuid.uuid4())
         self.saga_process = {
