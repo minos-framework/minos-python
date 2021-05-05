@@ -8,9 +8,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 __version__ = "0.0.6"
 
-from .command import Command
-from .event import Event
-from .broker import MinosBaseBroker
+from .broker import (
+    MinosBaseBroker,
+)
+from .command import (
+    Command,
+)
 from .configuration import (
     BROKER,
     COMMAND,
@@ -23,7 +26,12 @@ from .configuration import (
     MinosConfig,
     MinosConfigAbstract,
 )
-from .database import PostgreSqlMinosDatabase
+from .database import (
+    PostgreSqlMinosDatabase,
+)
+from .event import (
+    Event,
+)
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
@@ -106,7 +114,9 @@ from .repository import (
     MinosRepositoryEntry,
     PostgreSqlMinosRepository,
 )
-from .setup import MinosSetup
+from .setup import (
+    MinosSetup,
+)
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,

@@ -6,14 +6,24 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
+
 from typing import (
     Any,
     Type,
 )
-from ..exceptions import MultiTypeMinosModelSequenceException
-from ..importlib import import_module
-from ..meta import self_or_classmethod
+
+from ..exceptions import (
+    MultiTypeMinosModelSequenceException,
+)
+from ..importlib import (
+    import_module,
+)
+from ..meta import (
+    self_or_classmethod,
+)
 from ..model import (
     Aggregate,
     MinosModel,
