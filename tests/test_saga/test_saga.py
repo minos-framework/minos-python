@@ -8,7 +8,9 @@
 import shutil
 
 import pytest
-from minos.saga import Saga
+from minos.saga import (
+    Saga,
+)
 
 
 @pytest.fixture
