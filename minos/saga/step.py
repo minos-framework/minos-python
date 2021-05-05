@@ -26,10 +26,10 @@ from uuid import (
 )
 
 from .exceptions import (
-    MinosSagaException,
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
+    MinosSagaException,
 )
 
 if TYPE_CHECKING:

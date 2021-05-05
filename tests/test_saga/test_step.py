@@ -14,7 +14,9 @@ from minos.saga import (
     MinosMultipleWithCompensationException,
     SagaStep,
 )
-from tests.callbacks import a_callback
+from tests.callbacks import (
+    a_callback,
+)
 
 
 class TestSomething(unittest.TestCase):
