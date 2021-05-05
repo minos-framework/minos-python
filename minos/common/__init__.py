@@ -9,8 +9,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 __version__ = "0.0.6"
 
 from .broker import (
-    Command,
-    Event,
     MinosBaseBroker,
 )
 from .configuration import (
@@ -90,8 +88,11 @@ from .model import (
     TIMESTAMP_MILLIS,
     UUID,
     Aggregate,
+    Command,
+    CommandReply,
     Decimal,
     Enum,
+    Event,
     Fixed,
     MinosModel,
     MissingSentinel,
