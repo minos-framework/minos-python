@@ -88,11 +88,10 @@ def f_callback(response):
 def test_saga_async_callbacks_ok(db_path):
     s = (
         Saga("OrdersAdd", db_path)
-        .start()
         .step()
-        .invokeParticipant("CreateOrder", a_callback)
-        .withCompensation("DeleteOrder", b_callback)
-        .onReply(c_callback)
+        .invoke_participant("CreateOrder", a_callback)
+        .with_compensation("DeleteOrder", b_callback)
+        .on_reply(c_callback)
         .execute()
     )
 
@@ -102,11 +101,10 @@ def test_saga_async_callbacks_ok(db_path):
 def test_saga_sync_callbacks_ok(db_path):
     s = (
         Saga("OrdersAdd", db_path)
-        .start()
         .step()
-        .invokeParticipant("CreateOrder", d_callback)
-        .withCompensation("DeleteOrder", e_callback)
-        .onReply(f_callback)
+        .invoke_participant("CreateOrder", d_callback)
+        .with_compensation("DeleteOrder", e_callback)
+        .on_reply(f_callback)
         .execute()
     )
 
@@ -116,11 +114,10 @@ def test_saga_sync_callbacks_ok(db_path):
 def test_saga_async_callbacks_ko(db_path):
     s = (
         Saga("OrdersAdd", db_path)
-        .start()
         .step()
-        .invokeParticipant("Shipping", a_callback)
-        .withCompensation("DeleteOrder", b_callback)
-        .onReply(c_callback)
+        .invoke_participant("Shipping", a_callback)
+        .with_compensation("DeleteOrder", b_callback)
+        .on_reply(c_callback)
         .execute()
     )
 
@@ -133,11 +130,10 @@ def test_saga_async_callbacks_ko(db_path):
 def test_saga_sync_callbacks_ko(db_path):
     s = (
         Saga("OrdersAdd", db_path)
-        .start()
         .step()
-        .invokeParticipant("Shipping", d_callback)
-        .withCompensation("DeleteOrder", e_callback)
-        .onReply(f_callback)
+        .invoke_participant("Shipping", d_callback)
+        .with_compensation("DeleteOrder", e_callback)
+        .on_reply(f_callback)
         .execute()
     )
 
@@ -150,17 +146,16 @@ def test_saga_sync_callbacks_ko(db_path):
 def test_saga_correct(db_path):
     s = (
         Saga("OrdersAdd", db_path)
-        .start()
         .step()
-        .invokeParticipant("CreateOrder", create_order_callback)
-        .withCompensation("DeleteOrder", delete_order_callback)
-        .onReply(create_ticket_on_reply_callback)
+        .invoke_participant("CreateOrder", create_order_callback)
+        .with_compensation("DeleteOrder", delete_order_callback)
+        .on_reply(create_ticket_on_reply_callback)
         .step()
-        .invokeParticipant("CreateTicket", create_ticket_callback)
-        .onReply(create_ticket_on_reply_callback)
+        .invoke_participant("CreateTicket", create_ticket_callback)
+        .on_reply(create_ticket_on_reply_callback)
         .step()
-        .invokeParticipant("Shopping")
-        .withCompensation(["Failed", "BlockOrder"], shipping_callback)
+        .invoke_participant("Shopping")
+        .with_compensation(["Failed", "BlockOrder"], shipping_callback)
         .execute()
     )
 
@@ -172,17 +167,16 @@ def test_saga_correct(db_path):
 def test_saga_execute_all_compensations(db_path):
     s = (
         Saga("ItemsAdd", db_path)
-        .start()
         .step()
-        .invokeParticipant("CreateOrder", create_order_callback)
-        .withCompensation("DeleteOrder", delete_order_callback)
-        .onReply(create_ticket_on_reply_callback)
+        .invoke_participant("CreateOrder", create_order_callback)
+        .with_compensation("DeleteOrder", delete_order_callback)
+        .on_reply(create_ticket_on_reply_callback)
         .step()
-        .invokeParticipant("CreateTicket")
-        .onReply(create_ticket_on_reply_callback)
+        .invoke_participant("CreateTicket")
+        .on_reply(create_ticket_on_reply_callback)
         .step()
-        .invokeParticipant("Shipping")
-        .withCompensation(["Failed", "BlockOrder"], shipping_callback)
+        .invoke_participant("Shipping")
+        .with_compensation(["Failed", "BlockOrder"], shipping_callback)
         .execute()
     )
 
@@ -205,17 +199,16 @@ def test_saga_empty_step_must_throw_exception(db_path):
     with pytest.raises(Exception) as exc:
         (
             Saga("OrdersAdd2", db_path)
-            .start()
             .step()
-            .invokeParticipant("CreateOrder")
-            .withCompensation("DeleteOrder")
-            .withCompensation("DeleteOrder2")
+            .invoke_participant("CreateOrder")
+            .with_compensation("DeleteOrder")
+            .with_compensation("DeleteOrder2")
             .step()
             .step()
-            .invokeParticipant("CreateTicket")
-            .onReply(create_ticket_on_reply_callback)
+            .invoke_participant("CreateTicket")
+            .on_reply(create_ticket_on_reply_callback)
             .step()
-            .invokeParticipant("VerifyConsumer")
+            .invoke_participant("VerifyConsumer")
             .execute()
         )
 
@@ -226,15 +219,14 @@ def test_saga_wrong_step_action_must_throw_exception(db_path):
     with pytest.raises(Exception) as exc:
         (
             Saga("OrdersAdd3", db_path)
-            .start()
             .step()
-            .invokeParticipant("CreateOrder")
-            .withCompensation("DeleteOrder")
-            .withCompensation("DeleteOrder2")
+            .invoke_participant("CreateOrder")
+            .with_compensation("DeleteOrder")
+            .with_compensation("DeleteOrder2")
             .step()
-            .onReply(create_ticket_on_reply_callback)
+            .on_reply(create_ticket_on_reply_callback)
             .step()
-            .invokeParticipant("VerifyConsumer")
+            .invoke_participant("VerifyConsumer")
             .execute()
         )
 
