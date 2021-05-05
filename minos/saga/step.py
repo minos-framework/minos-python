@@ -27,6 +27,9 @@ from uuid import (
 
 from .exceptions import (
     MinosSagaException,
+    MultipleInvokeParticipantException,
+    MultipleOnReplyException,
+    MultipleWithCompensationException,
 )
 
 if TYPE_CHECKING:
@@ -81,6 +84,9 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
+        if self._invoke_participant is not None:
+            raise MultipleInvokeParticipantException()
+
         self._invoke_participant = {
             "id": str(uuid4()),
             "type": "invokeParticipant",
@@ -160,15 +166,16 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
-        self._with_compensation = (
-            {
-                "id": str(uuid4()),
-                "type": "withCompensation",
-                "method": self.execute_with_compensation,
-                "name": name,
-                "callback": callback,
-            }
-        )
+        if self._with_compensation is not None:
+            raise MultipleWithCompensationException()
+
+        self._with_compensation = {
+            "id": str(uuid4()),
+            "type": "withCompensation",
+            "method": self.execute_with_compensation,
+            "name": name,
+            "callback": callback,
+        }
 
         return self
 
@@ -228,6 +235,9 @@ class SagaStep(object):
         :param _callback: TODO
         :return: TODO
         """
+        if self._with_compensation is not None:
+            raise MultipleOnReplyException()
+
         self._on_reply = {"id": str(uuid4()), "type": "onReply", "method": self.execute_on_reply, "callback": _callback}
 
         return self

@@ -12,3 +12,34 @@ from minos.common import (
 
 class MinosSagaException(MinosException):
     """Base saga exception."""
+
+
+class MinosSagaStepException(MinosSagaException):
+    """TODO"""
+
+
+class MultipleInvokeParticipantException(MinosSagaStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep' can only define one 'invoke_participant' method."
+        super().__init__(message)
+
+
+class MultipleWithCompensationException(MinosSagaStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep' can only define one 'with_compensation' method."
+        super().__init__(message)
+
+
+class MultipleOnReplyException(MinosSagaStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep' can only define one 'on_reply' method."
+        super().__init__(message)
