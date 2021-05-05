@@ -15,7 +15,9 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-    from .step import SagaStep
+    from .step import (
+        SagaStep,
+    )
 
 
 class MinosBaseSagaBuilder(abc.ABC):

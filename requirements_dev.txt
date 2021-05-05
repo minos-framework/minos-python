@@ -8,7 +8,7 @@ colorlog==4.8.0
 coverage==5.5
 importlib-metadata==3.10.0
 iniconfig==1.1.1
-isort==4.3.21
+isort==5.8.0
 lmdb==1.1.1
 minos-microservice-common==0.0.5
 mypy-extensions==0.4.3
@@ -26,3 +26,4 @@ toml==0.10.2
 typed-ast==1.4.2
 typing-extensions==3.7.4.3
 zipp==3.4.1
+pre-commit==2.12.1
