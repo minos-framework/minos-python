@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import time
-from typing import Any, NoReturn
+from typing import Any, NoReturn, Type
 
 from minos.common import (
     MinosStorage,
@@ -24,9 +24,10 @@ class MinosSagaStepManager:
 
     """
 
-    def __init__(self, name, uuid: str, db_path: str, storage: MinosStorage = MinosStorageLmdb):
+    def __init__(self, name, uuid: str, db_path: str, storage: Type[MinosStorage] = MinosStorageLmdb):
         self.db_name = "LocalState"
         self.db_path = db_path
+        # noinspection PyArgumentList
         self._storage = storage.build(path_db=self.db_path)
         self._local_state = MinosLocalState(storage=self._storage, db_name=self.db_name)
         self.uuid = uuid
