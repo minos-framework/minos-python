@@ -21,4 +21,4 @@ class Command(CommandReply):
     reply_on: str
 
     def __init__(self, topic: str, items: list[Aggregate], saga_id: str, task_id: str, reply_on: str, *args, **kwargs):
-        super().__init__(topic, items, *args,saga_id=saga_id, task_id=task_id, reply_on=reply_on, **kwargs)
+        super().__init__(topic, items, *args, saga_id=saga_id, task_id=task_id, reply_on=reply_on, **kwargs)
