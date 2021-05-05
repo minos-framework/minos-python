@@ -25,7 +25,7 @@ from uuid import (
     uuid4,
 )
 
-from .exceptions import (
+from ..exceptions import (
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
@@ -33,11 +33,11 @@ from .exceptions import (
 )
 
 if TYPE_CHECKING:
+    from ..step_manager import (
+        MinosSagaStepManager,
+    )
     from .saga import (
         Saga,
-    )
-    from .step_manager import (
-        MinosSagaStepManager,
     )
 
 
