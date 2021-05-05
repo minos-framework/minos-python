@@ -10,11 +10,11 @@ __version__ = "0.0.1-alpha"
 from .exceptions import (
     MinosSagaException,
 )
-from .saga import (
-    Saga,
-)
 from .local_state import (
     MinosLocalState,
+)
+from .saga import (
+    Saga,
 )
 from .step_manager import (
     MinosSagaStepManager,

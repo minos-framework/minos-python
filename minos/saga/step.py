@@ -18,7 +18,8 @@ from typing import (
     Any,
     Callable,
     NoReturn,
-    Union, Optional,
+    Optional,
+    Union,
 )
 from uuid import (
     uuid4,
@@ -209,9 +210,7 @@ class SagaStep(object):
         :param _callback: TODO
         :return: TODO
         """
-        self.raw.append(
-            {"id": str(uuid4()), "type": "onReply", "method": self.execute_on_reply, "callback": _callback}
-        )
+        self.raw.append({"id": str(uuid4()), "type": "onReply", "method": self.execute_on_reply, "callback": _callback})
 
         return self
 
