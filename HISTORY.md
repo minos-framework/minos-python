@@ -82,3 +82,10 @@ History
 
 0.0.6 (2021-05-04)
 ------------------
+
+
+0.0.7 (2021-05-06)
+------------------
+
+* Moved CommandModel and EventModel to the model module
+* Created CommandReplyModel for Saga reply
