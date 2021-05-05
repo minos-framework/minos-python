@@ -212,7 +212,7 @@ def test_saga_empty_step_must_throw_exception(db_path):
             .execute()
         )
 
-    assert "The step() cannot be empty." in str(exc.value)
+    assert "A 'SagaStep' can only define one 'with_compensation' method." in str(exc.value)
 
 
 def test_saga_wrong_step_action_must_throw_exception(db_path):
@@ -230,4 +230,4 @@ def test_saga_wrong_step_action_must_throw_exception(db_path):
             .execute()
         )
 
-    assert "The first method of the step must be .invokeParticipant(name, callback (optional))." in str(exc.value)
+    assert "A 'SagaStep' can only define one 'with_compensation' method." in str(exc.value)

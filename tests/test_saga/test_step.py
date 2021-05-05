@@ -14,9 +14,10 @@ from minos.saga import (
     MinosMultipleWithCompensationException,
     SagaStep,
 )
-from tests.callbacks import (
-    a_callback,
-)
+
+
+def _callback():
+    ...
 
 
 class TestSomething(unittest.TestCase):
@@ -30,7 +31,7 @@ class TestSomething(unittest.TestCase):
 
     def test_on_reply_multiple_raises(self):
         with self.assertRaises(MinosMultipleOnReplyException):
-            SagaStep().on_reply(a_callback).on_reply(a_callback)
+            SagaStep().on_reply(_callback).on_reply(_callback)
 
 
 if __name__ == "__main__":
