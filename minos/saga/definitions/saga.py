@@ -12,14 +12,7 @@ from __future__ import (
 
 import asyncio
 import typing as t
-import uuid
-from pathlib import (
-    Path,
-)
 
-from ..storage import (
-    MinosSagaStorage,
-)
 from .abc import (
     MinosBaseSagaBuilder,
 )
@@ -37,26 +30,10 @@ class Saga(MinosBaseSagaBuilder):
     """TODO"""
 
     def __init__(
-        self,
-        name,
-        db_path: t.Union[Path, str] = "./db.lmdb",
-        storage: t.Type[MinosSagaStorage] = MinosSagaStorage,
-        loop: asyncio.AbstractEventLoop = None,
+        self, name, loop: asyncio.AbstractEventLoop = None,
     ):
-        if not isinstance(db_path, str):
-            db_path = str(db_path)
-
-        self.saga_name = name
-        self.uuid = str(uuid.uuid4())
-        self.saga_process = {
-            "name": self.saga_name,
-            "id": self.uuid,
-            "steps": [],
-            "current_compensations": [],
-        }
-        self.storage = storage(self.saga_name, self.uuid, db_path)
+        self.name = name
         self.loop = loop or asyncio.get_event_loop()
-        self.response = ""
         self.steps = list()
 
     def step(self, step: t.Optional[SagaStep] = None) -> SagaStep:
@@ -74,7 +51,7 @@ class Saga(MinosBaseSagaBuilder):
         self.steps.append(step)
         return step
 
-    def build_execution(self) -> SagaExecution:
+    def build_execution(self, *args, **kwargs) -> SagaExecution:
         """TODO
 
         :return: TODO
@@ -83,4 +60,4 @@ class Saga(MinosBaseSagaBuilder):
             SagaExecution,
         )
 
-        return SagaExecution.from_saga(self)
+        return SagaExecution.from_saga(self, *args, **kwargs)

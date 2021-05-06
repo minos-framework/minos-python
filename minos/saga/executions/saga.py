@@ -5,8 +5,13 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from pathlib import (
+    Path,
+)
 from typing import (
     NoReturn,
+    Type,
+    Union,
 )
 from uuid import (
     UUID,
@@ -39,8 +44,18 @@ class SagaExecution(object):
     """TODO"""
 
     def __init__(
-        self, definition: Saga, uuid: UUID, steps: [SagaExecutionStep], context: SagaContext, status: SagaStatus
+        self,
+        definition: Saga,
+        uuid: UUID,
+        steps: [SagaExecutionStep],
+        context: SagaContext,
+        status: SagaStatus,
+        db_path: Union[Path, str] = "./db.lmdb",
+        storage: Type[MinosSagaStorage] = MinosSagaStorage,
     ):
+        if not isinstance(db_path, str):
+            db_path = str(db_path)
+
         self.uuid = uuid
         self.definition = definition
         self.executed_steps = steps
@@ -49,14 +64,23 @@ class SagaExecution(object):
         self.status = status
         self.already_rollback = False
 
+        self.storage = storage(self.definition.name, str(self.uuid), db_path)
+
+        self.saga_process = {
+            "name": self.definition.name,
+            "id": self.uuid,
+            "steps": [],
+            "current_compensations": [],
+        }
+
     @classmethod
-    def from_saga(cls, definition: Saga):
+    def from_saga(cls, definition: Saga, *args, **kwargs):
         """TODO
 
         :param definition: TODO
         :return: TODO
         """
-        return cls(definition, uuid=uuid4(), steps=list(), context=SagaContext(), status=SagaStatus.Created)
+        return cls(definition, uuid4(), list(), SagaContext(), SagaStatus.Created, *args, **kwargs)
 
     def execute(self, storage: MinosSagaStorage):
         """TODO

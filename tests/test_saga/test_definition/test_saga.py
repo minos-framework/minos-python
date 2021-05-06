@@ -35,7 +35,7 @@ class TestSaga(unittest.TestCase):
     def test_empty_step_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:
             (
-                Saga("OrdersAdd2", self.DB_PATH)
+                Saga("OrdersAdd2")
                 .step()
                 .invoke_participant("CreateOrder")
                 .with_compensation("DeleteOrder")
@@ -51,25 +51,10 @@ class TestSaga(unittest.TestCase):
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
-    def test_sync_callbacks_ok(self):
-        saga = (
-            Saga("OrdersAdd", self.DB_PATH)
-            .step()
-            .invoke_participant("CreateOrder", d_callback)
-            .with_compensation("DeleteOrder", e_callback)
-            .on_reply(f_callback)
-            .commit()
-        )
-        with saga.storage as storage:
-            observed = storage.get_state()
-
-        expected = {"current_step": None, "operations": {}, "saga": "OrdersAdd"}
-        self.assertEqual(expected, observed)
-
     def test_wrong_step_action_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:
             (
-                Saga("OrdersAdd3", self.DB_PATH)
+                Saga("OrdersAdd3")
                 .step()
                 .invoke_participant("CreateOrder")
                 .with_compensation("DeleteOrder")
@@ -84,13 +69,7 @@ class TestSaga(unittest.TestCase):
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
     def test_build_execution(self):
-        saga = (
-            Saga("OrdersAdd3", self.DB_PATH)
-            .step()
-            .invoke_participant("CreateOrder")
-            .with_compensation("DeleteOrder")
-            .commit()
-        )
+        saga = Saga("OrdersAdd3").step().invoke_participant("CreateOrder").with_compensation("DeleteOrder").commit()
         execution = saga.build_execution()
         self.assertIsInstance(execution, SagaExecution)
 

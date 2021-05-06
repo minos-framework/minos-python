@@ -54,7 +54,7 @@ class SagaExecutionStep(object):
         :return: TODO
         """
 
-        self.execution.definition.saga_process["steps"].append(self.definition.raw)
+        self.execution.saga_process["steps"].append(self.definition.raw)
         self._register_with_compensation()
 
         context = self._execute_invoke_participant(context, storage)
@@ -67,7 +67,7 @@ class SagaExecutionStep(object):
     def _register_with_compensation(self):
         operation = self.definition.raw_with_compensation
         if operation is not None:
-            self.execution.definition.saga_process["current_compensations"].insert(0, operation)
+            self.execution.saga_process["current_compensations"].insert(0, operation)
 
     def _execute_invoke_participant(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
         self.status = SagaStepStatus.RunningInvokeParticipant
