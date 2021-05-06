@@ -97,7 +97,6 @@ class SagaStep(object):
         self.raw_invoke_participant = {
             "id": str(uuid.uuid4()),
             "type": "invokeParticipant",
-            "method": self.execute_invoke_participant,
             "name": name,
             "callback": callback,
         }
@@ -114,60 +113,26 @@ class SagaStep(object):
         operation = self.raw_invoke_participant
         if operation is None:
             return context
-        # Add current operation to lmdb
-        (db_operation_flag, db_operation_error,) = step_manager.create_operation_db(
-            operation["id"], operation["type"], operation["name"]
-        )
-        # if the DB was updated
-        if db_operation_flag:
-            try:
-                response = _invoke_participant(operation["name"])
-            except MinosSagaException as error:
-                step_manager.operation_error_db(operation["id"], error)
-                raise error
 
-            # Add response of current operation to lmdb
-            (db_op_response_flag, db_op_response_error,) = step_manager.operation_response_db(operation["id"], response)
+        step_manager.create_operation(operation)
+        try:
+            response = _invoke_participant(operation["name"])
+        except MinosSagaException as error:
+            step_manager.operation_error_db(operation["id"], error)
+            raise error
+        step_manager.store_operation_response(operation["id"], response)
 
-            # if the DB was updated with the response of previous operation
-            if db_op_response_flag:
-                if operation["callback"] is not None:
-                    func = operation["callback"]
-                    callback_id = str(uuid.uuid4())
+        if operation["callback"] is None:
+            return response
 
-                    (db_op_callback_flag, db_op_callback_error,) = step_manager.create_operation_db(
-                        callback_id, "invokeParticipant_callback", operation["name"]
-                    )
-                    # if the DB was updated
-                    if db_op_callback_flag:
-                        try:
-                            response = self._callback_function_call(func, context)
-                        except MinosSagaException as error:
-                            step_manager.operation_error_db(callback_id, error)
-                            raise error
-
-                        # Add response of current operation to lmdb
-                        (
-                            db_op_callback_response_flag,
-                            db_op_callback_response_error,
-                        ) = step_manager.operation_response_db(callback_id, response)
-
-                        # If the database could not be updated
-                        if not db_op_callback_response_flag:
-                            step_manager.operation_error_db(callback_id, db_op_callback_response_error)
-                            raise db_op_callback_response_error
-
-                    # If the database could not be updated
-                    else:
-                        step_manager.operation_error_db(callback_id, db_op_callback_error)
-                        raise db_op_callback_error
-            else:
-                step_manager.operation_error_db(operation["id"], db_op_response_error)
-                raise db_op_response_error
-        # If the database could not be updated
-        else:
-            step_manager.operation_error_db(operation["id"], db_operation_error)
-            raise db_operation_error
+        callback_operation = {"id": str(uuid.uuid4()), "type": "invokeParticipant_callback", "name": operation["name"]}
+        step_manager.create_operation(callback_operation)
+        try:
+            response = self._callback_function_call(operation["callback"], context)
+        except MinosSagaException as error:
+            step_manager.operation_error_db(callback_operation["id"], error)
+            raise error
+        step_manager.store_operation_response(callback_operation["id"], response)
 
         return response
 
@@ -184,7 +149,6 @@ class SagaStep(object):
         self.raw_with_compensation = {
             "id": str(uuid.uuid4()),
             "type": "withCompensation",
-            "method": self.execute_with_compensation,
             "name": name,
             "callback": callback,
         }
@@ -262,7 +226,6 @@ class SagaStep(object):
         self.raw_on_reply = {
             "id": str(uuid.uuid4()),
             "type": "onReply",
-            "method": self.execute_on_reply,
             "callback": _callback,
         }
 

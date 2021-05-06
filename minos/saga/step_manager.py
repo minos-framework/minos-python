@@ -5,7 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import time
 from typing import (
     Any,
     NoReturn,
@@ -53,6 +52,19 @@ class MinosSagaStepManager:
         structure = {"saga": self.saga_name, "current_step": None, "operations": {}}
         self._local_state.update(self.uuid, structure)
 
+    def create_operation(self, operation):
+        """TODO
+
+        :param operation: TODO
+        :return: TODO
+        """
+        db_operation_flag, db_operation_error = self.create_operation_db(
+            operation["id"], operation["type"], operation["name"]
+        )
+        if not db_operation_flag:
+            self.operation_error_db(operation["id"], db_operation_error)
+            raise db_operation_error
+
     def create_operation_db(self, step_uuid: str, operation_type: str, name: str = "") -> (bool, str):
         """TODO
 
@@ -96,6 +108,21 @@ class MinosSagaStepManager:
         self._state["current_step"] = step_uuid
         self._state["operations"][step_uuid] = operation
         self._local_state.add(self.uuid, self._state)
+
+    def store_operation_response(self, callback_id, response):
+        """TODO
+
+        :param callback_id: TODO
+        :param response: TODO
+        :return: TODO
+        """
+        # Add response of current operation to lmdb
+        db_op_callback_response_flag, db_op_callback_response_error = self.operation_response_db(callback_id, response)
+
+        # If the database could not be updated
+        if not db_op_callback_response_flag:
+            self.operation_error_db(callback_id, db_op_callback_response_error)
+            raise db_op_callback_response_error
 
     def operation_response_db(self, step_uuid: str, response: str) -> (bool, str):
         """TODO
