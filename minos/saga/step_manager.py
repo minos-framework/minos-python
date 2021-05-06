@@ -71,7 +71,6 @@ class MinosSagaStepManager:
                 break
             except Exception as e:  # pragma: no cover
                 error = e
-                time.sleep(0.5)
 
         return flag, error
 
@@ -115,7 +114,6 @@ class MinosSagaStepManager:
                 break
             except Exception as e:  # pragma: no cover
                 error = e
-                time.sleep(0.5)
 
         return flag, error
 
@@ -147,7 +145,6 @@ class MinosSagaStepManager:
                 break
             except Exception as e:  # pragma: no cover
                 error = e
-                time.sleep(0.5)
 
         return flag, error
 
@@ -178,7 +175,6 @@ class MinosSagaStepManager:
                 break
             except Exception as e:  # pragma: no cover
                 error = e
-                time.sleep(0.5)
 
         return flag, response, error
 

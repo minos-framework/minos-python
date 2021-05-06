@@ -112,7 +112,8 @@ class SagaStep(object):
         :return: TODO
         """
         operation = self.raw_invoke_participant
-
+        if operation is None:
+            return context
         # Add current operation to lmdb
         (db_operation_flag, db_operation_error,) = step_manager.create_operation_db(
             operation["id"], operation["type"], operation["name"]
