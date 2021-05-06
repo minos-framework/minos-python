@@ -16,7 +16,7 @@ from .broker import (
 from .handler import (
     MinosEventHandler,
     MinosEventPeriodicService,
-    MinosEventServer,
+    MinosEventHandlerServer,
     MinosEventServerService,
 )
 from .exceptions import (

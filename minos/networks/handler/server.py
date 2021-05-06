@@ -8,13 +8,14 @@
 from __future__ import (
     annotations,
 )
-
+from psycopg2.extensions import AsIs
 import asyncio
 import datetime
 from typing import (
     Any,
     AsyncIterator,
     Optional,
+    NamedTuple,
 )
 
 import aiopg
@@ -24,12 +25,12 @@ from minos.common import (
 from minos.common.configuration.config import (
     MinosConfig,
 )
-from ..abc import (
+from minos.networks.handler.abc import (
     MinosHandlerSetup,
 )
 
 
-class MinosEventServer(MinosHandlerSetup):
+class MinosHandlerServer(MinosHandlerSetup):
     """
     Event Manager
 
@@ -37,26 +38,25 @@ class MinosEventServer(MinosHandlerSetup):
 
     """
 
-    TABLE = "event_queue"
 
     __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_kafka_conn_data", "_broker_group_name"
 
-    def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, **kwargs, **config.events.queue._asdict())
+    def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
+        super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
         self._tasks = set()  # type: t.Set[asyncio.Task]
         self._db_dsn = (
-            f"dbname={config.events.queue.database} user={config.events.queue.user} "
-            f"password={config.events.queue.password} host={config.events.queue.host}"
+            f"dbname={config.queue.database} user={config.queue.user} "
+            f"password={config.queue.password} host={config.queue.host}"
         )
         self._handler = {
-            item.name: {"controller": item.controller, "action": item.action} for item in config.events.items
+            item.name: {"controller": item.controller, "action": item.action} for item in config.items
         }
         self._topics = list(self._handler.keys())
-        self._kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
-        self._broker_group_name = f"event_{config.service.name}"
+        self._kafka_conn_data = f"{config.broker.host}:{config.broker.port}"
+        self._table_name = table_name
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosEventServer]:
+    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosHandlerServer]:
         """Build a new repository from config.
         :param args: Additional positional arguments.
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -70,7 +70,7 @@ class MinosEventServer(MinosHandlerSetup):
         # noinspection PyProtectedMember
         return cls(*args, config=config, **kwargs)
 
-    async def event_queue_add(self, topic: str, partition: int, binary: bytes):
+    async def queue_add(self, topic: str, partition: int, binary: bytes):
         """Insert row to event_queue table.
 
         Retrieves number of affected rows and row ID.
@@ -93,8 +93,8 @@ class MinosEventServer(MinosHandlerSetup):
             async with pool.acquire() as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
-                        "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
-                        (topic, partition, binary, datetime.datetime.now(),),
+                        "INSERT INTO %s (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                        (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
                     )
 
                     queue_id = await cur.fetchone()
@@ -118,7 +118,7 @@ class MinosEventServer(MinosHandlerSetup):
         # check if the event binary string is well formatted
         if not self._is_valid_event(msg.value):
             return
-        affected_rows, id = await self.event_queue_add(msg.topic, msg.partition, msg.value)
+        affected_rows, id = await self.queue_add(msg.topic, msg.partition, msg.value)
         return affected_rows, id
 
     def _is_valid_event(self, value: bytes):

@@ -1,6 +1,5 @@
 from typing import (
     Any,
-    Awaitable,
 )
 
 from aiokafka import (
@@ -17,8 +16,8 @@ from minos.common import (
 from .dispatcher import (
     MinosEventHandler,
 )
-from .event_server import (
-    MinosEventServer,
+from .server import (
+    MinosEventHandlerServer,
 )
 
 
@@ -27,7 +26,7 @@ class MinosEventServerService(Service):
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = MinosEventServer.from_config(config=config)
+        self.dispatcher = MinosEventHandlerServer.from_config(config=config)
         self.consumer = None
 
     """
