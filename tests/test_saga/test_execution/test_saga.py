@@ -10,6 +10,9 @@ import unittest
 from shutil import (
     rmtree,
 )
+from unittest.mock import (
+    patch,
+)
 
 from minos.saga import (
     Saga,
@@ -39,31 +42,51 @@ class TestSagaExecution(unittest.TestCase):
         rmtree(self.DB_PATH, ignore_errors=True)
 
     def test_async_callbacks_ok(self):
-        saga = (
-            Saga("OrdersAdd", self.DB_PATH)
-            .step()
-            .invoke_participant("CreateOrder", a_callback)
-            .with_compensation("DeleteOrder", b_callback)
-            .on_reply(c_callback)
-            .commit()
-        )
-        execution = saga.build_execution()
-        execution.execute()
+        with patch("uuid.uuid4", side_effect=["uuid-0", "uuid-1", "uuid-2", "uuid-3", "uuid-4", "uuid-5"]):
+            saga = (
+                Saga("OrdersAdd", self.DB_PATH)
+                .step()
+                .invoke_participant("CreateOrder", a_callback)
+                .with_compensation("DeleteOrder", b_callback)
+                .on_reply(c_callback)
+                .commit()
+            )
+            with saga.step_manager as step_manager:
+                execution = saga.build_execution()
+                execution.execute(step_manager)
+                observed = step_manager.get_state()
 
-        assert execution.get_db_state() is None
-
-    def test_sync_callbacks_ok(self):
-        saga = (
-            Saga("OrdersAdd", self.DB_PATH)
-            .step()
-            .invoke_participant("CreateOrder", d_callback)
-            .with_compensation("DeleteOrder", e_callback)
-            .on_reply(f_callback)
-            .commit()
-        )
-        execution = saga.build_execution()
-
-        assert execution.get_db_state() is None
+        expected = {
+            "current_step": "uuid-5",
+            "operations": {
+                "uuid-1": {
+                    "error": "",
+                    "id": "uuid-1",
+                    "name": "CreateOrder",
+                    "response": "_invokeParticipant Response",
+                    "status": 0,
+                    "type": "invokeParticipant",
+                },
+                "uuid-4": {
+                    "error": "",
+                    "id": "uuid-4",
+                    "name": "CreateOrder",
+                    "response": "create_order_callback response!!!!",
+                    "status": 0,
+                    "type": "invokeParticipant_callback",
+                },
+                "uuid-5": {
+                    "error": "",
+                    "id": "uuid-5",
+                    "name": "",
+                    "response": "async create_ticket_on_reply_callback " "response!!!!",
+                    "status": 0,
+                    "type": "onReply",
+                },
+            },
+            "saga": "OrdersAdd",
+        }
+        self.assertEqual(expected, observed)
 
     def test_async_callbacks_ko(self):
         saga = (
@@ -74,13 +97,14 @@ class TestSagaExecution(unittest.TestCase):
             .on_reply(c_callback)
             .commit()
         )
-        execution = saga.build_execution()
-        execution.execute()
+        with saga.step_manager as step_manager:
+            execution = saga.build_execution()
+            execution.execute(step_manager)
 
-        state = execution.get_db_state()
+            state = step_manager.get_state()
 
-        assert state is not None
-        assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
+            assert state is not None
+            assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
 
     def test_sync_callbacks_ko(self):
         saga = (
@@ -91,13 +115,14 @@ class TestSagaExecution(unittest.TestCase):
             .on_reply(f_callback)
             .commit()
         )
-        execution = saga.build_execution()
-        execution.execute()
+        with saga.step_manager as step_manager:
+            execution = saga.build_execution()
+            execution.execute(step_manager)
 
-        state = execution.get_db_state()
+            state = step_manager.get_state()
 
-        assert state is not None
-        assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
+            assert state is not None
+            assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
 
     def test_correct(self):
         saga = (
@@ -114,10 +139,10 @@ class TestSagaExecution(unittest.TestCase):
             .with_compensation(["Failed", "BlockOrder"], shipping_callback)
             .commit()
         )
-        execution = saga.build_execution()
-        state = execution.get_db_state()
+        with saga.step_manager as step_manager:
+            state = step_manager.get_state()
 
-        assert state is None
+        self.assertEqual({"current_step": None, "operations": {}, "saga": "OrdersAdd"}, state)
 
     def test_execute_all_compensations(self):
         saga = (
@@ -134,22 +159,23 @@ class TestSagaExecution(unittest.TestCase):
             .with_compensation(["Failed", "BlockOrder"], shipping_callback)
             .commit()
         )
-        execution = saga.build_execution()
-        execution.execute()
+        with saga.step_manager as step_manager:
+            execution = saga.build_execution()
+            execution.execute(step_manager)
 
-        state = execution.get_db_state()
+            state = step_manager.get_state()
 
-        assert state is not None
-        assert list(state["operations"].values())[0]["type"] == "invokeParticipant"
-        assert list(state["operations"].values())[1]["type"] == "invokeParticipant_callback"
-        assert list(state["operations"].values())[2]["type"] == "onReply"
-        assert list(state["operations"].values())[3]["type"] == "invokeParticipant"
-        assert list(state["operations"].values())[4]["type"] == "onReply"
-        assert list(state["operations"].values())[5]["type"] == "invokeParticipant"
-        assert list(state["operations"].values())[6]["type"] == "withCompensation"
-        assert list(state["operations"].values())[7]["type"] == "withCompensation_callback"
-        assert list(state["operations"].values())[8]["type"] == "withCompensation"
-        assert list(state["operations"].values())[9]["type"] == "withCompensation_callback"
+            assert state is not None
+            assert list(state["operations"].values())[0]["type"] == "invokeParticipant"
+            assert list(state["operations"].values())[1]["type"] == "invokeParticipant_callback"
+            assert list(state["operations"].values())[2]["type"] == "onReply"
+            assert list(state["operations"].values())[3]["type"] == "invokeParticipant"
+            assert list(state["operations"].values())[4]["type"] == "onReply"
+            assert list(state["operations"].values())[5]["type"] == "invokeParticipant"
+            assert list(state["operations"].values())[6]["type"] == "withCompensation"
+            assert list(state["operations"].values())[7]["type"] == "withCompensation_callback"
+            assert list(state["operations"].values())[8]["type"] == "withCompensation"
+            assert list(state["operations"].values())[9]["type"] == "withCompensation_callback"
 
 
 if __name__ == "__main__":

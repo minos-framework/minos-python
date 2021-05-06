@@ -18,6 +18,13 @@ from ..definitions import (
     Saga,
     SagaStep,
 )
+from ..exceptions import (
+    MinosSagaFailedExecutionStepException,
+    MinosSagaPausedExecutionStepException,
+)
+from ..step_manager import (
+    MinosSagaStepManager,
+)
 from .context import (
     SagaContext,
 )
@@ -51,73 +58,48 @@ class SagaExecution(object):
         """
         return cls(definition, uuid=uuid4(), steps=list(), context=SagaContext(), status=SagaStatus.Created)
 
-    def execute(self):
+    def execute(self, step_manager: MinosSagaStepManager):
         """TODO
 
+        :param step_manager: TODO
         :return: TODO
         """
-        self.definition.saga_process["steps"] = [step.raw for step in self.definition._steps]
-
-        self.step_manager.start()
+        self.status = SagaStatus.Running
 
         for step in self.pending_steps:
-            # try:
-            #     execution_step = SagaExecutedStep(self, step)
-            #     self.add_executed_step(execution_step)
-            # except ValueError:  # FIXME: Exception that pauses execution.
-            #     break
-            # except TypeError:  # FIXME: Exception that rollbacks execution.
-            #     self.rollback()
-            #     break
+            execution_step = SagaExecutionStep(self, step)
+            try:
+                execution_step.execute(step_manager)
+            except MinosSagaFailedExecutionStepException:  # FIXME: Exception that rollbacks execution.
+                self.rollback(step_manager)
+                self.status = SagaStatus.Errored
+                return self
+            except MinosSagaPausedExecutionStepException:  # FIXME: Exception that pauses execution.
+                self.status = SagaStatus.Paused
+                return self
+            finally:
+                self._add_executed_step(execution_step)
 
-            # execution_step = SagaExecutionStep(self, step)
-            # execution_step.execute()
-            # self.add_executed_step(execution_step)
-            for operation in step.raw:
-                if operation["type"] == "withCompensation":
-                    self.definition.saga_process["current_compensations"].insert(0, operation)
+        self.status = SagaStatus.Finished
 
-            for operation in step.raw:
-
-                if operation["type"] == "invokeParticipant":
-                    from minos.saga import (
-                        MinosSagaException,
-                    )
-
-                    try:
-                        self.response = step.execute_invoke_participant(operation)
-                    except MinosSagaException:
-                        self._rollback()
-                        return self
-
-                if operation["type"] == "onReply":
-                    # noinspection PyBroadException
-                    try:
-                        self.response = step.execute_on_reply(operation)
-                    except Exception:
-                        self._rollback()
-                        return self
-
-        self.step_manager.close()
-
-    def _rollback(self):
-        for operation in self.definition.saga_process["current_compensations"]:
-            self.definition._steps[-1].execute_with_compensation(operation)
-
-        return self
-
-    def rollback(self) -> NoReturn:
+    def rollback(self, step_manager: MinosSagaStepManager) -> NoReturn:
         """TODO
 
+        :param step_manager: TODO
         :return: TODO
         """
-        if self.already_rollback:
-            return
 
-        for executed_step in reversed(self.steps):
-            executed_step.rollback()
+        #
+        # if self.already_rollback:
+        #     return
+        #
+        # for executed_step in reversed(self.steps):
+        #     executed_step.rollback()
+        #
+        # self.already_rollback = True
 
-        self.already_rollback = True
+        for execution_step in reversed(self.steps):
+            execution_step.rollback(step_manager)
 
     @property
     def pending_steps(self) -> [SagaStep]:
@@ -127,25 +109,10 @@ class SagaExecution(object):
         """
         return self.definition._steps
 
-    def add_executed_step(self, executed_step: SagaExecutionStep):
+    def _add_executed_step(self, executed_step: SagaExecutionStep):
         """TODO
 
         :param executed_step: TODO
         :return: TODO
         """
         self.steps.append(executed_step)
-
-    def get_db_state(self) -> dict[str, Any]:
-        """TODO
-
-        :return: TODO
-        """
-        return self.step_manager.get_state()
-
-    @property
-    def step_manager(self):
-        """TODO
-
-        :return: TODO
-        """
-        return self.definition.step_manager

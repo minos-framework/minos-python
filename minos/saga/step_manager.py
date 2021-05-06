@@ -38,6 +38,13 @@ class MinosSagaStepManager:
         self.saga_name = name
         self._state = {}
 
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def start(self) -> NoReturn:
         """TODO
 

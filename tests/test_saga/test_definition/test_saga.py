@@ -17,6 +17,9 @@ from minos.saga import (
 )
 from tests.callbacks import (
     create_ticket_on_reply_callback,
+    d_callback,
+    e_callback,
+    f_callback,
 )
 from tests.utils import (
     BASE_PATH,
@@ -47,6 +50,21 @@ class TestSaga(unittest.TestCase):
             )
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
+
+    def test_sync_callbacks_ok(self):
+        saga = (
+            Saga("OrdersAdd", self.DB_PATH)
+            .step()
+            .invoke_participant("CreateOrder", d_callback)
+            .with_compensation("DeleteOrder", e_callback)
+            .on_reply(f_callback)
+            .commit()
+        )
+        with saga.step_manager as step_manager:
+            observed = step_manager.get_state()
+
+        expected = {"current_step": None, "operations": {}, "saga": "OrdersAdd"}
+        self.assertEqual(expected, observed)
 
     def test_wrong_step_action_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:

@@ -14,6 +14,7 @@ class SagaStatus(Enum):
     """TODO"""
 
     Created = "created"
+    Running = "running"
     Paused = "paused"
     Finished = "finished"
     Errored = "errored"

@@ -61,3 +61,25 @@ class MinosMultipleOnReplyException(MinosSagaStepException):
         if message is None:
             message = "A 'SagaStep' can only define one 'on_reply' method."
         super().__init__(message)
+
+
+class MinosSagaExecutionStepException(MinosSagaException):
+    """TODO"""
+
+
+class MinosSagaFailedExecutionStepException(MinosSagaExecutionStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "There was a failure while 'SagaExecutionStep' was executing."
+        super().__init__(message)
+
+
+class MinosSagaPausedExecutionStepException(MinosSagaExecutionStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "There was a pause while 'SagaExecutionStep' was executing."
+        super().__init__(message)

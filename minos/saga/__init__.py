@@ -18,7 +18,10 @@ from .exceptions import (
     MinosMultipleWithCompensationException,
     MinosSagaEmptyStepException,
     MinosSagaException,
+    MinosSagaExecutionStepException,
+    MinosSagaFailedExecutionStepException,
     MinosSagaNotDefinedException,
+    MinosSagaPausedExecutionStepException,
     MinosSagaStepException,
 )
 from .executions import (
