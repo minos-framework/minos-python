@@ -40,7 +40,7 @@ class TestSaga(unittest.TestCase):
         rmtree(self.DB_PATH, ignore_errors=True)
 
     def test_async_callbacks_ok(self):
-        s = (
+        saga = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
             .invoke_participant("CreateOrder", a_callback)
@@ -49,10 +49,10 @@ class TestSaga(unittest.TestCase):
             .submit()
         )
 
-        assert s.get_db_state() is None
+        assert saga.get_db_state() is None
 
     def test_sync_callbacks_ok(self):
-        s = (
+        saga = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
             .invoke_participant("CreateOrder", d_callback)
@@ -61,10 +61,10 @@ class TestSaga(unittest.TestCase):
             .submit()
         )
 
-        assert s.get_db_state() is None
+        assert saga.get_db_state() is None
 
     def test_async_callbacks_ko(self):
-        s = (
+        saga = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
             .invoke_participant("Shipping", a_callback)
@@ -72,15 +72,15 @@ class TestSaga(unittest.TestCase):
             .on_reply(c_callback)
             .submit()
         )
-        s.execute()
+        saga.execute()
 
-        state = s.get_db_state()
+        state = saga.get_db_state()
 
         assert state is not None
         assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
 
     def test_sync_callbacks_ko(self):
-        s = (
+        saga = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
             .invoke_participant("Shipping", d_callback)
@@ -88,15 +88,15 @@ class TestSaga(unittest.TestCase):
             .on_reply(f_callback)
             .submit()
         )
-        s.execute()
+        saga.execute()
 
-        state = s.get_db_state()
+        state = saga.get_db_state()
 
         assert state is not None
         assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
 
     def test_correct(self):
-        s = (
+        saga = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
@@ -111,12 +111,12 @@ class TestSaga(unittest.TestCase):
             .submit()
         )
 
-        state = s.get_db_state()
+        state = saga.get_db_state()
 
         assert state is None
 
     def test_execute_all_compensations(self):
-        s = (
+        saga = (
             Saga("ItemsAdd", self.DB_PATH)
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
@@ -130,9 +130,9 @@ class TestSaga(unittest.TestCase):
             .with_compensation(["Failed", "BlockOrder"], shipping_callback)
             .submit()
         )
-        s.execute()
+        saga.execute()
 
-        state = s.get_db_state()
+        state = saga.get_db_state()
 
         assert state is not None
         assert list(state["operations"].values())[0]["type"] == "invokeParticipant"
