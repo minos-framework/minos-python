@@ -46,12 +46,12 @@ class TestSagaStep(unittest.TestCase):
 
     def test_submit(self):
         expected = Saga("SagaTest")
-        observed = SagaStep(expected).submit()
+        observed = SagaStep(expected).commit()
         self.assertEqual(expected, observed)
 
     def test_submit_raises(self):
         with self.assertRaises(MinosSagaNotDefinedException):
-            SagaStep().submit()
+            SagaStep().commit()
 
 
 if __name__ == "__main__":

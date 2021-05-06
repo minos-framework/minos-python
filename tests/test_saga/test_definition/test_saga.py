@@ -43,7 +43,7 @@ class TestSaga(unittest.TestCase):
                 .on_reply(create_ticket_on_reply_callback)
                 .step()
                 .invoke_participant("VerifyConsumer")
-                .submit()
+                .commit()
             )
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
@@ -60,7 +60,7 @@ class TestSaga(unittest.TestCase):
                 .on_reply(create_ticket_on_reply_callback)
                 .step()
                 .invoke_participant("VerifyConsumer")
-                .submit()
+                .commit()
             )
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
@@ -71,7 +71,7 @@ class TestSaga(unittest.TestCase):
             .step()
             .invoke_participant("CreateOrder")
             .with_compensation("DeleteOrder")
-            .submit()
+            .commit()
         )
         execution = saga.build_execution()
         self.assertIsInstance(execution, SagaExecution)

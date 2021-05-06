@@ -341,7 +341,7 @@ class SagaStep(object):
             raise MinosSagaNotDefinedException()
         return self.saga.step()
 
-    def submit(self) -> Saga:
+    def commit(self) -> Saga:
         """TODO
 
         :return: TODO
