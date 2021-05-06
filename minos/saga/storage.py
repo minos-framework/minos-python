@@ -58,14 +58,14 @@ class MinosSagaStorage:
         :param operation: TODO
         :return: TODO
         """
-        db_operation_flag, db_operation_error = self.create_operation_db(
+        db_operation_flag, db_operation_error = self._create_operation_db(
             operation["id"], operation["type"], operation["name"]
         )
         if not db_operation_flag:
             self.operation_error_db(operation["id"], db_operation_error)
             raise db_operation_error
 
-    def create_operation_db(self, step_uuid: str, operation_type: str, name: str = "") -> (bool, str):
+    def _create_operation_db(self, step_uuid: str, operation_type: str, name: str = "") -> (bool, str):
         """TODO
 
         :param step_uuid: TODO
@@ -77,7 +77,7 @@ class MinosSagaStorage:
         error = ""
         for x in range(2):
             try:
-                self.operation(step_uuid, operation_type, name)
+                self._operation(step_uuid, operation_type, name)
                 flag = True
                 error = ""
                 break
@@ -86,7 +86,7 @@ class MinosSagaStorage:
 
         return flag, error
 
-    def operation(self, step_uuid: str, operation_type: str, name: str = ""):
+    def _operation(self, step_uuid: str, operation_type: str, name: str = ""):
         """TODO
 
         :param step_uuid: TODO
@@ -117,14 +117,14 @@ class MinosSagaStorage:
         :return: TODO
         """
         # Add response of current operation to lmdb
-        db_op_callback_response_flag, db_op_callback_response_error = self.operation_response_db(callback_id, response)
+        db_op_callback_response_flag, db_op_callback_response_error = self._operation_response_db(callback_id, response)
 
         # If the database could not be updated
         if not db_op_callback_response_flag:
             self.operation_error_db(callback_id, db_op_callback_response_error)
             raise db_op_callback_response_error
 
-    def operation_response_db(self, step_uuid: str, response: str) -> (bool, str):
+    def _operation_response_db(self, step_uuid: str, response: str) -> (bool, str):
         """TODO
 
         :param step_uuid: TODO
@@ -135,7 +135,7 @@ class MinosSagaStorage:
         error = ""
         for x in range(2):
             try:
-                self.add_response(step_uuid, response)
+                self._add_response(step_uuid, response)
                 flag = True
                 error = ""
                 break
@@ -144,7 +144,7 @@ class MinosSagaStorage:
 
         return flag, error
 
-    def add_response(self, step_uuid: str, response: str):
+    def _add_response(self, step_uuid: str, response: str):
         """TODO
 
         :param step_uuid: TODO
@@ -166,7 +166,7 @@ class MinosSagaStorage:
         error = ""
         for x in range(2):
             try:
-                self.add_error(step_uuid, str(err))
+                self._add_error(step_uuid, str(err))
                 flag = True
                 error = ""
                 break
@@ -175,7 +175,7 @@ class MinosSagaStorage:
 
         return flag, error
 
-    def add_error(self, step_uuid: str, error: str):
+    def _add_error(self, step_uuid: str, error: str):
         """TODO
 
         :param step_uuid: TODO
@@ -186,7 +186,20 @@ class MinosSagaStorage:
         self._state["operations"][step_uuid]["error"] = error
         self._local_state.update(self.uuid, self._state)
 
-    def get_last_response_db(self) -> (bool, str, str):
+    def load_operation_response(self, uuid: str) -> str:
+        """TODO
+
+        :param uuid: TODO
+        :return: TODO
+        """
+        (db_response_flag, db_response, db_response_error,) = self._get_last_response_db()
+
+        if not db_response_flag:
+            self.operation_error_db(uuid, db_response_error)
+            raise db_response_error
+        return db_response
+
+    def _get_last_response_db(self) -> (bool, str, str):
         """TODO
 
         :return: TODO
@@ -196,7 +209,7 @@ class MinosSagaStorage:
         error = ""
         for x in range(2):
             try:
-                response = self.get_last_response()
+                response = self._get_last_response()
                 flag = True
                 error = ""
                 break
@@ -205,7 +218,7 @@ class MinosSagaStorage:
 
         return flag, response, error
 
-    def get_last_response(self) -> str:
+    def _get_last_response(self) -> str:
         """TODO
 
         :return: TODO

@@ -166,8 +166,6 @@ class SagaStep(object):
         if operation is None:
             return context
 
-        response = None
-
         if type(operation["name"]) == list:
             operations = operation["name"]
         else:
@@ -177,38 +175,26 @@ class SagaStep(object):
 
         for compensation in operations:
             # Add current operation to lmdb
-            (db_operation_flag, db_operation_error,) = storage.create_operation_db(
-                operation["id"], operation["type"], name
-            )
-            # if the DB was updated
-            if db_operation_flag:
-                try:
-                    response = _with_compensation(compensation)
-                except MinosSagaException as error:
-                    raise error
+            compensation_operation = {"id": operation["id"], "type": operation["type"], "name": name}
+            storage.create_operation(compensation_operation)
+            try:
+                response = _with_compensation(compensation)
+            except MinosSagaException as error:
+                raise error
+            storage.store_operation_response(operation["id"], response)
 
-                # Add response of current operation to lmdb
-                (db_op_response_flag, db_op_response_error,) = storage.operation_response_db(operation["id"], response)
+        if operation["callback"] is None:
+            return context
 
-                # if the DB was updated with the response of previous operation
-                if not db_op_response_flag:
-                    storage.operation_error_db(operation["id"], db_op_response_error)
-                    raise db_op_response_error
-            # If the database could not be updated
-            else:
-                storage.operation_error_db(operation["id"], db_operation_error)
-                raise db_operation_error
-
-        if operation["callback"] is not None:
-            func = operation["callback"]
-            callback_id = str(uuid.uuid4())
-
-            (db_op_callback_flag, db_op_callback_error,) = storage.create_operation_db(
-                callback_id, "withCompensation_callback", name
-            )
-            context = self._db_callback(
-                db_op_callback_flag, callback_id, func, response, db_op_callback_error, context, storage
-            )
+        func = operation["callback"]
+        callback_operation = {"id": str(uuid.uuid4()), "type": "withCompensation_callback", "name": name}
+        storage.create_operation(callback_operation)
+        try:
+            response = self._callback_function_call(func, context)
+        except MinosSagaException as error:
+            storage.operation_error_db(callback_operation["id"], error)
+            raise error
+        storage.store_operation_response(callback_operation["id"], response)
 
         return context
 
@@ -238,52 +224,17 @@ class SagaStep(object):
         """
         operation = self.raw_on_reply
         # Add current operation to lmdb
-        (db_response_flag, db_response_error, db_response,) = storage.get_last_response_db()
+        db_response = storage.load_operation_response(operation["id"])
 
-        if db_response_flag:
-            func = operation["callback"]
-            callback_id = str(uuid.uuid4())
+        callback_operation = {"id": str(uuid.uuid4()), "type": operation["type"], "name": ""}
+        storage.create_operation(callback_operation)
+        try:
+            response = self._callback_function_call(operation["callback"], db_response)
+        except MinosSagaException as error:
+            storage.operation_error_db(callback_operation["id"], error)
+            raise error
+        storage.store_operation_response(callback_operation["id"], response)
 
-            (db_op_callback_flag, db_op_callback_error,) = storage.create_operation_db(callback_id, operation["type"])
-
-            context = self._db_callback(
-                db_op_callback_flag, callback_id, func, db_response, db_op_callback_error, context, storage
-            )
-        else:
-            storage.operation_error_db(operation["id"], db_response_error)
-            raise db_response_error
-
-        return context
-
-    def _db_callback(
-        self,
-        db_op_callback_flag,
-        callback_id,
-        func,
-        db_response,
-        db_op_callback_error,
-        context: SagaContext,
-        storage: MinosSagaStorage,
-    ):
-        if db_op_callback_flag:
-            try:
-                response = self._callback_function_call(func, db_response)
-            except MinosSagaException as error:
-                storage.operation_error_db(callback_id, error)
-                raise error
-
-            # Add response of current operation to lmdb
-            (db_op_callback_response_flag, db_op_callback_response_error,) = storage.operation_response_db(
-                callback_id, response
-            )
-
-            # If the database could not be updated
-            if not db_op_callback_response_flag:
-                storage.operation_error_db(callback_id, db_op_callback_response_error)
-                raise db_op_callback_response_error
-        else:
-            storage.operation_error_db(callback_id, db_op_callback_error)
-            raise db_op_callback_error
         return context
 
     def _callback_function_call(self, func: Callable, response: Any) -> Any:
