@@ -60,8 +60,8 @@ class TestSaga(unittest.TestCase):
             .on_reply(f_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
-            observed = step_manager.get_state()
+        with saga.storage as storage:
+            observed = storage.get_state()
 
         expected = {"current_step": None, "operations": {}, "saga": "OrdersAdd"}
         self.assertEqual(expected, observed)

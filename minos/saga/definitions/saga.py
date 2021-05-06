@@ -40,7 +40,7 @@ class Saga(MinosBaseSagaBuilder):
         self,
         name,
         db_path: t.Union[Path, str] = "./db.lmdb",
-        step_manager: t.Type[MinosSagaStorage] = MinosSagaStorage,
+        storage: t.Type[MinosSagaStorage] = MinosSagaStorage,
         loop: asyncio.AbstractEventLoop = None,
     ):
         if not isinstance(db_path, str):
@@ -54,7 +54,7 @@ class Saga(MinosBaseSagaBuilder):
             "steps": [],
             "current_compensations": [],
         }
-        self.step_manager = step_manager(self.saga_name, self.uuid, db_path)
+        self.storage = storage(self.saga_name, self.uuid, db_path)
         self.loop = loop or asyncio.get_event_loop()
         self.response = ""
         self.steps = list()

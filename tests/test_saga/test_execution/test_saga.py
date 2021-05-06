@@ -51,10 +51,10 @@ class TestSagaExecution(unittest.TestCase):
                 .on_reply(c_callback)
                 .commit()
             )
-            with saga.step_manager as step_manager:
+            with saga.storage as storage:
                 execution = saga.build_execution()
-                execution.execute(step_manager)
-                observed = step_manager.get_state()
+                execution.execute(storage)
+                observed = storage.get_state()
 
         expected = {
             "current_step": "uuid-5",
@@ -97,11 +97,11 @@ class TestSagaExecution(unittest.TestCase):
             .on_reply(c_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
+        with saga.storage as storage:
             execution = saga.build_execution()
-            execution.execute(step_manager)
+            execution.execute(storage)
 
-            state = step_manager.get_state()
+            state = storage.get_state()
 
             assert state is not None
             assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
@@ -115,11 +115,11 @@ class TestSagaExecution(unittest.TestCase):
             .on_reply(f_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
+        with saga.storage as storage:
             execution = saga.build_execution()
-            execution.execute(step_manager)
+            execution.execute(storage)
 
-            state = step_manager.get_state()
+            state = storage.get_state()
 
             assert state is not None
             assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
@@ -139,8 +139,8 @@ class TestSagaExecution(unittest.TestCase):
             .with_compensation(["Failed", "BlockOrder"], shipping_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
-            state = step_manager.get_state()
+        with saga.storage as storage:
+            state = storage.get_state()
 
         self.assertEqual({"current_step": None, "operations": {}, "saga": "OrdersAdd"}, state)
 
@@ -159,11 +159,11 @@ class TestSagaExecution(unittest.TestCase):
             .with_compensation(["Failed", "BlockOrder"], shipping_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
+        with saga.storage as storage:
             execution = saga.build_execution()
-            execution.execute(step_manager)
+            execution.execute(storage)
 
-            state = step_manager.get_state()
+            state = storage.get_state()
 
             assert state is not None
             assert list(state["operations"].values())[0]["type"] == "invokeParticipant"

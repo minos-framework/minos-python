@@ -31,9 +31,9 @@ class TestSagaExecutionStep(unittest.TestCase):
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
-        with saga_definition.step_manager as step_manager:
+        with saga_definition.storage as storage:
             with self.assertRaises(MinosSagaFailedExecutionStepException):
-                step_execution.execute(saga_execution.context, step_manager)
+                step_execution.execute(saga_execution.context, storage)
 
 
 if __name__ == "__main__":
