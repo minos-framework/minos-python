@@ -44,10 +44,6 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(MinosSagaNotDefinedException):
             SagaStep().invoke_participant("FooAdded").step()
 
-    def test_execute_raises(self):
-        with self.assertRaises(MinosSagaNotDefinedException):
-            SagaStep().execute()
-
     def test_submit(self):
         expected = Saga("SagaTest")
         observed = SagaStep(expected).submit()

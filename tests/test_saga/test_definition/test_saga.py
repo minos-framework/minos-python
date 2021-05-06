@@ -46,7 +46,7 @@ class TestSaga(unittest.TestCase):
             .invoke_participant("CreateOrder", a_callback)
             .with_compensation("DeleteOrder", b_callback)
             .on_reply(c_callback)
-            .execute()
+            .submit()
         )
 
         assert s.get_db_state() is None
@@ -58,7 +58,7 @@ class TestSaga(unittest.TestCase):
             .invoke_participant("CreateOrder", d_callback)
             .with_compensation("DeleteOrder", e_callback)
             .on_reply(f_callback)
-            .execute()
+            .submit()
         )
 
         assert s.get_db_state() is None
@@ -70,8 +70,9 @@ class TestSaga(unittest.TestCase):
             .invoke_participant("Shipping", a_callback)
             .with_compensation("DeleteOrder", b_callback)
             .on_reply(c_callback)
-            .execute()
+            .submit()
         )
+        s.execute()
 
         state = s.get_db_state()
 
@@ -85,8 +86,9 @@ class TestSaga(unittest.TestCase):
             .invoke_participant("Shipping", d_callback)
             .with_compensation("DeleteOrder", e_callback)
             .on_reply(f_callback)
-            .execute()
+            .submit()
         )
+        s.execute()
 
         state = s.get_db_state()
 
@@ -106,7 +108,7 @@ class TestSaga(unittest.TestCase):
             .step()
             .invoke_participant("Shopping")
             .with_compensation(["Failed", "BlockOrder"], shipping_callback)
-            .execute()
+            .submit()
         )
 
         state = s.get_db_state()
@@ -126,8 +128,9 @@ class TestSaga(unittest.TestCase):
             .step()
             .invoke_participant("Shipping")
             .with_compensation(["Failed", "BlockOrder"], shipping_callback)
-            .execute()
+            .submit()
         )
+        s.execute()
 
         state = s.get_db_state()
 
@@ -157,7 +160,7 @@ class TestSaga(unittest.TestCase):
                 .on_reply(create_ticket_on_reply_callback)
                 .step()
                 .invoke_participant("VerifyConsumer")
-                .execute()
+                .submit()
             )
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
@@ -174,7 +177,7 @@ class TestSaga(unittest.TestCase):
                 .on_reply(create_ticket_on_reply_callback)
                 .step()
                 .invoke_participant("VerifyConsumer")
-                .execute()
+                .submit()
             )
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))

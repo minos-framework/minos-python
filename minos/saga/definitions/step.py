@@ -341,16 +341,6 @@ class SagaStep(object):
             raise MinosSagaNotDefinedException()
         return self.saga.step()
 
-    def execute(self) -> Saga:
-        """TODO
-
-        :return: TODO
-        """
-        if self.saga is None:
-            raise MinosSagaNotDefinedException()
-        self._execute = {"type": "execute", "method": self._execute}
-        return self.saga.execute()
-
     def submit(self) -> Saga:
         """TODO
 
