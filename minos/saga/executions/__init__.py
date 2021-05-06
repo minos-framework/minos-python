@@ -10,7 +10,6 @@ from .context import (
 )
 from .executors import (
     Executor,
-    LocalExecutor,
 )
 from .saga import (
     SagaExecution,

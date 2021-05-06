@@ -9,7 +9,6 @@ from __future__ import (
     annotations,
 )
 
-import uuid
 from typing import (
     TYPE_CHECKING,
 )
@@ -25,11 +24,13 @@ from ..exceptions import (
 from ..storage import (
     MinosSagaStorage,
 )
-from . import (
-    LocalExecutor,
-)
 from .context import (
     SagaContext,
+)
+from .executors import (
+    InvokeParticipantExecutor,
+    OnReplyExecutor,
+    WithCompensationExecutor,
 )
 from .status import (
     SagaStepStatus,
@@ -75,8 +76,9 @@ class SagaExecutionStep(object):
 
     def _execute_invoke_participant(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
         self.status = SagaStepStatus.RunningInvokeParticipant
+        executor = InvokeParticipantExecutor(storage, self._loop)
         try:
-            context = self.execute_invoke_participant(context, storage)
+            context = executor.exec(self.definition.raw_invoke_participant, context)
         except MinosSagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedInvokeParticipant
             raise exc
@@ -86,67 +88,16 @@ class SagaExecutionStep(object):
             raise MinosSagaFailedExecutionStepException()
         return context
 
-    def execute_invoke_participant(self, context: SagaContext, storage: MinosSagaStorage):
-        """TODO
-
-        :param context: TODO
-        :param storage: TODO
-        :return: TODO
-        """
-        operation = self.definition.raw_invoke_participant
-        if operation is None:
-            return context
-
-        storage.create_operation(operation)
-        try:
-            context = _invoke_participant(operation["name"])
-        except MinosSagaException as error:
-            storage.operation_error_db(operation["id"], error)
-            raise error
-        storage.store_operation_response(operation["id"], context)
-
-        if operation["callback"] is None:
-            return context
-
-        callback_operation = {
-            "id": str(uuid.uuid4()),
-            "type": "invokeParticipant_callback",
-            "name": operation["name"],
-            "callback": operation["callback"],
-        }
-        context = LocalExecutor(self._loop).exec(callback_operation, context, storage)
-
-        return context
-
     def _execute_on_reply(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
         self.status = SagaStepStatus.RunningOnReply
+        executor = OnReplyExecutor(storage, self._loop)
         # noinspection PyBroadException
         try:
-            context = self.execute_on_reply(context, storage)
+            context = executor.exec(self.definition.raw_on_reply, context)
         except Exception:
             self.status = SagaStepStatus.ErroredOnReply
             self.rollback(context, storage)
             raise MinosSagaFailedExecutionStepException()
-        return context
-
-    def execute_on_reply(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
-        """TODO
-
-        :param context: TODO
-        :param storage: TODO
-        :return: TODO
-        """
-        operation = self.definition.raw_on_reply
-        # Add current operation to lmdb
-
-        callback_operation = {
-            "id": str(uuid.uuid4()),
-            "type": operation["type"],
-            "name": "",
-            "callback": operation["callback"],
-        }
-        context = LocalExecutor(self._loop).exec(callback_operation, context, storage)
-
         return context
 
     def rollback(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
@@ -159,56 +110,12 @@ class SagaExecutionStep(object):
         if self.already_rollback:
             return context
 
-        context = self.execute_with_compensation(context, storage)
+        executor = WithCompensationExecutor(storage, self._loop)
+        context = executor.exec(self.definition.raw_with_compensation, context)
 
         self.already_rollback = True
-        return context
-
-    def execute_with_compensation(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
-        """TODO
-
-        :param context: TODO
-        :param storage: TODO
-        :return: TODO
-        """
-        operation = self.definition.raw_with_compensation
-        if operation is None:
-            return context
-
-        storage.create_operation(operation)
-        try:
-            context = _with_compensation(operation["name"])
-        except MinosSagaException as error:
-            raise error
-        storage.store_operation_response(operation["id"], context)
-
-        if operation["callback"] is None:
-            return context
-
-        callback_operation = {
-            "id": str(uuid.uuid4()),
-            "type": "withCompensation_callback",
-            "name": operation["name"],
-            "callback": operation["callback"],
-        }
-        context = LocalExecutor(self._loop).exec(callback_operation, context, storage)
-
         return context
 
     @property
     def _loop(self):
         return self.execution.definition.loop
-
-
-def _invoke_participant(name) -> SagaContext:
-    if name == "Shipping":
-        raise MinosSagaException("invokeParticipantTest exception")
-
-    # noinspection PyTypeChecker
-    return "_invokeParticipant Response"
-
-
-# noinspection PyUnusedLocal
-def _with_compensation(name) -> SagaContext:
-    # noinspection PyTypeChecker
-    return "_withCompensation Response"
