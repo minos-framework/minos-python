@@ -29,7 +29,9 @@ from ..exceptions import (
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
+    MinosSagaEmptyStepException,
     MinosSagaException,
+    MinosSagaNotDefinedException,
 )
 
 if TYPE_CHECKING:
@@ -335,6 +337,8 @@ class SagaStep(object):
         :return: TODO
         """
         self.validate()
+        if self.saga is None:
+            raise MinosSagaNotDefinedException()
         return self.saga.step()
 
     def execute(self) -> Saga:
@@ -342,8 +346,19 @@ class SagaStep(object):
 
         :return: TODO
         """
+        if self.saga is None:
+            raise MinosSagaNotDefinedException()
         self._execute = {"type": "execute", "method": self._execute}
         return self.saga.execute()
+
+    def submit(self) -> Saga:
+        """TODO
+
+        :return: TODO
+        """
+        if self.saga is None:
+            raise MinosSagaNotDefinedException()
+        return self.saga
 
     def validate(self) -> NoReturn:
         """TODO
@@ -351,7 +366,7 @@ class SagaStep(object):
         :return TODO:
         """
         if not self.raw:
-            raise MinosSagaException("The step() cannot be empty.")
+            raise MinosSagaEmptyStepException()
 
         for idx, operation in enumerate(self.raw):
             if idx == 0 and operation["type"] != "invokeParticipant":

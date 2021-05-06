@@ -12,6 +12,9 @@ from minos.saga import (
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
+    MinosSagaEmptyStepException,
+    MinosSagaNotDefinedException,
+    Saga,
     SagaStep,
 )
 
@@ -20,7 +23,7 @@ def _callback():
     ...
 
 
-class TestSomething(unittest.TestCase):
+class TestSagaStep(unittest.TestCase):
     def test_invoke_participant_multiple_raises(self):
         with self.assertRaises(MinosMultipleInvokeParticipantException):
             SagaStep().invoke_participant("foo").invoke_participant("foo")
@@ -32,6 +35,27 @@ class TestSomething(unittest.TestCase):
     def test_on_reply_multiple_raises(self):
         with self.assertRaises(MinosMultipleOnReplyException):
             SagaStep().on_reply(_callback).on_reply(_callback)
+
+    def test_step_raises_empty(self):
+        with self.assertRaises(MinosSagaEmptyStepException):
+            SagaStep().step()
+
+    def test_step_raises_not_saga(self):
+        with self.assertRaises(MinosSagaNotDefinedException):
+            SagaStep().invoke_participant("FooAdded").step()
+
+    def test_execute_raises(self):
+        with self.assertRaises(MinosSagaNotDefinedException):
+            SagaStep().execute()
+
+    def test_submit(self):
+        expected = Saga("SagaTest")
+        observed = SagaStep(expected).submit()
+        self.assertEqual(expected, observed)
+
+    def test_submit_raises(self):
+        with self.assertRaises(MinosSagaNotDefinedException):
+            SagaStep().submit()
 
 
 if __name__ == "__main__":

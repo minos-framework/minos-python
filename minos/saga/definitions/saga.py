@@ -30,6 +30,11 @@ from .step import (
     SagaStep,
 )
 
+if t.TYPE_CHECKING:
+    from ..executions import (
+        SagaExecution,
+    )
+
 
 class Saga(MinosBaseSagaBuilder):
     """TODO"""
@@ -122,3 +127,14 @@ class Saga(MinosBaseSagaBuilder):
             self._steps[-1].execute_with_compensation(operation)
 
         return self
+
+    def build_execution(self) -> SagaExecution:
+        """TODO
+
+        :return: TODO
+        """
+        from ..executions import (
+            SagaExecution,
+        )
+
+        return SagaExecution.from_saga(self)

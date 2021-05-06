@@ -13,6 +13,7 @@ from shutil import (
 from minos.saga import (
     MinosSagaException,
     Saga,
+    SagaExecution,
 )
 from tests.callbacks import (
     a_callback,
@@ -32,7 +33,7 @@ from tests.utils import (
 )
 
 
-class TestStringMethods(unittest.TestCase):
+class TestSaga(unittest.TestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     def tearDown(self) -> None:
@@ -177,6 +178,17 @@ class TestStringMethods(unittest.TestCase):
             )
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
+
+    def test_build_execution(self):
+        saga = (
+            Saga("OrdersAdd3", self.DB_PATH)
+            .step()
+            .invoke_participant("CreateOrder")
+            .with_compensation("DeleteOrder")
+            .submit()
+        )
+        execution = saga.build_execution()
+        self.assertIsInstance(execution, SagaExecution)
 
 
 if __name__ == "__main__":

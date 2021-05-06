@@ -18,6 +18,24 @@ class MinosSagaStepException(MinosSagaException):
     """TODO"""
 
 
+class MinosSagaNotDefinedException(MinosSagaStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep' must have a 'Saga' instance to call call this method."
+        super().__init__(message)
+
+
+class MinosSagaEmptyStepException(MinosSagaStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep' must have at least one defined action."
+        super().__init__(message)
+
+
 class MinosMultipleInvokeParticipantException(MinosSagaStepException):
     """TODO"""
 
