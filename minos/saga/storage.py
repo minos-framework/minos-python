@@ -21,7 +21,7 @@ from .local_state import (
 )
 
 
-class MinosSagaStepManager:
+class MinosSagaStorage:
     """
     Example of how states are stored:
 

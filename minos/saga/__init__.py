@@ -34,6 +34,6 @@ from .executions import (
 from .local_state import (
     MinosLocalState,
 )
-from .step_manager import (
-    MinosSagaStepManager,
+from .storage import (
+    MinosSagaStorage,
 )

@@ -21,8 +21,8 @@ from ..exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
 )
-from ..step_manager import (
-    MinosSagaStepManager,
+from ..storage import (
+    MinosSagaStorage,
 )
 from .context import (
     SagaContext,
@@ -46,7 +46,7 @@ class SagaExecutionStep(object):
         self.status = status
         self.already_rollback = False
 
-    def execute(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
+    def execute(self, context: SagaContext, step_manager: MinosSagaStorage) -> SagaContext:
         """TODO
 
         :param context: TODO
@@ -69,7 +69,7 @@ class SagaExecutionStep(object):
         if operation is not None:
             self.execution.definition.saga_process["current_compensations"].insert(0, operation)
 
-    def _execute_invoke_participant(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
+    def _execute_invoke_participant(self, context: SagaContext, step_manager: MinosSagaStorage) -> SagaContext:
         self.status = SagaStepStatus.RunningInvokeParticipant
         try:
             context = self.definition.execute_invoke_participant(context, step_manager)
@@ -82,7 +82,7 @@ class SagaExecutionStep(object):
             raise MinosSagaFailedExecutionStepException()
         return context
 
-    def _execute_on_reply(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
+    def _execute_on_reply(self, context: SagaContext, step_manager: MinosSagaStorage) -> SagaContext:
         self.status = SagaStepStatus.RunningOnReply
         # noinspection PyBroadException
         try:
@@ -93,7 +93,7 @@ class SagaExecutionStep(object):
             raise MinosSagaFailedExecutionStepException()
         return context
 
-    def rollback(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
+    def rollback(self, context: SagaContext, step_manager: MinosSagaStorage) -> SagaContext:
         """TODO
 
         :param context: TODO

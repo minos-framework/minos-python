@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from ..executions import (
         SagaContext,
     )
-    from ..step_manager import (
-        MinosSagaStepManager,
+    from ..storage import (
+        MinosSagaStorage,
     )
     from .saga import (
         Saga,
@@ -103,7 +103,7 @@ class SagaStep(object):
 
         return self
 
-    def execute_invoke_participant(self, context: SagaContext, step_manager: MinosSagaStepManager):
+    def execute_invoke_participant(self, context: SagaContext, step_manager: MinosSagaStorage):
         """TODO
 
         :param context: TODO
@@ -155,7 +155,7 @@ class SagaStep(object):
 
         return self
 
-    def execute_with_compensation(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
+    def execute_with_compensation(self, context: SagaContext, step_manager: MinosSagaStorage) -> SagaContext:
         """TODO
 
         :param context: TODO
@@ -231,7 +231,7 @@ class SagaStep(object):
 
         return self
 
-    def execute_on_reply(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
+    def execute_on_reply(self, context: SagaContext, step_manager: MinosSagaStorage) -> SagaContext:
         """TODO
 
         :param context: TODO
@@ -267,7 +267,7 @@ class SagaStep(object):
         db_response,
         db_op_callback_error,
         context: SagaContext,
-        step_manager: MinosSagaStepManager,
+        step_manager: MinosSagaStorage,
     ):
         if db_op_callback_flag:
             try:

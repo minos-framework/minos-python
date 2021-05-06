@@ -17,8 +17,8 @@ from pathlib import (
     Path,
 )
 
-from ..step_manager import (
-    MinosSagaStepManager,
+from ..storage import (
+    MinosSagaStorage,
 )
 from .abc import (
     MinosBaseSagaBuilder,
@@ -40,7 +40,7 @@ class Saga(MinosBaseSagaBuilder):
         self,
         name,
         db_path: t.Union[Path, str] = "./db.lmdb",
-        step_manager: t.Type[MinosSagaStepManager] = MinosSagaStepManager,
+        step_manager: t.Type[MinosSagaStorage] = MinosSagaStorage,
         loop: asyncio.AbstractEventLoop = None,
     ):
         if not isinstance(db_path, str):

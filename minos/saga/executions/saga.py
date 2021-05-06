@@ -21,8 +21,8 @@ from ..exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
 )
-from ..step_manager import (
-    MinosSagaStepManager,
+from ..storage import (
+    MinosSagaStorage,
 )
 from .context import (
     SagaContext,
@@ -58,7 +58,7 @@ class SagaExecution(object):
         """
         return cls(definition, uuid=uuid4(), steps=list(), context=SagaContext(), status=SagaStatus.Created)
 
-    def execute(self, step_manager: MinosSagaStepManager):
+    def execute(self, step_manager: MinosSagaStorage):
         """TODO
 
         :param step_manager: TODO
@@ -81,7 +81,7 @@ class SagaExecution(object):
 
         self.status = SagaStatus.Finished
 
-    def rollback(self, step_manager: MinosSagaStepManager) -> NoReturn:
+    def rollback(self, step_manager: MinosSagaStorage) -> NoReturn:
         """TODO
 
         :param step_manager: TODO
