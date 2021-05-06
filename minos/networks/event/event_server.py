@@ -20,7 +20,7 @@ from typing import (
 )
 
 import aiopg
-from minos.common.broker import (
+from minos.common import (
     Event,
 )
 from minos.common.configuration.config import (

@@ -30,9 +30,11 @@ class MinosCommandBroker(MinosBroker):
 
     ACTION = "command"
 
-    def __init__(self, *args, reply_on: str, **kwargs):
+    def __init__(self, *args, saga_id: str, task_id: str, reply_on: str, **kwargs):
         super().__init__(*args, **kwargs)
         self.reply_on = reply_on
+        self.saga_id = saga_id
+        self.task_id = task_id
 
     @classmethod
     def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosCommandBroker]:
@@ -55,5 +57,5 @@ class MinosCommandBroker(MinosBroker):
         :param items: A list of aggregates.
         :return: This method does not return anything.
         """
-        command = Command(self.topic, items, self.reply_on)
+        command = Command(self.topic, items, self.saga_id, self.task_id, self.reply_on)
         return await self._send_bytes(command.topic, command.avro_bytes)

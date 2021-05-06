@@ -28,7 +28,7 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_commands_broker_insertion(self):
-        broker = MinosCommandBroker.from_config("CommandBroker", config=self.config, reply_on="test_reply_on")
+        broker = MinosCommandBroker.from_config("CommandBroker", config=self.config, saga_id= "9347839473kfslf", task_id= "92839283hjijh232", reply_on="test_reply_on")
         await broker.setup()
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -37,7 +37,7 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
         assert queue_id > 0
 
     async def test_if_commands_was_deleted(self):
-        broker = MinosCommandBroker.from_config("CommandBroker-Delete", config=self.config, reply_on="test_reply_on")
+        broker = MinosCommandBroker.from_config("CommandBroker-Delete", config=self.config, saga_id= "9347839473kfslf", task_id= "92839283hjijh232", reply_on="test_reply_on")
         await broker.setup()
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -57,7 +57,7 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_commands_retry_was_incremented(self):
-        broker = MinosCommandBroker.from_config("CommandBroker-Delete", config=self.config, reply_on="test_reply_on")
+        broker = MinosCommandBroker.from_config("CommandBroker-Delete", config=self.config, saga_id= "9347839473kfslf", task_id= "92839283hjijh232", reply_on="test_reply_on")
         await broker.setup()
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)

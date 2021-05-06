@@ -21,7 +21,7 @@ import aiopg
 from aiomisc.service.periodic import (
     PeriodicService,
 )
-from minos.common.broker import (
+from minos.common import (
     Event,
 )
 from minos.common.configuration.config import (
