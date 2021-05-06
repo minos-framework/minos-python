@@ -18,3 +18,18 @@ class SagaStatus(Enum):
     Paused = "paused"
     Finished = "finished"
     Errored = "errored"
+
+
+class SagaStepStatus(Enum):
+    """TODO"""
+
+    Created = "created"
+    RunningInvokeParticipant = "running-invoke-participant"
+    PausedInvokeParticipant = "paused-invoke-participant"
+    ErroredInvokeParticipant = "errored"
+    RunningWithCompensation = "running-with-compensation"
+    PausedWithCompensation = "paused-with-compensation"
+    ErroredWithCompensation = "errored-with-compensation"
+    RunningOnReply = "running-on-reply"
+    ErroredOnReply = "errored-on-reply"
+    Finished = "finished"

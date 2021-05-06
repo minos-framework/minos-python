@@ -11,7 +11,6 @@ from __future__ import (
 
 from typing import (
     TYPE_CHECKING,
-    NoReturn,
 )
 
 from ..definitions import (
@@ -20,12 +19,16 @@ from ..definitions import (
 from ..exceptions import (
     MinosSagaException,
     MinosSagaFailedExecutionStepException,
+    MinosSagaPausedExecutionStepException,
 )
 from ..step_manager import (
     MinosSagaStepManager,
 )
+from .context import (
+    SagaContext,
+)
 from .status import (
-    SagaStatus,
+    SagaStepStatus,
 )
 
 if TYPE_CHECKING:
@@ -37,55 +40,70 @@ if TYPE_CHECKING:
 class SagaExecutionStep(object):
     """TODO"""
 
-    def __init__(self, execution: SagaExecution, definition: SagaStep, status: SagaStatus = SagaStatus.Created):
+    def __init__(self, execution: SagaExecution, definition: SagaStep, status: SagaStepStatus = SagaStepStatus.Created):
         self.execution = execution
         self.definition = definition
         self.status = status
         self.already_rollback = False
 
-    def execute(self, step_manager: MinosSagaStepManager) -> NoReturn:
+    def execute(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
         """TODO
 
+        :param context: TODO
         :param step_manager: TODO
         :return: TODO
         """
 
         self.execution.definition.saga_process["steps"].append(self.definition.raw)
+        self._register_with_compensation()
 
-        for operation in self.definition.raw:
-            if operation["type"] == "withCompensation":
-                self.execution.definition.saga_process["current_compensations"].insert(0, operation)
+        context = self._execute_invoke_participant(context, step_manager)
 
-        for operation in self.definition.raw:
-            if operation["type"] == "invokeParticipant":
-                try:
-                    self.execution.definition.response = self.definition.execute_invoke_participant(
-                        operation, step_manager
-                    )
-                except MinosSagaException:
-                    self.rollback(step_manager)
-                    raise MinosSagaFailedExecutionStepException()
+        context = self._execute_on_reply(context, step_manager)
 
-            if operation["type"] == "onReply":
-                # noinspection PyBroadException
-                try:
-                    self.execution.definition.response = self.definition.execute_on_reply(operation, step_manager)
-                except Exception:
-                    self.rollback(step_manager)
-                    raise MinosSagaFailedExecutionStepException()
+        self.status = SagaStepStatus.Finished
+        return context
 
-    def rollback(self, step_manager: MinosSagaStepManager) -> NoReturn:
+    def _register_with_compensation(self):
+        operation = self.definition.raw_with_compensation
+        if operation is not None:
+            self.execution.definition.saga_process["current_compensations"].insert(0, operation)
+
+    def _execute_invoke_participant(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
+        self.status = SagaStepStatus.RunningInvokeParticipant
+        try:
+            context = self.definition.execute_invoke_participant(context, step_manager)
+        except MinosSagaPausedExecutionStepException as exc:
+            self.status = SagaStepStatus.PausedInvokeParticipant
+            raise exc
+        except MinosSagaException:
+            self.status = SagaStepStatus.ErroredInvokeParticipant
+            self.rollback(context, step_manager)
+            raise MinosSagaFailedExecutionStepException()
+        return context
+
+    def _execute_on_reply(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
+        self.status = SagaStepStatus.RunningOnReply
+        # noinspection PyBroadException
+        try:
+            context = self.definition.execute_on_reply(context, step_manager)
+        except Exception:
+            self.status = SagaStepStatus.ErroredOnReply
+            self.rollback(context, step_manager)
+            raise MinosSagaFailedExecutionStepException()
+        return context
+
+    def rollback(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
         """TODO
 
+        :param context: TODO
         :param step_manager: TODO
         :return: TODO
         """
         if self.already_rollback:
-            return
+            return context
 
-        step = self.definition
-        operation = step._with_compensation
-        if operation is not None:
-            step.execute_with_compensation(operation, step_manager)
+        context = self.definition.execute_with_compensation(context, step_manager)
 
         self.already_rollback = True
+        return context

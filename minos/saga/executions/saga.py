@@ -6,7 +6,6 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
-    Any,
     NoReturn,
 )
 from uuid import (
@@ -44,8 +43,9 @@ class SagaExecution(object):
     ):
         self.uuid = uuid
         self.definition = definition
-        self.steps = steps
-        self.context = context
+        self.executed_steps = steps
+        # self.context = context  # FIXME
+        self.context = ""
         self.status = status
         self.already_rollback = False
 
@@ -65,11 +65,10 @@ class SagaExecution(object):
         :return: TODO
         """
         self.status = SagaStatus.Running
-
         for step in self.pending_steps:
             execution_step = SagaExecutionStep(self, step)
             try:
-                execution_step.execute(step_manager)
+                self.context = execution_step.execute(self.context, step_manager)
             except MinosSagaFailedExecutionStepException:  # FIXME: Exception that rollbacks execution.
                 self.rollback(step_manager)
                 self.status = SagaStatus.Errored
@@ -78,7 +77,7 @@ class SagaExecution(object):
                 self.status = SagaStatus.Paused
                 return self
             finally:
-                self._add_executed_step(execution_step)
+                self._add_executed(execution_step)
 
         self.status = SagaStatus.Finished
 
@@ -92,8 +91,8 @@ class SagaExecution(object):
         if self.already_rollback:
             return
 
-        for execution_step in reversed(self.steps):
-            execution_step.rollback(step_manager)
+        for execution_step in reversed(self.executed_steps):
+            self.context = execution_step.rollback(self.context, step_manager)
 
         self.already_rollback = True
 
@@ -103,12 +102,12 @@ class SagaExecution(object):
 
         :return: TODO
         """
-        return self.definition._steps
+        return self.definition.steps[len(self.executed_steps) :]
 
-    def _add_executed_step(self, executed_step: SagaExecutionStep):
+    def _add_executed(self, executed_step: SagaExecutionStep):
         """TODO
 
         :param executed_step: TODO
         :return: TODO
         """
-        self.steps.append(executed_step)
+        self.executed_steps.append(executed_step)

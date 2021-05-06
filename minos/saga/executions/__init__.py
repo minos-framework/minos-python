@@ -13,6 +13,7 @@ from .saga import (
 )
 from .status import (
     SagaStatus,
+    SagaStepStatus,
 )
 from .step import (
     SagaExecutionStep,

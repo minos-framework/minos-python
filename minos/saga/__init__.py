@@ -29,6 +29,7 @@ from .executions import (
     SagaExecution,
     SagaExecutionStep,
     SagaStatus,
+    SagaStepStatus,
 )
 from .local_state import (
     MinosLocalState,

@@ -17,9 +17,6 @@ from pathlib import (
     Path,
 )
 
-from ..exceptions import (
-    MinosSagaException,
-)
 from ..step_manager import (
     MinosSagaStepManager,
 )
@@ -60,7 +57,7 @@ class Saga(MinosBaseSagaBuilder):
         self.step_manager = step_manager(self.saga_name, self.uuid, db_path)
         self.loop = loop or asyncio.get_event_loop()
         self.response = ""
-        self._steps = list()
+        self.steps = list()
 
     def step(self, step: t.Optional[SagaStep] = None) -> SagaStep:
         """TODO
@@ -74,7 +71,7 @@ class Saga(MinosBaseSagaBuilder):
                 raise ValueError()
             step.saga = self
 
-        self._steps.append(step)
+        self.steps.append(step)
         return step
 
     def build_execution(self) -> SagaExecution:
