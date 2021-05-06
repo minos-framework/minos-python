@@ -44,15 +44,17 @@ if TYPE_CHECKING:
     )
 
 
-def _invoke_participant(name):
+def _invoke_participant(name) -> SagaContext:
     if name == "Shipping":
         raise MinosSagaException("invokeParticipantTest exception")
 
+    # noinspection PyTypeChecker
     return "_invokeParticipant Response"
 
 
 # noinspection PyUnusedLocal
-def _with_compensation(name):
+def _with_compensation(name) -> SagaContext:
+    # noinspection PyTypeChecker
     return "_withCompensation Response"
 
 
@@ -116,25 +118,19 @@ class SagaStep(object):
 
         storage.create_operation(operation)
         try:
-            response = _invoke_participant(operation["name"])
+            context = _invoke_participant(operation["name"])
         except MinosSagaException as error:
             storage.operation_error_db(operation["id"], error)
             raise error
-        storage.store_operation_response(operation["id"], response)
+        storage.store_operation_response(operation["id"], context)
 
         if operation["callback"] is None:
-            return response
+            return context
 
         callback_operation = {"id": str(uuid.uuid4()), "type": "invokeParticipant_callback", "name": operation["name"]}
-        storage.create_operation(callback_operation)
-        try:
-            response = self._callback_function_call(operation["callback"], context)
-        except MinosSagaException as error:
-            storage.operation_error_db(callback_operation["id"], error)
-            raise error
-        storage.store_operation_response(callback_operation["id"], response)
+        context = self._exec(callback_operation, operation, context, storage)
 
-        return response
+        return context
 
     def with_compensation(self, name: Union[str, list], callback: Callable = None) -> SagaStep:
         """TODO
@@ -166,35 +162,18 @@ class SagaStep(object):
         if operation is None:
             return context
 
-        if type(operation["name"]) == list:
-            operations = operation["name"]
-        else:
-            operations = [operation["name"]]
-
-        name = "_".join(operations)
-
-        for compensation in operations:
-            # Add current operation to lmdb
-            compensation_operation = {"id": operation["id"], "type": operation["type"], "name": name}
-            storage.create_operation(compensation_operation)
-            try:
-                response = _with_compensation(compensation)
-            except MinosSagaException as error:
-                raise error
-            storage.store_operation_response(operation["id"], response)
+        storage.create_operation(operation)
+        try:
+            context = _with_compensation(operation["name"])
+        except MinosSagaException as error:
+            raise error
+        storage.store_operation_response(operation["id"], context)
 
         if operation["callback"] is None:
             return context
 
-        func = operation["callback"]
-        callback_operation = {"id": str(uuid.uuid4()), "type": "withCompensation_callback", "name": name}
-        storage.create_operation(callback_operation)
-        try:
-            response = self._callback_function_call(func, context)
-        except MinosSagaException as error:
-            storage.operation_error_db(callback_operation["id"], error)
-            raise error
-        storage.store_operation_response(callback_operation["id"], response)
+        callback_operation = {"id": str(uuid.uuid4()), "type": "withCompensation_callback", "name": operation["name"]}
+        context = self._exec(callback_operation, operation, context, storage)
 
         return context
 
@@ -224,20 +203,30 @@ class SagaStep(object):
         """
         operation = self.raw_on_reply
         # Add current operation to lmdb
-        db_response = storage.load_operation_response(operation["id"])
 
         callback_operation = {"id": str(uuid.uuid4()), "type": operation["type"], "name": ""}
-        storage.create_operation(callback_operation)
-        try:
-            response = self._callback_function_call(operation["callback"], db_response)
-        except MinosSagaException as error:
-            storage.operation_error_db(callback_operation["id"], error)
-            raise error
-        storage.store_operation_response(callback_operation["id"], response)
+        context = self._exec(callback_operation, operation, context, storage)
 
         return context
 
-    def _callback_function_call(self, func: Callable, response: Any) -> Any:
+    def _exec(
+        self,
+        callback_operation: dict[str, Any],
+        operation: dict[str, Any],
+        context: SagaContext,
+        storage: MinosSagaStorage,
+    ):
+        storage.create_operation(callback_operation)
+        try:
+            context = self._exec_function(operation["callback"], context)
+        except MinosSagaException as error:
+            storage.operation_error_db(callback_operation["id"], error)
+            raise error
+        storage.store_operation_response(callback_operation["id"], context)
+
+        return context
+
+    def _exec_function(self, func: Callable, response: Any) -> Any:
         """TODO
 
         :param func: TODO
