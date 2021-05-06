@@ -226,19 +226,18 @@ class SagaStep(object):
 
         return context
 
-    def _exec_function(self, func: Callable, response: Any) -> Any:
+    def _exec_function(self, func: Callable, context: SagaContext) -> SagaContext:
         """TODO
 
         :param func: TODO
-        :param response: TODO
+        :param context: TODO
         :return: TODO
         """
-        task = func(response)
-        if inspect.isawaitable(task):
-            result = self._loop.run_until_complete(task)
+        result = func(context)
+        if inspect.isawaitable(result):
+            result = self._loop.run_until_complete(result)
             return result
-        else:
-            return task
+        return result
 
     @property
     def _loop(self) -> AbstractEventLoop:
