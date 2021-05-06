@@ -39,7 +39,7 @@ class TestSaga(unittest.TestCase):
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
 
-    def test_saga_async_callbacks_ok(self):
+    def test_async_callbacks_ok(self):
         s = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
@@ -51,7 +51,7 @@ class TestSaga(unittest.TestCase):
 
         assert s.get_db_state() is None
 
-    def test_saga_sync_callbacks_ok(self):
+    def test_sync_callbacks_ok(self):
         s = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
@@ -63,7 +63,7 @@ class TestSaga(unittest.TestCase):
 
         assert s.get_db_state() is None
 
-    def test_saga_async_callbacks_ko(self):
+    def test_async_callbacks_ko(self):
         s = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
@@ -79,7 +79,7 @@ class TestSaga(unittest.TestCase):
         assert state is not None
         assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
 
-    def test_saga_sync_callbacks_ko(self):
+    def test_sync_callbacks_ko(self):
         s = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
@@ -95,7 +95,7 @@ class TestSaga(unittest.TestCase):
         assert state is not None
         assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
 
-    def test_saga_correct(self):
+    def test_correct(self):
         s = (
             Saga("OrdersAdd", self.DB_PATH)
             .step()
@@ -115,7 +115,7 @@ class TestSaga(unittest.TestCase):
 
         assert state is None
 
-    def test_saga_execute_all_compensations(self):
+    def test_execute_all_compensations(self):
         s = (
             Saga("ItemsAdd", self.DB_PATH)
             .step()
@@ -146,7 +146,7 @@ class TestSaga(unittest.TestCase):
         assert list(state["operations"].values())[8]["type"] == "withCompensation"
         assert list(state["operations"].values())[9]["type"] == "withCompensation_callback"
 
-    def test_saga_empty_step_must_throw_exception(self):
+    def test_empty_step_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:
             (
                 Saga("OrdersAdd2", self.DB_PATH)
@@ -165,7 +165,7 @@ class TestSaga(unittest.TestCase):
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
-    def test_saga_wrong_step_action_must_throw_exception(self):
+    def test_wrong_step_action_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:
             (
                 Saga("OrdersAdd3", self.DB_PATH)
