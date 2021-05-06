@@ -31,12 +31,3 @@ class MinosBaseSagaBuilder(abc.ABC):
         :return: TODO
         """
         raise NotImplementedError
-
-    @abc.abstractmethod
-    def execute(self, **kwargs):  # pragma: no cover
-        """TODO
-
-        :param kwargs: TODO
-        :return: TODO
-        """
-        raise NotImplementedError

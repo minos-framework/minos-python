@@ -62,13 +62,6 @@ class Saga(MinosBaseSagaBuilder):
         self.response = ""
         self._steps = list()
 
-    def get_db_state(self) -> dict[str, t.Any]:
-        """TODO
-
-        :return: TODO
-        """
-        return self.step_manager.get_state()
-
     def step(self, step: t.Optional[SagaStep] = None) -> SagaStep:
         """TODO
 
@@ -83,50 +76,6 @@ class Saga(MinosBaseSagaBuilder):
 
         self._steps.append(step)
         return step
-
-    def execute(self) -> Saga:
-        """TODO
-
-        :return: TODO
-        """
-        self.saga_process["steps"] = [step.raw for step in self._steps]
-        self._execute_steps()
-
-        return self
-
-    def _execute_steps(self):
-        self.step_manager.start()
-
-        for step in self._steps:
-
-            for operation in step.raw:
-                if operation["type"] == "withCompensation":
-                    self.saga_process["current_compensations"].insert(0, operation)
-
-            for operation in step.raw:
-
-                if operation["type"] == "invokeParticipant":
-                    try:
-                        self.response = step.execute_invoke_participant(operation)
-                    except MinosSagaException:
-                        self._rollback()
-                        return self
-
-                if operation["type"] == "onReply":
-                    # noinspection PyBroadException
-                    try:
-                        self.response = step.execute_on_reply(operation)
-                    except Exception:
-                        self._rollback()
-                        return self
-
-        self.step_manager.close()
-
-    def _rollback(self):
-        for operation in self.saga_process["current_compensations"]:
-            self._steps[-1].execute_with_compensation(operation)
-
-        return self
 
     def build_execution(self) -> SagaExecution:
         """TODO
