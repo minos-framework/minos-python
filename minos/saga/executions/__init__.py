@@ -8,6 +8,10 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .context import (
     SagaContext,
 )
+from .executors import (
+    Executor,
+    LocalExecutor,
+)
 from .saga import (
     SagaExecution,
 )

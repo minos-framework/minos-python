@@ -9,7 +9,6 @@ from __future__ import (
     annotations,
 )
 
-import inspect
 import uuid
 from asyncio import (
     AbstractEventLoop,
@@ -33,29 +32,9 @@ from ..exceptions import (
 )
 
 if TYPE_CHECKING:
-    from ..executions import (
-        SagaContext,
-    )
-    from ..storage import (
-        MinosSagaStorage,
-    )
     from .saga import (
         Saga,
     )
-
-
-def _invoke_participant(name) -> SagaContext:
-    if name == "Shipping":
-        raise MinosSagaException("invokeParticipantTest exception")
-
-    # noinspection PyTypeChecker
-    return "_invokeParticipant Response"
-
-
-# noinspection PyUnusedLocal
-def _with_compensation(name) -> SagaContext:
-    # noinspection PyTypeChecker
-    return "_withCompensation Response"
 
 
 class SagaStep(object):
@@ -105,33 +84,6 @@ class SagaStep(object):
 
         return self
 
-    def execute_invoke_participant(self, context: SagaContext, storage: MinosSagaStorage):
-        """TODO
-
-        :param context: TODO
-        :param storage: TODO
-        :return: TODO
-        """
-        operation = self.raw_invoke_participant
-        if operation is None:
-            return context
-
-        storage.create_operation(operation)
-        try:
-            context = _invoke_participant(operation["name"])
-        except MinosSagaException as error:
-            storage.operation_error_db(operation["id"], error)
-            raise error
-        storage.store_operation_response(operation["id"], context)
-
-        if operation["callback"] is None:
-            return context
-
-        callback_operation = {"id": str(uuid.uuid4()), "type": "invokeParticipant_callback", "name": operation["name"]}
-        context = self._exec(callback_operation, operation, context, storage)
-
-        return context
-
     def with_compensation(self, name: Union[str, list], callback: Callable = None) -> SagaStep:
         """TODO
 
@@ -151,32 +103,6 @@ class SagaStep(object):
 
         return self
 
-    def execute_with_compensation(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
-        """TODO
-
-        :param context: TODO
-        :param storage: TODO
-        :return: TODO
-        """
-        operation = self.raw_with_compensation
-        if operation is None:
-            return context
-
-        storage.create_operation(operation)
-        try:
-            context = _with_compensation(operation["name"])
-        except MinosSagaException as error:
-            raise error
-        storage.store_operation_response(operation["id"], context)
-
-        if operation["callback"] is None:
-            return context
-
-        callback_operation = {"id": str(uuid.uuid4()), "type": "withCompensation_callback", "name": operation["name"]}
-        context = self._exec(callback_operation, operation, context, storage)
-
-        return context
-
     def on_reply(self, _callback: Callable) -> SagaStep:
         """TODO
 
@@ -193,51 +119,6 @@ class SagaStep(object):
         }
 
         return self
-
-    def execute_on_reply(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
-        """TODO
-
-        :param context: TODO
-        :param storage: TODO
-        :return: TODO
-        """
-        operation = self.raw_on_reply
-        # Add current operation to lmdb
-
-        callback_operation = {"id": str(uuid.uuid4()), "type": operation["type"], "name": ""}
-        context = self._exec(callback_operation, operation, context, storage)
-
-        return context
-
-    def _exec(
-        self,
-        callback_operation: dict[str, Any],
-        operation: dict[str, Any],
-        context: SagaContext,
-        storage: MinosSagaStorage,
-    ):
-        storage.create_operation(callback_operation)
-        try:
-            context = self._exec_function(operation["callback"], context)
-        except MinosSagaException as error:
-            storage.operation_error_db(callback_operation["id"], error)
-            raise error
-        storage.store_operation_response(callback_operation["id"], context)
-
-        return context
-
-    def _exec_function(self, func: Callable, context: SagaContext) -> SagaContext:
-        """TODO
-
-        :param func: TODO
-        :param context: TODO
-        :return: TODO
-        """
-        result = func(context)
-        if inspect.isawaitable(result):
-            result = self._loop.run_until_complete(result)
-            return result
-        return result
 
     @property
     def _loop(self) -> AbstractEventLoop:
