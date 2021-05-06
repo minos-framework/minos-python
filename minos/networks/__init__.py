@@ -13,7 +13,7 @@ from .broker import (
     MinosQueueDispatcher,
     MinosQueueService,
 )
-from .event import (
+from .handler import (
     MinosEventHandler,
     MinosEventPeriodicService,
     MinosEventServer,

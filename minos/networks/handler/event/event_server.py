@@ -14,8 +14,6 @@ import datetime
 from typing import (
     Any,
     AsyncIterator,
-    Awaitable,
-    NoReturn,
     Optional,
 )
 
@@ -26,19 +24,12 @@ from minos.common import (
 from minos.common.configuration.config import (
     MinosConfig,
 )
-from minos.common.logs import (
-    log,
-)
-from minos.networks.exceptions import (
-    MinosNetworkException,
-)
-
-from .abc import (
-    MinosEventSetup,
+from ..abc import (
+    MinosHandlerSetup,
 )
 
 
-class MinosEventServer(MinosEventSetup):
+class MinosEventServer(MinosHandlerSetup):
     """
     Event Manager
 
@@ -46,10 +37,12 @@ class MinosEventServer(MinosEventSetup):
 
     """
 
+    TABLE = "event_queue"
+
     __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_kafka_conn_data", "_broker_group_name"
 
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(**kwargs, **config.events.queue._asdict())
+        super().__init__(table_name=self.TABLE, **kwargs, **config.events.queue._asdict())
         self._tasks = set()  # type: t.Set[asyncio.Task]
         self._db_dsn = (
             f"dbname={config.events.queue.database} user={config.events.queue.user} "

@@ -37,21 +37,22 @@ from minos.networks.exceptions import (
     MinosNetworkException,
 )
 
-from .abc import (
-    MinosEventSetup,
+from ..abc import (
+    MinosHandlerSetup,
 )
 
 
-class MinosEventHandler(MinosEventSetup):
+class MinosEventHandler(MinosHandlerSetup):
     """
     Event Handler
 
     """
+    TABLE = "event_queue"
 
     __slots__ = "_db_dsn", "_handlers", "_event_items", "_topics", "_conf"
 
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(**kwargs, **config.events.queue._asdict())
+        super().__init__(table_name=self.TABLE, **kwargs, **config.events.queue._asdict())
         self._db_dsn = (
             f"dbname={config.events.queue.database} user={config.events.queue.user} "
             f"password={config.events.queue.password} host={config.events.queue.host}"
@@ -126,8 +127,8 @@ class MinosEventHandler(MinosEventSetup):
             async with pool.acquire() as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
-                        "SELECT * FROM event_queue ORDER BY creation_date ASC LIMIT %d;"
-                        % (self._conf.events.queue.records),
+                        "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;"
+                        % (self.TABLE, self._conf.events.queue.records),
                     )
                     async for row in cur:
                         call_ok = False
@@ -140,4 +141,4 @@ class MinosEventHandler(MinosEventSetup):
                             if call_ok:
                                 # Delete from database If the event was sent successfully to Kafka.
                                 async with connect.cursor() as cur2:
-                                    await cur2.execute("DELETE FROM event_queue WHERE id=%d;" % row[0])
+                                    await cur2.execute("DELETE FROM %s WHERE id=%d;" % (self.TABLE, row[0]))
