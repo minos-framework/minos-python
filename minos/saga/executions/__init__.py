@@ -15,5 +15,5 @@ from .status import (
     SagaStatus,
 )
 from .step import (
-    SagaExecutedStep,
+    SagaExecutionStep,
 )

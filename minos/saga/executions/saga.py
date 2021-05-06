@@ -25,7 +25,7 @@ from .status import (
     SagaStatus,
 )
 from .step import (
-    SagaExecutedStep,
+    SagaExecutionStep,
 )
 
 
@@ -33,7 +33,7 @@ class SagaExecution(object):
     """TODO"""
 
     def __init__(
-        self, definition: Saga, uuid: UUID, steps: [SagaExecutedStep], context: SagaContext, status: SagaStatus
+        self, definition: Saga, uuid: UUID, steps: [SagaExecutionStep], context: SagaContext, status: SagaStatus
     ):
         self.uuid = uuid
         self.definition = definition
@@ -57,27 +57,22 @@ class SagaExecution(object):
         :return: TODO
         """
         self.definition.saga_process["steps"] = [step.raw for step in self.definition._steps]
-        self._execute_steps()
 
-        #     self.step_manager.start()
-        #
-        #     for step in self.pending_steps:
-        #         try:
-        #             executed_step = SagaExecutedStep(self, step)
-        #             self.add_executed_step(executed_step)
-        #         except ValueError:  # FIXME: Exception that pauses execution.
-        #             break
-        #         except TypeError:  # FIXME: Exception that rollbacks execution.
-        #             self.rollback()
-        #             break
-        #
-        #     self.step_manager.close()
-
-    def _execute_steps(self):
         self.step_manager.start()
 
-        for step in self.definition._steps:
+        for step in self.pending_steps:
+            # try:
+            #     execution_step = SagaExecutedStep(self, step)
+            #     self.add_executed_step(execution_step)
+            # except ValueError:  # FIXME: Exception that pauses execution.
+            #     break
+            # except TypeError:  # FIXME: Exception that rollbacks execution.
+            #     self.rollback()
+            #     break
 
+            # execution_step = SagaExecutionStep(self, step)
+            # execution_step.execute()
+            # self.add_executed_step(execution_step)
             for operation in step.raw:
                 if operation["type"] == "withCompensation":
                     self.definition.saga_process["current_compensations"].insert(0, operation)
@@ -130,9 +125,9 @@ class SagaExecution(object):
 
         :return: TODO
         """
-        return []
+        return self.definition._steps
 
-    def add_executed_step(self, executed_step: SagaExecutedStep):
+    def add_executed_step(self, executed_step: SagaExecutionStep):
         """TODO
 
         :param executed_step: TODO
