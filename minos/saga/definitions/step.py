@@ -10,6 +10,7 @@ from __future__ import (
 )
 
 import inspect
+import uuid
 from asyncio import (
     AbstractEventLoop,
 )
@@ -21,23 +22,25 @@ from typing import (
     Optional,
     Union,
 )
-from uuid import (
-    uuid4,
-)
 
-from .exceptions import (
+from ..exceptions import (
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
+    MinosSagaEmptyStepException,
     MinosSagaException,
+    MinosSagaNotDefinedException,
 )
 
 if TYPE_CHECKING:
+    from ..executions import (
+        SagaContext,
+    )
+    from ..step_manager import (
+        MinosSagaStepManager,
+    )
     from .saga import (
         Saga,
-    )
-    from .step_manager import (
-        MinosSagaStepManager,
     )
 
 
@@ -58,9 +61,9 @@ class SagaStep(object):
 
     def __init__(self, saga: Optional[Saga] = None):
         self.saga = saga
-        self._invoke_participant = None
-        self._with_compensation = None
-        self._on_reply = None
+        self.raw_invoke_participant = None
+        self.raw_with_compensation = None
+        self.raw_on_reply = None
         self._execute = None
 
     @property
@@ -70,12 +73,12 @@ class SagaStep(object):
         :return: TODO
         """
         raw = list()
-        if self._invoke_participant is not None:
-            raw.append(self._invoke_participant)
-        if self._with_compensation is not None:
-            raw.append(self._with_compensation)
-        if self._on_reply is not None:
-            raw.append(self._on_reply)
+        if self.raw_invoke_participant is not None:
+            raw.append(self.raw_invoke_participant)
+        if self.raw_with_compensation is not None:
+            raw.append(self.raw_with_compensation)
+        if self.raw_on_reply is not None:
+            raw.append(self.raw_on_reply)
         if self._execute is not None:
             raw.append(self._execute)
 
@@ -88,11 +91,11 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
-        if self._invoke_participant is not None:
+        if self.raw_invoke_participant is not None:
             raise MinosMultipleInvokeParticipantException()
 
-        self._invoke_participant = {
-            "id": str(uuid4()),
+        self.raw_invoke_participant = {
+            "id": str(uuid.uuid4()),
             "type": "invokeParticipant",
             "method": self.execute_invoke_participant,
             "name": name,
@@ -101,14 +104,18 @@ class SagaStep(object):
 
         return self
 
-    def execute_invoke_participant(self, operation):
+    def execute_invoke_participant(self, context: SagaContext, step_manager: MinosSagaStepManager):
         """TODO
 
-        :param operation: TODO
+        :param context: TODO
+        :param step_manager: TODO
         :return: TODO
         """
+        operation = self.raw_invoke_participant
+        if operation is None:
+            return context
         # Add current operation to lmdb
-        (db_operation_flag, db_operation_error,) = self._create_operation_db(
+        (db_operation_flag, db_operation_error,) = step_manager.create_operation_db(
             operation["id"], operation["type"], operation["name"]
         )
         # if the DB was updated
@@ -116,49 +123,50 @@ class SagaStep(object):
             try:
                 response = _invoke_participant(operation["name"])
             except MinosSagaException as error:
-                self._operation_error_db(operation["id"], error)
+                step_manager.operation_error_db(operation["id"], error)
                 raise error
 
             # Add response of current operation to lmdb
-            (db_op_response_flag, db_op_response_error,) = self._operation_response_db(operation["id"], response)
+            (db_op_response_flag, db_op_response_error,) = step_manager.operation_response_db(operation["id"], response)
 
             # if the DB was updated with the response of previous operation
             if db_op_response_flag:
                 if operation["callback"] is not None:
                     func = operation["callback"]
-                    callback_id = str(uuid4())
+                    callback_id = str(uuid.uuid4())
 
-                    (db_op_callback_flag, db_op_callback_error,) = self._create_operation_db(
+                    (db_op_callback_flag, db_op_callback_error,) = step_manager.create_operation_db(
                         callback_id, "invokeParticipant_callback", operation["name"]
                     )
                     # if the DB was updated
                     if db_op_callback_flag:
                         try:
-                            response = self._callback_function_call(func, self._response)
+                            response = self._callback_function_call(func, context)
                         except MinosSagaException as error:
-                            self._operation_error_db(callback_id, error)
+                            step_manager.operation_error_db(callback_id, error)
                             raise error
 
                         # Add response of current operation to lmdb
-                        (db_op_callback_response_flag, db_op_callback_response_error,) = self._operation_response_db(
-                            callback_id, response
-                        )
+                        (
+                            db_op_callback_response_flag,
+                            db_op_callback_response_error,
+                        ) = step_manager.operation_response_db(callback_id, response)
 
                         # If the database could not be updated
                         if not db_op_callback_response_flag:
-                            self._operation_error_db(callback_id, db_op_callback_response_error)
+                            step_manager.operation_error_db(callback_id, db_op_callback_response_error)
                             raise db_op_callback_response_error
 
                     # If the database could not be updated
                     else:
-                        self._operation_error_db(callback_id, db_op_callback_error)
+                        step_manager.operation_error_db(callback_id, db_op_callback_error)
                         raise db_op_callback_error
             else:
-                self._operation_error_db(operation["id"], db_op_response_error)
+                step_manager.operation_error_db(operation["id"], db_op_response_error)
                 raise db_op_response_error
         # If the database could not be updated
         else:
-            self._operation_error_db(operation["id"], db_operation_error)
+            step_manager.operation_error_db(operation["id"], db_operation_error)
             raise db_operation_error
 
         return response
@@ -170,11 +178,11 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
-        if self._with_compensation is not None:
+        if self.raw_with_compensation is not None:
             raise MinosMultipleWithCompensationException()
 
-        self._with_compensation = {
-            "id": str(uuid4()),
+        self.raw_with_compensation = {
+            "id": str(uuid.uuid4()),
             "type": "withCompensation",
             "method": self.execute_with_compensation,
             "name": name,
@@ -183,12 +191,17 @@ class SagaStep(object):
 
         return self
 
-    def execute_with_compensation(self, operation):
+    def execute_with_compensation(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
         """TODO
 
-        :param operation: TODO
+        :param context: TODO
+        :param step_manager: TODO
         :return: TODO
         """
+        operation = self.raw_with_compensation
+        if operation is None:
+            return context
+
         response = None
 
         if type(operation["name"]) == list:
@@ -200,7 +213,7 @@ class SagaStep(object):
 
         for compensation in operations:
             # Add current operation to lmdb
-            (db_operation_flag, db_operation_error,) = self._create_operation_db(
+            (db_operation_flag, db_operation_error,) = step_manager.create_operation_db(
                 operation["id"], operation["type"], name
             )
             # if the DB was updated
@@ -211,27 +224,31 @@ class SagaStep(object):
                     raise error
 
                 # Add response of current operation to lmdb
-                (db_op_response_flag, db_op_response_error,) = self._operation_response_db(operation["id"], response)
+                (db_op_response_flag, db_op_response_error,) = step_manager.operation_response_db(
+                    operation["id"], response
+                )
 
                 # if the DB was updated with the response of previous operation
                 if not db_op_response_flag:
-                    self._operation_error_db(operation["id"], db_op_response_error)
+                    step_manager.operation_error_db(operation["id"], db_op_response_error)
                     raise db_op_response_error
             # If the database could not be updated
             else:
-                self._operation_error_db(operation["id"], db_operation_error)
+                step_manager.operation_error_db(operation["id"], db_operation_error)
                 raise db_operation_error
 
         if operation["callback"] is not None:
             func = operation["callback"]
-            callback_id = str(uuid4())
+            callback_id = str(uuid.uuid4())
 
-            (db_op_callback_flag, db_op_callback_error,) = self._create_operation_db(
+            (db_op_callback_flag, db_op_callback_error,) = step_manager.create_operation_db(
                 callback_id, "withCompensation_callback", name
             )
-            response = self._db_callback(db_op_callback_flag, callback_id, func, response, db_op_callback_error)
+            context = self._db_callback(
+                db_op_callback_flag, callback_id, func, response, db_op_callback_error, context, step_manager
+            )
 
-        return response
+        return context
 
     def on_reply(self, _callback: Callable) -> SagaStep:
         """TODO
@@ -239,63 +256,78 @@ class SagaStep(object):
         :param _callback: TODO
         :return: TODO
         """
-        if self._on_reply is not None:
+        if self.raw_on_reply is not None:
             raise MinosMultipleOnReplyException()
 
-        self._on_reply = {"id": str(uuid4()), "type": "onReply", "method": self.execute_on_reply, "callback": _callback}
+        self.raw_on_reply = {
+            "id": str(uuid.uuid4()),
+            "type": "onReply",
+            "method": self.execute_on_reply,
+            "callback": _callback,
+        }
 
         return self
 
-    def execute_on_reply(self, operation):
+    def execute_on_reply(self, context: SagaContext, step_manager: MinosSagaStepManager) -> SagaContext:
         """TODO
 
-        :param operation: TODO
+        :param context: TODO
+        :param step_manager: TODO
         :return: TODO
         """
-
+        operation = self.raw_on_reply
         # Add current operation to lmdb
-        (db_response_flag, db_response_error, db_response,) = self._get_last_response_db()
+        (db_response_flag, db_response_error, db_response,) = step_manager.get_last_response_db()
 
         if db_response_flag:
             func = operation["callback"]
-            callback_id = str(uuid4())
+            callback_id = str(uuid.uuid4())
 
-            (db_op_callback_flag, db_op_callback_error,) = self._create_operation_db(callback_id, operation["type"])
+            (db_op_callback_flag, db_op_callback_error,) = step_manager.create_operation_db(
+                callback_id, operation["type"]
+            )
 
-            response = self._db_callback(db_op_callback_flag, callback_id, func, db_response, db_op_callback_error)
+            context = self._db_callback(
+                db_op_callback_flag, callback_id, func, db_response, db_op_callback_error, context, step_manager
+            )
         else:
-            self._operation_error_db(operation["id"], db_response_error)
+            step_manager.operation_error_db(operation["id"], db_response_error)
             raise db_response_error
 
-        return response
+        return context
 
-    def _db_callback(self, db_op_callback_flag, callback_id, func, db_response, db_op_callback_error):
+    def _db_callback(
+        self,
+        db_op_callback_flag,
+        callback_id,
+        func,
+        db_response,
+        db_op_callback_error,
+        context: SagaContext,
+        step_manager: MinosSagaStepManager,
+    ):
         if db_op_callback_flag:
             try:
                 response = self._callback_function_call(func, db_response)
             except MinosSagaException as error:
-                self._operation_error_db(callback_id, error)
+                step_manager.operation_error_db(callback_id, error)
                 raise error
 
             # Add response of current operation to lmdb
-            (db_op_callback_response_flag, db_op_callback_response_error,) = self._operation_response_db(
+            (db_op_callback_response_flag, db_op_callback_response_error,) = step_manager.operation_response_db(
                 callback_id, response
             )
 
             # If the database could not be updated
             if not db_op_callback_response_flag:
-                self._operation_error_db(callback_id, db_op_callback_response_error)
+                step_manager.operation_error_db(callback_id, db_op_callback_response_error)
                 raise db_op_callback_response_error
         else:
-            self._operation_error_db(callback_id, db_op_callback_error)
+            step_manager.operation_error_db(callback_id, db_op_callback_error)
             raise db_op_callback_error
-        return response
+        return context
 
-    @property
-    def _response(self) -> str:
-        return self.saga.response
-
-    def _callback_function_call(self, func: Callable, response: str) -> Any:
+    def _callback_function_call(self, func: Callable, response: Any) -> Any:
         """TODO
 
         :param func: TODO
@@ -313,37 +345,24 @@ class SagaStep(object):
     def _loop(self) -> AbstractEventLoop:
         return self.saga.loop
 
-    def _create_operation_db(self, *args, **kwargs):
-        return self._step_manager.create_operation_db(*args, **kwargs)
-
-    def _operation_response_db(self, *args, **kwargs):
-        return self._step_manager.operation_response_db(*args, **kwargs)
-
-    def _operation_error_db(self, *args, **kwargs):
-        return self._step_manager.operation_error_db(*args, **kwargs)
-
-    def _get_last_response_db(self):
-        return self._step_manager.get_last_response_db()
-
-    @property
-    def _step_manager(self) -> MinosSagaStepManager:
-        return self.saga.step_manager
-
     def step(self) -> SagaStep:
         """TODO
 
         :return: TODO
         """
         self.validate()
+        if self.saga is None:
+            raise MinosSagaNotDefinedException()
         return self.saga.step()
 
-    def execute(self) -> Saga:
+    def commit(self) -> Saga:
         """TODO
 
         :return: TODO
         """
-        self._execute = {"type": "execute", "method": self._execute}
-        return self.saga.execute()
+        if self.saga is None:
+            raise MinosSagaNotDefinedException()
+        return self.saga
 
     def validate(self) -> NoReturn:
         """TODO
@@ -351,7 +370,7 @@ class SagaStep(object):
         :return TODO:
         """
         if not self.raw:
-            raise MinosSagaException("The step() cannot be empty.")
+            raise MinosSagaEmptyStepException()
 
         for idx, operation in enumerate(self.raw):
             if idx == 0 and operation["type"] != "invokeParticipant":

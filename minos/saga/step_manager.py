@@ -38,6 +38,13 @@ class MinosSagaStepManager:
         self.saga_name = name
         self._state = {}
 
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def start(self) -> NoReturn:
         """TODO
 
@@ -64,7 +71,6 @@ class MinosSagaStepManager:
                 break
             except Exception as e:  # pragma: no cover
                 error = e
-                time.sleep(0.5)
 
         return flag, error
 
@@ -108,7 +114,6 @@ class MinosSagaStepManager:
                 break
             except Exception as e:  # pragma: no cover
                 error = e
-                time.sleep(0.5)
 
         return flag, error
 
@@ -140,7 +145,6 @@ class MinosSagaStepManager:
                 break
             except Exception as e:  # pragma: no cover
                 error = e
-                time.sleep(0.5)
 
         return flag, error
 
@@ -171,7 +175,6 @@ class MinosSagaStepManager:
                 break
             except Exception as e:  # pragma: no cover
                 error = e
-                time.sleep(0.5)
 
         return flag, response, error
 
