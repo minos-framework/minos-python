@@ -89,17 +89,13 @@ class SagaExecution(object):
         :return: TODO
         """
 
-        #
-        # if self.already_rollback:
-        #     return
-        #
-        # for executed_step in reversed(self.steps):
-        #     executed_step.rollback()
-        #
-        # self.already_rollback = True
+        if self.already_rollback:
+            return
 
         for execution_step in reversed(self.steps):
             execution_step.rollback(step_manager)
+
+        self.already_rollback = True
 
     @property
     def pending_steps(self) -> [SagaStep]:

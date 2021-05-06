@@ -18,6 +18,7 @@ from ..definitions import (
     SagaStep,
 )
 from ..exceptions import (
+    MinosSagaException,
     MinosSagaFailedExecutionStepException,
 )
 from ..step_manager import (
@@ -56,12 +57,7 @@ class SagaExecutionStep(object):
                 self.execution.definition.saga_process["current_compensations"].insert(0, operation)
 
         for operation in self.definition.raw:
-
             if operation["type"] == "invokeParticipant":
-                from minos.saga import (
-                    MinosSagaException,
-                )
-
                 try:
                     self.execution.definition.response = self.definition.execute_invoke_participant(
                         operation, step_manager
@@ -84,8 +80,12 @@ class SagaExecutionStep(object):
         :param step_manager: TODO
         :return: TODO
         """
+        if self.already_rollback:
+            return
 
         step = self.definition
         operation = step._with_compensation
         if operation is not None:
             step.execute_with_compensation(operation, step_manager)
+
+        self.already_rollback = True
