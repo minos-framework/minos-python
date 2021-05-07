@@ -5,13 +5,8 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from pathlib import (
-    Path,
-)
 from typing import (
     NoReturn,
-    Type,
-    Union,
 )
 from uuid import (
     UUID,
@@ -43,6 +38,7 @@ from .step import (
 class SagaExecution(object):
     """TODO"""
 
+    # noinspection PyUnusedLocal
     def __init__(
         self,
         definition: Saga,
@@ -50,8 +46,8 @@ class SagaExecution(object):
         steps: [SagaExecutionStep],
         context: SagaContext,
         status: SagaStatus,
-        db_path: Union[Path, str] = "./db.lmdb",
-        storage: Type[MinosSagaStorage] = MinosSagaStorage,
+        *args,
+        **kwargs
     ):
 
         self.uuid = uuid
@@ -61,8 +57,6 @@ class SagaExecution(object):
         self.context = ""
         self.status = status
         self.already_rollback = False
-
-        self.storage = storage(self.definition.name, str(self.uuid), db_path)
 
         self.saga_process = {
             "name": self.definition.name,
@@ -124,7 +118,8 @@ class SagaExecution(object):
 
         :return: TODO
         """
-        return self.definition.steps[len(self.executed_steps) :]
+        offset = len(self.executed_steps)
+        return self.definition.steps[offset:]
 
     def _add_executed(self, executed_step: SagaExecutionStep):
         """TODO

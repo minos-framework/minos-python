@@ -10,6 +10,7 @@ import unittest
 
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
+    MinosSagaStorage,
     Saga,
     SagaExecution,
     SagaExecutionStep,
@@ -31,7 +32,7 @@ class TestSagaExecutionStep(unittest.TestCase):
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
-        with saga_execution.storage as storage:
+        with MinosSagaStorage.from_execution(saga_execution) as storage:
             with self.assertRaises(MinosSagaFailedExecutionStepException):
                 step_execution.execute(saga_execution.context, storage)
 

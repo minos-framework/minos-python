@@ -32,6 +32,7 @@ from .local_state import (
 if TYPE_CHECKING:
     from .executions import (
         SagaContext,
+        SagaExecution,
     )
 
 
@@ -42,12 +43,27 @@ class MinosSagaStorage:
     """
 
     def __init__(
-        self, name: str, uuid: str, db_path: Union[Path, str], storage_cls: Type[MinosStorage] = MinosStorageLmdb
+        self,
+        name: str,
+        uuid: str,
+        db_path: Union[Path, str] = "./db.lmdb",
+        storage_cls: Type[MinosStorage] = MinosStorageLmdb,
     ):
         self.uuid = uuid
         self.saga_name = name
         self._local_state = MinosLocalState(storage_cls=storage_cls, db_path=db_path, db_name="LocalState")
         self._state = {}
+
+    @classmethod
+    def from_execution(cls, execution: SagaExecution, *args, **kwargs) -> MinosSagaStorage:
+        """TODO
+
+        :param execution: TODO
+        :param args: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        return cls(execution.definition.name, str(execution.uuid), *args, **kwargs)
 
     def __enter__(self):
         self.start()
