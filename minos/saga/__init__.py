@@ -13,6 +13,7 @@ from .definitions import (
     SagaStep,
 )
 from .exceptions import (
+    MinosAlreadyOnSagaException,
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,

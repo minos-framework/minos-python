@@ -63,6 +63,15 @@ class MinosMultipleOnReplyException(MinosSagaStepException):
         super().__init__(message)
 
 
+class MinosAlreadyOnSagaException(MinosSagaStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep' can only belong to one 'Saga' simultaneously."
+        super().__init__(message)
+
+
 class MinosSagaExecutionStepException(MinosSagaException):
     """TODO"""
 

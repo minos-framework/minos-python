@@ -11,9 +11,11 @@ from shutil import (
 )
 
 from minos.saga import (
+    MinosAlreadyOnSagaException,
     MinosSagaException,
     Saga,
     SagaExecution,
+    SagaStep,
 )
 from tests.callbacks import (
     create_ticket_on_reply_callback,
@@ -72,6 +74,18 @@ class TestSaga(unittest.TestCase):
         saga = Saga("OrdersAdd3").step().invoke_participant("CreateOrder").with_compensation("DeleteOrder").commit()
         execution = saga.build_execution()
         self.assertIsInstance(execution, SagaExecution)
+
+    def test_add_step(self):
+        step = SagaStep().invoke_participant("CreateOrder")
+        saga = Saga("OrdersAdd3").step(step).commit()
+
+        self.assertEqual([step], saga.steps)
+
+    def test_add_step_raises(self):
+
+        step = SagaStep(Saga("FooTest")).invoke_participant("CreateOrder")
+        with self.assertRaises(MinosAlreadyOnSagaException):
+            Saga("BarAdd").step(step)
 
 
 if __name__ == "__main__":

@@ -11,8 +11,14 @@ from __future__ import (
 )
 
 import asyncio
-import typing as t
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+)
 
+from ..exceptions import (
+    MinosAlreadyOnSagaException,
+)
 from .abc import (
     MinosBaseSagaBuilder,
 )
@@ -20,7 +26,7 @@ from .step import (
     SagaStep,
 )
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from ..executions import (
         SagaExecution,
     )
@@ -36,7 +42,7 @@ class Saga(MinosBaseSagaBuilder):
         self.loop = loop or asyncio.get_event_loop()
         self.steps = list()
 
-    def step(self, step: t.Optional[SagaStep] = None) -> SagaStep:
+    def step(self, step: Optional[SagaStep] = None) -> SagaStep:
         """TODO
 
         :return: TODO
@@ -45,7 +51,7 @@ class Saga(MinosBaseSagaBuilder):
             step = SagaStep(self)
         else:
             if step.saga is not None:
-                raise ValueError()
+                raise MinosAlreadyOnSagaException()
             step.saga = self
 
         self.steps.append(step)
