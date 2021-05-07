@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import uuid
+from typing import (
+    Any,
+)
 
 from ...exceptions import (
     MinosSagaException,
@@ -21,7 +24,7 @@ from .local import (
 class InvokeParticipantExecutor(LocalExecutor):
     """TODO"""
 
-    def exec(self, operation: dict, context: SagaContext):
+    def exec(self, operation: dict[str, Any], context: SagaContext):
         """TODO
 
         :param operation: TODO
