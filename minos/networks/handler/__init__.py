@@ -7,7 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 from .event import (
-    MinosEventHandler,
+    MinosEventHandlerDispatcher,
     MinosEventHandlerServer,
     MinosEventPeriodicService,
     MinosEventServerService,

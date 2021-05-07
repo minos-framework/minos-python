@@ -14,7 +14,7 @@ from minos.common import (
 )
 
 from .dispatcher import (
-    MinosEventHandler,
+    MinosEventHandlerDispatcher,
 )
 from .server import (
     MinosEventHandlerServer,
@@ -67,7 +67,7 @@ class MinosEventPeriodicService(PeriodicService):
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = MinosEventHandler.from_config(config=config)
+        self.dispatcher = MinosEventHandlerDispatcher.from_config(config=config)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -82,4 +82,4 @@ class MinosEventPeriodicService(PeriodicService):
 
         :return:This method does not return anything.
         """
-        await self.dispatcher.event_queue_checker()
+        await self.dispatcher.queue_checker()

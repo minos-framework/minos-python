@@ -8,6 +8,9 @@
 from __future__ import (
     annotations,
 )
+
+from abc import abstractmethod
+
 from psycopg2.extensions import AsIs
 import asyncio
 import datetime
@@ -17,11 +20,7 @@ from typing import (
     Optional,
     NamedTuple,
 )
-
 import aiopg
-from minos.common import (
-    Event,
-)
 from minos.common.configuration.config import (
     MinosConfig,
 )
@@ -32,9 +31,9 @@ from minos.networks.handler.abc import (
 
 class MinosHandlerServer(MinosHandlerSetup):
     """
-    Event Manager
+    Handler Server
 
-    Consumer for the Broker ( at the moment only Kafka is supported )
+    Generic insert for queue_* table. (Support Command, CommandReply and Event)
 
     """
 
@@ -121,12 +120,9 @@ class MinosHandlerServer(MinosHandlerSetup):
         affected_rows, id = await self.queue_add(msg.topic, msg.partition, msg.value)
         return affected_rows, id
 
+    @abstractmethod
     def _is_valid_event(self, value: bytes):
-        try:
-            Event.from_avro_bytes(value)
-            return True
-        except:
-            return False
+        raise Exception("Method not implemented")
 
     async def handle_message(self, consumer: AsyncIterator):
         """Message consumer.

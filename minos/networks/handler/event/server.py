@@ -10,12 +10,12 @@ from minos.common.configuration.config import (
 )
 from typing import (
     Any,
-    NamedTuple,
-    AsyncIterator,
-    Optional,
 )
 from ..server import (
     MinosHandlerServer,
+)
+from minos.common import (
+    Event,
 )
 
 
@@ -26,3 +26,10 @@ class MinosEventHandlerServer(MinosHandlerServer):
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
         super().__init__(table_name=self.TABLE, config=config.events, **kwargs)
         self._broker_group_name = f"event_{config.service.name}"
+
+    def _is_valid_event(self, value: bytes):
+        try:
+            Event.from_avro_bytes(value)
+            return True
+        except:
+            return False

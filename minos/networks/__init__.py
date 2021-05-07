@@ -14,7 +14,7 @@ from .broker import (
     MinosQueueService,
 )
 from .handler import (
-    MinosEventHandler,
+    MinosEventHandlerDispatcher,
     MinosEventPeriodicService,
     MinosEventHandlerServer,
     MinosEventServerService,
