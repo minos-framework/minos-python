@@ -21,6 +21,7 @@ from minos.common import (
 
 from ...exceptions import (
     MinosSagaException,
+    MinosSagaFailedExecutionStepException,
 )
 from ..context import (
     SagaContext,
@@ -47,8 +48,12 @@ class PublishExecutor(LocalExecutor):
 
         try:
             request = self._run_callback(operation, context)
-            self._publish(request)
+            self.publish(request)
         except MinosSagaException as exc:
+            self.storage.operation_error_db(operation["id"], exc)
+            raise exc
+        except Exception:
+            exc = MinosSagaFailedExecutionStepException()  # FIXME: Include explanation.
             self.storage.operation_error_db(operation["id"], exc)
             raise exc
 
@@ -61,6 +66,11 @@ class PublishExecutor(LocalExecutor):
         raise NotImplementedError
 
     @staticmethod
-    def _publish(request: Aggregate) -> NoReturn:
+    def publish(request: Aggregate) -> NoReturn:
+        """TODO
+
+        :param request: TODO
+        :return: TODO
+        """
         # TODO: Publish the command
         pass
