@@ -5,10 +5,15 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from pathlib import (
     Path,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
     NoReturn,
     Type,
@@ -23,6 +28,11 @@ from minos.common import (
 from .local_state import (
     MinosLocalState,
 )
+
+if TYPE_CHECKING:
+    from .executions import (
+        SagaContext,
+    )
 
 
 class MinosSagaStorage:
@@ -106,7 +116,7 @@ class MinosSagaStorage:
         self._state["operations"][step_uuid] = operation
         self._local_state.add(self.uuid, self._state)
 
-    def store_operation_response(self, step_uuid: str, response: str) -> (bool, str):
+    def store_operation_response(self, step_uuid: str, response: SagaContext) -> (bool, str):
         """TODO
 
         :param step_uuid: TODO
@@ -126,7 +136,7 @@ class MinosSagaStorage:
 
         return flag, error
 
-    def _add_response(self, step_uuid: str, response: str):
+    def _add_response(self, step_uuid: str, response: SagaContext):
         """TODO
 
         :param step_uuid: TODO
