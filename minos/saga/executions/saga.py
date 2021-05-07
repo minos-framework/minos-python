@@ -53,8 +53,6 @@ class SagaExecution(object):
         db_path: Union[Path, str] = "./db.lmdb",
         storage: Type[MinosSagaStorage] = MinosSagaStorage,
     ):
-        if not isinstance(db_path, str):
-            db_path = str(db_path)
 
         self.uuid = uuid
         self.definition = definition

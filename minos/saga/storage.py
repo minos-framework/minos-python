@@ -5,10 +5,14 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from pathlib import (
+    Path,
+)
 from typing import (
     Any,
     NoReturn,
     Type,
+    Union,
 )
 
 from minos.common import (
@@ -27,14 +31,12 @@ class MinosSagaStorage:
 
     """
 
-    def __init__(self, name, uuid: str, db_path: str, storage: Type[MinosStorage] = MinosStorageLmdb):
-        self.db_name = "LocalState"
-        self.db_path = db_path
-        # noinspection PyArgumentList
-        self._storage = storage.build(path_db=self.db_path)
-        self._local_state = MinosLocalState(storage=self._storage, db_name=self.db_name)
+    def __init__(
+        self, name: str, uuid: str, db_path: Union[Path, str], storage_cls: Type[MinosStorage] = MinosStorageLmdb
+    ):
         self.uuid = uuid
         self.saga_name = name
+        self._local_state = MinosLocalState(storage_cls=storage_cls, db_path=db_path, db_name="LocalState")
         self._state = {}
 
     def __enter__(self):
@@ -58,12 +60,7 @@ class MinosSagaStorage:
         :param operation: TODO
         :return: TODO
         """
-        db_operation_flag, db_operation_error = self._create_operation_db(
-            operation["id"], operation["type"], operation["name"]
-        )
-        if not db_operation_flag:
-            self.operation_error_db(operation["id"], db_operation_error)
-            raise db_operation_error
+        self._create_operation_db(operation["id"], operation["type"], operation["name"])
 
     def _create_operation_db(self, step_uuid: str, operation_type: str, name: str = "") -> (bool, str):
         """TODO
@@ -109,22 +106,7 @@ class MinosSagaStorage:
         self._state["operations"][step_uuid] = operation
         self._local_state.add(self.uuid, self._state)
 
-    def store_operation_response(self, callback_id, response):
-        """TODO
-
-        :param callback_id: TODO
-        :param response: TODO
-        :return: TODO
-        """
-        # Add response of current operation to lmdb
-        db_op_callback_response_flag, db_op_callback_response_error = self._operation_response_db(callback_id, response)
-
-        # If the database could not be updated
-        if not db_op_callback_response_flag:
-            self.operation_error_db(callback_id, db_op_callback_response_error)
-            raise db_op_callback_response_error
-
-    def _operation_response_db(self, step_uuid: str, response: str) -> (bool, str):
+    def store_operation_response(self, step_uuid: str, response: str) -> (bool, str):
         """TODO
 
         :param step_uuid: TODO
@@ -185,46 +167,6 @@ class MinosSagaStorage:
         self._state = self._local_state.load_state(self.uuid)
         self._state["operations"][step_uuid]["error"] = error
         self._local_state.update(self.uuid, self._state)
-
-    def load_operation_response(self, uuid: str) -> str:
-        """TODO
-
-        :param uuid: TODO
-        :return: TODO
-        """
-        (db_response_flag, db_response, db_response_error,) = self._get_last_response_db()
-
-        if not db_response_flag:
-            self.operation_error_db(uuid, db_response_error)
-            raise db_response_error
-        return db_response
-
-    def _get_last_response_db(self) -> (bool, str, str):
-        """TODO
-
-        :return: TODO
-        """
-        flag = False
-        response = ""
-        error = ""
-        for x in range(2):
-            try:
-                response = self._get_last_response()
-                flag = True
-                error = ""
-                break
-            except Exception as e:  # pragma: no cover
-                error = e
-
-        return flag, response, error
-
-    def _get_last_response(self) -> str:
-        """TODO
-
-        :return: TODO
-        """
-        self._state = self._local_state.load_state(self.uuid)
-        return self._state["operations"][self._state["current_step"]]["response"]
 
     def get_state(self) -> dict[str, Any]:
         """TODO

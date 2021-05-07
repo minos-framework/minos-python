@@ -5,8 +5,13 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from pathlib import (
+    Path,
+)
 from typing import (
     Any,
+    Type,
+    Union,
 )
 
 from minos.common import (
@@ -17,9 +22,11 @@ from minos.common import (
 class MinosLocalState:
     """TODO"""
 
-    def __init__(self, storage: MinosStorage, db_name: str):
-        self._storage = storage
+    def __init__(self, db_path: Union[Path, str], storage_cls: Type[MinosStorage], db_name: str):
+        self.db_path = db_path
         self.db_name = db_name
+        # noinspection PyArgumentList
+        self._storage = storage_cls.build(path_db=str(self.db_path))
 
     def update(self, key: str, value: Any):
         """TODO
