@@ -13,6 +13,7 @@ from shutil import (
 
 from minos.saga import (
     MinosSagaStorage,
+    Saga,
 )
 from tests.utils import (
     BASE_PATH,
@@ -29,6 +30,13 @@ class TestMinosSagaStorage(unittest.TestCase):
         storage = MinosSagaStorage("foo", "uuid4", self.DB_PATH)
         self.assertEqual("uuid4", storage.uuid)
         self.assertEqual("foo", storage.saga_name)
+
+    def test_from_execution(self):
+        saga = Saga("OrdersAdd")
+        execution = saga.build_execution()
+        storage = MinosSagaStorage.from_execution(execution)
+        self.assertEqual(str(execution.uuid), storage.uuid)
+        self.assertEqual("OrdersAdd", storage.saga_name)
 
 
 if __name__ == "__main__":

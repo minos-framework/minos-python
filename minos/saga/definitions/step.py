@@ -14,6 +14,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Coroutine,
     NoReturn,
     Optional,
     Union,
@@ -29,9 +30,21 @@ from ..exceptions import (
 )
 
 if TYPE_CHECKING:
+    from minos.common import (
+        MinosModel,
+    )
+
+    from ..executions import (
+        SagaContext,
+    )
     from .saga import (
         Saga,
     )
+
+    CallBack = Callable[
+        [SagaContext],
+        Union[MinosModel, list[MinosModel], Coroutine[Any, Any, MinosModel], Coroutine[Any, Any, list[MinosModel]]],
+    ]
 
 
 class SagaStep(object):
@@ -59,7 +72,7 @@ class SagaStep(object):
 
         return raw
 
-    def invoke_participant(self, name: str, callback: Callable = None) -> SagaStep:
+    def invoke_participant(self, name: Union[str, list], callback: CallBack) -> SagaStep:
         """TODO
 
         :param name: TODO
@@ -78,7 +91,7 @@ class SagaStep(object):
 
         return self
 
-    def with_compensation(self, name: Union[str, list], callback: Callable = None) -> SagaStep:
+    def with_compensation(self, name: str, callback: CallBack) -> SagaStep:
         """TODO
 
         :param name: TODO
@@ -97,10 +110,11 @@ class SagaStep(object):
 
         return self
 
-    def on_reply(self, _callback: Callable) -> SagaStep:
+    def on_reply(self, name: str, callback: Callable) -> SagaStep:
         """TODO
 
-        :param _callback: TODO
+        :param name: TODO
+        :param callback: TODO
         :return: TODO
         """
         if self.raw_on_reply is not None:
@@ -109,7 +123,8 @@ class SagaStep(object):
         self.raw_on_reply = {
             "id": str(uuid.uuid4()),
             "type": "onReply",
-            "callback": _callback,
+            "name": name,
+            "callback": callback,
         }
 
         return self
@@ -129,6 +144,7 @@ class SagaStep(object):
 
         :return: TODO
         """
+        self.validate()
         if self.saga is None:
             raise MinosSagaNotDefinedException()
         return self.saga

@@ -45,12 +45,30 @@ class MinosMultipleInvokeParticipantException(MinosSagaStepException):
         super().__init__(message)
 
 
+class MinosUndefinedInvokeParticipantCallbackException(MinosSagaStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep.invoke_participant' must have a data preparation callback."
+        super().__init__(message)
+
+
 class MinosMultipleWithCompensationException(MinosSagaStepException):
     """TODO"""
 
     def __init__(self, message: str = None):
         if message is None:
             message = "A 'SagaStep' can only define one 'with_compensation' method."
+        super().__init__(message)
+
+
+class MinosUndefinedWithCompensationCallbackException(MinosSagaStepException):
+    """TODO"""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep.with_compensation' must have a data preparation callback."
         super().__init__(message)
 
 

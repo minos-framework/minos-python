@@ -50,7 +50,7 @@ class MinosLocalState:
         """
         self._storage.add(table=self.db_name, key=key, value=value)
 
-    def load_state(self, key: str):
+    def get(self, key: str):
         """TODO
 
         :param key: TODO
@@ -59,7 +59,7 @@ class MinosLocalState:
         actual_state = self._storage.get(table=self.db_name, key=key)
         return actual_state
 
-    def delete_state(self, key: str):
+    def delete(self, key: str):
         """TODO
 
         :param key: TODO

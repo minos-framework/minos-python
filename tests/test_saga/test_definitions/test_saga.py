@@ -1,9 +1,11 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
 
 import unittest
 from shutil import (
@@ -19,18 +21,17 @@ from minos.saga import (
 )
 from tests.callbacks import (
     create_ticket_on_reply_callback,
-    d_callback,
-    e_callback,
-    f_callback,
 )
 from tests.utils import (
     BASE_PATH,
+    foo_fn,
 )
 
 
 class TestSaga(unittest.TestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
+    # noinspection PyMissingOrEmptyDocstring
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
 
@@ -39,15 +40,15 @@ class TestSaga(unittest.TestCase):
             (
                 Saga("OrdersAdd2")
                 .step()
-                .invoke_participant("CreateOrder")
-                .with_compensation("DeleteOrder")
-                .with_compensation("DeleteOrder2")
+                .invoke_participant("CreateOrder", foo_fn)
+                .with_compensation("DeleteOrder", foo_fn)
+                .with_compensation("DeleteOrder2", foo_fn)
                 .step()
                 .step()
-                .invoke_participant("CreateTicket")
-                .on_reply(create_ticket_on_reply_callback)
+                .invoke_participant("CreateTicket", foo_fn)
+                .on_reply("ticket", create_ticket_on_reply_callback)
                 .step()
-                .invoke_participant("VerifyConsumer")
+                .invoke_participant("VerifyConsumer", foo_fn)
                 .commit()
             )
 
@@ -58,32 +59,38 @@ class TestSaga(unittest.TestCase):
             (
                 Saga("OrdersAdd3")
                 .step()
-                .invoke_participant("CreateOrder")
-                .with_compensation("DeleteOrder")
-                .with_compensation("DeleteOrder2")
+                .invoke_participant("CreateOrder", foo_fn)
+                .with_compensation("DeleteOrder", foo_fn)
+                .with_compensation("DeleteOrder2", foo_fn)
                 .step()
-                .on_reply(create_ticket_on_reply_callback)
+                .on_reply("ticket", create_ticket_on_reply_callback)
                 .step()
-                .invoke_participant("VerifyConsumer")
+                .invoke_participant("VerifyConsumer", foo_fn)
                 .commit()
             )
 
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
     def test_build_execution(self):
-        saga = Saga("OrdersAdd3").step().invoke_participant("CreateOrder").with_compensation("DeleteOrder").commit()
+        saga = (
+            Saga("OrdersAdd3")
+            .step()
+            .invoke_participant("CreateOrder", foo_fn)
+            .with_compensation("DeleteOrder", foo_fn)
+            .commit()
+        )
         execution = saga.build_execution()
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):
-        step = SagaStep().invoke_participant("CreateOrder")
+        step = SagaStep().invoke_participant("CreateOrder", foo_fn)
         saga = Saga("OrdersAdd3").step(step).commit()
 
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
 
-        step = SagaStep(Saga("FooTest")).invoke_participant("CreateOrder")
+        step = SagaStep(Saga("FooTest")).invoke_participant("CreateOrder", foo_fn)
         with self.assertRaises(MinosAlreadyOnSagaException):
             Saga("BarAdd").step(step)
 

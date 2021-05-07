@@ -6,6 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
+    NoReturn,
     Optional,
 )
 
@@ -18,9 +19,18 @@ from minos.common import (
 class SagaContext(MinosModel):
     """TODO"""
 
-    content: dict[str, (str, Aggregate)]
+    content: dict[str, MinosModel]
 
-    def __init__(self, *args, content: Optional[dict[str, (str, Aggregate)]] = None, **kwargs):
+    def __init__(self, content: Optional[dict[str, (str, MinosModel)]] = None, *args, **kwargs):
         if content is None:
             content = dict()
         super().__init__(*args, content=content, **kwargs)
+
+    def update(self, key: str, value: MinosModel) -> NoReturn:
+        """TODO
+
+        :param key: TODO
+        :param value: TODO
+        :return: TODO
+        """
+        self.content[key] = value

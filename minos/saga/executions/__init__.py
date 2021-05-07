@@ -12,6 +12,7 @@ from .executors import (
     InvokeParticipantExecutor,
     LocalExecutor,
     OnReplyExecutor,
+    PublishExecutor,
     WithCompensationExecutor,
 )
 from .saga import (

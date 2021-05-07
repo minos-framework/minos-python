@@ -8,7 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import asyncio
 import inspect
 from abc import (
-    abstractmethod,
+    ABC,
 )
 from asyncio import (
     AbstractEventLoop,
@@ -21,51 +21,37 @@ from typing import (
     Optional,
 )
 
-from ...exceptions import (
-    MinosSagaException,
-)
-from ...storage import (
-    MinosSagaStorage,
-)
 from ..context import (
     SagaContext,
 )
 
 
-class LocalExecutor(object):
+class LocalExecutor(ABC):
     """TODO"""
 
-    def __init__(self, storage: MinosSagaStorage, loop: Optional[AbstractEventLoop] = None):
+    def __init__(self, loop: Optional[AbstractEventLoop] = None):
         if loop is None:
             loop = asyncio.get_event_loop()
-        self.storage = storage
         self.loop = loop
 
-    def exec(self, operation: dict[str, Any], context: SagaContext):
+    def exec_one(self, operation: dict[str, Any], response: Any) -> Any:
         """TODO
 
         :param operation: TODO
-        :param context: TODO
+        :param response: TODO
         :return: TODO
         """
-        self.storage.create_operation(operation)
-        try:
-            context = self._exec_function(operation["callback"], context)
-        except MinosSagaException as error:
-            self.storage.operation_error_db(operation["id"], error)
-            raise error
-        self.storage.store_operation_response(operation["id"], context)
 
-        return context
+        return self._exec_function(operation["callback"], response)
 
-    def _exec_function(self, func: Callable, context: SagaContext) -> SagaContext:
+    def _exec_function(self, func: Callable, request: Any) -> SagaContext:
         """TODO
 
         :param func: TODO
-        :param context: TODO
+        :param request: TODO
         :return: TODO
         """
-        result = func(context)
+        result = func(request)
         if inspect.isawaitable(result):
             result = self.loop.run_until_complete(result)
             return result
