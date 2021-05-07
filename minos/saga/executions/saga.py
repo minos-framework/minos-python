@@ -53,8 +53,7 @@ class SagaExecution(object):
         self.uuid = uuid
         self.definition = definition
         self.executed_steps = steps
-        # self.context = context  # FIXME
-        self.context = ""
+        self.context = context
         self.status = status
         self.already_rollback = False
 

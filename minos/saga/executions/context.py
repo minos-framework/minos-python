@@ -19,18 +19,18 @@ from minos.common import (
 class SagaContext(MinosModel):
     """TODO"""
 
-    content: dict[str, (str, Aggregate)]
+    content: dict[str, MinosModel]
 
-    def __init__(self, *args, content: Optional[dict[str, (str, Aggregate)]] = None, **kwargs):
+    def __init__(self, *args, content: Optional[dict[str, (str, MinosModel)]] = None, **kwargs):
         if content is None:
             content = dict()
         super().__init__(*args, content=content, **kwargs)
 
-    def update(self, name: str, aggregate: Aggregate) -> NoReturn:
+    def update(self, key: str, value: MinosModel) -> NoReturn:
         """TODO
 
-        :param name: TODO
-        :param aggregate: TODO
+        :param key: TODO
+        :param value: TODO
         :return: TODO
         """
-        self.content[name] = (aggregate.classname, aggregate)
+        self.content[key] = value

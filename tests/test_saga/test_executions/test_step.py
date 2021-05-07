@@ -16,6 +16,7 @@ from minos.saga import (
     MinosSagaPausedExecutionStepException,
     MinosSagaStorage,
     Saga,
+    SagaContext,
     SagaExecution,
     SagaExecutionStep,
     SagaStepStatus,
@@ -74,6 +75,22 @@ class TestSagaExecutionStep(unittest.TestCase):
                 with self.assertRaises(MinosSagaPausedExecutionStepException):
                     step_execution.execute(saga_execution.context, storage)
                 self.assertEqual(SagaStepStatus.PausedOnReply, step_execution.status)
+
+    def test_execute_on_reply(self):
+        saga_definition = (
+            Saga("FooAdded", self.DB_PATH)
+            .step()
+            .invoke_participant("FooAdd", foo_fn)
+            .on_reply("foo", lambda foo: foo)
+            .commit()
+        )
+        saga_execution = SagaExecution.from_saga(saga_definition)
+        step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
+
+        with MinosSagaStorage.from_execution(saga_execution) as storage:
+            context = step_execution.execute(saga_execution.context, storage, response=Foo("foo"))
+            self.assertEqual(SagaContext(content={"foo": Foo("foo")}), context)
+            self.assertEqual(SagaStepStatus.Finished, step_execution.status)
 
     def test_execute_on_reply_errored(self):
         saga_definition = (
