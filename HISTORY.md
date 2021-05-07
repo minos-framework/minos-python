@@ -89,3 +89,8 @@ History
 
 * Moved CommandModel and EventModel to the model module
 * Created CommandReplyModel for Saga reply
+
+0.0.8 (2021-05-07)
+------------------
+
+* Added SAGA Attriubutes in MinosConfig
