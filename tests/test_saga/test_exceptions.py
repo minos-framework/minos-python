@@ -23,6 +23,9 @@ from minos.saga import (
     MinosSagaPausedExecutionStepException,
     MinosSagaStepException,
 )
+from minos.saga.exceptions import (
+    MinosUndefinedInvokeParticipantException,
+)
 
 
 class TestExceptions(unittest.TestCase):
@@ -82,6 +85,16 @@ class TestExceptions(unittest.TestCase):
     def test_step_already_on_saga_repr(self):
         expected = "MinosAlreadyOnSagaException(message=\"A 'SagaStep' can only belong to one 'Saga' simultaneously.\")"
         self.assertEqual(expected, repr(MinosAlreadyOnSagaException()))
+
+    def test_step_undefined_invoke_participant(self):
+        self.assertTrue(issubclass(MinosUndefinedInvokeParticipantException, MinosSagaStepException))
+
+    def test_step_undefined_invoke_participant_repr(self):
+        expected = (
+            "MinosUndefinedInvokeParticipantException(message=\"A 'SagaStep' "
+            "must define at least the 'invoke_participant' logic.\")"
+        )
+        self.assertEqual(expected, repr(MinosUndefinedInvokeParticipantException()))
 
     def test_execution(self):
         self.assertTrue(issubclass(MinosSagaExecutionStepException, MinosException))

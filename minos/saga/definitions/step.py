@@ -10,9 +10,6 @@ from __future__ import (
 )
 
 import uuid
-from asyncio import (
-    AbstractEventLoop,
-)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -27,8 +24,8 @@ from ..exceptions import (
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
     MinosSagaEmptyStepException,
-    MinosSagaException,
     MinosSagaNotDefinedException,
+    MinosUndefinedInvokeParticipantException,
 )
 
 if TYPE_CHECKING:
@@ -45,7 +42,6 @@ class SagaStep(object):
         self.raw_invoke_participant = None
         self.raw_with_compensation = None
         self.raw_on_reply = None
-        self._execute = None
 
     @property
     def raw(self) -> [dict[str, Any]]:
@@ -60,8 +56,6 @@ class SagaStep(object):
             raw.append(self.raw_with_compensation)
         if self.raw_on_reply is not None:
             raw.append(self.raw_on_reply)
-        if self._execute is not None:
-            raw.append(self._execute)
 
         return raw
 
@@ -120,10 +114,6 @@ class SagaStep(object):
 
         return self
 
-    @property
-    def _loop(self) -> AbstractEventLoop:
-        return self.saga.loop
-
     def step(self) -> SagaStep:
         """TODO
 
@@ -151,8 +141,5 @@ class SagaStep(object):
         if not self.raw:
             raise MinosSagaEmptyStepException()
 
-        for idx, operation in enumerate(self.raw):
-            if idx == 0 and operation["type"] != "invokeParticipant":
-                raise MinosSagaException(
-                    "The first method of the step must be .invokeParticipant(name, callback (optional))."
-                )
+        if self.raw_invoke_participant is None:
+            raise MinosUndefinedInvokeParticipantException()

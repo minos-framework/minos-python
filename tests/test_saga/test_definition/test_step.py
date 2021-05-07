@@ -7,6 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
+from unittest.mock import (
+    MagicMock,
+)
 
 from minos.saga import (
     MinosMultipleInvokeParticipantException,
@@ -16,6 +19,9 @@ from minos.saga import (
     MinosSagaNotDefinedException,
     Saga,
     SagaStep,
+)
+from minos.saga.exceptions import (
+    MinosUndefinedInvokeParticipantException,
 )
 
 
@@ -36,9 +42,12 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(MinosMultipleOnReplyException):
             SagaStep().on_reply(_callback).on_reply(_callback)
 
-    def test_step_raises_empty(self):
-        with self.assertRaises(MinosSagaEmptyStepException):
-            SagaStep().step()
+    def test_step_validates(self):
+        step = SagaStep(Saga("SagaTest"))
+        mock = MagicMock(return_value=True)
+        step.validate = mock
+        step.step()
+        self.assertEqual(1, mock.call_count)
 
     def test_step_raises_not_saga(self):
         with self.assertRaises(MinosSagaNotDefinedException):
@@ -52,6 +61,14 @@ class TestSagaStep(unittest.TestCase):
     def test_submit_raises(self):
         with self.assertRaises(MinosSagaNotDefinedException):
             SagaStep().commit()
+
+    def test_validate_raises_empty(self):
+        with self.assertRaises(MinosSagaEmptyStepException):
+            SagaStep().validate()
+
+    def test_validate_raises_non_invoke_participant(self):
+        with self.assertRaises(MinosUndefinedInvokeParticipantException):
+            SagaStep().with_compensation("UserRemove").validate()
 
 
 if __name__ == "__main__":
