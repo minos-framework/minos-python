@@ -33,3 +33,13 @@ def foo_fn(context: SagaContext) -> MinosModel:
     :return: TODO
     """
     return Foo("hello")
+
+
+# noinspection PyUnusedLocal
+def foo_fn_raises(context: SagaContext) -> MinosModel:
+    """TODO
+
+    :param context: TODO
+    :return: TODO
+    """
+    raise ValueError()

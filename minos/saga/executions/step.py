@@ -11,7 +11,9 @@ from __future__ import (
 
 from typing import (
     TYPE_CHECKING,
+    Any,
     NoReturn,
+    Optional,
 )
 
 from ..definitions import (
@@ -52,18 +54,19 @@ class SagaExecutionStep(object):
         self.status = status
         self.already_rollback = False
 
-    def execute(self, context: SagaContext, storage: MinosSagaStorage, *args, **kwargs) -> SagaContext:
+    def execute(self, context: SagaContext, storage: MinosSagaStorage, response: Optional[Any] = None) -> SagaContext:
         """TODO
 
         :param context: TODO
         :param storage: TODO
+        :param response: TODO
         :return: TODO
         """
 
         self._register()
 
         self._execute_invoke_participant(context, storage)
-        context = self._execute_on_reply(context, storage, *args, **kwargs)
+        context = self._execute_on_reply(context, storage, response)
 
         self.status = SagaStepStatus.Finished
         return context
@@ -88,12 +91,14 @@ class SagaExecutionStep(object):
             raise MinosSagaFailedExecutionStepException()
         self.status = SagaStepStatus.FinishedInvokeParticipant
 
-    def _execute_on_reply(self, context: SagaContext, storage: MinosSagaStorage, *args, **kwargs) -> SagaContext:
+    def _execute_on_reply(
+        self, context: SagaContext, storage: MinosSagaStorage, response: Optional[Any] = None
+    ) -> SagaContext:
         self.status = SagaStepStatus.RunningOnReply
         executor = OnReplyExecutor(storage, self._loop)
         # noinspection PyBroadException
         try:
-            context = executor.exec(self.definition.raw_on_reply, context, *args, **kwargs)
+            context = executor.exec(self.definition.raw_on_reply, context, response=response)
         except MinosSagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedOnReply
             raise exc

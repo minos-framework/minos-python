@@ -25,12 +25,8 @@ from tests.utils import (
     BASE_PATH,
     Foo,
     foo_fn,
+    foo_fn_raises,
 )
-
-
-# noinspection PyUnusedLocal
-def _fn_exception(response):
-    raise ValueError()
 
 
 class TestSagaExecutionStep(unittest.TestCase):
@@ -48,7 +44,7 @@ class TestSagaExecutionStep(unittest.TestCase):
                 self.assertEqual(SagaStepStatus.Finished, step_execution.status)
 
     def test_execute_invoke_participant_errored(self):
-        saga_definition = Saga("FooAdded", self.DB_PATH).step().invoke_participant("FooAdd", _fn_exception).commit()
+        saga_definition = Saga("FooAdded", self.DB_PATH).step().invoke_participant("FooAdd", foo_fn_raises).commit()
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
@@ -64,7 +60,7 @@ class TestSagaExecutionStep(unittest.TestCase):
             Saga("FooAdded", self.DB_PATH)
             .step()
             .invoke_participant("FooAdd", foo_fn)
-            .on_reply("foo", _fn_exception)
+            .on_reply("foo", foo_fn_raises)
             .commit()
         )
         saga_execution = SagaExecution.from_saga(saga_definition)
@@ -89,7 +85,7 @@ class TestSagaExecutionStep(unittest.TestCase):
 
         with MinosSagaStorage.from_execution(saga_execution) as storage:
             context = step_execution.execute(saga_execution.context, storage, response=Foo("foo"))
-            self.assertEqual(SagaContext(content={"foo": Foo("foo")}), context)
+            self.assertEqual(SagaContext({"foo": Foo("foo")}), context)
             self.assertEqual(SagaStepStatus.Finished, step_execution.status)
 
     def test_execute_on_reply_errored(self):
@@ -97,7 +93,7 @@ class TestSagaExecutionStep(unittest.TestCase):
             Saga("FooAdded", self.DB_PATH)
             .step()
             .invoke_participant("FooAdd", foo_fn)
-            .on_reply("foo", _fn_exception)
+            .on_reply("foo", foo_fn_raises)
             .commit()
         )
         saga_execution = SagaExecution.from_saga(saga_definition)

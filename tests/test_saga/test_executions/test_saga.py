@@ -10,10 +10,17 @@ import unittest
 from shutil import (
     rmtree,
 )
+from unittest.mock import (
+    patch,
+)
 
 from minos.saga import (
+    MinosSagaFailedExecutionStepException,
+    MinosSagaPausedExecutionStepException,
     MinosSagaStorage,
     Saga,
+    SagaContext,
+    SagaStatus,
 )
 from tests.callbacks import (
     create_order_callback,
@@ -27,6 +34,8 @@ from tests.callbacks import (
 )
 from tests.utils import (
     BASE_PATH,
+    Foo,
+    foo_fn_raises,
 )
 
 
@@ -52,16 +61,16 @@ class TestSagaExecution(unittest.TestCase):
         expected = {"current_step": None, "operations": {}, "saga": "OrdersAdd"}
         self.assertEqual(expected, observed)
 
-    def test_correct(self):
+    def test_execute(self):
         saga = (
             Saga("OrdersAdd")
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order", create_ticket_on_reply_callback)
+            .on_reply("order1", lambda order: order)
             .step()
             .invoke_participant("CreateTicket", create_ticket_callback)
-            .on_reply("order", create_ticket_on_reply_callback)
+            .on_reply("order2", lambda order: order)
             .step()
             .invoke_participant("Shopping", shipping_callback)
             .with_compensation("BlockOrder", shipping_callback)
@@ -69,7 +78,46 @@ class TestSagaExecution(unittest.TestCase):
         )
         execution = saga.build_execution(self.DB_PATH)
         with MinosSagaStorage.from_execution(execution) as storage:
-            state = storage.get_state()
+            with self.assertRaises(MinosSagaPausedExecutionStepException):
+                execution.execute(storage)
+            self.assertEqual(SagaStatus.Paused, execution.status)
+
+            with self.assertRaises(MinosSagaPausedExecutionStepException):
+                execution.execute(storage, response=Foo("order1"))
+            self.assertEqual(SagaStatus.Paused, execution.status)
+
+            context = execution.execute(storage, response=Foo("order2"))
+            self.assertEqual(SagaStatus.Finished, execution.status)
+            self.assertEqual(SagaContext({"order1": Foo("order1"), "order2": Foo("order2")}), context)
+
+    def test_execute_failure(self):
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1", lambda order: order)
+            .step()
+            .invoke_participant("CreateTicket", create_ticket_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order2", foo_fn_raises)
+            .commit()
+        )
+        execution = saga.build_execution(self.DB_PATH)
+        with MinosSagaStorage.from_execution(execution) as storage:
+            with self.assertRaises(MinosSagaPausedExecutionStepException):
+                execution.execute(storage)
+            self.assertEqual(SagaStatus.Paused, execution.status)
+
+            with self.assertRaises(MinosSagaPausedExecutionStepException):
+                execution.execute(storage, response=Foo("order1"))
+            self.assertEqual(SagaStatus.Paused, execution.status)
+
+            with patch("minos.saga.executions.executors.with_compensation.WithCompensationExecutor.publish") as mock:
+                with self.assertRaises(MinosSagaFailedExecutionStepException):
+                    execution.execute(storage, response=Foo("order2"))
+                self.assertEqual(SagaStatus.Errored, execution.status)
+                self.assertEqual(2, mock.call_count)
 
 
 if __name__ == "__main__":

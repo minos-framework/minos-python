@@ -6,7 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
+    Any,
     NoReturn,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -73,28 +75,31 @@ class SagaExecution(object):
         """
         return cls(definition, uuid4(), list(), SagaContext(), SagaStatus.Created, *args, **kwargs)
 
-    def execute(self, storage: MinosSagaStorage):
+    def execute(self, storage: MinosSagaStorage, response: Optional[Any] = None):
         """TODO
 
         :param storage: TODO
+        :param response: TODO
         :return: TODO
         """
         self.status = SagaStatus.Running
         for step in self.pending_steps:
             execution_step = SagaExecutionStep(self, step)
             try:
-                self.context = execution_step.execute(self.context, storage)
-            except MinosSagaFailedExecutionStepException:  # FIXME: Exception that rollbacks execution.
+                self.context = execution_step.execute(self.context, storage, response=response)
+                self._add_executed(execution_step)
+            except MinosSagaFailedExecutionStepException as exc:
                 self.rollback(storage)
                 self.status = SagaStatus.Errored
-                return self
-            except MinosSagaPausedExecutionStepException:  # FIXME: Exception that pauses execution.
+                raise exc
+            except MinosSagaPausedExecutionStepException as exc:
                 self.status = SagaStatus.Paused
-                return self
-            finally:
-                self._add_executed(execution_step)
+                raise exc
+
+            response = None  # Response is consumed
 
         self.status = SagaStatus.Finished
+        return self.context
 
     def rollback(self, storage: MinosSagaStorage) -> NoReturn:
         """TODO

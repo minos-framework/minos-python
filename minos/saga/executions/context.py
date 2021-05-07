@@ -21,7 +21,7 @@ class SagaContext(MinosModel):
 
     content: dict[str, MinosModel]
 
-    def __init__(self, *args, content: Optional[dict[str, (str, MinosModel)]] = None, **kwargs):
+    def __init__(self, content: Optional[dict[str, (str, MinosModel)]] = None, *args, **kwargs):
         if content is None:
             content = dict()
         super().__init__(*args, content=content, **kwargs)
