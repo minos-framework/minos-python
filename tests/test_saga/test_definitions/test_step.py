@@ -23,6 +23,9 @@ from minos.saga import (
 from minos.saga.exceptions import (
     MinosUndefinedInvokeParticipantException,
 )
+from tests.utils import (
+    foo_fn,
+)
 
 
 def _callback():
@@ -32,15 +35,15 @@ def _callback():
 class TestSagaStep(unittest.TestCase):
     def test_invoke_participant_multiple_raises(self):
         with self.assertRaises(MinosMultipleInvokeParticipantException):
-            SagaStep().invoke_participant("foo").invoke_participant("foo")
+            SagaStep().invoke_participant("foo", foo_fn).invoke_participant("foo", foo_fn)
 
     def test_with_compensation_multiple_raises(self):
         with self.assertRaises(MinosMultipleWithCompensationException):
-            SagaStep().with_compensation("foo").with_compensation("foo")
+            SagaStep().with_compensation("foo", foo_fn).with_compensation("foo", foo_fn)
 
     def test_on_reply_multiple_raises(self):
         with self.assertRaises(MinosMultipleOnReplyException):
-            SagaStep().on_reply(_callback).on_reply(_callback)
+            SagaStep().on_reply("foo", _callback).on_reply("foo", _callback)
 
     def test_step_validates(self):
         step = SagaStep(Saga("SagaTest"))
@@ -51,16 +54,16 @@ class TestSagaStep(unittest.TestCase):
 
     def test_step_raises_not_saga(self):
         with self.assertRaises(MinosSagaNotDefinedException):
-            SagaStep().invoke_participant("FooAdded").step()
+            SagaStep().invoke_participant("FooAdded", foo_fn).step()
 
     def test_submit(self):
         expected = Saga("SagaTest")
-        observed = SagaStep(expected).commit()
+        observed = SagaStep(expected).invoke_participant("FoodAdd", foo_fn).commit()
         self.assertEqual(expected, observed)
 
     def test_submit_raises(self):
         with self.assertRaises(MinosSagaNotDefinedException):
-            SagaStep().commit()
+            SagaStep().invoke_participant("FoodAdd", foo_fn).commit()
 
     def test_validate_raises_empty(self):
         with self.assertRaises(MinosSagaEmptyStepException):
@@ -68,7 +71,7 @@ class TestSagaStep(unittest.TestCase):
 
     def test_validate_raises_non_invoke_participant(self):
         with self.assertRaises(MinosUndefinedInvokeParticipantException):
-            SagaStep().with_compensation("UserRemove").validate()
+            SagaStep().with_compensation("UserRemove", foo_fn).validate()
 
 
 if __name__ == "__main__":

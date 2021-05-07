@@ -14,6 +14,9 @@ from .local import (
 from .on_reply import (
     OnReplyExecutor,
 )
+from .publish import (
+    PublishExecutor,
+)
 from .with_compensation import (
     WithCompensationExecutor,
 )

@@ -6,6 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
+    NoReturn,
     Optional,
 )
 
@@ -24,3 +25,12 @@ class SagaContext(MinosModel):
         if content is None:
             content = dict()
         super().__init__(*args, content=content, **kwargs)
+
+    def update(self, name: str, aggregate: Aggregate) -> NoReturn:
+        """TODO
+
+        :param name: TODO
+        :param aggregate: TODO
+        :return: TODO
+        """
+        self.content[name] = (aggregate.classname, aggregate)

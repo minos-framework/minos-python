@@ -25,11 +25,12 @@ class SagaStepStatus(Enum):
 
     Created = "created"
     RunningInvokeParticipant = "running-invoke-participant"
-    PausedInvokeParticipant = "paused-invoke-participant"
+    FinishedInvokeParticipant = "finished-invoke-participant"
     ErroredInvokeParticipant = "errored"
     RunningWithCompensation = "running-with-compensation"
     PausedWithCompensation = "paused-with-compensation"
     ErroredWithCompensation = "errored-with-compensation"
     RunningOnReply = "running-on-reply"
+    PausedOnReply = "paused-on-reply"
     ErroredOnReply = "errored-on-reply"
     Finished = "finished"
