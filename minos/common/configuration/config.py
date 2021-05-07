@@ -33,7 +33,6 @@ SAGA = collections.namedtuple("Saga", "name controller action")
 SERVICE = collections.namedtuple("Service", "name")
 EVENTS = collections.namedtuple("Events", "broker items queue")
 COMMANDS = collections.namedtuple("Commands", "broker items queue")
-SAGAS = collections.namedtuple("Sagas", "items")
 REST = collections.namedtuple("Rest", "broker endpoints")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
@@ -282,13 +281,13 @@ class MinosConfig(MinosConfigAbstract):
         return COMMANDS(broker=broker, items=commands, queue=queue)
 
     @property
-    def sagas(self) -> SAGAS:
+    def saga(self) -> SAGA:
         """Get the commands config.
 
          :return: A ``COMMAND`` NamedTuple instance.
          """
-        sagas = self._sagas_items
-        return SAGAS(items=sagas)
+        sagas = self._saga_items
+        return sagas
 
     @property
     def _commands_broker(self) -> BROKER:
@@ -319,13 +318,13 @@ class MinosConfig(MinosConfigAbstract):
         return COMMAND(name=command["name"], controller=command["controller"], action=command["action"])
 
     @property
-    def _sagas_items(self) -> list[SAGA]:
-        info = self._get("sagas.items")
-        sagas = [self._sagas_items_entry(saga) for saga in info]
+    def _saga_items(self) -> list[SAGA]:
+        info = self._get("saga")
+        sagas = [self._saga_items_entry(saga) for saga in info]
         return sagas
 
     @staticmethod
-    def _sagas_items_entry(saga: dict[str, t.Any]) -> SAGA:
+    def _saga_items_entry(saga: dict[str, t.Any]) -> SAGA:
         return SAGA(name=saga["name"], controller=saga["controller"], action=saga["action"])
 
     @property

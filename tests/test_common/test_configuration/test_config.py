@@ -97,7 +97,10 @@ class TestMinosConfig(unittest.TestCase):
 
     def test_config_saga_items(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
-        self.assertEqual(len(config.sagas.items), 2)
+        self.assertEqual(len(config.saga), 2)
+
+        saga1 = config.saga[0]
+        self.assertEqual(saga1.name, "AddOrder")
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_environment(self):
