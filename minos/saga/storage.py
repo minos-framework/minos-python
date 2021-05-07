@@ -5,11 +5,19 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import time
+from __future__ import (
+    annotations,
+)
+
+from pathlib import (
+    Path,
+)
 from typing import (
+    TYPE_CHECKING,
     Any,
     NoReturn,
     Type,
+    Union,
 )
 
 from minos.common import (
@@ -21,22 +29,41 @@ from .local_state import (
     MinosLocalState,
 )
 
+if TYPE_CHECKING:
+    from .executions import (
+        SagaContext,
+        SagaExecution,
+    )
 
-class MinosSagaStepManager:
+
+class MinosSagaStorage:
     """
     Example of how states are stored:
 
     """
 
-    def __init__(self, name, uuid: str, db_path: str, storage: Type[MinosStorage] = MinosStorageLmdb):
-        self.db_name = "LocalState"
-        self.db_path = db_path
-        # noinspection PyArgumentList
-        self._storage = storage.build(path_db=self.db_path)
-        self._local_state = MinosLocalState(storage=self._storage, db_name=self.db_name)
+    def __init__(
+        self,
+        name: str,
+        uuid: str,
+        db_path: Union[Path, str] = "./db.lmdb",
+        storage_cls: Type[MinosStorage] = MinosStorageLmdb,
+    ):
         self.uuid = uuid
         self.saga_name = name
+        self._local_state = MinosLocalState(storage_cls=storage_cls, db_path=db_path, db_name="LocalState")
         self._state = {}
+
+    @classmethod
+    def from_execution(cls, execution: SagaExecution, *args, **kwargs) -> MinosSagaStorage:
+        """TODO
+
+        :param execution: TODO
+        :param args: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        return cls(execution.definition.name, str(execution.uuid), *args, **kwargs)
 
     def __enter__(self):
         self.start()
@@ -53,7 +80,15 @@ class MinosSagaStepManager:
         structure = {"saga": self.saga_name, "current_step": None, "operations": {}}
         self._local_state.update(self.uuid, structure)
 
-    def create_operation_db(self, step_uuid: str, operation_type: str, name: str = "") -> (bool, str):
+    def create_operation(self, operation):
+        """TODO
+
+        :param operation: TODO
+        :return: TODO
+        """
+        self._create_operation_db(operation["id"], operation["type"], operation["name"])
+
+    def _create_operation_db(self, step_uuid: str, operation_type: str, name: str = "") -> (bool, str):
         """TODO
 
         :param step_uuid: TODO
@@ -65,7 +100,7 @@ class MinosSagaStepManager:
         error = ""
         for x in range(2):
             try:
-                self.operation(step_uuid, operation_type, name)
+                self._operation(step_uuid, operation_type, name)
                 flag = True
                 error = ""
                 break
@@ -74,7 +109,7 @@ class MinosSagaStepManager:
 
         return flag, error
 
-    def operation(self, step_uuid: str, operation_type: str, name: str = ""):
+    def _operation(self, step_uuid: str, operation_type: str, name: str = ""):
         """TODO
 
         :param step_uuid: TODO
@@ -97,7 +132,7 @@ class MinosSagaStepManager:
         self._state["operations"][step_uuid] = operation
         self._local_state.add(self.uuid, self._state)
 
-    def operation_response_db(self, step_uuid: str, response: str) -> (bool, str):
+    def store_operation_response(self, step_uuid: str, response: SagaContext) -> (bool, str):
         """TODO
 
         :param step_uuid: TODO
@@ -108,7 +143,7 @@ class MinosSagaStepManager:
         error = ""
         for x in range(2):
             try:
-                self.add_response(step_uuid, response)
+                self._add_response(step_uuid, response)
                 flag = True
                 error = ""
                 break
@@ -117,7 +152,7 @@ class MinosSagaStepManager:
 
         return flag, error
 
-    def add_response(self, step_uuid: str, response: str):
+    def _add_response(self, step_uuid: str, response: SagaContext):
         """TODO
 
         :param step_uuid: TODO
@@ -139,7 +174,7 @@ class MinosSagaStepManager:
         error = ""
         for x in range(2):
             try:
-                self.add_error(step_uuid, str(err))
+                self._add_error(step_uuid, str(err))
                 flag = True
                 error = ""
                 break
@@ -148,7 +183,7 @@ class MinosSagaStepManager:
 
         return flag, error
 
-    def add_error(self, step_uuid: str, error: str):
+    def _add_error(self, step_uuid: str, error: str):
         """TODO
 
         :param step_uuid: TODO
@@ -158,33 +193,6 @@ class MinosSagaStepManager:
         self._state = self._local_state.load_state(self.uuid)
         self._state["operations"][step_uuid]["error"] = error
         self._local_state.update(self.uuid, self._state)
-
-    def get_last_response_db(self) -> (bool, str, str):
-        """TODO
-
-        :return: TODO
-        """
-        flag = False
-        response = ""
-        error = ""
-        for x in range(2):
-            try:
-                response = self.get_last_response()
-                flag = True
-                error = ""
-                break
-            except Exception as e:  # pragma: no cover
-                error = e
-
-        return flag, response, error
-
-    def get_last_response(self) -> str:
-        """TODO
-
-        :return: TODO
-        """
-        self._state = self._local_state.load_state(self.uuid)
-        return self._state["operations"][self._state["current_step"]]["response"]
 
     def get_state(self) -> dict[str, Any]:
         """TODO

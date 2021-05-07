@@ -11,14 +11,13 @@ from __future__ import (
 )
 
 import asyncio
-import typing as t
-import uuid
-from pathlib import (
-    Path,
+from typing import (
+    TYPE_CHECKING,
+    Optional,
 )
 
-from ..step_manager import (
-    MinosSagaStepManager,
+from ..exceptions import (
+    MinosAlreadyOnSagaException,
 )
 from .abc import (
     MinosBaseSagaBuilder,
@@ -27,7 +26,7 @@ from .step import (
     SagaStep,
 )
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from ..executions import (
         SagaExecution,
     )
@@ -37,29 +36,13 @@ class Saga(MinosBaseSagaBuilder):
     """TODO"""
 
     def __init__(
-        self,
-        name,
-        db_path: t.Union[Path, str] = "./db.lmdb",
-        step_manager: t.Type[MinosSagaStepManager] = MinosSagaStepManager,
-        loop: asyncio.AbstractEventLoop = None,
+        self, name, loop: asyncio.AbstractEventLoop = None,
     ):
-        if not isinstance(db_path, str):
-            db_path = str(db_path)
-
-        self.saga_name = name
-        self.uuid = str(uuid.uuid4())
-        self.saga_process = {
-            "name": self.saga_name,
-            "id": self.uuid,
-            "steps": [],
-            "current_compensations": [],
-        }
-        self.step_manager = step_manager(self.saga_name, self.uuid, db_path)
+        self.name = name
         self.loop = loop or asyncio.get_event_loop()
-        self.response = ""
         self.steps = list()
 
-    def step(self, step: t.Optional[SagaStep] = None) -> SagaStep:
+    def step(self, step: Optional[SagaStep] = None) -> SagaStep:
         """TODO
 
         :return: TODO
@@ -68,13 +51,13 @@ class Saga(MinosBaseSagaBuilder):
             step = SagaStep(self)
         else:
             if step.saga is not None:
-                raise ValueError()
+                raise MinosAlreadyOnSagaException()
             step.saga = self
 
         self.steps.append(step)
         return step
 
-    def build_execution(self) -> SagaExecution:
+    def build_execution(self, *args, **kwargs) -> SagaExecution:
         """TODO
 
         :return: TODO
@@ -83,4 +66,4 @@ class Saga(MinosBaseSagaBuilder):
             SagaExecution,
         )
 
-        return SagaExecution.from_saga(self)
+        return SagaExecution.from_saga(self, *args, **kwargs)

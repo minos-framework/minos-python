@@ -11,6 +11,7 @@ from minos.common import (
     MinosException,
 )
 from minos.saga import (
+    MinosAlreadyOnSagaException,
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
@@ -21,6 +22,9 @@ from minos.saga import (
     MinosSagaNotDefinedException,
     MinosSagaPausedExecutionStepException,
     MinosSagaStepException,
+)
+from minos.saga.exceptions import (
+    MinosUndefinedInvokeParticipantException,
 )
 
 
@@ -74,6 +78,23 @@ class TestExceptions(unittest.TestCase):
     def test_step_multiple_on_reply_repr(self):
         expected = "MinosMultipleOnReplyException(message=\"A 'SagaStep' can only define one 'on_reply' method.\")"
         self.assertEqual(expected, repr(MinosMultipleOnReplyException()))
+
+    def test_step_already_on_saga(self):
+        self.assertTrue(issubclass(MinosAlreadyOnSagaException, MinosSagaStepException))
+
+    def test_step_already_on_saga_repr(self):
+        expected = "MinosAlreadyOnSagaException(message=\"A 'SagaStep' can only belong to one 'Saga' simultaneously.\")"
+        self.assertEqual(expected, repr(MinosAlreadyOnSagaException()))
+
+    def test_step_undefined_invoke_participant(self):
+        self.assertTrue(issubclass(MinosUndefinedInvokeParticipantException, MinosSagaStepException))
+
+    def test_step_undefined_invoke_participant_repr(self):
+        expected = (
+            "MinosUndefinedInvokeParticipantException(message=\"A 'SagaStep' "
+            "must define at least the 'invoke_participant' logic.\")"
+        )
+        self.assertEqual(expected, repr(MinosUndefinedInvokeParticipantException()))
 
     def test_execution(self):
         self.assertTrue(issubclass(MinosSagaExecutionStepException, MinosException))

@@ -15,6 +15,7 @@ from unittest.mock import (
 )
 
 from minos.saga import (
+    MinosSagaStorage,
     Saga,
 )
 from tests.callbacks import (
@@ -41,43 +42,59 @@ class TestSagaExecution(unittest.TestCase):
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
 
+    def test_get_state(self):
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", d_callback)
+            .with_compensation("DeleteOrder", e_callback)
+            .on_reply(f_callback)
+            .commit()
+        )
+        execution = saga.build_execution(self.DB_PATH)
+        with MinosSagaStorage.from_execution(execution) as storage:
+            observed = storage.get_state()
+
+        expected = {"current_step": None, "operations": {}, "saga": "OrdersAdd"}
+        self.assertEqual(expected, observed)
+
     def test_async_callbacks_ok(self):
         with patch("uuid.uuid4", side_effect=["uuid-0", "uuid-1", "uuid-2", "uuid-3", "uuid-4", "uuid-5"]):
             saga = (
-                Saga("OrdersAdd", self.DB_PATH)
+                Saga("OrdersAdd")
                 .step()
                 .invoke_participant("CreateOrder", a_callback)
                 .with_compensation("DeleteOrder", b_callback)
                 .on_reply(c_callback)
                 .commit()
             )
-            with saga.step_manager as step_manager:
-                execution = saga.build_execution()
-                execution.execute(step_manager)
-                observed = step_manager.get_state()
+            execution = saga.build_execution(self.DB_PATH)
+            with MinosSagaStorage.from_execution(execution) as storage:
+                execution.execute(storage)
+                observed = storage.get_state()
 
         expected = {
-            "current_step": "uuid-5",
+            "current_step": "uuid-4",
             "operations": {
-                "uuid-1": {
+                "uuid-0": {
                     "error": "",
-                    "id": "uuid-1",
+                    "id": "uuid-0",
                     "name": "CreateOrder",
                     "response": "_invokeParticipant Response",
                     "status": 0,
                     "type": "invokeParticipant",
                 },
-                "uuid-4": {
+                "uuid-3": {
                     "error": "",
-                    "id": "uuid-4",
+                    "id": "uuid-3",
                     "name": "CreateOrder",
                     "response": "create_order_callback response!!!!",
                     "status": 0,
                     "type": "invokeParticipant_callback",
                 },
-                "uuid-5": {
+                "uuid-4": {
                     "error": "",
-                    "id": "uuid-5",
+                    "id": "uuid-4",
                     "name": "",
                     "response": "async create_ticket_on_reply_callback " "response!!!!",
                     "status": 0,
@@ -90,43 +107,43 @@ class TestSagaExecution(unittest.TestCase):
 
     def test_async_callbacks_ko(self):
         saga = (
-            Saga("OrdersAdd", self.DB_PATH)
+            Saga("OrdersAdd")
             .step()
             .invoke_participant("Shipping", a_callback)
             .with_compensation("DeleteOrder", b_callback)
             .on_reply(c_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
-            execution = saga.build_execution()
-            execution.execute(step_manager)
+        execution = saga.build_execution(self.DB_PATH)
+        with MinosSagaStorage.from_execution(execution) as storage:
+            execution.execute(storage)
 
-            state = step_manager.get_state()
+            state = storage.get_state()
 
             assert state is not None
             assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
 
     def test_sync_callbacks_ko(self):
         saga = (
-            Saga("OrdersAdd", self.DB_PATH)
+            Saga("OrdersAdd")
             .step()
             .invoke_participant("Shipping", d_callback)
             .with_compensation("DeleteOrder", e_callback)
             .on_reply(f_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
-            execution = saga.build_execution()
-            execution.execute(step_manager)
+        execution = saga.build_execution(self.DB_PATH)
+        with MinosSagaStorage.from_execution(execution) as storage:
+            execution.execute(storage)
 
-            state = step_manager.get_state()
+            state = storage.get_state()
 
             assert state is not None
             assert list(state["operations"].values())[0]["error"] == "invokeParticipantTest exception"
 
     def test_correct(self):
         saga = (
-            Saga("OrdersAdd", self.DB_PATH)
+            Saga("OrdersAdd")
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -136,17 +153,18 @@ class TestSagaExecution(unittest.TestCase):
             .on_reply(create_ticket_on_reply_callback)
             .step()
             .invoke_participant("Shopping")
-            .with_compensation(["Failed", "BlockOrder"], shipping_callback)
+            .with_compensation("BlockOrder", shipping_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
-            state = step_manager.get_state()
+        execution = saga.build_execution(self.DB_PATH)
+        with MinosSagaStorage.from_execution(execution) as storage:
+            state = storage.get_state()
 
         self.assertEqual({"current_step": None, "operations": {}, "saga": "OrdersAdd"}, state)
 
     def test_execute_all_compensations(self):
         saga = (
-            Saga("ItemsAdd", self.DB_PATH)
+            Saga("ItemsAdd")
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -156,14 +174,15 @@ class TestSagaExecution(unittest.TestCase):
             .on_reply(create_ticket_on_reply_callback)
             .step()
             .invoke_participant("Shipping")
-            .with_compensation(["Failed", "BlockOrder"], shipping_callback)
+            .with_compensation("BlockOrder", shipping_callback)
             .commit()
         )
-        with saga.step_manager as step_manager:
-            execution = saga.build_execution()
-            execution.execute(step_manager)
+        execution = saga.build_execution(self.DB_PATH)
 
-            state = step_manager.get_state()
+        with MinosSagaStorage.from_execution(execution) as storage:
+            execution.execute(storage)
+
+            state = storage.get_state()
 
             assert state is not None
             assert list(state["operations"].values())[0]["type"] == "invokeParticipant"
