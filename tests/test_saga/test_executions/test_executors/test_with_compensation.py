@@ -9,31 +9,15 @@ import unittest
 from asyncio import (
     AbstractEventLoop,
 )
-from shutil import (
-    rmtree,
-)
 
 from minos.saga import (
-    MinosSagaStorage,
     WithCompensationExecutor,
-)
-from tests.utils import (
-    BASE_PATH,
 )
 
 
 class TesWithCompensationExecutor(unittest.TestCase):
-    DB_PATH = BASE_PATH / "test_db.lmdb"
-
-    def tearDown(self) -> None:
-        rmtree(self.DB_PATH, ignore_errors=True)
-
-    def setUp(self) -> None:
-        self.storage = MinosSagaStorage("foo", "uuid4", self.DB_PATH)
-
     def test_constructor(self):
-        executor = WithCompensationExecutor(self.storage)
-        self.assertEqual(self.storage, executor.storage)
+        executor = WithCompensationExecutor()
         self.assertIsInstance(executor.loop, AbstractEventLoop)
 
 

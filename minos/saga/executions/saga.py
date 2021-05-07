@@ -75,10 +75,9 @@ class SagaExecution(object):
         """
         return cls(definition, uuid4(), list(), SagaContext(), SagaStatus.Created, *args, **kwargs)
 
-    def execute(self, storage: MinosSagaStorage, response: Optional[Any] = None):
+    def execute(self, response: Optional[Any] = None):
         """TODO
 
-        :param storage: TODO
         :param response: TODO
         :return: TODO
         """
@@ -86,10 +85,10 @@ class SagaExecution(object):
         for step in self.pending_steps:
             execution_step = SagaExecutionStep(self, step)
             try:
-                self.context = execution_step.execute(self.context, storage, response=response)
+                self.context = execution_step.execute(self.context, response=response)
                 self._add_executed(execution_step)
             except MinosSagaFailedExecutionStepException as exc:
-                self.rollback(storage)
+                self.rollback()
                 self.status = SagaStatus.Errored
                 raise exc
             except MinosSagaPausedExecutionStepException as exc:
@@ -101,10 +100,9 @@ class SagaExecution(object):
         self.status = SagaStatus.Finished
         return self.context
 
-    def rollback(self, storage: MinosSagaStorage) -> NoReturn:
+    def rollback(self) -> NoReturn:
         """TODO
 
-        :param storage: TODO
         :return: TODO
         """
 
@@ -112,7 +110,7 @@ class SagaExecution(object):
             return
 
         for execution_step in reversed(self.executed_steps):
-            self.context = execution_step.rollback(self.context, storage)
+            self.context = execution_step.rollback(self.context)
 
         self.already_rollback = True
 

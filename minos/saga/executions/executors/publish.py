@@ -16,7 +16,6 @@ from typing import (
 
 from minos.common import (
     Aggregate,
-    MinosModel,
 )
 
 from ...exceptions import (
@@ -44,20 +43,14 @@ class PublishExecutor(LocalExecutor):
         if operation is None:
             return context
 
-        self.storage.create_operation(operation)
-
         try:
             request = self._run_callback(operation, context)
             self.publish(request)
         except MinosSagaException as exc:
-            self.storage.operation_error_db(operation["id"], exc)
             raise exc
         except Exception:
             exc = MinosSagaFailedExecutionStepException()  # FIXME: Include explanation.
-            self.storage.operation_error_db(operation["id"], exc)
             raise exc
-
-        self.storage.store_operation_response(operation["id"], context)
 
         return context
 

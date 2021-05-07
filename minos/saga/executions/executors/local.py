@@ -21,9 +21,6 @@ from typing import (
     Optional,
 )
 
-from ...storage import (
-    MinosSagaStorage,
-)
 from ..context import (
     SagaContext,
 )
@@ -32,10 +29,9 @@ from ..context import (
 class LocalExecutor(ABC):
     """TODO"""
 
-    def __init__(self, storage: MinosSagaStorage, loop: Optional[AbstractEventLoop] = None):
+    def __init__(self, loop: Optional[AbstractEventLoop] = None):
         if loop is None:
             loop = asyncio.get_event_loop()
-        self.storage = storage
         self.loop = loop
 
     def exec_one(self, operation: dict[str, Any], response: Any) -> Any:

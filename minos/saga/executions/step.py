@@ -24,9 +24,6 @@ from ..exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
 )
-from ..storage import (
-    MinosSagaStorage,
-)
 from .context import (
     SagaContext,
 )
@@ -54,19 +51,18 @@ class SagaExecutionStep(object):
         self.status = status
         self.already_rollback = False
 
-    def execute(self, context: SagaContext, storage: MinosSagaStorage, response: Optional[Any] = None) -> SagaContext:
+    def execute(self, context: SagaContext, response: Optional[Any] = None) -> SagaContext:
         """TODO
 
         :param context: TODO
-        :param storage: TODO
         :param response: TODO
         :return: TODO
         """
 
         self._register()
 
-        self._execute_invoke_participant(context, storage)
-        context = self._execute_on_reply(context, storage, response)
+        self._execute_invoke_participant(context)
+        context = self._execute_on_reply(context, response)
 
         self.status = SagaStepStatus.Finished
         return context
@@ -77,25 +73,23 @@ class SagaExecutionStep(object):
         if operation is not None:
             self.execution.saga_process["current_compensations"].insert(0, operation)
 
-    def _execute_invoke_participant(self, context: SagaContext, storage: MinosSagaStorage) -> NoReturn:
+    def _execute_invoke_participant(self, context: SagaContext) -> NoReturn:
         if self.status != SagaStepStatus.Created:
             return
 
         self.status = SagaStepStatus.RunningInvokeParticipant
-        executor = InvokeParticipantExecutor(storage, self._loop)
+        executor = InvokeParticipantExecutor(self._loop)
         try:
             executor.exec(self.definition.raw_invoke_participant, context)
         except MinosSagaException:
             self.status = SagaStepStatus.ErroredInvokeParticipant
-            self.rollback(context, storage)
+            self.rollback(context)
             raise MinosSagaFailedExecutionStepException()
         self.status = SagaStepStatus.FinishedInvokeParticipant
 
-    def _execute_on_reply(
-        self, context: SagaContext, storage: MinosSagaStorage, response: Optional[Any] = None
-    ) -> SagaContext:
+    def _execute_on_reply(self, context: SagaContext, response: Optional[Any] = None) -> SagaContext:
         self.status = SagaStepStatus.RunningOnReply
-        executor = OnReplyExecutor(storage, self._loop)
+        executor = OnReplyExecutor(self._loop)
         # noinspection PyBroadException
         try:
             context = executor.exec(self.definition.raw_on_reply, context, response=response)
@@ -104,21 +98,20 @@ class SagaExecutionStep(object):
             raise exc
         except Exception as e:
             self.status = SagaStepStatus.ErroredOnReply
-            self.rollback(context, storage)
+            self.rollback(context)
             raise MinosSagaFailedExecutionStepException()
         return context
 
-    def rollback(self, context: SagaContext, storage: MinosSagaStorage) -> SagaContext:
+    def rollback(self, context: SagaContext) -> SagaContext:
         """TODO
 
         :param context: TODO
-        :param storage: TODO
         :return: TODO
         """
         if self.already_rollback:
             return context
 
-        executor = WithCompensationExecutor(storage, self._loop)
+        executor = WithCompensationExecutor(self._loop)
         executor.exec(self.definition.raw_with_compensation, context)
 
         self.already_rollback = True

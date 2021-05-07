@@ -14,7 +14,6 @@ from unittest.mock import (
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
-    MinosSagaStorage,
     Saga,
     SagaContext,
     SagaExecution,
@@ -22,7 +21,6 @@ from minos.saga import (
     SagaStepStatus,
 )
 from tests.utils import (
-    BASE_PATH,
     Foo,
     foo_fn,
     foo_fn_raises,
@@ -30,79 +28,60 @@ from tests.utils import (
 
 
 class TestSagaExecutionStep(unittest.TestCase):
-    DB_PATH = BASE_PATH / "test_db.lmdb"
-
     def test_execute_invoke_participant(self):
-        saga_definition = Saga("FooAdded", self.DB_PATH).step().invoke_participant("FooAdd", foo_fn).commit()
+        saga_definition = Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).commit()
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
         with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
-            with MinosSagaStorage.from_execution(saga_execution) as storage:
-                step_execution.execute(saga_execution.context, storage)
-                self.assertEqual(1, mock.call_count)
-                self.assertEqual(SagaStepStatus.Finished, step_execution.status)
+            step_execution.execute(saga_execution.context)
+            self.assertEqual(1, mock.call_count)
+            self.assertEqual(SagaStepStatus.Finished, step_execution.status)
 
     def test_execute_invoke_participant_errored(self):
-        saga_definition = Saga("FooAdded", self.DB_PATH).step().invoke_participant("FooAdd", foo_fn_raises).commit()
+        saga_definition = Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn_raises).commit()
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
         with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
-            with MinosSagaStorage.from_execution(saga_execution) as storage:
-                with self.assertRaises(MinosSagaFailedExecutionStepException):
-                    step_execution.execute(saga_execution.context, storage)
-                self.assertEqual(0, mock.call_count)
-                self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, step_execution.status)
+            with self.assertRaises(MinosSagaFailedExecutionStepException):
+                step_execution.execute(saga_execution.context)
+            self.assertEqual(0, mock.call_count)
+            self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, step_execution.status)
 
     def test_execute_invoke_participant_with_on_reply(self):
         saga_definition = (
-            Saga("FooAdded", self.DB_PATH)
-            .step()
-            .invoke_participant("FooAdd", foo_fn)
-            .on_reply("foo", foo_fn_raises)
-            .commit()
+            Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).on_reply("foo", foo_fn_raises).commit()
         )
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
         with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
-            with MinosSagaStorage.from_execution(saga_execution) as storage:
-                with self.assertRaises(MinosSagaPausedExecutionStepException):
-                    step_execution.execute(saga_execution.context, storage)
-                self.assertEqual(SagaStepStatus.PausedOnReply, step_execution.status)
+            with self.assertRaises(MinosSagaPausedExecutionStepException):
+                step_execution.execute(saga_execution.context)
+            self.assertEqual(SagaStepStatus.PausedOnReply, step_execution.status)
 
     def test_execute_on_reply(self):
         saga_definition = (
-            Saga("FooAdded", self.DB_PATH)
-            .step()
-            .invoke_participant("FooAdd", foo_fn)
-            .on_reply("foo", lambda foo: foo)
-            .commit()
+            Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo).commit()
         )
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
-        with MinosSagaStorage.from_execution(saga_execution) as storage:
-            context = step_execution.execute(saga_execution.context, storage, response=Foo("foo"))
-            self.assertEqual(SagaContext({"foo": Foo("foo")}), context)
-            self.assertEqual(SagaStepStatus.Finished, step_execution.status)
+        context = step_execution.execute(saga_execution.context, response=Foo("foo"))
+        self.assertEqual(SagaContext({"foo": Foo("foo")}), context)
+        self.assertEqual(SagaStepStatus.Finished, step_execution.status)
 
     def test_execute_on_reply_errored(self):
         saga_definition = (
-            Saga("FooAdded", self.DB_PATH)
-            .step()
-            .invoke_participant("FooAdd", foo_fn)
-            .on_reply("foo", foo_fn_raises)
-            .commit()
+            Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).on_reply("foo", foo_fn_raises).commit()
         )
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
-        with MinosSagaStorage.from_execution(saga_execution) as storage:
-            with self.assertRaises(MinosSagaFailedExecutionStepException):
-                step_execution.execute(saga_execution.context, storage, response=Foo("foo"))
-            self.assertEqual(SagaStepStatus.ErroredOnReply, step_execution.status)
+        with self.assertRaises(MinosSagaFailedExecutionStepException):
+            step_execution.execute(saga_execution.context, response=Foo("foo"))
+        self.assertEqual(SagaStepStatus.ErroredOnReply, step_execution.status)
 
 
 if __name__ == "__main__":

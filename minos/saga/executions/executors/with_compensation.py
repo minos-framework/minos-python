@@ -8,7 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 import uuid
 from typing import (
     Any,
-    NoReturn,
 )
 
 from minos.common import (
