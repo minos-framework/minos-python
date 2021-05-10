@@ -14,10 +14,9 @@ from unittest.mock import (
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
-    Saga,
     SagaContext,
-    SagaExecution,
     SagaExecutionStep,
+    SagaStep,
     SagaStepStatus,
 )
 from tests.utils import (
@@ -26,62 +25,84 @@ from tests.utils import (
     foo_fn_raises,
 )
 
+_PUBLISH_MOCKER = patch("minos.saga.executions.executors.publish.PublishExecutor.publish")
+
 
 class TestSagaExecutionStep(unittest.TestCase):
     def test_execute_invoke_participant(self):
-        saga_definition = Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).commit()
-        saga_execution = SagaExecution.from_saga(saga_definition)
-        step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
+        step = SagaStep().invoke_participant("FooAdd", foo_fn)
+        context = SagaContext()
+        execution = SagaExecutionStep(step)
 
-        with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
-            step_execution.execute(saga_execution.context)
+        with _PUBLISH_MOCKER as mock:
+            execution.execute(context)
             self.assertEqual(1, mock.call_count)
-            self.assertEqual(SagaStepStatus.Finished, step_execution.status)
+
+        self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_invoke_participant_errored(self):
-        saga_definition = Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn_raises).commit()
-        saga_execution = SagaExecution.from_saga(saga_definition)
-        step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
+        step = SagaStep().invoke_participant("FooAdd", foo_fn_raises)
+        context = SagaContext()
+        execution = SagaExecutionStep(step)
 
-        with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
+        with _PUBLISH_MOCKER as mock:
             with self.assertRaises(MinosSagaFailedExecutionStepException):
-                step_execution.execute(saga_execution.context)
+                execution.execute(context)
             self.assertEqual(0, mock.call_count)
-            self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, step_execution.status)
+
+        self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, execution.status)
 
     def test_execute_invoke_participant_with_on_reply(self):
-        saga_definition = (
-            Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).on_reply("foo", foo_fn_raises).commit()
-        )
-        saga_execution = SagaExecution.from_saga(saga_definition)
-        step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
+        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
+        context = SagaContext()
+        execution = SagaExecutionStep(step)
 
-        with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
+        with _PUBLISH_MOCKER as mock:
             with self.assertRaises(MinosSagaPausedExecutionStepException):
-                step_execution.execute(saga_execution.context)
-            self.assertEqual(SagaStepStatus.PausedOnReply, step_execution.status)
+                execution.execute(context)
+            self.assertEqual(1, mock.call_count)
+
+            self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
+
+        execution.execute(context, response=Foo("foo"))
+        self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_on_reply(self):
-        saga_definition = (
-            Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo).commit()
-        )
-        saga_execution = SagaExecution.from_saga(saga_definition)
-        step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
+        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
+        context = SagaContext()
+        execution = SagaExecutionStep(step)
 
-        context = step_execution.execute(saga_execution.context, response=Foo("foo"))
+        context = execution.execute(context, response=Foo("foo"))
         self.assertEqual(SagaContext({"foo": Foo("foo")}), context)
-        self.assertEqual(SagaStepStatus.Finished, step_execution.status)
+        self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_on_reply_errored(self):
-        saga_definition = (
-            Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).on_reply("foo", foo_fn_raises).commit()
-        )
-        saga_execution = SagaExecution.from_saga(saga_definition)
-        step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
+        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", foo_fn_raises)
+        context = SagaContext()
+        execution = SagaExecutionStep(step)
 
         with self.assertRaises(MinosSagaFailedExecutionStepException):
-            step_execution.execute(saga_execution.context, response=Foo("foo"))
-        self.assertEqual(SagaStepStatus.ErroredOnReply, step_execution.status)
+            execution.execute(context, response=Foo("foo"))
+
+        self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
+
+    def test_rollback(self):
+        step = (
+            SagaStep()
+            .invoke_participant("FooAdd", foo_fn)
+            .with_compensation("FooDelete", foo_fn)
+            .on_reply("foo", foo_fn_raises)
+        )
+        context = SagaContext()
+        execution = SagaExecutionStep(step)
+
+        with _PUBLISH_MOCKER as mock:
+            execution.rollback(context)
+            self.assertEqual(1, mock.call_count)
+
+            mock.reset_mock()
+            execution.rollback(context)
+            self.assertEqual(0, mock.call_count)
 
 
 if __name__ == "__main__":

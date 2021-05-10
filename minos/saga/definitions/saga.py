@@ -10,7 +10,6 @@ from __future__ import (
     annotations,
 )
 
-import asyncio
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -35,11 +34,8 @@ if TYPE_CHECKING:
 class Saga(MinosBaseSagaBuilder):
     """TODO"""
 
-    def __init__(
-        self, name, loop: asyncio.AbstractEventLoop = None,
-    ):
+    def __init__(self, name: str):
         self.name = name
-        self.loop = loop or asyncio.get_event_loop()
         self.steps = list()
 
     def step(self, step: Optional[SagaStep] = None) -> SagaStep:
