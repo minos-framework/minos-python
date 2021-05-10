@@ -5,18 +5,10 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from minos.common.configuration.config import (
-    MinosConfig,
-)
-from typing import (
-    Any,
-)
-from ..dispatcher import (
-    MinosHandlerDispatcher,
-)
-from minos.common import (
-    Event,
-)
+from minos.common.configuration.config import MinosConfig
+from typing import Any
+from ..dispatcher import MinosHandlerDispatcher
+from minos.common import Event
 
 
 class MinosEventHandlerDispatcher(MinosHandlerDispatcher):

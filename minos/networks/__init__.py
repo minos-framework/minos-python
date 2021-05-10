@@ -26,7 +26,6 @@ from .handler import (
     MinosCommandReplyHandlerServer,
     MinosCommandReplyPeriodicService,
     MinosCommandReplyServerService,
-
 )
 from .exceptions import (
     MinosNetworkException,

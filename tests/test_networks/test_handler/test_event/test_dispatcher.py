@@ -1,18 +1,10 @@
 import datetime
 
 import aiopg
-from minos.common import (
-    Event,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from minos.networks import (
-    MinosEventHandlerDispatcher,
-)
-from minos.networks.exceptions import (
-    MinosNetworkException,
-)
+from minos.common import Event
+from minos.common.testing import PostgresAsyncTestCase
+from minos.networks import MinosEventHandlerDispatcher
+from minos.networks.exceptions import MinosNetworkException
 from tests.utils import (
     BASE_PATH,
     NaiveAggregate,
@@ -105,8 +97,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
     async def test_event_queue_checker_wrong_event(self):
         handler = MinosEventHandlerDispatcher.from_config(config=self.config)
         await handler.setup()
-        bin_data =  bytes(b'Test')
-
+        bin_data = bytes(b"Test")
 
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -130,4 +121,3 @@ class TestEventDispatcher(PostgresAsyncTestCase):
                 records = await cur.fetchone()
 
         assert records[0] == 1
-

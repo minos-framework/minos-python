@@ -1,15 +1,7 @@
-from collections import (
-    namedtuple,
-)
-from minos.common import (
-    Event,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from minos.networks import (
-    MinosEventHandlerServer,
-)
+from collections import namedtuple
+from minos.common import Event
+from minos.common.testing import PostgresAsyncTestCase
+from minos.networks import MinosEventHandlerServer
 from tests.utils import (
     BASE_PATH,
     NaiveAggregate,

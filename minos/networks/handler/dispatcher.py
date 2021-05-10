@@ -5,9 +5,7 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 from abc import abstractmethod
 from typing import (
@@ -19,22 +17,12 @@ from typing import (
 )
 
 import aiopg
-from minos.common.configuration.config import (
-    MinosConfig,
-)
-from minos.common.importlib import (
-    import_module,
-)
-from minos.common.logs import (
-    log,
-)
-from minos.networks.exceptions import (
-    MinosNetworkException,
-)
+from minos.common.configuration.config import MinosConfig
+from minos.common.importlib import import_module
+from minos.common.logs import log
+from minos.networks.exceptions import MinosNetworkException
 
-from minos.networks.handler.abc import (
-    MinosHandlerSetup,
-)
+from minos.networks.handler.abc import MinosHandlerSetup
 
 
 class MinosHandlerDispatcher(MinosHandlerSetup):
@@ -51,9 +39,7 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
             f"dbname={config.queue.database} user={config.queue.user} "
             f"password={config.queue.password} host={config.queue.host}"
         )
-        self._handlers = {
-            item.name: {"controller": item.controller, "action": item.action} for item in config.items
-        }
+        self._handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._event_items = config.items
         self._topics = list(self._handlers.keys())
         self._conf = config

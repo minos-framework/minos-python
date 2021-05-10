@@ -6,18 +6,10 @@
 # permission of Clariteia SL.
 import collections
 
-from minos.common.configuration.config import (
-    MinosConfig,
-)
-from typing import (
-    Any,
-)
-from ..dispatcher import (
-    MinosHandlerDispatcher,
-)
-from minos.common import (
-    CommandReply,
-)
+from minos.common.configuration.config import MinosConfig
+from typing import Any
+from ..dispatcher import MinosHandlerDispatcher
+from minos.common import CommandReply
 
 
 class MinosCommandReplyHandlerDispatcher(MinosHandlerDispatcher):

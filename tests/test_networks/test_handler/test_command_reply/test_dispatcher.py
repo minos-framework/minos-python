@@ -1,18 +1,10 @@
 import datetime
 
 import aiopg
-from minos.common import (
-    CommandReply,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from minos.networks import (
-    MinosCommandReplyHandlerDispatcher,
-)
-from minos.networks.exceptions import (
-    MinosNetworkException,
-)
+from minos.common import CommandReply
+from minos.common.testing import PostgresAsyncTestCase
+from minos.networks import MinosCommandReplyHandlerDispatcher
+from minos.networks.exceptions import MinosNetworkException
 from tests.utils import (
     BASE_PATH,
     NaiveAggregate,
@@ -45,7 +37,14 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
 
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = CommandReply(topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
+        event_instance = CommandReply(
+            topic="AddOrder",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
         m = MinosCommandReplyHandlerDispatcher.from_config(config=self.config)
 
         cls = m.get_event_handler(topic=event_instance.topic)
@@ -55,7 +54,14 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
 
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = CommandReply(topic="NotExisting", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
+        instance = CommandReply(
+            topic="NotExisting",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
         m = MinosCommandReplyHandlerDispatcher.from_config(config=self.config)
 
         with self.assertRaises(MinosNetworkException) as context:
@@ -85,7 +91,14 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
                 await cur.execute("DELETE FROM {table};".format(table=MinosCommandReplyHandlerDispatcher.TABLE))
 
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = CommandReply(topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
+        instance = CommandReply(
+            topic="AddOrder",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
         bin_data = instance.avro_bytes
         CommandReply.from_avro_bytes(bin_data)
 
@@ -124,7 +137,7 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
             async with connect.cursor() as cur:
                 await cur.execute("DELETE FROM {table};".format(table=MinosCommandReplyHandlerDispatcher.TABLE))
 
-        bin_data =  bytes(b'Test')
+        bin_data = bytes(b"Test")
 
         async with aiopg.connect(**self._meta_saga_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -146,7 +159,5 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
             async with connect.cursor() as cur:
                 await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
                 records = await cur.fetchone()
-
-
 
         assert records[0] == 1

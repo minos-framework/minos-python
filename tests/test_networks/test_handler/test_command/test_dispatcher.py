@@ -1,18 +1,10 @@
 import datetime
 
 import aiopg
-from minos.common import (
-    Command,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from minos.networks import (
-    MinosCommandHandlerDispatcher,
-)
-from minos.networks.exceptions import (
-    MinosNetworkException,
-)
+from minos.common import Command
+from minos.common.testing import PostgresAsyncTestCase
+from minos.networks import MinosCommandHandlerDispatcher
+from minos.networks.exceptions import MinosNetworkException
 from tests.utils import (
     BASE_PATH,
     NaiveAggregate,
@@ -43,7 +35,14 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
 
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = Command(topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
+        event_instance = Command(
+            topic="AddOrder",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
         m = MinosCommandHandlerDispatcher.from_config(config=self.config)
 
         cls = m.get_event_handler(topic=event_instance.topic)
@@ -53,7 +52,14 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
 
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = Command(topic="NotExisting", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
+        instance = Command(
+            topic="NotExisting",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
         m = MinosCommandHandlerDispatcher.from_config(config=self.config)
 
         with self.assertRaises(MinosNetworkException) as context:
@@ -75,7 +81,14 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
         await handler.setup()
 
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = Command(topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
+        instance = Command(
+            topic="AddOrder",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
         bin_data = instance.avro_bytes
         Command.from_avro_bytes(bin_data)
 
@@ -105,8 +118,7 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
     async def test_event_queue_checker_wrong_event(self):
         handler = MinosCommandHandlerDispatcher.from_config(config=self.config)
         await handler.setup()
-        bin_data =  bytes(b'Test')
-
+        bin_data = bytes(b"Test")
 
         async with aiopg.connect(**self.commands_queue_db) as connect:
             async with connect.cursor() as cur:

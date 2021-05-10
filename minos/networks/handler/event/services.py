@@ -6,23 +6,15 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-from typing import (
-    Any,
-)
+from typing import Any
 from aiomisc.service.periodic import (
     PeriodicService,
     Service,
 )
-from minos.common import (
-    MinosConfig,
-)
+from minos.common import MinosConfig
 
-from .dispatcher import (
-    MinosEventHandlerDispatcher,
-)
-from .server import (
-    MinosEventHandlerServer,
-)
+from .dispatcher import MinosEventHandlerDispatcher
+from .server import MinosEventHandlerServer
 
 
 class MinosEventServerService(Service):
@@ -40,8 +32,9 @@ class MinosEventServerService(Service):
         """
         await self.dispatcher.setup()
 
-        self.consumer = await self.dispatcher.kafka_consumer(self.dispatcher._topics, self.dispatcher._broker_group_name,
-                                                        self.dispatcher._kafka_conn_data)
+        self.consumer = await self.dispatcher.kafka_consumer(
+            self.dispatcher._topics, self.dispatcher._broker_group_name, self.dispatcher._kafka_conn_data
+        )
         await self.dispatcher.handle_message(self.consumer)
 
     async def stop(self, exception: Exception = None) -> Any:

@@ -6,13 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-from .server import (
-    MinosCommandReplyHandlerServer,
-)
+from .server import MinosCommandReplyHandlerServer
 from .services import (
     MinosCommandReplyPeriodicService,
     MinosCommandReplyServerService,
 )
-from .dispatcher import (
-    MinosCommandReplyHandlerDispatcher,
-)
+from .dispatcher import MinosCommandReplyHandlerDispatcher

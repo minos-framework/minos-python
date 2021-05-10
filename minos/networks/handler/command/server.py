@@ -5,18 +5,10 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from minos.common.configuration.config import (
-    MinosConfig,
-)
-from typing import (
-    Any,
-)
-from ..server import (
-    MinosHandlerServer,
-)
-from minos.common import (
-    Command,
-)
+from minos.common.configuration.config import MinosConfig
+from typing import Any
+from ..server import MinosHandlerServer
+from minos.common import Command
 
 
 class MinosCommandHandlerServer(MinosHandlerServer):

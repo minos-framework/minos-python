@@ -1,17 +1,11 @@
-from unittest.mock import (
-    MagicMock,
-)
+from unittest.mock import MagicMock
 
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     MinosCommandReplyPeriodicService,
     MinosCommandReplyServerService,
 )
-from tests.utils import (
-    BASE_PATH,
-)
+from tests.utils import BASE_PATH
 
 
 class TestMinosCommandReplyServices(PostgresAsyncTestCase):

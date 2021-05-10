@@ -1,6 +1,4 @@
-from minos.common import (
-    Command,
-)
+from minos.common import Command
 
 
 class CommandService(object):

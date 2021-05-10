@@ -1,6 +1,4 @@
-from minos.common import (
-    CommandReply,
-)
+from minos.common import CommandReply
 
 
 class SagaService(object):
@@ -9,4 +7,3 @@ class SagaService(object):
 
     async def delete_order(self, topic: str, command: CommandReply):
         return "delete_order_saga"
-
