@@ -28,10 +28,6 @@ from tests.utils import (
 )
 
 
-def _callback():
-    ...
-
-
 class TestSagaStep(unittest.TestCase):
     def test_invoke_participant_multiple_raises(self):
         with self.assertRaises(MinosMultipleInvokeParticipantException):
@@ -43,7 +39,7 @@ class TestSagaStep(unittest.TestCase):
 
     def test_on_reply_multiple_raises(self):
         with self.assertRaises(MinosMultipleOnReplyException):
-            SagaStep().on_reply("foo", _callback).on_reply("foo", _callback)
+            SagaStep().on_reply("foo").on_reply("foo")
 
     def test_step_validates(self):
         step = SagaStep(Saga("SagaTest"))
