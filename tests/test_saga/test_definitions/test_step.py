@@ -80,9 +80,9 @@ class TestSagaStep(unittest.TestCase):
 
         step = SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
         expected = {
-            "raw_invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
-            "raw_with_compensation": {"callback": foo_fn, "name": "FooDelete",},
-            "raw_on_reply": {"callback": identity_fn, "name": "foo",},
+            "invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
+            "with_compensation": {"callback": foo_fn, "name": "FooDelete",},
+            "on_reply": {"callback": identity_fn, "name": "foo",},
         }
         self.assertEqual(expected, step.raw)
 
@@ -92,9 +92,9 @@ class TestSagaStep(unittest.TestCase):
         )
 
         raw = {
-            "raw_invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
-            "raw_with_compensation": {"callback": foo_fn, "name": "FooDelete",},
-            "raw_on_reply": {"callback": identity_fn, "name": "foo",},
+            "invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
+            "with_compensation": {"callback": foo_fn, "name": "FooDelete",},
+            "on_reply": {"callback": identity_fn, "name": "foo",},
         }
 
         expected = (

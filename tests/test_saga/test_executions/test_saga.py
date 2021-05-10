@@ -145,14 +145,14 @@ class TestSagaExecution(unittest.TestCase):
                 "name": "OrdersAdd",
                 "steps": [
                     {
-                        "raw_invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
-                        "raw_on_reply": {"callback": identity_fn, "name": "order1"},
-                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
+                        "on_reply": {"callback": identity_fn, "name": "order1"},
+                        "with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
                     },
                     {
-                        "raw_invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
-                        "raw_on_reply": {"callback": foo_fn_raises, "name": "order2"},
-                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
+                        "on_reply": {"callback": foo_fn_raises, "name": "order2"},
+                        "with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
                     },
                 ],
             },
@@ -174,23 +174,23 @@ class TestSagaExecution(unittest.TestCase):
                 "name": "OrdersAdd",
                 "steps": [
                     {
-                        "raw_invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
-                        "raw_on_reply": {"callback": identity_fn, "name": "order1"},
-                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
+                        "on_reply": {"callback": identity_fn, "name": "order1"},
+                        "with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
                     },
                     {
-                        "raw_invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
-                        "raw_on_reply": {"callback": foo_fn_raises, "name": "order2"},
-                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
+                        "on_reply": {"callback": foo_fn_raises, "name": "order2"},
+                        "with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
                     },
                 ],
             },
             "executed_steps": [
                 {
                     "definition": {
-                        "raw_invoke_participant": {"name": "CreateOrder", "callback": create_order_callback},
-                        "raw_with_compensation": {"name": "DeleteOrder", "callback": delete_order_callback},
-                        "raw_on_reply": {"name": "order1", "callback": identity_fn},
+                        "invoke_participant": {"name": "CreateOrder", "callback": create_order_callback},
+                        "with_compensation": {"name": "DeleteOrder", "callback": delete_order_callback},
+                        "on_reply": {"name": "order1", "callback": identity_fn},
                     },
                     "status": "finished",
                     "already_rollback": False,

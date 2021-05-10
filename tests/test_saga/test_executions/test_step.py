@@ -117,9 +117,9 @@ class TestSagaExecutionStep(unittest.TestCase):
         expected = {
             "already_rollback": False,
             "definition": {
-                "raw_invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
-                "raw_on_reply": {"callback": identity_fn, "name": "foo"},
-                "raw_with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+                "invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
+                "on_reply": {"callback": identity_fn, "name": "foo"},
+                "with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
             },
             "status": "created",
         }
@@ -133,9 +133,9 @@ class TestSagaExecutionStep(unittest.TestCase):
         raw = {
             "already_rollback": False,
             "definition": {
-                "raw_invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
-                "raw_on_reply": {"callback": identity_fn, "name": "foo"},
-                "raw_with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+                "invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
+                "on_reply": {"callback": identity_fn, "name": "foo"},
+                "with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
             },
             "status": "created",
         }
