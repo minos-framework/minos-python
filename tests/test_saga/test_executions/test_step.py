@@ -18,6 +18,7 @@ from minos.saga import (
     SagaContext,
     SagaExecution,
     SagaExecutionStep,
+    SagaStep,
     SagaStepStatus,
 )
 from tests.utils import (
@@ -89,11 +90,7 @@ class TestSagaExecutionStep(unittest.TestCase):
         )
 
         definition = (
-            Saga("FooCreation")
-            .step()
-            .invoke_participant("CreateFoo", foo_fn)
-            .with_compensation("DeleteFoo", foo_fn)
-            .on_reply("foo")
+            SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")
         )
         execution = SagaExecutionStep(None, definition)
 
@@ -107,6 +104,27 @@ class TestSagaExecutionStep(unittest.TestCase):
             "status": "created",
         }
         self.assertEqual(expected, execution.raw)
+
+    def test_from_raw(self):
+        from minos.saga.definitions.step import (
+            identity_fn,
+        )
+
+        raw = {
+            "already_rollback": False,
+            "definition": {
+                "raw_invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
+                "raw_on_reply": {"callback": identity_fn, "name": "foo"},
+                "raw_with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+            },
+            "status": "created",
+        }
+        expected = SagaExecutionStep(
+            None,
+            (SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")),
+        )
+        observed = SagaExecutionStep.from_raw(raw, execution=None)
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":

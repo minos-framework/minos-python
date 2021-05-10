@@ -72,6 +72,20 @@ class SagaStep(object):
         self.raw_with_compensation = raw_with_compensation
         self.raw_on_reply = raw_on_reply
 
+    @classmethod
+    def from_raw(cls, raw: dict[str, Any], **kwargs) -> SagaStep:
+        """TODO
+
+        :param raw: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        current = raw | kwargs
+        return cls(**current)
+
     def invoke_participant(self, name: Union[str, list], callback: CallBack) -> SagaStep:
         """TODO
 
@@ -146,7 +160,7 @@ class SagaStep(object):
             raise MinosUndefinedInvokeParticipantException()
 
     @property
-    def raw(self) -> [dict[str, Any]]:
+    def raw(self) -> dict[str, Any]:
         """TODO
 
         :return: TODO
@@ -156,3 +170,16 @@ class SagaStep(object):
             "raw_with_compensation": self.raw_with_compensation,
             "raw_on_reply": self.raw_on_reply,
         }
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.raw_invoke_participant,
+            self.raw_with_compensation,
+            self.raw_on_reply,
+        )

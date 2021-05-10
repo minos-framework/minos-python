@@ -127,6 +127,41 @@ class TestSaga(unittest.TestCase):
         }
         self.assertEqual(expected, saga.raw)
 
+    def test_from_raw(self):
+        raw = {
+            "name": "CreateShipment",
+            "steps": [
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateOrder"},
+                    "raw_on_reply": None,
+                    "raw_with_compensation": {"callback": foo_fn, "name": "DeleteOrder"},
+                },
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateTicket"},
+                    "raw_on_reply": {"callback": create_ticket_on_reply_callback, "name": "ticket"},
+                    "raw_with_compensation": None,
+                },
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "VerifyConsumer"},
+                    "raw_on_reply": None,
+                    "raw_with_compensation": None,
+                },
+            ],
+        }
+        expected = (
+            Saga("CreateShipment")
+            .step()
+            .invoke_participant("CreateOrder", foo_fn)
+            .with_compensation("DeleteOrder", foo_fn)
+            .step()
+            .invoke_participant("CreateTicket", foo_fn)
+            .on_reply("ticket", create_ticket_on_reply_callback)
+            .step()
+            .invoke_participant("VerifyConsumer", foo_fn)
+            .commit()
+        )
+        self.assertEqual(expected, Saga.from_raw(raw))
+
 
 if __name__ == "__main__":
     unittest.main()

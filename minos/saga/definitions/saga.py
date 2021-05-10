@@ -45,6 +45,25 @@ class Saga(MinosBaseSagaBuilder):
         self.loop = loop or asyncio.get_event_loop()
         self.steps = steps
 
+    @classmethod
+    def from_raw(cls, raw: dict[str, Any], **kwargs) -> Saga:
+        """TODO
+
+        :param raw: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        current = raw | kwargs
+        steps = (SagaStep.from_raw(step) for step in current.pop("steps"))
+
+        instance = cls(**current)
+        for step in steps:
+            instance.step(step)
+        return instance
+
     def step(self, step: Optional[SagaStep] = None) -> SagaStep:
         """TODO
 
@@ -81,3 +100,15 @@ class Saga(MinosBaseSagaBuilder):
             "name": self.name,
             "steps": [step.raw for step in self.steps],
         }
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.name,
+            self.steps,
+        )

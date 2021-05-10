@@ -42,13 +42,15 @@ class SagaExecution(object):
         self,
         definition: Saga,
         uuid: UUID,
-        steps: [SagaExecutionStep],
         context: SagaContext,
-        status: SagaStatus,
+        status: SagaStatus = SagaStatus.Created,
+        steps: [SagaExecutionStep] = None,
         already_rollback: bool = False,
         *args,
         **kwargs
     ):
+        if steps is None:
+            steps = list()
 
         self.uuid = uuid
         self.definition = definition
@@ -65,6 +67,35 @@ class SagaExecution(object):
         }
 
     @classmethod
+    def from_raw(cls, raw: dict[str, Any], **kwargs):
+        """TODO
+
+        :param raw: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        current = raw | kwargs
+        current["definition"] = Saga.from_raw(current["definition"])
+        current["status"] = SagaStatus.from_raw(current["status"])
+
+        if isinstance(current["uuid"], str):
+            current["uuid"] = UUID(current["uuid"])
+
+        instance = cls(**current)
+
+        executed_steps = (
+            SagaExecutionStep.from_raw(executed_step, definition=step, execution=instance)
+            for step, executed_step in zip(instance.definition.steps, raw.pop("executed_steps"))
+        )
+        for executed_step in executed_steps:
+            instance._add_executed(executed_step)
+
+        return instance
+
+    @classmethod
     def from_saga(cls, definition: Saga, *args, **kwargs):
         """TODO
 
@@ -75,7 +106,7 @@ class SagaExecution(object):
             uuid4,
         )
 
-        return cls(definition, uuid4(), list(), SagaContext(), SagaStatus.Created, *args, **kwargs)
+        return cls(definition, uuid4(), SagaContext(), *args, **kwargs)
 
     def execute(self, response: Optional[Any] = None):
         """TODO
@@ -147,3 +178,19 @@ class SagaExecution(object):
             "context": self.context,
             "already_rollback": self.already_rollback,
         }
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.definition,
+            self.uuid,
+            self.status,
+            self.executed_steps,
+            self.context,
+            self.already_rollback,
+        )

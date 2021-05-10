@@ -58,6 +58,22 @@ class SagaExecutionStep(object):
         self.status = status
         self.already_rollback = already_rollback
 
+    @classmethod
+    def from_raw(cls, raw: dict[str, Any], **kwargs) -> SagaExecutionStep:
+        """TODO
+
+        :param raw: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        current = raw | kwargs
+        current["definition"] = SagaStep.from_raw(current["definition"])
+        current["status"] = SagaStepStatus.from_raw(current["status"])
+        return cls(**current)
+
     def execute(self, context: SagaContext, response: Optional[Any] = None) -> SagaContext:
         """TODO
 
@@ -139,3 +155,16 @@ class SagaExecutionStep(object):
             "status": self.status.raw,
             "already_rollback": self.already_rollback,
         }
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.definition,
+            self.status,
+            self.already_rollback,
+        )

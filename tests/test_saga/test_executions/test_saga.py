@@ -138,6 +138,52 @@ class TestSagaExecution(unittest.TestCase):
         }
         self.assertEqual(expected, execution.raw)
 
+    def test_from_raw(self):
+        from minos.saga.definitions.step import (
+            identity_fn,
+        )
+
+        raw = {
+            "already_rollback": False,
+            "context": SagaContext(),
+            "definition": {
+                "name": "OrdersAdd",
+                "steps": [
+                    {
+                        "raw_invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
+                        "raw_on_reply": {"callback": identity_fn, "name": "order1"},
+                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                    },
+                    {
+                        "raw_invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
+                        "raw_on_reply": {"callback": foo_fn_raises, "name": "order2"},
+                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                    },
+                ],
+            },
+            "executed_steps": [],
+            "status": "created",
+            "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
+        }
+
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1")
+            .step()
+            .invoke_participant("CreateTicket", create_ticket_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order2", foo_fn_raises)
+            .commit()
+        )
+        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+            expected = SagaExecution.from_saga(saga)
+
+        observed = SagaExecution.from_raw(raw)
+        self.assertEqual(expected, observed)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -86,6 +86,22 @@ class TestSagaStep(unittest.TestCase):
         }
         self.assertEqual(expected, step.raw)
 
+    def test_from_raw(self):
+        from minos.saga.definitions.step import (
+            identity_fn,
+        )
+
+        raw = {
+            "raw_invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
+            "raw_with_compensation": {"callback": foo_fn, "name": "FooDelete",},
+            "raw_on_reply": {"callback": identity_fn, "name": "foo",},
+        }
+
+        expected = (
+            SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
+        )
+        self.assertEqual(expected, SagaStep.from_raw(raw))
+
 
 if __name__ == "__main__":
     unittest.main()

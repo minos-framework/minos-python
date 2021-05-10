@@ -23,6 +23,18 @@ class SagaStatus(Enum):
     Finished = "finished"
     Errored = "errored"
 
+    @classmethod
+    def from_raw(cls, raw: str) -> SagaStatus:
+        """TODO
+
+        :param raw: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        return next(obj for obj in cls if obj.value == raw)
+
     @property
     def raw(self) -> str:
         """TODO
@@ -46,6 +58,18 @@ class SagaStepStatus(Enum):
     PausedOnReply = "paused-on-reply"
     ErroredOnReply = "errored-on-reply"
     Finished = "finished"
+
+    @classmethod
+    def from_raw(cls, raw: str) -> SagaStepStatus:
+        """TODO
+
+        :param raw: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        return next(obj for obj in cls if obj.value == raw)
 
     @property
     def raw(self) -> str:
