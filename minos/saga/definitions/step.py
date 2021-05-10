@@ -20,6 +20,11 @@ from typing import (
     Union,
 )
 
+from minos.common import (
+    classname,
+    import_module,
+)
+
 from ..exceptions import (
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
@@ -65,8 +70,11 @@ class SagaStepOperation(object):
 
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO"""
-        return {"name": self.name, "callback": self.callback}
+        """TODO
+
+        :return: TODO
+        """
+        return {"name": self.name, "callback": classname(self.callback)}
 
     @classmethod
     def from_raw(cls, raw: dict[str, Any], **kwargs) -> Optional[SagaStepOperation]:
@@ -79,6 +87,8 @@ class SagaStepOperation(object):
         if raw is None:
             return None
         current = raw | kwargs
+        if isinstance(current["callback"], str):
+            current["callback"] = import_module(current["callback"])
         return cls(**current)
 
     def __eq__(self, other: SagaStep) -> bool:

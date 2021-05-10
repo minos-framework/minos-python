@@ -117,9 +117,9 @@ class TestSagaExecutionStep(unittest.TestCase):
         expected = {
             "already_rollback": False,
             "definition": {
-                "invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
-                "on_reply": {"callback": identity_fn, "name": "foo"},
-                "with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+                "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
+                "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo"},
+                "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
             },
             "status": "created",
         }

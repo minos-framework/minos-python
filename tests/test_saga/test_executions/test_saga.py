@@ -145,14 +145,26 @@ class TestSagaExecution(unittest.TestCase):
                 "name": "OrdersAdd",
                 "steps": [
                     {
-                        "invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
-                        "on_reply": {"callback": identity_fn, "name": "order1"},
-                        "with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_order_callback",
+                            "name": "CreateOrder",
+                        },
+                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                     {
-                        "invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
-                        "on_reply": {"callback": foo_fn_raises, "name": "order2"},
-                        "with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_ticket_callback",
+                            "name": "CreateTicket",
+                        },
+                        "on_reply": {"callback": "tests.utils.foo_fn_raises", "name": "order2"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                 ],
             },
