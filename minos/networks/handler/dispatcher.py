@@ -9,13 +9,15 @@ from __future__ import (
     annotations,
 )
 
-from abc import abstractmethod
+from abc import (
+    abstractmethod,
+)
 from typing import (
     Any,
     Callable,
+    NamedTuple,
     NoReturn,
     Optional,
-    NamedTuple,
 )
 
 import aiopg
@@ -31,7 +33,6 @@ from minos.common.logs import (
 from minos.networks.exceptions import (
     MinosNetworkException,
 )
-
 from minos.networks.handler.abc import (
     MinosHandlerSetup,
 )
@@ -51,9 +52,7 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
             f"dbname={config.queue.database} user={config.queue.user} "
             f"password={config.queue.password} host={config.queue.host}"
         )
-        self._handlers = {
-            item.name: {"controller": item.controller, "action": item.action} for item in config.items
-        }
+        self._handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._event_items = config.items
         self._topics = list(self._handlers.keys())
         self._conf = config

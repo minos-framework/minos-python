@@ -1,6 +1,7 @@
 from collections import (
     namedtuple,
 )
+
 from minos.common import (
     Event,
 )

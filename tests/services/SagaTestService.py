@@ -9,4 +9,3 @@ class SagaService(object):
 
     async def delete_order(self, topic: str, command: CommandReply):
         return "delete_order_saga"
-

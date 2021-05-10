@@ -9,24 +9,30 @@ from __future__ import (
     annotations,
 )
 
-from abc import abstractmethod
-
-from aiokafka import AIOKafkaConsumer
-from psycopg2.extensions import AsIs
 import asyncio
 import datetime
+from abc import (
+    abstractmethod,
+)
 from typing import (
     Any,
     AsyncIterator,
-    Optional,
     NamedTuple,
+    Optional,
 )
+
 import aiopg
+from aiokafka import (
+    AIOKafkaConsumer,
+)
 from minos.common.configuration.config import (
     MinosConfig,
 )
 from minos.networks.handler.abc import (
     MinosHandlerSetup,
+)
+from psycopg2.extensions import (
+    AsIs,
 )
 
 
@@ -38,7 +44,6 @@ class MinosHandlerServer(MinosHandlerSetup):
 
     """
 
-
     __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_broker_group_name"
 
     def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
@@ -48,9 +53,7 @@ class MinosHandlerServer(MinosHandlerSetup):
             f"dbname={config.queue.database} user={config.queue.user} "
             f"password={config.queue.password} host={config.queue.host}"
         )
-        self._handler = {
-            item.name: {"controller": item.controller, "action": item.action} for item in config.items
-        }
+        self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._topics = list(self._handler.keys())
         self._table_name = table_name
 
@@ -139,11 +142,7 @@ class MinosHandlerServer(MinosHandlerSetup):
     @staticmethod
     async def kafka_consumer(topics: list, group_name: str, conn: str):
         # start the Service Event Consumer for Kafka
-        consumer = AIOKafkaConsumer(
-            group_id=group_name,
-            auto_offset_reset="latest",
-            bootstrap_servers=conn,
-        )
+        consumer = AIOKafkaConsumer(group_id=group_name, auto_offset_reset="latest", bootstrap_servers=conn,)
 
         await consumer.start()
         consumer.subscribe(topics)

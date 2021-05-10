@@ -1,6 +1,7 @@
 from collections import (
     namedtuple,
 )
+
 from minos.common import (
     CommandReply,
 )
@@ -30,7 +31,14 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
 
     async def test_queue_add(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = CommandReply(topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
+        event_instance = CommandReply(
+            topic="AddOrder",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
         bin_data = event_instance.avro_bytes
         CommandReply.from_avro_bytes(bin_data)
 
@@ -47,7 +55,14 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
         await event_server.setup()
 
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = CommandReply(topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
+        event_instance = CommandReply(
+            topic="AddOrder",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
         bin_data = event_instance.avro_bytes
 
         Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
