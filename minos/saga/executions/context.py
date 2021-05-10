@@ -14,6 +14,7 @@ from minos.common import (
     MinosModel,
     MinosModelException,
     ModelField,
+    classname,
     import_module,
 )
 from minos.common.meta import (
@@ -29,7 +30,7 @@ class SagaContext(MinosModel):
     def __init__(self, **kwargs):
         types_ = kwargs.pop("types_", None)
         if types_ is None:
-            types_ = {k: v.classname for k, v in kwargs.items()}
+            types_ = {k: classname(type(v)) for k, v in kwargs.items()}
         super().__init__(types_=types_, **kwargs)
 
     def update(self, key: str, value: MinosModel) -> NoReturn:
@@ -45,7 +46,7 @@ class SagaContext(MinosModel):
         try:
             super().__setattr__(key, value)
         except MinosModelException:
-            self.types_[key] = value.classname
+            self.types_[key] = classname(type(value))
             self._fields[key] = ModelField(key, type(value), value)
 
     # noinspection PyMethodParameters
