@@ -17,12 +17,10 @@ from minos.saga import (
     MinosMultipleWithCompensationException,
     MinosSagaEmptyStepException,
     MinosSagaNotDefinedException,
+    MinosUndefinedInvokeParticipantException,
     Saga,
     SagaStep,
     SagaStepOperation,
-)
-from minos.saga.exceptions import (
-    MinosUndefinedInvokeParticipantException,
 )
 from tests.utils import (
     foo_fn,
