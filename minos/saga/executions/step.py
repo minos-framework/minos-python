@@ -81,7 +81,7 @@ class SagaExecutionStep(object):
         except MinosSagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedOnReply
             raise exc
-        except Exception as e:
+        except Exception:
             self.status = SagaStepStatus.ErroredOnReply
             self.rollback(context, *args, **kwargs)
             raise MinosSagaFailedExecutionStepException()

@@ -23,9 +23,6 @@ from ..exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
 )
-from ..storage import (
-    MinosSagaStorage,
-)
 from .context import (
     SagaContext,
 )
