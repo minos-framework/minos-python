@@ -7,12 +7,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from typing import (
     Any,
+    Iterable,
     NoReturn,
     Optional,
 )
 from uuid import (
     UUID,
-    uuid4,
 )
 
 from ..definitions import (
@@ -22,9 +22,6 @@ from ..definitions import (
 from ..exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
-)
-from ..storage import (
-    MinosSagaStorage,
 )
 from .context import (
     SagaContext,
@@ -48,6 +45,7 @@ class SagaExecution(object):
         steps: [SagaExecutionStep],
         context: SagaContext,
         status: SagaStatus,
+        already_rollback: bool = False,
         *args,
         **kwargs
     ):
@@ -57,7 +55,7 @@ class SagaExecution(object):
         self.executed_steps = steps
         self.context = context
         self.status = status
-        self.already_rollback = False
+        self.already_rollback = already_rollback
 
         self.saga_process = {
             "name": self.definition.name,
@@ -73,6 +71,10 @@ class SagaExecution(object):
         :param definition: TODO
         :return: TODO
         """
+        from uuid import (
+            uuid4,
+        )
+
         return cls(definition, uuid4(), list(), SagaContext(), SagaStatus.Created, *args, **kwargs)
 
     def execute(self, response: Optional[Any] = None):
@@ -130,3 +132,18 @@ class SagaExecution(object):
         :return: TODO
         """
         self.executed_steps.append(executed_step)
+
+    @property
+    def raw(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return {
+            "definition": self.definition.raw,
+            "uuid": str(self.uuid),
+            "status": self.status.raw,
+            "executed_steps": [step.raw for step in self.executed_steps],
+            "context": self.context,
+            "already_rollback": self.already_rollback,
+        }

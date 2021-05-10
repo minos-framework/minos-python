@@ -83,6 +83,31 @@ class TestSagaExecutionStep(unittest.TestCase):
             step_execution.execute(saga_execution.context, response=Foo("foo"))
         self.assertEqual(SagaStepStatus.ErroredOnReply, step_execution.status)
 
+    def test_raw(self):
+        from minos.saga.definitions.step import (
+            identity_fn,
+        )
+
+        definition = (
+            Saga("FooCreation")
+            .step()
+            .invoke_participant("CreateFoo", foo_fn)
+            .with_compensation("DeleteFoo", foo_fn)
+            .on_reply("foo")
+        )
+        execution = SagaExecutionStep(None, definition)
+
+        expected = {
+            "already_rollback": False,
+            "definition": {
+                "raw_invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
+                "raw_on_reply": {"callback": identity_fn, "name": "foo"},
+                "raw_with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+            },
+            "status": "created",
+        }
+        self.assertEqual(expected, execution.raw)
+
 
 if __name__ == "__main__":
     unittest.main()

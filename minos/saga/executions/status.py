@@ -5,6 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from enum import (
     Enum,
 )
@@ -18,6 +22,14 @@ class SagaStatus(Enum):
     Paused = "paused"
     Finished = "finished"
     Errored = "errored"
+
+    @property
+    def raw(self) -> str:
+        """TODO
+
+        :return: TODO
+        """
+        return self.value
 
 
 class SagaStepStatus(Enum):
@@ -34,3 +46,11 @@ class SagaStepStatus(Enum):
     PausedOnReply = "paused-on-reply"
     ErroredOnReply = "errored-on-reply"
     Finished = "finished"
+
+    @property
+    def raw(self) -> str:
+        """TODO
+
+        :return: TODO
+        """
+        return self.value

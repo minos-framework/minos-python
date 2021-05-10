@@ -45,12 +45,6 @@ class OnReplyExecutor(LocalExecutor):
         if response is None:
             raise MinosSagaPausedExecutionStepException()
 
-        callback_operation = {
-            "id": str(uuid.uuid4()),
-            "type": operation["type"],
-            "name": operation["name"],
-            "callback": operation["callback"],
-        }
-        response = super().exec_one(callback_operation, response)
+        response = super().exec_one(operation, response)
         context.update(operation["name"], response)
         return context

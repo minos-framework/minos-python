@@ -13,6 +13,8 @@ from __future__ import (
 import asyncio
 from typing import (
     TYPE_CHECKING,
+    Any,
+    Iterable,
     Optional,
 )
 
@@ -35,12 +37,13 @@ if TYPE_CHECKING:
 class Saga(MinosBaseSagaBuilder):
     """TODO"""
 
-    def __init__(
-        self, name, loop: asyncio.AbstractEventLoop = None,
-    ):
+    def __init__(self, name, loop: asyncio.AbstractEventLoop = None, steps: list[SagaStep] = None):
+        if steps is None:
+            steps = list()
+
         self.name = name
         self.loop = loop or asyncio.get_event_loop()
-        self.steps = list()
+        self.steps = steps
 
     def step(self, step: Optional[SagaStep] = None) -> SagaStep:
         """TODO
@@ -67,3 +70,14 @@ class Saga(MinosBaseSagaBuilder):
         )
 
         return SagaExecution.from_saga(self, *args, **kwargs)
+
+    @property
+    def raw(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return {
+            "name": self.name,
+            "steps": [step.raw for step in self.steps],
+        }

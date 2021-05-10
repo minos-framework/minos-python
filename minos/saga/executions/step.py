@@ -12,6 +12,7 @@ from __future__ import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Iterable,
     NoReturn,
     Optional,
 )
@@ -45,11 +46,17 @@ if TYPE_CHECKING:
 class SagaExecutionStep(object):
     """TODO"""
 
-    def __init__(self, execution: SagaExecution, definition: SagaStep, status: SagaStepStatus = SagaStepStatus.Created):
+    def __init__(
+        self,
+        execution: SagaExecution,
+        definition: SagaStep,
+        status: SagaStepStatus = SagaStepStatus.Created,
+        already_rollback: bool = False,
+    ):
         self.execution = execution
         self.definition = definition
         self.status = status
-        self.already_rollback = False
+        self.already_rollback = already_rollback
 
     def execute(self, context: SagaContext, response: Optional[Any] = None) -> SagaContext:
         """TODO
@@ -120,3 +127,15 @@ class SagaExecutionStep(object):
     @property
     def _loop(self):
         return self.execution.definition.loop
+
+    @property
+    def raw(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return {
+            "definition": self.definition.raw,
+            "status": self.status.raw,
+            "already_rollback": self.already_rollback,
+        }

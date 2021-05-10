@@ -26,10 +26,4 @@ class InvokeParticipantExecutor(PublishExecutor):
     """TODO"""
 
     def _run_callback(self, operation: dict[str, Any], context: SagaContext) -> Aggregate:
-        callback_operation = {
-            "id": str(uuid.uuid4()),
-            "type": "invokeParticipant_callback",
-            "name": operation["name"],
-            "callback": operation["callback"],
-        }
-        return super().exec_one(callback_operation, context)
+        return super().exec_one(operation, context)
