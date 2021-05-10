@@ -5,13 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import uuid
 from typing import (
     Any,
 )
 
 from minos.common import (
-    Aggregate,
+    CommandReply,
 )
 
 from ...exceptions import (
@@ -29,12 +28,12 @@ class OnReplyExecutor(LocalExecutor):
     """TODO"""
 
     # noinspection PyUnusedLocal
-    def exec(self, operation: dict[str, Any], context: SagaContext, response: Aggregate = None, *args, **kwargs):
+    def exec(self, operation: dict[str, Any], context: SagaContext, reply: CommandReply, *args, **kwargs):
         """TODO
 
         :param operation: TODO
         :param context: TODO
-        :param response: TODO
+        :param reply: TODO
         :param args: TODO
         :param kwargs: TODO
         :return: TODO
@@ -42,9 +41,11 @@ class OnReplyExecutor(LocalExecutor):
         if operation is None:
             return context
 
-        if response is None:
+        if reply is None:
             raise MinosSagaPausedExecutionStepException()
 
-        response = super().exec_one(operation, response)
+        value = reply.items[0]  # FIXME: This behaviour must be parameterizable.
+
+        response = super().exec_one(operation, value)
         context.update(operation["name"], response)
         return context

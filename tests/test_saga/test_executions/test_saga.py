@@ -7,7 +7,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-import uuid
 from unittest.mock import (
     patch,
 )
@@ -31,6 +30,7 @@ from tests.callbacks import (
 )
 from tests.utils import (
     Foo,
+    fake_reply,
     foo_fn_raises,
 )
 
@@ -59,11 +59,14 @@ class TestSagaExecution(unittest.TestCase):
             execution.execute()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
+        reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(response=Foo("order1"))
+            execution.execute(reply=reply)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        context = execution.execute(response=Foo("order2"))
+        reply = fake_reply(Foo("order2"))
+        context = execution.execute(reply=reply)
+
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext({"order1": Foo("order1"), "order2": Foo("order2")}), context)
 
@@ -86,13 +89,15 @@ class TestSagaExecution(unittest.TestCase):
             execution.execute()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
+        reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(response=Foo("order1"))
+            execution.execute(reply=reply)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         with patch("minos.saga.executions.executors.with_compensation.WithCompensationExecutor.publish") as mock:
+            reply = fake_reply(Foo("order2"))
             with self.assertRaises(MinosSagaFailedExecutionStepException):
-                execution.execute(response=Foo("order2"))
+                execution.execute(reply=reply)
             self.assertEqual(SagaStatus.Errored, execution.status)
             self.assertEqual(2, mock.call_count)
 
@@ -108,7 +113,8 @@ class TestSagaExecution(unittest.TestCase):
         execution = SagaExecution.from_saga(saga)
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             execution.execute()
-        execution.execute(response=Foo("order1"))
+        reply = fake_reply(Foo("order1"))
+        execution.execute(reply=reply)
 
         with _PUBLISH_MOCKER as mock:
             execution.rollback()
@@ -219,7 +225,8 @@ class TestSagaExecution(unittest.TestCase):
             except MinosSagaPausedExecutionStepException:
                 pass
             try:
-                expected.execute(response=Foo("hola"))
+                reply = fake_reply(Foo("hola"))
+                expected.execute(reply=reply)
             except MinosSagaPausedExecutionStepException:
                 pass
 

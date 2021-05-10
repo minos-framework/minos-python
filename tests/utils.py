@@ -10,6 +10,7 @@ from pathlib import (
 )
 
 from minos.common import (
+    CommandReply,
     MinosModel,
 )
 from minos.saga import (
@@ -43,3 +44,12 @@ def foo_fn_raises(context: SagaContext) -> MinosModel:
     :return: TODO
     """
     raise ValueError()
+
+
+def fake_reply(data: MinosModel) -> CommandReply:
+    """TODO
+
+    :param data:TODO
+    :return: TODO
+    """
+    return CommandReply("FooCreated", [data], "saga_id", "task_id")

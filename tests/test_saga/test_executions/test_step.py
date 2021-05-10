@@ -21,6 +21,7 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
+    fake_reply,
     foo_fn,
     foo_fn_raises,
 )
@@ -64,7 +65,8 @@ class TestSagaExecutionStep(unittest.TestCase):
 
             self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
 
-        execution.execute(context, response=Foo("foo"))
+        reply = fake_reply(Foo("foo"))
+        execution.execute(context, reply=reply)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_on_reply(self):
@@ -72,7 +74,8 @@ class TestSagaExecutionStep(unittest.TestCase):
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
-        context = execution.execute(context, response=Foo("foo"))
+        reply = fake_reply(Foo("foo"))
+        context = execution.execute(context, reply=reply)
         self.assertEqual(SagaContext({"foo": Foo("foo")}), context)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
@@ -81,8 +84,9 @@ class TestSagaExecutionStep(unittest.TestCase):
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
+        reply = fake_reply(Foo("foo"))
         with self.assertRaises(MinosSagaFailedExecutionStepException):
-            execution.execute(context, response=Foo("foo"))
+            execution.execute(context, reply=reply)
 
         self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
 
