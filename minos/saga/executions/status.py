@@ -12,6 +12,9 @@ from __future__ import (
 from enum import (
     Enum,
 )
+from typing import (
+    Union,
+)
 
 
 class SagaStatus(Enum):
@@ -24,7 +27,7 @@ class SagaStatus(Enum):
     Errored = "errored"
 
     @classmethod
-    def from_raw(cls, raw: str) -> SagaStatus:
+    def from_raw(cls, raw: Union[str, SagaStatus]) -> SagaStatus:
         """TODO
 
         :param raw: TODO
@@ -60,7 +63,7 @@ class SagaStepStatus(Enum):
     Finished = "finished"
 
     @classmethod
-    def from_raw(cls, raw: str) -> SagaStepStatus:
+    def from_raw(cls, raw: Union[str, SagaStepStatus]) -> SagaStepStatus:
         """TODO
 
         :param raw: TODO
