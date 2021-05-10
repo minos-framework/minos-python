@@ -1,4 +1,6 @@
-from minos.common import CommandReply
+from minos.common import (
+    CommandReply,
+)
 
 
 class SagaService(object):

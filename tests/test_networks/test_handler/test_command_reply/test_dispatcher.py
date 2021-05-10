@@ -1,10 +1,18 @@
 import datetime
 
 import aiopg
-from minos.common import CommandReply
-from minos.common.testing import PostgresAsyncTestCase
-from minos.networks import MinosCommandReplyHandlerDispatcher
-from minos.networks.exceptions import MinosNetworkException
+from minos.common import (
+    CommandReply,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
+from minos.networks import (
+    MinosCommandReplyHandlerDispatcher,
+)
+from minos.networks.exceptions import (
+    MinosNetworkException,
+)
 from tests.utils import (
     BASE_PATH,
     NaiveAggregate,

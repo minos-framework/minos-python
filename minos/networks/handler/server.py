@@ -5,23 +5,35 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
-from abc import abstractmethod
-
-from aiokafka import AIOKafkaConsumer
-from psycopg2.extensions import AsIs
 import asyncio
 import datetime
+from abc import (
+    abstractmethod,
+)
 from typing import (
     Any,
     AsyncIterator,
-    Optional,
     NamedTuple,
+    Optional,
 )
+
 import aiopg
-from minos.common.configuration.config import MinosConfig
-from minos.networks.handler.abc import MinosHandlerSetup
+from aiokafka import (
+    AIOKafkaConsumer,
+)
+from minos.common.configuration.config import (
+    MinosConfig,
+)
+from minos.networks.handler.abc import (
+    MinosHandlerSetup,
+)
+from psycopg2.extensions import (
+    AsIs,
+)
 
 
 class MinosHandlerServer(MinosHandlerSetup):

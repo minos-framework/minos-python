@@ -1,7 +1,16 @@
-from collections import namedtuple
-from minos.common import CommandReply
-from minos.common.testing import PostgresAsyncTestCase
-from minos.networks import MinosCommandReplyHandlerServer
+from collections import (
+    namedtuple,
+)
+
+from minos.common import (
+    CommandReply,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
+from minos.networks import (
+    MinosCommandReplyHandlerServer,
+)
 from tests.utils import (
     BASE_PATH,
     NaiveAggregate,
