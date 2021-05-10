@@ -29,10 +29,11 @@ QUEUE = collections.namedtuple("Queue", "database user password host port record
 ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
 EVENT = collections.namedtuple("Event", "name controller action")
 COMMAND = collections.namedtuple("Command", "name controller action")
-SAGA = collections.namedtuple("Saga", "name controller action")
+SAGAITEM = collections.namedtuple("SagaItem", "name controller action")
 SERVICE = collections.namedtuple("Service", "name")
 EVENTS = collections.namedtuple("Events", "broker items queue")
 COMMANDS = collections.namedtuple("Commands", "broker items queue")
+SAGA = collections.namedtuple("Saga", "items queue")
 REST = collections.namedtuple("Rest", "broker endpoints")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
@@ -45,6 +46,11 @@ _ENVIRONMENT_MAPPER = {
     "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
     "commands.broker": "MINOS_COMMANDS_BROKER",
     "commands.port": "MINOS_COMMANDS_PORT",
+    "saga.queue.host": "MINOS_SAGA_QUEUE_HOST",
+    "saga.queue.port": "MINOS_SAGA_QUEUE_PORT",
+    "saga.queue.database": "MINOS_SAGA_QUEUE_DATABASE",
+    "saga.queue.user": "MINOS_CSAGA_QUEUE_USER",
+    "saga.queue.password": "MINOS_SAGA_QUEUE_PASSWORD",
     "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
     "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
     "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
@@ -72,6 +78,11 @@ _PARAMETERIZED_MAPPER = {
     "commands.queue.password": "commands_queue_password",
     "commands.broker": "commands_broker",
     "commands.port": "commands_port",
+    "saga.queue.host": "saga_queue_host",
+    "saga.queue.port": "saga_queue_port",
+    "saga.queue.database": "saga_queue_database",
+    "saga.queue.user": "saga_queue_user",
+    "saga.queue.password": "saga_queue_password",
     "events.queue.host": "events_queue_host",
     "events.queue.port": "events_queue_port",
     "events.queue.database": "events_queue_database",
@@ -282,12 +293,13 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def saga(self) -> SAGA:
-        """Get the commands config.
+        """Get the sagas config.
 
-         :return: A ``COMMAND`` NamedTuple instance.
+         :return: A ``SAGAS`` NamedTuple instance.
          """
+        queue = self._sagas_queue
         sagas = self._saga_items
-        return sagas
+        return SAGA(items=sagas, queue=queue)
 
     @property
     def _commands_broker(self) -> BROKER:
@@ -318,14 +330,27 @@ class MinosConfig(MinosConfigAbstract):
         return COMMAND(name=command["name"], controller=command["controller"], action=command["action"])
 
     @property
-    def _saga_items(self) -> list[SAGA]:
-        info = self._get("saga")
-        sagas = [self._saga_items_entry(saga) for saga in info]
+    def _sagas_queue(self) -> QUEUE:
+        queue = QUEUE(
+            database=self._get("saga.queue.database"),
+            user=self._get("saga.queue.user"),
+            password=self._get("saga.queue.password"),
+            host=self._get("saga.queue.host"),
+            port=int(self._get("saga.queue.port")),
+            records=int(self._get("saga.queue.records")),
+            retry=int(self._get("saga.queue.retry")),
+        )
+        return queue
+
+    @property
+    def _saga_items(self) -> list[SAGAITEM]:
+        info = self._get("saga.items")
+        sagas = [self._sagas_items_entry(saga) for saga in info]
         return sagas
 
     @staticmethod
-    def _saga_items_entry(saga: dict[str, t.Any]) -> SAGA:
-        return SAGA(name=saga["name"], controller=saga["controller"], action=saga["action"])
+    def _sagas_items_entry(saga: dict[str, t.Any]) -> SAGAITEM:
+        return SAGAITEM(name=saga["name"], controller=saga["controller"], action=saga["action"])
 
     @property
     def repository(self) -> REPOSITORY:
