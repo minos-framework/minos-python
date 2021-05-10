@@ -5,14 +5,19 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from typing import (
     Any,
+    Iterable,
     NoReturn,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
-    uuid4,
 )
 
 from ..definitions import (
@@ -42,19 +47,51 @@ class SagaExecution(object):
         self,
         definition: Saga,
         uuid: UUID,
-        steps: [SagaExecutionStep],
         context: SagaContext,
-        status: SagaStatus,
+        status: SagaStatus = SagaStatus.Created,
+        steps: [SagaExecutionStep] = None,
+        already_rollback: bool = False,
         *args,
         **kwargs
     ):
+        if steps is None:
+            steps = list()
 
         self.uuid = uuid
         self.definition = definition
         self.executed_steps = steps
         self.context = context
         self.status = status
-        self.already_rollback = False
+        self.already_rollback = already_rollback
+
+    @classmethod
+    def from_raw(cls, raw: Union[dict[str, Any], SagaExecution], **kwargs) -> SagaExecution:
+        """TODO
+
+        :param raw: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        current = raw | kwargs
+        current["definition"] = Saga.from_raw(current["definition"])
+        current["status"] = SagaStatus.from_raw(current["status"])
+
+        if isinstance(current["uuid"], str):
+            current["uuid"] = UUID(current["uuid"])
+
+        instance = cls(**current)
+
+        executed_steps = (
+            SagaExecutionStep.from_raw(executed_step, definition=step)
+            for step, executed_step in zip(instance.definition.steps, raw.pop("executed_steps"))
+        )
+        for executed_step in executed_steps:
+            instance._add_executed(executed_step)
+
+        return instance
 
     @classmethod
     def from_saga(cls, definition: Saga, *args, **kwargs):
@@ -63,7 +100,11 @@ class SagaExecution(object):
         :param definition: TODO
         :return: TODO
         """
-        return cls(definition, uuid4(), list(), SagaContext(), SagaStatus.Created, *args, **kwargs)
+        from uuid import (
+            uuid4,
+        )
+
+        return cls(definition, uuid4(), SagaContext(), *args, **kwargs)
 
     def execute(self, response: Optional[Any] = None):
         """TODO
@@ -120,3 +161,31 @@ class SagaExecution(object):
         :return: TODO
         """
         self.executed_steps.append(executed_step)
+
+    @property
+    def raw(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return {
+            "definition": self.definition.raw,
+            "uuid": str(self.uuid),
+            "status": self.status.raw,
+            "executed_steps": [step.raw for step in self.executed_steps],
+            "context": self.context,
+            "already_rollback": self.already_rollback,
+        }
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.definition,
+            self.uuid,
+            self.status,
+            self.executed_steps,
+            self.context,
+            self.already_rollback,
+        )

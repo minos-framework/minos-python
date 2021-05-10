@@ -12,7 +12,10 @@ from __future__ import (
 
 from typing import (
     TYPE_CHECKING,
+    Any,
+    Iterable,
     Optional,
+    Union,
 )
 
 from ..exceptions import (
@@ -34,9 +37,31 @@ if TYPE_CHECKING:
 class Saga(MinosBaseSagaBuilder):
     """TODO"""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, steps: list[SagaStep] = None):
+        if steps is None:
+            steps = list()
+
         self.name = name
-        self.steps = list()
+        self.steps = steps
+
+    @classmethod
+    def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
+        """TODO
+
+        :param raw: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        current = raw | kwargs
+        steps = (SagaStep.from_raw(step) for step in current.pop("steps"))
+
+        instance = cls(**current)
+        for step in steps:
+            instance.step(step)
+        return instance
 
     def step(self, step: Optional[SagaStep] = None) -> SagaStep:
         """TODO
@@ -63,3 +88,23 @@ class Saga(MinosBaseSagaBuilder):
         )
 
         return SagaExecution.from_saga(self, *args, **kwargs)
+
+    @property
+    def raw(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return {
+            "name": self.name,
+            "steps": [step.raw for step in self.steps],
+        }
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.name,
+            self.steps,
+        )

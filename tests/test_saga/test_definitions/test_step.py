@@ -73,6 +73,42 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(MinosUndefinedInvokeParticipantException):
             SagaStep().with_compensation("UserRemove", foo_fn).validate()
 
+    def test_raw(self):
+        from minos.saga import (
+            identity_fn,
+        )
+
+        step = SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
+        expected = {
+            "raw_invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
+            "raw_with_compensation": {"callback": foo_fn, "name": "FooDelete",},
+            "raw_on_reply": {"callback": identity_fn, "name": "foo",},
+        }
+        self.assertEqual(expected, step.raw)
+
+    def test_from_raw(self):
+        from minos.saga import (
+            identity_fn,
+        )
+
+        raw = {
+            "raw_invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
+            "raw_with_compensation": {"callback": foo_fn, "name": "FooDelete",},
+            "raw_on_reply": {"callback": identity_fn, "name": "foo",},
+        }
+
+        expected = (
+            SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
+        )
+        self.assertEqual(expected, SagaStep.from_raw(raw))
+
+    def test_from_raw_already(self):
+        expected = (
+            SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
+        )
+        observed = SagaStep.from_raw(expected)
+        self.assertEqual(expected, observed)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -11,8 +11,10 @@ from __future__ import (
 
 from typing import (
     Any,
+    Iterable,
     NoReturn,
     Optional,
+    Union,
 )
 
 from ..definitions import (
@@ -39,10 +41,29 @@ from .status import (
 class SagaExecutionStep(object):
     """TODO"""
 
-    def __init__(self, definition: SagaStep, status: SagaStepStatus = SagaStepStatus.Created):
+    def __init__(
+        self, definition: SagaStep, status: SagaStepStatus = SagaStepStatus.Created, already_rollback: bool = False,
+    ):
+
         self.definition = definition
         self.status = status
-        self.already_rollback = False
+        self.already_rollback = already_rollback
+
+    @classmethod
+    def from_raw(cls, raw: Union[dict[str, Any], SagaExecutionStep], **kwargs) -> SagaExecutionStep:
+        """TODO
+
+        :param raw: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        current = raw | kwargs
+        current["definition"] = SagaStep.from_raw(current["definition"])
+        current["status"] = SagaStepStatus.from_raw(current["status"])
+        return cls(**current)
 
     def execute(self, context: SagaContext, response: Optional[Any] = None, *args, **kwargs) -> SagaContext:
         """TODO
@@ -101,3 +122,25 @@ class SagaExecutionStep(object):
 
         self.already_rollback = True
         return context
+
+    @property
+    def raw(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return {
+            "definition": self.definition.raw,
+            "status": self.status.raw,
+            "already_rollback": self.already_rollback,
+        }
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.definition,
+            self.status,
+            self.already_rollback,
+        )

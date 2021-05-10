@@ -5,8 +5,15 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from enum import (
     Enum,
+)
+from typing import (
+    Union,
 )
 
 
@@ -18,6 +25,26 @@ class SagaStatus(Enum):
     Paused = "paused"
     Finished = "finished"
     Errored = "errored"
+
+    @classmethod
+    def from_raw(cls, raw: Union[str, SagaStatus]) -> SagaStatus:
+        """TODO
+
+        :param raw: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        return next(obj for obj in cls if obj.value == raw)
+
+    @property
+    def raw(self) -> str:
+        """TODO
+
+        :return: TODO
+        """
+        return self.value
 
 
 class SagaStepStatus(Enum):
@@ -34,3 +61,23 @@ class SagaStepStatus(Enum):
     PausedOnReply = "paused-on-reply"
     ErroredOnReply = "errored-on-reply"
     Finished = "finished"
+
+    @classmethod
+    def from_raw(cls, raw: Union[str, SagaStepStatus]) -> SagaStepStatus:
+        """TODO
+
+        :param raw: TODO
+        :return: TODO
+        """
+        if isinstance(raw, cls):
+            return raw
+
+        return next(obj for obj in cls if obj.value == raw)
+
+    @property
+    def raw(self) -> str:
+        """TODO
+
+        :return: TODO
+        """
+        return self.value

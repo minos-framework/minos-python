@@ -104,6 +104,54 @@ class TestSagaExecutionStep(unittest.TestCase):
             execution.rollback(context)
             self.assertEqual(0, mock.call_count)
 
+    def test_raw(self):
+        from minos.saga import (
+            identity_fn,
+        )
+
+        definition = (
+            SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")
+        )
+        execution = SagaExecutionStep(definition)
+
+        expected = {
+            "already_rollback": False,
+            "definition": {
+                "raw_invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
+                "raw_on_reply": {"callback": identity_fn, "name": "foo"},
+                "raw_with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+            },
+            "status": "created",
+        }
+        self.assertEqual(expected, execution.raw)
+
+    def test_from_raw(self):
+        from minos.saga import (
+            identity_fn,
+        )
+
+        raw = {
+            "already_rollback": False,
+            "definition": {
+                "raw_invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
+                "raw_on_reply": {"callback": identity_fn, "name": "foo"},
+                "raw_with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+            },
+            "status": "created",
+        }
+        expected = SagaExecutionStep(
+            (SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")),
+        )
+        observed = SagaExecutionStep.from_raw(raw)
+        self.assertEqual(expected, observed)
+
+    def test_from_raw_already(self):
+        expected = SagaExecutionStep(
+            (SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")),
+        )
+        observed = SagaExecutionStep.from_raw(expected)
+        self.assertEqual(expected, observed)
+
 
 if __name__ == "__main__":
     unittest.main()

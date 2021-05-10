@@ -9,12 +9,12 @@ from __future__ import (
     annotations,
 )
 
-import uuid
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     Coroutine,
+    Iterable,
     NoReturn,
     Optional,
     Union,
@@ -47,30 +47,43 @@ if TYPE_CHECKING:
     ]
 
 
+def identity_fn(x):
+    """TODO
+
+    :param x: TODO
+    :return: TODO
+    """
+    return x
+
+
 class SagaStep(object):
     """TODO"""
 
-    def __init__(self, saga: Optional[Saga] = None):
+    def __init__(
+        self,
+        saga: Optional[Saga] = None,
+        raw_invoke_participant: dict[str, Any] = None,
+        raw_with_compensation: dict[str, Any] = None,
+        raw_on_reply: dict[str, Any] = None,
+    ):
         self.saga = saga
-        self.raw_invoke_participant = None
-        self.raw_with_compensation = None
-        self.raw_on_reply = None
+        self.raw_invoke_participant = raw_invoke_participant
+        self.raw_with_compensation = raw_with_compensation
+        self.raw_on_reply = raw_on_reply
 
-    @property
-    def raw(self) -> [dict[str, Any]]:
+    @classmethod
+    def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
         """TODO
 
+        :param raw: TODO
+        :param kwargs: TODO
         :return: TODO
         """
-        raw = list()
-        if self.raw_invoke_participant is not None:
-            raw.append(self.raw_invoke_participant)
-        if self.raw_with_compensation is not None:
-            raw.append(self.raw_with_compensation)
-        if self.raw_on_reply is not None:
-            raw.append(self.raw_on_reply)
+        if isinstance(raw, cls):
+            return raw
 
-        return raw
+        current = raw | kwargs
+        return cls(**current)
 
     def invoke_participant(self, name: Union[str, list], callback: CallBack) -> SagaStep:
         """TODO
@@ -82,12 +95,7 @@ class SagaStep(object):
         if self.raw_invoke_participant is not None:
             raise MinosMultipleInvokeParticipantException()
 
-        self.raw_invoke_participant = {
-            "id": str(uuid.uuid4()),
-            "type": "invokeParticipant",
-            "name": name,
-            "callback": callback,
-        }
+        self.raw_invoke_participant = {"name": name, "callback": callback}
 
         return self
 
@@ -101,16 +109,11 @@ class SagaStep(object):
         if self.raw_with_compensation is not None:
             raise MinosMultipleWithCompensationException()
 
-        self.raw_with_compensation = {
-            "id": str(uuid.uuid4()),
-            "type": "withCompensation",
-            "name": name,
-            "callback": callback,
-        }
+        self.raw_with_compensation = {"name": name, "callback": callback}
 
         return self
 
-    def on_reply(self, name: str, callback: Callable) -> SagaStep:
+    def on_reply(self, name: str, callback: Callable = identity_fn) -> SagaStep:
         """TODO
 
         :param name: TODO
@@ -120,12 +123,7 @@ class SagaStep(object):
         if self.raw_on_reply is not None:
             raise MinosMultipleOnReplyException()
 
-        self.raw_on_reply = {
-            "id": str(uuid.uuid4()),
-            "type": "onReply",
-            "name": name,
-            "callback": callback,
-        }
+        self.raw_on_reply = {"name": name, "callback": callback}
 
         return self
 
@@ -154,8 +152,30 @@ class SagaStep(object):
 
         :return TODO:
         """
-        if not self.raw:
+        if self.raw_invoke_participant is None and self.raw_with_compensation is None and self.raw_on_reply is None:
             raise MinosSagaEmptyStepException()
 
         if self.raw_invoke_participant is None:
             raise MinosUndefinedInvokeParticipantException()
+
+    @property
+    def raw(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return {
+            "raw_invoke_participant": self.raw_invoke_participant,
+            "raw_with_compensation": self.raw_with_compensation,
+            "raw_on_reply": self.raw_on_reply,
+        }
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.raw_invoke_participant,
+            self.raw_with_compensation,
+            self.raw_on_reply,
+        )

@@ -6,7 +6,6 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-
 import unittest
 from shutil import (
     rmtree,
@@ -89,10 +88,94 @@ class TestSaga(unittest.TestCase):
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
-
         step = SagaStep(Saga("FooTest")).invoke_participant("CreateOrder", foo_fn)
         with self.assertRaises(MinosAlreadyOnSagaException):
             Saga("BarAdd").step(step)
+
+    def test_raw(self):
+        saga = (
+            Saga("CreateShipment")
+            .step()
+            .invoke_participant("CreateOrder", foo_fn)
+            .with_compensation("DeleteOrder", foo_fn)
+            .step()
+            .invoke_participant("CreateTicket", foo_fn)
+            .on_reply("ticket", create_ticket_on_reply_callback)
+            .step()
+            .invoke_participant("VerifyConsumer", foo_fn)
+            .commit()
+        )
+        expected = {
+            "name": "CreateShipment",
+            "steps": [
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateOrder"},
+                    "raw_on_reply": None,
+                    "raw_with_compensation": {"callback": foo_fn, "name": "DeleteOrder"},
+                },
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateTicket"},
+                    "raw_on_reply": {"callback": create_ticket_on_reply_callback, "name": "ticket"},
+                    "raw_with_compensation": None,
+                },
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "VerifyConsumer"},
+                    "raw_on_reply": None,
+                    "raw_with_compensation": None,
+                },
+            ],
+        }
+        self.assertEqual(expected, saga.raw)
+
+    def test_from_raw(self):
+        raw = {
+            "name": "CreateShipment",
+            "steps": [
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateOrder"},
+                    "raw_on_reply": None,
+                    "raw_with_compensation": {"callback": foo_fn, "name": "DeleteOrder"},
+                },
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateTicket"},
+                    "raw_on_reply": {"callback": create_ticket_on_reply_callback, "name": "ticket"},
+                    "raw_with_compensation": None,
+                },
+                {
+                    "raw_invoke_participant": {"callback": foo_fn, "name": "VerifyConsumer"},
+                    "raw_on_reply": None,
+                    "raw_with_compensation": None,
+                },
+            ],
+        }
+        expected = (
+            Saga("CreateShipment")
+            .step()
+            .invoke_participant("CreateOrder", foo_fn)
+            .with_compensation("DeleteOrder", foo_fn)
+            .step()
+            .invoke_participant("CreateTicket", foo_fn)
+            .on_reply("ticket", create_ticket_on_reply_callback)
+            .step()
+            .invoke_participant("VerifyConsumer", foo_fn)
+            .commit()
+        )
+        self.assertEqual(expected, Saga.from_raw(raw))
+
+    def test_from_raw_already(self):
+        expected = (
+            Saga("CreateShipment")
+            .step()
+            .invoke_participant("CreateOrder", foo_fn)
+            .with_compensation("DeleteOrder", foo_fn)
+            .step()
+            .invoke_participant("CreateTicket", foo_fn)
+            .on_reply("ticket", create_ticket_on_reply_callback)
+            .step()
+            .invoke_participant("VerifyConsumer", foo_fn)
+            .commit()
+        )
+        self.assertEqual(expected, Saga.from_raw(expected))
 
 
 if __name__ == "__main__":

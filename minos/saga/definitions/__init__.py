@@ -13,4 +13,5 @@ from .saga import (
 )
 from .step import (
     SagaStep,
+    identity_fn,
 )
