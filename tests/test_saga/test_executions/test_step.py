@@ -73,7 +73,7 @@ class TestSagaExecutionStep(unittest.TestCase):
         execution = SagaExecutionStep(step)
 
         context = execution.execute(context, response=Foo("foo"))
-        self.assertEqual(SagaContext({"foo": Foo("foo")}), context)
+        self.assertEqual(SagaContext(foo=Foo("foo")), context)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_on_reply_errored(self):
