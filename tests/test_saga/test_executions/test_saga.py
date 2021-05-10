@@ -7,7 +7,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-import uuid
 from unittest.mock import (
     patch,
 )
@@ -119,10 +118,6 @@ class TestSagaExecution(unittest.TestCase):
             self.assertEqual(0, mock.call_count)
 
     def test_raw(self):
-        from minos.saga import (
-            identity_fn,
-        )
-
         saga = (
             Saga("OrdersAdd")
             .step()
@@ -175,10 +170,6 @@ class TestSagaExecution(unittest.TestCase):
         self.assertEqual(expected, execution.raw)
 
     def test_from_raw(self):
-        from minos.saga import (
-            identity_fn,
-        )
-
         raw = {
             "already_rollback": False,
             "context": SagaContext({"order1": Foo("hola")}),
@@ -186,23 +177,41 @@ class TestSagaExecution(unittest.TestCase):
                 "name": "OrdersAdd",
                 "steps": [
                     {
-                        "invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
-                        "on_reply": {"callback": identity_fn, "name": "order1"},
-                        "with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_order_callback",
+                            "name": "CreateOrder",
+                        },
+                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                     {
-                        "invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
-                        "on_reply": {"callback": foo_fn_raises, "name": "order2"},
-                        "with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_ticket_callback",
+                            "name": "CreateTicket",
+                        },
+                        "on_reply": {"callback": "tests.utils.foo_fn_raises", "name": "order2"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                 ],
             },
             "executed_steps": [
                 {
                     "definition": {
-                        "invoke_participant": {"name": "CreateOrder", "callback": create_order_callback},
-                        "with_compensation": {"name": "DeleteOrder", "callback": delete_order_callback},
-                        "on_reply": {"name": "order1", "callback": identity_fn},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_order_callback",
+                            "name": "CreateOrder",
+                        },
+                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                     "status": "finished",
                     "already_rollback": False,
