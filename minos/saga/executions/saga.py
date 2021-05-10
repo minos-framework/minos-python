@@ -59,13 +59,6 @@ class SagaExecution(object):
         self.status = status
         self.already_rollback = False
 
-        self.saga_process = {
-            "name": self.definition.name,
-            "id": self.uuid,
-            "steps": [],
-            "current_compensations": [],
-        }
-
     @classmethod
     def from_saga(cls, definition: Saga, *args, **kwargs):
         """TODO
@@ -83,7 +76,7 @@ class SagaExecution(object):
         """
         self.status = SagaStatus.Running
         for step in self.pending_steps:
-            execution_step = SagaExecutionStep(self, step)
+            execution_step = SagaExecutionStep(step)
             try:
                 self.context = execution_step.execute(self.context, response=response)
                 self._add_executed(execution_step)
@@ -100,7 +93,7 @@ class SagaExecution(object):
         self.status = SagaStatus.Finished
         return self.context
 
-    def rollback(self) -> NoReturn:
+    def rollback(self, *args, **kwargs) -> NoReturn:
         """TODO
 
         :return: TODO
@@ -110,7 +103,7 @@ class SagaExecution(object):
             return
 
         for execution_step in reversed(self.executed_steps):
-            self.context = execution_step.rollback(self.context)
+            self.context = execution_step.rollback(self.context, *args, **kwargs)
 
         self.already_rollback = True
 
