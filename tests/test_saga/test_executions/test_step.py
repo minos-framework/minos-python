@@ -41,7 +41,7 @@ class TestSagaExecutionStep(unittest.TestCase):
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_invoke_participant_errored(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn_raises)
+        step = SagaStep().invoke_participant("FooAdd", foo_fn_raises).with_compensation("FooDelete", foo_fn)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
@@ -97,6 +97,16 @@ class TestSagaExecutionStep(unittest.TestCase):
         execution = SagaExecutionStep(step)
 
         with _PUBLISH_MOCKER as mock:
+            execution.rollback(context)
+            self.assertEqual(0, mock.call_count)
+
+            try:
+                execution.execute(context)
+            except MinosSagaPausedExecutionStepException:
+                pass
+            self.assertEqual(1, mock.call_count)
+            mock.reset_mock()
+
             execution.rollback(context)
             self.assertEqual(1, mock.call_count)
 
