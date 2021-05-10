@@ -145,7 +145,7 @@ class TestSagaExecution(unittest.TestCase):
 
         raw = {
             "already_rollback": False,
-            "context": SagaContext(),
+            "context": SagaContext({"order1": Foo("hola")}),
             "definition": {
                 "name": "OrdersAdd",
                 "steps": [
@@ -161,8 +161,18 @@ class TestSagaExecution(unittest.TestCase):
                     },
                 ],
             },
-            "executed_steps": [],
-            "status": "created",
+            "executed_steps": [
+                {
+                    "definition": {
+                        "raw_invoke_participant": {"name": "CreateOrder", "callback": create_order_callback},
+                        "raw_with_compensation": {"name": "DeleteOrder", "callback": delete_order_callback},
+                        "raw_on_reply": {"name": "order1", "callback": identity_fn},
+                    },
+                    "status": "finished",
+                    "already_rollback": False,
+                }
+            ],
+            "status": "paused",
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
 
@@ -180,6 +190,14 @@ class TestSagaExecution(unittest.TestCase):
         )
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(saga)
+            try:
+                expected.execute()
+            except MinosSagaPausedExecutionStepException:
+                pass
+            try:
+                expected.execute(response=Foo("hola"))
+            except MinosSagaPausedExecutionStepException:
+                pass
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)
