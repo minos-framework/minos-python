@@ -10,7 +10,6 @@ from __future__ import (
 )
 
 from typing import (
-    TYPE_CHECKING,
     Any,
     Iterable,
     NoReturn,
@@ -38,23 +37,14 @@ from .status import (
     SagaStepStatus,
 )
 
-if TYPE_CHECKING:
-    from .saga import (
-        SagaExecution,
-    )
-
 
 class SagaExecutionStep(object):
     """TODO"""
 
     def __init__(
-        self,
-        execution: SagaExecution,
-        definition: SagaStep,
-        status: SagaStepStatus = SagaStepStatus.Created,
-        already_rollback: bool = False,
+        self, definition: SagaStep, status: SagaStepStatus = SagaStepStatus.Created, already_rollback: bool = False,
     ):
-        self.execution = execution
+
         self.definition = definition
         self.status = status
         self.already_rollback = already_rollback
@@ -75,7 +65,7 @@ class SagaExecutionStep(object):
         current["status"] = SagaStepStatus.from_raw(current["status"])
         return cls(**current)
 
-    def execute(self, context: SagaContext, response: Optional[Any] = None) -> SagaContext:
+    def execute(self, context: SagaContext, response: Optional[Any] = None, *args, **kwargs) -> SagaContext:
         """TODO
 
         :param context: TODO
@@ -83,50 +73,42 @@ class SagaExecutionStep(object):
         :return: TODO
         """
 
-        self._register()
-
-        self._execute_invoke_participant(context)
-        context = self._execute_on_reply(context, response)
+        self._execute_invoke_participant(context, *args, **kwargs)
+        context = self._execute_on_reply(context, response, *args, **kwargs)
 
         self.status = SagaStepStatus.Finished
         return context
 
-    def _register(self) -> NoReturn:
-        self.execution.saga_process["steps"].append(self.definition.raw)
-        operation = self.definition.raw_with_compensation
-        if operation is not None:
-            self.execution.saga_process["current_compensations"].insert(0, operation)
-
-    def _execute_invoke_participant(self, context: SagaContext) -> NoReturn:
+    def _execute_invoke_participant(self, context: SagaContext, *args, **kwargs) -> NoReturn:
         if self.status != SagaStepStatus.Created:
             return
 
         self.status = SagaStepStatus.RunningInvokeParticipant
-        executor = InvokeParticipantExecutor(self._loop)
+        executor = InvokeParticipantExecutor(*args, **kwargs)
         try:
             executor.exec(self.definition.raw_invoke_participant, context)
         except MinosSagaException:
             self.status = SagaStepStatus.ErroredInvokeParticipant
-            self.rollback(context)
+            self.rollback(context, *args, **kwargs)
             raise MinosSagaFailedExecutionStepException()
         self.status = SagaStepStatus.FinishedInvokeParticipant
 
-    def _execute_on_reply(self, context: SagaContext, response: Optional[Any] = None) -> SagaContext:
+    def _execute_on_reply(self, context: SagaContext, response: Optional[Any] = None, *args, **kwargs) -> SagaContext:
         self.status = SagaStepStatus.RunningOnReply
-        executor = OnReplyExecutor(self._loop)
+        executor = OnReplyExecutor(*args, **kwargs)
         # noinspection PyBroadException
         try:
             context = executor.exec(self.definition.raw_on_reply, context, response=response)
         except MinosSagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedOnReply
             raise exc
-        except Exception as e:
+        except Exception:
             self.status = SagaStepStatus.ErroredOnReply
-            self.rollback(context)
+            self.rollback(context, *args, **kwargs)
             raise MinosSagaFailedExecutionStepException()
         return context
 
-    def rollback(self, context: SagaContext) -> SagaContext:
+    def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
         """TODO
 
         :param context: TODO
@@ -135,15 +117,11 @@ class SagaExecutionStep(object):
         if self.already_rollback:
             return context
 
-        executor = WithCompensationExecutor(self._loop)
+        executor = WithCompensationExecutor(*args, **kwargs)
         executor.exec(self.definition.raw_with_compensation, context)
 
         self.already_rollback = True
         return context
-
-    @property
-    def _loop(self):
-        return self.execution.definition.loop
 
     @property
     def raw(self) -> dict[str, Any]:

@@ -64,13 +64,6 @@ class SagaExecution(object):
         self.status = status
         self.already_rollback = already_rollback
 
-        self.saga_process = {
-            "name": self.definition.name,
-            "id": self.uuid,
-            "steps": [],
-            "current_compensations": [],
-        }
-
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaExecution], **kwargs) -> SagaExecution:
         """TODO
@@ -92,7 +85,7 @@ class SagaExecution(object):
         instance = cls(**current)
 
         executed_steps = (
-            SagaExecutionStep.from_raw(executed_step, definition=step, execution=instance)
+            SagaExecutionStep.from_raw(executed_step, definition=step)
             for step, executed_step in zip(instance.definition.steps, raw.pop("executed_steps"))
         )
         for executed_step in executed_steps:
@@ -121,7 +114,7 @@ class SagaExecution(object):
         """
         self.status = SagaStatus.Running
         for step in self.pending_steps:
-            execution_step = SagaExecutionStep(self, step)
+            execution_step = SagaExecutionStep(step)
             try:
                 self.context = execution_step.execute(self.context, response=response)
                 self._add_executed(execution_step)
@@ -138,7 +131,7 @@ class SagaExecution(object):
         self.status = SagaStatus.Finished
         return self.context
 
-    def rollback(self) -> NoReturn:
+    def rollback(self, *args, **kwargs) -> NoReturn:
         """TODO
 
         :return: TODO
@@ -148,7 +141,7 @@ class SagaExecution(object):
             return
 
         for execution_step in reversed(self.executed_steps):
-            self.context = execution_step.rollback(self.context)
+            self.context = execution_step.rollback(self.context, *args, **kwargs)
 
         self.already_rollback = True
 
