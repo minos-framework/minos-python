@@ -63,9 +63,7 @@ class TestSagaExecutionStep(unittest.TestCase):
             self.assertEqual(SagaStepStatus.PausedOnReply, step_execution.status)
 
     def test_execute_on_reply(self):
-        saga_definition = (
-            Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo).commit()
-        )
+        saga_definition = Saga("FooAdded").step().invoke_participant("FooAdd", foo_fn).on_reply("foo").commit()
         saga_execution = SagaExecution.from_saga(saga_definition)
         step_execution = SagaExecutionStep(saga_execution, saga_definition.steps[0])
 
@@ -85,7 +83,7 @@ class TestSagaExecutionStep(unittest.TestCase):
         self.assertEqual(SagaStepStatus.ErroredOnReply, step_execution.status)
 
     def test_raw(self):
-        from minos.saga.definitions.step import (
+        from minos.saga import (
             identity_fn,
         )
 
@@ -106,7 +104,7 @@ class TestSagaExecutionStep(unittest.TestCase):
         self.assertEqual(expected, execution.raw)
 
     def test_from_raw(self):
-        from minos.saga.definitions.step import (
+        from minos.saga import (
             identity_fn,
         )
 

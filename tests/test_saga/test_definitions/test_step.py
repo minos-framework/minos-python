@@ -74,7 +74,7 @@ class TestSagaStep(unittest.TestCase):
             SagaStep().with_compensation("UserRemove", foo_fn).validate()
 
     def test_raw(self):
-        from minos.saga.definitions.step import (
+        from minos.saga import (
             identity_fn,
         )
 
@@ -87,7 +87,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(expected, step.raw)
 
     def test_from_raw(self):
-        from minos.saga.definitions.step import (
+        from minos.saga import (
             identity_fn,
         )
 

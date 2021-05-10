@@ -42,10 +42,10 @@ class TestSagaExecution(unittest.TestCase):
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1", lambda order: order)
+            .on_reply("order1")
             .step()
             .invoke_participant("CreateTicket", create_ticket_callback)
-            .on_reply("order2", lambda order: order)
+            .on_reply("order2")
             .step()
             .invoke_participant("Shopping", shipping_callback)
             .with_compensation("BlockOrder", shipping_callback)
@@ -71,7 +71,7 @@ class TestSagaExecution(unittest.TestCase):
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1", lambda order: order)
+            .on_reply("order1")
             .step()
             .invoke_participant("CreateTicket", create_ticket_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -95,7 +95,7 @@ class TestSagaExecution(unittest.TestCase):
             self.assertEqual(2, mock.call_count)
 
     def test_raw(self):
-        from minos.saga.definitions.step import (
+        from minos.saga import (
             identity_fn,
         )
 
@@ -139,7 +139,7 @@ class TestSagaExecution(unittest.TestCase):
         self.assertEqual(expected, execution.raw)
 
     def test_from_raw(self):
-        from minos.saga.definitions.step import (
+        from minos.saga import (
             identity_fn,
         )
 
