@@ -16,6 +16,7 @@ from typing import (
     Any,
     Iterable,
     Optional,
+    Union,
 )
 
 from ..exceptions import (
@@ -46,7 +47,7 @@ class Saga(MinosBaseSagaBuilder):
         self.steps = steps
 
     @classmethod
-    def from_raw(cls, raw: dict[str, Any], **kwargs) -> Saga:
+    def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
         """TODO
 
         :param raw: TODO

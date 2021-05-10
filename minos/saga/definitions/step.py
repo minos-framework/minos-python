@@ -9,7 +9,6 @@ from __future__ import (
     annotations,
 )
 
-import uuid
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -73,7 +72,7 @@ class SagaStep(object):
         self.raw_on_reply = raw_on_reply
 
     @classmethod
-    def from_raw(cls, raw: dict[str, Any], **kwargs) -> SagaStep:
+    def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
         """TODO
 
         :param raw: TODO

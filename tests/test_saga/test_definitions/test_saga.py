@@ -162,6 +162,21 @@ class TestSaga(unittest.TestCase):
         )
         self.assertEqual(expected, Saga.from_raw(raw))
 
+    def test_from_raw_already(self):
+        expected = (
+            Saga("CreateShipment")
+            .step()
+            .invoke_participant("CreateOrder", foo_fn)
+            .with_compensation("DeleteOrder", foo_fn)
+            .step()
+            .invoke_participant("CreateTicket", foo_fn)
+            .on_reply("ticket", create_ticket_on_reply_callback)
+            .step()
+            .invoke_participant("VerifyConsumer", foo_fn)
+            .commit()
+        )
+        self.assertEqual(expected, Saga.from_raw(expected))
+
 
 if __name__ == "__main__":
     unittest.main()

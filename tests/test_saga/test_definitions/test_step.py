@@ -102,6 +102,13 @@ class TestSagaStep(unittest.TestCase):
         )
         self.assertEqual(expected, SagaStep.from_raw(raw))
 
+    def test_from_raw_already(self):
+        expected = (
+            SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
+        )
+        observed = SagaStep.from_raw(expected)
+        self.assertEqual(expected, observed)
+
 
 if __name__ == "__main__":
     unittest.main()

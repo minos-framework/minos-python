@@ -15,6 +15,7 @@ from typing import (
     Iterable,
     NoReturn,
     Optional,
+    Union,
 )
 
 from ..definitions import (
@@ -59,7 +60,7 @@ class SagaExecutionStep(object):
         self.already_rollback = already_rollback
 
     @classmethod
-    def from_raw(cls, raw: dict[str, Any], **kwargs) -> SagaExecutionStep:
+    def from_raw(cls, raw: Union[dict[str, Any], SagaExecutionStep], **kwargs) -> SagaExecutionStep:
         """TODO
 
         :param raw: TODO

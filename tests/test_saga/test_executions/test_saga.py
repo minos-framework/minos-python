@@ -184,6 +184,23 @@ class TestSagaExecution(unittest.TestCase):
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)
 
+    def test_from_raw_already(self):
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1")
+            .step()
+            .invoke_participant("CreateTicket", create_ticket_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order2", foo_fn_raises)
+            .commit()
+        )
+        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+            expected = SagaExecution.from_saga(saga)
+        self.assertEqual(expected, SagaExecution.from_raw(expected))
+
 
 if __name__ == "__main__":
     unittest.main()

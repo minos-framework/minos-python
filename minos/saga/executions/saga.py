@@ -5,11 +5,16 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from typing import (
     Any,
     Iterable,
     NoReturn,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -67,7 +72,7 @@ class SagaExecution(object):
         }
 
     @classmethod
-    def from_raw(cls, raw: dict[str, Any], **kwargs):
+    def from_raw(cls, raw: Union[dict[str, Any], SagaExecution], **kwargs) -> SagaExecution:
         """TODO
 
         :param raw: TODO
