@@ -48,7 +48,7 @@ class PublishExecutor(LocalExecutor):
             self.publish(request)
         except MinosSagaException as exc:
             raise exc
-        except Exception:
+        except Exception as e:
             exc = MinosSagaFailedExecutionStepException()  # FIXME: Include explanation.
             raise exc
 

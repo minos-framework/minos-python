@@ -16,6 +16,7 @@ from minos.saga import (
     MinosSagaPausedExecutionStepException,
     Saga,
     SagaContext,
+    SagaExecution,
     SagaStatus,
 )
 from tests.callbacks import (
@@ -28,6 +29,8 @@ from tests.utils import (
     Foo,
     foo_fn_raises,
 )
+
+_PUBLISH_MOCKER = patch("minos.saga.executions.executors.publish.PublishExecutor.publish")
 
 
 class TestSagaExecution(unittest.TestCase):
@@ -46,7 +49,7 @@ class TestSagaExecution(unittest.TestCase):
             .with_compensation("BlockOrder", shipping_callback)
             .commit()
         )
-        execution = saga.build_execution()
+        execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             execution.execute()
@@ -73,7 +76,7 @@ class TestSagaExecution(unittest.TestCase):
             .on_reply("order2", foo_fn_raises)
             .commit()
         )
-        execution = saga.build_execution()
+        execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             execution.execute()
@@ -88,6 +91,28 @@ class TestSagaExecution(unittest.TestCase):
                 execution.execute(response=Foo("order2"))
             self.assertEqual(SagaStatus.Errored, execution.status)
             self.assertEqual(2, mock.call_count)
+
+    def test_rollback(self):
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1", lambda order: order)
+            .commit()
+        )
+        execution = SagaExecution.from_saga(saga)
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            execution.execute()
+        execution.execute(response=Foo("order1"))
+
+        with _PUBLISH_MOCKER as mock:
+            execution.rollback()
+            self.assertEqual(1, mock.call_count)
+
+            mock.reset_mock()
+            execution.rollback()
+            self.assertEqual(0, mock.call_count)
 
 
 if __name__ == "__main__":
