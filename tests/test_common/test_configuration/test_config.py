@@ -77,6 +77,18 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(10, queue.records)
         self.assertEqual(2, queue.retry)
 
+    def test_config_saga_queue_database(self):
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        saga = config.saga
+        queue = saga.queue
+        self.assertEqual("order_db", queue.database)
+        self.assertEqual("minos", queue.user)
+        self.assertEqual("min0s", queue.password)
+        self.assertEqual("localhost", queue.host)
+        self.assertEqual(5432, queue.port)
+        self.assertEqual(10, queue.records)
+        self.assertEqual(2, queue.retry)
+
     def test_config_repository(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         repository = config.repository
@@ -94,13 +106,6 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("min0s", snapshot.password)
         self.assertEqual("localhost", snapshot.host)
         self.assertEqual(5432, snapshot.port)
-
-    def test_config_saga_items(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
-        self.assertEqual(len(config.saga), 2)
-
-        saga1 = config.saga[0]
-        self.assertEqual(saga1.name, "AddOrder")
 
     @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
     def test_overwrite_with_environment(self):
