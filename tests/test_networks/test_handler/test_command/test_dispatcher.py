@@ -101,3 +101,32 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
                 records = await cur.fetchone()
 
         assert records[0] == 0
+
+    async def test_event_queue_checker_wrong_event(self):
+        handler = MinosCommandHandlerDispatcher.from_config(config=self.config)
+        await handler.setup()
+        bin_data =  bytes(b'Test')
+
+
+        async with aiopg.connect(**self.commands_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                    ("AddOrder", 0, bin_data, datetime.datetime.now(),),
+                )
+
+                queue_id = await cur.fetchone()
+                affected_rows = cur.rowcount
+
+        assert affected_rows == 1
+        assert queue_id[0] > 0
+
+        # Must get the record, call on_reply function and delete the record from DB
+        await handler.queue_checker()
+
+        async with aiopg.connect(**self.commands_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
+                records = await cur.fetchone()
+
+        assert records[0] == 1

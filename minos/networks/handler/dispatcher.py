@@ -141,5 +141,5 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
                                     await cur2.execute("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
 
     @abstractmethod
-    def _is_valid_instance(self, value: bytes):
+    def _is_valid_instance(self, value: bytes):  # pragma: no cover
         raise Exception("Method not implemented")

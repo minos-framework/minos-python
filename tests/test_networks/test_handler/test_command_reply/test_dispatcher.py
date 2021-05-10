@@ -73,17 +73,22 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
         self.assertIsNone(handler)
 
     async def test_event_queue_checker(self):
+        self._meta_saga_queue_db = self._config.saga.queue._asdict()
+        self._meta_saga_queue_db.pop("records")
+        self._meta_saga_queue_db.pop("retry")
+
         handler = MinosCommandReplyHandlerDispatcher.from_config(config=self.config)
         await handler.setup()
+
+        async with aiopg.connect(**self._meta_saga_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("DELETE FROM {table};".format(table=MinosCommandReplyHandlerDispatcher.TABLE))
 
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = CommandReply(topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="mkk2334")
         bin_data = instance.avro_bytes
         CommandReply.from_avro_bytes(bin_data)
 
-        self._meta_saga_queue_db = self._config.saga.queue._asdict()
-        self._meta_saga_queue_db.pop("records")
-        self._meta_saga_queue_db.pop("retry")
         async with aiopg.connect(**self._meta_saga_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
@@ -100,12 +105,48 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
         # Must get the record, call on_reply function and delete the record from DB
         await handler.queue_checker()
 
-        self._meta_saga_queue_db = self._config.saga.queue._asdict()
-        self._meta_saga_queue_db.pop("records")
-        self._meta_saga_queue_db.pop("retry")
         async with aiopg.connect(**self._meta_saga_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
                 records = await cur.fetchone()
 
         assert records[0] == 0
+
+    async def test_command_reply_queue_checker_wrong_event(self):
+        self._meta_saga_queue_db = self._config.saga.queue._asdict()
+        self._meta_saga_queue_db.pop("records")
+        self._meta_saga_queue_db.pop("retry")
+
+        handler = MinosCommandReplyHandlerDispatcher.from_config(config=self.config)
+        await handler.setup()
+
+        async with aiopg.connect(**self._meta_saga_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("DELETE FROM {table};".format(table=MinosCommandReplyHandlerDispatcher.TABLE))
+
+        bin_data =  bytes(b'Test')
+
+        async with aiopg.connect(**self._meta_saga_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                    ("AddOrder", 0, bin_data, datetime.datetime.now(),),
+                )
+
+                queue_id = await cur.fetchone()
+                affected_rows = cur.rowcount
+
+        assert affected_rows == 1
+        assert queue_id[0] > 0
+
+        # Must get the record, call on_reply function and delete the record from DB
+        await handler.queue_checker()
+
+        async with aiopg.connect(**self._meta_saga_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
+                records = await cur.fetchone()
+
+
+
+        assert records[0] == 1

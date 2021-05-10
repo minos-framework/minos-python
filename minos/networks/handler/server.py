@@ -121,7 +121,7 @@ class MinosHandlerServer(MinosHandlerSetup):
         return affected_rows, id
 
     @abstractmethod
-    def _is_valid_instance(self, value: bytes):
+    def _is_valid_instance(self, value: bytes):  # pragma: no cover
         raise Exception("Method not implemented")
 
     async def handle_message(self, consumer: AsyncIterator):
