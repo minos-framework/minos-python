@@ -104,9 +104,6 @@ class Saga(MinosBaseSagaBuilder):
     def __eq__(self, other: SagaStep) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
-    def __hash__(self) -> int:
-        return hash(tuple(self))
-
     def __iter__(self) -> Iterable:
         yield from (
             self.name,
