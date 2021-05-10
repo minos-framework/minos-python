@@ -7,24 +7,30 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from typing import (
     NoReturn,
-    Optional,
+    Type,
 )
 
 from minos.common import (
-    Aggregate,
     MinosModel,
+    MinosModelException,
+    ModelField,
+    import_module,
+)
+from minos.common.meta import (
+    self_or_classmethod,
 )
 
 
 class SagaContext(MinosModel):
     """TODO"""
 
-    content: dict[str, MinosModel]
+    types_: dict[str, str]
 
-    def __init__(self, content: Optional[dict[str, (str, MinosModel)]] = None, *args, **kwargs):
-        if content is None:
-            content = dict()
-        super().__init__(*args, content=content, **kwargs)
+    def __init__(self, **kwargs):
+        types_ = kwargs.pop("types_", None)
+        if types_ is None:
+            types_ = {k: v.classname for k, v in kwargs.items()}
+        super().__init__(types_=types_, **kwargs)
 
     def update(self, key: str, value: MinosModel) -> NoReturn:
         """TODO
@@ -33,4 +39,18 @@ class SagaContext(MinosModel):
         :param value: TODO
         :return: TODO
         """
-        self.content[key] = value
+        setattr(self, key, value)
+
+    def __setattr__(self, key, value):
+        try:
+            super().__setattr__(key, value)
+        except MinosModelException:
+            self.types_[key] = value.classname
+            self._fields[key] = ModelField(key, type(value), value)
+
+    # noinspection PyMethodParameters
+    @self_or_classmethod
+    def _type_hints(self_or_cls) -> dict[str, Type]:
+        yield from super()._type_hints()
+        for k, v in self_or_cls.types_.items():
+            yield k, import_module(v)

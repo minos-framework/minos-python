@@ -7,7 +7,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-import uuid
 from unittest.mock import (
     patch,
 )
@@ -65,7 +64,7 @@ class TestSagaExecution(unittest.TestCase):
 
         context = execution.execute(response=Foo("order2"))
         self.assertEqual(SagaStatus.Finished, execution.status)
-        self.assertEqual(SagaContext({"order1": Foo("order1"), "order2": Foo("order2")}), context)
+        self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2")), context)
 
     def test_execute_failure(self):
         saga = (
@@ -140,7 +139,7 @@ class TestSagaExecution(unittest.TestCase):
 
         expected = {
             "already_rollback": False,
-            "context": SagaContext(),
+            "context": SagaContext().avro_bytes,
             "definition": {
                 "name": "OrdersAdd",
                 "steps": [
@@ -160,7 +159,11 @@ class TestSagaExecution(unittest.TestCase):
             "status": "created",
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
-        self.assertEqual(expected, execution.raw)
+        observed = execution.raw
+        self.assertEqual(
+            SagaContext.from_avro_bytes(expected.pop("context")), SagaContext.from_avro_bytes(observed.pop("context"))
+        )
+        self.assertEqual(expected, observed)
 
     def test_from_raw(self):
         from minos.saga import (
@@ -169,7 +172,7 @@ class TestSagaExecution(unittest.TestCase):
 
         raw = {
             "already_rollback": False,
-            "context": SagaContext({"order1": Foo("hola")}),
+            "context": SagaContext(order1=Foo("hola")).avro_bytes,
             "definition": {
                 "name": "OrdersAdd",
                 "steps": [
