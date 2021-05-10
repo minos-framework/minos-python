@@ -22,7 +22,7 @@ from minos.common import (
 class MinosLocalState:
     """TODO"""
 
-    def __init__(self, db_path: Union[Path, str], storage_cls: Type[MinosStorage], db_name: str):
+    def __init__(self, db_path: Union[Path, str], storage_cls: Type[MinosStorage], db_name: str = "LocalState"):
         self.db_path = db_path
         self.db_name = db_name
         # noinspection PyArgumentList

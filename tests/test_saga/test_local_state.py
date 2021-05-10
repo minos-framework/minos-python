@@ -29,18 +29,18 @@ class TestMinosLocalState(unittest.TestCase):
         rmtree(self.DB_PATH, ignore_errors=True)
 
     def test_add_get(self):
-        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH, db_name="LocalState")
+        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
         storage.add("foo", "bar")
         self.assertEqual("bar", storage.get("foo"))
 
     def test_update_get(self):
-        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH, db_name="LocalState")
+        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
         storage.add("foo", "bar")
         storage.update("foo", "foobar")
         self.assertEqual("foobar", storage.get("foo"))
 
     def test_add_delete(self):
-        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH, db_name="LocalState")
+        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
         storage.add("foo", "bar")
         storage.delete("foo")
 

@@ -48,7 +48,7 @@ class MinosSagaStorage:
     ):
         self.uuid = uuid
         self.saga_name = name
-        self._local_state = MinosLocalState(storage_cls=storage_cls, db_path=db_path, db_name="LocalState")
+        self._local_state = MinosLocalState(storage_cls=storage_cls, db_path=db_path)
         self._state = {}
 
     @classmethod
