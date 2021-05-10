@@ -94,3 +94,8 @@ History
 ------------------
 
 * Added SAGA Attriubutes in MinosConfig
+
+0.0.8 (2021-05-10)
+------------------
+
+* Added Config Parameters for MinosConfig
