@@ -11,6 +11,7 @@ from .definitions import (
     MinosBaseSagaBuilder,
     Saga,
     SagaStep,
+    SagaStepOperation,
     identity_fn,
 )
 from .exceptions import (
