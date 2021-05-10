@@ -77,7 +77,7 @@ class SagaStepOperation(object):
         return {"name": self.name, "callback": classname(self.callback)}
 
     @classmethod
-    def from_raw(cls, raw: dict[str, Any], **kwargs) -> Optional[SagaStepOperation]:
+    def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaStepOperation]], **kwargs) -> Optional[SagaStepOperation]:
         """TODO
 
         :param raw: TODO
@@ -86,6 +86,10 @@ class SagaStepOperation(object):
         """
         if raw is None:
             return None
+
+        if isinstance(raw, cls):
+            return raw
+
         current = raw | kwargs
         if isinstance(current["callback"], str):
             current["callback"] = import_module(current["callback"])

@@ -19,6 +19,7 @@ from minos.saga import (
     MinosSagaNotDefinedException,
     Saga,
     SagaStep,
+    SagaStepOperation,
 )
 from minos.saga.exceptions import (
     MinosUndefinedInvokeParticipantException,
@@ -26,6 +27,24 @@ from minos.saga.exceptions import (
 from tests.utils import (
     foo_fn,
 )
+
+
+class TestSagaStepOperation(unittest.TestCase):
+    def test_raw(self):
+        step = SagaStepOperation("CreateFoo", foo_fn)
+        expected = {"callback": "tests.utils.foo_fn", "name": "CreateFoo"}
+        self.assertEqual(expected, step.raw)
+
+    def test_from_raw(self):
+        raw = {"callback": "tests.utils.foo_fn", "name": "CreateFoo"}
+
+        expected = SagaStepOperation("CreateFoo", foo_fn)
+        self.assertEqual(expected, SagaStepOperation.from_raw(raw))
+
+    def test_from_raw_already(self):
+        expected = SagaStepOperation("CreateFoo", foo_fn)
+        observed = SagaStepOperation.from_raw(expected)
+        self.assertEqual(expected, observed)
 
 
 class TestSagaStep(unittest.TestCase):
