@@ -129,10 +129,10 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
                         call_ok = False
                         try:
                             reply_on = self.get_event_handler(topic=row[1])
-                            valid_instance, event_instance = self._is_valid_event(row[3])
+                            valid_instance, instance = self._is_valid_instance(row[3])
                             if not valid_instance:
                                 return
-                            await reply_on(topic=row[1], event=event_instance)
+                            await reply_on(row[1], instance)
                             call_ok = True
                         finally:
                             if call_ok:
@@ -141,5 +141,5 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
                                     await cur2.execute("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
 
     @abstractmethod
-    def _is_valid_event(self, value: bytes):
+    def _is_valid_instance(self, value: bytes):
         raise Exception("Method not implemented")

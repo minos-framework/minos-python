@@ -44,16 +44,16 @@ commands:
     port: 9092
     items:
         - name: AddOrder
-          controller: minos.services.OrderService
+          controller: tests.services.CommandTestService.CommandService
           action: add_order
         - name: DeleteOrder
-          controller: minos.services.OrderService
+          controller: tests.services.CommandTestService.CommandService
           action: delete_order
         - name: UpdateOrder
-          controller: minos.services.OrderService
+          controller: tests.services.CommandTestService.CommandService
           action: update_order
         - name: GetOrder
-          controller: minos.service.OrderService
+          controller: tests.service.CommandTestService.CommandService
           action: get_order
     queue:
         database: order_db
@@ -64,9 +64,18 @@ commands:
         records: 10
         retry: 2
 saga:
-    - name: AddOrder
-      controller: minos.services.OrderService
-      action: add_order
-    - name: DeleteOrder
-      controller: minos.services.OrderService
-      action: delete_order
+    items:
+        - name: AddOrder
+          controller: tests.services.SagaTestService.SagaService
+          action: add_order
+        - name: DeleteOrder
+          controller: tests.services.SagaTestService.SagaService
+          action: delete_order
+    queue:
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 10
+        retry: 2

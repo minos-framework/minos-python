@@ -11,6 +11,7 @@ from __future__ import (
 
 from abc import abstractmethod
 
+from aiokafka import AIOKafkaConsumer
 from psycopg2.extensions import AsIs
 import asyncio
 import datetime
@@ -38,7 +39,7 @@ class MinosHandlerServer(MinosHandlerSetup):
     """
 
 
-    __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_kafka_conn_data", "_broker_group_name"
+    __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_broker_group_name"
 
     def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
@@ -51,7 +52,6 @@ class MinosHandlerServer(MinosHandlerSetup):
             item.name: {"controller": item.controller, "action": item.action} for item in config.items
         }
         self._topics = list(self._handler.keys())
-        self._kafka_conn_data = f"{config.broker.host}:{config.broker.port}"
         self._table_name = table_name
 
     @classmethod
@@ -115,13 +115,13 @@ class MinosHandlerServer(MinosHandlerSetup):
         """
         # the handler receive a message and store in the queue database
         # check if the event binary string is well formatted
-        if not self._is_valid_event(msg.value):
+        if not self._is_valid_instance(msg.value):
             return
         affected_rows, id = await self.queue_add(msg.topic, msg.partition, msg.value)
         return affected_rows, id
 
     @abstractmethod
-    def _is_valid_event(self, value: bytes):
+    def _is_valid_instance(self, value: bytes):
         raise Exception("Method not implemented")
 
     async def handle_message(self, consumer: AsyncIterator):
@@ -135,3 +135,17 @@ class MinosHandlerServer(MinosHandlerSetup):
 
         async for msg in consumer:
             await self.handle_single_message(msg)
+
+    @staticmethod
+    async def kafka_consumer(topics: list, group_name: str, conn: str):
+        # start the Service Event Consumer for Kafka
+        consumer = AIOKafkaConsumer(
+            group_id=group_name,
+            auto_offset_reset="latest",
+            bootstrap_servers=conn,
+        )
+
+        await consumer.start()
+        consumer.subscribe(topics)
+
+        return consumer

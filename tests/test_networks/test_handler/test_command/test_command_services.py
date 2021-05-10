@@ -7,19 +7,19 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosEventPeriodicService,
-    MinosEventServerService,
+    MinosCommandPeriodicService,
+    MinosCommandServerService,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class TestMinosEventServices(PostgresAsyncTestCase):
+class TestMinosCommandServices(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):
-        service = MinosEventServerService(loop=None, config=self.config)
+        service = MinosCommandServerService(loop=None, config=self.config)
 
         async def _fn(consumer):
             self.assertEqual(service.consumer, consumer)
@@ -35,7 +35,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):
-        service = MinosEventPeriodicService(interval=1, loop=None, config=self.config)
+        service = MinosCommandPeriodicService(interval=1, loop=None, config=self.config)
         mock = MagicMock(side_effect=service.dispatcher.setup)
         service.dispatcher.setup = mock
         await service.start()
@@ -43,7 +43,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
         await service.stop()
 
     async def test_callback(self):
-        service = MinosEventPeriodicService(interval=1, loop=None, config=self.config)
+        service = MinosCommandPeriodicService(interval=1, loop=None, config=self.config)
         await service.dispatcher.setup()
         mock = MagicMock(side_effect=service.dispatcher.queue_checker)
         service.dispatcher.queue_checker = mock

@@ -27,9 +27,9 @@ class MinosEventHandlerDispatcher(MinosHandlerDispatcher):
         super().__init__(table_name=self.TABLE, config=config.events, **kwargs)
         self._broker_group_name = f"event_{config.service.name}"
 
-    def _is_valid_event(self, value: bytes):
+    def _is_valid_instance(self, value: bytes):
         try:
-            event_instance = Event.from_avro_bytes(value)
-            return True, event_instance
+            instance = Event.from_avro_bytes(value)
+            return True, instance
         except:
             return False, None
