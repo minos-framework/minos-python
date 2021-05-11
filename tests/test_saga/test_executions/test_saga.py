@@ -137,7 +137,7 @@ class TestSagaExecution(unittest.TestCase):
 
         expected = {
             "already_rollback": False,
-            "context": SagaContext(order1=Foo("hola")).avro_str,
+            "context": SagaContext().avro_str,
             "definition": {
                 "name": "OrdersAdd",
                 "steps": [

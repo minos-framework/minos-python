@@ -10,7 +10,7 @@ importlib-metadata==3.10.0
 iniconfig==1.1.1
 isort==5.8.0
 lmdb==1.1.1
-minos-microservice-common==0.0.5
+minos-microservice-common==0.0.10
 mypy-extensions==0.4.3
 orjson==3.5.1
 packaging==20.9

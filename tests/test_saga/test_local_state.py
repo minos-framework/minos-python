@@ -18,6 +18,7 @@ from uuid import (
 )
 
 from minos.common import (
+    MinosJsonBinaryProtocol,
     MinosStorageLmdb,
 )
 from minos.saga import (
@@ -45,23 +46,23 @@ class TestMinosLocalState(unittest.TestCase):
         rmtree(self.DB_PATH, ignore_errors=True)
 
     def test_add_get(self):
-        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
+        storage = MinosLocalState(MinosStorageLmdb, db_path=self.DB_PATH)
         storage.add("foo", "bar")
         self.assertEqual("bar", storage.get("foo"))
 
     def test_update_get(self):
-        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
+        storage = MinosLocalState(MinosStorageLmdb, db_path=self.DB_PATH)
         storage.add("foo", "bar")
         storage.update("foo", "foobar")
         self.assertEqual("foobar", storage.get("foo"))
 
     def test_add_delete(self):
-        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
+        storage = MinosLocalState(MinosStorageLmdb, db_path=self.DB_PATH)
         storage.add("foo", "bar")
         storage.delete("foo")
 
     def test_add_get_saga_execution(self):
-        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
+        storage = MinosLocalState(MinosStorageLmdb, db_path=self.DB_PATH, protocol=MinosJsonBinaryProtocol)
 
         saga = (
             Saga("OrdersAdd")
@@ -86,10 +87,10 @@ class TestMinosLocalState(unittest.TestCase):
             except MinosSagaPausedExecutionStepException:
                 pass
 
-        # storage.add("foo", expected.raw)
-        # observed = SagaExecution.from_raw(storage.get("foo"))
-        #
-        # self.assertEqual(expected, observed)
+        storage.add("foo", expected.raw)
+        observed = SagaExecution.from_raw(storage.get("foo"))
+
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
