@@ -7,9 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import abc
-from typing import (
-    Any,
-)
+from typing import Any
 
 
 class MinosBinaryProtocol(abc.ABC):

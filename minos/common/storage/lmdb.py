@@ -14,9 +14,7 @@ from ..protocol import (
     MinosBinaryProtocol,
     MinosAvroValuesDatabase,
 )
-from .abstract import (
-    MinosStorage,
-)
+from .abstract import MinosStorage
 
 
 class MinosStorageLmdb(MinosStorage):

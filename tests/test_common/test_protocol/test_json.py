@@ -8,9 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import unittest
 
-from minos.common import (
-    MinosJsonBinaryProtocol,
-)
+from minos.common import MinosJsonBinaryProtocol
 
 
 class TestMinosJsonBinaryProtocol(unittest.TestCase):
