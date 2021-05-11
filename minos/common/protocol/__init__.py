@@ -13,3 +13,6 @@ from .avro import (
     MinosAvroProtocol,
     MinosAvroValuesDatabase,
 )
+from .json import (
+    MinosJsonBinaryProtocol,
+)
