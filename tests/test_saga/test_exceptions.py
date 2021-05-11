@@ -17,10 +17,13 @@ from minos.saga import (
     MinosMultipleWithCompensationException,
     MinosSagaEmptyStepException,
     MinosSagaException,
+    MinosSagaExecutionException,
     MinosSagaExecutionStepException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotDefinedException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionException,
+    MinosSagaRollbackExecutionStepException,
     MinosSagaStepException,
     MinosUndefinedInvokeParticipantCallbackException,
     MinosUndefinedInvokeParticipantException,
@@ -117,12 +120,18 @@ class TestExceptions(unittest.TestCase):
         self.assertEqual(expected, repr(MinosUndefinedInvokeParticipantException()))
 
     def test_execution(self):
+        self.assertTrue(issubclass(MinosSagaExecutionException, MinosException))
+
+    def test_execution_rollback(self):
+        self.assertTrue(issubclass(MinosSagaRollbackExecutionException, MinosSagaExecutionException))
+
+    def test_execution_step(self):
         self.assertTrue(issubclass(MinosSagaExecutionStepException, MinosException))
 
-    def test_execution_failed_step(self):
-        self.assertTrue(issubclass(MinosSagaFailedExecutionStepException, MinosException))
+    def test_execution_step_failed_step(self):
+        self.assertTrue(issubclass(MinosSagaFailedExecutionStepException, MinosSagaExecutionStepException))
 
-    def test_execution_failed_step_repr(self):
+    def test_execution_step_failed_step_repr(self):
         expected = (
             'MinosSagaFailedExecutionStepException(message="There was '
             "a failure while 'SagaExecutionStep' was executing.\")"
@@ -130,15 +139,18 @@ class TestExceptions(unittest.TestCase):
 
         self.assertEqual(expected, repr(MinosSagaFailedExecutionStepException()))
 
-    def test_execution_paused_step(self):
-        self.assertTrue(issubclass(MinosSagaPausedExecutionStepException, MinosException))
+    def test_execution_step_paused_step(self):
+        self.assertTrue(issubclass(MinosSagaPausedExecutionStepException, MinosSagaExecutionStepException))
 
-    def test_execution_paused_step_repr(self):
+    def test_execution_step_paused_step_repr(self):
         expected = (
             'MinosSagaPausedExecutionStepException(message="There was '
             "a pause while 'SagaExecutionStep' was executing.\")"
         )
         self.assertEqual(expected, repr(MinosSagaPausedExecutionStepException()))
+
+    def test_execution_step_rollback(self):
+        self.assertTrue(issubclass(MinosSagaRollbackExecutionStepException, MinosSagaExecutionStepException))
 
 
 if __name__ == "__main__":

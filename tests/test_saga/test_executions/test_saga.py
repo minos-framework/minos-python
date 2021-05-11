@@ -17,6 +17,7 @@ from uuid import (
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionException,
     Saga,
     SagaContext,
     SagaExecution,
@@ -114,7 +115,8 @@ class TestSagaExecution(unittest.TestCase):
             self.assertEqual(1, mock.call_count)
 
             mock.reset_mock()
-            execution.rollback()
+            with self.assertRaises(MinosSagaRollbackExecutionException):
+                execution.rollback()
             self.assertEqual(0, mock.call_count)
 
     def test_raw(self):
