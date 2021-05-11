@@ -17,19 +17,32 @@ from minos.saga import (
     MinosMultipleWithCompensationException,
     MinosSagaEmptyStepException,
     MinosSagaNotDefinedException,
+    MinosUndefinedInvokeParticipantException,
     Saga,
     SagaStep,
-)
-from minos.saga.exceptions import (
-    MinosUndefinedInvokeParticipantException,
+    SagaStepOperation,
 )
 from tests.utils import (
     foo_fn,
 )
 
 
-def _callback():
-    ...
+class TestSagaStepOperation(unittest.TestCase):
+    def test_raw(self):
+        step = SagaStepOperation("CreateFoo", foo_fn)
+        expected = {"callback": "tests.utils.foo_fn", "name": "CreateFoo"}
+        self.assertEqual(expected, step.raw)
+
+    def test_from_raw(self):
+        raw = {"callback": "tests.utils.foo_fn", "name": "CreateFoo"}
+
+        expected = SagaStepOperation("CreateFoo", foo_fn)
+        self.assertEqual(expected, SagaStepOperation.from_raw(raw))
+
+    def test_from_raw_already(self):
+        expected = SagaStepOperation("CreateFoo", foo_fn)
+        observed = SagaStepOperation.from_raw(expected)
+        self.assertEqual(expected, observed)
 
 
 class TestSagaStep(unittest.TestCase):
@@ -43,7 +56,7 @@ class TestSagaStep(unittest.TestCase):
 
     def test_on_reply_multiple_raises(self):
         with self.assertRaises(MinosMultipleOnReplyException):
-            SagaStep().on_reply("foo", _callback).on_reply("foo", _callback)
+            SagaStep().on_reply("foo").on_reply("foo")
 
     def test_step_validates(self):
         step = SagaStep(Saga("SagaTest"))
@@ -74,27 +87,19 @@ class TestSagaStep(unittest.TestCase):
             SagaStep().with_compensation("UserRemove", foo_fn).validate()
 
     def test_raw(self):
-        from minos.saga import (
-            identity_fn,
-        )
-
         step = SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
         expected = {
-            "raw_invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
-            "raw_with_compensation": {"callback": foo_fn, "name": "FooDelete",},
-            "raw_on_reply": {"callback": identity_fn, "name": "foo",},
+            "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "FoodAdd",},
+            "with_compensation": {"callback": "tests.utils.foo_fn", "name": "FooDelete",},
+            "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo",},
         }
         self.assertEqual(expected, step.raw)
 
     def test_from_raw(self):
-        from minos.saga import (
-            identity_fn,
-        )
-
         raw = {
-            "raw_invoke_participant": {"callback": foo_fn, "name": "FoodAdd",},
-            "raw_with_compensation": {"callback": foo_fn, "name": "FooDelete",},
-            "raw_on_reply": {"callback": identity_fn, "name": "foo",},
+            "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "FoodAdd",},
+            "with_compensation": {"callback": "tests.utils.foo_fn", "name": "FooDelete",},
+            "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo",},
         }
 
         expected = (

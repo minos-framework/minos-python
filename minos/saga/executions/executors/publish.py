@@ -9,7 +9,6 @@ from abc import (
     abstractmethod,
 )
 from typing import (
-    Any,
     NoReturn,
 )
 
@@ -17,6 +16,9 @@ from minos.common import (
     Aggregate,
 )
 
+from ...definitions import (
+    SagaStepOperation,
+)
 from ...exceptions import (
     MinosSagaException,
     MinosSagaFailedExecutionStepException,
@@ -32,7 +34,7 @@ from .local import (
 class PublishExecutor(LocalExecutor):
     """TODO"""
 
-    def exec(self, operation: dict[str, Any], context: SagaContext):
+    def exec(self, operation: SagaStepOperation, context: SagaContext):
         """TODO
 
         :param operation: TODO
@@ -54,7 +56,7 @@ class PublishExecutor(LocalExecutor):
         return context
 
     @abstractmethod
-    def _run_callback(self, operation: dict[str, Any], context: SagaContext) -> Aggregate:
+    def _run_callback(self, operation: SagaStepOperation, context: SagaContext) -> Aggregate:
         raise NotImplementedError
 
     @staticmethod

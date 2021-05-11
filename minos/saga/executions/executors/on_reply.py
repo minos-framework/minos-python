@@ -5,15 +5,14 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import uuid
-from typing import (
-    Any,
-)
 
 from minos.common import (
     Aggregate,
 )
 
+from ...definitions import (
+    SagaStepOperation,
+)
 from ...exceptions import (
     MinosSagaPausedExecutionStepException,
 )
@@ -29,7 +28,7 @@ class OnReplyExecutor(LocalExecutor):
     """TODO"""
 
     # noinspection PyUnusedLocal
-    def exec(self, operation: dict[str, Any], context: SagaContext, response: Aggregate = None, *args, **kwargs):
+    def exec(self, operation: SagaStepOperation, context: SagaContext, response: Aggregate = None, *args, **kwargs):
         """TODO
 
         :param operation: TODO
@@ -46,5 +45,5 @@ class OnReplyExecutor(LocalExecutor):
             raise MinosSagaPausedExecutionStepException()
 
         response = super().exec_one(operation, response)
-        context.update(operation["name"], response)
+        context.update(operation.name, response)
         return context

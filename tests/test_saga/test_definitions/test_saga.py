@@ -109,19 +109,19 @@ class TestSaga(unittest.TestCase):
             "name": "CreateShipment",
             "steps": [
                 {
-                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateOrder"},
-                    "raw_on_reply": None,
-                    "raw_with_compensation": {"callback": foo_fn, "name": "DeleteOrder"},
+                    "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateOrder"},
+                    "on_reply": None,
+                    "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteOrder"},
                 },
                 {
-                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateTicket"},
-                    "raw_on_reply": {"callback": create_ticket_on_reply_callback, "name": "ticket"},
-                    "raw_with_compensation": None,
+                    "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateTicket"},
+                    "on_reply": {"callback": "tests.callbacks.create_ticket_on_reply_callback", "name": "ticket"},
+                    "with_compensation": None,
                 },
                 {
-                    "raw_invoke_participant": {"callback": foo_fn, "name": "VerifyConsumer"},
-                    "raw_on_reply": None,
-                    "raw_with_compensation": None,
+                    "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "VerifyConsumer"},
+                    "on_reply": None,
+                    "with_compensation": None,
                 },
             ],
         }
@@ -132,19 +132,19 @@ class TestSaga(unittest.TestCase):
             "name": "CreateShipment",
             "steps": [
                 {
-                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateOrder"},
-                    "raw_on_reply": None,
-                    "raw_with_compensation": {"callback": foo_fn, "name": "DeleteOrder"},
+                    "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateOrder"},
+                    "on_reply": None,
+                    "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteOrder"},
                 },
                 {
-                    "raw_invoke_participant": {"callback": foo_fn, "name": "CreateTicket"},
-                    "raw_on_reply": {"callback": create_ticket_on_reply_callback, "name": "ticket"},
-                    "raw_with_compensation": None,
+                    "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateTicket"},
+                    "on_reply": {"callback": "tests.callbacks.create_ticket_on_reply_callback", "name": "ticket"},
+                    "with_compensation": None,
                 },
                 {
-                    "raw_invoke_participant": {"callback": foo_fn, "name": "VerifyConsumer"},
-                    "raw_on_reply": None,
-                    "raw_with_compensation": None,
+                    "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "VerifyConsumer"},
+                    "on_reply": None,
+                    "with_compensation": None,
                 },
             ],
         }

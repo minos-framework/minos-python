@@ -86,7 +86,7 @@ class SagaExecutionStep(object):
         self.status = SagaStepStatus.RunningInvokeParticipant
         executor = InvokeParticipantExecutor(*args, **kwargs)
         try:
-            executor.exec(self.definition.raw_invoke_participant, context)
+            executor.exec(self.definition.invoke_participant_operation, context)
         except MinosSagaException:
             self.status = SagaStepStatus.ErroredInvokeParticipant
             self.rollback(context, *args, **kwargs)
@@ -98,7 +98,7 @@ class SagaExecutionStep(object):
         executor = OnReplyExecutor(*args, **kwargs)
         # noinspection PyBroadException
         try:
-            context = executor.exec(self.definition.raw_on_reply, context, response=response)
+            context = executor.exec(self.definition.on_reply_operation, context, response=response)
         except MinosSagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedOnReply
             raise exc
@@ -118,7 +118,7 @@ class SagaExecutionStep(object):
             return context
 
         executor = WithCompensationExecutor(*args, **kwargs)
-        executor.exec(self.definition.raw_with_compensation, context)
+        executor.exec(self.definition.with_compensation_operation, context)
 
         self.already_rollback = True
         return context
