@@ -82,10 +82,6 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         """
         if self._pool is None:
             self._pool = await aiopg.create_pool(
-                host=self.host,
-                port=self.port,
-                dbname=self.database,
-                user=self.user,
-                password=self.password,
+                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
             )
         return self._pool

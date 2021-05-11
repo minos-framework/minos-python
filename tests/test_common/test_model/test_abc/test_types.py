@@ -122,13 +122,7 @@ class TestModelRef(unittest.TestCase):
 class TestTypesModule(unittest.TestCase):
     def test_custom_types(self):
         self.assertEqual(
-            (
-                "Fixed",
-                "Enum",
-                "Decimal",
-                "ModelRef",
-            ),
-            CUSTOM_TYPES,
+            ("Fixed", "Enum", "Decimal", "ModelRef",), CUSTOM_TYPES,
         )
 
 

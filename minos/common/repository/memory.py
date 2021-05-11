@@ -72,8 +72,7 @@ class MinosInMemoryRepository(MinosRepository):
         """
         iterable = iter(self._storage)
         iterable = filter(
-            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id,
-            iterable,
+            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id, iterable,
         )
         return len(list(iterable)) + 1
 
