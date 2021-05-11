@@ -30,12 +30,18 @@ class RestInterfaceHandler:
         self.load_routes()
 
     def load_routes(self):
+        """Load routes from config file."""
         for item in self._config.rest.endpoints:
             callable_f = self.class_resolver(item.controller, item.action)
             self._app.router.add_route(item.method, item.route, callable_f)
 
     @staticmethod
     def class_resolver(controller: str, action: str):
+        """Load controller class and action method.
+        :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
+        :param action: Config instance. Example: "get_order"
+        :return: A class method callable instance.
+        """
         object_class = import_module(controller)
         instance_class = object_class()
         class_method = getattr(instance_class, action)
@@ -43,4 +49,7 @@ class RestInterfaceHandler:
         return class_method
 
     def get_app(self):
+        """Return rest application instance.
+        :return: A `web.Application` instance.
+        """
         return self._app
