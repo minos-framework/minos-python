@@ -99,6 +99,14 @@ class MinosUndefinedInvokeParticipantException(MinosSagaStepException):
         super().__init__(message)
 
 
+class MinosSagaExecutionException(MinosSagaException):
+    """TODO"""
+
+
+class MinosSagaRollbackExecutionException(MinosSagaExecutionException):
+    """TODO"""
+
+
 class MinosSagaExecutionStepException(MinosSagaException):
     """TODO"""
 
@@ -119,3 +127,7 @@ class MinosSagaPausedExecutionStepException(MinosSagaExecutionStepException):
         if message is None:
             message = "There was a pause while 'SagaExecutionStep' was executing."
         super().__init__(message)
+
+
+class MinosSagaRollbackExecutionStepException(MinosSagaExecutionStepException):
+    """TODO"""
