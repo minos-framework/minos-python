@@ -21,6 +21,9 @@ from typing import (
     Optional,
 )
 
+from ...definitions import (
+    SagaStepOperation,
+)
 from ..context import (
     SagaContext,
 )
@@ -34,7 +37,7 @@ class LocalExecutor(ABC):
             loop = asyncio.get_event_loop()
         self.loop = loop
 
-    def exec_one(self, operation: dict[str, Any], *args, **kwargs) -> Any:
+    def exec_one(self, operation: SagaStepOperation, *args, **kwargs) -> Any:
         """TODO
 
         :param operation: TODO
@@ -42,7 +45,7 @@ class LocalExecutor(ABC):
         :return: TODO
         """
 
-        return self._exec_function(operation["callback"], *args, **kwargs)
+        return self._exec_function(operation.callback, *args, **kwargs)
 
     def _exec_function(self, func: Callable, *args, **kwargs) -> SagaContext:
         """TODO

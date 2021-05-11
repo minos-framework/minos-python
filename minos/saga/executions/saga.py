@@ -31,6 +31,7 @@ from ..definitions import (
 from ..exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionException,
 )
 from .context import (
     SagaContext,
@@ -82,6 +83,7 @@ class SagaExecution(object):
         current = raw | kwargs
         current["definition"] = Saga.from_raw(current["definition"])
         current["status"] = SagaStatus.from_raw(current["status"])
+        current["context"] = SagaContext.from_avro_bytes(current["context"])
 
         if isinstance(current["uuid"], str):
             current["uuid"] = UUID(current["uuid"])
@@ -142,7 +144,7 @@ class SagaExecution(object):
         """
 
         if self.already_rollback:
-            return
+            raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
 
         for execution_step in reversed(self.executed_steps):
             self.context = execution_step.rollback(self.context, *args, **kwargs)
@@ -177,7 +179,7 @@ class SagaExecution(object):
             "uuid": str(self.uuid),
             "status": self.status.raw,
             "executed_steps": [step.raw for step in self.executed_steps],
-            "context": self.context,
+            "context": self.context.avro_bytes,
             "already_rollback": self.already_rollback,
         }
 

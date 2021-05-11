@@ -20,6 +20,11 @@ from typing import (
     Union,
 )
 
+from minos.common import (
+    classname,
+    import_module,
+)
+
 from ..exceptions import (
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
@@ -56,20 +61,64 @@ def identity_fn(x):
     return x
 
 
+class SagaStepOperation(object):
+    """TODO"""
+
+    def __init__(self, name: str, callback: Callable):
+        self.name = name
+        self.callback = callback
+
+    @property
+    def raw(self) -> dict[str, Any]:
+        """TODO
+
+        :return: TODO
+        """
+        return {"name": self.name, "callback": classname(self.callback)}
+
+    @classmethod
+    def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaStepOperation]], **kwargs) -> Optional[SagaStepOperation]:
+        """TODO
+
+        :param raw: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        if raw is None:
+            return None
+
+        if isinstance(raw, cls):
+            return raw
+
+        current = raw | kwargs
+        if isinstance(current["callback"], str):
+            current["callback"] = import_module(current["callback"])
+        return cls(**current)
+
+    def __eq__(self, other: SagaStep) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.name,
+            self.callback,
+        )
+
+
 class SagaStep(object):
     """TODO"""
 
     def __init__(
         self,
         saga: Optional[Saga] = None,
-        raw_invoke_participant: dict[str, Any] = None,
-        raw_with_compensation: dict[str, Any] = None,
-        raw_on_reply: dict[str, Any] = None,
+        invoke_participant: Optional[SagaStepOperation] = None,
+        with_compensation: Optional[SagaStepOperation] = None,
+        on_reply: Optional[SagaStepOperation] = None,
     ):
         self.saga = saga
-        self.raw_invoke_participant = raw_invoke_participant
-        self.raw_with_compensation = raw_with_compensation
-        self.raw_on_reply = raw_on_reply
+        self.invoke_participant_operation = invoke_participant
+        self.with_compensation_operation = with_compensation
+        self.on_reply_operation = on_reply
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
@@ -83,6 +132,11 @@ class SagaStep(object):
             return raw
 
         current = raw | kwargs
+
+        current["invoke_participant"] = SagaStepOperation.from_raw(current["invoke_participant"])
+        current["with_compensation"] = SagaStepOperation.from_raw(current["with_compensation"])
+        current["on_reply"] = SagaStepOperation.from_raw(current["on_reply"])
+
         return cls(**current)
 
     def invoke_participant(self, name: Union[str, list], callback: CallBack) -> SagaStep:
@@ -92,10 +146,10 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
-        if self.raw_invoke_participant is not None:
+        if self.invoke_participant_operation is not None:
             raise MinosMultipleInvokeParticipantException()
 
-        self.raw_invoke_participant = {"name": name, "callback": callback}
+        self.invoke_participant_operation = SagaStepOperation(name, callback)
 
         return self
 
@@ -106,10 +160,10 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
-        if self.raw_with_compensation is not None:
+        if self.with_compensation_operation is not None:
             raise MinosMultipleWithCompensationException()
 
-        self.raw_with_compensation = {"name": name, "callback": callback}
+        self.with_compensation_operation = SagaStepOperation(name, callback)
 
         return self
 
@@ -120,10 +174,10 @@ class SagaStep(object):
         :param callback: TODO
         :return: TODO
         """
-        if self.raw_on_reply is not None:
+        if self.on_reply_operation is not None:
             raise MinosMultipleOnReplyException()
 
-        self.raw_on_reply = {"name": name, "callback": callback}
+        self.on_reply_operation = SagaStepOperation(name, callback)
 
         return self
 
@@ -152,10 +206,14 @@ class SagaStep(object):
 
         :return TODO:
         """
-        if self.raw_invoke_participant is None and self.raw_with_compensation is None and self.raw_on_reply is None:
+        if (
+            self.invoke_participant_operation is None
+            and self.with_compensation_operation is None
+            and self.on_reply_operation is None
+        ):
             raise MinosSagaEmptyStepException()
 
-        if self.raw_invoke_participant is None:
+        if self.invoke_participant_operation is None:
             raise MinosUndefinedInvokeParticipantException()
 
     @property
@@ -165,9 +223,13 @@ class SagaStep(object):
         :return: TODO
         """
         return {
-            "raw_invoke_participant": self.raw_invoke_participant,
-            "raw_with_compensation": self.raw_with_compensation,
-            "raw_on_reply": self.raw_on_reply,
+            "invoke_participant": (
+                None if self.invoke_participant_operation is None else self.invoke_participant_operation.raw
+            ),
+            "with_compensation": (
+                None if self.with_compensation_operation is None else self.with_compensation_operation.raw
+            ),
+            "on_reply": (None if self.on_reply_operation is None else self.on_reply_operation.raw),
         }
 
     def __eq__(self, other: SagaStep) -> bool:
@@ -175,7 +237,7 @@ class SagaStep(object):
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.raw_invoke_participant,
-            self.raw_with_compensation,
-            self.raw_on_reply,
+            self.invoke_participant_operation,
+            self.with_compensation_operation,
+            self.on_reply_operation,
         )

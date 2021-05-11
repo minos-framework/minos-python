@@ -14,6 +14,7 @@ from unittest.mock import (
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionStepException,
     SagaContext,
     SagaExecutionStep,
     SagaStep,
@@ -42,7 +43,7 @@ class TestSagaExecutionStep(unittest.TestCase):
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_invoke_participant_errored(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn_raises)
+        step = SagaStep().invoke_participant("FooAdd", foo_fn_raises).with_compensation("FooDelete", foo_fn)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
@@ -76,7 +77,7 @@ class TestSagaExecutionStep(unittest.TestCase):
 
         reply = fake_reply(Foo("foo"))
         context = execution.execute(context, reply=reply)
-        self.assertEqual(SagaContext({"foo": Foo("foo")}), context)
+        self.assertEqual(SagaContext(foo=Foo("foo")), context)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_on_reply_errored(self):
@@ -101,18 +102,26 @@ class TestSagaExecutionStep(unittest.TestCase):
         execution = SagaExecutionStep(step)
 
         with _PUBLISH_MOCKER as mock:
+            with self.assertRaises(MinosSagaRollbackExecutionStepException):
+                execution.rollback(context)
+            self.assertEqual(0, mock.call_count)
+
+            try:
+                execution.execute(context)
+            except MinosSagaPausedExecutionStepException:
+                pass
+            self.assertEqual(1, mock.call_count)
+            mock.reset_mock()
+
             execution.rollback(context)
             self.assertEqual(1, mock.call_count)
 
             mock.reset_mock()
-            execution.rollback(context)
+            with self.assertRaises(MinosSagaRollbackExecutionStepException):
+                execution.rollback(context)
             self.assertEqual(0, mock.call_count)
 
     def test_raw(self):
-        from minos.saga import (
-            identity_fn,
-        )
-
         definition = (
             SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")
         )
@@ -121,25 +130,22 @@ class TestSagaExecutionStep(unittest.TestCase):
         expected = {
             "already_rollback": False,
             "definition": {
-                "raw_invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
-                "raw_on_reply": {"callback": identity_fn, "name": "foo"},
-                "raw_with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+                "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
+                "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo"},
+                "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
             },
             "status": "created",
         }
         self.assertEqual(expected, execution.raw)
 
     def test_from_raw(self):
-        from minos.saga import (
-            identity_fn,
-        )
 
         raw = {
             "already_rollback": False,
             "definition": {
-                "raw_invoke_participant": {"callback": foo_fn, "name": "CreateFoo"},
-                "raw_on_reply": {"callback": identity_fn, "name": "foo"},
-                "raw_with_compensation": {"callback": foo_fn, "name": "DeleteFoo"},
+                "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
+                "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo"},
+                "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
             },
             "status": "created",
         }

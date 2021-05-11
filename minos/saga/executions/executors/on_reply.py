@@ -13,6 +13,9 @@ from minos.common import (
     CommandReply,
 )
 
+from ...definitions import (
+    SagaStepOperation,
+)
 from ...exceptions import (
     MinosSagaPausedExecutionStepException,
 )
@@ -28,7 +31,7 @@ class OnReplyExecutor(LocalExecutor):
     """TODO"""
 
     # noinspection PyUnusedLocal
-    def exec(self, operation: dict[str, Any], context: SagaContext, reply: CommandReply, *args, **kwargs):
+    def exec(self, operation: SagaStepOperation, context: SagaContext, reply: CommandReply, *args, **kwargs):
         """TODO
 
         :param operation: TODO
@@ -49,5 +52,5 @@ class OnReplyExecutor(LocalExecutor):
             value = value[0]
 
         response = super().exec_one(operation, value)
-        context.update(operation["name"], response)
+        context.update(operation.name, response)
         return context

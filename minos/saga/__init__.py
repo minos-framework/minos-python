@@ -11,6 +11,7 @@ from .definitions import (
     MinosBaseSagaBuilder,
     Saga,
     SagaStep,
+    SagaStepOperation,
     identity_fn,
 )
 from .exceptions import (
@@ -20,10 +21,13 @@ from .exceptions import (
     MinosMultipleWithCompensationException,
     MinosSagaEmptyStepException,
     MinosSagaException,
+    MinosSagaExecutionException,
     MinosSagaExecutionStepException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotDefinedException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionException,
+    MinosSagaRollbackExecutionStepException,
     MinosSagaStepException,
     MinosUndefinedInvokeParticipantCallbackException,
     MinosUndefinedInvokeParticipantException,

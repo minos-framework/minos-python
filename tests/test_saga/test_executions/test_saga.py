@@ -17,6 +17,7 @@ from uuid import (
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionException,
     Saga,
     SagaContext,
     SagaExecution,
@@ -68,7 +69,7 @@ class TestSagaExecution(unittest.TestCase):
         context = execution.execute(reply=reply)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
-        self.assertEqual(SagaContext({"order1": Foo("order1"), "order2": Foo("order2")}), context)
+        self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2")), context)
 
     def test_execute_failure(self):
         saga = (
@@ -121,14 +122,11 @@ class TestSagaExecution(unittest.TestCase):
             self.assertEqual(1, mock.call_count)
 
             mock.reset_mock()
-            execution.rollback()
+            with self.assertRaises(MinosSagaRollbackExecutionException):
+                execution.rollback()
             self.assertEqual(0, mock.call_count)
 
     def test_raw(self):
-        from minos.saga import (
-            identity_fn,
-        )
-
         saga = (
             Saga("OrdersAdd")
             .step()
@@ -146,19 +144,31 @@ class TestSagaExecution(unittest.TestCase):
 
         expected = {
             "already_rollback": False,
-            "context": SagaContext(),
+            "context": SagaContext().avro_bytes,
             "definition": {
                 "name": "OrdersAdd",
                 "steps": [
                     {
-                        "raw_invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
-                        "raw_on_reply": {"callback": identity_fn, "name": "order1"},
-                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_order_callback",
+                            "name": "CreateOrder",
+                        },
+                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                     {
-                        "raw_invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
-                        "raw_on_reply": {"callback": foo_fn_raises, "name": "order2"},
-                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_ticket_callback",
+                            "name": "CreateTicket",
+                        },
+                        "on_reply": {"callback": "tests.utils.foo_fn_raises", "name": "order2"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                 ],
             },
@@ -166,37 +176,55 @@ class TestSagaExecution(unittest.TestCase):
             "status": "created",
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
-        self.assertEqual(expected, execution.raw)
+        observed = execution.raw
+        self.assertEqual(
+            SagaContext.from_avro_bytes(expected.pop("context")), SagaContext.from_avro_bytes(observed.pop("context"))
+        )
+        self.assertEqual(expected, observed)
 
     def test_from_raw(self):
-        from minos.saga import (
-            identity_fn,
-        )
-
         raw = {
             "already_rollback": False,
-            "context": SagaContext({"order1": Foo("hola")}),
+            "context": SagaContext(order1=Foo("hola")).avro_bytes,
             "definition": {
                 "name": "OrdersAdd",
                 "steps": [
                     {
-                        "raw_invoke_participant": {"callback": create_order_callback, "name": "CreateOrder"},
-                        "raw_on_reply": {"callback": identity_fn, "name": "order1"},
-                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_order_callback",
+                            "name": "CreateOrder",
+                        },
+                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                     {
-                        "raw_invoke_participant": {"callback": create_ticket_callback, "name": "CreateTicket"},
-                        "raw_on_reply": {"callback": foo_fn_raises, "name": "order2"},
-                        "raw_with_compensation": {"callback": delete_order_callback, "name": "DeleteOrder"},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_ticket_callback",
+                            "name": "CreateTicket",
+                        },
+                        "on_reply": {"callback": "tests.utils.foo_fn_raises", "name": "order2"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                 ],
             },
             "executed_steps": [
                 {
                     "definition": {
-                        "raw_invoke_participant": {"name": "CreateOrder", "callback": create_order_callback},
-                        "raw_with_compensation": {"name": "DeleteOrder", "callback": delete_order_callback},
-                        "raw_on_reply": {"name": "order1", "callback": identity_fn},
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_order_callback",
+                            "name": "CreateOrder",
+                        },
+                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
                     },
                     "status": "finished",
                     "already_rollback": False,
