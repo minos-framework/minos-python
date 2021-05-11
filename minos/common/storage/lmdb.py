@@ -11,8 +11,8 @@ import typing as t
 import lmdb
 
 from ..protocol import (
-    MinosBinaryProtocol,
     MinosAvroValuesDatabase,
+    MinosBinaryProtocol,
 )
 from .abstract import (
     MinosStorage,
