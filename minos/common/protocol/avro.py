@@ -15,15 +15,9 @@ from fastavro import (
     writer,
 )
 
-from ..exceptions import (
-    MinosProtocolException,
-)
-from ..logs import (
-    log,
-)
-from .abc import (
-    MinosBinaryProtocol,
-)
+from ..exceptions import MinosProtocolException
+from ..logs import log
+from .abc import MinosBinaryProtocol
 
 
 class MinosAvroProtocol(MinosBinaryProtocol):

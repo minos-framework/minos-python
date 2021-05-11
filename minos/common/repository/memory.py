@@ -5,25 +5,17 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
-from itertools import (
-    count,
-)
+from itertools import count
 from typing import (
     AsyncIterator,
     NoReturn,
     Optional,
 )
 
-from .abc import (
-    MinosRepository,
-)
-from .entries import (
-    MinosRepositoryEntry,
-)
+from .abc import MinosRepository
+from .entries import MinosRepositoryEntry
 
 
 class MinosInMemoryRepository(MinosRepository):
@@ -72,8 +64,7 @@ class MinosInMemoryRepository(MinosRepository):
         """
         iterable = iter(self._storage)
         iterable = filter(
-            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id,
-            iterable,
+            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id, iterable,
         )
         return len(list(iterable)) + 1
 

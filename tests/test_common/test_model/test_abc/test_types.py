@@ -7,9 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import (
-    Generic,
-)
+from typing import Generic
 
 from minos.common import (
     CUSTOM_TYPES,
@@ -122,13 +120,7 @@ class TestModelRef(unittest.TestCase):
 class TestTypesModule(unittest.TestCase):
     def test_custom_types(self):
         self.assertEqual(
-            (
-                "Fixed",
-                "Enum",
-                "Decimal",
-                "ModelRef",
-            ),
-            CUSTOM_TYPES,
+            ("Fixed", "Enum", "Decimal", "ModelRef",), CUSTOM_TYPES,
         )
 
 

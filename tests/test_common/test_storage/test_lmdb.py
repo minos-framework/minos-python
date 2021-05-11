@@ -10,9 +10,7 @@ import shutil
 
 import pytest
 
-from minos.common import (
-    MinosStorageLmdb,
-)
+from minos.common import MinosStorageLmdb
 
 
 @pytest.fixture

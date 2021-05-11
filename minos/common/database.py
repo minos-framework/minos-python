@@ -5,22 +5,16 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from abc import (
-    ABC,
-)
+from abc import ABC
 from typing import (
     AsyncIterator,
     NoReturn,
 )
 
 import aiopg
-from aiopg import (
-    Pool,
-)
+from aiopg import Pool
 
-from .setup import (
-    MinosSetup,
-)
+from .setup import MinosSetup
 
 
 class PostgreSqlMinosDatabase(ABC, MinosSetup):
@@ -82,10 +76,6 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         """
         if self._pool is None:
             self._pool = await aiopg.create_pool(
-                host=self.host,
-                port=self.port,
-                dbname=self.database,
-                user=self.user,
-                password=self.password,
+                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
             )
         return self._pool

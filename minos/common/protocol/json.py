@@ -10,13 +10,9 @@ from base64 import (
     b64decode,
     b64encode,
 )
-from typing import (
-    Any,
-)
+from typing import Any
 
-from .abc import (
-    MinosBinaryProtocol,
-)
+from .abc import MinosBinaryProtocol
 
 
 class MinosJsonBinaryProtocol(MinosBinaryProtocol):
