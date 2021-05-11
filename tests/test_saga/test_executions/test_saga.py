@@ -137,7 +137,7 @@ class TestSagaExecution(unittest.TestCase):
 
         expected = {
             "already_rollback": False,
-            "context": SagaContext().avro_bytes,
+            "context": SagaContext(order1=Foo("hola")).avro_str,
             "definition": {
                 "name": "OrdersAdd",
                 "steps": [
@@ -171,14 +171,14 @@ class TestSagaExecution(unittest.TestCase):
         }
         observed = execution.raw
         self.assertEqual(
-            SagaContext.from_avro_bytes(expected.pop("context")), SagaContext.from_avro_bytes(observed.pop("context"))
+            SagaContext.from_avro_str(expected.pop("context")), SagaContext.from_avro_str(observed.pop("context"))
         )
         self.assertEqual(expected, observed)
 
     def test_from_raw(self):
         raw = {
             "already_rollback": False,
-            "context": SagaContext(order1=Foo("hola")).avro_bytes,
+            "context": SagaContext(order1=Foo("hola")).avro_str,
             "definition": {
                 "name": "OrdersAdd",
                 "steps": [

@@ -79,7 +79,7 @@ class SagaExecution(object):
         current = raw | kwargs
         current["definition"] = Saga.from_raw(current["definition"])
         current["status"] = SagaStatus.from_raw(current["status"])
-        current["context"] = SagaContext.from_avro_bytes(current["context"])
+        current["context"] = SagaContext.from_avro_str(current["context"])
 
         if isinstance(current["uuid"], str):
             current["uuid"] = UUID(current["uuid"])
@@ -175,7 +175,7 @@ class SagaExecution(object):
             "uuid": str(self.uuid),
             "status": self.status.raw,
             "executed_steps": [step.raw for step in self.executed_steps],
-            "context": self.context.avro_bytes,
+            "context": self.context.avro_str,
             "already_rollback": self.already_rollback,
         }
 
