@@ -10,15 +10,31 @@ import unittest
 from shutil import (
     rmtree,
 )
+from unittest.mock import (
+    patch,
+)
+from uuid import (
+    UUID,
+)
 
 from minos.common import (
     MinosStorageLmdb,
 )
 from minos.saga import (
     MinosLocalState,
+    MinosSagaPausedExecutionStepException,
+    Saga,
+    SagaExecution,
+)
+from tests.callbacks import (
+    create_order_callback,
+    create_ticket_callback,
+    delete_order_callback,
 )
 from tests.utils import (
     BASE_PATH,
+    Foo,
+    foo_fn_raises,
 )
 
 
@@ -43,6 +59,37 @@ class TestMinosLocalState(unittest.TestCase):
         storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
         storage.add("foo", "bar")
         storage.delete("foo")
+
+    def test_add_get_saga_execution(self):
+        storage = MinosLocalState(storage_cls=MinosStorageLmdb, db_path=self.DB_PATH)
+
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1")
+            .step()
+            .invoke_participant("CreateTicket", create_ticket_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order2", foo_fn_raises)
+            .commit()
+        )
+        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+            expected = SagaExecution.from_saga(saga)
+            try:
+                expected.execute()
+            except MinosSagaPausedExecutionStepException:
+                pass
+            try:
+                expected.execute(response=Foo("hola"))
+            except MinosSagaPausedExecutionStepException:
+                pass
+
+        # storage.add("foo", expected.raw)
+        # observed = SagaExecution.from_raw(storage.get("foo"))
+        #
+        # self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
