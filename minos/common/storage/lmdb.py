@@ -12,25 +12,19 @@ import lmdb
 
 from ..protocol import (
     MinosAvroValuesDatabase,
+    MinosBinaryProtocol,
 )
 from .abstract import (
     MinosStorage,
 )
 
 
-def _encode_values(value: t.Any) -> bytes:
-    return MinosAvroValuesDatabase.encode(value)
-
-
-def _decode_values(value: t.Any) -> bytes:
-    return MinosAvroValuesDatabase.decode(value)
-
-
 class MinosStorageLmdb(MinosStorage):
-    __slots__ = "_env", "_tables"
+    __slots__ = "_env", "_protocol", "_tables"
 
-    def __init__(self, env: lmdb.Environment):
+    def __init__(self, env: lmdb.Environment, protocol: t.Type[MinosBinaryProtocol] = MinosAvroValuesDatabase):
         self._env: lmdb.Environment = env
+        self._protocol = protocol
         self._tables = {}
 
     @property
@@ -40,7 +34,7 @@ class MinosStorageLmdb(MinosStorage):
     def add(self, table: str, key: str, value: t.Any) -> t.NoReturn:
         db_instance = self._get_table(table)
         with self._env.begin(write=True) as txn:
-            value_bytes: bytes = _encode_values(value)
+            value_bytes: bytes = self._protocol.encode(value)
             txn.put(key.encode(), value_bytes, db=db_instance)
 
     def get(self, table: str, key) -> t.Union[None, t.Any]:
@@ -49,7 +43,7 @@ class MinosStorageLmdb(MinosStorage):
             value_binary = txn.get(key.encode())
             if value_binary is not None:
                 # decode the returned value
-                return _decode_values(value_binary)
+                return self._protocol.decode(value_binary)
             return None
 
     def delete(self, table: str, key: str) -> t.NoReturn:
@@ -60,7 +54,7 @@ class MinosStorageLmdb(MinosStorage):
     def update(self, table: str, key: str, value: t.Any) -> t.NoReturn:
         db_instance = self._get_table(table)
         with self._env.begin(write=True, db=db_instance) as txn:
-            value_bytes: bytes = _encode_values(value)
+            value_bytes: bytes = self._protocol.encode(value)
             txn.put(key.encode(), value_bytes, db=db_instance, overwrite=True)
 
     def _get_table(self, table: str) -> lmdb._Database:

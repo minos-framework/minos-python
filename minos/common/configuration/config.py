@@ -208,16 +208,16 @@ class MinosConfig(MinosConfigAbstract):
     def service(self) -> SERVICE:
         """Get the service config.
 
-         :return: A ``SERVICE`` NamedTuple instance.
-         """
+        :return: A ``SERVICE`` NamedTuple instance.
+        """
         return SERVICE(name=self._get("service.name"))
 
     @property
     def rest(self) -> REST:
         """Get the rest config.
 
-         :return: A ``REST`` NamedTuple instance.
-         """
+        :return: A ``REST`` NamedTuple instance.
+        """
         broker = self._rest_broker
         endpoints = self._rest_endpoints
         return REST(broker=broker, endpoints=endpoints)
@@ -247,8 +247,8 @@ class MinosConfig(MinosConfigAbstract):
     def events(self) -> EVENTS:
         """Get the events config.
 
-         :return: A ``EVENTS`` NamedTuple instance.
-         """
+        :return: A ``EVENTS`` NamedTuple instance.
+        """
         broker = self._events_broker
         queue = self._events_queue
         events = self._events_items
@@ -284,8 +284,8 @@ class MinosConfig(MinosConfigAbstract):
     def commands(self) -> COMMANDS:
         """Get the commands config.
 
-         :return: A ``COMMAND`` NamedTuple instance.
-         """
+        :return: A ``COMMAND`` NamedTuple instance.
+        """
         broker = self._commands_broker
         queue = self._commands_queue
         commands = self._commands_items
@@ -295,8 +295,8 @@ class MinosConfig(MinosConfigAbstract):
     def saga(self) -> SAGA:
         """Get the sagas config.
 
-         :return: A ``SAGAS`` NamedTuple instance.
-         """
+        :return: A ``SAGAS`` NamedTuple instance.
+        """
         queue = self._sagas_queue
         sagas = self._saga_items
         return SAGA(items=sagas, queue=queue)

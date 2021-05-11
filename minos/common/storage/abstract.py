@@ -26,6 +26,7 @@ class MinosStorage(abc.ABC):
     def update(self, **kwargs):
         raise NotImplementedError
 
+    @classmethod
     @abc.abstractmethod
-    def build(self, **kwargs):
+    def build(cls, **kwargs):
         raise NotImplementedError
