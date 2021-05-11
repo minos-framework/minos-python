@@ -9,7 +9,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 import shutil
 
 import pytest
-from minos.common import MinosStorageLmdb
+from minos.common import (
+    MinosStorageLmdb,
+)
 
 
 @pytest.fixture
