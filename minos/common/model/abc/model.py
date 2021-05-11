@@ -5,33 +5,45 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import typing as t
 from base64 import (
     b64decode,
     b64encode,
 )
-from itertools import zip_longest
+from itertools import (
+    zip_longest,
+)
 
 from ...exceptions import (
     EmptyMinosModelSequenceException,
     MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
-from ...importlib import classname
-from ...logs import log
+from ...importlib import (
+    classname,
+)
+from ...logs import (
+    log,
+)
 from ...meta import (
     classproperty,
     property_or_classproperty,
     self_or_classmethod,
 )
-from ...protocol import MinosAvroValuesDatabase
+from ...protocol import (
+    MinosAvroValuesDatabase,
+)
 from .fields import (
     ModelField,
     _MinosModelAvroSchemaBuilder,
 )
-from .types import MissingSentinel
+from .types import (
+    MissingSentinel,
+)
 
 # def _process_aggregate(cls):
 #     """

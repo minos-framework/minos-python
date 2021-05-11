@@ -6,14 +6,24 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from typing import NoReturn
+from typing import (
+    NoReturn,
+)
 
 import aiopg
-from aiopg import Pool
+from aiopg import (
+    Pool,
+)
 
-from minos.common import PostgreSqlMinosDatabase
-from minos.common.testing import PostgresAsyncTestCase
-from tests.utils import BASE_PATH
+from minos.common import (
+    PostgreSqlMinosDatabase,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class _PostgreSqlMinosDatabase(PostgreSqlMinosDatabase):
