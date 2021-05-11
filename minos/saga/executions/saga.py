@@ -27,6 +27,7 @@ from ..definitions import (
 from ..exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionException,
 )
 from .context import (
     SagaContext,
@@ -138,7 +139,7 @@ class SagaExecution(object):
         """
 
         if self.already_rollback:
-            return
+            raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
 
         for execution_step in reversed(self.executed_steps):
             self.context = execution_step.rollback(self.context, *args, **kwargs)

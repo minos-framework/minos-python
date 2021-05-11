@@ -24,6 +24,7 @@ from ..exceptions import (
     MinosSagaException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionStepException,
 )
 from .context import (
     SagaContext,
@@ -113,8 +114,11 @@ class SagaExecutionStep(object):
         :param context: TODO
         :return: TODO
         """
-        if self.status == SagaStepStatus.Created or self.already_rollback:
-            return context
+        if self.status == SagaStepStatus.Created:
+            raise MinosSagaRollbackExecutionStepException("There is nothing to rollback.")
+
+        if self.already_rollback:
+            raise MinosSagaRollbackExecutionStepException("The step was already rollbacked.")
 
         executor = WithCompensationExecutor(*args, **kwargs)
         executor.exec(self.definition.raw_with_compensation, context)

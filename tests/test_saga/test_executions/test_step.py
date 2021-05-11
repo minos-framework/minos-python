@@ -14,6 +14,7 @@ from unittest.mock import (
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
+    MinosSagaRollbackExecutionStepException,
     SagaContext,
     SagaExecutionStep,
     SagaStep,
@@ -97,7 +98,8 @@ class TestSagaExecutionStep(unittest.TestCase):
         execution = SagaExecutionStep(step)
 
         with _PUBLISH_MOCKER as mock:
-            execution.rollback(context)
+            with self.assertRaises(MinosSagaRollbackExecutionStepException):
+                execution.rollback(context)
             self.assertEqual(0, mock.call_count)
 
             try:
@@ -111,7 +113,8 @@ class TestSagaExecutionStep(unittest.TestCase):
             self.assertEqual(1, mock.call_count)
 
             mock.reset_mock()
-            execution.rollback(context)
+            with self.assertRaises(MinosSagaRollbackExecutionStepException):
+                execution.rollback(context)
             self.assertEqual(0, mock.call_count)
 
     def test_raw(self):
