@@ -9,6 +9,9 @@ from __future__ import (
     annotations,
 )
 
+from abc import (
+    abstractmethod,
+)
 from typing import (
     Any,
     Callable,
@@ -18,12 +21,6 @@ from typing import (
 )
 
 import aiopg
-from aiomisc.service.periodic import (
-    PeriodicService,
-)
-from minos.common.broker import (
-    Event,
-)
 from minos.common.configuration.config import (
     MinosConfig,
 )
@@ -36,13 +33,12 @@ from minos.common.logs import (
 from minos.networks.exceptions import (
     MinosNetworkException,
 )
-
-from .abc import (
-    MinosEventSetup,
+from minos.networks.handler.abc import (
+    MinosHandlerSetup,
 )
 
 
-class MinosEventHandler(MinosEventSetup):
+class MinosHandlerDispatcher(MinosHandlerSetup):
     """
     Event Handler
 
@@ -50,21 +46,20 @@ class MinosEventHandler(MinosEventSetup):
 
     __slots__ = "_db_dsn", "_handlers", "_event_items", "_topics", "_conf"
 
-    def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(**kwargs, **config.events.queue._asdict())
+    def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
+        super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
         self._db_dsn = (
-            f"dbname={config.events.queue.database} user={config.events.queue.user} "
-            f"password={config.events.queue.password} host={config.events.queue.host}"
+            f"dbname={config.queue.database} user={config.queue.user} "
+            f"password={config.queue.password} host={config.queue.host}"
         )
-        self._handlers = {
-            item.name: {"controller": item.controller, "action": item.action} for item in config.events.items
-        }
-        self._event_items = config.events.items
+        self._handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
+        self._event_items = config.items
         self._topics = list(self._handlers.keys())
         self._conf = config
+        self._table_name = table_name
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosEventHandler]:
+    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosHandlerDispatcher]:
         """Build a new repository from config.
         :param args: Additional positional arguments.
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -106,7 +101,7 @@ class MinosEventHandler(MinosEventSetup):
             f"topic {topic} have no controller/action configured, " f"please review th configuration file"
         )
 
-    async def event_queue_checker(self) -> NoReturn:
+    async def queue_checker(self) -> NoReturn:
         """Event Queue Checker and dispatcher.
 
         It is in charge of querying the database and calling the action according to the topic.
@@ -119,25 +114,31 @@ class MinosEventHandler(MinosEventSetup):
             Exception: An error occurred inserting record.
         """
         db_dsn = (
-            f"dbname={self._conf.events.queue.database} user={self._conf.events.queue.user} "
-            f"password={self._conf.events.queue.password} host={self._conf.events.queue.host}"
+            f"dbname={self._conf.queue.database} user={self._conf.queue.user} "
+            f"password={self._conf.queue.password} host={self._conf.queue.host}"
         )
         async with aiopg.create_pool(db_dsn) as pool:
             async with pool.acquire() as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
-                        "SELECT * FROM event_queue ORDER BY creation_date ASC LIMIT %d;"
-                        % (self._conf.events.queue.records),
+                        "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;"
+                        % (self._table_name, self._conf.queue.records),
                     )
                     async for row in cur:
                         call_ok = False
                         try:
                             reply_on = self.get_event_handler(topic=row[1])
-                            event_instance = Event.from_avro_bytes(row[3])
-                            await reply_on(topic=row[1], event=event_instance)
+                            valid_instance, instance = self._is_valid_instance(row[3])
+                            if not valid_instance:
+                                return
+                            await reply_on(row[1], instance)
                             call_ok = True
                         finally:
                             if call_ok:
                                 # Delete from database If the event was sent successfully to Kafka.
                                 async with connect.cursor() as cur2:
-                                    await cur2.execute("DELETE FROM event_queue WHERE id=%d;" % row[0])
+                                    await cur2.execute("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
+
+    @abstractmethod
+    def _is_valid_instance(self, value: bytes):  # pragma: no cover
+        raise Exception("Method not implemented")

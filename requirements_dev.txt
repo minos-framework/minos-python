@@ -1,5 +1,5 @@
 aiokafka==0.7.0
-aiomisc==14.0.3
+aiomisc==12.1.0
 aiopg==1.2.1
 alabaster==0.7.12
 appdirs==1.4.4
@@ -32,7 +32,7 @@ keyring==23.0.1
 lmdb==1.1.1
 MarkupSafe==1.1.1
 mccabe==0.6.1
-minos-microservice-common==0.0.6
+minos-microservice-common==0.0.9
 more-itertools==8.7.0
 mypy-extensions==0.4.3
 orjson==3.5.1
@@ -41,6 +41,7 @@ pathspec==0.8.1
 peewee==3.14.4
 pkginfo==1.7.0
 pluggy==0.13.1
+psycopg2==2.8.6
 psycopg2-binary==2.8.6
 py==1.10.0
 pycodestyle==2.7.0

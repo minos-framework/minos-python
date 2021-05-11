@@ -5,35 +5,22 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-__version__ = "0.0.1.1-alpha"
 
-from .broker import (
-    MinosCommandBroker,
-    MinosEventBroker,
-    MinosQueueDispatcher,
-    MinosQueueService,
-)
-from .exceptions import (
-    MinosNetworkException,
-    MinosPreviousVersionSnapshotException,
-    MinosSnapshotException,
-)
-from .handler import (
+from .command import (
     MinosCommandHandlerDispatcher,
     MinosCommandHandlerServer,
     MinosCommandPeriodicService,
+    MinosCommandServerService,
+)
+from .command_reply import (
     MinosCommandReplyHandlerDispatcher,
     MinosCommandReplyHandlerServer,
     MinosCommandReplyPeriodicService,
     MinosCommandReplyServerService,
-    MinosCommandServerService,
+)
+from .event import (
     MinosEventHandlerDispatcher,
     MinosEventHandlerServer,
     MinosEventPeriodicService,
     MinosEventServerService,
-)
-from .snapshots import (
-    MinosSnapshotDispatcher,
-    MinosSnapshotEntry,
-    MinosSnapshotService,
 )

@@ -1,11 +1,15 @@
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
+
 from typing import (
     Any,
-    Awaitable,
 )
 
-from aiokafka import (
-    AIOKafkaConsumer,
-)
 from aiomisc.service.periodic import (
     PeriodicService,
     Service,
@@ -15,27 +19,20 @@ from minos.common import (
 )
 
 from .dispatcher import (
-    MinosEventHandler,
+    MinosCommandReplyHandlerDispatcher,
 )
-from .event_server import (
-    MinosEventServer,
+from .server import (
+    MinosCommandReplyHandlerServer,
 )
 
 
-class MinosEventServerService(Service):
+class MinosCommandReplyServerService(Service):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = MinosEventServer.from_config(config=config)
+        self.dispatcher = MinosCommandReplyHandlerServer.from_config(config=config)
         self.consumer = None
-
-    """
-    def create_task(self, coro: Awaitable[Any]):
-        task = self.loop.create_task(coro)
-        self.dispatcher._tasks.add(task)
-        task.add_done_callback(self.dispatcher._tasks.remove)
-    """
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -44,18 +41,9 @@ class MinosEventServerService(Service):
         """
         await self.dispatcher.setup()
 
-        # start the Service Event Consumer for Kafka
-        self.consumer = AIOKafkaConsumer(
-            group_id=self.dispatcher._broker_group_name,
-            auto_offset_reset="latest",
-            bootstrap_servers=self.dispatcher._kafka_conn_data,
+        self.consumer = await self.dispatcher.kafka_consumer(
+            self.dispatcher._topics, self.dispatcher._broker_group_name, self.dispatcher._kafka_conn_data
         )
-
-        await self.consumer.start()
-        self.consumer.subscribe(self.dispatcher._topics)
-
-        # self.create_task(self.dispatcher.handle_message(self.consumer))
-
         await self.dispatcher.handle_message(self.consumer)
 
     async def stop(self, exception: Exception = None) -> Any:
@@ -63,12 +51,12 @@ class MinosEventServerService(Service):
             await self.consumer.stop()
 
 
-class MinosEventPeriodicService(PeriodicService):
+class MinosCommandReplyPeriodicService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = MinosEventHandler.from_config(config=config)
+        self.dispatcher = MinosCommandReplyHandlerDispatcher.from_config(config=config)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -83,4 +71,4 @@ class MinosEventPeriodicService(PeriodicService):
 
         :return:This method does not return anything.
         """
-        await self.dispatcher.event_queue_checker()
+        await self.dispatcher.queue_checker()

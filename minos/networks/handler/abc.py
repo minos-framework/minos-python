@@ -21,11 +21,12 @@ from minos.common import (
 )
 
 
-class MinosEventSetup(MinosSetup):
+class MinosHandlerSetup(MinosSetup):
     """Minos Broker Setup Class"""
 
     def __init__(
         self,
+        table_name: str,
         *args,
         host: str = None,
         port: int = None,
@@ -41,6 +42,7 @@ class MinosEventSetup(MinosSetup):
         self.database = database
         self.user = user
         self.password = password
+        self.table_name = table_name
 
     async def _setup(self) -> NoReturn:
         await self._create_event_queue_table()
@@ -49,12 +51,12 @@ class MinosEventSetup(MinosSetup):
         async with self._connection() as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    'CREATE TABLE IF NOT EXISTS "event_queue" ('
+                    'CREATE TABLE IF NOT EXISTS "%s" ('
                     '"id" BIGSERIAL NOT NULL PRIMARY KEY, '
                     '"topic" VARCHAR(255) NOT NULL, '
                     '"partition_id" INTEGER,'
                     '"binary_data" BYTEA NOT NULL, '
-                    '"creation_date" TIMESTAMP NOT NULL);'
+                    '"creation_date" TIMESTAMP NOT NULL);' % (self.table_name)
                 )
 
     def _connection(self):

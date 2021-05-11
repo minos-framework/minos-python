@@ -11,59 +11,54 @@ from __future__ import (
 
 import asyncio
 import datetime
+from abc import (
+    abstractmethod,
+)
 from typing import (
     Any,
     AsyncIterator,
-    Awaitable,
-    NoReturn,
+    NamedTuple,
     Optional,
 )
 
 import aiopg
-from minos.common.broker import (
-    Event,
+from aiokafka import (
+    AIOKafkaConsumer,
 )
 from minos.common.configuration.config import (
     MinosConfig,
 )
-from minos.common.logs import (
-    log,
+from minos.networks.handler.abc import (
+    MinosHandlerSetup,
 )
-from minos.networks.exceptions import (
-    MinosNetworkException,
-)
-
-from .abc import (
-    MinosEventSetup,
+from psycopg2.extensions import (
+    AsIs,
 )
 
 
-class MinosEventServer(MinosEventSetup):
+class MinosHandlerServer(MinosHandlerSetup):
     """
-    Event Manager
+    Handler Server
 
-    Consumer for the Broker ( at the moment only Kafka is supported )
+    Generic insert for queue_* table. (Support Command, CommandReply and Event)
 
     """
 
-    __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_kafka_conn_data", "_broker_group_name"
+    __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_broker_group_name"
 
-    def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(**kwargs, **config.events.queue._asdict())
+    def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
+        super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
         self._tasks = set()  # type: t.Set[asyncio.Task]
         self._db_dsn = (
-            f"dbname={config.events.queue.database} user={config.events.queue.user} "
-            f"password={config.events.queue.password} host={config.events.queue.host}"
+            f"dbname={config.queue.database} user={config.queue.user} "
+            f"password={config.queue.password} host={config.queue.host}"
         )
-        self._handler = {
-            item.name: {"controller": item.controller, "action": item.action} for item in config.events.items
-        }
+        self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._topics = list(self._handler.keys())
-        self._kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
-        self._broker_group_name = f"event_{config.service.name}"
+        self._table_name = table_name
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosEventServer]:
+    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosHandlerServer]:
         """Build a new repository from config.
         :param args: Additional positional arguments.
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -77,7 +72,7 @@ class MinosEventServer(MinosEventSetup):
         # noinspection PyProtectedMember
         return cls(*args, config=config, **kwargs)
 
-    async def event_queue_add(self, topic: str, partition: int, binary: bytes):
+    async def queue_add(self, topic: str, partition: int, binary: bytes):
         """Insert row to event_queue table.
 
         Retrieves number of affected rows and row ID.
@@ -100,8 +95,8 @@ class MinosEventServer(MinosEventSetup):
             async with pool.acquire() as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
-                        "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
-                        (topic, partition, binary, datetime.datetime.now(),),
+                        "INSERT INTO %s (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                        (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
                     )
 
                     queue_id = await cur.fetchone()
@@ -123,17 +118,14 @@ class MinosEventServer(MinosEventSetup):
         """
         # the handler receive a message and store in the queue database
         # check if the event binary string is well formatted
-        if not self._is_valid_event(msg.value):
+        if not self._is_valid_instance(msg.value):
             return
-        affected_rows, id = await self.event_queue_add(msg.topic, msg.partition, msg.value)
+        affected_rows, id = await self.queue_add(msg.topic, msg.partition, msg.value)
         return affected_rows, id
 
-    def _is_valid_event(self, value: bytes):
-        try:
-            Event.from_avro_bytes(value)
-            return True
-        except:
-            return False
+    @abstractmethod
+    def _is_valid_instance(self, value: bytes):  # pragma: no cover
+        raise Exception("Method not implemented")
 
     async def handle_message(self, consumer: AsyncIterator):
         """Message consumer.
@@ -146,3 +138,13 @@ class MinosEventServer(MinosEventSetup):
 
         async for msg in consumer:
             await self.handle_single_message(msg)
+
+    @staticmethod
+    async def kafka_consumer(topics: list, group_name: str, conn: str):
+        # start the Service Event Consumer for Kafka
+        consumer = AIOKafkaConsumer(group_id=group_name, auto_offset_reset="latest", bootstrap_servers=conn,)
+
+        await consumer.start()
+        consumer.subscribe(topics)
+
+        return consumer
