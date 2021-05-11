@@ -26,12 +26,10 @@ class MinosBinaryProtocol(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def decode(cls, data: bytes, *args, **kwargs) -> Any:
+    def decode(cls, data: bytes) -> Any:
         """Decodes the given bytes data.
 
         :param data: bytes data to be decoded.
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
         :return: De decoded data.
         """
         raise NotImplementedError
