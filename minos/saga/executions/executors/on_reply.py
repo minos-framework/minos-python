@@ -44,7 +44,9 @@ class OnReplyExecutor(LocalExecutor):
         if reply is None:
             raise MinosSagaPausedExecutionStepException()
 
-        value = reply.items[0]  # FIXME: This behaviour must be parameterizable.
+        value = reply.items
+        if len(value) == 1:
+            value = value[0]
 
         response = super().exec_one(operation, value)
         context.update(operation["name"], response)
