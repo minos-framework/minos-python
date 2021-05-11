@@ -7,8 +7,13 @@ rest:
         - name: AddOrder
           route: /order
           method: POST
-          controller: minos.services.OrderService
+          controller: tests.services.TestRestService.RestService
           action: add_order
+        - name: GetOrder
+          route: /order
+          method: GET
+          controller: tests.services.TestRestService.RestService
+          action: get_order
 repository:
     database: order_db
     user: minos
