@@ -21,5 +21,5 @@ class TestMinosJsonBinaryProtocol(unittest.TestCase):
         self.assertEqual(data, decoded)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
