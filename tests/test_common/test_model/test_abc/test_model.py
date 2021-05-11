@@ -11,6 +11,7 @@ from typing import (
 )
 
 import pytest
+
 from minos.common import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
