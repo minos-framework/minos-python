@@ -103,6 +103,7 @@ from .protocol import (
     MinosAvroProtocol,
     MinosAvroValuesDatabase,
     MinosBinaryProtocol,
+    MinosJsonBinaryProtocol,
 )
 from .repository import (
     MinosInMemoryRepository,

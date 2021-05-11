@@ -21,7 +21,7 @@ from ..exceptions import (
 from ..logs import (
     log,
 )
-from .abstract import (
+from .abc import (
     MinosBinaryProtocol,
 )
 
