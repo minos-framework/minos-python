@@ -48,7 +48,10 @@ class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
         entry.id, entry.aggregate_id, entry.version, entry.created_at = response
         return entry
 
-    async def _select(self, **kwargs,) -> AsyncIterator[MinosRepositoryEntry]:
+    async def _select(
+        self,
+        **kwargs,
+    ) -> AsyncIterator[MinosRepositoryEntry]:
         query = self._build_select_query(**kwargs)
         async for row in self.submit_query_and_iter(query, kwargs):
             yield MinosRepositoryEntry(*row)

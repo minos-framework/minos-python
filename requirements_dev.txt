@@ -5,6 +5,7 @@ atomicwrites==1.4.0
 attrs==20.3.0
 avro==1.10.2
 Babel==2.9.0
+black==19.10b0
 bleach==3.3.0
 bump2version==0.5.11
 certifi==2020.12.5
@@ -19,6 +20,7 @@ flake8==3.9.0
 idna==2.10
 imagesize==1.2.0
 importlib-metadata==3.10.1
+isort==5.8.0
 Jinja2==2.11.3
 keyring==23.0.1
 lmdb==1.1.1
@@ -62,3 +64,4 @@ watchdog==2.0.2
 wcwidth==0.2.5
 webencodings==0.5.1
 zipp==3.4.1
+pre-commit==2.12.1
