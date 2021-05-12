@@ -7,10 +7,10 @@ from setuptools import (
     setup,
 )
 
-with open("README.rst") as readme_file:
+with open("README.md") as readme_file:
     readme = readme_file.read()
 
-with open("HISTORY.rst") as history_file:
+with open("HISTORY.md") as history_file:
     history = history_file.read()
 
 requirements = ["minos-microservice-common"]
@@ -24,9 +24,9 @@ test_requirements = [
 ]
 
 setup(
-    author="Vladyslav Fenchak",
-    author_email="vladyslav.fenchak@clariteia.com",
-    python_requires=">=3.5",
+    author="Andrea Mucci",
+    author_email="andrea@clariteia.com",
+    python_requires=">=3.7",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
@@ -37,7 +37,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
-    description="Minos Boilerplate contains all the boilerplate you need to create a Minos Python package.",
+    description="Saga Library for MinOS project.",
     install_requires=requirements,
     long_description=readme + "\n\n" + history,
     include_package_data=True,
