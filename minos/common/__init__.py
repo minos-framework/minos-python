@@ -63,6 +63,11 @@ from .messages import (
     MinosRPCHeadersRequest,
     MinosRPCResponse,
 )
+from .meta import (
+    classproperty,
+    property_or_classproperty,
+    self_or_classmethod,
+)
 from .model import (
     ARRAY,
     BOOLEAN,
