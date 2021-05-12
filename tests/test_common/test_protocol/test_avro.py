@@ -15,7 +15,6 @@ from minos.common import (
 
 
 class TestMinosAvroProtocol(unittest.TestCase):
-
     def test_encoder_decoder_with_body_dict(self):
         headers = {"id": 123, "action": "get"}
         body = {"message": "this is a message"}
