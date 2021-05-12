@@ -5,14 +5,11 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import json
-from base64 import (
-    b64decode,
-    b64encode,
-)
 from typing import (
     Any,
 )
+
+import orjson
 
 from .abc import (
     MinosBinaryProtocol,
@@ -31,7 +28,7 @@ class MinosJsonBinaryProtocol(MinosBinaryProtocol):
         :param kwargs: Additional named arguments.
         :return: A bytes instance.
         """
-        return b64encode(json.dumps(data).encode())
+        return orjson.dumps(data)
 
     @classmethod
     def decode(cls, data: bytes) -> Any:
@@ -40,4 +37,4 @@ class MinosJsonBinaryProtocol(MinosBinaryProtocol):
         :param data: bytes data to be decoded.
         :return: De decoded data.
         """
-        return json.loads(b64decode(data.decode()))
+        return orjson.loads(data)

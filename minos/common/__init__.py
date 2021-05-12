@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.0.10"
+__version__ = "0.0.11"
 
 from .broker import (
     MinosBaseBroker,
@@ -62,6 +62,11 @@ from .messages import (
     MinosRPCBodyRequest,
     MinosRPCHeadersRequest,
     MinosRPCResponse,
+)
+from .meta import (
+    classproperty,
+    property_or_classproperty,
+    self_or_classmethod,
 )
 from .model import (
     ARRAY,

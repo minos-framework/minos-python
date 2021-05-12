@@ -80,7 +80,7 @@ class TestMinosAvroProtocol(unittest.TestCase):
 
     def test_decode_raises(self):
         with self.assertRaises(MinosProtocolException):
-            MinosAvroValuesDatabase.decode(bytes())
+            MinosAvroProtocol.decode(bytes())
 
 
 class TestMinosAvroValuesDatabase(unittest.TestCase):
