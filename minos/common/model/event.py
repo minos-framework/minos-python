@@ -15,17 +15,16 @@ from typing import (
     Type,
 )
 
-from minos.common.exceptions import (
+from ..exceptions import (
     MultiTypeMinosModelSequenceException,
 )
-from minos.common.importlib import (
+from ..importlib import (
     import_module,
 )
-from minos.common.meta import (
+from ..meta import (
     self_or_classmethod,
 )
-from minos.common.model import (
-    Aggregate,
+from .abc import (
     MinosModel,
 )
 
@@ -35,9 +34,9 @@ class Event(MinosModel):
 
     topic: str
     model: str
-    items: list[Aggregate]
+    items: list[MinosModel]
 
-    def __init__(self, topic: str, items: list[Aggregate], model: str = None, *args, **kwargs):
+    def __init__(self, topic: str, items: list[MinosModel], model: str = None, *args, **kwargs):
         if model is None:
             model_cls = type(items[0])
             model = model_cls.classname
@@ -74,7 +73,7 @@ class Event(MinosModel):
         return
 
     @property
-    def model_cls(self) -> Type[Aggregate]:
+    def model_cls(self) -> Type[MinosModel]:
         """Get the model class.
 
         :return: A type object.
