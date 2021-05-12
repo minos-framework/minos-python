@@ -27,7 +27,7 @@ test_requirements = [
 setup(
     author="Andrea Mucci",
     author_email="andrea@clariteia.com",
-    python_requires=">=3.5",
+    python_requires=">=3.7",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
@@ -49,6 +49,6 @@ setup(
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,
-    version="0.0.1-alpha",
+    version="0.0.1",
     zip_safe=False,
 )
