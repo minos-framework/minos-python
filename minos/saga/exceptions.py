@@ -103,6 +103,10 @@ class MinosSagaExecutionException(MinosSagaException):
     """TODO"""
 
 
+class MinosSagaExecutionNotFoundException(MinosSagaExecutionException):
+    """TODO"""
+
+
 class MinosSagaRollbackExecutionException(MinosSagaExecutionException):
     """TODO"""
 

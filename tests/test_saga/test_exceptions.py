@@ -18,6 +18,7 @@ from minos.saga import (
     MinosSagaEmptyStepException,
     MinosSagaException,
     MinosSagaExecutionException,
+    MinosSagaExecutionNotFoundException,
     MinosSagaExecutionStepException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotDefinedException,
@@ -121,6 +122,9 @@ class TestExceptions(unittest.TestCase):
 
     def test_execution(self):
         self.assertTrue(issubclass(MinosSagaExecutionException, MinosException))
+
+    def test_execution_not_found(self):
+        self.assertTrue(issubclass(MinosSagaExecutionNotFoundException, MinosException))
 
     def test_execution_rollback(self):
         self.assertTrue(issubclass(MinosSagaRollbackExecutionException, MinosSagaExecutionException))
