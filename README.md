@@ -1,7 +1,7 @@
 Minos Microservice Networks
 ===========================
 
-[![codecov](https://codecov.io/gh/Clariteia/minos_microservice_networks/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_common)
+[![codecov](https://codecov.io/gh/Clariteia/minos_microservice_networks/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_networks)
 
 ![Tests](https://github.com/Clariteia/minos_microservice_networks/actions/workflows/python-tests.yml/badge.svg)
 
