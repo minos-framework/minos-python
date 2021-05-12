@@ -22,6 +22,7 @@ from .exceptions import (
     MinosSagaEmptyStepException,
     MinosSagaException,
     MinosSagaExecutionException,
+    MinosSagaExecutionNotFoundException,
     MinosSagaExecutionStepException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotDefinedException,
@@ -44,6 +45,6 @@ from .executions import (
     SagaStepStatus,
     WithCompensationExecutor,
 )
-from .local_state import (
-    MinosLocalState,
+from .storage import (
+    SagaExecutionStorage,
 )
