@@ -18,7 +18,7 @@ from ..protocol import (
     MinosAvroValuesDatabase,
     MinosBinaryProtocol,
 )
-from .abstract import (
+from .abc import (
     MinosStorage,
 )
 
@@ -42,7 +42,7 @@ class MinosStorageLmdb(MinosStorage):
         return self._env
 
     def add(self, table: str, key: str, value: t.Any) -> t.NoReturn:
-        """Add a key value pair.
+        """Store a value.
 
         :param table: Table in which the data is stored.
         :param key: Key that identifies the data.
@@ -55,7 +55,7 @@ class MinosStorageLmdb(MinosStorage):
             txn.put(key.encode(), value_bytes, db=db_instance)
 
     def get(self, table: str, key: str) -> t.Optional[t.Any]:
-        """Get the data referenced by the given key.
+        """Get the stored value..
 
         :param table: Table in which the data is stored.
         :param key: Key that identifies the data.
@@ -70,7 +70,7 @@ class MinosStorageLmdb(MinosStorage):
             return None
 
     def delete(self, table: str, key: str) -> t.NoReturn:
-        """
+        """Delete the stored value.
 
         :param table: Table in which the data is stored.
         :param key: Key that identifies the data.
@@ -81,7 +81,7 @@ class MinosStorageLmdb(MinosStorage):
             txn.delete(key.encode())
 
     def update(self, table: str, key: str, value: t.Any) -> t.NoReturn:
-        """
+        """Update the stored value.
 
         :param table: Table in which the data is stored.
         :param key: Key that identifies the data.
