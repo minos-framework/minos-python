@@ -6,12 +6,8 @@
 # permission of Clariteia SL.
 
 from aiohttp import web
-from minos.common.configuration.config import (
-    MinosConfig,
-)
-from minos.common.importlib import (
-    import_module,
-)
+from minos.common.configuration.config import MinosConfig
+from minos.common.importlib import import_module
 
 
 class RestInterfaceHandler:

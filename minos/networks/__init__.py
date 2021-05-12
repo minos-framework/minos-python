@@ -37,7 +37,4 @@ from .snapshots import (
     MinosSnapshotEntry,
     MinosSnapshotService,
 )
-from .rest_interface import (
-    RestInterfaceHandler,
-    REST
-)
+from .rest_interface import RestInterfaceHandler, REST
