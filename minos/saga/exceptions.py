@@ -15,11 +15,11 @@ class MinosSagaException(MinosException):
 
 
 class MinosSagaStepException(MinosSagaException):
-    """TODO"""
+    """Base exception for saga steps."""
 
 
 class MinosSagaNotDefinedException(MinosSagaStepException):
-    """TODO"""
+    """Exception to be raised when the saga is not defined."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -28,7 +28,7 @@ class MinosSagaNotDefinedException(MinosSagaStepException):
 
 
 class MinosSagaEmptyStepException(MinosSagaStepException):
-    """TODO"""
+    """Exception to be raised when the step is empty."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -37,7 +37,7 @@ class MinosSagaEmptyStepException(MinosSagaStepException):
 
 
 class MinosMultipleInvokeParticipantException(MinosSagaStepException):
-    """TODO"""
+    """Exception to be raised when multiple invoke participant methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -45,17 +45,8 @@ class MinosMultipleInvokeParticipantException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MinosUndefinedInvokeParticipantCallbackException(MinosSagaStepException):
-    """TODO"""
-
-    def __init__(self, message: str = None):
-        if message is None:
-            message = "A 'SagaStep.invoke_participant' must have a data preparation callback."
-        super().__init__(message)
-
-
 class MinosMultipleWithCompensationException(MinosSagaStepException):
-    """TODO"""
+    """Exception to be raised when multiple with compensation methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -63,17 +54,8 @@ class MinosMultipleWithCompensationException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MinosUndefinedWithCompensationCallbackException(MinosSagaStepException):
-    """TODO"""
-
-    def __init__(self, message: str = None):
-        if message is None:
-            message = "A 'SagaStep.with_compensation' must have a data preparation callback."
-        super().__init__(message)
-
-
 class MinosMultipleOnReplyException(MinosSagaStepException):
-    """TODO"""
+    """Exception to be raised when multiple on reply methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -82,7 +64,7 @@ class MinosMultipleOnReplyException(MinosSagaStepException):
 
 
 class MinosAlreadyOnSagaException(MinosSagaStepException):
-    """TODO"""
+    """Exception to be raised when a saga step is already in another saga."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -91,7 +73,7 @@ class MinosAlreadyOnSagaException(MinosSagaStepException):
 
 
 class MinosUndefinedInvokeParticipantException(MinosSagaStepException):
-    """TODO"""
+    """Exception to be raised when the invoke participant method is not defined."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -100,23 +82,23 @@ class MinosUndefinedInvokeParticipantException(MinosSagaStepException):
 
 
 class MinosSagaExecutionException(MinosSagaException):
-    """TODO"""
+    """Base exception for saga execution."""
 
 
 class MinosSagaExecutionNotFoundException(MinosSagaExecutionException):
-    """TODO"""
+    """Exception to be raised when a saga execution is not found."""
 
 
 class MinosSagaRollbackExecutionException(MinosSagaExecutionException):
-    """TODO"""
+    """Exception to be raised when a saga exception cannot be rollbacked"""
 
 
 class MinosSagaExecutionStepException(MinosSagaException):
-    """TODO"""
+    """Base exception for saga execution step."""
 
 
 class MinosSagaFailedExecutionStepException(MinosSagaExecutionStepException):
-    """TODO"""
+    """Exception to be raised when a saga execution step failed while running."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -125,7 +107,7 @@ class MinosSagaFailedExecutionStepException(MinosSagaExecutionStepException):
 
 
 class MinosSagaPausedExecutionStepException(MinosSagaExecutionStepException):
-    """TODO"""
+    """Exception to be raised when a saga execution step is paused."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -134,4 +116,4 @@ class MinosSagaPausedExecutionStepException(MinosSagaExecutionStepException):
 
 
 class MinosSagaRollbackExecutionStepException(MinosSagaExecutionStepException):
-    """TODO"""
+    """Exception to be raised when a saga execution step failed while performing a rollback."""

@@ -45,7 +45,7 @@ from .step import (
 
 
 class SagaExecution(object):
-    """TODO"""
+    """Saga Execution class."""
 
     # noinspection PyUnusedLocal
     def __init__(
@@ -71,11 +71,11 @@ class SagaExecution(object):
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaExecution], **kwargs) -> SagaExecution:
-        """TODO
+        """Build a new instance from a raw representation.
 
-        :param raw: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param raw: The raw representation of the instance.
+        :param kwargs: Additional named arguments.
+        :return: A ``SagaExecution`` instance.
         """
         if isinstance(raw, cls):
             return raw
@@ -100,11 +100,11 @@ class SagaExecution(object):
         return instance
 
     @classmethod
-    def from_saga(cls, definition: Saga, *args, **kwargs):
-        """TODO
+    def from_saga(cls, definition: Saga, *args, **kwargs) -> SagaExecution:
+        """Build a new instance from a ``Saga`` object.
 
-        :param definition: TODO
-        :return: TODO
+        :param definition: The definition of the saga.
+        :return: A new ``SagaExecution`` instance.
         """
         from uuid import (
             uuid4,
@@ -112,14 +112,14 @@ class SagaExecution(object):
 
         return cls(definition, uuid4(), SagaContext(), *args, **kwargs)
 
-    def execute(self, reply: Optional[CommandReply] = None):
-        """TODO
+    def execute(self, reply: Optional[CommandReply] = None) -> SagaContext:
+        """Execute the ``Saga`` definition.
 
-        :param reply: TODO
-        :return: TODO
+        :param reply: An optional ``CommandReply`` to be consumed by the immediately next executed step.
+        :return: A ``SagaContext instance.
         """
         self.status = SagaStatus.Running
-        for step in self.pending_steps:
+        for step in self._pending_steps:
             execution_step = SagaExecutionStep(step)
             try:
                 self.context = execution_step.execute(self.context, reply)
@@ -138,9 +138,11 @@ class SagaExecution(object):
         return self.context
 
     def rollback(self, *args, **kwargs) -> NoReturn:
-        """TODO
+        """Revert the invoke participant operation with a with compensation operation.
 
-        :return: TODO
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The updated execution context.
         """
 
         if self.already_rollback:
@@ -152,27 +154,18 @@ class SagaExecution(object):
         self.already_rollback = True
 
     @property
-    def pending_steps(self) -> [SagaStep]:
-        """TODO
-
-        :return: TODO
-        """
+    def _pending_steps(self) -> list[SagaStep]:
         offset = len(self.executed_steps)
         return self.definition.steps[offset:]
 
-    def _add_executed(self, executed_step: SagaExecutionStep):
-        """TODO
-
-        :param executed_step: TODO
-        :return: TODO
-        """
+    def _add_executed(self, executed_step: SagaExecutionStep) -> NoReturn:
         self.executed_steps.append(executed_step)
 
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO
+        """Compute a raw representation of the instance.
 
-        :return: TODO
+        :return: A ``dict`` instance.
         """
         return {
             "definition": self.definition.raw,

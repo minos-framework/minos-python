@@ -52,17 +52,17 @@ if TYPE_CHECKING:
     ]
 
 
-def identity_fn(x):
-    """TODO
+def identity_fn(x: Any) -> Any:
+    """A identity function, that returns the same value without any transformation.
 
-    :param x: TODO
-    :return: TODO
+    :param x: The input value.
+    :return: This function return the input value without any transformation.
     """
     return x
 
 
 class SagaStepOperation(object):
-    """TODO"""
+    """Saga Step Operation class."""
 
     def __init__(self, name: str, callback: Callable):
         self.name = name
@@ -70,19 +70,20 @@ class SagaStepOperation(object):
 
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO
+        """Generate a rew representation of the instance.
 
-        :return: TODO
+        :return: A ``dict`` instance.
         """
+        # noinspection PyTypeChecker
         return {"name": self.name, "callback": classname(self.callback)}
 
     @classmethod
     def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaStepOperation]], **kwargs) -> Optional[SagaStepOperation]:
-        """TODO
+        """Build a new instance from a raw representation.
 
-        :param raw: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param raw: A raw representation.
+        :param kwargs: Additional named arguments.
+        :return: A ``SagaStepOperation`` instance if the ``raw`` argument is not ``None``, ``None`` otherwise.
         """
         if raw is None:
             return None
@@ -106,7 +107,7 @@ class SagaStepOperation(object):
 
 
 class SagaStep(object):
-    """TODO"""
+    """Saga step class."""
 
     def __init__(
         self,
@@ -122,11 +123,11 @@ class SagaStep(object):
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
-        """TODO
+        """Build a new instance from raw.
 
-        :param raw: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param raw: A raw representation.
+        :param kwargs: Additional named arguments.
+        :return: A ``SagaStep`` instance.
         """
         if isinstance(raw, cls):
             return raw
@@ -140,11 +141,11 @@ class SagaStep(object):
         return cls(**current)
 
     def invoke_participant(self, name: Union[str, list], callback: CallBack) -> SagaStep:
-        """TODO
+        """Invoke a new participant method.
 
-        :param name: TODO
-        :param callback: TODO
-        :return: TODO
+        :param name: The name of the new participant instruction.
+        :param callback: The callback function used for the request contents preparation.
+        :return: A ``self`` reference.
         """
         if self.invoke_participant_operation is not None:
             raise MinosMultipleInvokeParticipantException()
@@ -154,11 +155,11 @@ class SagaStep(object):
         return self
 
     def with_compensation(self, name: str, callback: CallBack) -> SagaStep:
-        """TODO
+        """With compensation method.
 
-        :param name: TODO
-        :param callback: TODO
-        :return: TODO
+        :param name: The name of the with compensation instruction.
+        :param callback: The callback function used for the request contents preparation.
+        :return: A ``self`` reference.
         """
         if self.with_compensation_operation is not None:
             raise MinosMultipleWithCompensationException()
@@ -168,11 +169,11 @@ class SagaStep(object):
         return self
 
     def on_reply(self, name: str, callback: Callable = identity_fn) -> SagaStep:
-        """TODO
+        """On reply method.
 
-        :param name: TODO
-        :param callback: TODO
-        :return: TODO
+        :param name: The name of the variable in which the reply will be stored on the context.
+        :param callback: The callback function used to handle the invoke participant response.
+        :return: A ``self`` reference.
         """
         if self.on_reply_operation is not None:
             raise MinosMultipleOnReplyException()
@@ -182,9 +183,9 @@ class SagaStep(object):
         return self
 
     def step(self) -> SagaStep:
-        """TODO
+        """Create a new step in the ``Saga``.
 
-        :return: TODO
+        :return: A new ``SagaStep`` instance.
         """
         self.validate()
         if self.saga is None:
@@ -192,9 +193,9 @@ class SagaStep(object):
         return self.saga.step()
 
     def commit(self) -> Saga:
-        """TODO
+        """Commit the current ``SagaStep`` on the ``Saga``.
 
-        :return: TODO
+        :return: A ``Saga`` instance.
         """
         self.validate()
         if self.saga is None:
@@ -202,9 +203,9 @@ class SagaStep(object):
         return self.saga
 
     def validate(self) -> NoReturn:
-        """TODO
+        """Performs a validation about the structure of the defined ``SagaStep``.
 
-        :return TODO:
+        :return This method does not return anything.
         """
         if (
             self.invoke_participant_operation is None
@@ -218,9 +219,9 @@ class SagaStep(object):
 
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO
+        """Generate a raw representation of the instance.
 
-        :return: TODO
+        :return: A ``dict`` instance.
         """
         return {
             "invoke_participant": (

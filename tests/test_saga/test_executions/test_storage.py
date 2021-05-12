@@ -53,9 +53,9 @@ class TestMinosLocalState(unittest.TestCase):
             execution.execute()
         except MinosSagaPausedExecutionStepException:
             pass
+        reply = fake_reply(Foo("hola"))
         try:
-            reply = fake_reply(Foo("hola"))
-            execution.execute(reply)
+            execution.execute(reply=reply)
         except MinosSagaPausedExecutionStepException:
             pass
         self.execution = execution
@@ -70,7 +70,7 @@ class TestMinosLocalState(unittest.TestCase):
 
         self.assertEqual(self.execution, storage.load(self.execution.uuid))
 
-    def test_store_ovewrite(self):
+    def test_store_overwrite(self):
         storage = SagaExecutionStorage(self.DB_PATH)
 
         storage.store(self.execution)
@@ -93,7 +93,7 @@ class TestMinosLocalState(unittest.TestCase):
         storage = SagaExecutionStorage(self.DB_PATH)
 
         storage.store(self.execution)
-        storage.delete(self.execution.uuid)
+        storage.delete(self.execution)
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             storage.load(self.execution.uuid)
 

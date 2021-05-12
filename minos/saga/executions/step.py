@@ -34,9 +34,8 @@ from .context import (
     SagaContext,
 )
 from .executors import (
-    InvokeParticipantExecutor,
     OnReplyExecutor,
-    WithCompensationExecutor,
+    PublishExecutor,
 )
 from .status import (
     SagaStepStatus,
@@ -44,7 +43,7 @@ from .status import (
 
 
 class SagaExecutionStep(object):
-    """TODO"""
+    """Saga Execution Step class."""
 
     def __init__(
         self, definition: SagaStep, status: SagaStepStatus = SagaStepStatus.Created, already_rollback: bool = False,
@@ -56,11 +55,11 @@ class SagaExecutionStep(object):
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaExecutionStep], **kwargs) -> SagaExecutionStep:
-        """TODO
+        """Build a new instance from a raw representation.
 
-        :param raw: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param raw: The raw representation of the instance.
+        :param kwargs: Additional named arguments.
+        :return: A ``SagaExecutionStep`` instance.
         """
         if isinstance(raw, cls):
             return raw
@@ -71,11 +70,11 @@ class SagaExecutionStep(object):
         return cls(**current)
 
     def execute(self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
-        """TODO
+        """Execution the step.
 
-        :param context: TODO
-        :param reply: TODO
-        :return: TODO
+        :param context: The execution context to be used during the execution.
+        :param reply: An optional command reply instance (to be consumed by the on_reply method).
+        :return: The updated context.
         """
 
         self._execute_invoke_participant(context, *args, **kwargs)
@@ -89,7 +88,7 @@ class SagaExecutionStep(object):
             return
 
         self.status = SagaStepStatus.RunningInvokeParticipant
-        executor = InvokeParticipantExecutor(*args, **kwargs)
+        executor = PublishExecutor(*args, **kwargs)
         try:
             executor.exec(self.definition.invoke_participant_operation, context)
         except MinosSagaException:
@@ -115,10 +114,10 @@ class SagaExecutionStep(object):
         return context
 
     def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """TODO
+        """Revert the invoke participant operation with a with compensation operation.
 
-        :param context: TODO
-        :return: TODO
+        :param context: Execution context.
+        :return: The updated execution context.
         """
         if self.status == SagaStepStatus.Created:
             raise MinosSagaRollbackExecutionStepException("There is nothing to rollback.")
@@ -126,7 +125,7 @@ class SagaExecutionStep(object):
         if self.already_rollback:
             raise MinosSagaRollbackExecutionStepException("The step was already rollbacked.")
 
-        executor = WithCompensationExecutor(*args, **kwargs)
+        executor = PublishExecutor(*args, **kwargs)
         executor.exec(self.definition.with_compensation_operation, context)
 
         self.already_rollback = True
@@ -134,9 +133,9 @@ class SagaExecutionStep(object):
 
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO
+        """Compute a raw representation of the instance.
 
-        :return: TODO
+        :return: A ``dict`` instance.
         """
         return {
             "definition": self.definition.raw,

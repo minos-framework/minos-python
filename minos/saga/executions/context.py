@@ -23,7 +23,10 @@ from minos.common.meta import (
 
 
 class SagaContext(MinosModel):
-    """TODO"""
+    """Saga Context class
+
+    The purpose of this class is to keep an execution state.
+    """
 
     types_: dict[str, str]
 
@@ -34,11 +37,11 @@ class SagaContext(MinosModel):
         super().__init__(types_=types_, **kwargs)
 
     def update(self, key: str, value: MinosModel) -> NoReturn:
-        """TODO
+        """Update the value of the given key.
 
-        :param key: TODO
-        :param value: TODO
-        :return: TODO
+        :param key: Key to identify the value.
+        :param value: A value to be stored.
+        :return: This method does not return anything.
         """
         setattr(self, key, value)
 

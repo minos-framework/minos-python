@@ -18,7 +18,7 @@ from typing import (
 
 
 class SagaStatus(Enum):
-    """TODO"""
+    """Saga Status class."""
 
     Created = "created"
     Running = "running"
@@ -28,10 +28,10 @@ class SagaStatus(Enum):
 
     @classmethod
     def from_raw(cls, raw: Union[str, SagaStatus]) -> SagaStatus:
-        """TODO
+        """Build a new instance from raw.
 
-        :param raw: TODO
-        :return: TODO
+        :param raw: The raw representation of the instance.
+        :return: A ``SagaStatus`` instance.
         """
         if isinstance(raw, cls):
             return raw
@@ -40,15 +40,15 @@ class SagaStatus(Enum):
 
     @property
     def raw(self) -> str:
-        """TODO
+        """Compute the raw representation of the instance.
 
-        :return: TODO
+        :return: A ``str`` instance.
         """
         return self.value
 
 
 class SagaStepStatus(Enum):
-    """TODO"""
+    """Saga Step Status class."""
 
     Created = "created"
     RunningInvokeParticipant = "running-invoke-participant"
@@ -64,10 +64,10 @@ class SagaStepStatus(Enum):
 
     @classmethod
     def from_raw(cls, raw: Union[str, SagaStepStatus]) -> SagaStepStatus:
-        """TODO
+        """Build a new instance from raw.
 
-        :param raw: TODO
-        :return: TODO
+        :param raw: The raw representation of the instance.
+        :return: A ``SagaStepStatus`` instance.
         """
         if isinstance(raw, cls):
             return raw
@@ -76,8 +76,8 @@ class SagaStepStatus(Enum):
 
     @property
     def raw(self) -> str:
-        """TODO
+        """Compute the raw representation of the instance.
 
-        :return: TODO
+        :return: A ``str`` instance.
         """
         return self.value

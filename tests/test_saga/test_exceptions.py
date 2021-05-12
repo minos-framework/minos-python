@@ -26,9 +26,7 @@ from minos.saga import (
     MinosSagaRollbackExecutionException,
     MinosSagaRollbackExecutionStepException,
     MinosSagaStepException,
-    MinosUndefinedInvokeParticipantCallbackException,
     MinosUndefinedInvokeParticipantException,
-    MinosUndefinedWithCompensationCallbackException,
 )
 
 
@@ -66,16 +64,6 @@ class TestExceptions(unittest.TestCase):
         )
         self.assertEqual(expected, repr(MinosMultipleInvokeParticipantException()))
 
-    def test_step_undefined_invoke_participant_callback(self):
-        self.assertTrue(issubclass(MinosUndefinedInvokeParticipantCallbackException, MinosSagaStepException))
-
-    def test_step_undefined_invoke_participant_callback_repr(self):
-        expected = (
-            "MinosUndefinedInvokeParticipantCallbackException(message=\"A 'SagaStep.invoke_participant' "
-            'must have a data preparation callback.")'
-        )
-        self.assertEqual(expected, repr(MinosUndefinedInvokeParticipantCallbackException()))
-
     def test_step_multiple_with_compensation(self):
         self.assertTrue(issubclass(MinosMultipleWithCompensationException, MinosSagaStepException))
 
@@ -85,16 +73,6 @@ class TestExceptions(unittest.TestCase):
             " can only define one 'with_compensation' method.\")"
         )
         self.assertEqual(expected, repr(MinosMultipleWithCompensationException()))
-
-    def test_step_undefined_with_compensation_callback(self):
-        self.assertTrue(issubclass(MinosUndefinedWithCompensationCallbackException, MinosSagaStepException))
-
-    def test_step_undefined_with_compensation_callback_repr(self):
-        expected = (
-            "MinosUndefinedWithCompensationCallbackException(message=\"A 'SagaStep.with_compensation' "
-            'must have a data preparation callback.")'
-        )
-        self.assertEqual(expected, repr(MinosUndefinedWithCompensationCallbackException()))
 
     def test_step_multiple_on_reply(self):
         self.assertTrue(issubclass(MinosMultipleOnReplyException, MinosSagaStepException))

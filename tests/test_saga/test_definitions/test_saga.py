@@ -78,7 +78,7 @@ class TestSaga(unittest.TestCase):
             .with_compensation("DeleteOrder", foo_fn)
             .commit()
         )
-        execution = saga.build_execution()
+        execution = SagaExecution.from_saga(saga)
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):

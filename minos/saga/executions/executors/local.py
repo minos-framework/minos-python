@@ -30,7 +30,7 @@ from ..context import (
 
 
 class LocalExecutor(ABC):
-    """TODO"""
+    """Local executor class."""
 
     def __init__(self, loop: Optional[AbstractEventLoop] = None):
         if loop is None:
@@ -38,22 +38,17 @@ class LocalExecutor(ABC):
         self.loop = loop
 
     def exec_one(self, operation: SagaStepOperation, *args, **kwargs) -> Any:
-        """TODO
+        """Execute the given operation locally.
 
-        :param operation: TODO
-        :param response: TODO
-        :return: TODO
+        :param operation: The operation to be executed.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The execution response.
         """
 
         return self._exec_function(operation.callback, *args, **kwargs)
 
     def _exec_function(self, func: Callable, *args, **kwargs) -> SagaContext:
-        """TODO
-
-        :param func: TODO
-        :param request: TODO
-        :return: TODO
-        """
         result = func(*args, **kwargs)
         if inspect.isawaitable(result):
             result = self.loop.run_until_complete(result)
