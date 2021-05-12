@@ -95,12 +95,12 @@ class TestSagaExecution(unittest.TestCase):
             execution.execute(reply=reply)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        with patch("minos.saga.executions.executors.with_compensation.WithCompensationExecutor.publish") as mock:
+        with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
             reply = fake_reply(Foo("order2"))
             with self.assertRaises(MinosSagaFailedExecutionStepException):
                 execution.execute(reply=reply)
             self.assertEqual(SagaStatus.Errored, execution.status)
-            self.assertEqual(2, mock.call_count)
+            self.assertEqual(3, mock.call_count)
 
     def test_rollback(self):
         saga = (

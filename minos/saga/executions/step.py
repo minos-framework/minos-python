@@ -34,9 +34,8 @@ from .context import (
     SagaContext,
 )
 from .executors import (
-    InvokeParticipantExecutor,
     OnReplyExecutor,
-    WithCompensationExecutor,
+    PublishExecutor,
 )
 from .status import (
     SagaStepStatus,
@@ -89,7 +88,7 @@ class SagaExecutionStep(object):
             return
 
         self.status = SagaStepStatus.RunningInvokeParticipant
-        executor = InvokeParticipantExecutor(*args, **kwargs)
+        executor = PublishExecutor(*args, **kwargs)
         try:
             executor.exec(self.definition.invoke_participant_operation, context)
         except MinosSagaException:
@@ -126,7 +125,7 @@ class SagaExecutionStep(object):
         if self.already_rollback:
             raise MinosSagaRollbackExecutionStepException("The step was already rollbacked.")
 
-        executor = WithCompensationExecutor(*args, **kwargs)
+        executor = PublishExecutor(*args, **kwargs)
         executor.exec(self.definition.with_compensation_operation, context)
 
         self.already_rollback = True

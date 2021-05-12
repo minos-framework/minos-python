@@ -21,35 +21,35 @@ BASE_PATH = Path(__file__).parent
 
 
 class Foo(MinosModel):
-    """TODO"""
+    """Utility minos model class for testing purposes"""
 
     foo: str
 
 
 # noinspection PyUnusedLocal
 def foo_fn(context: SagaContext) -> MinosModel:
-    """TODO
+    """Utility callback function for testing purposes.
 
-    :param context: TODO
-    :return: TODO
+    :param context: A context instance.
+    :return: A minos model function.
     """
     return Foo("hello")
 
 
 # noinspection PyUnusedLocal
 def foo_fn_raises(context: SagaContext) -> MinosModel:
-    """TODO
+    """Utility callback function for testing purposes that raises an exception.
 
-    :param context: TODO
-    :return: TODO
+    :param context: A context instance.
+    :return: A minos model function.
     """
     raise ValueError()
 
 
 def fake_reply(data: MinosModel) -> CommandReply:
-    """TODO
+    """Fake command reply generator.
 
-    :param data:TODO
-    :return: TODO
+    :param data: Data to be set as response on the command reply.
+    :return: A Command reply instance.
     """
     return CommandReply("FooCreated", [data], "saga_id", "task_id")

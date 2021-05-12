@@ -5,9 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from typing import (
-    Any,
-)
 
 from minos.common import (
     CommandReply,
@@ -28,18 +25,20 @@ from .local import (
 
 
 class OnReplyExecutor(LocalExecutor):
-    """TODO"""
+    """On Reply Executor class."""
 
     # noinspection PyUnusedLocal
-    def exec(self, operation: SagaStepOperation, context: SagaContext, reply: CommandReply, *args, **kwargs):
-        """TODO
+    def exec(
+        self, operation: SagaStepOperation, context: SagaContext, reply: CommandReply, *args, **kwargs
+    ) -> SagaContext:
+        """Execute the on reply operation.
 
-        :param operation: TODO
-        :param context: TODO
-        :param reply: TODO
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param operation: Operation to be executed.
+        :param context: Actual execution context.
+        :param reply: Command Reply which contains the response.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: An updated context instance.
         """
         if operation is None:
             return context

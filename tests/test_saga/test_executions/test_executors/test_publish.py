@@ -11,13 +11,13 @@ from asyncio import (
 )
 
 from minos.saga import (
-    WithCompensationExecutor,
+    PublishExecutor,
 )
 
 
-class TesWithCompensationExecutor(unittest.TestCase):
+class TestPublishExecutor(unittest.TestCase):
     def test_constructor(self):
-        executor = WithCompensationExecutor()
+        executor = PublishExecutor()
         self.assertIsInstance(executor.loop, AbstractEventLoop)
 
 

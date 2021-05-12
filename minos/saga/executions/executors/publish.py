@@ -5,15 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from abc import (
-    abstractmethod,
-)
 from typing import (
     NoReturn,
 )
 
 from minos.common import (
-    Aggregate,
+    MinosModel,
 )
 
 from ...definitions import (
@@ -32,39 +29,36 @@ from .local import (
 
 
 class PublishExecutor(LocalExecutor):
-    """TODO"""
+    """Publish Executor class.
 
-    def exec(self, operation: SagaStepOperation, context: SagaContext):
-        """TODO
+    This class has the responsibility to publish command on the corresponding broker's queue. """
 
-        :param operation: TODO
-        :param context: TODO
-        :return: TODO
+    def exec(self, operation: SagaStepOperation, context: SagaContext) -> SagaContext:
+        """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
+
+        :param operation: Operation to be executed.
+        :param context: Execution context.
+        :return: A saga context instance.
         """
         if operation is None:
             return context
 
         try:
-            request = self._run_callback(operation, context)
+            request = self.exec_one(operation, context)
             self.publish(request)
         except MinosSagaException as exc:
             raise exc
-        except Exception as e:
+        except Exception:
             exc = MinosSagaFailedExecutionStepException()  # FIXME: Include explanation.
             raise exc
 
         return context
 
-    @abstractmethod
-    def _run_callback(self, operation: SagaStepOperation, context: SagaContext) -> Aggregate:
-        raise NotImplementedError
-
     @staticmethod
-    def publish(request: Aggregate) -> NoReturn:
-        """TODO
+    def publish(request: MinosModel) -> NoReturn:
+        """Publish a request on the corresponding broker's queue./
 
-        :param request: TODO
-        :return: TODO
+        :param request: The request to be published as a command.
+        :return: This method does not return anything.
         """
-        # TODO: Publish the command
-        pass
+        # FIXME: Publish the command
