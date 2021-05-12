@@ -53,8 +53,8 @@ class TestMinosLocalState(unittest.TestCase):
             execution.execute()
         except MinosSagaPausedExecutionStepException:
             pass
+        reply = fake_reply(Foo("hola"))
         try:
-            reply = fake_reply(Foo("hola"))
             execution.execute(reply=reply)
         except MinosSagaPausedExecutionStepException:
             pass
