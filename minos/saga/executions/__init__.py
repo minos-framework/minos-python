@@ -25,3 +25,6 @@ from .status import (
 from .step import (
     SagaExecutionStep,
 )
+from .storage import (
+    SagaExecutionStorage,
+)
