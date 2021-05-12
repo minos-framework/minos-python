@@ -1,4 +1,6 @@
-from aiohttp import web
+from aiohttp import (
+    web,
+)
 
 
 class RestService(object):
