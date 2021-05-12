@@ -36,14 +36,6 @@ class MinosStorageLmdb(MinosStorage):
         self._protocol = protocol
         self._tables = {}
 
-    @property
-    def env(self) -> lmdb.Environment:
-        """Env getter.
-
-        :return: An ``lmdb.Environment`` instance.
-        """
-        return self._env
-
     def add(self, table: str, key: str, value: t.Any) -> t.NoReturn:
         """Store a value.
 
