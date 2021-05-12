@@ -8,7 +8,6 @@ Minos Microservice Networks
 Python Package with the common network classes and utlities used in Minos Microservice
 
 
-
 Credits
 -------
 
