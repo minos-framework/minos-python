@@ -1,5 +1,5 @@
-Minos Microservice Common
-=========================
+Minos Microservice Saga
+=======================
 
 [![codecov](https://codecov.io/gh/Clariteia/minos_microservice_saga/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_saga)
 

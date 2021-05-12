@@ -39,6 +39,7 @@ setup(
     ],
     description="Saga Library for MinOS project.",
     install_requires=requirements,
+    long_description_content_type="text/markdown",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="minos_microservice_saga",
