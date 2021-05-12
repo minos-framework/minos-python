@@ -9,3 +9,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .handler import (
     RestInterfaceHandler
 )
+from .service import (
+    REST
+)

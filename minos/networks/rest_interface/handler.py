@@ -35,6 +35,9 @@ class RestInterfaceHandler:
             callable_f = self.class_resolver(item.controller, item.action)
             self._app.router.add_route(item.method, item.route, callable_f)
 
+        # Load default routes
+        self._mount_system_health()
+
     @staticmethod
     def class_resolver(controller: str, action: str):
         """Load controller class and action method.
@@ -53,3 +56,14 @@ class RestInterfaceHandler:
         :return: A `web.Application` instance.
         """
         return self._app
+
+    def _mount_system_health(self):
+        """Mount System Health Route."""
+        self._app.router.add_get("/system/health", self._system_health_handler)
+
+    @staticmethod
+    async def _system_health_handler(request):
+        """System Health Route Handler.
+        :return: A `web.json_response` response.
+        """
+        return web.json_response({"host": request.host}, status=200)

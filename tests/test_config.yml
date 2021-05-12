@@ -2,7 +2,7 @@ service:
     name: Order
 rest:
     host: localhost
-    port: 8900
+    port: 8080
     endpoints:
         - name: AddOrder
           route: /order
