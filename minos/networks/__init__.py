@@ -32,6 +32,10 @@ from .handler import (
     MinosEventPeriodicService,
     MinosEventServerService,
 )
+from .rest_interface import (
+    REST,
+    RestInterfaceHandler,
+)
 from .snapshots import (
     MinosSnapshotDispatcher,
     MinosSnapshotEntry,

@@ -1,3 +1,4 @@
+aiohttp==3.7.4.post0
 aiokafka==0.7.0
 aiomisc==12.1.0
 aiopg==1.2.1
@@ -34,6 +35,7 @@ MarkupSafe==1.1.1
 mccabe==0.6.1
 minos-microservice-common==0.0.9
 more-itertools==8.7.0
+multidict==5.1.0
 mypy-extensions==0.4.3
 orjson==3.5.1
 packaging==20.9
@@ -78,4 +80,5 @@ virtualenv==20.4.3
 watchdog==2.0.2
 wcwidth==0.2.5
 webencodings==0.5.1
+yarl==1.6.3
 zipp==3.4.1
