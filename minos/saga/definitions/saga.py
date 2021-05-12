@@ -11,7 +11,6 @@ from __future__ import (
 )
 
 from typing import (
-    TYPE_CHECKING,
     Any,
     Iterable,
     Optional,
@@ -25,14 +24,12 @@ from .step import (
     SagaStep,
 )
 
-if TYPE_CHECKING:
-    from ..executions import (
-        SagaExecution,
-    )
-
 
 class Saga(object):
-    """TODO"""
+    """Saga class.
+
+    The purpose of this class is to define a sequence of operations among microservices.
+    """
 
     def __init__(self, name: str, steps: list[SagaStep] = None):
         if steps is None:
@@ -43,11 +40,11 @@ class Saga(object):
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
-        """TODO
+        """Build a new ``Saga`` instance from raw.
 
-        :param raw: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param raw: The raw representation of the saga.
+        :param kwargs: Additional named arguments.
+        :return: A new ``Saga`` instance.
         """
         if isinstance(raw, cls):
             return raw
@@ -61,9 +58,9 @@ class Saga(object):
         return instance
 
     def step(self, step: Optional[SagaStep] = None) -> SagaStep:
-        """TODO
+        """Add a new step in the ``Saga``.
 
-        :return: TODO
+        :return: A ``SagaStep`` instance.
         """
         if step is None:
             step = SagaStep(self)
@@ -75,22 +72,11 @@ class Saga(object):
         self.steps.append(step)
         return step
 
-    def build_execution(self, *args, **kwargs) -> SagaExecution:
-        """TODO
-
-        :return: TODO
-        """
-        from ..executions import (
-            SagaExecution,
-        )
-
-        return SagaExecution.from_saga(self, *args, **kwargs)
-
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO
+        """Generate a raw representation of the instance.
 
-        :return: TODO
+        :return: A ``dict`` instance.
         """
         return {
             "name": self.name,
