@@ -106,3 +106,9 @@ History
 * Added JSON Binary format
 * Improved LMDB support for Saga Binary format
 
+0.0.11 (2021-05-12)
+------------------
+
+* EventModel modified the list of items from Aggregate to MinosModel, for better compatibility
+* Added DB Storage Abstract class
+* Added code documentation
