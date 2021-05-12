@@ -16,8 +16,6 @@ from minos.common import (
     ModelField,
     classname,
     import_module,
-)
-from minos.common.meta import (
     self_or_classmethod,
 )
 
