@@ -9,6 +9,7 @@ from pathlib import (
     Path,
 )
 from typing import (
+    NoReturn,
     Type,
     Union,
 )
@@ -31,7 +32,7 @@ from .saga import (
 
 
 class SagaExecutionStorage(object):
-    """TODO"""
+    """Saga Execution Storage class."""
 
     def __init__(
         self,
@@ -44,27 +45,29 @@ class SagaExecutionStorage(object):
         self.db_name = db_name
 
         # FIXME: call storage_cls.build instead of this code.
+
+        # noinspection PyPackageRequirements
         import lmdb
 
         env = lmdb.open(str(db_path), max_dbs=10)
         # noinspection PyArgumentList
         self._storage = storage_cls(env, protocol=protocol, **kwargs)
 
-    def store(self, execution: SagaExecution):
-        """TODO
+    def store(self, execution: SagaExecution) -> NoReturn:
+        """Store an execution.
 
-        :param execution: TODO
-        :return: TODO
+        :param execution: Execution to be stored.
+        :return: This method does not return anything.
         """
         key = str(execution.uuid)
         value = execution.raw
         self._storage.update(table=self.db_name, key=key, value=value)
 
     def load(self, key: Union[str, UUID]) -> SagaExecution:
-        """TODO
+        """Load the saga execution stored on the given key.
 
-        :param key: TODO
-        :return: TODO
+        :param key: The key to identify the execution.
+        :return: A ``SagaExecution`` instance.
         """
         key = str(key)
         value = self._storage.get(table=self.db_name, key=key)
@@ -73,11 +76,14 @@ class SagaExecutionStorage(object):
         execution = SagaExecution.from_raw(value)
         return execution
 
-    def delete(self, key: Union[str, UUID]):
-        """TODO
+    def delete(self, key: Union[SagaExecution, str, UUID]) -> NoReturn:
+        """Delete the reference of the given key.
 
-        :param key: TODO
-        :return: TODO
+        :param key: Execution key to be deleted.
+        :return: This method does not return anything.
         """
+        if isinstance(key, SagaExecution):
+            key = key.uuid
+
         key = str(key)
         self._storage.delete(table=self.db_name, key=key)
