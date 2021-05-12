@@ -8,8 +8,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 from __future__ import (
     annotations,
 )
+
 import abc
-from typing import NoReturn, Any, Optional
+from typing import (
+    Any,
+    NoReturn,
+    Optional,
+)
 
 
 class MinosStorage(abc.ABC):

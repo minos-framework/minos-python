@@ -9,8 +9,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 from __future__ import (
     annotations,
 )
+
 import typing as t
-from pathlib import Path
+from pathlib import (
+    Path,
+)
 
 import lmdb
 
