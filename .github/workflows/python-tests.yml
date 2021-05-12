@@ -2,46 +2,71 @@ on: push
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    container:
-        image: python:latest
+    container: python:3.9-buster
+
+
     services:
-        zookeeper:
-            image: bitnami/zookeeper:latest
-            ports:
-                - "2181:2181"
-        kafka:
-            image: bitnami/kafka:latest
-            ports:
-                - "9092:9092"
-            env:
-                KAFKA_BROKER_ID: 1
-                KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-                KAFKA_ADVERTISED_HOST_NAME: localhost
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: minos
+          POSTGRES_PASSWORD: min0s
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+      zookeeper:
+          image: wurstmeister/zookeeper:latest
+          ports:
+              - 2181:2181
+
+      kafka:
+          image: wurstmeister/kafka:latest
+          ports:
+              - 9092:9092
+          env:
+              KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+              KAFKA_ADVERTISED_HOST_NAME: kafka
+    env:
+      MINOS_EVENTS_QUEUE_HOST: postgres
+      MINOS_EVENTS_BROKER: kafka
+      MINOS_COMMANDS_QUEUE_HOST: postgres
+      MINOS_COMMANDS_BROKER: kafka
+      MINOS_REPOSITORY_HOST: postgres
+      MINOS_SNAPSHOT_HOST: postgres
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-          apt-get install -y libc6 build-essential
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
           python -m pip install --upgrade pip
           if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
           python setup.py install
-    - name: Test with pytest
-      run: |
+
+      - name: Install Postgresql client
+        run: |
+          apt-get update
+          apt-get install --yes postgresql-client
+
+      - name: Create database
+        run: |
+          PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_db OWNER minos;"
+
+      - name: Test with pytest
+        run: |
           make test
-    -   name: Generate coverage report
+
+      - name: Generate coverage report
         run: |
             make coverage
-    -   name: Codecov
+
+      - name: Codecov
         uses: codecov/codecov-action@v1.3.1
         with:
-            token: ${{ secrets.CODECOV_TOKEN }}
-            files: ./coverage.xml
-            fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: true
