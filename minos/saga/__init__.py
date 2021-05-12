@@ -47,6 +47,3 @@ from .executions import (
 from .local_state import (
     MinosLocalState,
 )
-from .storage import (
-    MinosSagaStorage,
-)
