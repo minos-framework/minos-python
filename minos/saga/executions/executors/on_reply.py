@@ -5,9 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from typing import (
+    Any,
+)
 
 from minos.common import (
-    Aggregate,
+    CommandReply,
 )
 
 from ...definitions import (
@@ -28,12 +31,12 @@ class OnReplyExecutor(LocalExecutor):
     """TODO"""
 
     # noinspection PyUnusedLocal
-    def exec(self, operation: SagaStepOperation, context: SagaContext, response: Aggregate = None, *args, **kwargs):
+    def exec(self, operation: SagaStepOperation, context: SagaContext, reply: CommandReply, *args, **kwargs):
         """TODO
 
         :param operation: TODO
         :param context: TODO
-        :param response: TODO
+        :param reply: TODO
         :param args: TODO
         :param kwargs: TODO
         :return: TODO
@@ -41,9 +44,13 @@ class OnReplyExecutor(LocalExecutor):
         if operation is None:
             return context
 
-        if response is None:
+        if reply is None:
             raise MinosSagaPausedExecutionStepException()
 
-        response = super().exec_one(operation, response)
+        value = reply.items
+        if len(value) == 1:
+            value = value[0]
+
+        response = super().exec_one(operation, value)
         context.update(operation.name, response)
         return context

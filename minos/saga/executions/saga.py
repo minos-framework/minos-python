@@ -20,6 +20,10 @@ from uuid import (
     UUID,
 )
 
+from minos.common import (
+    CommandReply,
+)
+
 from ..definitions import (
     Saga,
     SagaStep,
@@ -108,17 +112,17 @@ class SagaExecution(object):
 
         return cls(definition, uuid4(), SagaContext(), *args, **kwargs)
 
-    def execute(self, response: Optional[Any] = None):
+    def execute(self, reply: Optional[CommandReply] = None):
         """TODO
 
-        :param response: TODO
+        :param reply: TODO
         :return: TODO
         """
         self.status = SagaStatus.Running
         for step in self.pending_steps:
             execution_step = SagaExecutionStep(step)
             try:
-                self.context = execution_step.execute(self.context, response=response)
+                self.context = execution_step.execute(self.context, reply)
                 self._add_executed(execution_step)
             except MinosSagaFailedExecutionStepException as exc:
                 self.rollback()
@@ -128,7 +132,7 @@ class SagaExecution(object):
                 self.status = SagaStatus.Paused
                 raise exc
 
-            response = None  # Response is consumed
+            reply = None  # Response is consumed
 
         self.status = SagaStatus.Finished
         return self.context

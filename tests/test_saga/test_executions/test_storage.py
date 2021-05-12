@@ -26,6 +26,7 @@ from tests.callbacks import (
 from tests.utils import (
     BASE_PATH,
     Foo,
+    fake_reply,
     foo_fn_raises,
 )
 
@@ -53,7 +54,8 @@ class TestMinosLocalState(unittest.TestCase):
         except MinosSagaPausedExecutionStepException:
             pass
         try:
-            execution.execute(response=Foo("hola"))
+            reply = fake_reply(Foo("hola"))
+            execution.execute(reply)
         except MinosSagaPausedExecutionStepException:
             pass
         self.execution = execution
