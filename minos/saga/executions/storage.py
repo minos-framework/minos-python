@@ -36,22 +36,13 @@ class SagaExecutionStorage(object):
 
     def __init__(
         self,
-        db_path: Union[Path, str],
         storage_cls: Type[MinosStorage] = MinosStorageLmdb,
         protocol=MinosJsonBinaryProtocol,
         db_name: str = "LocalState",
         **kwargs,
     ):
         self.db_name = db_name
-
-        # FIXME: call storage_cls.build instead of this code.
-
-        # noinspection PyPackageRequirements
-        import lmdb
-
-        env = lmdb.open(str(db_path), max_dbs=10)
-        # noinspection PyArgumentList
-        self._storage = storage_cls(env, protocol=protocol, **kwargs)
+        self._storage = storage_cls.build(protocol=protocol, **kwargs)
 
     def store(self, execution: SagaExecution) -> NoReturn:
         """Store an execution.

@@ -64,14 +64,14 @@ class TestMinosLocalState(unittest.TestCase):
         rmtree(self.DB_PATH, ignore_errors=True)
 
     def test_store(self):
-        storage = SagaExecutionStorage(self.DB_PATH)
+        storage = SagaExecutionStorage(path_db=self.DB_PATH)
 
         storage.store(self.execution)
 
         self.assertEqual(self.execution, storage.load(self.execution.uuid))
 
     def test_store_overwrite(self):
-        storage = SagaExecutionStorage(self.DB_PATH)
+        storage = SagaExecutionStorage(path_db=self.DB_PATH)
 
         storage.store(self.execution)
         self.assertEqual(self.execution, storage.load(self.execution.uuid))
@@ -84,13 +84,13 @@ class TestMinosLocalState(unittest.TestCase):
         self.assertEqual(another, storage.load(self.execution.uuid))
 
     def test_load_raises(self):
-        storage = SagaExecutionStorage(self.DB_PATH)
+        storage = SagaExecutionStorage(path_db=self.DB_PATH)
 
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             storage.load(self.execution.uuid)
 
     def test_delete(self):
-        storage = SagaExecutionStorage(self.DB_PATH)
+        storage = SagaExecutionStorage(path_db=self.DB_PATH)
 
         storage.store(self.execution)
         storage.delete(self.execution)
