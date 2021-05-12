@@ -37,7 +37,7 @@ class LocalExecutor(ABC):
             loop = asyncio.get_event_loop()
         self.loop = loop
 
-    def exec_one(self, operation: SagaStepOperation, response: Any) -> Any:
+    def exec_one(self, operation: SagaStepOperation, *args, **kwargs) -> Any:
         """TODO
 
         :param operation: TODO
@@ -45,16 +45,16 @@ class LocalExecutor(ABC):
         :return: TODO
         """
 
-        return self._exec_function(operation.callback, response)
+        return self._exec_function(operation.callback, *args, **kwargs)
 
-    def _exec_function(self, func: Callable, request: Any) -> SagaContext:
+    def _exec_function(self, func: Callable, *args, **kwargs) -> SagaContext:
         """TODO
 
         :param func: TODO
         :param request: TODO
         :return: TODO
         """
-        result = func(request)
+        result = func(*args, **kwargs)
         if inspect.isawaitable(result):
             result = self.loop.run_until_complete(result)
             return result
