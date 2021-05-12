@@ -21,9 +21,6 @@ from typing import (
 from ..exceptions import (
     MinosAlreadyOnSagaException,
 )
-from .abc import (
-    MinosBaseSagaBuilder,
-)
 from .step import (
     SagaStep,
 )
@@ -34,7 +31,7 @@ if TYPE_CHECKING:
     )
 
 
-class Saga(MinosBaseSagaBuilder):
+class Saga(object):
     """TODO"""
 
     def __init__(self, name: str, steps: list[SagaStep] = None):
