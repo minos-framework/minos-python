@@ -26,9 +26,8 @@ packages = [
 include = [
     "AUTHORS.md",
     "HISTORY.md",
+    "LICENSE",
 ]
-
-
 
 [tool.poetry.dependencies]
 python = "^3.9"
