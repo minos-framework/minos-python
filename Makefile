@@ -57,7 +57,7 @@ dev-install:
 	python setup.py install
 
 lint: ## check style with flake8
-	flake8 minos tests
+	flake8
 
 env-test:
 	source venv/bin/activate; $(MAKE) test
