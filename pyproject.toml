@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "minos_microservice_saga"
-version = "0.0.1"
+version = "0.0.2"
 description = "Saga Library for MinOS project."
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_saga"
 homepage = "https://clariteia.com"
-authors = ["Clariteia Devs <devs@clariteia.com>"]
+authors = ["Clariteia Devs <pypi@clariteia.com>"]
 license = "MIT"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
