@@ -7,11 +7,13 @@ repos:
                 name: Run code reformatting
                 entry: make reformat
                 language: system
+
             -   id: lint
                 pass_filenames: false
                 name: Run code lintting
                 entry: make lint
                 language: system
+
             -   id: test
                 pass_filenames: false
                 name: Run tests
