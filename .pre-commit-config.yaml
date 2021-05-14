@@ -5,10 +5,10 @@ repos:
             -   id: reformat
                 pass_filenames: false
                 name: Run code reformatting
-                entry: make env-reformat
+                entry: make reformat
                 language: system
             -   id: test
                 pass_filenames: false
                 name: Run tests
-                entry: make env-test
+                entry: make test
                 language: system
