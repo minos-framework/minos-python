@@ -87,5 +87,7 @@ dist: clean ## builds source and wheel package
 	poetry build
 	ls -l dist
 
-install: clean ## install the package to the active Python's site-packages
+install:
 	poetry install
+
+full-install: clean install
