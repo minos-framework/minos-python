@@ -23,7 +23,6 @@ jobs:
             -   name: Install dependencies
                 run: make install
 
-
             -   name: Publish package
                 run: make publish
                 env:

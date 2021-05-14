@@ -15,18 +15,18 @@ jobs:
             -   name: Install dependencies
                 run: make install
 
-            -   name: Lint code
+            -   name: Lint package
                 run: make lint
 
-            -   name: Test Code
-                run: make test
-
-            -   name: Generate coverage report
+            -   name: Test package with coverage
                 run: make coverage
 
-            -   name: Codecov
+            -   name: Publish coverage
                 uses: codecov/codecov-action@v1.3.1
                 with:
                     token: ${{ secrets.CODECOV_TOKEN }}
                     files: ./coverage.xml
                     fail_ci_if_error: true
+
+            -   name: Generate documentation
+                run: make docs

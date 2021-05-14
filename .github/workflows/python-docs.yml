@@ -13,7 +13,6 @@ jobs:
         container: python:3.9-buster
 
         steps:
-
             -   name: Check out repository code
                 uses: actions/checkout@v2
 
@@ -23,10 +22,10 @@ jobs:
             -   name: Install dependencies
                 run: make install
 
-            -   name: Publish package
+            -   name: Generate documentation
                 run: make docs
 
-            -   name: Documentation deploying
+            -   name: Deploy documentation
                 uses: peaceiris/actions-gh-pages@v3
                 with:
                     github_token: ${{ secrets.GITHUB_TOKEN }}
