@@ -47,8 +47,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Minos Microservice SAGA'
-copyright = "2021, Vladyslav Fenchak"
-author = "Vladyslav Fenchak"
+copyright = "2021, Clariteia Devs"
+author = "Clariteia Devs"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -129,7 +129,7 @@ latex_elements = {
 latex_documents = [
     (master_doc, 'minos.tex',
      'Minos Microservice SAGA Documentation',
-     'Vladyslav Fenchak', 'manual'),
+     'Clariteia Devs', 'manual'),
 ]
 
 
