@@ -1,0 +1,33 @@
+default_stages: [ commit ]
+repos:
+    -   repo: local
+        hooks:
+            -   id: install
+                pass_filenames: false
+                name: Install depencies
+                entry: make install
+                language: system
+
+            -   id: reformat
+                pass_filenames: false
+                name: Reformat package
+                entry: make reformat
+                language: system
+
+            -   id: lint
+                pass_filenames: false
+                name: Lint package
+                entry: make lint
+                language: system
+
+            -   id: test
+                pass_filenames: false
+                name: Test package
+                entry: make test
+                language: system
+
+            -   id: docs
+                pass_filenames: false
+                name: Generate documentation
+                entry: make test
+                language: system

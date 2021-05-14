@@ -1,72 +1,69 @@
 on: push
 
 jobs:
-  build:
+    build:
+        runs-on: ubuntu-latest
+        container: python:3.9-buster
 
-    runs-on: ubuntu-latest
-    container: python:3.9-buster
+        services:
+            postgres:
+                image: postgres
+                env:
+                    POSTGRES_USER: minos
+                    POSTGRES_PASSWORD: min0s
+                ports:
+                    - 5432:5432
+                options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
+            zookeeper:
+                image: wurstmeister/zookeeper:latest
+                ports:
+                    - 2181:2181
 
-    services:
-      postgres:
-        image: postgres
+            kafka:
+                image: wurstmeister/kafka:latest
+                ports:
+                    - 9092:9092
+                env:
+                    KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+                    KAFKA_ADVERTISED_HOST_NAME: kafka
         env:
-          POSTGRES_USER: minos
-          POSTGRES_PASSWORD: min0s
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+            MINOS_EVENTS_QUEUE_HOST: postgres
+            MINOS_EVENTS_BROKER: kafka
+            MINOS_COMMANDS_QUEUE_HOST: postgres
+            MINOS_COMMANDS_BROKER: kafka
+            MINOS_REPOSITORY_HOST: postgres
+            MINOS_SNAPSHOT_HOST: postgres
+            MINOS_SAGA_HOST: postgres
 
-      zookeeper:
-          image: wurstmeister/zookeeper:latest
-          ports:
-              - 2181:2181
+        steps:
+            -   name: Check out repository code
+                uses: actions/checkout@v2
 
-      kafka:
-          image: wurstmeister/kafka:latest
-          ports:
-              - 9092:9092
-          env:
-              KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-              KAFKA_ADVERTISED_HOST_NAME: kafka
-    env:
-      MINOS_EVENTS_QUEUE_HOST: postgres
-      MINOS_EVENTS_BROKER: kafka
-      MINOS_COMMANDS_QUEUE_HOST: postgres
-      MINOS_COMMANDS_BROKER: kafka
-      MINOS_REPOSITORY_HOST: postgres
-      MINOS_SNAPSHOT_HOST: postgres
+            -   name: Create database
+                run: |
+                    apt-get update
+                    apt-get install --yes postgresql-client
+                    PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_db OWNER minos;"
 
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
+            -   name: Install Poetry
+                uses: snok/install-poetry@v1.1.4
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
-          python setup.py install
+            -   name: Install dependencies
+                run: make install
 
-      - name: Install Postgresql client
-        run: |
-          apt-get update
-          apt-get install --yes postgresql-client
+            -   name: Lint package
+                run: make lint
 
-      - name: Create database
-        run: |
-          PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_db OWNER minos;"
+            -   name: Test package with coverage
+                run: make coverage
 
-      - name: Test with pytest
-        run: |
-          make test
+            -   name: Publish coverage
+                uses: codecov/codecov-action@v1.3.1
+                with:
+                    token: ${{ secrets.CODECOV_TOKEN }}
+                    files: ./coverage.xml
+                    fail_ci_if_error: true
 
-      - name: Generate coverage report
-        run: |
-            make coverage
-
-      - name: Codecov
-        uses: codecov/codecov-action@v1.3.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          fail_ci_if_error: true
+            -   name: Generate documentation
+                run: make docs
