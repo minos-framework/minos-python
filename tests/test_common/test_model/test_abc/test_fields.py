@@ -282,9 +282,8 @@ class TestModelField(unittest.TestCase):
         self.assertEqual([4], field.value)
 
     def test_parser(self):
-        parser = lambda x: x.title()
-        field = ModelField("test", str, "foo", parser)
-        self.assertEqual(parser, field.parser)
+        field = ModelField("test", str, "foo", str.title)
+        self.assertEqual(str.title, field.parser)
 
     def test_parser_non_set(self):
         field = ModelField("test", str, "foo")
@@ -303,9 +302,8 @@ class TestModelField(unittest.TestCase):
         self.assertEqual(None, field.value)
 
     def test_validator(self):
-        validator = lambda x: not x.count(" ")
-        field = ModelField("test", str, "foo", validator=validator)
-        self.assertEqual(validator, field.validator)
+        field = ModelField("test", str, "foo", validator=len)
+        self.assertEqual(len, field.validator)
 
     def test_validator_non_set(self):
         field = ModelField("test", str, "foo")

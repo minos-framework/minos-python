@@ -28,7 +28,7 @@ def import_module(module: str) -> t.Type:
         if not six.callable(kallable):
             raise TypeError("The module is not callable")
         return kallable
-    except ImportError as e:
+    except ImportError:
         raise MinosImportException("Error importing Package")
 
 
