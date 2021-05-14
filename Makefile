@@ -72,10 +72,9 @@ reformat: ## check code coverage quickly with the default Python
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/minos_microservice_saga.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/api minos
+	poetry run sphinx-apidoc -o docs/api minos
 	poetry run $(MAKE) -C docs clean
 	poetry run $(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
 
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
