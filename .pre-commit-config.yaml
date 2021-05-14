@@ -10,7 +10,7 @@ repos:
 
             -   id: lint
                 pass_filenames: false
-                name: Run code lintting
+                name: Run code linting
                 entry: make lint
                 language: system
 
