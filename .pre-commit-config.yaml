@@ -31,3 +31,9 @@ repos:
                 name: Generate documentation
                 entry: make test
                 language: system
+
+            -   id: build
+                pass_filenames: false
+                entry: make dist
+                name: Generate build
+                language: system

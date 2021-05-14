@@ -24,7 +24,7 @@ jobs:
                 run: make install
 
             -   name: Publish package
-                run: make publish
+                run: make release
                 env:
                     POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
                     POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
