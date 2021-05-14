@@ -52,3 +52,6 @@ jobs:
 
             -   name: Generate documentation
                 run: make docs
+
+            -   name: Generate build
+                run: make dist
