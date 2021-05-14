@@ -7,7 +7,7 @@ Welcome to Minos Microservice SAGA's documentation!
 
    readme
    usage
-   modules
+   api/modules
    authors
    history
 
