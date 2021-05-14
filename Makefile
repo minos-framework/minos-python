@@ -26,11 +26,7 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean:
-	clean-build
-	clean-pyc
-	clean-test
-	clean-env
+clean: clean-build clean-pyc clean-test clean-env
 
 clean-build: ## remove build artifacts
 	rm -fr build/
