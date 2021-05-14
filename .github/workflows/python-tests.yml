@@ -15,7 +15,10 @@ jobs:
             -   name: Install dependencies
                 run: make install
 
-            -   name: Test with pytest
+            -   name: Lint code
+                run: make lint
+
+            -   name: Test Code
                 run: make test
 
             -   name: Generate coverage report

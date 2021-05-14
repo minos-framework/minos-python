@@ -51,7 +51,7 @@ clean-env:
 	rm -fr .env/
 
 lint: ## check style with flake8
-	poetry run flake8 minos tests
+	poetry run flake8
 
 test: ## run tests quickly with the default Python
 	poetry run pytest
