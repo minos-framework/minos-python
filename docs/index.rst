@@ -7,7 +7,7 @@ Welcome to Minos Microservice Common's documentation!
 
    readme
    usage
-   modules
+   api/modules
    authors
    history
 

@@ -26,7 +26,7 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+clean: clean-build clean-pyc clean-test clean-env
 
 clean-build: ## remove build artifacts
 	rm -fr build/
@@ -47,61 +47,46 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
-env-dev-install:
-	python -m venv venv; \
-	source venv/bin/activate; $(MAKE) dev-install
-
-dev-install:
-	python -m pip install --upgrade pip
-	if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
-	python setup.py install
+clean-env:
+	rm -fr .env/
 
 lint: ## check style with flake8
-	flake8 minos tests
-
-env-test:
-	source venv/bin/activate; $(MAKE) test
+	poetry run flake8
 
 test: ## run tests quickly with the default Python
-	pytest
+	poetry run pytest
 
 test-all: ## run tests on every Python version with tox
-	tox
-
-env-coverage:
-	source venv/bin/activate; $(MAKE) coverage
+	poetry run tox
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source minos -m pytest
-	coverage report -m
-	coverage xml
+	poetry run coverage run --source minos -m pytest
+	poetry run coverage report -m
+	poetry run coverage xml
 	## $(BROWSER) htmlcov/index.html
 
-env-reformat:
-	source venv/bin/activate; $(MAKE) reformat
-
 reformat: ## check code coverage quickly with the default Python
-	black --line-length 120 minos tests
-	isort --recursive minos tests
+	poetry run black --line-length 120 minos tests
+	poetry run isort --recursive minos tests
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/minos_microservice_common.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ minos_microservice_common
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
+	poetry run sphinx-apidoc -o docs/api minos
+	poetry run $(MAKE) -C docs clean
+	poetry run $(MAKE) -C docs html
 
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 release: dist ## package and upload a release
-	twine upload --repository-url $(aws_repo_url) --username aws --password $(aws_password) dist/*
+	poetry publish
 
 dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
+	poetry build
 	ls -l dist
 
-install: clean ## install the package to the active Python's site-packages
-	python setup.py install
+install:
+	poetry install
+
+full-install: clean install
