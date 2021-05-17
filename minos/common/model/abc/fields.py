@@ -201,7 +201,7 @@ class _ModelFieldCaster(object):
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
-        if type_field is not type(None):
+        if type_field is not type(None):  # noqa: E721
             if data is None:
                 raise MinosReqAttributeException(f"'{self._name}' field is 'None'.")
 
@@ -211,7 +211,7 @@ class _ModelFieldCaster(object):
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_single_value(self, type_field: t.Type, data: t.Any) -> t.Any:
-        if type_field is type(None):
+        if type_field is type(None):  # noqa: E721
             return self._cast_none_value(type_field, data)
 
         if type_field in PYTHON_IMMUTABLE_TYPES:
@@ -398,7 +398,7 @@ class _MinosModelAvroSchemaBuilder(object):
         return ans
 
     def _build_single_schema(self, type_field: t.Type) -> t.Any:
-        if type_field is type(None):
+        if type_field is type(None):  # noqa: E721
             return self._build_none_schema(type_field)
 
         if type_field in PYTHON_IMMUTABLE_TYPES:
@@ -411,7 +411,7 @@ class _MinosModelAvroSchemaBuilder(object):
 
     @staticmethod
     def _build_none_schema(type_field: t.Type) -> t.Any:
-        if type_field is type(None):
+        if type_field is type(None):  # noqa: E721
             return NULL
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
@@ -492,12 +492,16 @@ class _MinosModelAvroDataBuilder(object):
 
 
 def _is_minos_model_cls(type_field: t.Type) -> bool:
-    from .model import MinosModel
+    from .model import (
+        MinosModel,
+    )
 
     return inspect.isclass(type_field) and issubclass(type_field, MinosModel)
 
 
 def _is_aggregate_cls(type_field: t.Type) -> bool:
-    from ..aggregate import Aggregate
+    from ..aggregate import (
+        Aggregate,
+    )
 
     return inspect.isclass(type_field) and issubclass(type_field, Aggregate)

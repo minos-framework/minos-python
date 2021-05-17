@@ -95,7 +95,20 @@ History
 
 * Added SAGA Attriubutes in MinosConfig
 
-0.0.8 (2021-05-10)
+0.0.9 (2021-05-10)
 ------------------
 
 * Added Config Parameters for MinosConfig
+
+0.0.10 (2021-05-11)
+------------------
+
+* Added JSON Binary format
+* Improved LMDB support for Saga Binary format
+
+0.0.11 (2021-05-12)
+------------------
+
+* EventModel modified the list of items from Aggregate to MinosModel, for better compatibility
+* Added DB Storage Abstract class
+* Added code documentation

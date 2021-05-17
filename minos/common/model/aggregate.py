@@ -218,7 +218,9 @@ class Aggregate(MinosModel):
 
         if repository is None:
             # FIXME: In the future, this could be parameterized.
-            from ..repository import PostgreSqlMinosRepository
+            from ..repository import (
+                PostgreSqlMinosRepository,
+            )
 
             repository = PostgreSqlMinosRepository.from_config(already_setup=True, config=config)
 

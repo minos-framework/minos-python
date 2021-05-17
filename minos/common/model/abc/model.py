@@ -10,6 +10,10 @@ from __future__ import (
 )
 
 import typing as t
+from base64 import (
+    b64decode,
+    b64encode,
+)
 from itertools import (
     zip_longest,
 )
@@ -86,6 +90,16 @@ class MinosModel(object):
         self._list_fields(*args, **kwargs)
 
     @classmethod
+    def from_avro_str(cls, raw: str, **kwargs) -> t.Union[MinosModel, list[MinosModel]]:
+        """Build a single instance or a sequence of instances from bytes
+
+        :param raw: A bytes data.
+        :return: A single instance or a sequence of instances.
+        """
+        raw = b64decode(raw.encode())
+        return cls.from_avro_bytes(raw, **kwargs)
+
+    @classmethod
     def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[MinosModel, list[MinosModel]]:
         """Build a single instance or a sequence of instances from bytes
 
@@ -106,6 +120,15 @@ class MinosModel(object):
         :return: A new ``MinosModel`` instance.
         """
         return cls(**d)
+
+    @classmethod
+    def to_avro_str(cls, models: list[MinosModel]) -> str:
+        """Create a bytes representation of the given object instances.
+
+        :param models: A sequence of minos models.
+        :return: A bytes object.
+        """
+        return b64encode(cls.to_avro_bytes(models)).decode()
 
     @classmethod
     def to_avro_bytes(cls, models: list[MinosModel]) -> bytes:
@@ -211,6 +234,15 @@ class MinosModel(object):
         :return: A dictionary object.
         """
         return {name: field.avro_data for name, field in self.fields.items()}
+
+    @property
+    def avro_str(self) -> str:
+        """Generate bytes representation of the current instance.
+
+        :return: A bytes object.
+        """
+        # noinspection PyTypeChecker
+        return b64encode(self.avro_bytes).decode()
 
     @property
     def avro_bytes(self) -> bytes:

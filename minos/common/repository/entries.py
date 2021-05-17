@@ -27,7 +27,9 @@ from ..exceptions import (
 )
 
 if TYPE_CHECKING:
-    from ..model import Aggregate
+    from ..model import (
+        Aggregate,
+    )
 
 
 class MinosRepositoryAction(Enum):

@@ -1,4 +1,3 @@
-=======
 Credits
 =======
 
@@ -10,4 +9,5 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Sergio Garcia Prado <sergio.garcia@clariteia.com>
+* Vladyslav Fenchak <vladyslav.fenchak@clariteia.com>

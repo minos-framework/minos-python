@@ -7,6 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import pytest
+
 from minos.common import (
     MinosAvroProtocol,
     MinosRequest,
@@ -91,8 +92,8 @@ def test_request_avro_error_response_id():
 
 def test_request_avro_get_binary_response():
     try:
-        class_response: MinosRPCResponse = MinosResponse.build(MinosRPCResponse).addId(123).addBody(
-            "Test Response Body"
+        class_response: MinosRPCResponse = (
+            MinosResponse.build(MinosRPCResponse).addId(123).addBody("Test Response Body")
         )
         binary_format = class_response.binary
         imported_response_class: MinosRPCResponse = MinosResponse.load(binary_format, MinosRPCResponse)
