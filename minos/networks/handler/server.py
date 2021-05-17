@@ -29,10 +29,11 @@ from psycopg2.extensions import (
     AsIs,
 )
 
-from minos.common.configuration.config import (
+from minos.common import (
     MinosConfig,
 )
-from minos.networks.handler.abc import (
+
+from .abc import (
     MinosHandlerSetup,
 )
 

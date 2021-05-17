@@ -10,8 +10,6 @@ from minos.common.testing import (
 )
 from minos.networks import (
     MinosCommandReplyHandlerDispatcher,
-)
-from minos.networks.exceptions import (
     MinosNetworkException,
 )
 from tests.utils import (

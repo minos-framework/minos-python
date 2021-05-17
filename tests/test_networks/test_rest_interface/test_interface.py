@@ -3,10 +3,10 @@ from aiohttp.test_utils import (
     AioHTTPTestCase,
     unittest_run_loop,
 )
-from minos.common.configuration.config import (
+from minos.common import (
     MinosConfig,
 )
-from minos.networks.rest_interface import (
+from minos.networks import (
     RestInterfaceHandler,
 )
 from tests.utils import (

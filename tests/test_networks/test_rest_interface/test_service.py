@@ -3,7 +3,7 @@ from aiohttp.test_utils import (
     unittest_run_loop,
 )
 
-from minos.common.configuration.config import (
+from minos.common import (
     MinosConfig,
 )
 from minos.networks import (

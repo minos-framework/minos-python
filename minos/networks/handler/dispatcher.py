@@ -22,19 +22,18 @@ from typing import (
 
 import aiopg
 
-from minos.common.configuration.config import (
+from minos.common import (
     MinosConfig,
-)
-from minos.common.importlib import (
     import_module,
 )
 from minos.common.logs import (
     log,
 )
-from minos.networks.exceptions import (
+
+from ..exceptions import (
     MinosNetworkException,
 )
-from minos.networks.handler.abc import (
+from .abc import (
     MinosHandlerSetup,
 )
 

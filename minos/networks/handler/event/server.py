@@ -11,8 +11,6 @@ from typing import (
 
 from minos.common import (
     Event,
-)
-from minos.common.configuration.config import (
     MinosConfig,
 )
 
