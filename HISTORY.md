@@ -12,3 +12,8 @@ History
 * Added Command Broker with Recurrent Service
 * Added REST Service with Health handler
 
+0.0.2 (2021-05-17)
+------------------
+
+* Completed the Poetry Support
+* added actions for documentation
