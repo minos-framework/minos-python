@@ -80,7 +80,7 @@ saga:
         database: order_db
         user: minos
         password: min0s
-        host: localhost
+        host: postgres
         port: 5432
         records: 10
         retry: 2
