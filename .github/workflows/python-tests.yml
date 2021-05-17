@@ -34,6 +34,7 @@ jobs:
             MINOS_COMMANDS_BROKER: kafka
             MINOS_REPOSITORY_HOST: postgres
             MINOS_SNAPSHOT_HOST: postgres
+            MINOS_SAGA_QUEUE_HOST: postgres
 
         steps:
             -   name: Check out repository code
