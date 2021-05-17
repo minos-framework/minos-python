@@ -20,9 +20,12 @@ class TestImportlib(unittest.TestCase):
         object_class = import_module("tests.ImportedModule.ImportedClassTest")
         self.assertEqual("tests.ImportedModule.ImportedClassTest", classname(object_class))
 
-    def test_import_module_exception(self):
+    def test_import_module_raises(self):
         with self.assertRaises(MinosImportException):
             import_module("tests.ImportedModuleFail.ImportedClassTest")
+
+        with self.assertRaises(MinosImportException):
+            import_module("builtins.foo")
 
     def test_classname(self):
         self.assertEqual("builtins.int", classname(int))
