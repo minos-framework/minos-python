@@ -44,6 +44,10 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self._meta_commands_queue_db.pop("records")
         self._meta_commands_queue_db.pop("retry")
 
+        self._meta_saga_queue_db = self._config.saga.queue._asdict()
+        self._meta_saga_queue_db.pop("records")
+        self._meta_saga_queue_db.pop("retry")
+
         self._meta_snapshot_db = self._config.snapshot._asdict()
 
         self._test_db = {"database": f"test_db_{self._uuid.hex}", "user": f"test_user_{self._uuid.hex}"}
@@ -51,6 +55,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         self.repository_db = self._meta_repository_db | self._test_db
         self.events_queue_db = self._meta_events_queue_db | self._test_db
         self.commands_queue_db = self._meta_commands_queue_db | self._test_db
+        self.saga_queue_db = self._meta_saga_queue_db | self._test_db
         self.snapshot_db = self._meta_snapshot_db | self._test_db
 
         self.config = MinosConfig(
@@ -61,6 +66,8 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
             events_queue_user=self.events_queue_db["user"],
             commands_queue_database=self.commands_queue_db["database"],
             commands_queue_user=self.commands_queue_db["user"],
+            saga_queue_database=self.saga_queue_db["database"],
+            saga_queue_user=self.saga_queue_db["user"],
             snapshot_database=self.snapshot_db["database"],
             snapshot_user=self.snapshot_db["user"],
         )
@@ -71,6 +78,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 (self._meta_repository_db, self.repository_db),
                 (self._meta_events_queue_db, self.events_queue_db),
                 (self._meta_commands_queue_db, self.commands_queue_db),
+                (self._meta_saga_queue_db, self.saga_queue_db),
                 (self._meta_snapshot_db, self.snapshot_db),
             ]
         )
@@ -99,6 +107,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
                 (self._meta_repository_db, self.repository_db),
                 (self._meta_events_queue_db, self.events_queue_db),
                 (self._meta_commands_queue_db, self.commands_queue_db),
+                (self._meta_saga_queue_db, self.saga_queue_db),
             ]
         )
 

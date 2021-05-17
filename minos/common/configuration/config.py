@@ -49,7 +49,7 @@ _ENVIRONMENT_MAPPER = {
     "saga.queue.host": "MINOS_SAGA_QUEUE_HOST",
     "saga.queue.port": "MINOS_SAGA_QUEUE_PORT",
     "saga.queue.database": "MINOS_SAGA_QUEUE_DATABASE",
-    "saga.queue.user": "MINOS_CSAGA_QUEUE_USER",
+    "saga.queue.user": "MINOS_SAGA_QUEUE_USER",
     "saga.queue.password": "MINOS_SAGA_QUEUE_PASSWORD",
     "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
     "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",

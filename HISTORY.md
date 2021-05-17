@@ -112,3 +112,9 @@ History
 * EventModel modified the list of items from Aggregate to MinosModel, for better compatibility
 * Added DB Storage Abstract class
 * Added code documentation
+
+0.0.12 (2021-05-17)
+------------------
+
+* Added Support for Poetry
+* Added action for Doc generation
