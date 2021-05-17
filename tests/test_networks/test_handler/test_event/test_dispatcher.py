@@ -33,7 +33,9 @@ class TestEventDispatcher(PostgresAsyncTestCase):
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'event_queue';"
+                    "SELECT 1 "
+                    "FROM information_schema.tables "
+                    "WHERE table_schema = 'public' AND table_name = 'event_queue';"
                 )
                 ret = []
                 async for row in cur:
@@ -82,7 +84,9 @@ class TestEventDispatcher(PostgresAsyncTestCase):
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                    "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
+                    "VALUES (%s, %s, %s, %s) "
+                    "RETURNING id;",
                     (event_instance.topic, 0, bin_data, datetime.datetime.now(),),
                 )
 
@@ -110,7 +114,9 @@ class TestEventDispatcher(PostgresAsyncTestCase):
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                    "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
+                    "VALUES (%s, %s, %s, %s) "
+                    "RETURNING id;",
                     ("TicketAdded", 0, bin_data, datetime.datetime.now(),),
                 )
 

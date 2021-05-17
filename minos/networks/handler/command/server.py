@@ -34,5 +34,5 @@ class MinosCommandHandlerServer(MinosHandlerServer):
         try:
             Command.from_avro_bytes(value)
             return True
-        except:
+        except:  # noqa E722
             return False

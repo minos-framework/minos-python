@@ -1,3 +1,4 @@
+"""
 from aiohttp.test_utils import (
     AioHTTPTestCase,
     unittest_run_loop,
@@ -12,7 +13,6 @@ from tests.utils import (
     BASE_PATH,
 )
 
-"""
 class TestInterface(AioHTTPTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 

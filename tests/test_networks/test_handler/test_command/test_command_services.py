@@ -50,3 +50,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
         await service.callback()
         self.assertEqual(1, mock.call_count)
         await service.dispatcher.destroy()
+
+
+if __name__ == "__main__":
+    unittest.main()

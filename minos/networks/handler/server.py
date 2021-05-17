@@ -4,13 +4,13 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-
 from __future__ import (
     annotations,
 )
 
 import asyncio
 import datetime
+import typing as t
 from abc import (
     abstractmethod,
 )
@@ -28,11 +28,12 @@ from aiokafka import (
 from minos.common.configuration.config import (
     MinosConfig,
 )
-from minos.networks.handler.abc import (
-    MinosHandlerSetup,
-)
 from psycopg2.extensions import (
     AsIs,
+)
+
+from minos.networks.handler.abc import (
+    MinosHandlerSetup,
 )
 
 
@@ -95,8 +96,7 @@ class MinosHandlerServer(MinosHandlerSetup):
             async with pool.acquire() as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
-                        "INSERT INTO %s (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
-                        (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
+                        _INSERT_QUERY, (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
                     )
 
                     queue_id = await cur.fetchone()
@@ -148,3 +148,9 @@ class MinosHandlerServer(MinosHandlerSetup):
         consumer.subscribe(topics)
 
         return consumer
+
+
+_INSERT_QUERY = """
+"INSERT INTO %s (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+(AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
+""".strip()

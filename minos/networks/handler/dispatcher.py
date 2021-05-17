@@ -83,7 +83,8 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
             topic: Kafka topic. Example: "TicketAdded"
 
         Raises:
-            MinosNetworkException: topic TicketAdded have no controller/action configured, please review th configuration file.
+            MinosNetworkException: topic TicketAdded have no controller/action configured, please review th
+                configuration file.
         """
         for event in self._event_items:
             if event.name == topic:

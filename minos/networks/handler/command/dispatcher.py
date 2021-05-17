@@ -33,5 +33,5 @@ class MinosCommandHandlerDispatcher(MinosHandlerDispatcher):
         try:
             instance = Command.from_avro_bytes(value)
             return True, instance
-        except:
+        except:  # noqa E722
             return False, None
