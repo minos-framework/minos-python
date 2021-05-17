@@ -8,6 +8,7 @@
 from aiohttp import (
     web,
 )
+
 from minos.common.configuration.config import (
     MinosConfig,
 )

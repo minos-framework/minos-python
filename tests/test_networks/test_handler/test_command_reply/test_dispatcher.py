@@ -1,6 +1,7 @@
 import datetime
 
 import aiopg
+
 from minos.common import (
     CommandReply,
 )

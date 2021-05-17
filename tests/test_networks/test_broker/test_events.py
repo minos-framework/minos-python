@@ -1,6 +1,7 @@
 import unittest
 
 import aiopg
+
 from minos.common import (
     MinosConfig,
 )

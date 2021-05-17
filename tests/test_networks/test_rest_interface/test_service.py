@@ -2,6 +2,7 @@ from aiohttp.test_utils import (
     AioHTTPTestCase,
     unittest_run_loop,
 )
+
 from minos.common.configuration.config import (
     MinosConfig,
 )

@@ -12,6 +12,7 @@ from __future__ import (
 from aiomisc.service.periodic import (
     PeriodicService,
 )
+
 from minos.common import (
     MinosConfig,
 )

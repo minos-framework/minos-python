@@ -21,6 +21,7 @@ from typing import (
 )
 
 import aiopg
+
 from minos.common.configuration.config import (
     MinosConfig,
 )

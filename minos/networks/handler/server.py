@@ -25,13 +25,13 @@ import aiopg
 from aiokafka import (
     AIOKafkaConsumer,
 )
-from minos.common.configuration.config import (
-    MinosConfig,
-)
 from psycopg2.extensions import (
     AsIs,
 )
 
+from minos.common.configuration.config import (
+    MinosConfig,
+)
 from minos.networks.handler.abc import (
     MinosHandlerSetup,
 )
@@ -151,6 +151,7 @@ class MinosHandlerServer(MinosHandlerSetup):
 
 
 _INSERT_QUERY = """
-"INSERT INTO %s (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
-(AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
+INSERT INTO %s (topic, partition_id, binary_data, creation_date)
+VALUES (%s, %s, %s, %s)
+RETURNING id;
 """.strip()

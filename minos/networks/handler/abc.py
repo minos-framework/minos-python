@@ -10,6 +10,7 @@ from typing import (
 )
 
 import aiopg
+
 from minos.common import (
     MinosSetup,
 )
