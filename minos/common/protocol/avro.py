@@ -132,7 +132,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         try:
             data_return["headers"] = {}
             for schema_dict in cls._decode(data):
-                log.debug(f"Avro: get the request/response in dict format")
+                log.debug("Avro: get the request/response in dict format")
                 data_return["headers"] = schema_dict["headers"]
                 # check wich type is body
                 if "body" in schema_dict:
@@ -254,7 +254,7 @@ class MinosAvroValuesDatabase(MinosAvroProtocol):
         try:
             ans = list()
             for schema_dict in cls._decode(data):
-                log.debug(f"Avro Database: get the values data")
+                log.debug("Avro Database: get the values data")
                 if content_root:
                     schema_dict = schema_dict["content"]
                 ans.append(schema_dict)
