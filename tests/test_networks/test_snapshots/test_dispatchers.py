@@ -17,6 +17,7 @@ from unittest.mock import (
 )
 
 import aiopg
+
 from minos.common import (
     MinosConfigException,
     MinosRepositoryEntry,

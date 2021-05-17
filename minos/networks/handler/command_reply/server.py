@@ -11,8 +11,6 @@ from typing import (
 
 from minos.common import (
     CommandReply,
-)
-from minos.common.configuration.config import (
     MinosConfig,
 )
 
@@ -34,5 +32,5 @@ class MinosCommandReplyHandlerServer(MinosHandlerServer):
         try:
             CommandReply.from_avro_bytes(value)
             return True
-        except:
+        except:  # noqa E722
             return False

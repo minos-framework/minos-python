@@ -1,6 +1,7 @@
 import datetime
 
 import aiopg
+
 from minos.common import (
     CommandReply,
 )
@@ -9,8 +10,6 @@ from minos.common.testing import (
 )
 from minos.networks import (
     MinosCommandReplyHandlerDispatcher,
-)
-from minos.networks.exceptions import (
     MinosNetworkException,
 )
 from tests.utils import (
@@ -35,7 +34,9 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
         async with aiopg.connect(**self._meta_saga_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'command_reply_queue';"
+                    "SELECT 1 "
+                    "FROM information_schema.tables "
+                    "WHERE table_schema = 'public' AND table_name = 'command_reply_queue';"
                 )
                 ret = []
                 async for row in cur:
@@ -113,7 +114,9 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
         async with aiopg.connect(**self._meta_saga_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                    "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
+                    "VALUES (%s, %s, %s, %s) "
+                    "RETURNING id;",
                     (instance.topic, 0, bin_data, datetime.datetime.now(),),
                 )
 
@@ -150,7 +153,9 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
         async with aiopg.connect(**self._meta_saga_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, %s) RETURNING id;",
+                    "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
+                    "VALUES (%s, %s, %s, %s) "
+                    "RETURNING id;",
                     ("AddOrder", 0, bin_data, datetime.datetime.now(),),
                 )
 

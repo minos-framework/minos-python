@@ -8,10 +8,9 @@
 from aiohttp import (
     web,
 )
-from minos.common.configuration.config import (
+
+from minos.common import (
     MinosConfig,
-)
-from minos.common.importlib import (
     import_module,
 )
 

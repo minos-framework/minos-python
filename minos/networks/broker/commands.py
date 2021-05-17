@@ -10,7 +10,6 @@ from __future__ import (
 )
 
 from typing import (
-    NoReturn,
     Optional,
 )
 

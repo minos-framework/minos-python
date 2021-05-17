@@ -31,6 +31,7 @@ from .handler import (
     MinosEventHandlerServer,
     MinosEventPeriodicService,
     MinosEventServerService,
+    MinosHandlerSetup,
 )
 from .rest_interface import (
     REST,

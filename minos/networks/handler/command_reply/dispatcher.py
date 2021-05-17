@@ -4,15 +4,12 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-import collections
 from typing import (
     Any,
 )
 
 from minos.common import (
     CommandReply,
-)
-from minos.common.configuration.config import (
     MinosConfig,
 )
 
@@ -33,5 +30,5 @@ class MinosCommandReplyHandlerDispatcher(MinosHandlerDispatcher):
         try:
             instance = CommandReply.from_avro_bytes(value)
             return True, instance
-        except:
+        except:  # noqa E722
             return False, None

@@ -1,6 +1,7 @@
 import unittest
 
 import aiopg
+
 from minos.common import (
     MinosConfig,
 )
@@ -27,7 +28,9 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
         async with aiopg.connect(**self.events_queue_db) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute(
-                    "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'producer_queue';"
+                    "SELECT 1 "
+                    "FROM information_schema.tables "
+                    "WHERE table_schema = 'public' AND table_name = 'producer_queue';"
                 )
                 ret = []
                 async for row in cursor:

@@ -14,6 +14,7 @@ from aiomisc.service.periodic import (
     PeriodicService,
     Service,
 )
+
 from minos.common import (
     MinosConfig,
 )

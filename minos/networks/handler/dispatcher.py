@@ -21,19 +21,19 @@ from typing import (
 )
 
 import aiopg
-from minos.common.configuration.config import (
+
+from minos.common import (
     MinosConfig,
-)
-from minos.common.importlib import (
     import_module,
 )
 from minos.common.logs import (
     log,
 )
-from minos.networks.exceptions import (
+
+from ..exceptions import (
     MinosNetworkException,
 )
-from minos.networks.handler.abc import (
+from .abc import (
     MinosHandlerSetup,
 )
 
@@ -83,7 +83,8 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
             topic: Kafka topic. Example: "TicketAdded"
 
         Raises:
-            MinosNetworkException: topic TicketAdded have no controller/action configured, please review th configuration file.
+            MinosNetworkException: topic TicketAdded have no controller/action configured, please review th
+                configuration file.
         """
         for event in self._event_items:
             if event.name == topic:
