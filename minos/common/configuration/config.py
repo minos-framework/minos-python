@@ -27,15 +27,13 @@ from ..exceptions import (
 BROKER = collections.namedtuple("Broker", "host port")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
 ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
-EVENT = collections.namedtuple("Event", "name controller action")
-COMMAND = collections.namedtuple("Command", "name controller action")
-SAGAITEM = collections.namedtuple("SagaItem", "name controller action")
 SERVICE = collections.namedtuple("Service", "name")
+CONTROLLER = collections.namedtuple("Controller", "name controller action")
+STORAGE = collections.namedtuple("Storage", "path")
+
 EVENTS = collections.namedtuple("Events", "broker items queue")
 COMMANDS = collections.namedtuple("Commands", "broker items queue")
 SAGA = collections.namedtuple("Saga", "items queue storage")
-STORAGE = collections.namedtuple("Storage", "path")
-
 REST = collections.namedtuple("Rest", "broker endpoints")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
@@ -267,14 +265,14 @@ class MinosConfig(MinosConfigAbstract):
         )
 
     @property
-    def _events_items(self) -> list[EVENT]:
+    def _events_items(self) -> list[CONTROLLER]:
         info = self._get("events.items")
         events = [self._events_items_entry(event) for event in info]
         return events
 
     @staticmethod
-    def _events_items_entry(event: dict[str, t.Any]) -> EVENT:
-        return EVENT(name=event["name"], controller=event["controller"], action=event["action"])
+    def _events_items_entry(event: dict[str, t.Any]) -> CONTROLLER:
+        return CONTROLLER(name=event["name"], controller=event["controller"], action=event["action"])
 
     @property
     def commands(self) -> COMMANDS:
@@ -317,14 +315,14 @@ class MinosConfig(MinosConfigAbstract):
         return queue
 
     @property
-    def _commands_items(self) -> list[COMMAND]:
+    def _commands_items(self) -> list[CONTROLLER]:
         info = self._get("commands.items")
         commands = [self._commands_items_entry(command) for command in info]
         return commands
 
     @staticmethod
-    def _commands_items_entry(command: dict[str, t.Any]) -> COMMAND:
-        return COMMAND(name=command["name"], controller=command["controller"], action=command["action"])
+    def _commands_items_entry(command: dict[str, t.Any]) -> CONTROLLER:
+        return CONTROLLER(name=command["name"], controller=command["controller"], action=command["action"])
 
     @property
     def _saga_storage(self) -> STORAGE:
@@ -348,14 +346,14 @@ class MinosConfig(MinosConfigAbstract):
         return queue
 
     @property
-    def _saga_items(self) -> list[SAGAITEM]:
+    def _saga_items(self) -> list[CONTROLLER]:
         info = self._get("saga.items")
         sagas = [self._sagas_items_entry(saga) for saga in info]
         return sagas
 
     @staticmethod
-    def _sagas_items_entry(saga: dict[str, t.Any]) -> SAGAITEM:
-        return SAGAITEM(name=saga["name"], controller=saga["controller"], action=saga["action"])
+    def _sagas_items_entry(saga: dict[str, t.Any]) -> CONTROLLER:
+        return CONTROLLER(name=saga["name"], controller=saga["controller"], action=saga["action"])
 
     @property
     def repository(self) -> REPOSITORY:
