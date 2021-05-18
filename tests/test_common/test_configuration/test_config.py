@@ -30,6 +30,10 @@ class TestMinosConfig(unittest.TestCase):
         with self.assertRaises(MinosConfigException):
             MinosConfig(path=BASE_PATH / "test_fail_config.yaml")
 
+    def test_cast_path(self):
+        config = MinosConfig(path=str(self.config_file_path))
+        self.assertEqual(self.config_file_path, config._path)
+
     def test_config_service(self):
         config = MinosConfig(path=self.config_file_path)
         service = config.service
