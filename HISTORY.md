@@ -118,3 +118,8 @@ History
 
 * Added Support for Poetry
 * Added action for Doc generation
+
+0.0.13 (2021-05-18)
+------------------
+
+* Added Abstract classes for Saga
