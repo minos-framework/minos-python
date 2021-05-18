@@ -117,6 +117,9 @@ from .repository import (
     MinosRepositoryEntry,
     PostgreSqlMinosRepository,
 )
+from .saga import (
+    MinosSagaManager,
+)
 from .setup import (
     MinosSetup,
 )
