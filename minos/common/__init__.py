@@ -13,13 +13,17 @@ from .broker import (
 )
 from .configuration import (
     BROKER,
-    COMMAND,
     COMMANDS,
+    CONTROLLER,
     ENDPOINT,
-    EVENT,
     EVENTS,
+    QUEUE,
+    REPOSITORY,
     REST,
+    SAGA,
     SERVICE,
+    SNAPSHOT,
+    STORAGE,
     MinosConfig,
     MinosConfigAbstract,
 )

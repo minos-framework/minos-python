@@ -30,6 +30,10 @@ class TestMinosConfig(unittest.TestCase):
         with self.assertRaises(MinosConfigException):
             MinosConfig(path=BASE_PATH / "test_fail_config.yaml")
 
+    def test_cast_path(self):
+        config = MinosConfig(path=str(self.config_file_path))
+        self.assertEqual(self.config_file_path, config._path)
+
     def test_config_service(self):
         config = MinosConfig(path=self.config_file_path)
         service = config.service
@@ -76,6 +80,12 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(5432, queue.port)
         self.assertEqual(10, queue.records)
         self.assertEqual(2, queue.retry)
+
+    def test_config_saga_storage(self):
+        config = MinosConfig(path=self.config_file_path, with_environment=False)
+        saga = config.saga
+        storage = saga.storage
+        self.assertEqual(BASE_PATH / "order.lmdb", storage.path)
 
     def test_config_saga_queue_database(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)

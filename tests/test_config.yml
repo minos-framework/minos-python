@@ -67,6 +67,8 @@ commands:
         records: 10
         retry: 2
 saga:
+    storage:
+        path: "./order.lmdb"
     items:
         - name: AddOrder
           controller: tests.services.SagaTestService.SagaService
