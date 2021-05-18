@@ -27,6 +27,14 @@ class TestEvent(unittest.TestCase):
         with self.assertRaises(MultiTypeMinosModelSequenceException):
             Event("CarCreated", [Car(1, 1, 3, "blue"), Owner(2, 1, "Foo", "Bar")])
 
+    def test_model(self):
+        event = Event("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")])
+        self.assertEqual("tests.aggregate_classes.Car", event.model)
+
+    def test_model_cls(self):
+        event = Event("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")])
+        self.assertEqual(Car, event.model_cls)
+
 
 if __name__ == "__main__":
     unittest.main()
