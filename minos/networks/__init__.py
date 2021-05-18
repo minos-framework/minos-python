@@ -9,6 +9,7 @@ __version__ = "0.0.2"
 
 from .broker import (
     MinosCommandBroker,
+    MinosCommandReplyBroker,
     MinosEventBroker,
     MinosQueueDispatcher,
     MinosQueueService,

@@ -8,6 +8,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .commands import (
     MinosCommandBroker,
 )
+from .command_reply import (
+    MinosCommandReplyBroker,
+)
 from .dispatchers import (
     MinosQueueDispatcher,
 )
