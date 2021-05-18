@@ -20,8 +20,6 @@ from typing import (
     Optional,
 )
 
-import aiopg
-
 from minos.common import (
     MinosConfig,
     import_module,
@@ -44,14 +42,10 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
 
     """
 
-    __slots__ = "_db_dsn", "_handlers", "_event_items", "_topics", "_conf"
+    __slots__ = "_handlers", "_event_items", "_topics", "_conf"
 
     def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
-        self._db_dsn = (
-            f"dbname={config.queue.database} user={config.queue.user} "
-            f"password={config.queue.password} host={config.queue.host}"
-        )
         self._handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._event_items = config.items
         self._topics = list(self._handlers.keys())
@@ -114,31 +108,22 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        db_dsn = (
-            f"dbname={self._conf.queue.database} user={self._conf.queue.user} "
-            f"password={self._conf.queue.password} host={self._conf.queue.host}"
+        iterable = self.submit_query_and_iter(
+            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self._table_name, self._conf.queue.records),
         )
-        async with aiopg.create_pool(db_dsn) as pool:
-            async with pool.acquire() as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;"
-                        % (self._table_name, self._conf.queue.records),
-                    )
-                    async for row in cur:
-                        call_ok = False
-                        try:
-                            reply_on = self.get_event_handler(topic=row[1])
-                            valid_instance, instance = self._is_valid_instance(row[3])
-                            if not valid_instance:
-                                return
-                            await reply_on(row[1], instance)
-                            call_ok = True
-                        finally:
-                            if call_ok:
-                                # Delete from database If the event was sent successfully to Kafka.
-                                async with connect.cursor() as cur2:
-                                    await cur2.execute("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
+        async for row in iterable:
+            call_ok = False
+            try:
+                reply_on = self.get_event_handler(topic=row[1])
+                valid_instance, instance = self._is_valid_instance(row[3])
+                if not valid_instance:
+                    return
+                await reply_on(row[1], instance)
+                call_ok = True
+            finally:
+                if call_ok:
+                    # Delete from database If the event was sent successfully to Kafka.
+                    await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
 
     @abstractmethod
     def _is_valid_instance(self, value: bytes):  # pragma: no cover
