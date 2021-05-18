@@ -18,6 +18,11 @@ from tests.aggregate_classes import (
 
 
 class TestEvent(unittest.TestCase):
+    def test_constructor(self):
+        event = Event("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")])
+        self.assertEqual("CarCreated", event.topic)
+        self.assertEqual([Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], event.items)
+
     def test_avro_serialization(self):
         event = Event("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")])
         decoded_event = Event.from_avro_bytes(event.avro_bytes)
