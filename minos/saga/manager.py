@@ -10,17 +10,14 @@ from __future__ import (
 )
 
 import logging
-from typing import (
-    Optional,
-)
 from uuid import (
     UUID,
 )
 
 from minos.common import (
     CommandReply,
-    MinosBaseBroker,
     MinosConfig,
+    MinosSagaManager,
     import_module,
 )
 
@@ -39,50 +36,37 @@ from .executions import (
 logger = logging.getLogger(__name__)
 
 
-class SagaManager(object):
-    """TODO"""
+def _build_definitions(items) -> dict[str, Saga]:
+    def _fn(item) -> Saga:
+        controller = import_module(item.controller)
+        return getattr(controller, item.action)
 
-    def __init__(self, storage: SagaExecutionStorage, broker: MinosBaseBroker, definitions: dict[str, Saga]):
+    return {item.name: _fn(item) for item in items}
+
+
+class SagaManager(MinosSagaManager):
+    """Saga Manager implementation class.
+
+    The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
+    """
+
+    # noinspection PyUnusedLocal
+    def __init__(self, storage: SagaExecutionStorage, definitions: dict[str, Saga], *args, **kwargs):
         self.storage = storage
-        self.broker = broker
         self.definitions = definitions
 
     @classmethod
     def from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
-        """TODO
+        """Build an instance from config.
 
-        :param args: TODO
-        :param config: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param args: Additional positional arguments.
+        :param config: Config instance.
+        :param kwargs: Additional named arguments.
+        :return: A new ``classmethod`` instance.
         """
-        storage = SagaExecutionStorage(**kwargs)
-        broker = None
-
-        def _fn(item) -> Saga:
-            controller = import_module(item.controller)
-            return getattr(controller, item.action)
-
-        definitions = {item.name: _fn(item) for item in config.saga.items}
-
-        return cls(storage=storage, broker=broker, definitions=definitions)
-
-    def run(self, name: Optional[str] = None, reply: Optional[CommandReply] = None) -> UUID:
-        """Perform a run of a ``Saga``.
-
-        The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
-
-        :param name: The name of the saga to be executed.
-        :param reply: The reply that relaunches a saga execution.
-        :return: This method does not return anything.
-        """
-        if name is not None:
-            return self._run_new(name)
-
-        if reply is not None:
-            return self._load_and_run(reply)
-
-        raise ValueError("At least a 'name' or a 'reply' must be provided.")
+        storage = SagaExecutionStorage.from_config(config=config, **kwargs)
+        definitions = _build_definitions(config.saga.items)
+        return cls(*args, storage=storage, definitions=definitions, **kwargs)
 
     def _run_new(self, name: str) -> UUID:
         definition = self.definitions.get(name)

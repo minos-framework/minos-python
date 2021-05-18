@@ -1,6 +1,8 @@
 service:
     name: Order
 saga:
+    storage:
+        path: "./order.lmdb"
     items:
         - name: AddOrder
           controller: tests.order.SagaService

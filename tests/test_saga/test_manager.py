@@ -37,11 +37,11 @@ class TestSagaManager(unittest.TestCase):
         rmtree(self.DB_PATH, ignore_errors=True)
 
     def test_constructor(self):
-        manager = SagaManager.from_config(config=self.config, path_db=self.DB_PATH)
+        manager = SagaManager.from_config(config=self.config)
         self.assertIsInstance(manager.storage, SagaExecutionStorage)
 
     def test_run_ok(self):
-        manager = SagaManager.from_config(config=self.config, path_db=self.DB_PATH)
+        manager = SagaManager.from_config(config=self.config)
 
         uuid = manager.run("AddOrder")
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
@@ -54,7 +54,7 @@ class TestSagaManager(unittest.TestCase):
             manager.storage.load(uuid)
 
     def test_run_err(self):
-        manager = SagaManager.from_config(config=self.config, path_db=self.DB_PATH)
+        manager = SagaManager.from_config(config=self.config)
 
         uuid = manager.run("DeleteOrder")
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
