@@ -30,10 +30,7 @@ class TestMinosCommandReplyBroker(PostgresAsyncTestCase):
 
     async def test_commands_broker_insertion(self):
         broker = MinosCommandReplyBroker.from_config(
-            "CommandBroker",
-            config=self.config,
-            saga_id="9347839473kfslf",
-            task_id="92839283hjijh232"
+            "CommandBroker", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232"
         )
         await broker.setup()
 
@@ -44,10 +41,7 @@ class TestMinosCommandReplyBroker(PostgresAsyncTestCase):
 
     async def test_if_commands_was_deleted(self):
         broker = MinosCommandReplyBroker.from_config(
-            "CommandReplyBroker-Delete",
-            config=self.config,
-            saga_id="9347839473kfslf",
-            task_id="92839283hjijh232"
+            "CommandReplyBroker-Delete", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232"
         )
         await broker.setup()
 
@@ -60,7 +54,9 @@ class TestMinosCommandReplyBroker(PostgresAsyncTestCase):
 
         async with aiopg.connect(**self.events_queue_db) as connection:
             async with connection.cursor() as cursor:
-                await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandReplyBroker-Delete")
+                await cursor.execute(
+                    "SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandReplyBroker-Delete"
+                )
                 records = await cursor.fetchone()
 
         assert queue_id_1 > 0
@@ -69,10 +65,7 @@ class TestMinosCommandReplyBroker(PostgresAsyncTestCase):
 
     async def test_if_commands_retry_was_incremented(self):
         broker = MinosCommandReplyBroker.from_config(
-            "CommandReplyBroker-Delete",
-            config=self.config,
-            saga_id="9347839473kfslf",
-            task_id="92839283hjijh232",
+            "CommandReplyBroker-Delete", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232",
         )
         await broker.setup()
 
@@ -90,7 +83,9 @@ class TestMinosCommandReplyBroker(PostgresAsyncTestCase):
 
         async with aiopg.connect(**self.events_queue_db) as connection:
             async with connection.cursor() as cursor:
-                await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandReplyBroker-Delete")
+                await cursor.execute(
+                    "SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandReplyBroker-Delete"
+                )
                 records = await cursor.fetchone()
 
                 await cursor.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_1)
