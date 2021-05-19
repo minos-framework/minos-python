@@ -112,20 +112,24 @@ class SagaExecution(object):
 
         return cls(definition, uuid4(), SagaContext(), *args, **kwargs)
 
-    def execute(self, reply: Optional[CommandReply] = None) -> SagaContext:
+    def execute(self, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
         """Execute the ``Saga`` definition.
 
         :param reply: An optional ``CommandReply`` to be consumed by the immediately next executed step.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
         """
         self.status = SagaStatus.Running
         for step in self._pending_steps:
             execution_step = SagaExecutionStep(step)
             try:
-                self.context = execution_step.execute(self.context, reply)
+                self.context = execution_step.execute(
+                    self.context, reply, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
+                )
                 self._add_executed(execution_step)
             except MinosSagaFailedExecutionStepException as exc:
-                self.rollback()
+                self.rollback(*args, **kwargs)
                 self.status = SagaStatus.Errored
                 raise exc
             except MinosSagaPausedExecutionStepException as exc:
@@ -149,7 +153,9 @@ class SagaExecution(object):
             raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
 
         for execution_step in reversed(self.executed_steps):
-            self.context = execution_step.rollback(self.context, *args, **kwargs)
+            self.context = execution_step.rollback(
+                self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
+            )
 
         self.already_rollback = True
 
@@ -175,6 +181,14 @@ class SagaExecution(object):
             "context": self.context.avro_str,
             "already_rollback": self.already_rollback,
         }
+
+    @property
+    def definition_name(self) -> str:
+        """Get the ``Saga``` Definition name.
+
+        :return: An ``str`` instance.
+        """
+        return self.definition.name
 
     def __eq__(self, other: SagaStep) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

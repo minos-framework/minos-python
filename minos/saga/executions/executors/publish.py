@@ -8,8 +8,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 from typing import (
     NoReturn,
 )
+from uuid import (
+    UUID,
+)
 
 from minos.common import (
+    MinosBaseBroker,
     MinosModel,
 )
 
@@ -31,7 +35,14 @@ from .local import (
 class PublishExecutor(LocalExecutor):
     """Publish Executor class.
 
-    This class has the responsibility to publish command on the corresponding broker's queue. """
+    This class has the responsibility to publish command on the corresponding broker's queue.
+    """
+
+    def __init__(self, *args, definition_name: str, execution_uuid: UUID, broker: MinosBaseBroker, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.broker = broker
+        self.definition_name = definition_name
+        self.execution_uuid = execution_uuid
 
     def exec(self, operation: SagaStepOperation, context: SagaContext) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
@@ -54,11 +65,12 @@ class PublishExecutor(LocalExecutor):
 
         return context
 
-    @staticmethod
-    def publish(request: MinosModel) -> NoReturn:
+    def publish(self, request: MinosModel) -> NoReturn:
         """Publish a request on the corresponding broker's queue./
 
         :param request: The request to be published as a command.
         :return: This method does not return anything.
         """
-        # FIXME: Publish the command
+        self._exec_function(
+            self.broker.send_one, item=request, saga_id=self.definition_name, task_id=str(self.execution_uuid)
+        )

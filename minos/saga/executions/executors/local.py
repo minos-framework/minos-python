@@ -32,7 +32,7 @@ from ..context import (
 class LocalExecutor(ABC):
     """Local executor class."""
 
-    def __init__(self, loop: Optional[AbstractEventLoop] = None):
+    def __init__(self, loop: Optional[AbstractEventLoop] = None, *args, **kwargs):
         if loop is None:
             loop = asyncio.get_event_loop()
         self.loop = loop

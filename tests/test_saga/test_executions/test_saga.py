@@ -31,6 +31,7 @@ from tests.callbacks import (
 )
 from tests.utils import (
     Foo,
+    NaiveBroker,
     fake_reply,
     foo_fn_raises,
 )
@@ -39,6 +40,9 @@ _PUBLISH_MOCKER = patch("minos.saga.executions.executors.publish.PublishExecutor
 
 
 class TestSagaExecution(unittest.TestCase):
+    def setUp(self) -> None:
+        self.broker = NaiveBroker("foo")
+
     def test_execute(self):
         saga = (
             Saga("OrdersAdd")
@@ -57,16 +61,16 @@ class TestSagaExecution(unittest.TestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute()
+            execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(reply=reply)
+            execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order2"))
-        context = execution.execute(reply=reply)
+        context = execution.execute(reply=reply, broker=self.broker)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2")), context)
@@ -87,18 +91,18 @@ class TestSagaExecution(unittest.TestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute()
+            execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(reply=reply)
+            execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
             reply = fake_reply(Foo("order2"))
             with self.assertRaises(MinosSagaFailedExecutionStepException):
-                execution.execute(reply=reply)
+                execution.execute(reply=reply, broker=self.broker)
             self.assertEqual(SagaStatus.Errored, execution.status)
             self.assertEqual(3, mock.call_count)
 
@@ -113,17 +117,17 @@ class TestSagaExecution(unittest.TestCase):
         )
         execution = SagaExecution.from_saga(saga)
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute()
+            execution.execute(broker=self.broker)
         reply = fake_reply(Foo("order1"))
-        execution.execute(reply=reply)
+        execution.execute(reply=reply, broker=self.broker)
 
         with _PUBLISH_MOCKER as mock:
-            execution.rollback()
+            execution.rollback(broker=self.broker)
             self.assertEqual(1, mock.call_count)
 
             mock.reset_mock()
             with self.assertRaises(MinosSagaRollbackExecutionException):
-                execution.rollback()
+                execution.rollback(broker=self.broker)
             self.assertEqual(0, mock.call_count)
 
     def test_raw(self):
@@ -249,12 +253,12 @@ class TestSagaExecution(unittest.TestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(saga)
             try:
-                expected.execute()
+                expected.execute(broker=self.broker)
             except MinosSagaPausedExecutionStepException:
                 pass
             try:
                 reply = fake_reply(Foo("hola"))
-                expected.execute(reply=reply)
+                expected.execute(reply=reply, broker=self.broker)
             except MinosSagaPausedExecutionStepException:
                 pass
 
