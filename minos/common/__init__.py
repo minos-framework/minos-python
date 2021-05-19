@@ -6,20 +6,24 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.0.12"
+__version__ = "0.0.13"
 
 from .broker import (
     MinosBaseBroker,
 )
 from .configuration import (
     BROKER,
-    COMMAND,
     COMMANDS,
+    CONTROLLER,
     ENDPOINT,
-    EVENT,
     EVENTS,
+    QUEUE,
+    REPOSITORY,
     REST,
+    SAGA,
     SERVICE,
+    SNAPSHOT,
+    STORAGE,
     MinosConfig,
     MinosConfigAbstract,
 )
@@ -116,6 +120,9 @@ from .repository import (
     MinosRepositoryAction,
     MinosRepositoryEntry,
     PostgreSqlMinosRepository,
+)
+from .saga import (
+    MinosSagaManager,
 )
 from .setup import (
     MinosSetup,

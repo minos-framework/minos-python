@@ -16,6 +16,15 @@ from tests.aggregate_classes import (
 
 
 class TestCommandReply(unittest.TestCase):
+    def test_constructor(self):
+        command_reply = CommandReply(
+            "CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], "saga_id8972348237", "task_id32423432"
+        )
+        self.assertEqual("CarCreated", command_reply.topic)
+        self.assertEqual([Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], command_reply.items)
+        self.assertEqual("saga_id8972348237", command_reply.saga_id)
+        self.assertEqual("task_id32423432", command_reply.task_id)
+
     def test_avro_serialization(self):
         command_reply = CommandReply(
             "CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], "saga_id8972348237", "task_id32423432"

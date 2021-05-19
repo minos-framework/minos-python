@@ -27,13 +27,13 @@ from ..exceptions import (
 BROKER = collections.namedtuple("Broker", "host port")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
 ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
-EVENT = collections.namedtuple("Event", "name controller action")
-COMMAND = collections.namedtuple("Command", "name controller action")
-SAGAITEM = collections.namedtuple("SagaItem", "name controller action")
 SERVICE = collections.namedtuple("Service", "name")
+CONTROLLER = collections.namedtuple("Controller", "name controller action")
+STORAGE = collections.namedtuple("Storage", "path")
+
 EVENTS = collections.namedtuple("Events", "broker items queue")
 COMMANDS = collections.namedtuple("Commands", "broker items queue")
-SAGA = collections.namedtuple("Saga", "items queue")
+SAGA = collections.namedtuple("Saga", "items queue storage")
 REST = collections.namedtuple("Rest", "broker endpoints")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
@@ -111,25 +111,19 @@ class MinosConfigAbstract(abc.ABC):
     __slots__ = "_services", "_path"
 
     def __init__(self, path: t.Union[Path, str]):
-        if isinstance(path, Path):
-            path = str(path)
+        if isinstance(path, str):
+            path = Path(path)
         self._services = {}
         self._path = path
         self._load(path)
 
     @abc.abstractmethod
-    def _load(self, path: str) -> None:
+    def _load(self, path: Path) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
     def _get(self, key: str, **kwargs: t.Any):
         raise NotImplementedError
-
-    @staticmethod
-    def _file_exit(path: str) -> bool:
-        if os.path.isfile(path):
-            return True
-        return False
 
     def __enter__(self) -> MinosConfigAbstract:
         self.set_default(self)
@@ -179,12 +173,12 @@ class MinosConfig(MinosConfigAbstract):
         self._with_environment = with_environment
         self._parameterized = kwargs
 
-    def _load(self, path):
-        if self._file_exit(path):
-            with open(path) as f:
-                self._data = yaml.load(f, Loader=yaml.FullLoader)
-        else:
+    def _load(self, path: Path) -> t.NoReturn:
+        if not path.exists():
             raise MinosConfigException(f"Check if this path: {path} is correct")
+
+        with path.open() as file:
+            self._data = yaml.load(file, Loader=yaml.FullLoader)
 
     def _get(self, key: str, **kwargs: t.Any) -> t.Any:
         if key in _PARAMETERIZED_MAPPER and _PARAMETERIZED_MAPPER[key] in self._parameterized:
@@ -271,14 +265,14 @@ class MinosConfig(MinosConfigAbstract):
         )
 
     @property
-    def _events_items(self) -> list[EVENT]:
+    def _events_items(self) -> list[CONTROLLER]:
         info = self._get("events.items")
         events = [self._events_items_entry(event) for event in info]
         return events
 
     @staticmethod
-    def _events_items_entry(event: dict[str, t.Any]) -> EVENT:
-        return EVENT(name=event["name"], controller=event["controller"], action=event["action"])
+    def _events_items_entry(event: dict[str, t.Any]) -> CONTROLLER:
+        return CONTROLLER(name=event["name"], controller=event["controller"], action=event["action"])
 
     @property
     def commands(self) -> COMMANDS:
@@ -299,7 +293,8 @@ class MinosConfig(MinosConfigAbstract):
         """
         queue = self._sagas_queue
         sagas = self._saga_items
-        return SAGA(items=sagas, queue=queue)
+        storage = self._saga_storage
+        return SAGA(items=sagas, queue=queue, storage=storage)
 
     @property
     def _commands_broker(self) -> BROKER:
@@ -320,14 +315,22 @@ class MinosConfig(MinosConfigAbstract):
         return queue
 
     @property
-    def _commands_items(self) -> list[COMMAND]:
+    def _commands_items(self) -> list[CONTROLLER]:
         info = self._get("commands.items")
         commands = [self._commands_items_entry(command) for command in info]
         return commands
 
     @staticmethod
-    def _commands_items_entry(command: dict[str, t.Any]) -> COMMAND:
-        return COMMAND(name=command["name"], controller=command["controller"], action=command["action"])
+    def _commands_items_entry(command: dict[str, t.Any]) -> CONTROLLER:
+        return CONTROLLER(name=command["name"], controller=command["controller"], action=command["action"])
+
+    @property
+    def _saga_storage(self) -> STORAGE:
+        raw = self._get("saga.storage.path")
+        path = Path(raw) if raw.startswith("/") else self._path.parent / raw
+
+        queue = STORAGE(path=path)
+        return queue
 
     @property
     def _sagas_queue(self) -> QUEUE:
@@ -343,14 +346,14 @@ class MinosConfig(MinosConfigAbstract):
         return queue
 
     @property
-    def _saga_items(self) -> list[SAGAITEM]:
+    def _saga_items(self) -> list[CONTROLLER]:
         info = self._get("saga.items")
         sagas = [self._sagas_items_entry(saga) for saga in info]
         return sagas
 
     @staticmethod
-    def _sagas_items_entry(saga: dict[str, t.Any]) -> SAGAITEM:
-        return SAGAITEM(name=saga["name"], controller=saga["controller"], action=saga["action"])
+    def _sagas_items_entry(saga: dict[str, t.Any]) -> CONTROLLER:
+        return CONTROLLER(name=saga["name"], controller=saga["controller"], action=saga["action"])
 
     @property
     def repository(self) -> REPOSITORY:

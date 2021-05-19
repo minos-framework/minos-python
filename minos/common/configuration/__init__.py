@@ -8,13 +8,17 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 from .config import (
     BROKER,
-    COMMAND,
     COMMANDS,
+    CONTROLLER,
     ENDPOINT,
-    EVENT,
     EVENTS,
+    QUEUE,
+    REPOSITORY,
     REST,
+    SAGA,
     SERVICE,
+    SNAPSHOT,
+    STORAGE,
     MinosConfig,
     MinosConfigAbstract,
 )
