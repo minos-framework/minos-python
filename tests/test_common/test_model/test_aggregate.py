@@ -9,7 +9,7 @@ import sys
 import unittest
 
 from minos.common import (
-    MinosDependencyContainer,
+    MinosDependencyInjector,
     MinosInMemoryRepository,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
@@ -135,7 +135,7 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.container = MinosDependencyContainer(self.config, repository_cls=PostgreSqlMinosRepository)
+        self.container = MinosDependencyInjector(self.config, repository_cls=PostgreSqlMinosRepository)
         await self.container.wire(modules=[sys.modules[__name__]])
 
     async def asyncTearDown(self):

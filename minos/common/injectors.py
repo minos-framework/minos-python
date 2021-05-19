@@ -38,7 +38,7 @@ from .saga import (
 )
 
 
-class MinosDependencyContainer(object):
+class MinosDependencyInjector(object):
     """Wrapper class for ``dependency_injector.containers.Container``. """
 
     def __init__(
