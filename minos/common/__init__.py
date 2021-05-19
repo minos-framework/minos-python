@@ -8,9 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 __version__ = "0.0.13"
 
-from .broker import (
-    MinosBaseBroker,
-)
 from .configuration import (
     BROKER,
     COMMANDS,
@@ -107,6 +104,9 @@ from .model import (
     MissingSentinel,
     ModelField,
     ModelRef,
+)
+from .networks import (
+    MinosBaseBroker,
 )
 from .protocol import (
     MinosAvroProtocol,
