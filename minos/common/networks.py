@@ -14,19 +14,21 @@ from abc import (
     abstractmethod,
 )
 from typing import (
+    TYPE_CHECKING,
     NoReturn,
 )
 
-from .model import (
-    Aggregate,
-)
+if TYPE_CHECKING:
+    from .model import (
+        MinosModel,
+    )
 
 
 class MinosBroker(ABC):
     """Base Broker class."""
 
     @classmethod
-    async def send_one(cls, item: Aggregate, **kwargs) -> NoReturn:
+    async def send_one(cls, item: MinosModel, **kwargs) -> NoReturn:
         """Send one ``Aggregate`` instance.
 
         :param item: The instance to be send.
@@ -37,7 +39,7 @@ class MinosBroker(ABC):
 
     @classmethod
     @abstractmethod
-    async def send(cls, items: list[Aggregate], **kwargs) -> NoReturn:
+    async def send(cls, items: list[MinosModel], **kwargs) -> NoReturn:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.

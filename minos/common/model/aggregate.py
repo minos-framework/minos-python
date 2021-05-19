@@ -34,6 +34,9 @@ from ..exceptions import (
 from ..meta import (
     self_or_classmethod,
 )
+from ..networks import (
+    MinosBroker,
+)
 from ..repository import (
     MinosRepository,
     MinosRepositoryAction,
@@ -49,21 +52,32 @@ class Aggregate(MinosModel):
     id: int
     version: int
 
+    _broker: MinosBroker = Provide["event_broker"]
     _repository: MinosRepository = Provide["repository"]
 
-    # FIXME: The ``broker`` attribute should be a reference to a ``MinosBaseBroker`` class instance.
-    # noinspection PyShadowingBuiltins
     def __init__(
-        self, id: int, version: int, *args, _broker: str = None, _repository: MinosRepository = None, **kwargs,
+        self,
+        id: int,
+        version: int,
+        *args,
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
+        **kwargs,
     ):
 
         super().__init__(id, version, *args, **kwargs)
-        self._broker = _broker
-        self._repository = _repository
+        if _broker is not None:
+            self._broker = _broker
+        if _repository is not None:
+            self._repository = _repository
 
     @classmethod
     async def get(
-        cls, ids: list[int], _config: MinosConfig = None, _broker: str = None, _repository: MinosRepository = None
+        cls,
+        ids: list[int],
+        _config: MinosConfig = None,
+        _broker: MinosBroker = None,
+        _repository: MinosRepository = None,
     ) -> list[Aggregate]:
         """Get a sequence of aggregates based on a list of identifiers.
 
@@ -79,7 +93,7 @@ class Aggregate(MinosModel):
     # noinspection PyShadowingBuiltins
     @classmethod
     async def get_one(
-        cls, id: int, _config: MinosConfig = None, _broker: str = None, _repository: MinosRepository = None
+        cls, id: int, _config: MinosConfig = None, _broker: MinosBroker = None, _repository: MinosRepository = None
     ) -> Aggregate:
         """Get one aggregate based on an identifier.
 
@@ -111,7 +125,12 @@ class Aggregate(MinosModel):
 
     @classmethod
     async def create(
-        cls, *args, _config: MinosConfig = None, _broker: str = None, _repository: MinosRepository = None, **kwargs,
+        cls,
+        *args,
+        _config: MinosConfig = None,
+        _broker: MinosBroker = None,
+        _repository: MinosRepository = None,
+        **kwargs,
     ) -> Aggregate:
         """Create a new ``Aggregate`` instance.
 
@@ -133,12 +152,12 @@ class Aggregate(MinosModel):
             )
 
         if _broker is None:
-            _broker = "MinosBaseBroker()"
+            _broker = cls._broker
 
         if _repository is None:
             _repository = cls._repository
-        if _repository is None or isinstance(_repository, Provide):
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+            if isinstance(_repository, Provide):
+                raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
@@ -152,13 +171,19 @@ class Aggregate(MinosModel):
     # noinspection PyMethodParameters,PyShadowingBuiltins
     @self_or_classmethod
     async def update(
-        self_or_cls, id: int = None, _config: MinosConfig = None, _repository: MinosRepository = None, **kwargs
+        self_or_cls,
+        id: int = None,
+        _config: MinosConfig = None,
+        _broker: MinosBroker = None,
+        _repository: MinosRepository = None,
+        **kwargs,
     ) -> Aggregate:
         """Update an existing ``Aggregate`` instance.
 
         :param id: If the method call is performed from an instance the identifier is ignored, otherwise it is used to
             identify the target instance.
         :param _config: Current minos config.
+        :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param kwargs: Additional named arguments.
         :return: An updated ``Aggregate``  instance.
@@ -168,10 +193,13 @@ class Aggregate(MinosModel):
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
 
+        if _broker is None:
+            _broker = self_or_cls._broker
+
         if _repository is None:
             _repository = self_or_cls._repository
-        if _repository is None or isinstance(_repository, Provide):
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+            if isinstance(_repository, Provide):
+                raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
@@ -199,20 +227,28 @@ class Aggregate(MinosModel):
     # noinspection PyMethodParameters,PyShadowingBuiltins
     @self_or_classmethod
     async def delete(
-        self_or_cls, id: Optional[int] = None, _config: MinosConfig = None, _repository: MinosRepository = None
+        self_or_cls,
+        id: Optional[int] = None,
+        _config: MinosConfig = None,
+        _broker: MinosBroker = None,
+        _repository: MinosRepository = None,
     ):
         """Delete the given aggregate instance.
 
         :param id: If the method call is performed from an instance the identifier is ignored, otherwise it is used to
             identify the target instance.
         :param _config: Current minos config.
+        :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :return: This method does not return anything.
         """
+        if _broker is None:
+            _broker = self_or_cls._broker
+
         if _repository is None:
             _repository = self_or_cls._repository
-        if _repository is None or isinstance(_repository, Provide):
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+            if isinstance(_repository, Provide):
+                raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
