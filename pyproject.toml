@@ -32,7 +32,6 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 aiomisc = "^14.0.3"
-six = "^1.16.0"
 fastavro = "^1.4.0"
 orjson = "^3.5.2"
 lmdb = "^1.2.1"
