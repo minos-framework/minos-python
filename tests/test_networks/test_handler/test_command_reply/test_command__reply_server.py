@@ -4,6 +4,7 @@ from collections import (
 
 from minos.common import (
     CommandReply,
+    MinosConfigException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -24,10 +25,13 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
         dispatcher = MinosCommandReplyHandlerServer.from_config(config=self.config)
         self.assertIsInstance(dispatcher, MinosCommandReplyHandlerServer)
 
-    async def test_none_config(self):
-        event_server = MinosCommandReplyHandlerServer.from_config(config=None)
+    def test_from_config_default(self):
+        with self.config:
+            self.assertIsInstance(MinosCommandReplyHandlerServer.from_config(), MinosCommandReplyHandlerServer)
 
-        self.assertIsNone(event_server)
+    def test_from_config_raises(self):
+        with self.assertRaises(MinosConfigException):
+            MinosCommandReplyHandlerServer.from_config()
 
     async def test_queue_add(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)

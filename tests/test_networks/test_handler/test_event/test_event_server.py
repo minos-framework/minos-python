@@ -4,6 +4,7 @@ from collections import (
 
 from minos.common import (
     Event,
+    MinosConfigException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -24,10 +25,13 @@ class TestEventServer(PostgresAsyncTestCase):
         dispatcher = MinosEventHandlerServer.from_config(config=self.config)
         self.assertIsInstance(dispatcher, MinosEventHandlerServer)
 
-    async def test_none_config(self):
-        event_server = MinosEventHandlerServer.from_config(config=None)
+    def test_from_config_default(self):
+        with self.config:
+            self.assertIsInstance(MinosEventHandlerServer.from_config(), MinosEventHandlerServer)
 
-        self.assertIsNone(event_server)
+    def test_from_config_raises(self):
+        with self.assertRaises(MinosConfigException):
+            MinosEventHandlerServer.from_config()
 
     async def test_queue_add(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)

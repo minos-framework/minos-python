@@ -11,6 +11,7 @@ import aiopg
 
 from minos.common import (
     MinosConfig,
+    MinosConfigException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -27,6 +28,17 @@ from tests.utils import (
 
 class TestMinosCommandBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+
+    def test_from_config_default(self):
+        with self.config:
+            broker = MinosCommandBroker.from_config(
+                "CommandBroker", saga_id="9347839473kfslf", task_id="92839283hjijh232", reply_on="test_reply_on",
+            )
+            self.assertIsInstance(broker, MinosCommandBroker)
+
+    def test_from_config_raises(self):
+        with self.assertRaises(MinosConfigException):
+            MinosCommandBroker.from_config()
 
     async def test_commands_broker_insertion(self):
         broker = MinosCommandBroker.from_config(

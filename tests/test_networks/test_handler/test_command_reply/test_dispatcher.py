@@ -4,6 +4,7 @@ import aiopg
 
 from minos.common import (
     CommandReply,
+    MinosConfigException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -24,6 +25,14 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
     def test_from_config(self):
         dispatcher = MinosCommandReplyHandlerDispatcher.from_config(config=self.config)
         self.assertIsInstance(dispatcher, MinosCommandReplyHandlerDispatcher)
+
+    def test_from_config_default(self):
+        with self.config:
+            self.assertIsInstance(MinosCommandReplyHandlerDispatcher.from_config(), MinosCommandReplyHandlerDispatcher)
+
+    def test_from_config_raises(self):
+        with self.assertRaises(MinosConfigException):
+            MinosCommandReplyHandlerDispatcher.from_config()
 
     async def test_if_queue_table_exists(self):
         handler = MinosCommandReplyHandlerDispatcher.from_config(config=self.config)
@@ -79,11 +88,6 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
             "topic NotExisting have no controller/action configured, please review th configuration file"
             in str(context.exception)
         )
-
-    async def test_none_config(self):
-        handler = MinosCommandReplyHandlerDispatcher.from_config(config=None)
-
-        self.assertIsNone(handler)
 
     async def test_event_queue_checker(self):
         handler = MinosCommandReplyHandlerDispatcher.from_config(config=self.config)

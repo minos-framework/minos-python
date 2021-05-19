@@ -31,6 +31,7 @@ from psycopg2.extensions import (
 
 from minos.common import (
     MinosConfig,
+    MinosConfigException,
 )
 
 from .abc import (
@@ -70,7 +71,7 @@ class MinosHandlerServer(MinosHandlerSetup):
         if config is None:
             config = MinosConfig.get_default()
         if config is None:
-            return None
+            raise MinosConfigException("The config object must be setup.")
         # noinspection PyProtectedMember
         return cls(*args, config=config, **kwargs)
 
