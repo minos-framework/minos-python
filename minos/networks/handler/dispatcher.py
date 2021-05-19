@@ -22,6 +22,7 @@ from typing import (
 
 from minos.common import (
     MinosConfig,
+    MinosConfigException,
     import_module,
 )
 from minos.common.logs import (
@@ -63,7 +64,7 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
         if config is None:
             config = MinosConfig.get_default()
         if config is None:
-            return None
+            raise MinosConfigException("The config object must be setup.")
         # noinspection PyProtectedMember
         return cls(*args, config=config, **kwargs)
 

@@ -106,3 +106,5 @@ ENV/
 
 # Intellij IDEa / PyCharm / etc.
 .idea
+
+docs/api

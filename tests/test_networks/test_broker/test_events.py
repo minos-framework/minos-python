@@ -4,6 +4,7 @@ import aiopg
 
 from minos.common import (
     MinosConfig,
+    MinosConfigException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -20,6 +21,14 @@ from tests.utils import (
 
 class TestMinosEventBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+
+    def test_from_config_default(self):
+        with self.config:
+            self.assertIsInstance(MinosEventBroker.from_config("EventBroker"), MinosEventBroker)
+
+    def test_from_config_raises(self):
+        with self.assertRaises(MinosConfigException):
+            MinosEventBroker.from_config()
 
     async def test_if_queue_table_exists(self):
         broker = MinosEventBroker.from_config("EventBroker", config=self.config)

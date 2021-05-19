@@ -17,6 +17,7 @@ from minos.common import (
     Aggregate,
     Event,
     MinosConfig,
+    MinosConfigException,
 )
 
 from .abc import (
@@ -40,7 +41,7 @@ class MinosEventBroker(MinosBroker):
         if config is None:
             config = MinosConfig.get_default()
         if config is None:
-            return None
+            raise MinosConfigException("The config object must be setup.")
         # noinspection PyProtectedMember
         return cls(*args, **config.events.queue._asdict(), **kwargs)
 

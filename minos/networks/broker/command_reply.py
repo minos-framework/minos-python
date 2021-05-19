@@ -15,7 +15,7 @@ from typing import (
 
 from minos.common import (
     Aggregate,
-    Command,
+    CommandReply,
     MinosConfig,
     MinosConfigException,
 )
@@ -25,19 +25,18 @@ from .abc import (
 )
 
 
-class MinosCommandBroker(MinosBroker):
+class MinosCommandReplyBroker(MinosBroker):
     """Minos Command Broker Class."""
 
-    ACTION = "command"
+    ACTION = "commandReply"
 
-    def __init__(self, *args, saga_id: str, task_id: str, reply_on: str, **kwargs):
+    def __init__(self, *args, saga_id: str, task_id: str, **kwargs):
         super().__init__(*args, **kwargs)
-        self.reply_on = reply_on
         self.saga_id = saga_id
         self.task_id = task_id
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosCommandBroker]:
+    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosCommandReplyBroker]:
         """Build a new repository from config.
         :param args: Additional positional arguments.
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -57,5 +56,5 @@ class MinosCommandBroker(MinosBroker):
         :param items: A list of aggregates.
         :return: This method does not return anything.
         """
-        command = Command(self.topic, items, self.saga_id, self.task_id, self.reply_on)
-        return await self._send_bytes(command.topic, command.avro_bytes)
+        command_reply = CommandReply(topic=self.topic, items=items, saga_id=self.saga_id, task_id=self.task_id)
+        return await self._send_bytes(command_reply.topic, command_reply.avro_bytes)
