@@ -90,9 +90,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
                 )
 
                 queue_id = await cur.fetchone()
-                affected_rows = cur.rowcount
 
-        assert affected_rows == 1
         assert queue_id[0] > 0
 
         # Must get the record, call on_reply function and delete the record from DB
@@ -120,9 +118,6 @@ class TestEventDispatcher(PostgresAsyncTestCase):
                 )
 
                 queue_id = await cur.fetchone()
-                affected_rows = cur.rowcount
-
-        assert affected_rows == 1
         assert queue_id[0] > 0
 
         # Must get the record, call on_reply function and delete the record from DB

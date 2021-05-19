@@ -38,9 +38,7 @@ class TestEventServer(PostgresAsyncTestCase):
         event_server = MinosEventHandlerServer.from_config(config=self.config)
         await event_server.setup()
 
-        affected_rows, id = await event_server.queue_add(topic=event_instance.topic, partition=0, binary=bin_data)
-
-        assert affected_rows == 1
+        id = await event_server.queue_add(topic=event_instance.topic, partition=0, binary=bin_data)
         assert id > 0
 
     async def test_handle_message(self):

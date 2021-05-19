@@ -48,8 +48,16 @@ class MinosCommandServerService(Service):
         await self.dispatcher.handle_message(self.consumer)
 
     async def stop(self, exception: Exception = None) -> Any:
+
+        """Stop the service execution.
+
+        :param exception: Optional exception that stopped the execution.
+        :return: This method does not return anything.
+        """
         if self.consumer is not None:
             await self.consumer.stop()
+
+        await self.dispatcher.destroy()
 
 
 class MinosCommandPeriodicService(PeriodicService):
@@ -73,3 +81,12 @@ class MinosCommandPeriodicService(PeriodicService):
         :return:This method does not return anything.
         """
         await self.dispatcher.queue_checker()
+
+    async def stop(self, err: Exception = None) -> None:
+        """Stop the service execution.
+
+        :param err: Optional exception that stopped the execution.
+        :return: This method does not return anything.
+        """
+        await super().stop(err)
+        await self.dispatcher.destroy()

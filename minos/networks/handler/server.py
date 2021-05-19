@@ -17,11 +17,9 @@ from abc import (
 from typing import (
     Any,
     AsyncIterator,
-    NamedTuple,
     Optional,
 )
 
-import aiopg
 from aiokafka import (
     AIOKafkaConsumer,
 )
@@ -46,15 +44,11 @@ class MinosHandlerServer(MinosHandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_db_dsn", "_handlers", "_topics", "_broker_group_name"
+    __slots__ = "_tasks", "_handlers", "_topics", "_broker_group_name"
 
-    def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
+    def __init__(self, *, table_name: str, config: MinosConfig, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
         self._tasks = set()  # type: t.Set[asyncio.Task]
-        self._db_dsn = (
-            f"dbname={config.queue.database} user={config.queue.user} "
-            f"password={config.queue.password} host={config.queue.host}"
-        )
         self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._topics = list(self._handler.keys())
         self._table_name = table_name
@@ -74,7 +68,7 @@ class MinosHandlerServer(MinosHandlerSetup):
         # noinspection PyProtectedMember
         return cls(*args, config=config, **kwargs)
 
-    async def queue_add(self, topic: str, partition: int, binary: bytes):
+    async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:
         """Insert row to event_queue table.
 
         Retrieves number of affected rows and row ID.
@@ -85,25 +79,18 @@ class MinosHandlerServer(MinosHandlerSetup):
             binary: Event Model in bytes.
 
         Returns:
-            Affected rows and queue ID.
+            Queue ID.
 
-            Example: 1, 12
+            Example: 12
 
         Raises:
             Exception: An error occurred inserting record.
         """
+        queue_id = await self.submit_query_and_fetchone(
+            _INSERT_QUERY, (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
+        )
 
-        async with aiopg.create_pool(self._db_dsn) as pool:
-            async with pool.acquire() as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        _INSERT_QUERY, (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-                    affected_rows = cur.rowcount
-
-        return affected_rows, queue_id[0]
+        return queue_id[0]
 
     async def handle_single_message(self, msg):
         """Handle Kafka messages.
@@ -121,8 +108,8 @@ class MinosHandlerServer(MinosHandlerSetup):
         # check if the event binary string is well formatted
         if not self._is_valid_instance(msg.value):
             return
-        affected_rows, id = await self.queue_add(msg.topic, msg.partition, msg.value)
-        return affected_rows, id
+
+        return await self.queue_add(msg.topic, msg.partition, msg.value)
 
     @abstractmethod
     def _is_valid_instance(self, value: bytes):  # pragma: no cover
@@ -141,7 +128,7 @@ class MinosHandlerServer(MinosHandlerSetup):
             await self.handle_single_message(msg)
 
     @staticmethod
-    async def kafka_consumer(topics: list, group_name: str, conn: str):
+    async def kafka_consumer(topics: list, group_name: str, conn: str) -> AIOKafkaConsumer:
         # start the Service Event Consumer for Kafka
         consumer = AIOKafkaConsumer(group_id=group_name, auto_offset_reset="latest", bootstrap_servers=conn,)
 
