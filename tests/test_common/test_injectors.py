@@ -48,36 +48,25 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.config = MinosConfig(path=str(self.config_file_path))
 
     def test_container(self):
-        injector = MinosDependencyInjector(self.config,)
-
+        injector = MinosDependencyInjector(self.config)
         self.assertEqual(self.config, injector.container.config())
 
     def test_container_repository(self):
-        injector = MinosDependencyInjector(self.config, repository_cls=MinosInMemoryRepository,)
-
-        self.assertEqual(self.config, injector.container.config())
-        self.assertIsInstance(
-            injector.container.repository(), MinosInMemoryRepository,
-        )
+        injector = MinosDependencyInjector(self.config, repository_cls=MinosInMemoryRepository)
+        self.assertIsInstance(injector.container.repository(), MinosInMemoryRepository)
 
     def test_container_event_broker(self):
-        injector = MinosDependencyInjector(
-            self.config, repository_cls=MinosInMemoryRepository, event_broker_cls=_MinosBroker,
-        )
-
-        self.assertIsInstance(injector.container.event_broker(), _MinosBroker)
+        injector = MinosDependencyInjector(self.config, event_broker_cls=_MinosBroker)
+        self.assertTrue(issubclass(injector.container.event_broker(), _MinosBroker))
 
     def test_container_command_broker(self):
-        injector = MinosDependencyInjector(self.config, command_broker_cls=_MinosBroker,)
-
-        self.assertIsInstance(injector.container.command_broker(), _MinosBroker)
+        injector = MinosDependencyInjector(self.config, command_broker_cls=_MinosBroker)
+        self.assertTrue(issubclass(injector.container.command_broker(), _MinosBroker))
 
     def test_container_command_reply_broker(self):
-        injector = MinosDependencyInjector(self.config, command_reply_broker_cls=_MinosBroker,)
-
-        self.assertIsInstance(injector.container.command_reply_broker(), _MinosBroker)
+        injector = MinosDependencyInjector(self.config, command_reply_broker_cls=_MinosBroker)
+        self.assertTrue(issubclass(injector.container.command_reply_broker(), _MinosBroker))
 
     def test_container_saga_manager(self):
         injector = MinosDependencyInjector(self.config, saga_manager_cls=_MinosSagaManager)
-
         self.assertIsInstance(injector.container.saga_manager(), _MinosSagaManager)
