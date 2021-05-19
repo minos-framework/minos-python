@@ -20,22 +20,17 @@ from tests.aggregate_classes import (
 
 
 class _MinosBroker(MinosBroker):
-    async def send(self, items: list[Aggregate], **kwargs) -> NoReturn:
+    @classmethod
+    async def send(cls, items: list[Aggregate], **kwargs) -> NoReturn:
         pass
 
 
 class TestMinosBaseBroker(unittest.IsolatedAsyncioTestCase):
-    def test_topic(self):
-        broker = _MinosBroker("CarAdded")
-        self.assertEqual("CarAdded", broker.topic)
-
     async def test_send(self):
-        broker = _MinosBroker("CarAdded")
-        self.assertEqual(None, await broker.send([Car(1, 1, 3, "red"), Car(1, 1, 3, "red")]))
+        self.assertEqual(None, await _MinosBroker.send([Car(1, 1, 3, "red"), Car(1, 1, 3, "red")]))
 
     async def test_send_one(self):
-        broker = _MinosBroker("CarAdded")
-        self.assertEqual(None, await broker.send_one(Car(1, 1, 3, "red")))
+        self.assertEqual(None, await _MinosBroker.send_one(Car(1, 1, 3, "red")))
 
 
 if __name__ == "__main__":

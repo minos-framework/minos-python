@@ -25,20 +25,19 @@ from .model import (
 class MinosBroker(ABC):
     """Base Broker class."""
 
-    def __init__(self, topic: str):
-        self.topic = topic
-
-    async def send_one(self, item: Aggregate, **kwargs) -> NoReturn:
+    @classmethod
+    async def send_one(cls, item: Aggregate, **kwargs) -> NoReturn:
         """Send one ``Aggregate`` instance.
 
         :param item: The instance to be send.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        return await self.send([item], **kwargs)
+        return await cls.send([item], **kwargs)
 
+    @classmethod
     @abstractmethod
-    async def send(self, items: list[Aggregate], **kwargs) -> NoReturn:
+    async def send(cls, items: list[Aggregate], **kwargs) -> NoReturn:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.
