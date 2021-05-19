@@ -19,7 +19,7 @@ from .model import (
 )
 
 
-class MinosBaseBroker(abc.ABC):
+class MinosBroker(abc.ABC):
     """Base Broker class."""
 
     def __init__(self, topic: str):

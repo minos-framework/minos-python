@@ -106,7 +106,7 @@ from .model import (
     ModelRef,
 )
 from .networks import (
-    MinosBaseBroker,
+    MinosBroker,
 )
 from .protocol import (
     MinosAvroProtocol,

@@ -12,29 +12,29 @@ from typing import (
 
 from minos.common import (
     Aggregate,
-    MinosBaseBroker,
+    MinosBroker,
 )
 from tests.aggregate_classes import (
     Car,
 )
 
 
-class MinosBroker(MinosBaseBroker):
+class _MinosBroker(MinosBroker):
     async def send(self, items: list[Aggregate]) -> NoReturn:
         pass
 
 
 class TestMinosBaseBroker(unittest.IsolatedAsyncioTestCase):
     def test_topic(self):
-        broker = MinosBroker("CarAdded")
+        broker = _MinosBroker("CarAdded")
         self.assertEqual("CarAdded", broker.topic)
 
     async def test_send(self):
-        broker = MinosBroker("CarAdded")
+        broker = _MinosBroker("CarAdded")
         self.assertEqual(None, await broker.send([Car(1, 1, 3, "red"), Car(1, 1, 3, "red")]))
 
     async def test_send_one(self):
-        broker = MinosBroker("CarAdded")
+        broker = _MinosBroker("CarAdded")
         self.assertEqual(None, await broker.send_one(Car(1, 1, 3, "red")))
 
 
