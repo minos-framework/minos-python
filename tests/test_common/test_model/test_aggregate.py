@@ -5,6 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import sys
 import unittest
 
 from minos.common import (
@@ -134,12 +135,8 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        import sys
-
-        self.container = MinosDependencyContainer(
-            [sys.modules[__name__]], self.config, repository_cls=PostgreSqlMinosRepository
-        )
-        await self.container.wire()
+        self.container = MinosDependencyContainer(self.config, repository_cls=PostgreSqlMinosRepository)
+        await self.container.wire(modules=[sys.modules[__name__]])
 
     async def asyncTearDown(self):
         await self.container.unwire()
