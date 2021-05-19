@@ -5,6 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from typing import (
     NoReturn,
     Type,
@@ -15,6 +19,7 @@ from uuid import (
 )
 
 from minos.common import (
+    MinosConfig,
     MinosJsonBinaryProtocol,
     MinosStorage,
     MinosStorageLmdb,
@@ -40,6 +45,18 @@ class SagaExecutionStorage(object):
     ):
         self.db_name = db_name
         self._storage = storage_cls.build(protocol=protocol, **kwargs)
+
+    @classmethod
+    def from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaExecutionStorage:
+        """Build an instance from config.
+
+        :param args: Additional positional arguments.
+        :param config: Config instance.
+        :param kwargs: Additional named arguments.
+        :return: A new ``SagaExecutionStorage`` instance.
+        """
+        # noinspection PyProtectedMember
+        return cls(*args, **(config.saga.storage._asdict() | kwargs))
 
     def store(self, execution: SagaExecution) -> NoReturn:
         """Store an execution.
