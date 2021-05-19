@@ -17,6 +17,10 @@ from typing import (
     Optional,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+)
+
 from ..configuration import (
     MinosConfig,
 )
@@ -44,6 +48,8 @@ class Aggregate(MinosModel):
 
     id: int
     version: int
+
+    _repository: MinosRepository = Provide["repository"]
 
     # FIXME: The ``broker`` attribute should be a reference to a ``MinosBaseBroker`` class instance.
     # noinspection PyShadowingBuiltins
@@ -85,7 +91,9 @@ class Aggregate(MinosModel):
         :return: An aggregate instance.
         """
         if _repository is None:
-            _repository = cls._build_repository(_config)
+            _repository = cls._repository
+        if _repository is None or isinstance(_repository, Provide):
+            raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         # noinspection PyTypeChecker
         entries = [v async for v in _repository.select(aggregate_name=cls.classname, aggregate_id=id)]
@@ -103,7 +111,7 @@ class Aggregate(MinosModel):
 
     @classmethod
     async def create(
-        cls, *args, _config: MinosConfig = None, _broker: str = None, _repository: MinosRepository = None, **kwargs
+        cls, *args, _config: MinosConfig = None, _broker: str = None, _repository: MinosRepository = None, **kwargs,
     ) -> Aggregate:
         """Create a new ``Aggregate`` instance.
 
@@ -128,7 +136,9 @@ class Aggregate(MinosModel):
             _broker = "MinosBaseBroker()"
 
         if _repository is None:
-            _repository = cls._build_repository(_config)
+            _repository = cls._repository
+        if _repository is None or isinstance(_repository, Provide):
+            raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
@@ -159,7 +169,9 @@ class Aggregate(MinosModel):
             )
 
         if _repository is None:
-            _repository = self_or_cls._build_repository(_config)
+            _repository = self_or_cls._repository
+        if _repository is None or isinstance(_repository, Provide):
+            raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
@@ -198,7 +210,9 @@ class Aggregate(MinosModel):
         :return: This method does not return anything.
         """
         if _repository is None:
-            _repository = self_or_cls._build_repository(_config)
+            _repository = self_or_cls._repository
+        if _repository is None or isinstance(_repository, Provide):
+            raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         if isinstance(self_or_cls, type):
             assert issubclass(self_or_cls, Aggregate)
@@ -207,24 +221,3 @@ class Aggregate(MinosModel):
             instance = self_or_cls
 
         await _repository.delete(instance)
-
-    # noinspection PyMethodParameters
-    @self_or_classmethod
-    def _build_repository(self_or_cls, config: MinosConfig) -> MinosRepository:
-        repository = None
-
-        if not isinstance(self_or_cls, type):
-            repository = self_or_cls._repository
-
-        if repository is None:
-            # FIXME: In the future, this could be parameterized.
-            from ..repository import (
-                PostgreSqlMinosRepository,
-            )
-
-            repository = PostgreSqlMinosRepository.from_config(already_setup=True, config=config)
-
-        if repository is None:
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
-
-        return repository

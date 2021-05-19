@@ -38,6 +38,7 @@ lmdb = "^1.2.1"
 PyYAML = "^5.4.1"
 aiopg = "^1.2.1"
 dependency-injector = "^4.32.2"
+cached-property = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"
