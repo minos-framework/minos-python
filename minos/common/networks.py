@@ -9,7 +9,10 @@ from __future__ import (
     annotations,
 )
 
-import abc
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from typing import (
     NoReturn,
 )
@@ -19,25 +22,27 @@ from .model import (
 )
 
 
-class MinosBroker(abc.ABC):
+class MinosBroker(ABC):
     """Base Broker class."""
 
     def __init__(self, topic: str):
         self.topic = topic
 
-    @abc.abstractmethod
-    async def send(self, items: list[Aggregate]) -> NoReturn:
-        """Send a list of ``Aggregate`` instances.
-
-        :param items: A list of aggregates.
-        :return: This method does not return anything.
-        """
-        raise NotImplementedError
-
-    async def send_one(self, item: Aggregate) -> NoReturn:
+    async def send_one(self, item: Aggregate, **kwargs) -> NoReturn:
         """Send one ``Aggregate`` instance.
 
         :param item: The instance to be send.
+        :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        return await self.send([item])
+        return await self.send([item], **kwargs)
+
+    @abstractmethod
+    async def send(self, items: list[Aggregate], **kwargs) -> NoReturn:
+        """Send a list of ``Aggregate`` instances.
+
+        :param items: A list of aggregates.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
+        raise NotImplementedError

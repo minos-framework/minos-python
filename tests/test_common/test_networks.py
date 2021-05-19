@@ -20,7 +20,7 @@ from tests.aggregate_classes import (
 
 
 class _MinosBroker(MinosBroker):
-    async def send(self, items: list[Aggregate]) -> NoReturn:
+    async def send(self, items: list[Aggregate], **kwargs) -> NoReturn:
         pass
 
 
