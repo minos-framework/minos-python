@@ -354,28 +354,21 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.0.13"
+version = "0.0.14"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-aiomisc = "^14.0.3"
-aiopg = "^1.2.1"
-cached-property = "^1.5.2"
-dependency-injector = "^4.32.2"
-fastavro = "^1.4.0"
-lmdb = "^1.2.1"
-orjson = "^3.5.2"
-PyYAML = "^5.4.1"
-
-[package.source]
-type = "git"
-url = "https://github.com/Clariteia/minos_microservice_common.git"
-reference = "issue-161-inject-repository"
-resolved_reference = "49abc774b659a1a7e84db02f062f3ee24e7c34f3"
+aiomisc = ">=14.0.3,<15.0.0"
+aiopg = ">=1.2.1,<2.0.0"
+cached-property = ">=1.5.2,<2.0.0"
+dependency-injector = ">=4.32.2,<5.0.0"
+fastavro = ">=1.4.0,<2.0.0"
+lmdb = ">=1.2.1,<2.0.0"
+orjson = ">=3.5.2,<4.0.0"
+PyYAML = ">=5.4.1,<6.0.0"
 
 [[package]]
 name = "nodeenv"
@@ -727,7 +720,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "42bd651925964ab52deaca000da5f91fa9833fcf7ed37c6425302b844f5e168f"
+content-hash = "eaed17433e41052e3af24aea0b1ecb1597b5db09fa0d615ed77445cb89f1765b"
 
 [metadata.files]
 aiomisc = [
@@ -1089,7 +1082,10 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-microservice-common = []
+minos-microservice-common = [
+    {file = "minos_microservice_common-0.0.14-py3-none-any.whl", hash = "sha256:c23e8d94f69bc8bd3a5cd61c8dd2a42cb195098fe8578ae7db632f8dbf82cb58"},
+    {file = "minos_microservice_common-0.0.14.tar.gz", hash = "sha256:4afa38f82f445a776893195d45a7a5aeb3d17c0111bf62a79e76b7f1abf58be6"},
+]
 nodeenv = [
     {file = "nodeenv-1.6.0-py2.py3-none-any.whl", hash = "sha256:621e6b7076565ddcacd2db0294c0381e01fd28945ab36bcf00f41c5daf63bef7"},
     {file = "nodeenv-1.6.0.tar.gz", hash = "sha256:3ef13ff90291ba2a4a7a4ff9a979b63ffdd00a464dbe04acf0ea6471517a4c2b"},
