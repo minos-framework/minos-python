@@ -52,5 +52,4 @@ class LocalExecutor(ABC):
         result = func(*args, **kwargs)
         if inspect.isawaitable(result):
             result = self.loop.run_until_complete(result)
-            return result
         return result

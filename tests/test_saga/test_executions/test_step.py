@@ -9,7 +9,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 import uuid
 from unittest.mock import (
-    patch,
+    MagicMock,
 )
 
 from minos.saga import (
@@ -29,12 +29,13 @@ from tests.utils import (
     foo_fn_raises,
 )
 
-_PUBLISH_MOCKER = patch("minos.saga.executions.executors.publish.PublishExecutor.publish")
-
 
 class TestSagaExecutionStep(unittest.TestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
+        self.publish_mock = MagicMock(side_effect=self.broker.send_one)
+        self.broker.send_one = self.publish_mock
+
         self.definition_name = "FoodAdd"
         self.execution_uuid = uuid.uuid4()
 
@@ -49,9 +50,8 @@ class TestSagaExecutionStep(unittest.TestCase):
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
-        with _PUBLISH_MOCKER as mock:
-            execution.execute(context, **self.execute_kwargs)
-            self.assertEqual(1, mock.call_count)
+        execution.execute(context, **self.execute_kwargs)
+        self.assertEqual(1, self.publish_mock.call_count)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
@@ -60,10 +60,9 @@ class TestSagaExecutionStep(unittest.TestCase):
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
-        with _PUBLISH_MOCKER as mock:
-            with self.assertRaises(MinosSagaFailedExecutionStepException):
-                execution.execute(context, **self.execute_kwargs)
-            self.assertEqual(0, mock.call_count)
+        with self.assertRaises(MinosSagaFailedExecutionStepException):
+            execution.execute(context, **self.execute_kwargs)
+        self.assertEqual(0, self.publish_mock.call_count)
 
         self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, execution.status)
 
@@ -72,12 +71,11 @@ class TestSagaExecutionStep(unittest.TestCase):
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
-        with _PUBLISH_MOCKER as mock:
-            with self.assertRaises(MinosSagaPausedExecutionStepException):
-                execution.execute(context, **self.execute_kwargs)
-            self.assertEqual(1, mock.call_count)
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            execution.execute(context, **self.execute_kwargs)
+        self.assertEqual(1, self.publish_mock.call_count)
 
-            self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
+        self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
 
         reply = fake_reply(Foo("foo"))
         execution.execute(context, reply=reply)
@@ -114,25 +112,24 @@ class TestSagaExecutionStep(unittest.TestCase):
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
-        with _PUBLISH_MOCKER as mock:
-            with self.assertRaises(MinosSagaRollbackExecutionStepException):
-                execution.rollback(context, **self.execute_kwargs)
-            self.assertEqual(0, mock.call_count)
-
-            try:
-                execution.execute(context, **self.execute_kwargs)
-            except MinosSagaPausedExecutionStepException:
-                pass
-            self.assertEqual(1, mock.call_count)
-            mock.reset_mock()
-
+        with self.assertRaises(MinosSagaRollbackExecutionStepException):
             execution.rollback(context, **self.execute_kwargs)
-            self.assertEqual(1, mock.call_count)
+        self.assertEqual(0, self.publish_mock.call_count)
 
-            mock.reset_mock()
-            with self.assertRaises(MinosSagaRollbackExecutionStepException):
-                execution.rollback(context, **self.execute_kwargs)
-            self.assertEqual(0, mock.call_count)
+        try:
+            execution.execute(context, **self.execute_kwargs)
+        except MinosSagaPausedExecutionStepException:
+            pass
+        self.assertEqual(1, self.publish_mock.call_count)
+        self.publish_mock.reset_mock()
+
+        execution.rollback(context, **self.execute_kwargs)
+        self.assertEqual(1, self.publish_mock.call_count)
+
+        self.publish_mock.reset_mock()
+        with self.assertRaises(MinosSagaRollbackExecutionStepException):
+            execution.rollback(context, **self.execute_kwargs)
+        self.assertEqual(0, self.publish_mock.call_count)
 
     def test_raw(self):
         definition = (

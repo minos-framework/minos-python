@@ -8,6 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import unittest
 from unittest.mock import (
+    MagicMock,
     patch,
 )
 from uuid import (
@@ -36,12 +37,12 @@ from tests.utils import (
     foo_fn_raises,
 )
 
-_PUBLISH_MOCKER = patch("minos.saga.executions.executors.publish.PublishExecutor.publish")
-
 
 class TestSagaExecution(unittest.TestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
+        self.publish_mock = MagicMock(side_effect=self.broker.send_one)
+        self.broker.send_one = self.publish_mock
 
     def test_execute(self):
         saga = (
@@ -99,12 +100,12 @@ class TestSagaExecution(unittest.TestCase):
             execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
-            reply = fake_reply(Foo("order2"))
-            with self.assertRaises(MinosSagaFailedExecutionStepException):
-                execution.execute(reply=reply, broker=self.broker)
-            self.assertEqual(SagaStatus.Errored, execution.status)
-            self.assertEqual(3, mock.call_count)
+        self.publish_mock.reset_mock()
+        reply = fake_reply(Foo("order2"))
+        with self.assertRaises(MinosSagaFailedExecutionStepException):
+            execution.execute(reply=reply, broker=self.broker)
+        self.assertEqual(SagaStatus.Errored, execution.status)
+        self.assertEqual(3, self.publish_mock.call_count)
 
     def test_rollback(self):
         saga = (
@@ -121,14 +122,14 @@ class TestSagaExecution(unittest.TestCase):
         reply = fake_reply(Foo("order1"))
         execution.execute(reply=reply, broker=self.broker)
 
-        with _PUBLISH_MOCKER as mock:
-            execution.rollback(broker=self.broker)
-            self.assertEqual(1, mock.call_count)
+        self.publish_mock.reset_mock()
+        execution.rollback(broker=self.broker)
+        self.assertEqual(1, self.publish_mock.call_count)
 
-            mock.reset_mock()
-            with self.assertRaises(MinosSagaRollbackExecutionException):
-                execution.rollback(broker=self.broker)
-            self.assertEqual(0, mock.call_count)
+        self.publish_mock.reset_mock()
+        with self.assertRaises(MinosSagaRollbackExecutionException):
+            execution.rollback(broker=self.broker)
+        self.assertEqual(0, self.publish_mock.call_count)
 
     def test_raw(self):
         saga = (

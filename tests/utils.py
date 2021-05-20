@@ -61,8 +61,6 @@ def fake_reply(data: MinosModel) -> CommandReply:
 
 
 class NaiveBroker(MinosBroker):
-    async def send_one(self, item: Aggregate, **kwargs) -> NoReturn:
-        return await self.send([item], **kwargs)
-
-    async def send(self, items: list[Aggregate], **kwargs) -> NoReturn:
+    @staticmethod
+    async def send(items: list[MinosModel], **kwargs) -> NoReturn:
         pass
