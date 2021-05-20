@@ -17,39 +17,30 @@ from minos.common import (
     Aggregate,
     Event,
     MinosConfig,
-    MinosConfigException,
 )
 
 from .abc import (
-    MinosBroker,
+    Broker,
 )
 
 
-class MinosEventBroker(MinosBroker):
+class EventBroker(Broker):
     """Minos Event broker class."""
 
     ACTION = "event"
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosEventBroker]:
-        """Build a new repository from config.
-        :param args: Additional positional arguments.
-        :param config: Config instance. If `None` is provided, default config is chosen.
-        :param kwargs: Additional named arguments.
-        :return: A `MinosRepository` instance.
-        """
-        if config is None:
-            config = MinosConfig.get_default()
-        if config is None:
-            raise MinosConfigException("The config object must be setup.")
-        # noinspection PyProtectedMember
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventBroker:
         return cls(*args, **config.events.queue._asdict(), **kwargs)
 
-    async def send(self, items: list[Aggregate]) -> int:
+    async def send(self, items: list[Aggregate], topic: Optional[str] = None, **kwargs) -> int:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.
+        :param topic: TODO
         :return: This method does not return anything.
         """
-        event = Event(self.topic, items)
+        if topic is None:
+            topic = self.topic
+        event = Event(topic, items)
         return await self._send_bytes(event.topic, event.avro_bytes)

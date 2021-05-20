@@ -10,7 +10,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosEventBroker,
+    EventBroker,
     MinosQueueDispatcher,
 )
 from tests.utils import (
@@ -23,15 +23,14 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):
-        with self.config:
-            self.assertIsInstance(MinosEventBroker.from_config("EventBroker"), MinosEventBroker)
+        self.assertIsInstance(EventBroker.from_config("EventBroker", config=self.config), EventBroker)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            MinosEventBroker.from_config()
+            EventBroker.from_config()
 
     async def test_if_queue_table_exists(self):
-        broker = MinosEventBroker.from_config("EventBroker", config=self.config)
+        broker = EventBroker.from_config("EventBroker", config=self.config)
         await broker.setup()
 
         async with aiopg.connect(**self.events_queue_db) as connection:
@@ -48,7 +47,7 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
         assert ret == [(1,)]
 
     async def test_events_broker_insertion(self):
-        broker = MinosEventBroker.from_config("EventBroker", config=self.config)
+        broker = EventBroker.from_config("EventBroker", config=self.config)
         await broker.setup()
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -57,7 +56,7 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
         assert queue_id > 0
 
     async def test_if_events_was_deleted(self):
-        broker = MinosEventBroker.from_config("EventBroker-Delete", config=self.config)
+        broker = EventBroker.from_config("EventBroker-Delete", config=self.config)
         await broker.setup()
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -76,7 +75,7 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_events_retry_was_incremented(self):
-        broker = MinosEventBroker.from_config("EventBroker-Delete", config=self.config)
+        broker = EventBroker.from_config("EventBroker-Delete", config=self.config)
         await broker.setup()
 
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)

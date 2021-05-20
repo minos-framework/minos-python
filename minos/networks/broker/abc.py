@@ -13,10 +13,11 @@ from datetime import (
 )
 from typing import (
     NoReturn,
+    Optional,
 )
 
 from minos.common import (
-    MinosBaseBroker,
+    MinosBroker,
     PostgreSqlMinosDatabase,
 )
 
@@ -31,14 +32,14 @@ class MinosBrokerSetup(PostgreSqlMinosDatabase):
         await self.submit_query(_CREATE_TABLE_QUERY)
 
 
-class MinosBroker(MinosBaseBroker, MinosBrokerSetup, ABC):
+class Broker(MinosBroker, MinosBrokerSetup, ABC):
     """Minos Broker Class."""
 
     ACTION: str
 
-    def __init__(self, topic: str, *args, **kwargs):
-        MinosBaseBroker.__init__(self, topic)
-        MinosBrokerSetup.__init__(self, *args, **kwargs)
+    def __init__(self, topic: Optional[str] = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.topic = topic
 
     async def _send_bytes(self, topic: str, raw: bytes) -> int:
         params = (topic, raw, 0, self.ACTION, datetime.now(), datetime.now())

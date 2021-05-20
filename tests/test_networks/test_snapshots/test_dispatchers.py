@@ -80,10 +80,9 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     async def test_dispatch_select(self):
         await self._populate()
-        with self.config:
-            async with MinosSnapshotDispatcher.from_config() as dispatcher:
-                await dispatcher.dispatch()
-                observed = [v async for v in dispatcher.select()]
+        async with MinosSnapshotDispatcher.from_config(config=self.config) as dispatcher:
+            await dispatcher.dispatch()
+            observed = [v async for v in dispatcher.select()]
 
         expected = [
             MinosSnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
@@ -92,25 +91,25 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
         self._assert_equal_snapshot_entries(expected, observed)
 
     async def test_dispatch_ignore_previous_version(self):
-        with self.config:
-            dispatcher = MinosSnapshotDispatcher.from_config()
-            await dispatcher.setup()
 
-            car = Car(1, 1, 3, "blue")
-            # noinspection PyTypeChecker
-            aggregate_name: str = car.classname
+        dispatcher = MinosSnapshotDispatcher.from_config(config=self.config)
+        await dispatcher.setup()
 
-            async def _fn(*args, **kwargs):
-                yield MinosRepositoryEntry(1, aggregate_name, 1, car.avro_bytes)
-                yield MinosRepositoryEntry(1, aggregate_name, 3, car.avro_bytes)
-                yield MinosRepositoryEntry(1, aggregate_name, 2, car.avro_bytes)
+        car = Car(1, 1, 3, "blue")
+        # noinspection PyTypeChecker
+        aggregate_name: str = car.classname
 
-            with patch("minos.common.PostgreSqlMinosRepository.select", _fn):
-                await dispatcher.dispatch()
-                observed = [v async for v in dispatcher.select()]
+        async def _fn(*args, **kwargs):
+            yield MinosRepositoryEntry(1, aggregate_name, 1, car.avro_bytes)
+            yield MinosRepositoryEntry(1, aggregate_name, 3, car.avro_bytes)
+            yield MinosRepositoryEntry(1, aggregate_name, 2, car.avro_bytes)
 
-            expected = [MinosSnapshotEntry(1, aggregate_name, 3, car.avro_bytes)]
-            self._assert_equal_snapshot_entries(expected, observed)
+        with patch("minos.common.PostgreSqlMinosRepository.select", _fn):
+            await dispatcher.dispatch()
+            observed = [v async for v in dispatcher.select()]
+
+        expected = [MinosSnapshotEntry(1, aggregate_name, 3, car.avro_bytes)]
+        self._assert_equal_snapshot_entries(expected, observed)
 
     def _assert_equal_snapshot_entries(self, expected: list[MinosSnapshotEntry], observed: list[MinosSnapshotEntry]):
         self.assertEqual(len(expected), len(observed))

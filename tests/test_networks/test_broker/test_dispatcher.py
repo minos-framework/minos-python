@@ -22,8 +22,7 @@ class TestQueueDispatcher(PostgresAsyncTestCase):
         self.assertIsInstance(dispatcher, MinosQueueDispatcher)
 
     def test_from_config_default(self):
-        with self.config:
-            self.assertIsInstance(MinosQueueDispatcher.from_config(), MinosQueueDispatcher)
+        self.assertIsInstance(MinosQueueDispatcher.from_config(config=self.config), MinosQueueDispatcher)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):

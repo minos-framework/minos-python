@@ -20,7 +20,6 @@ from typing import (
 from minos.common import (
     Aggregate,
     MinosConfig,
-    MinosConfigException,
     MinosRepositoryAction,
     MinosRepositoryEntry,
     PostgreSqlMinosDatabase,
@@ -48,18 +47,7 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         await self.repository.destroy()
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSnapshotDispatcher:
-        """Build a new Snapshot Dispatcher from config.
-        :param args: Additional positional arguments.
-        :param config: Config instance. If `None` is provided, default config is chosen.
-        :param kwargs: Additional named arguments.
-        :return: A `MinosRepository` instance.
-        """
-        if config is None:
-            config = MinosConfig.get_default()
-        if config is None:
-            raise MinosConfigException("The config object must be setup.")
-        # noinspection PyProtectedMember
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> MinosSnapshotDispatcher:
         return cls(*args, **config.snapshot._asdict(), repository=config.repository._asdict(), **kwargs)
 
     async def _setup(self) -> NoReturn:

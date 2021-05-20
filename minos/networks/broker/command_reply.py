@@ -14,18 +14,17 @@ from typing import (
 )
 
 from minos.common import (
-    Aggregate,
     CommandReply,
     MinosConfig,
-    MinosConfigException,
+    MinosModel,
 )
 
 from .abc import (
-    MinosBroker,
+    Broker,
 )
 
 
-class MinosCommandReplyBroker(MinosBroker):
+class CommandReplyBroker(Broker):
     """Minos Command Broker Class."""
 
     ACTION = "commandReply"
@@ -36,25 +35,30 @@ class MinosCommandReplyBroker(MinosBroker):
         self.task_id = task_id
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosCommandReplyBroker]:
-        """Build a new repository from config.
-        :param args: Additional positional arguments.
-        :param config: Config instance. If `None` is provided, default config is chosen.
-        :param kwargs: Additional named arguments.
-        :return: A `MinosRepository` instance.
-        """
-        if config is None:
-            config = MinosConfig.get_default()
-        if config is None:
-            raise MinosConfigException("The config object must be setup.")
-        # noinspection PyProtectedMember
-        return cls(*args, **config.commands.queue._asdict(), **kwargs)
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyBroker:
+        return cls(*args, **config.saga.queue._asdict(), **kwargs)
 
-    async def send(self, items: list[Aggregate]) -> int:
+    async def send(
+        self,
+        items: list[MinosModel],
+        topic: Optional[str] = None,
+        saga_id: Optional[str] = None,
+        task_id: Optional[str] = None,
+        **kwargs
+    ) -> int:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.
+        :param topic: TODO
+        :param saga_id: TODO
+        :param task_id: TODO
         :return: This method does not return anything.
         """
-        command_reply = CommandReply(topic=self.topic, items=items, saga_id=self.saga_id, task_id=self.task_id)
+        if topic is None:
+            topic = self.topic
+        if saga_id is None:
+            saga_id = self.saga_id
+        if task_id is None:
+            task_id = self.task_id
+        command_reply = CommandReply(topic=topic, items=items, saga_id=saga_id, task_id=task_id)
         return await self._send_bytes(command_reply.topic, command_reply.avro_bytes)

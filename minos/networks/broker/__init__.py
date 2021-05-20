@@ -6,16 +6,16 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from .command_reply import (
-    MinosCommandReplyBroker,
+    CommandReplyBroker,
 )
 from .commands import (
-    MinosCommandBroker,
+    CommandBroker,
 )
 from .dispatchers import (
     MinosQueueDispatcher,
 )
 from .events import (
-    MinosEventBroker,
+    EventBroker,
 )
 from .services import (
     MinosQueueService,

@@ -13,7 +13,6 @@ from typing import (
     AsyncIterator,
     NamedTuple,
     NoReturn,
-    Optional,
 )
 
 from aiokafka import (
@@ -22,7 +21,6 @@ from aiokafka import (
 
 from minos.common import (
     MinosConfig,
-    MinosConfigException,
 )
 
 from .abc import (
@@ -42,18 +40,7 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         self.broker = broker
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosQueueDispatcher]:
-        """Build a new repository from config.
-        :param args: Additional positional arguments.
-        :param config: Config instance. If `None` is provided, default config is chosen.
-        :param kwargs: Additional named arguments.
-        :return: A `MinosRepository` instance.
-        """
-        if config is None:
-            config = MinosConfig.get_default()
-        if config is None:
-            raise MinosConfigException("The config object must be setup.")
-        # noinspection PyProtectedMember
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> MinosQueueDispatcher:
         return cls(*args, **config.events._asdict(), **kwargs)
 
     async def dispatch(self) -> NoReturn:

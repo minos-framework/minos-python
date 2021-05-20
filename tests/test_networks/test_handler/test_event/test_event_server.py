@@ -25,10 +25,6 @@ class TestEventServer(PostgresAsyncTestCase):
         dispatcher = MinosEventHandlerServer.from_config(config=self.config)
         self.assertIsInstance(dispatcher, MinosEventHandlerServer)
 
-    def test_from_config_default(self):
-        with self.config:
-            self.assertIsInstance(MinosEventHandlerServer.from_config(), MinosEventHandlerServer)
-
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
             MinosEventHandlerServer.from_config()
