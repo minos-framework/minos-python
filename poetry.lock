@@ -727,7 +727,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ab9d15ee8435629e1b54280099559421ec384e03f4e7b73215350cf03a916b20"
+content-hash = "42bd651925964ab52deaca000da5f91fa9833fcf7ed37c6425302b844f5e168f"
 
 [metadata.files]
 aiomisc = [
