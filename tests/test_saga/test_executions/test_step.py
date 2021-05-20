@@ -34,7 +34,7 @@ _PUBLISH_MOCKER = patch("minos.saga.executions.executors.publish.PublishExecutor
 
 class TestSagaExecutionStep(unittest.TestCase):
     def setUp(self) -> None:
-        self.broker = NaiveBroker("foo")
+        self.broker = NaiveBroker()
         self.definition_name = "FoodAdd"
         self.execution_uuid = uuid.uuid4()
 

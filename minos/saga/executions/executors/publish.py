@@ -13,7 +13,7 @@ from uuid import (
 )
 
 from minos.common import (
-    MinosBaseBroker,
+    MinosBroker,
     MinosModel,
 )
 
@@ -38,7 +38,7 @@ class PublishExecutor(LocalExecutor):
     This class has the responsibility to publish command on the corresponding broker's queue.
     """
 
-    def __init__(self, *args, definition_name: str, execution_uuid: UUID, broker: MinosBaseBroker, **kwargs):
+    def __init__(self, *args, definition_name: str, execution_uuid: UUID, broker: MinosBroker, **kwargs):
         super().__init__(*args, **kwargs)
         self.broker = broker
         self.definition_name = definition_name

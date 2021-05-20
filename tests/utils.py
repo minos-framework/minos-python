@@ -15,7 +15,7 @@ from typing import (
 from minos.common import (
     Aggregate,
     CommandReply,
-    MinosBaseBroker,
+    MinosBroker,
     MinosModel,
 )
 from minos.saga import (
@@ -60,7 +60,7 @@ def fake_reply(data: MinosModel) -> CommandReply:
     return CommandReply("FooCreated", [data], "saga_id", "task_id")
 
 
-class NaiveBroker(MinosBaseBroker):
+class NaiveBroker(MinosBroker):
     async def send_one(self, item: Aggregate, **kwargs) -> NoReturn:
         return await self.send([item], **kwargs)
 

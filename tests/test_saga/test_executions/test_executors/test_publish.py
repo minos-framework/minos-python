@@ -23,7 +23,7 @@ from tests.utils import (
 
 class TestPublishExecutor(unittest.TestCase):
     def test_constructor(self):
-        broker = NaiveBroker("foo")
+        broker = NaiveBroker()
         uuid = uuid4()
         executor = PublishExecutor(definition_name="AddFoo", execution_uuid=uuid, broker=broker)
 

@@ -33,7 +33,7 @@ class TestSagaManager(unittest.TestCase):
 
     def setUp(self) -> None:
         self.config = MinosConfig(BASE_PATH / "config.yml")
-        self.broker = NaiveBroker("foo")
+        self.broker = NaiveBroker()
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)

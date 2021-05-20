@@ -36,7 +36,7 @@ class TestMinosLocalState(unittest.TestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     def setUp(self) -> None:
-        self.broker = NaiveBroker("foo")
+        self.broker = NaiveBroker()
         self.saga = (
             Saga("OrdersAdd")
             .step()

@@ -56,7 +56,7 @@ class SagaManager(MinosSagaManager):
         self.definitions = definitions
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
+    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSagaManager:
         """Build an instance from config.
 
         :param args: Additional positional arguments.
@@ -68,14 +68,7 @@ class SagaManager(MinosSagaManager):
         definitions = _build_definitions(config.saga.items)
         return cls(*args, storage=storage, definitions=definitions, **kwargs)
 
-    def run(self, name=None, reply=None, **kwargs):
-        if name is not None:
-            return self._run_new(name, **kwargs)
-        if reply is not None:
-            return self._load_and_run(reply, **kwargs)
-        raise ValueError("At least a 'name' or a 'reply' must be provided.")
-
-    def _run_new(self, name: str, *args, **kwargs) -> UUID:
+    def _run_new(self, name: str, **kwargs) -> UUID:
         definition = self.definitions.get(name)
         execution = SagaExecution.from_saga(definition)
         return self._run(execution, **kwargs)

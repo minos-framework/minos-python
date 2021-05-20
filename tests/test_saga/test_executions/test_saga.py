@@ -41,7 +41,7 @@ _PUBLISH_MOCKER = patch("minos.saga.executions.executors.publish.PublishExecutor
 
 class TestSagaExecution(unittest.TestCase):
     def setUp(self) -> None:
-        self.broker = NaiveBroker("foo")
+        self.broker = NaiveBroker()
 
     def test_execute(self):
         saga = (
