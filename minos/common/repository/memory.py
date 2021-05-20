@@ -29,7 +29,7 @@ from .entries import (
 class MinosInMemoryRepository(MinosRepository):
     """Memory-based implementation of the repository class in ``minos``."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__()
         self._storage = list()
         self._id_generator = count()

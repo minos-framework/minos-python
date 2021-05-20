@@ -5,9 +5,11 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import sys
 import unittest
 
 from minos.common import (
+    MinosDependencyInjector,
     MinosInMemoryRepository,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
@@ -131,31 +133,37 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 class TestAggregateWithConfig(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.container = MinosDependencyInjector(self.config, repository_cls=PostgreSqlMinosRepository)
+        await self.container.wire(modules=[sys.modules[__name__]])
+
+    async def asyncTearDown(self):
+        await self.container.unwire()
+        await super().asyncTearDown()
+
     async def test_update(self):
-        with self.config:
-            await PostgreSqlMinosRepository.from_config().setup()
+        car = await Car.create(doors=3, color="blue")
 
-            car = await Car.create(doors=3, color="blue")
+        await car.update(color="red")
+        self.assertEqual(Car(1, 2, 3, "red"), car)
+        self.assertEqual(car, await Car.get_one(car.id))
 
-            await car.update(color="red")
-            self.assertEqual(Car(1, 2, 3, "red"), car)
-            self.assertEqual(car, await Car.get_one(car.id))
+        await car.update(doors=5)
+        self.assertEqual(Car(1, 3, 5, "red"), car)
+        self.assertEqual(car, await Car.get_one(car.id))
 
-            await car.update(doors=5)
-            self.assertEqual(Car(1, 3, 5, "red"), car)
-            self.assertEqual(car, await Car.get_one(car.id))
+        await car.delete()
+        with self.assertRaises(MinosRepositoryDeletedAggregateException):
+            await Car.get_one(car.id)
 
-            await car.delete()
-            with self.assertRaises(MinosRepositoryDeletedAggregateException):
-                await Car.get_one(car.id)
+        car = await Car.create(doors=3, color="blue")
+        await Car.update(car.id, color="red")
+        self.assertEqual(Car(2, 2, 3, "red"), await Car.get_one(car.id))
 
-            car = await Car.create(doors=3, color="blue")
-            await Car.update(car.id, color="red")
-            self.assertEqual(Car(2, 2, 3, "red"), await Car.get_one(car.id))
-
-            await Car.delete(car.id)
-            with self.assertRaises(MinosRepositoryDeletedAggregateException):
-                await Car.get_one(car.id)
+        await Car.delete(car.id)
+        with self.assertRaises(MinosRepositoryDeletedAggregateException):
+            await Car.get_one(car.id)
 
 
 if __name__ == "__main__":

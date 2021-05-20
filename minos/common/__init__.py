@@ -55,6 +55,9 @@ from .importlib import (
     classname,
     import_module,
 )
+from .injectors import (
+    MinosDependencyInjector,
+)
 from .messages import (
     MinosBaseRequest,
     MinosBaseResponse,
