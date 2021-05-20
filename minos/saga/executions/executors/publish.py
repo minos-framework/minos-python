@@ -53,9 +53,6 @@ class PublishExecutor(LocalExecutor):
         if broker is not None:
             self.broker = broker
 
-        if not isinstance(self.broker, MinosBroker):
-            raise ValueError("The command broker is not properly setup.")
-
         self.definition_name = definition_name
         self.execution_uuid = execution_uuid
 
