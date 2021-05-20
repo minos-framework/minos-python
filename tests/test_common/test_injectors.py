@@ -31,10 +31,6 @@ class _MinosBroker(MinosBroker):
 
 
 class _MinosSagaManager(MinosSagaManager):
-    @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSagaManager:
-        return cls()
-
     def _run_new(self, name: str, **kwargs) -> NoReturn:
         pass
 
@@ -57,15 +53,15 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
 
     def test_container_event_broker(self):
         injector = MinosDependencyInjector(self.config, event_broker_cls=_MinosBroker)
-        self.assertTrue(issubclass(injector.container.event_broker(), _MinosBroker))
+        self.assertIsInstance(injector.container.event_broker(), _MinosBroker)
 
     def test_container_command_broker(self):
         injector = MinosDependencyInjector(self.config, command_broker_cls=_MinosBroker)
-        self.assertTrue(issubclass(injector.container.command_broker(), _MinosBroker))
+        self.assertIsInstance(injector.container.command_broker(), _MinosBroker)
 
     def test_container_command_reply_broker(self):
         injector = MinosDependencyInjector(self.config, command_reply_broker_cls=_MinosBroker)
-        self.assertTrue(issubclass(injector.container.command_reply_broker(), _MinosBroker))
+        self.assertIsInstance(injector.container.command_reply_broker(), _MinosBroker)
 
     def test_container_saga_manager(self):
         injector = MinosDependencyInjector(self.config, saga_manager_cls=_MinosSagaManager)

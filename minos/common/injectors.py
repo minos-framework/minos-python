@@ -69,11 +69,13 @@ class MinosDependencyInjector(object):
         if self.repository_cls is not None:
             container.repository = providers.Object(self.repository_cls.from_config(config=self.config))
         if self.event_broker_cls is not None:
-            container.event_broker = providers.Object(self.event_broker_cls)
+            container.event_broker = providers.Object(self.event_broker_cls.from_config(config=self.config))
         if self.command_broker_cls is not None:
-            container.command_broker = providers.Object(self.command_broker_cls)
+            container.command_broker = providers.Object(self.command_broker_cls.from_config(config=self.config))
         if self.command_reply_broker_cls is not None:
-            container.command_reply_broker = providers.Object(self.command_reply_broker_cls)
+            container.command_reply_broker = providers.Object(
+                self.command_reply_broker_cls.from_config(config=self.config)
+            )
         if self.saga_manager_cls is not None:
             container.saga_manager = providers.Object(self.saga_manager_cls.from_config(config=self.config))
 

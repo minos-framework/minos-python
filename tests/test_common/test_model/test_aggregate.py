@@ -135,11 +135,11 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.container = MinosDependencyInjector(self.config, repository_cls=PostgreSqlMinosRepository)
-        await self.container.wire(modules=[sys.modules[__name__]])
+        self.injector = MinosDependencyInjector(self.config, repository_cls=PostgreSqlMinosRepository)
+        await self.injector.wire(modules=[sys.modules[__name__]])
 
     async def asyncTearDown(self):
-        await self.container.unwire()
+        await self.injector.unwire()
         await super().asyncTearDown()
 
     async def test_update(self):

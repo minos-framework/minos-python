@@ -26,11 +26,14 @@ class _MinosBroker(MinosBroker):
 
 
 class TestMinosBaseBroker(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.broker = _MinosBroker()
+
     async def test_send(self):
-        self.assertEqual(None, await _MinosBroker.send([Car(1, 1, 3, "red"), Car(1, 1, 3, "red")]))
+        self.assertEqual(None, await self.broker.send([Car(1, 1, 3, "red"), Car(1, 1, 3, "red")]))
 
     async def test_send_one(self):
-        self.assertEqual(None, await _MinosBroker.send_one(Car(1, 1, 3, "red")))
+        self.assertEqual(None, await self.broker.send_one(Car(1, 1, 3, "red")))
 
 
 if __name__ == "__main__":
