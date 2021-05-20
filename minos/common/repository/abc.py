@@ -42,19 +42,7 @@ class MinosRepository(ABC, MinosSetup):
     """Base repository class in ``minos``."""
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosRepository]:
-        """Build a new repository from config.
-
-        :param args: Additional positional arguments.
-        :param config: Config instance. If `None` is provided, default config is chosen.
-        :param kwargs: Additional named arguments.
-        :return: A `MinosRepository` instance.
-        """
-        if config is None:
-            config = MinosConfig.get_default()
-        if config is None:
-            return None
-        # noinspection PyProtectedMember
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:

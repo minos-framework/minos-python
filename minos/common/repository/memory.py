@@ -14,7 +14,6 @@ from itertools import (
 )
 from typing import (
     AsyncIterator,
-    NoReturn,
     Optional,
 )
 
@@ -29,13 +28,10 @@ from .entries import (
 class MinosInMemoryRepository(MinosRepository):
     """Memory-based implementation of the repository class in ``minos``."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__()
         self._storage = list()
         self._id_generator = count()
-
-    async def _setup(self) -> NoReturn:
-        pass
 
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         """Store new deletion entry into de repository.

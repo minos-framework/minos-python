@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_common"
-version = "0.0.13"
+version = "0.0.14"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_common"
@@ -32,12 +32,13 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 aiomisc = "^14.0.3"
-six = "^1.16.0"
 fastavro = "^1.4.0"
 orjson = "^3.5.2"
 lmdb = "^1.2.1"
 PyYAML = "^5.4.1"
 aiopg = "^1.2.1"
+dependency-injector = "^4.32.2"
+cached-property = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"

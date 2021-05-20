@@ -6,11 +6,8 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.0.13"
+__version__ = "0.0.14"
 
-from .broker import (
-    MinosBaseBroker,
-)
 from .configuration import (
     BROKER,
     COMMANDS,
@@ -57,6 +54,9 @@ from .exceptions import (
 from .importlib import (
     classname,
     import_module,
+)
+from .injectors import (
+    MinosDependencyInjector,
 )
 from .messages import (
     MinosBaseRequest,
@@ -107,6 +107,9 @@ from .model import (
     MissingSentinel,
     ModelField,
     ModelRef,
+)
+from .networks import (
+    MinosBroker,
 )
 from .protocol import (
     MinosAvroProtocol,

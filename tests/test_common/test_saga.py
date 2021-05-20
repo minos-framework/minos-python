@@ -25,10 +25,10 @@ from tests.aggregate_classes import (
 
 
 class _MinosSagaManager(MinosSagaManager):
-    def _run_new(self, name: str) -> NoReturn:
+    def _run_new(self, name: str, **kwargs) -> NoReturn:
         pass
 
-    def _load_and_run(self, reply: CommandReply) -> NoReturn:
+    def _load_and_run(self, reply: CommandReply, **kwargs) -> NoReturn:
         pass
 
 
@@ -39,10 +39,10 @@ class TestMinosSagaManager(unittest.TestCase):
         mock = MagicMock(side_effect=manager._run_new)
         manager._run_new = mock
 
-        manager.run(name="hello")
+        manager.run(name="hello", foo="bar")
 
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call("hello"), mock.call_args)
+        self.assertEqual(call("hello", foo="bar"), mock.call_args)
 
     def test_reload_and_run(self):
         manager = _MinosSagaManager()
@@ -52,10 +52,10 @@ class TestMinosSagaManager(unittest.TestCase):
 
         reply = CommandReply("hello", [Car(1, 1, 3, "blue")], "saga_id8972348237", "task_id32423432")
 
-        manager.run(reply=reply)
+        manager.run(reply=reply, foo="bar")
 
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(reply), mock.call_args)
+        self.assertEqual(call(reply, foo="bar"), mock.call_args)
 
     def test_run_raises(self):
 

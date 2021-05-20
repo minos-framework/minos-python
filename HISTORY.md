@@ -123,3 +123,11 @@ History
 ------------------
 
 * Added Abstract classes for Saga
+
+
+0.0.14 (2021-05-20)
+------------------
+
+* Added Dependency Injections Containers
+* Modified .gitignore
+* Moved Borker Class from static method impl to instance by init
