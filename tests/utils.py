@@ -8,9 +8,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 from pathlib import (
     Path,
 )
+from typing import (
+    NoReturn,
+)
 
 from minos.common import (
     CommandReply,
+    MinosBroker,
     MinosModel,
 )
 from minos.saga import (
@@ -53,3 +57,8 @@ def fake_reply(data: MinosModel) -> CommandReply:
     :return: A Command reply instance.
     """
     return CommandReply("FooCreated", [data], "saga_id", "task_id")
+
+
+class NaiveBroker(MinosBroker):
+    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
+        pass

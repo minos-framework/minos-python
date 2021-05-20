@@ -26,6 +26,7 @@ from tests.callbacks import (
 from tests.utils import (
     BASE_PATH,
     Foo,
+    NaiveBroker,
     fake_reply,
     foo_fn_raises,
 )
@@ -35,6 +36,7 @@ class TestMinosLocalState(unittest.TestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     def setUp(self) -> None:
+        self.broker = NaiveBroker()
         self.saga = (
             Saga("OrdersAdd")
             .step()
@@ -50,12 +52,12 @@ class TestMinosLocalState(unittest.TestCase):
 
         execution = SagaExecution.from_saga(self.saga)
         try:
-            execution.execute()
+            execution.execute(broker=self.broker)
         except MinosSagaPausedExecutionStepException:
             pass
         reply = fake_reply(Foo("hola"))
         try:
-            execution.execute(reply=reply)
+            execution.execute(reply=reply, broker=self.broker)
         except MinosSagaPausedExecutionStepException:
             pass
         self.execution = execution
@@ -64,14 +66,14 @@ class TestMinosLocalState(unittest.TestCase):
         rmtree(self.DB_PATH, ignore_errors=True)
 
     def test_store(self):
-        storage = SagaExecutionStorage(path_db=self.DB_PATH)
+        storage = SagaExecutionStorage(path=self.DB_PATH)
 
         storage.store(self.execution)
 
         self.assertEqual(self.execution, storage.load(self.execution.uuid))
 
     def test_store_overwrite(self):
-        storage = SagaExecutionStorage(path_db=self.DB_PATH)
+        storage = SagaExecutionStorage(path=self.DB_PATH)
 
         storage.store(self.execution)
         self.assertEqual(self.execution, storage.load(self.execution.uuid))
@@ -84,13 +86,13 @@ class TestMinosLocalState(unittest.TestCase):
         self.assertEqual(another, storage.load(self.execution.uuid))
 
     def test_load_raises(self):
-        storage = SagaExecutionStorage(path_db=self.DB_PATH)
+        storage = SagaExecutionStorage(path=self.DB_PATH)
 
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             storage.load(self.execution.uuid)
 
     def test_delete(self):
-        storage = SagaExecutionStorage(path_db=self.DB_PATH)
+        storage = SagaExecutionStorage(path=self.DB_PATH)
 
         storage.store(self.execution)
         storage.delete(self.execution)

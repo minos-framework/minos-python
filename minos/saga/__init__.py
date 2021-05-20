@@ -5,7 +5,7 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 from .definitions import (
     Saga,
@@ -41,4 +41,7 @@ from .executions import (
     SagaExecutionStorage,
     SagaStatus,
     SagaStepStatus,
+)
+from .manager import (
+    SagaManager,
 )

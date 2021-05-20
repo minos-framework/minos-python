@@ -5,15 +5,23 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 import unittest
 from unittest.mock import (
+    MagicMock,
     patch,
 )
 from uuid import (
     UUID,
 )
 
+from dependency_injector import (
+    containers,
+    providers,
+)
+
+from minos.common import (
+    MinosConfig,
+)
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
@@ -30,15 +38,35 @@ from tests.callbacks import (
     shipping_callback,
 )
 from tests.utils import (
+    BASE_PATH,
     Foo,
+    NaiveBroker,
     fake_reply,
     foo_fn_raises,
 )
 
-_PUBLISH_MOCKER = patch("minos.saga.executions.executors.publish.PublishExecutor.publish")
 
+class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.config = MinosConfig(path=BASE_PATH / "config.yml")
+        self.broker = NaiveBroker()
 
-class TestSagaExecution(unittest.TestCase):
+        self.publish_mock = MagicMock(side_effect=self.broker.send_one)
+        self.broker.send_one = self.publish_mock
+
+        self.container = containers.DynamicContainer()
+        self.container.config = providers.Object(self.config)
+        self.container.command_broker = providers.Object(self.broker)
+
+        from minos import (
+            saga,
+        )
+
+        self.container.wire(modules=[saga])
+
+    def tearDown(self) -> None:
+        self.container.unwire()
+
     def test_execute(self):
         saga = (
             Saga("OrdersAdd")
@@ -87,20 +115,20 @@ class TestSagaExecution(unittest.TestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute()
+            execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(reply=reply)
+            execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        with patch("minos.saga.executions.executors.publish.PublishExecutor.publish") as mock:
-            reply = fake_reply(Foo("order2"))
-            with self.assertRaises(MinosSagaFailedExecutionStepException):
-                execution.execute(reply=reply)
-            self.assertEqual(SagaStatus.Errored, execution.status)
-            self.assertEqual(3, mock.call_count)
+        self.publish_mock.reset_mock()
+        reply = fake_reply(Foo("order2"))
+        with self.assertRaises(MinosSagaFailedExecutionStepException):
+            execution.execute(reply=reply, broker=self.broker)
+        self.assertEqual(SagaStatus.Errored, execution.status)
+        self.assertEqual(3, self.publish_mock.call_count)
 
     def test_rollback(self):
         saga = (
@@ -113,18 +141,18 @@ class TestSagaExecution(unittest.TestCase):
         )
         execution = SagaExecution.from_saga(saga)
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute()
+            execution.execute(broker=self.broker)
         reply = fake_reply(Foo("order1"))
-        execution.execute(reply=reply)
+        execution.execute(reply=reply, broker=self.broker)
 
-        with _PUBLISH_MOCKER as mock:
-            execution.rollback()
-            self.assertEqual(1, mock.call_count)
+        self.publish_mock.reset_mock()
+        execution.rollback(broker=self.broker)
+        self.assertEqual(1, self.publish_mock.call_count)
 
-            mock.reset_mock()
-            with self.assertRaises(MinosSagaRollbackExecutionException):
-                execution.rollback()
-            self.assertEqual(0, mock.call_count)
+        self.publish_mock.reset_mock()
+        with self.assertRaises(MinosSagaRollbackExecutionException):
+            execution.rollback(broker=self.broker)
+        self.assertEqual(0, self.publish_mock.call_count)
 
     def test_raw(self):
         saga = (

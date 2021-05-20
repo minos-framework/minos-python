@@ -29,5 +29,11 @@ repos:
             -   id: docs
                 pass_filenames: false
                 name: Generate documentation
-                entry: make test
+                entry: make docs
+                language: system
+
+            -   id: build
+                pass_filenames: false
+                entry: make dist
+                name: Generate build
                 language: system

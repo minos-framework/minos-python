@@ -9,16 +9,28 @@ import unittest
 from asyncio import (
     AbstractEventLoop,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.saga import (
     PublishExecutor,
+)
+from tests.utils import (
+    NaiveBroker,
 )
 
 
 class TestPublishExecutor(unittest.TestCase):
     def test_constructor(self):
-        executor = PublishExecutor()
+        broker = NaiveBroker()
+        uuid = uuid4()
+        executor = PublishExecutor(definition_name="AddFoo", execution_uuid=uuid, broker=broker)
+
         self.assertIsInstance(executor.loop, AbstractEventLoop)
+        self.assertEqual("AddFoo", executor.definition_name)
+        self.assertEqual(uuid, executor.execution_uuid)
+        self.assertEqual(broker, executor.broker)
 
 
 if __name__ == "__main__":
