@@ -87,8 +87,21 @@ class MinosDependencyInjector(object):
         :return: This method does not return anything.
         """
         self.container.wire(*args, **kwargs)
+
         if self.repository_cls is not None:
             await self.container.repository().setup()
+
+        if self.event_broker_cls is not None:
+            await self.container.event_broker().setup()
+
+        if self.command_broker_cls is not None:
+            await self.container.command_broker().setup()
+
+        if self.command_reply_broker_cls is not None:
+            await self.container.command_reply_broker().setup()
+
+        if self.saga_manager_cls is not None:
+            await self.container.saga_manager().setup()
 
     async def unwire(self) -> NoReturn:
         """Disconnect the configuration.
@@ -96,5 +109,21 @@ class MinosDependencyInjector(object):
         :return: This method does not return anything.
         """
         self.container.unwire()
+
         if self.repository_cls is not None:
             await self.container.repository().destroy()
+
+        if self.repository_cls is not None:
+            await self.container.repository().destroy()
+
+        if self.event_broker_cls is not None:
+            await self.container.event_broker().destroy()
+
+        if self.command_broker_cls is not None:
+            await self.container.command_broker().destroy()
+
+        if self.command_reply_broker_cls is not None:
+            await self.container.command_reply_broker().destroy()
+
+        if self.saga_manager_cls is not None:
+            await self.container.saga_manager().destroy()

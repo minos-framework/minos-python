@@ -5,9 +5,15 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import sys
 import unittest
 from typing import (
+    AsyncIterator,
     NoReturn,
+)
+from unittest.mock import (
+    MagicMock,
+    call,
 )
 
 from minos.common import (
@@ -16,12 +22,21 @@ from minos.common import (
     MinosBroker,
     MinosConfig,
     MinosDependencyInjector,
-    MinosInMemoryRepository,
+    MinosRepository,
+    MinosRepositoryEntry,
     MinosSagaManager,
 )
 from tests.utils import (
     BASE_PATH,
 )
+
+
+class _MinosRepository(MinosRepository):
+    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
+        pass
+
+    async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
+        pass
 
 
 class _MinosBroker(MinosBroker):
@@ -48,8 +63,8 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.config, injector.container.config())
 
     def test_container_repository(self):
-        injector = MinosDependencyInjector(self.config, repository_cls=MinosInMemoryRepository)
-        self.assertIsInstance(injector.container.repository(), MinosInMemoryRepository)
+        injector = MinosDependencyInjector(self.config, repository_cls=_MinosRepository)
+        self.assertIsInstance(injector.container.repository(), _MinosRepository)
 
     def test_container_event_broker(self):
         injector = MinosDependencyInjector(self.config, event_broker_cls=_MinosBroker)
@@ -66,3 +81,28 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
     def test_container_saga_manager(self):
         injector = MinosDependencyInjector(self.config, saga_manager_cls=_MinosSagaManager)
         self.assertIsInstance(injector.container.saga_manager(), _MinosSagaManager)
+
+    async def test_wire_unwire(self):
+        injector = MinosDependencyInjector(
+            self.config,
+            repository_cls=_MinosRepository,
+            event_broker_cls=_MinosBroker,
+            command_broker_cls=_MinosBroker,
+            command_reply_broker_cls=_MinosBroker,
+            saga_manager_cls=_MinosSagaManager,
+        )
+
+        mock = MagicMock()
+        injector.container.wire = mock
+        await injector.wire(modules=[sys.modules[__name__]])
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(modules=[sys.modules[__name__]]), mock.call_args)
+
+        mock = MagicMock()
+        injector.container.unwire = mock
+        await injector.unwire()
+        self.assertEqual(1, mock.call_count)
+
+
+if __name__ == "__main__":
+    unittest.main()
