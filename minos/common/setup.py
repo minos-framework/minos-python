@@ -5,13 +5,25 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from abc import (
-    abstractmethod,
+from __future__ import (
+    annotations,
 )
+
 from typing import (
     Generic,
     NoReturn,
     TypeVar,
+)
+
+from dependency_injector.wiring import (
+    Provide,
+)
+
+from .configuration import (
+    MinosConfig,
+)
+from .exceptions import (
+    MinosConfigException,
 )
 
 T = TypeVar("T")
@@ -23,6 +35,23 @@ class MinosSetup(Generic[T]):
     def __init__(self, *args, already_setup: bool = False, **kwargs):
         self.already_setup = already_setup
         self.already_destroyed = False
+
+    @classmethod
+    def from_config(cls, *args, config: MinosConfig = Provide["config"], **kwargs) -> T:
+        """Build a new instance from config.
+
+        :param args: Additional positional arguments.
+        :param config: Config instance. If `None` is provided, default config is chosen.
+        :param kwargs: Additional named arguments.
+        :return: A instance of the called class.
+        """
+        if config is None or isinstance(config, Provide):
+            raise MinosConfigException("The config object must be setup.")
+        return cls._from_config(*args, config=config, **kwargs)
+
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> T:
+        return cls(*args, **kwargs)
 
     async def __aenter__(self) -> T:
         await self.setup()
@@ -38,10 +67,8 @@ class MinosSetup(Generic[T]):
             self.already_setup = True
         self.already_destroyed = False
 
-    @abstractmethod
     async def _setup(self) -> NoReturn:
-        """Setup miscellaneous repository things."""
-        raise NotImplementedError
+        return
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
         await self.destroy()

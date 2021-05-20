@@ -6,9 +6,6 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from typing import (
-    NoReturn,
-)
 
 import aiopg
 from aiopg import (
@@ -27,8 +24,7 @@ from tests.utils import (
 
 
 class _PostgreSqlMinosDatabase(PostgreSqlMinosDatabase):
-    async def _setup(self) -> NoReturn:
-        pass
+    pass
 
 
 class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):

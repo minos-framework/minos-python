@@ -18,28 +18,30 @@ from typing import (
     NoReturn,
 )
 
+from .setup import (
+    MinosSetup,
+)
+
 if TYPE_CHECKING:
     from .model import (
         MinosModel,
     )
 
 
-class MinosBroker(ABC):
+class MinosBroker(ABC, MinosSetup):
     """Base Broker class."""
 
-    @classmethod
-    async def send_one(cls, item: MinosModel, **kwargs) -> NoReturn:
+    async def send_one(self, item: MinosModel, **kwargs) -> NoReturn:
         """Send one ``Aggregate`` instance.
 
         :param item: The instance to be send.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        return await cls.send([item], **kwargs)
+        return await self.send([item], **kwargs)
 
-    @classmethod
     @abstractmethod
-    async def send(cls, items: list[MinosModel], **kwargs) -> NoReturn:
+    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.

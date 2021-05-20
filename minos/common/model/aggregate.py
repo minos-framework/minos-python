@@ -75,9 +75,9 @@ class Aggregate(MinosModel):
     async def get(
         cls,
         ids: list[int],
-        _config: MinosConfig = None,
-        _broker: MinosBroker = None,
-        _repository: MinosRepository = None,
+        _config: Optional[MinosConfig] = None,
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
     ) -> list[Aggregate]:
         """Get a sequence of aggregates based on a list of identifiers.
 
@@ -93,7 +93,11 @@ class Aggregate(MinosModel):
     # noinspection PyShadowingBuiltins
     @classmethod
     async def get_one(
-        cls, id: int, _config: MinosConfig = None, _broker: MinosBroker = None, _repository: MinosRepository = None
+        cls,
+        id: int,
+        _config: Optional[MinosConfig] = None,
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
     ) -> Aggregate:
         """Get one aggregate based on an identifier.
 
@@ -127,9 +131,9 @@ class Aggregate(MinosModel):
     async def create(
         cls,
         *args,
-        _config: MinosConfig = None,
-        _broker: MinosBroker = None,
-        _repository: MinosRepository = None,
+        _config: Optional[MinosConfig] = None,
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
         **kwargs,
     ) -> Aggregate:
         """Create a new ``Aggregate`` instance.
@@ -172,10 +176,10 @@ class Aggregate(MinosModel):
     @self_or_classmethod
     async def update(
         self_or_cls,
-        id: int = None,
-        _config: MinosConfig = None,
-        _broker: MinosBroker = None,
-        _repository: MinosRepository = None,
+        id: Optional[int] = None,
+        _config: Optional[MinosConfig] = None,
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
         **kwargs,
     ) -> Aggregate:
         """Update an existing ``Aggregate`` instance.
@@ -229,9 +233,9 @@ class Aggregate(MinosModel):
     async def delete(
         self_or_cls,
         id: Optional[int] = None,
-        _config: MinosConfig = None,
-        _broker: MinosBroker = None,
-        _repository: MinosRepository = None,
+        _config: Optional[MinosConfig] = None,
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
     ):
         """Delete the given aggregate instance.
 

@@ -17,7 +17,6 @@ from unittest.mock import (
 
 from minos.common import (
     CommandReply,
-    MinosConfig,
     MinosSagaManager,
 )
 from tests.aggregate_classes import (
@@ -26,10 +25,6 @@ from tests.aggregate_classes import (
 
 
 class _MinosSagaManager(MinosSagaManager):
-    @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSagaManager:
-        return cls()
-
     def _run_new(self, name: str, **kwargs) -> NoReturn:
         pass
 

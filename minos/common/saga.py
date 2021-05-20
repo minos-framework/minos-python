@@ -18,28 +18,16 @@ from typing import (
     Optional,
 )
 
-from .configuration import (
-    MinosConfig,
-)
 from .model import (
     CommandReply,
 )
+from .setup import (
+    MinosSetup,
+)
 
 
-class MinosSagaManager(ABC):
+class MinosSagaManager(ABC, MinosSetup):
     """Base class for saga manager implementations."""
-
-    @classmethod
-    @abstractmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSagaManager:
-        """Build a new instance from config.
-
-        :param args: Additional positional arguments.
-        :param config: Config instance. If `None` is provided, default config is chosen.
-        :param kwargs: Additional named arguments.
-        :return: A `MinosSagaManager` instance.
-        """
-        raise NotImplementedError
 
     def run(self, name: Optional[str] = None, reply: Optional[CommandReply] = None, **kwargs) -> NoReturn:
         """Perform a run of a ``Saga``.
