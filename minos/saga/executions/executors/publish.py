@@ -5,11 +5,19 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from typing import (
     NoReturn,
 )
 from uuid import (
     UUID,
+)
+
+from dependency_injector.wiring import (
+    Provide,
 )
 
 from minos.common import (
@@ -38,9 +46,16 @@ class PublishExecutor(LocalExecutor):
     This class has the responsibility to publish command on the corresponding broker's queue.
     """
 
-    def __init__(self, *args, definition_name: str, execution_uuid: UUID, broker: MinosBroker, **kwargs):
+    broker: MinosBroker = Provide["command_broker"]
+
+    def __init__(self, *args, definition_name: str, execution_uuid: UUID, broker: MinosBroker = None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.broker = broker
+        if broker is not None:
+            self.broker = broker
+
+        if not isinstance(self.broker, MinosBroker):
+            raise ValueError("The command broker is not properly setup.")
+
         self.definition_name = definition_name
         self.execution_uuid = execution_uuid
 

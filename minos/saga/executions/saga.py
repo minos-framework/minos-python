@@ -54,7 +54,7 @@ class SagaExecution(object):
         uuid: UUID,
         context: SagaContext,
         status: SagaStatus = SagaStatus.Created,
-        steps: [SagaExecutionStep] = None,
+        steps: list[SagaExecutionStep] = None,
         already_rollback: bool = False,
         *args,
         **kwargs
