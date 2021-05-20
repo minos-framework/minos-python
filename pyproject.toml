@@ -32,6 +32,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 minos-microservice-common = "^0.0"
+dependency-injector = "^4.32.2"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"

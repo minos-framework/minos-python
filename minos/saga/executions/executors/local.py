@@ -32,7 +32,7 @@ from ..context import (
 class LocalExecutor(ABC):
     """Local executor class."""
 
-    def __init__(self, loop: Optional[AbstractEventLoop] = None):
+    def __init__(self, loop: Optional[AbstractEventLoop] = None, *args, **kwargs):
         if loop is None:
             loop = asyncio.get_event_loop()
         self.loop = loop
@@ -52,5 +52,4 @@ class LocalExecutor(ABC):
         result = func(*args, **kwargs)
         if inspect.isawaitable(result):
             result = self.loop.run_until_complete(result)
-            return result
         return result

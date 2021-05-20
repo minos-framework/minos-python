@@ -26,6 +26,7 @@ from tests.callbacks import (
 from tests.utils import (
     BASE_PATH,
     Foo,
+    NaiveBroker,
     fake_reply,
     foo_fn_raises,
 )
@@ -35,6 +36,7 @@ class TestMinosLocalState(unittest.TestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     def setUp(self) -> None:
+        self.broker = NaiveBroker()
         self.saga = (
             Saga("OrdersAdd")
             .step()
@@ -50,12 +52,12 @@ class TestMinosLocalState(unittest.TestCase):
 
         execution = SagaExecution.from_saga(self.saga)
         try:
-            execution.execute()
+            execution.execute(broker=self.broker)
         except MinosSagaPausedExecutionStepException:
             pass
         reply = fake_reply(Foo("hola"))
         try:
-            execution.execute(reply=reply)
+            execution.execute(reply=reply, broker=self.broker)
         except MinosSagaPausedExecutionStepException:
             pass
         self.execution = execution
