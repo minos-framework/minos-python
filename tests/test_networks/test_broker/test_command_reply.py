@@ -17,7 +17,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosCommandReplyBroker,
+    CommandReplyBroker,
     MinosQueueDispatcher,
 )
 from tests.utils import (
@@ -30,18 +30,17 @@ class TestMinosCommandReplyBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):
-        with self.config:
-            broker = MinosCommandReplyBroker.from_config(
-                "CommandBroker", saga_id="9347839473kfslf", task_id="92839283hjijh232"
-            )
-            self.assertIsInstance(broker, MinosCommandReplyBroker)
+        broker = CommandReplyBroker.from_config(
+            "CommandBroker", saga_id="9347839473kfslf", task_id="92839283hjijh232", config=self.config
+        )
+        self.assertIsInstance(broker, CommandReplyBroker)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            MinosCommandReplyBroker.from_config()
+            CommandReplyBroker.from_config()
 
     async def test_commands_broker_insertion(self):
-        broker = MinosCommandReplyBroker.from_config(
+        broker = CommandReplyBroker.from_config(
             "CommandBroker", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232"
         )
         await broker.setup()
@@ -52,7 +51,7 @@ class TestMinosCommandReplyBroker(PostgresAsyncTestCase):
         assert queue_id > 0
 
     async def test_if_commands_was_deleted(self):
-        broker = MinosCommandReplyBroker.from_config(
+        broker = CommandReplyBroker.from_config(
             "CommandReplyBroker-Delete", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232"
         )
         await broker.setup()
@@ -76,7 +75,7 @@ class TestMinosCommandReplyBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_commands_retry_was_incremented(self):
-        broker = MinosCommandReplyBroker.from_config(
+        broker = CommandReplyBroker.from_config(
             "CommandReplyBroker-Delete", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232",
         )
         await broker.setup()

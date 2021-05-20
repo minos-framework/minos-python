@@ -25,10 +25,6 @@ class TestCommandServer(PostgresAsyncTestCase):
         dispatcher = MinosCommandHandlerServer.from_config(config=self.config)
         self.assertIsInstance(dispatcher, MinosCommandHandlerServer)
 
-    def test_from_config_default(self):
-        with self.config:
-            self.assertIsInstance(MinosCommandHandlerServer.from_config(), MinosCommandHandlerServer)
-
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
             MinosCommandHandlerServer.from_config()

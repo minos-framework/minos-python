@@ -17,12 +17,10 @@ from typing import (
     Callable,
     NamedTuple,
     NoReturn,
-    Optional,
 )
 
 from minos.common import (
     MinosConfig,
-    MinosConfigException,
     import_module,
 )
 from minos.common.logs import (
@@ -54,18 +52,7 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
         self._table_name = table_name
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> Optional[MinosHandlerDispatcher]:
-        """Build a new repository from config.
-        :param args: Additional positional arguments.
-        :param config: Config instance. If `None` is provided, default config is chosen.
-        :param kwargs: Additional named arguments.
-        :return: A `MinosRepository` instance.
-        """
-        if config is None:
-            config = MinosConfig.get_default()
-        if config is None:
-            raise MinosConfigException("The config object must be setup.")
-        # noinspection PyProtectedMember
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> MinosHandlerDispatcher:
         return cls(*args, config=config, **kwargs)
 
     def get_event_handler(self, topic: str) -> Callable:

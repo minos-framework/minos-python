@@ -34,9 +34,8 @@ class TestMinosSnapshotService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
-        with self.config:
-            service = MinosSnapshotService(interval=0.1)
-            self.assertIsInstance(service, PeriodicService)
+        service = MinosSnapshotService(interval=0.1, config=self.config)
+        self.assertIsInstance(service, PeriodicService)
 
     def test_dispatcher_config_raises(self):
         with self.assertRaises(MinosConfigException):
@@ -47,11 +46,6 @@ class TestMinosSnapshotService(PostgresAsyncTestCase):
         dispatcher = service.dispatcher
         self.assertIsInstance(dispatcher, MinosSnapshotDispatcher)
         self.assertFalse(dispatcher.already_setup)
-
-    def test_dispatcher_config_context(self):
-        with self.config:
-            service = MinosSnapshotService(interval=0.1)
-            self.assertIsInstance(service.dispatcher, MinosSnapshotDispatcher)
 
     async def test_start(self):
         service = MinosSnapshotService(interval=0.1, loop=None, config=self.config)

@@ -17,7 +17,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosCommandBroker,
+    CommandBroker,
     MinosQueueDispatcher,
 )
 from tests.utils import (
@@ -30,18 +30,21 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):
-        with self.config:
-            broker = MinosCommandBroker.from_config(
-                "CommandBroker", saga_id="9347839473kfslf", task_id="92839283hjijh232", reply_on="test_reply_on",
-            )
-            self.assertIsInstance(broker, MinosCommandBroker)
+        broker = CommandBroker.from_config(
+            "CommandBroker",
+            saga_id="9347839473kfslf",
+            task_id="92839283hjijh232",
+            reply_on="test_reply_on",
+            config=self.config,
+        )
+        self.assertIsInstance(broker, CommandBroker)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            MinosCommandBroker.from_config()
+            CommandBroker.from_config()
 
     async def test_commands_broker_insertion(self):
-        broker = MinosCommandBroker.from_config(
+        broker = CommandBroker.from_config(
             "CommandBroker",
             config=self.config,
             saga_id="9347839473kfslf",
@@ -56,7 +59,7 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
         assert queue_id > 0
 
     async def test_if_commands_was_deleted(self):
-        broker = MinosCommandBroker.from_config(
+        broker = CommandBroker.from_config(
             "CommandBroker-Delete",
             config=self.config,
             saga_id="9347839473kfslf",
@@ -82,7 +85,7 @@ class TestMinosCommandBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_commands_retry_was_incremented(self):
-        broker = MinosCommandBroker.from_config(
+        broker = CommandBroker.from_config(
             "CommandBroker-Delete",
             config=self.config,
             saga_id="9347839473kfslf",
