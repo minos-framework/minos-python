@@ -12,6 +12,14 @@ from unittest.mock import (
     MagicMock,
 )
 
+from dependency_injector import (
+    containers,
+    providers,
+)
+
+from minos.common import (
+    MinosConfig,
+)
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
@@ -22,6 +30,7 @@ from minos.saga import (
     SagaStepStatus,
 )
 from tests.utils import (
+    BASE_PATH,
     Foo,
     NaiveBroker,
     fake_reply,
@@ -30,27 +39,34 @@ from tests.utils import (
 )
 
 
-class TestSagaExecutionStep(unittest.TestCase):
+class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
+        self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
+        self.execute_kwargs = {"definition_name": "FoodAdd", "execution_uuid": uuid.uuid4()}
+
         self.publish_mock = MagicMock(side_effect=self.broker.send_one)
         self.broker.send_one = self.publish_mock
 
-        self.definition_name = "FoodAdd"
-        self.execution_uuid = uuid.uuid4()
+        self.container = containers.DynamicContainer()
+        self.container.config = providers.Object(self.config)
+        self.container.command_broker = providers.Object(self.broker)
 
-        self.execute_kwargs = {
-            "broker": self.broker,
-            "definition_name": self.definition_name,
-            "execution_uuid": self.execution_uuid,
-        }
+        from minos import (
+            saga,
+        )
+
+        self.container.wire(modules=[saga])
+
+    def tearDown(self) -> None:
+        self.container.unwire()
 
     def test_execute_invoke_participant(self):
         step = SagaStep().invoke_participant("FooAdd", foo_fn)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
-        execution.execute(context, **self.execute_kwargs)
+        execution.execute(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
@@ -72,13 +88,13 @@ class TestSagaExecutionStep(unittest.TestCase):
         execution = SagaExecutionStep(step)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(context, **self.execute_kwargs)
+            execution.execute(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
 
         reply = fake_reply(Foo("foo"))
-        execution.execute(context, reply=reply)
+        execution.execute(context, reply=reply, broker=self.broker)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     def test_execute_on_reply(self):
@@ -113,22 +129,22 @@ class TestSagaExecutionStep(unittest.TestCase):
         execution = SagaExecutionStep(step)
 
         with self.assertRaises(MinosSagaRollbackExecutionStepException):
-            execution.rollback(context, **self.execute_kwargs)
+            execution.rollback(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
         try:
-            execution.execute(context, **self.execute_kwargs)
+            execution.execute(context, broker=self.broker, **self.execute_kwargs)
         except MinosSagaPausedExecutionStepException:
             pass
         self.assertEqual(1, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
 
-        execution.rollback(context, **self.execute_kwargs)
+        execution.rollback(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.publish_mock.reset_mock()
         with self.assertRaises(MinosSagaRollbackExecutionStepException):
-            execution.rollback(context, **self.execute_kwargs)
+            execution.rollback(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
     def test_raw(self):

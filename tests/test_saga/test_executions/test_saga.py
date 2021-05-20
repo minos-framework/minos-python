@@ -5,7 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
 import unittest
 from unittest.mock import (
     MagicMock,
@@ -15,6 +14,14 @@ from uuid import (
     UUID,
 )
 
+from dependency_injector import (
+    containers,
+    providers,
+)
+
+from minos.common import (
+    MinosConfig,
+)
 from minos.saga import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
@@ -31,6 +38,7 @@ from tests.callbacks import (
     shipping_callback,
 )
 from tests.utils import (
+    BASE_PATH,
     Foo,
     NaiveBroker,
     fake_reply,
@@ -38,11 +46,26 @@ from tests.utils import (
 )
 
 
-class TestSagaExecution(unittest.TestCase):
+class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
+        self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
+
         self.publish_mock = MagicMock(side_effect=self.broker.send_one)
         self.broker.send_one = self.publish_mock
+
+        self.container = containers.DynamicContainer()
+        self.container.config = providers.Object(self.config)
+        self.container.command_broker = providers.Object(self.broker)
+
+        from minos import (
+            saga,
+        )
+
+        self.container.wire(modules=[saga])
+
+    def tearDown(self) -> None:
+        self.container.unwire()
 
     def test_execute(self):
         saga = (
@@ -62,16 +85,16 @@ class TestSagaExecution(unittest.TestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(broker=self.broker)
+            execution.execute()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(reply=reply, broker=self.broker)
+            execution.execute(reply=reply)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order2"))
-        context = execution.execute(reply=reply, broker=self.broker)
+        context = execution.execute(reply=reply)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2")), context)
@@ -254,12 +277,12 @@ class TestSagaExecution(unittest.TestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(saga)
             try:
-                expected.execute(broker=self.broker)
+                expected.execute()
             except MinosSagaPausedExecutionStepException:
                 pass
             try:
                 reply = fake_reply(Foo("hola"))
-                expected.execute(reply=reply, broker=self.broker)
+                expected.execute(reply=reply)
             except MinosSagaPausedExecutionStepException:
                 pass
 

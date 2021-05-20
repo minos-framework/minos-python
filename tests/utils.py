@@ -13,7 +13,6 @@ from typing import (
 )
 
 from minos.common import (
-    Aggregate,
     CommandReply,
     MinosBroker,
     MinosModel,
@@ -61,6 +60,5 @@ def fake_reply(data: MinosModel) -> CommandReply:
 
 
 class NaiveBroker(MinosBroker):
-    @staticmethod
-    async def send(items: list[MinosModel], **kwargs) -> NoReturn:
+    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
         pass
