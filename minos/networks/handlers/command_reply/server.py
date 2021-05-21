@@ -10,27 +10,27 @@ from typing import (
 )
 
 from minos.common import (
-    Event,
+    CommandReply,
     MinosConfig,
 )
 
-from ..server import (
+from ..abc import (
     MinosHandlerServer,
 )
 
 
-class MinosEventHandlerServer(MinosHandlerServer):
+class MinosCommandReplyHandlerServer(MinosHandlerServer):
 
-    TABLE = "event_queue"
+    TABLE = "command_reply_queue"
 
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, config=config.events, **kwargs)
-        self._kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
+        super().__init__(table_name=self.TABLE, config=config.saga, **kwargs)
+        self._kafka_conn_data = f"{config.commands.broker.host}:{config.commands.broker.port}"
         self._broker_group_name = f"event_{config.service.name}"
 
     def _is_valid_instance(self, value: bytes):
         try:
-            Event.from_avro_bytes(value)
+            CommandReply.from_avro_bytes(value)
             return True
         except:  # noqa E722
             return False

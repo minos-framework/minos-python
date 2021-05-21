@@ -4,31 +4,33 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
+
 from typing import (
     Any,
 )
 
 from minos.common import (
-    CommandReply,
+    Event,
     MinosConfig,
 )
 
-from ..dispatcher import (
-    MinosHandlerDispatcher,
+from ..abc import (
+    MinosHandlerServer,
 )
 
 
-class MinosCommandReplyHandlerDispatcher(MinosHandlerDispatcher):
+class MinosEventHandlerServer(MinosHandlerServer):
 
-    TABLE = "command_reply_queue"
+    TABLE = "event_queue"
 
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, config=config.saga, **kwargs)
+        super().__init__(table_name=self.TABLE, config=config.events, **kwargs)
+        self._kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
         self._broker_group_name = f"event_{config.service.name}"
 
     def _is_valid_instance(self, value: bytes):
         try:
-            instance = CommandReply.from_avro_bytes(value)
-            return True, instance
+            Event.from_avro_bytes(value)
+            return True
         except:  # noqa E722
-            return False, None
+            return False

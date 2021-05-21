@@ -27,10 +27,10 @@ from minos.common.logs import (
     log,
 )
 
-from ..exceptions import (
+from ...exceptions import (
     MinosNetworkException,
 )
-from .abc import (
+from .setup import (
     MinosHandlerSetup,
 )
 

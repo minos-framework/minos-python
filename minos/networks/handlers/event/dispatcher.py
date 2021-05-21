@@ -14,7 +14,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from ..dispatcher import (
+from ..abc import (
     MinosHandlerDispatcher,
 )
 

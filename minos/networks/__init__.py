@@ -19,7 +19,7 @@ from .exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosSnapshotException,
 )
-from .handler import (
+from .handlers import (
     MinosCommandHandlerDispatcher,
     MinosCommandHandlerServer,
     MinosCommandPeriodicService,
