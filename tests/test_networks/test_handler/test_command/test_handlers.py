@@ -32,7 +32,7 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
             CommandHandler.from_config()
 
     async def test_if_queue_table_exists(self):
-        async with CommandHandler.from_config(config=self.config) as handler:
+        async with CommandHandler.from_config(config=self.config):
             async with aiopg.connect(**self.commands_queue_db) as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
