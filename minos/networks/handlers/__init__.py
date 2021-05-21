@@ -6,25 +6,25 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from .abc import (
-    HandlerDispatcher,
-    HandlerServer,
+    Consumer,
+    Handler,
     HandlerSetup,
 )
 from .command_replies import (
-    CommandReplyHandlerDispatcher,
-    CommandReplyHandlerServer,
-    CommandReplyPeriodicService,
-    CommandReplyServerService,
+    CommandReplyConsumer,
+    CommandReplyConsumerService,
+    CommandReplyHandler,
+    CommandReplyHandlerService,
 )
 from .commands import (
-    CommandHandlerDispatcher,
-    CommandHandlerServer,
-    CommandPeriodicService,
-    CommandServerService,
+    CommandConsumer,
+    CommandConsumerService,
+    CommandHandler,
+    CommandHandlerService,
 )
 from .events import (
-    EventHandlerDispatcher,
-    EventHandlerServer,
-    EventPeriodicService,
-    EventServerService,
+    EventConsumer,
+    EventConsumerService,
+    EventHandler,
+    EventHandlerService,
 )

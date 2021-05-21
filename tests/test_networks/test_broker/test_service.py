@@ -21,7 +21,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    ProducerDispatcher,
+    Producer,
     ProducerService,
 )
 from tests.utils import (
@@ -43,7 +43,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
     def test_dispatcher_config(self):
         service = ProducerService(interval=0.1, config=self.config)
         dispatcher = service.dispatcher
-        self.assertIsInstance(dispatcher, ProducerDispatcher)
+        self.assertIsInstance(dispatcher, Producer)
         self.assertFalse(dispatcher.already_setup)
 
     async def test_start(self):

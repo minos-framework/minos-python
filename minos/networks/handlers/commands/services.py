@@ -19,20 +19,20 @@ from minos.common import (
     MinosConfig,
 )
 
+from .consumer import (
+    CommandConsumer,
+)
 from .dispatcher import (
-    CommandHandlerDispatcher,
-)
-from .server import (
-    CommandHandlerServer,
+    CommandHandler,
 )
 
 
-class CommandServerService(Service):
+class CommandConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = CommandHandlerServer.from_config(config=config)
+        self.dispatcher = CommandConsumer.from_config(config=config)
         self.consumer = None
 
     async def start(self) -> None:
@@ -60,12 +60,12 @@ class CommandServerService(Service):
         await self.dispatcher.destroy()
 
 
-class CommandPeriodicService(PeriodicService):
+class CommandHandlerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = CommandHandlerDispatcher.from_config(config=config)
+        self.dispatcher = CommandHandler.from_config(config=config)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.

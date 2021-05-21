@@ -9,7 +9,7 @@ from minos.common import (
 )
 
 from .handler import (
-    RestHandler,
+    Rest,
 )
 
 
@@ -26,7 +26,7 @@ class RestService(AIOHTTPService):
         port = config.rest.broker.port
         super().__init__(address=address, port=port, **kwds)
         self._config = config
-        self.rest_interface = RestHandler(config=self._config)
+        self.rest = Rest(config=self._config)
 
     async def create_application(self):
-        return self.rest_interface.get_app()  # pragma: no cover
+        return self.rest.get_app()  # pragma: no cover

@@ -15,7 +15,7 @@ from minos.common import (
 )
 
 
-class RestHandler:
+class Rest:
     """
     Rest Interface Handler
 

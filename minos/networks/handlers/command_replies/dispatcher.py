@@ -14,11 +14,11 @@ from minos.common import (
 )
 
 from ..abc import (
-    HandlerDispatcher,
+    Handler,
 )
 
 
-class CommandReplyHandlerDispatcher(HandlerDispatcher):
+class CommandReplyHandler(Handler):
 
     TABLE = "command_reply_queue"
 

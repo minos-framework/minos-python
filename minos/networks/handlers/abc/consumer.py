@@ -35,7 +35,7 @@ from .setup import (
 )
 
 
-class HandlerServer(HandlerSetup):
+class Consumer(HandlerSetup):
     """
     Handler Server
 
@@ -53,7 +53,7 @@ class HandlerServer(HandlerSetup):
         self._table_name = table_name
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> HandlerServer:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
         return cls(*args, config=config, **kwargs)
 
     async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:

@@ -28,7 +28,7 @@ from .abc import (
 )
 
 
-class ProducerDispatcher(BrokerSetup):
+class Producer(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
     # noinspection PyUnresolvedReferences
@@ -40,7 +40,7 @@ class ProducerDispatcher(BrokerSetup):
         self.broker = broker
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> ProducerDispatcher:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
         return cls(*args, **config.events._asdict(), **kwargs)
 
     async def dispatch(self) -> NoReturn:

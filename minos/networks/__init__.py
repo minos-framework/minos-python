@@ -11,7 +11,7 @@ from .brokers import (
     CommandBroker,
     CommandReplyBroker,
     EventBroker,
-    ProducerDispatcher,
+    Producer,
     ProducerService,
 )
 from .exceptions import (
@@ -20,28 +20,28 @@ from .exceptions import (
     MinosSnapshotException,
 )
 from .handlers import (
-    CommandHandlerDispatcher,
-    CommandHandlerServer,
-    CommandPeriodicService,
-    CommandReplyHandlerDispatcher,
-    CommandReplyHandlerServer,
-    CommandReplyPeriodicService,
-    CommandReplyServerService,
-    CommandServerService,
-    EventHandlerDispatcher,
-    EventHandlerServer,
-    EventPeriodicService,
-    EventServerService,
-    HandlerDispatcher,
-    HandlerServer,
+    CommandConsumer,
+    CommandConsumerService,
+    CommandHandler,
+    CommandHandlerService,
+    CommandReplyConsumer,
+    CommandReplyConsumerService,
+    CommandReplyHandler,
+    CommandReplyHandlerService,
+    Consumer,
+    EventConsumer,
+    EventConsumerService,
+    EventHandler,
+    EventHandlerService,
+    Handler,
     HandlerSetup,
 )
 from .rest import (
-    RestHandler,
+    Rest,
     RestService,
 )
 from .snapshots import (
-    SnapshotDispatcher,
+    Snapshot,
     SnapshotEntry,
     SnapshotService,
 )

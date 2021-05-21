@@ -6,8 +6,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandReplyPeriodicService,
-    CommandReplyServerService,
+    CommandReplyConsumerService,
+    CommandReplyHandlerService,
 )
 from tests.utils import (
     BASE_PATH,
@@ -18,7 +18,7 @@ class TestMinosCommandReplyServices(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):
-        service = CommandReplyServerService(loop=None, config=self.config)
+        service = CommandReplyConsumerService(loop=None, config=self.config)
 
         async def _fn(consumer):
             self.assertEqual(service.consumer, consumer)
@@ -34,7 +34,7 @@ class TestMinosCommandReplyQueueService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):
-        service = CommandReplyPeriodicService(interval=1, loop=None, config=self.config)
+        service = CommandReplyHandlerService(interval=1, loop=None, config=self.config)
         mock = MagicMock(side_effect=service.dispatcher.setup)
         service.dispatcher.setup = mock
         await service.start()
@@ -42,7 +42,7 @@ class TestMinosCommandReplyQueueService(PostgresAsyncTestCase):
         await service.stop()
 
     async def test_callback(self):
-        service = CommandReplyPeriodicService(interval=1, loop=None, config=self.config)
+        service = CommandReplyHandlerService(interval=1, loop=None, config=self.config)
         await service.dispatcher.setup()
         mock = MagicMock(side_effect=service.dispatcher.queue_checker)
         service.dispatcher.queue_checker = mock

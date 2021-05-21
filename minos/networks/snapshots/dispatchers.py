@@ -35,7 +35,7 @@ from .entries import (
 )
 
 
-class SnapshotDispatcher(PostgreSqlMinosDatabase):
+class Snapshot(PostgreSqlMinosDatabase):
     """Minos Snapshot Dispatcher class."""
 
     def __init__(self, *args, repository: dict[str, Any] = None, **kwargs):
@@ -47,7 +47,7 @@ class SnapshotDispatcher(PostgreSqlMinosDatabase):
         await self.repository.destroy()
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SnapshotDispatcher:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Snapshot:
         return cls(*args, **config.snapshot._asdict(), repository=config.repository._asdict(), **kwargs)
 
     async def _setup(self) -> NoReturn:

@@ -35,7 +35,7 @@ from .setup import (
 )
 
 
-class HandlerDispatcher(HandlerSetup):
+class Handler(HandlerSetup):
     """
     Event Handler
 
@@ -52,7 +52,7 @@ class HandlerDispatcher(HandlerSetup):
         self._table_name = table_name
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> HandlerDispatcher:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Handler:
         return cls(*args, config=config, **kwargs)
 
     def get_event_handler(self, topic: str) -> Callable:

@@ -18,7 +18,7 @@ from minos.common import (
 )
 
 from .dispatchers import (
-    ProducerDispatcher,
+    Producer,
 )
 
 
@@ -27,7 +27,7 @@ class ProducerService(PeriodicService):
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = ProducerDispatcher.from_config(config=config)
+        self.dispatcher = Producer.from_config(config=config)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
