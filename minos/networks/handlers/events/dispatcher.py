@@ -20,6 +20,7 @@ from ..abc import (
 
 
 class EventHandler(Handler):
+    """Event Handler class."""
 
     TABLE = "event_queue"
 

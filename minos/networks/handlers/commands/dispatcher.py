@@ -20,6 +20,7 @@ from ..abc import (
 
 
 class CommandHandler(Handler):
+    """Command Handler class."""
 
     TABLE = "command_queue"
 

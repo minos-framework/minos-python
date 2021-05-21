@@ -19,6 +19,7 @@ from ..abc import (
 
 
 class CommandReplyHandler(Handler):
+    """Command Reply Handler class."""
 
     TABLE = "command_reply_queue"
 

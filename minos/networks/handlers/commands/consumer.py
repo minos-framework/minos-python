@@ -20,6 +20,7 @@ from ..abc import (
 
 
 class CommandConsumer(Consumer):
+    """Command Consumer class."""
 
     TABLE = "command_queue"
 
