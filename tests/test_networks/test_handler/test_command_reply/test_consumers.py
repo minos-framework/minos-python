@@ -42,43 +42,39 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
         bin_data = event_instance.avro_bytes
         CommandReply.from_avro_bytes(bin_data)
 
-        event_server = CommandReplyConsumer.from_config(config=self.config)
-        await event_server.setup()
-
-        id = await event_server.queue_add(topic=event_instance.topic, partition=0, binary=bin_data)
-        assert id > 0
+        with CommandReplyConsumer.from_config(config=self.config) as event_server:
+            id = await event_server.queue_add(topic=event_instance.topic, partition=0, binary=bin_data)
+            assert id > 0
 
     async def test_handle_message(self):
-        event_server = CommandReplyConsumer.from_config(config=self.config)
-        await event_server.setup()
+        async with CommandReplyConsumer.from_config(config=self.config):
 
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = CommandReply(
-            topic="AddOrder",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="mkk2334",
-        )
-        bin_data = event_instance.avro_bytes
+            model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+            event_instance = CommandReply(
+                topic="AddOrder",
+                model=model.classname,
+                items=[],
+                saga_id="43434jhij",
+                task_id="juhjh34",
+                reply_on="mkk2334",
+            )
+            bin_data = event_instance.avro_bytes
 
-        Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
+            Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
 
-        async def consumer():
-            yield Mensaje(topic="AddOrder", partition=0, value=bin_data)
+            async def consumer():
+                yield Mensaje(topic="AddOrder", partition=0, value=bin_data)
 
-        await event_server.handle_message(consumer())
+            await event_server.handle_message(consumer())
 
     async def test_handle_message_ko(self):
-        event_server = CommandReplyConsumer.from_config(config=self.config)
-        await event_server.setup()
+        async with CommandReplyConsumer.from_config(config=self.config) as event_server:
 
-        bin_data = bytes(b"test")
+            bin_data = bytes(b"test")
 
-        Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
+            Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
 
-        async def consumer():
-            yield Mensaje(topic="AddOrder", partition=0, value=bin_data)
+            async def consumer():
+                yield Mensaje(topic="AddOrder", partition=0, value=bin_data)
 
-        await event_server.handle_message(consumer())
+            await event_server.handle_message(consumer())
