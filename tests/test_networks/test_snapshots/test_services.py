@@ -22,7 +22,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    Snapshot,
+    SnapshotBuilder,
     SnapshotService,
 )
 from tests.utils import (
@@ -30,7 +30,7 @@ from tests.utils import (
 )
 
 
-class TestMinosSnapshotService(PostgresAsyncTestCase):
+class TestSnapshotService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
@@ -44,7 +44,7 @@ class TestMinosSnapshotService(PostgresAsyncTestCase):
     def test_dispatcher_config(self):
         service = SnapshotService(interval=0.1, config=self.config)
         dispatcher = service.dispatcher
-        self.assertIsInstance(dispatcher, Snapshot)
+        self.assertIsInstance(dispatcher, SnapshotBuilder)
         self.assertFalse(dispatcher.already_setup)
 
     async def test_start(self):

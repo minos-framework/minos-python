@@ -17,7 +17,7 @@ from tests.utils import (
 )
 
 
-class TestMinosCommandReplyServices(PostgresAsyncTestCase):
+class TestCommandReplyConsumerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     @patch("minos.networks.CommandReplyConsumer.from_config")
@@ -40,7 +40,7 @@ class TestMinosCommandReplyServices(PostgresAsyncTestCase):
         self.assertEqual(1, instance.setup_destroy)
 
 
-class TestMinosCommandReplyQueueService(PostgresAsyncTestCase):
+class TestCommandReplyHandlerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):

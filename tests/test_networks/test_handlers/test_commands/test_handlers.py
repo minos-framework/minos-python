@@ -21,7 +21,7 @@ from tests.utils import (
 )
 
 
-class TestCommandDispatcher(PostgresAsyncTestCase):
+class TestCommandHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):

@@ -20,7 +20,7 @@ from tests.utils import (
 )
 
 
-class TestEventDispatcher(PostgresAsyncTestCase):
+class TestEventHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):

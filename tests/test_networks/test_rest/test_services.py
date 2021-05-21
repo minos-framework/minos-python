@@ -14,7 +14,7 @@ from tests.utils import (
 )
 
 
-class TestRestInterfaceService(AioHTTPTestCase):
+class TestRestService(AioHTTPTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def get_application(self):

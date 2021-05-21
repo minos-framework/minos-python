@@ -18,7 +18,7 @@ from tests.aggregate_classes import (
 )
 
 
-class TestMinosSnapshotEntry(unittest.TestCase):
+class TestSnapshotEntry(unittest.TestCase):
     def test_constructor(self):
         entry = SnapshotEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(1234, entry.aggregate_id)

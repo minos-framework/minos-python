@@ -19,7 +19,7 @@ from tests.utils import (
 )
 
 
-class TestMinosEventBroker(PostgresAsyncTestCase):
+class TestEventBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):

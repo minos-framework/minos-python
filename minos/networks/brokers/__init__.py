@@ -14,11 +14,11 @@ from .command_replies import (
 from .commands import (
     CommandBroker,
 )
-from .producers import (
-    Producer,
-)
 from .events import (
     EventBroker,
+)
+from .producers import (
+    Producer,
 )
 from .services import (
     ProducerService,
