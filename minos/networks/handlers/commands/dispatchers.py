@@ -7,6 +7,7 @@
 
 from typing import (
     Any,
+    NoReturn,
 )
 
 from minos.common import (
@@ -16,6 +17,9 @@ from minos.common import (
 
 from ..abc import (
     Handler,
+)
+from ..entries import (
+    HandlerEntry,
 )
 
 
@@ -28,9 +32,8 @@ class CommandHandler(Handler):
         super().__init__(table_name=self.TABLE, config=config.commands, **kwargs)
         self._broker_group_name = f"event_{config.service.name}"
 
-    def _is_valid_instance(self, value: bytes):
-        try:
-            instance = Command.from_avro_bytes(value)
-            return True, instance
-        except:  # noqa E722
-            return False, None
+    def _build_data(self, value: bytes) -> Command:
+        return Command.from_avro_bytes(value)
+
+    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        await row.callback(row.topic, row.data)

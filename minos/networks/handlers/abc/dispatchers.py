@@ -12,6 +12,9 @@ from __future__ import (
 from abc import (
     abstractmethod,
 )
+from datetime import (
+    datetime,
+)
 from typing import (
     Any,
     Callable,
@@ -21,6 +24,7 @@ from typing import (
 
 from minos.common import (
     MinosConfig,
+    MinosModel,
     import_module,
 )
 from minos.common.logs import (
@@ -29,6 +33,9 @@ from minos.common.logs import (
 
 from ...exceptions import (
     MinosNetworkException,
+)
+from ..entries import (
+    HandlerEntry,
 )
 from .setups import (
     HandlerSetup,
@@ -71,18 +78,28 @@ class Handler(HandlerSetup):
             "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self._table_name, self._conf.queue.records),
         )
         async for row in iterable:
-            call_ok = False
             try:
-                reply_on = self.get_event_handler(topic=row[1])
-                valid_instance, instance = self._is_valid_instance(row[3])
-                if not valid_instance:
-                    return
-                await reply_on(row[1], instance)
-                call_ok = True
-            finally:
-                if call_ok:
-                    # Delete from database If the event was sent successfully to Kafka.
-                    await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
+                await self.dispatch_one(row)
+            except Exception:
+                continue
+            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
+
+    async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
+        """Dispatch one row.
+
+        :param row: Row to be dispatched.
+        :return: This method does not return anything.
+        """
+        id = row[0]
+        topic = row[1]
+        callback = self.get_event_handler(row[1])
+        partition_id = row[2]
+        data = self._build_data(row[3])
+        created_at = row[4]
+
+        entry = HandlerEntry(id, topic, callback, partition_id, data, created_at)
+
+        await self._dispatch_one(entry)
 
     def get_event_handler(self, topic: str) -> Callable:
 
@@ -114,5 +131,9 @@ class Handler(HandlerSetup):
         )
 
     @abstractmethod
-    def _is_valid_instance(self, value: bytes):  # pragma: no cover
-        raise Exception("Method not implemented")
+    def _build_data(self, value: bytes) -> MinosModel:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        raise NotImplementedError
