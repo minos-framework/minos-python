@@ -47,6 +47,28 @@ class TestCommandServer(PostgresAsyncTestCase):
             id = await handler.queue_add(topic=event_instance.topic, partition=0, binary=bin_data)
             assert id > 0
 
+    async def test_dispatch(self):
+        async with CommandConsumer.from_config(config=self.config) as handler:
+            model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+            event_instance = Command(
+                topic="AddOrder",
+                model=model.classname,
+                items=[],
+                saga_id="43434jhij",
+                task_id="juhjh34",
+                reply_on="mkk2334",
+            )
+            bin_data = event_instance.avro_bytes
+
+            Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
+
+            async def consumer():
+                yield Mensaje(topic="TicketAdded", partition=0, value=bin_data)
+
+            handler._consumer = consumer()
+
+            await handler.dispatch()
+
     async def test_handle_message(self):
         async with CommandConsumer.from_config(config=self.config) as handler:
             model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
