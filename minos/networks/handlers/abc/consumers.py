@@ -10,13 +10,13 @@ from __future__ import (
 
 import asyncio
 import datetime
-import typing as t
 from abc import (
     abstractmethod,
 )
 from typing import (
     Any,
     AsyncIterator,
+    NoReturn,
 )
 
 from aiokafka import (
@@ -30,7 +30,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from .setup import (
+from .setups import (
     HandlerSetup,
 )
 
@@ -43,18 +43,36 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_handlers", "_topics", "_broker_group_name"
+    __slots__ = "_tasks", "_handler", "_topics", "_table_name", "_broker_group_name", "_kafka_conn_data", "_consumer"
 
     def __init__(self, *, table_name: str, config, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
-        self._tasks = set()  # type: t.Set[asyncio.Task]
+        self._tasks = set()  # type: set[asyncio.Task]
         self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._topics = list(self._handler.keys())
         self._table_name = table_name
+        self._broker_group_name = None
+        self._kafka_conn_data = None
+        self._consumer = None
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
         return cls(*args, config=config, **kwargs)
+
+    async def _setup(self) -> NoReturn:
+        self._consumer = await self._build_kafka_consumer(self._topics, self._broker_group_name, self._kafka_conn_data)
+        await super()._setup()
+
+    async def _destroy(self) -> NoReturn:
+        await self._consumer.stop()
+        await super()._destroy()
+
+    async def dispatch(self) -> NoReturn:
+        """Perform a dispatching step.
+
+        :return: This method does not return anything.
+        """
+        await self.handle_message(self._consumer)
 
     async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:
         """Insert row to event_queue table.
@@ -116,9 +134,9 @@ class Consumer(HandlerSetup):
             await self.handle_single_message(msg)
 
     @staticmethod
-    async def kafka_consumer(topics: list, group_name: str, conn: str) -> AIOKafkaConsumer:
+    async def _build_kafka_consumer(topics: list, group_name: str, conn: str) -> AIOKafkaConsumer:
         # start the Service Event Consumer for Kafka
-        consumer = AIOKafkaConsumer(group_id=group_name, auto_offset_reset="latest", bootstrap_servers=conn,)
+        consumer = AIOKafkaConsumer(group_id=group_name, auto_offset_reset="latest", bootstrap_servers=conn)
 
         await consumer.start()
         consumer.subscribe(topics)

@@ -3,26 +3,30 @@ from unittest.mock import (
     MagicMock,
 )
 
+from aiokafka import (
+    AIOKafkaConsumer,
+)
+
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    EventConsumerService,
-    EventHandlerService,
+    CommandConsumerService,
+    CommandHandlerService,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class TestMinosEventServices(PostgresAsyncTestCase):
+class TestMinosCommandServices(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):
-        service = EventConsumerService(loop=None, config=self.config)
+        service = CommandConsumerService(loop=None, config=self.config)
 
         async def _fn(consumer):
-            self.assertEqual(service.consumer, consumer)
+            self.assertIsInstance(consumer, AIOKafkaConsumer)
 
         mock = MagicMock(side_effect=_fn)
         service.dispatcher.handle_message = mock
@@ -35,7 +39,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):
-        service = EventHandlerService(interval=1, loop=None, config=self.config)
+        service = CommandHandlerService(interval=1, loop=None, config=self.config)
         mock = MagicMock(side_effect=service.dispatcher.setup)
         service.dispatcher.setup = mock
         await service.start()
@@ -43,7 +47,7 @@ class TestMinosQueueService(PostgresAsyncTestCase):
         await service.stop()
 
     async def test_callback(self):
-        service = EventHandlerService(interval=1, loop=None, config=self.config)
+        service = CommandHandlerService(interval=1, loop=None, config=self.config)
         await service.dispatcher.setup()
         mock = MagicMock(side_effect=service.dispatcher.dispatch)
         service.dispatcher.dispatch = mock

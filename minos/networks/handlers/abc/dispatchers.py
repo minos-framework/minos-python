@@ -30,7 +30,7 @@ from minos.common.logs import (
 from ...exceptions import (
     MinosNetworkException,
 )
-from .setup import (
+from .setups import (
     HandlerSetup,
 )
 
