@@ -7,7 +7,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosQueueDispatcher,
+    ProducerDispatcher,
 )
 from tests.utils import (
     BASE_PATH,
@@ -18,23 +18,23 @@ class TestQueueDispatcher(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = MinosQueueDispatcher.from_config(config=self.config)
-        self.assertIsInstance(dispatcher, MinosQueueDispatcher)
+        dispatcher = ProducerDispatcher.from_config(config=self.config)
+        self.assertIsInstance(dispatcher, ProducerDispatcher)
 
     def test_from_config_default(self):
-        self.assertIsInstance(MinosQueueDispatcher.from_config(config=self.config), MinosQueueDispatcher)
+        self.assertIsInstance(ProducerDispatcher.from_config(config=self.config), ProducerDispatcher)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            MinosQueueDispatcher.from_config()
+            ProducerDispatcher.from_config()
 
     async def test_select(self):
-        dispatcher = MinosQueueDispatcher.from_config(config=self.config)
+        dispatcher = ProducerDispatcher.from_config(config=self.config)
         await dispatcher.setup()
         self.assertEqual([], [v async for v in dispatcher.select()])
 
     async def test_send_to_kafka_ok(self):
-        dispatcher = MinosQueueDispatcher.from_config(config=self.config)
+        dispatcher = ProducerDispatcher.from_config(config=self.config)
         response = await dispatcher.publish(topic="TestKafkaSend", message=bytes())
         assert response is True
 

@@ -22,7 +22,7 @@ from minos.common import (
 )
 
 
-class MinosBrokerSetup(PostgreSqlMinosDatabase):
+class BrokerSetup(PostgreSqlMinosDatabase):
     """Minos Broker Setup Class"""
 
     async def _setup(self) -> NoReturn:
@@ -32,7 +32,7 @@ class MinosBrokerSetup(PostgreSqlMinosDatabase):
         await self.submit_query(_CREATE_TABLE_QUERY)
 
 
-class Broker(MinosBroker, MinosBrokerSetup, ABC):
+class Broker(MinosBroker, BrokerSetup, ABC):
     """Minos Broker Class."""
 
     ACTION: str

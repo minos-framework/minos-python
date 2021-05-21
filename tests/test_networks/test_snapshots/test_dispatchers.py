@@ -27,8 +27,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosSnapshotDispatcher,
-    MinosSnapshotEntry,
+    SnapshotDispatcher,
+    SnapshotEntry,
 )
 from tests.aggregate_classes import (
     Car,
@@ -42,10 +42,10 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_type(self):
-        self.assertTrue(issubclass(MinosSnapshotDispatcher, object))
+        self.assertTrue(issubclass(SnapshotDispatcher, object))
 
     def test_from_config(self):
-        dispatcher = MinosSnapshotDispatcher.from_config(config=self.config)
+        dispatcher = SnapshotDispatcher.from_config(config=self.config)
         self.assertEqual(self.config.snapshot.host, dispatcher.host)
         self.assertEqual(self.config.snapshot.port, dispatcher.port)
         self.assertEqual(self.config.snapshot.database, dispatcher.database)
@@ -54,10 +54,10 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            MinosSnapshotDispatcher.from_config()
+            SnapshotDispatcher.from_config()
 
     async def test_setup_snapshot_table(self):
-        async with MinosSnapshotDispatcher.from_config(config=self.config):
+        async with SnapshotDispatcher.from_config(config=self.config):
             async with aiopg.connect(**self.snapshot_db) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
@@ -68,7 +68,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
         self.assertEqual(True, observed)
 
     async def test_setup_snapshot_aux_offset_table(self):
-        async with MinosSnapshotDispatcher.from_config(config=self.config):
+        async with SnapshotDispatcher.from_config(config=self.config):
             async with aiopg.connect(**self.snapshot_db) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
@@ -80,19 +80,19 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     async def test_dispatch_select(self):
         await self._populate()
-        async with MinosSnapshotDispatcher.from_config(config=self.config) as dispatcher:
+        async with SnapshotDispatcher.from_config(config=self.config) as dispatcher:
             await dispatcher.dispatch()
             observed = [v async for v in dispatcher.select()]
 
         expected = [
-            MinosSnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
-            MinosSnapshotEntry.from_aggregate(Car(3, 1, 3, "blue")),
+            SnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
+            SnapshotEntry.from_aggregate(Car(3, 1, 3, "blue")),
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 
     async def test_dispatch_ignore_previous_version(self):
 
-        dispatcher = MinosSnapshotDispatcher.from_config(config=self.config)
+        dispatcher = SnapshotDispatcher.from_config(config=self.config)
         await dispatcher.setup()
 
         car = Car(1, 1, 3, "blue")
@@ -108,10 +108,10 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
             await dispatcher.dispatch()
             observed = [v async for v in dispatcher.select()]
 
-        expected = [MinosSnapshotEntry(1, aggregate_name, 3, car.avro_bytes)]
+        expected = [SnapshotEntry(1, aggregate_name, 3, car.avro_bytes)]
         self._assert_equal_snapshot_entries(expected, observed)
 
-    def _assert_equal_snapshot_entries(self, expected: list[MinosSnapshotEntry], observed: list[MinosSnapshotEntry]):
+    def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             self.assertEqual(exp.aggregate, obs.aggregate)
@@ -120,7 +120,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     async def test_dispatch_with_offset(self):
         async with await self._populate() as repository:
-            async with MinosSnapshotDispatcher.from_config(config=self.config) as dispatcher:
+            async with SnapshotDispatcher.from_config(config=self.config) as dispatcher:
                 mock = MagicMock(side_effect=dispatcher.repository.select)
                 dispatcher.repository.select = mock
 

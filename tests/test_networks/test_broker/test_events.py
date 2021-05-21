@@ -11,7 +11,7 @@ from minos.common.testing import (
 )
 from minos.networks import (
     EventBroker,
-    MinosQueueDispatcher,
+    ProducerDispatcher,
 )
 from tests.utils import (
     BASE_PATH,
@@ -63,7 +63,7 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
         queue_id_1 = await broker.send_one(item)
         queue_id_2 = await broker.send_one(item)
 
-        await MinosQueueDispatcher.from_config(config=self.config).dispatch()
+        await ProducerDispatcher.from_config(config=self.config).dispatch()
 
         async with aiopg.connect(**self.events_queue_db) as connection:
             async with connection.cursor() as cursor:
@@ -89,7 +89,7 @@ class TestMinosEventBroker(PostgresAsyncTestCase):
             events_queue_user=self.config.commands.queue.user,
         )
 
-        await MinosQueueDispatcher.from_config(config=config).dispatch()
+        await ProducerDispatcher.from_config(config=config).dispatch()
 
         async with aiopg.connect(**self.events_queue_db) as connection:
             async with connection.cursor() as cursor:

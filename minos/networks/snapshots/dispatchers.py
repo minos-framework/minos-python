@@ -31,11 +31,11 @@ from ..exceptions import (
     MinosPreviousVersionSnapshotException,
 )
 from .entries import (
-    MinosSnapshotEntry,
+    SnapshotEntry,
 )
 
 
-class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
+class SnapshotDispatcher(PostgreSqlMinosDatabase):
     """Minos Snapshot Dispatcher class."""
 
     def __init__(self, *args, repository: dict[str, Any] = None, **kwargs):
@@ -47,7 +47,7 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         await self.repository.destroy()
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> MinosSnapshotDispatcher:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SnapshotDispatcher:
         return cls(*args, **config.snapshot._asdict(), repository=config.repository._asdict(), **kwargs)
 
     async def _setup(self) -> NoReturn:
@@ -91,7 +91,7 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset})
 
     # noinspection PyUnusedLocal
-    async def select(self, *args, **kwargs) -> AsyncIterator[MinosSnapshotEntry]:
+    async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
         """Select a sequence of ``MinosSnapshotEntry`` objects.
 
         :param args: Additional positional arguments.
@@ -99,9 +99,9 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         :return: A sequence of ``MinosSnapshotEntry`` objects.
         """
         async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY):
-            yield MinosSnapshotEntry(*row)
+            yield SnapshotEntry(*row)
 
-    async def _dispatch_one(self, event_entry: MinosRepositoryEntry) -> Optional[MinosSnapshotEntry]:
+    async def _dispatch_one(self, event_entry: MinosRepositoryEntry) -> Optional[SnapshotEntry]:
         if event_entry.action is MinosRepositoryAction.DELETE:
             await self._submit_delete(event_entry)
             return
@@ -137,16 +137,16 @@ class MinosSnapshotDispatcher(PostgreSqlMinosDatabase):
         snapshot_entry = await self._select_one(aggregate_id, aggregate_name)
         return snapshot_entry.aggregate
 
-    async def _select_one(self, aggregate_id: int, aggregate_name: str) -> MinosSnapshotEntry:
+    async def _select_one(self, aggregate_id: int, aggregate_name: str) -> SnapshotEntry:
         raw = await self.submit_query_and_fetchone(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_id, aggregate_name))
-        return MinosSnapshotEntry(aggregate_id, aggregate_name, *raw)
+        return SnapshotEntry(aggregate_id, aggregate_name, *raw)
 
-    async def _submit_instance(self, aggregate: Aggregate) -> MinosSnapshotEntry:
-        snapshot_entry = MinosSnapshotEntry.from_aggregate(aggregate)
+    async def _submit_instance(self, aggregate: Aggregate) -> SnapshotEntry:
+        snapshot_entry = SnapshotEntry.from_aggregate(aggregate)
         snapshot_entry = await self._submit_update_or_create(snapshot_entry)
         return snapshot_entry
 
-    async def _submit_update_or_create(self, entry: MinosSnapshotEntry) -> MinosSnapshotEntry:
+    async def _submit_update_or_create(self, entry: SnapshotEntry) -> SnapshotEntry:
         params = {
             "aggregate_id": entry.aggregate_id,
             "aggregate_name": entry.aggregate_name,

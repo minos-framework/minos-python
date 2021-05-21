@@ -12,11 +12,11 @@ from .commands import (
     CommandBroker,
 )
 from .dispatchers import (
-    MinosQueueDispatcher,
+    ProducerDispatcher,
 )
 from .events import (
     EventBroker,
 )
 from .services import (
-    MinosQueueService,
+    ProducerService,
 )

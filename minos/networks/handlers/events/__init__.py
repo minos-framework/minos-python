@@ -7,12 +7,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 from .dispatcher import (
-    MinosEventHandlerDispatcher,
+    EventHandlerDispatcher,
 )
 from .server import (
-    MinosEventHandlerServer,
+    EventHandlerServer,
 )
 from .services import (
-    MinosEventPeriodicService,
-    MinosEventServerService,
+    EventPeriodicService,
+    EventServerService,
 )

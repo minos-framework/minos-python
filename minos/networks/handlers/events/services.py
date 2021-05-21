@@ -20,19 +20,19 @@ from minos.common import (
 )
 
 from .dispatcher import (
-    MinosEventHandlerDispatcher,
+    EventHandlerDispatcher,
 )
 from .server import (
-    MinosEventHandlerServer,
+    EventHandlerServer,
 )
 
 
-class MinosEventServerService(Service):
+class EventServerService(Service):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = MinosEventHandlerServer.from_config(config=config)
+        self.dispatcher = EventHandlerServer.from_config(config=config)
         self.consumer = None
 
     async def start(self) -> None:
@@ -59,12 +59,12 @@ class MinosEventServerService(Service):
         await self.dispatcher.destroy()
 
 
-class MinosEventPeriodicService(PeriodicService):
+class EventPeriodicService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = MinosEventHandlerDispatcher.from_config(config=config)
+        self.dispatcher = EventHandlerDispatcher.from_config(config=config)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.

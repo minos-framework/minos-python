@@ -15,11 +15,11 @@ from minos.common import (
 )
 
 from ..abc import (
-    MinosHandlerServer,
+    HandlerServer,
 )
 
 
-class MinosCommandReplyHandlerServer(MinosHandlerServer):
+class CommandReplyHandlerServer(HandlerServer):
 
     TABLE = "command_reply_queue"
 

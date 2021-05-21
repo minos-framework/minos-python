@@ -10,7 +10,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosCommandReplyHandlerServer,
+    CommandReplyHandlerServer,
 )
 from tests.utils import (
     BASE_PATH,
@@ -22,12 +22,12 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = MinosCommandReplyHandlerServer.from_config(config=self.config)
-        self.assertIsInstance(dispatcher, MinosCommandReplyHandlerServer)
+        dispatcher = CommandReplyHandlerServer.from_config(config=self.config)
+        self.assertIsInstance(dispatcher, CommandReplyHandlerServer)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            MinosCommandReplyHandlerServer.from_config()
+            CommandReplyHandlerServer.from_config()
 
     async def test_queue_add(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -42,14 +42,14 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
         bin_data = event_instance.avro_bytes
         CommandReply.from_avro_bytes(bin_data)
 
-        event_server = MinosCommandReplyHandlerServer.from_config(config=self.config)
+        event_server = CommandReplyHandlerServer.from_config(config=self.config)
         await event_server.setup()
 
         id = await event_server.queue_add(topic=event_instance.topic, partition=0, binary=bin_data)
         assert id > 0
 
     async def test_handle_message(self):
-        event_server = MinosCommandReplyHandlerServer.from_config(config=self.config)
+        event_server = CommandReplyHandlerServer.from_config(config=self.config)
         await event_server.setup()
 
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -71,7 +71,7 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
         await event_server.handle_message(consumer())
 
     async def test_handle_message_ko(self):
-        event_server = MinosCommandReplyHandlerServer.from_config(config=self.config)
+        event_server = CommandReplyHandlerServer.from_config(config=self.config)
         await event_server.setup()
 
         bin_data = bytes(b"test")

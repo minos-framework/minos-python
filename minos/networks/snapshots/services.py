@@ -15,16 +15,16 @@ from minos.common import (
 )
 
 from .dispatchers import (
-    MinosSnapshotDispatcher,
+    SnapshotDispatcher,
 )
 
 
-class MinosSnapshotService(PeriodicService):
+class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = MinosSnapshotDispatcher.from_config(config=config)
+        self.dispatcher = SnapshotDispatcher.from_config(config=config)
 
     async def start(self) -> None:
         """Start the service execution.

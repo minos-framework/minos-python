@@ -24,11 +24,11 @@ from minos.common import (
 )
 
 from .abc import (
-    MinosBrokerSetup,
+    BrokerSetup,
 )
 
 
-class MinosQueueDispatcher(MinosBrokerSetup):
+class ProducerDispatcher(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
     # noinspection PyUnresolvedReferences
@@ -40,7 +40,7 @@ class MinosQueueDispatcher(MinosBrokerSetup):
         self.broker = broker
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> MinosQueueDispatcher:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> ProducerDispatcher:
         return cls(*args, **config.events._asdict(), **kwargs)
 
     async def dispatch(self) -> NoReturn:

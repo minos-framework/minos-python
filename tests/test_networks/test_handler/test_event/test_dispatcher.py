@@ -10,7 +10,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosEventHandlerDispatcher,
+    EventHandlerDispatcher,
     MinosNetworkException,
 )
 from tests.utils import (
@@ -23,15 +23,15 @@ class TestEventDispatcher(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = MinosEventHandlerDispatcher.from_config(config=self.config)
-        self.assertIsInstance(dispatcher, MinosEventHandlerDispatcher)
+        dispatcher = EventHandlerDispatcher.from_config(config=self.config)
+        self.assertIsInstance(dispatcher, EventHandlerDispatcher)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            MinosEventHandlerDispatcher.from_config()
+            EventHandlerDispatcher.from_config()
 
     async def test_if_queue_table_exists(self):
-        event_handler = MinosEventHandlerDispatcher.from_config(config=self.config)
+        event_handler = EventHandlerDispatcher.from_config(config=self.config)
         await event_handler.setup()
 
         async with aiopg.connect(**self.events_queue_db) as connect:
@@ -50,7 +50,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Event(topic="TestEventQueueAdd", model=model.classname, items=[])
-        m = MinosEventHandlerDispatcher.from_config(config=self.config)
+        m = EventHandlerDispatcher.from_config(config=self.config)
 
         cls = m.get_event_handler(topic="TicketAdded")
         result = await cls(topic="TicketAdded", event=event_instance)
@@ -60,7 +60,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Event(topic="NotExisting", model=model.classname, items=[])
-        m = MinosEventHandlerDispatcher.from_config(config=self.config)
+        m = EventHandlerDispatcher.from_config(config=self.config)
 
         with self.assertRaises(MinosNetworkException) as context:
             cls = m.get_event_handler(topic=event_instance.topic)
@@ -72,7 +72,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
         )
 
     async def test_event_queue_checker(self):
-        event_handler = MinosEventHandlerDispatcher.from_config(config=self.config)
+        event_handler = EventHandlerDispatcher.from_config(config=self.config)
         await event_handler.setup()
 
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -104,7 +104,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_event_queue_checker_wrong_event(self):
-        handler = MinosEventHandlerDispatcher.from_config(config=self.config)
+        handler = EventHandlerDispatcher.from_config(config=self.config)
         await handler.setup()
         bin_data = bytes(b"Test")
 

@@ -15,11 +15,11 @@ from minos.common import (
 )
 
 from ..abc import (
-    MinosHandlerDispatcher,
+    HandlerDispatcher,
 )
 
 
-class MinosCommandHandlerDispatcher(MinosHandlerDispatcher):
+class CommandHandlerDispatcher(HandlerDispatcher):
 
     TABLE = "command_queue"
 

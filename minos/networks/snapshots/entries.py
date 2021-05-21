@@ -26,7 +26,7 @@ from minos.common import (
 )
 
 
-class MinosSnapshotEntry(object):
+class SnapshotEntry(object):
     """Minos Snapshot Entry class.
 
     Is the python object representation of a row in the ``snapshot`` storage system.
@@ -56,7 +56,7 @@ class MinosSnapshotEntry(object):
         self.updated_at = updated_at
 
     @classmethod
-    def from_aggregate(cls, aggregate: Aggregate) -> MinosSnapshotEntry:
+    def from_aggregate(cls, aggregate: Aggregate) -> SnapshotEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate: The aggregate instance.
@@ -84,7 +84,7 @@ class MinosSnapshotEntry(object):
         # noinspection PyTypeChecker
         return import_module(self.aggregate_name)
 
-    def __eq__(self, other: MinosSnapshotEntry) -> bool:
+    def __eq__(self, other: SnapshotEntry) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:

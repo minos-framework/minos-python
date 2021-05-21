@@ -31,11 +31,11 @@ from ...exceptions import (
     MinosNetworkException,
 )
 from .setup import (
-    MinosHandlerSetup,
+    HandlerSetup,
 )
 
 
-class MinosHandlerDispatcher(MinosHandlerSetup):
+class HandlerDispatcher(HandlerSetup):
     """
     Event Handler
 
@@ -52,7 +52,7 @@ class MinosHandlerDispatcher(MinosHandlerSetup):
         self._table_name = table_name
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> MinosHandlerDispatcher:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> HandlerDispatcher:
         return cls(*args, config=config, **kwargs)
 
     def get_event_handler(self, topic: str) -> Callable:

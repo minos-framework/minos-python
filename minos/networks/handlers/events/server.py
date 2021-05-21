@@ -15,11 +15,11 @@ from minos.common import (
 )
 
 from ..abc import (
-    MinosHandlerServer,
+    HandlerServer,
 )
 
 
-class MinosEventHandlerServer(MinosHandlerServer):
+class EventHandlerServer(HandlerServer):
 
     TABLE = "event_queue"
 

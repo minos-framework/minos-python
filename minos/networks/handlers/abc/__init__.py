@@ -6,11 +6,11 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from .dispatcher import (
-    MinosHandlerDispatcher,
+    HandlerDispatcher,
 )
 from .server import (
-    MinosHandlerServer,
+    HandlerServer,
 )
 from .setup import (
-    MinosHandlerSetup,
+    HandlerSetup,
 )

@@ -31,11 +31,11 @@ from minos.common import (
 )
 
 from .setup import (
-    MinosHandlerSetup,
+    HandlerSetup,
 )
 
 
-class MinosHandlerServer(MinosHandlerSetup):
+class HandlerServer(HandlerSetup):
     """
     Handler Server
 
@@ -53,7 +53,7 @@ class MinosHandlerServer(MinosHandlerSetup):
         self._table_name = table_name
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> MinosHandlerServer:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> HandlerServer:
         return cls(*args, config=config, **kwargs)
 
     async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:

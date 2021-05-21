@@ -18,16 +18,16 @@ from minos.common import (
 )
 
 from .dispatchers import (
-    MinosQueueDispatcher,
+    ProducerDispatcher,
 )
 
 
-class MinosQueueService(PeriodicService):
+class ProducerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = MinosQueueDispatcher.from_config(config=config)
+        self.dispatcher = ProducerDispatcher.from_config(config=config)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
