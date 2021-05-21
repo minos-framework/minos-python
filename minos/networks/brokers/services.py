@@ -17,7 +17,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from .dispatchers import (
+from .producers import (
     Producer,
 )
 

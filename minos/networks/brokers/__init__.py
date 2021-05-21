@@ -14,7 +14,7 @@ from .command_replies import (
 from .commands import (
     CommandBroker,
 )
-from .dispatchers import (
+from .producers import (
     Producer,
 )
 from .events import (

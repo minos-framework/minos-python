@@ -14,7 +14,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from .dispatchers import (
+from .builders import (
     Snapshot,
 )
 

@@ -15,7 +15,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from .handlers import (
+from .builders import (
     Rest,
 )
 

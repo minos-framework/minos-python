@@ -22,7 +22,7 @@ from minos.common import (
 from .consumers import (
     CommandConsumer,
 )
-from .dispatchers import (
+from .handlers import (
     CommandHandler,
 )
 
