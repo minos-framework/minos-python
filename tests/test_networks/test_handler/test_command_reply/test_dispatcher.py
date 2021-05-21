@@ -85,7 +85,7 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
             in str(context.exception)
         )
 
-    async def test_event_queue_checker(self):
+    async def test_event_dispatch(self):
         handler = CommandReplyHandler.from_config(config=self.config)
         await handler.setup()
 
@@ -115,7 +115,7 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
         assert queue_id[0] > 0
 
         # Must get the record, call on_reply function and delete the record from DB
-        await handler.queue_checker()
+        await handler.dispatch()
 
         async with aiopg.connect(**self.saga_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -124,7 +124,7 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
 
         assert records[0] == 0
 
-    async def test_command_reply_queue_checker_wrong_event(self):
+    async def test_command_reply_dispatch_wrong_event(self):
         handler = CommandReplyHandler.from_config(config=self.config)
         await handler.setup()
 
@@ -144,7 +144,7 @@ class TestCommandReplyDispatcher(PostgresAsyncTestCase):
         assert queue_id[0] > 0
 
         # Must get the record, call on_reply function and delete the record from DB
-        await handler.queue_checker()
+        await handler.dispatch()
 
         async with aiopg.connect(**self.saga_queue_db) as connect:
             async with connect.cursor() as cur:

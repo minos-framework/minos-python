@@ -79,7 +79,7 @@ class EventHandlerService(PeriodicService):
 
         :return:This method does not return anything.
         """
-        await self.dispatcher.queue_checker()
+        await self.dispatcher.dispatch()
 
     async def stop(self, err: Exception = None) -> None:
         """Stop the service execution.

@@ -45,8 +45,8 @@ class TestMinosQueueService(PostgresAsyncTestCase):
     async def test_callback(self):
         service = EventHandlerService(interval=1, loop=None, config=self.config)
         await service.dispatcher.setup()
-        mock = MagicMock(side_effect=service.dispatcher.queue_checker)
-        service.dispatcher.queue_checker = mock
+        mock = MagicMock(side_effect=service.dispatcher.dispatch)
+        service.dispatcher.dispatch = mock
         await service.callback()
         self.assertEqual(1, mock.call_count)
         await service.dispatcher.destroy()

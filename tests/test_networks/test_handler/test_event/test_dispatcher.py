@@ -71,7 +71,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
             in str(context.exception)
         )
 
-    async def test_event_queue_checker(self):
+    async def test_event_dispatch(self):
         event_handler = EventHandler.from_config(config=self.config)
         await event_handler.setup()
 
@@ -94,7 +94,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
         assert queue_id[0] > 0
 
         # Must get the record, call on_reply function and delete the record from DB
-        await event_handler.queue_checker()
+        await event_handler.dispatch()
 
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -103,7 +103,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
 
         assert records[0] == 0
 
-    async def test_event_queue_checker_wrong_event(self):
+    async def test_event_dispatch_wrong_event(self):
         handler = EventHandler.from_config(config=self.config)
         await handler.setup()
         bin_data = bytes(b"Test")
@@ -121,7 +121,7 @@ class TestEventDispatcher(PostgresAsyncTestCase):
         assert queue_id[0] > 0
 
         # Must get the record, call on_reply function and delete the record from DB
-        await handler.queue_checker()
+        await handler.dispatch()
 
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:

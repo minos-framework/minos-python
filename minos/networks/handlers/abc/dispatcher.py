@@ -55,6 +55,35 @@ class Handler(HandlerSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Handler:
         return cls(*args, config=config, **kwargs)
 
+    async def dispatch(self) -> NoReturn:
+        """Event Queue Checker and dispatcher.
+
+        It is in charge of querying the database and calling the action according to the topic.
+
+            1. Get periodically 10 records (or as many as defined in config > queue > records).
+            2. Instantiate the action (asynchronous) by passing it the model.
+            3. If the invoked function terminates successfully, remove the event from the database.
+
+        Raises:
+            Exception: An error occurred inserting record.
+        """
+        iterable = self.submit_query_and_iter(
+            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self._table_name, self._conf.queue.records),
+        )
+        async for row in iterable:
+            call_ok = False
+            try:
+                reply_on = self.get_event_handler(topic=row[1])
+                valid_instance, instance = self._is_valid_instance(row[3])
+                if not valid_instance:
+                    return
+                await reply_on(row[1], instance)
+                call_ok = True
+            finally:
+                if call_ok:
+                    # Delete from database If the event was sent successfully to Kafka.
+                    await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
+
     def get_event_handler(self, topic: str) -> Callable:
 
         """Get Event instance to call.
@@ -83,35 +112,6 @@ class Handler(HandlerSetup):
         raise MinosNetworkException(
             f"topic {topic} have no controller/action configured, " f"please review th configuration file"
         )
-
-    async def queue_checker(self) -> NoReturn:
-        """Event Queue Checker and dispatcher.
-
-        It is in charge of querying the database and calling the action according to the topic.
-
-            1. Get periodically 10 records (or as many as defined in config > queue > records).
-            2. Instantiate the action (asynchronous) by passing it the model.
-            3. If the invoked function terminates successfully, remove the event from the database.
-
-        Raises:
-            Exception: An error occurred inserting record.
-        """
-        iterable = self.submit_query_and_iter(
-            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self._table_name, self._conf.queue.records),
-        )
-        async for row in iterable:
-            call_ok = False
-            try:
-                reply_on = self.get_event_handler(topic=row[1])
-                valid_instance, instance = self._is_valid_instance(row[3])
-                if not valid_instance:
-                    return
-                await reply_on(row[1], instance)
-                call_ok = True
-            finally:
-                if call_ok:
-                    # Delete from database If the event was sent successfully to Kafka.
-                    await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
 
     @abstractmethod
     def _is_valid_instance(self, value: bytes):  # pragma: no cover
