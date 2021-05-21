@@ -2,6 +2,9 @@ import unittest
 from collections import (
     namedtuple,
 )
+from unittest.mock import (
+    MagicMock,
+)
 
 from minos.common import (
     CommandReply,
@@ -15,6 +18,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeConsumer,
     NaiveAggregate,
 )
 
@@ -48,26 +52,14 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
             assert id > 0
 
     async def test_dispatch(self):
-        async with CommandReplyConsumer.from_config(config=self.config) as event_server:
-            model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-            event_instance = CommandReply(
-                topic="AddOrder",
-                model=model.classname,
-                items=[],
-                saga_id="43434jhij",
-                task_id="juhjh34",
-                reply_on="mkk2334",
-            )
-            bin_data = event_instance.avro_bytes
+        handler = CommandReplyConsumer.from_config(config=self.config)
 
-            Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
+        async def _fn():
+            return FakeConsumer()
 
-            async def consumer():
-                yield Mensaje(topic="TicketAdded", partition=0, value=bin_data)
-
-            event_server._consumer = consumer()
-
-            await event_server.dispatch()
+        handler._build_kafka_consumer = MagicMock(side_effect=_fn)
+        async with handler:
+            await handler.dispatch()
 
     async def test_handle_message(self):
         async with CommandReplyConsumer.from_config(config=self.config) as event_server:

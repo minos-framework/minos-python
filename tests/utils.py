@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from collections import (
+    namedtuple,
+)
 from pathlib import (
     Path,
 )
@@ -27,6 +30,26 @@ class NaiveAggregate(Aggregate):
     """Naive aggregate class to be used for testing purposes."""
 
     test: int
+
+
+Message = namedtuple("Message", ["topic", "partition", "value"])
+
+
+class FakeConsumer:
+    """For testing purposes."""
+
+    def __init__(self):
+        self.i = 0
+        self.length = 3
+
+    async def start(self):
+        """For testing purposes."""
+
+    async def stop(self):
+        """For testing purposes."""
+
+    async def __aiter__(self):
+        yield Message(topic="TicketAdded", partition=0, value=bytes())
 
 
 class FakeDispatcher:

@@ -2,6 +2,9 @@ import unittest
 from collections import (
     namedtuple,
 )
+from unittest.mock import (
+    MagicMock,
+)
 
 from minos.common import (
     Event,
@@ -15,6 +18,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeConsumer,
     NaiveAggregate,
 )
 
@@ -41,19 +45,15 @@ class TestEventServer(PostgresAsyncTestCase):
             assert id > 0
 
     async def test_dispatch(self):
-        async with EventConsumer.from_config(config=self.config) as event_server:
-            model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-            event_instance = Event(topic="TicketAdded", model=model.classname, items=[model])
-            bin_data = event_instance.avro_bytes
+        handler = EventConsumer.from_config(config=self.config)
 
-            Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
+        async def _fn():
+            return FakeConsumer()
 
-            async def consumer():
-                yield Mensaje(topic="TicketAdded", partition=0, value=bin_data)
+        handler._build_kafka_consumer = MagicMock(side_effect=_fn)
 
-            event_server._consumer = consumer()
-
-            await event_server.dispatch()
+        async with handler:
+            await handler.dispatch()
 
     async def test_handle_message(self):
         async with EventConsumer.from_config(config=self.config) as event_server:
