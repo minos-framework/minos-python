@@ -16,6 +16,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeBroker,
     NaiveAggregate,
 )
 
@@ -84,21 +85,21 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
             in str(context.exception)
         )
 
-    @unittest.skip
     async def test_event_dispatch(self):
-        async with CommandHandler.from_config(config=self.config) as handler:
-            model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-            instance = Command(
-                topic="AddOrder",
-                model=model.classname,
-                items=[],
-                saga_id="43434jhij",
-                task_id="juhjh34",
-                reply_on="mkk2334",
-            )
-            bin_data = instance.avro_bytes
-            Command.from_avro_bytes(bin_data)
+        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        instance = Command(
+            topic="AddOrder",
+            model=model.classname,
+            items=[],
+            saga_id="43434jhij",
+            task_id="juhjh34",
+            reply_on="mkk2334",
+        )
+        bin_data = instance.avro_bytes
 
+        broker = FakeBroker()
+
+        async with CommandHandler.from_config(config=self.config, broker=broker) as handler:
             async with aiopg.connect(**self.commands_queue_db) as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
@@ -121,6 +122,11 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
                     records = await cur.fetchone()
 
             assert records[0] == 0
+
+        self.assertEqual("add_order", broker.items)
+        self.assertEqual("43434jhijReply", broker.topic)
+        self.assertEqual("43434jhij", broker.saga_id)
+        self.assertEqual("juhjh34", broker.task_id)
 
     async def test_event_dispatch_wrong_event(self):
         async with CommandHandler.from_config(config=self.config) as handler:

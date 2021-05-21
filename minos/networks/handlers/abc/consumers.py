@@ -75,7 +75,7 @@ class Consumer(HandlerSetup):
         return consumer
 
     async def _destroy(self) -> NoReturn:
-        # await self._consumer.stop()
+        # await self._consumer.stop()  # FIXME: This call should be performed.
         await super()._destroy()
 
     async def dispatch(self) -> NoReturn:

@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import (
-    MagicMock, patch,
+    MagicMock,
+    patch,
 )
 
 from minos.common.testing import (
@@ -11,7 +12,8 @@ from minos.networks import (
     EventHandlerService,
 )
 from tests.utils import (
-    BASE_PATH, FakeDispatcher,
+    BASE_PATH,
+    FakeDispatcher,
 )
 
 

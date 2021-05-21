@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import (
-    MagicMock, patch,
+    MagicMock,
+    patch,
 )
 
 from minos.common.testing import (
@@ -11,8 +12,10 @@ from minos.networks import (
     CommandHandlerService,
 )
 from tests.utils import (
-    BASE_PATH, FakeDispatcher,
+    BASE_PATH,
+    FakeDispatcher,
 )
+
 
 class TestMinosCommandServices(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"

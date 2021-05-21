@@ -80,7 +80,8 @@ class Handler(HandlerSetup):
         async for row in iterable:
             try:
                 await self.dispatch_one(row)
-            except Exception:
+            except Exception as exc:
+                log.warning(exc)
                 continue
             await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
 
