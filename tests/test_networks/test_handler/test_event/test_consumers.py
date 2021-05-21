@@ -1,3 +1,4 @@
+import unittest
 from collections import (
     namedtuple,
 )
@@ -62,3 +63,7 @@ class TestEventServer(PostgresAsyncTestCase):
                 yield Mensaje(topic="TicketAdded", partition=0, value=bin_data)
 
             await event_server.handle_message(consumer())
+
+
+if __name__ == "__main__":
+    unittest.main()

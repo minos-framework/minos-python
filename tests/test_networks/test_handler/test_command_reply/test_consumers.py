@@ -1,3 +1,4 @@
+import unittest
 from collections import (
     namedtuple,
 )
@@ -78,3 +79,7 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
                 yield Mensaje(topic="AddOrder", partition=0, value=bin_data)
 
             await event_server.handle_message(consumer())
+
+
+if __name__ == "__main__":
+    unittest.main()

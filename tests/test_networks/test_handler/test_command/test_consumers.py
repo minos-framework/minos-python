@@ -1,3 +1,4 @@
+import unittest
 from collections import (
     namedtuple,
 )
@@ -68,7 +69,6 @@ class TestCommandServer(PostgresAsyncTestCase):
 
     async def test_handle_message_ko(self):
         async with CommandConsumer.from_config(config=self.config) as handler:
-
             bin_data = bytes(b"test")
 
             Mensaje = namedtuple("Mensaje", ["topic", "partition", "value"])
@@ -77,3 +77,7 @@ class TestCommandServer(PostgresAsyncTestCase):
                 yield Mensaje(topic="TicketAdded", partition=0, value=bin_data)
 
             await handler.handle_message(consumer())
+
+
+if __name__ == "__main__":
+    unittest.main()
