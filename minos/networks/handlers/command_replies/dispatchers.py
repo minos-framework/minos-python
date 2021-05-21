@@ -9,9 +9,14 @@ from typing import (
     NoReturn,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+)
+
 from minos.common import (
     CommandReply,
     MinosConfig,
+    MinosSagaManager,
 )
 
 from ..abc import (
@@ -27,12 +32,16 @@ class CommandReplyHandler(Handler):
 
     TABLE = "command_reply_queue"
 
-    def __init__(self, *, config: MinosConfig, **kwargs: Any):
+    saga_manager: MinosSagaManager = Provide["saga_manager"]
+
+    def __init__(self, *, config: MinosConfig, saga_manager: MinosSagaManager = None, **kwargs: Any):
         super().__init__(table_name=self.TABLE, config=config.saga, **kwargs)
         self._broker_group_name = f"event_{config.service.name}"
+        if saga_manager is not None:
+            self.saga_manager = saga_manager
 
     def _build_data(self, value: bytes) -> CommandReply:
         return CommandReply.from_avro_bytes(value)
 
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
-        await row.callback(row.topic, row.data)
+        await self.saga_manager.run(reply=row.data)

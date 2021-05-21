@@ -10,8 +10,13 @@ from typing import (
     NoReturn,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+)
+
 from minos.common import (
     Command,
+    MinosBroker,
     MinosConfig,
 )
 
@@ -28,12 +33,23 @@ class CommandHandler(Handler):
 
     TABLE = "command_queue"
 
-    def __init__(self, *, config: MinosConfig, **kwargs: Any):
+    broker: MinosBroker = Provide["command_reply_broker"]
+
+    def __init__(self, *, config: MinosConfig, broker: MinosBroker = None, **kwargs: Any):
         super().__init__(table_name=self.TABLE, config=config.commands, **kwargs)
         self._broker_group_name = f"event_{config.service.name}"
+
+        if broker is not None:
+            self.broker = broker
 
     def _build_data(self, value: bytes) -> Command:
         return Command.from_avro_bytes(value)
 
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
-        await row.callback(row.topic, row.data)
+        command: Command = row.data
+        definition_id = command.saga_id
+        execution_id = command.task_id
+
+        response = await row.callback(row.topic, command)
+
+        await self.broker.send(response, topic=f"{definition_id}Reply", saga_id=definition_id, task_id=execution_id)
