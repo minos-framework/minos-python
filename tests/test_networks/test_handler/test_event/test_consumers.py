@@ -35,7 +35,7 @@ class TestEventServer(PostgresAsyncTestCase):
         bin_data = event_instance.avro_bytes
         Event.from_avro_bytes(bin_data)
 
-        with EventConsumer.from_config(config=self.config) as event_server:
+        async with EventConsumer.from_config(config=self.config) as event_server:
             id = await event_server.queue_add(topic=event_instance.topic, partition=0, binary=bin_data)
             assert id > 0
 
