@@ -37,8 +37,8 @@ from .handlers import (
     HandlerSetup,
 )
 from .rest import (
-    REST,
-    RestInterfaceHandler,
+    RestHandler,
+    RestService,
 )
 from .snapshots import (
     SnapshotDispatcher,
