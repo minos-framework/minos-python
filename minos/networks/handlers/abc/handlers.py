@@ -48,7 +48,7 @@ class Handler(HandlerSetup):
 
     """
 
-    __slots__ = "_handlers", "_event_items", "_topics", "_conf"
+    __slots__ = "_handler", "_event_items", "_topics", "_conf"
 
     def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
