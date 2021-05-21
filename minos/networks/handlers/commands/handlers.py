@@ -37,6 +37,7 @@ class CommandHandler(Handler):
 
     def __init__(self, *, config: MinosConfig, broker: MinosBroker = None, **kwargs: Any):
         super().__init__(table_name=self.TABLE, config=config.commands, **kwargs)
+
         self._broker_group_name = f"event_{config.service.name}"
 
         if broker is not None:
