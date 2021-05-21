@@ -37,7 +37,7 @@ class EventBroker(Broker):
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.
-        :param topic: TODO
+        :param topic: Topic in which the message will be published.
         :return: This method does not return anything.
         """
         if topic is None:

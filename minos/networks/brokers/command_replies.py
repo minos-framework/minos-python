@@ -49,9 +49,9 @@ class CommandReplyBroker(Broker):
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.
-        :param topic: TODO
-        :param saga_id: TODO
-        :param task_id: TODO
+        :param topic: Topic in which the message will be published.
+        :param saga_id: Saga identifier.
+        :param task_id: Saga execution identifier.
         :return: This method does not return anything.
         """
         if topic is None:
