@@ -17,9 +17,9 @@ class TestInterface(AioHTTPTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def get_application(self):
-        rest_interface = RestInterfaceHandler(config=MinosConfig(self.CONFIG_FILE_PATH))
+        rest = RestInterfaceHandler(config=MinosConfig(self.CONFIG_FILE_PATH))
 
-        return rest_interface.get_app()
+        return rest.get_app()
 
     @unittest_run_loop
     async def test_methods(self):
