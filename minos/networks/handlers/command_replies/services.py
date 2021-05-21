@@ -19,10 +19,10 @@ from minos.common import (
     MinosConfig,
 )
 
-from .consumer import (
+from .consumers import (
     CommandReplyConsumer,
 )
-from .dispatcher import (
+from .dispatchers import (
     CommandReplyHandler,
 )
 

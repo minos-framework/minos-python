@@ -30,7 +30,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from .setup import (
+from .setups import (
     HandlerSetup,
 )
 
