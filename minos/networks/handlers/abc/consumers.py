@@ -61,10 +61,21 @@ class Consumer(HandlerSetup):
 
     async def _setup(self) -> NoReturn:
         await super()._setup()
-        self._consumer = await self._build_kafka_consumer(self._topics, self._broker_group_name, self._kafka_conn_data)
+        self._consumer = await self._build_kafka_consumer()
+
+    async def _build_kafka_consumer(self) -> AIOKafkaConsumer:
+        # start the Service Event Consumer for Kafka
+        consumer = AIOKafkaConsumer(
+            group_id=self._broker_group_name, auto_offset_reset="latest", bootstrap_servers=self._kafka_conn_data
+        )
+
+        await consumer.start()
+        consumer.subscribe(self._topics)
+
+        return consumer
 
     async def _destroy(self) -> NoReturn:
-        await self._consumer.stop()
+        # await self._consumer.stop()
         await super()._destroy()
 
     async def dispatch(self) -> NoReturn:
@@ -74,29 +85,17 @@ class Consumer(HandlerSetup):
         """
         await self.handle_message(self._consumer)
 
-    async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:
-        """Insert row to event_queue table.
+    async def handle_message(self, consumer: AsyncIterator):
+        """Message consumer.
 
-        Retrieves number of affected rows and row ID.
+        It consumes the messages and sends them for processing.
 
         Args:
-            topic: Kafka topic. Example: "TicketAdded"
-            partition: Kafka partition number.
-            binary: Event Model in bytes.
-
-        Returns:
-            Queue ID.
-
-            Example: 12
-
-        Raises:
-            Exception: An error occurred inserting record.
+            consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
         """
-        queue_id = await self.submit_query_and_fetchone(
-            _INSERT_QUERY, (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
-        )
 
-        return queue_id[0]
+        async for msg in consumer:
+            await self.handle_single_message(msg)
 
     async def handle_single_message(self, msg):
         """Handle Kafka messages.
@@ -121,27 +120,29 @@ class Consumer(HandlerSetup):
     def _is_valid_instance(self, value: bytes):  # pragma: no cover
         raise Exception("Method not implemented")
 
-    async def handle_message(self, consumer: AsyncIterator):
-        """Message consumer.
+    async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:
+        """Insert row to event_queue table.
 
-        It consumes the messages and sends them for processing.
+        Retrieves number of affected rows and row ID.
 
         Args:
-            consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
+            topic: Kafka topic. Example: "TicketAdded"
+            partition: Kafka partition number.
+            binary: Event Model in bytes.
+
+        Returns:
+            Queue ID.
+
+            Example: 12
+
+        Raises:
+            Exception: An error occurred inserting record.
         """
+        queue_id = await self.submit_query_and_fetchone(
+            _INSERT_QUERY, (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now()),
+        )
 
-        async for msg in consumer:
-            await self.handle_single_message(msg)
-
-    @staticmethod
-    async def _build_kafka_consumer(topics: list, group_name: str, conn: str) -> AIOKafkaConsumer:
-        # start the Service Event Consumer for Kafka
-        consumer = AIOKafkaConsumer(group_id=group_name, auto_offset_reset="latest", bootstrap_servers=conn)
-
-        await consumer.start()
-        consumer.subscribe(topics)
-
-        return consumer
+        return queue_id[0]
 
 
 _INSERT_QUERY = """
