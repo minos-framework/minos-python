@@ -1,9 +1,6 @@
+import unittest
 from unittest.mock import (
-    MagicMock,
-)
-
-from aiokafka import (
-    AIOKafkaConsumer,
+    MagicMock, patch,
 )
 
 from minos.common.testing import (
@@ -14,24 +11,31 @@ from minos.networks import (
     CommandReplyHandlerService,
 )
 from tests.utils import (
-    BASE_PATH,
+    BASE_PATH, FakeDispatcher,
 )
 
 
 class TestMinosCommandReplyServices(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    async def test_start(self):
+    @patch("minos.networks.CommandReplyConsumer.from_config")
+    async def test_start(self, mock):
+        instance = FakeDispatcher()
+        mock.return_value = instance
+
         service = CommandReplyConsumerService(loop=None, config=self.config)
 
-        async def _fn(consumer):
-            self.assertIsInstance(consumer, AIOKafkaConsumer)
-
-        mock = MagicMock(side_effect=_fn)
-        service.dispatcher.handle_message = mock
+        self.assertEqual(0, instance.setup_count)
+        self.assertEqual(0, instance.setup_dispatch)
+        self.assertEqual(0, instance.setup_destroy)
         await service.start()
-        self.assertTrue(1, mock.call_count)
+        self.assertEqual(1, instance.setup_count)
+        self.assertEqual(1, instance.setup_dispatch)
+        self.assertEqual(0, instance.setup_destroy)
         await service.stop()
+        self.assertEqual(1, instance.setup_count)
+        self.assertEqual(1, instance.setup_dispatch)
+        self.assertEqual(1, instance.setup_destroy)
 
 
 class TestMinosCommandReplyQueueService(PostgresAsyncTestCase):
@@ -53,3 +57,7 @@ class TestMinosCommandReplyQueueService(PostgresAsyncTestCase):
         await service.callback()
         self.assertEqual(1, mock.call_count)
         await service.dispatcher.destroy()
+
+
+if __name__ == "__main__":
+    unittest.main()

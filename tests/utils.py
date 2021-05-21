@@ -20,3 +20,24 @@ class NaiveAggregate(Aggregate):
     """Naive aggregate class to be used for testing purposes."""
 
     test: int
+
+
+class FakeDispatcher:
+    """For testing purposes"""
+
+    def __init__(self):
+        self.setup_count = 0
+        self.setup_dispatch = 0
+        self.setup_destroy = 0
+
+    async def setup(self):
+        """For testing purposes."""
+        self.setup_count += 1
+
+    async def dispatch(self):
+        """For testing purposes."""
+        self.setup_dispatch += 1
+
+    async def destroy(self):
+        """For testing purposes."""
+        self.setup_destroy += 1
