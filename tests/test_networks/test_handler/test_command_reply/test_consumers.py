@@ -47,7 +47,7 @@ class TestCommandReplyServer(PostgresAsyncTestCase):
             assert id > 0
 
     async def test_handle_message(self):
-        async with CommandReplyConsumer.from_config(config=self.config):
+        async with CommandReplyConsumer.from_config(config=self.config) as event_server:
 
             model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
             event_instance = CommandReply(
