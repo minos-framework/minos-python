@@ -60,8 +60,8 @@ class Consumer(HandlerSetup):
         return cls(*args, config=config, **kwargs)
 
     async def _setup(self) -> NoReturn:
-        self._consumer = await self._build_kafka_consumer(self._topics, self._broker_group_name, self._kafka_conn_data)
         await super()._setup()
+        self._consumer = await self._build_kafka_consumer(self._topics, self._broker_group_name, self._kafka_conn_data)
 
     async def _destroy(self) -> NoReturn:
         await self._consumer.stop()
