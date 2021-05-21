@@ -10,19 +10,19 @@ from .abc import (
     MinosHandlerServer,
     MinosHandlerSetup,
 )
-from .command import (
-    MinosCommandHandlerDispatcher,
-    MinosCommandHandlerServer,
-    MinosCommandPeriodicService,
-    MinosCommandServerService,
-)
-from .command_reply import (
+from .command_replies import (
     MinosCommandReplyHandlerDispatcher,
     MinosCommandReplyHandlerServer,
     MinosCommandReplyPeriodicService,
     MinosCommandReplyServerService,
 )
-from .event import (
+from .commands import (
+    MinosCommandHandlerDispatcher,
+    MinosCommandHandlerServer,
+    MinosCommandPeriodicService,
+    MinosCommandServerService,
+)
+from .events import (
     MinosEventHandlerDispatcher,
     MinosEventHandlerServer,
     MinosEventPeriodicService,
