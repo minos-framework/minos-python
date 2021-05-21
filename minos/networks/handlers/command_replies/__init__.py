@@ -9,7 +9,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .consumers import (
     CommandReplyConsumer,
 )
-from .dispatchers import (
+from .handlers import (
     CommandReplyHandler,
 )
 from .services import (

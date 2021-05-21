@@ -3,14 +3,14 @@ import datetime
 import aiopg
 
 from minos.common import (
-    Command,
+    CommandReply,
     MinosConfigException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandHandler,
+    CommandReplyHandler,
     MinosNetworkException,
 )
 from tests.utils import (
@@ -19,27 +19,27 @@ from tests.utils import (
 )
 
 
-class TestCommandDispatcher(PostgresAsyncTestCase):
+class TestCommandReplyHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = CommandHandler.from_config(config=self.config)
-        self.assertIsInstance(dispatcher, CommandHandler)
+        dispatcher = CommandReplyHandler.from_config(config=self.config)
+        self.assertIsInstance(dispatcher, CommandReplyHandler)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            CommandHandler.from_config()
+            CommandReplyHandler.from_config()
 
     async def test_if_queue_table_exists(self):
-        handler = CommandHandler.from_config(config=self.config)
+        handler = CommandReplyHandler.from_config(config=self.config)
         await handler.setup()
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
+        async with aiopg.connect(**self.saga_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
                     "SELECT 1 "
                     "FROM information_schema.tables "
-                    "WHERE table_schema = 'public' AND table_name = 'command_queue';"
+                    "WHERE table_schema = 'public' AND table_name = 'command_reply_queue';"
                 )
                 ret = []
                 async for row in cur:
@@ -49,7 +49,7 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
 
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = Command(
+        event_instance = CommandReply(
             topic="AddOrder",
             model=model.classname,
             items=[],
@@ -57,16 +57,16 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
             task_id="juhjh34",
             reply_on="mkk2334",
         )
-        m = CommandHandler.from_config(config=self.config)
+        m = CommandReplyHandler.from_config(config=self.config)
 
         cls = m.get_event_handler(topic=event_instance.topic)
         result = await cls(topic=event_instance.topic, command=event_instance)
 
-        assert result == "add_order"
+        assert result == "add_order_saga"
 
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = Command(
+        instance = CommandReply(
             topic="NotExisting",
             model=model.classname,
             items=[],
@@ -74,7 +74,7 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
             task_id="juhjh34",
             reply_on="mkk2334",
         )
-        m = CommandHandler.from_config(config=self.config)
+        m = CommandReplyHandler.from_config(config=self.config)
 
         with self.assertRaises(MinosNetworkException) as context:
             cls = m.get_event_handler(topic=instance.topic)
@@ -86,11 +86,11 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
         )
 
     async def test_event_dispatch(self):
-        handler = CommandHandler.from_config(config=self.config)
+        handler = CommandReplyHandler.from_config(config=self.config)
         await handler.setup()
 
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = Command(
+        instance = CommandReply(
             topic="AddOrder",
             model=model.classname,
             items=[],
@@ -99,12 +99,12 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
             reply_on="mkk2334",
         )
         bin_data = instance.avro_bytes
-        Command.from_avro_bytes(bin_data)
+        CommandReply.from_avro_bytes(bin_data)
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
+        async with aiopg.connect(**self.saga_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
+                    "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
                     "VALUES (%s, %s, %s, %s) "
                     "RETURNING id;",
                     (instance.topic, 0, bin_data, datetime.datetime.now(),),
@@ -117,22 +117,23 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
         # Must get the record, call on_reply function and delete the record from DB
         await handler.dispatch()
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
+        async with aiopg.connect(**self.saga_queue_db) as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
+                await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
                 records = await cur.fetchone()
 
         assert records[0] == 0
 
-    async def test_event_dispatch_wrong_event(self):
-        handler = CommandHandler.from_config(config=self.config)
+    async def test_command_reply_dispatch_wrong_event(self):
+        handler = CommandReplyHandler.from_config(config=self.config)
         await handler.setup()
+
         bin_data = bytes(b"Test")
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
+        async with aiopg.connect(**self.saga_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
+                    "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
                     "VALUES (%s, %s, %s, %s) "
                     "RETURNING id;",
                     ("AddOrder", 0, bin_data, datetime.datetime.now(),),
@@ -145,9 +146,9 @@ class TestCommandDispatcher(PostgresAsyncTestCase):
         # Must get the record, call on_reply function and delete the record from DB
         await handler.dispatch()
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
+        async with aiopg.connect(**self.saga_queue_db) as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
+                await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
                 records = await cur.fetchone()
 
         assert records[0] == 1

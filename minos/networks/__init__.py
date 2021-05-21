@@ -37,11 +37,11 @@ from .handlers import (
     HandlerSetup,
 )
 from .rest import (
-    Rest,
+    RestBuilder,
     RestService,
 )
 from .snapshots import (
-    Snapshot,
+    SnapshotBuilder,
     SnapshotEntry,
     SnapshotService,
 )

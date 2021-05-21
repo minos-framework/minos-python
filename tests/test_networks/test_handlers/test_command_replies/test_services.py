@@ -14,7 +14,7 @@ from tests.utils import (
 )
 
 
-class TestMinosCommandReplyServices(PostgresAsyncTestCase):
+class TestCommandReplyConsumerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):
@@ -30,7 +30,7 @@ class TestMinosCommandReplyServices(PostgresAsyncTestCase):
         await service.stop()
 
 
-class TestMinosCommandReplyQueueService(PostgresAsyncTestCase):
+class TestCommandReplyHandlerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_start(self):

@@ -29,7 +29,7 @@ from tests.utils import (
 )
 
 
-class TestMinosQueueService(PostgresAsyncTestCase):
+class TestProducerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):

@@ -26,7 +26,7 @@ from tests.utils import (
 )
 
 
-class TestMinosCommandBroker(PostgresAsyncTestCase):
+class TestCommandBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):

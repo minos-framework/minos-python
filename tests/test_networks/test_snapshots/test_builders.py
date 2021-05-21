@@ -27,7 +27,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    Snapshot,
+    SnapshotBuilder,
     SnapshotEntry,
 )
 from tests.aggregate_classes import (
@@ -38,14 +38,14 @@ from tests.utils import (
 )
 
 
-class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
+class TestSnapshotBuilder(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_type(self):
-        self.assertTrue(issubclass(Snapshot, object))
+        self.assertTrue(issubclass(SnapshotBuilder, object))
 
     def test_from_config(self):
-        dispatcher = Snapshot.from_config(config=self.config)
+        dispatcher = SnapshotBuilder.from_config(config=self.config)
         self.assertEqual(self.config.snapshot.host, dispatcher.host)
         self.assertEqual(self.config.snapshot.port, dispatcher.port)
         self.assertEqual(self.config.snapshot.database, dispatcher.database)
@@ -54,10 +54,10 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            Snapshot.from_config()
+            SnapshotBuilder.from_config()
 
     async def test_setup_snapshot_table(self):
-        async with Snapshot.from_config(config=self.config):
+        async with SnapshotBuilder.from_config(config=self.config):
             async with aiopg.connect(**self.snapshot_db) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
@@ -68,7 +68,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
         self.assertEqual(True, observed)
 
     async def test_setup_snapshot_aux_offset_table(self):
-        async with Snapshot.from_config(config=self.config):
+        async with SnapshotBuilder.from_config(config=self.config):
             async with aiopg.connect(**self.snapshot_db) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
@@ -80,7 +80,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     async def test_dispatch_select(self):
         await self._populate()
-        async with Snapshot.from_config(config=self.config) as dispatcher:
+        async with SnapshotBuilder.from_config(config=self.config) as dispatcher:
             await dispatcher.dispatch()
             observed = [v async for v in dispatcher.select()]
 
@@ -92,7 +92,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     async def test_dispatch_ignore_previous_version(self):
 
-        dispatcher = Snapshot.from_config(config=self.config)
+        dispatcher = SnapshotBuilder.from_config(config=self.config)
         await dispatcher.setup()
 
         car = Car(1, 1, 3, "blue")
@@ -120,7 +120,7 @@ class TestMinosSnapshotDispatcher(PostgresAsyncTestCase):
 
     async def test_dispatch_with_offset(self):
         async with await self._populate() as repository:
-            async with Snapshot.from_config(config=self.config) as dispatcher:
+            async with SnapshotBuilder.from_config(config=self.config) as dispatcher:
                 mock = MagicMock(side_effect=dispatcher.repository.select)
                 dispatcher.repository.select = mock
 
