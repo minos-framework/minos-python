@@ -43,7 +43,7 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_handlers", "_topics", "_broker_group_name"
+    __slots__ = "_tasks", "_handler", "_topics", "_broker_group_name"
 
     def __init__(self, *, table_name: str, config, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
