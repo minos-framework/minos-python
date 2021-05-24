@@ -1,9 +1,17 @@
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
 import unittest
 from collections import (
     namedtuple,
 )
 from unittest.mock import (
     MagicMock,
+    call,
 )
 
 from minos.common import (
@@ -53,13 +61,14 @@ class TestCommandConsumer(PostgresAsyncTestCase):
 
     async def test_dispatch(self):
         handler = CommandConsumer.from_config(config=self.config)
-
-        async def _fn():
-            return FakeConsumer()
-
-        handler._build_kafka_consumer = MagicMock(side_effect=_fn)
+        consumer = FakeConsumer()
+        handler._consumer = consumer
+        mock = MagicMock(side_effect=handler.handle_message)
+        handler.handle_message = mock
         async with handler:
             await handler.dispatch()
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(consumer), mock.call_args)
 
     async def test_handle_message(self):
         async with CommandConsumer.from_config(config=self.config) as handler:
