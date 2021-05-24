@@ -22,6 +22,9 @@ from typing import (
 from aiokafka import (
     AIOKafkaConsumer,
 )
+from cached_property import (
+    cached_property,
+)
 from psycopg2.extensions import (
     AsIs,
 )
@@ -43,7 +46,7 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_handler", "_topics", "_table_name", "_broker_group_name", "_kafka_conn_data", "_consumer"
+    __slots__ = "_tasks", "_handler", "_topics", "_table_name", "_broker_group_name", "_kafka_conn_data"
 
     def __init__(self, *, table_name: str, config, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
@@ -53,7 +56,6 @@ class Consumer(HandlerSetup):
         self._table_name = table_name
         self._broker_group_name = None
         self._kafka_conn_data = None
-        self._consumer = None
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
@@ -61,17 +63,13 @@ class Consumer(HandlerSetup):
 
     async def _setup(self) -> NoReturn:
         await super()._setup()
-        self._consumer = await self._build_kafka_consumer()
+        await self._consumer.start()
 
-    async def _build_kafka_consumer(self) -> AIOKafkaConsumer:
-        # start the Service Event Consumer for Kafka
-        consumer = AIOKafkaConsumer(
+    @cached_property
+    def _consumer(self) -> AIOKafkaConsumer:
+        return AIOKafkaConsumer(
             *self._topics, group_id=self._broker_group_name, bootstrap_servers=self._kafka_conn_data,
         )
-
-        await consumer.start()
-
-        return consumer
 
     async def _destroy(self) -> NoReturn:
         await self._consumer.stop()
