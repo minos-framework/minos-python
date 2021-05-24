@@ -10,10 +10,10 @@ import aiomisc
 import aiopg
 
 
-class AiopgPool(aiomisc.PoolBase):
-    def __init__(self, dsn, maxsize=10, recycle=60):
+class PostgresPool(aiomisc.PoolBase):
+    def __init__(self, host: str, port: int, database: str, user: str, password: str, maxsize=10, recycle=60):
         super().__init__(maxsize=maxsize, recycle=recycle)
-        self.dsn = dsn
+        self.dsn = f"dbname={database} user={user} password={password} host={host} port={port}"
 
     async def _create_instance(self):
         return await aiopg.create_pool(dsn=self.dsn)

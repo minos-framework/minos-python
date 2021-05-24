@@ -17,8 +17,8 @@ from minos.common.setup import (
     MinosSetup,
 )
 
-from .database_pool import (
-    AiopgPool,
+from .pool import (
+    PostgresPool,
 )
 
 
@@ -32,9 +32,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         self.database = database
         self.user = user
         self.password = password
-        self._pool = AiopgPool(
-            f"dbname={self.database} user={self.user} password={self.password} host={self.host} port={self.port}"
-        )
+        self._pool = PostgresPool(self.host, self.port, self.database, self.user, self.password)
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.
@@ -70,7 +68,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
                 await cursor.execute(*args, **kwargs)
 
     @property
-    async def pool(self) -> AiopgPool:
+    async def pool(self) -> PostgresPool:
         """Get the connections pool.
 
         :return: A ``Pool`` object.

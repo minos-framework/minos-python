@@ -10,7 +10,7 @@ import unittest
 import aiopg
 
 from minos.common import (
-    AiopgPool,
+    PostgresPool,
     PostgreSqlMinosDatabase,
 )
 from minos.common.testing import (
@@ -38,7 +38,7 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
 
     async def test_pool(self):
         async with _PostgreSqlMinosDatabase(**self.repository_db) as database:
-            self.assertIsInstance(await database.pool, AiopgPool)
+            self.assertIsInstance(await database.pool, PostgresPool)
 
     async def test_submit_query(self):
         async with _PostgreSqlMinosDatabase(**self.repository_db) as database:

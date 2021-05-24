@@ -25,7 +25,7 @@ from .configuration import (
     MinosConfigAbstract,
 )
 from .database import (
-    AiopgPool,
+    PostgresPool,
     PostgreSqlMinosDatabase,
 )
 from .exceptions import (
