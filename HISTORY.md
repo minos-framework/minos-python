@@ -17,3 +17,10 @@ History
 
 * Completed the Poetry Support
 * added actions for documentation
+
+0.0.3 (2021-05-24)
+------------------
+
+* renamed classes and removed Minos prefix
+* Integration of Command and CommandReply with Handler
+
