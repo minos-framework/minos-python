@@ -1,5 +1,5 @@
 Welcome to Minos Microservice Common's documentation!
-======================================
+=======================================================
 
 .. toctree::
    :maxdepth: 2
@@ -7,12 +7,12 @@ Welcome to Minos Microservice Common's documentation!
 
    readme
    usage
-   api/modules
+   api/minos
    authors
    history
 
 Indices and tables
-==================
+====================
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
