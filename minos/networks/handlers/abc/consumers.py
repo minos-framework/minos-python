@@ -73,6 +73,7 @@ class Consumer(HandlerSetup):
 
     async def _destroy(self) -> NoReturn:
         await self._consumer.stop()
+        del self.__dict__["_consumer"]
         await super()._destroy()
 
     async def dispatch(self) -> NoReturn:
