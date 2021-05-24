@@ -13,13 +13,12 @@ from typing import (
     NoReturn,
 )
 
-import aiopg
-from aiopg import (
-    Pool,
+from minos.common.setup import (
+    MinosSetup,
 )
 
-from .setup import (
-    MinosSetup,
+from .database_pool import (
+    AiopgPool,
 )
 
 
@@ -33,13 +32,9 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         self.database = database
         self.user = user
         self.password = password
-        self._pool = None
-
-    async def _destroy(self) -> NoReturn:
-        if self._pool is not None:
-            self._pool.close()
-            await self._pool.wait_closed()
-            self._pool = None
+        self._pool = AiopgPool(
+            f"dbname={self.database} user={self.user} password={self.password} host={self.host} port={self.port}"
+        )
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.
@@ -57,11 +52,11 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        pool = await self.pool
-        with await pool.cursor() as cursor:
-            await cursor.execute(*args, **kwargs)
-            async for row in cursor:
-                yield row
+        async with self._pool.acquire() as connection:
+            with await connection.cursor() as cursor:
+                await cursor.execute(*args, **kwargs)
+                async for row in cursor:
+                    yield row
 
     async def submit_query(self, *args, **kwargs) -> NoReturn:
         """Submit a SQL query.
@@ -70,18 +65,14 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        pool = await self.pool
-        with await pool.cursor() as cursor:
-            await cursor.execute(*args, **kwargs)
+        async with self._pool.acquire() as connection:
+            with await connection.cursor() as cursor:
+                await cursor.execute(*args, **kwargs)
 
     @property
-    async def pool(self) -> Pool:
+    async def pool(self) -> AiopgPool:
         """Get the connections pool.
 
         :return: A ``Pool`` object.
         """
-        if self._pool is None:
-            self._pool = await aiopg.create_pool(
-                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
-            )
         return self._pool
