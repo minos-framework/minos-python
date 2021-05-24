@@ -8,7 +8,7 @@ from tests.utils import BASE_PATH
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self.config_file_path = BASE_PATH / 'test_config.yml'
+        self.config_file_path = BASE_PATH / "test_config.yml"
 
     def test_overwrite_with_parameter(self):
         config = MinosConfig(path=self.config_file_path, repository_database="foo")
