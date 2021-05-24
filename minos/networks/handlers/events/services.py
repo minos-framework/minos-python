@@ -33,7 +33,6 @@ class EventConsumerService(Service):
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
         self.dispatcher = EventConsumer.from_config(config=config)
-        self.consumer = None
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -41,11 +40,7 @@ class EventConsumerService(Service):
         :return: This method does not return anything.
         """
         await self.dispatcher.setup()
-
-        self.consumer = await self.dispatcher.kafka_consumer(
-            self.dispatcher._topics, self.dispatcher._broker_group_name, self.dispatcher._kafka_conn_data
-        )
-        await self.dispatcher.handle_message(self.consumer)
+        await self.dispatcher.dispatch()
 
     async def stop(self, exception: Exception = None) -> Any:
         """Stop the service execution.
@@ -53,9 +48,6 @@ class EventConsumerService(Service):
         :param exception: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
-        if self.consumer is not None:
-            await self.consumer.stop()
-
         await self.dispatcher.destroy()
 
 
