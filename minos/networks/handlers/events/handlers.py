@@ -4,9 +4,9 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-
 from typing import (
     Any,
+    NoReturn,
 )
 
 from minos.common import (
@@ -16,6 +16,9 @@ from minos.common import (
 
 from ..abc import (
     Handler,
+)
+from ..entries import (
+    HandlerEntry,
 )
 
 
@@ -28,9 +31,8 @@ class EventHandler(Handler):
         super().__init__(table_name=self.TABLE, config=config.events, **kwargs)
         self._broker_group_name = f"event_{config.service.name}"
 
-    def _is_valid_instance(self, value: bytes):
-        try:
-            instance = Event.from_avro_bytes(value)
-            return True, instance
-        except:  # noqa E722
-            return False, None
+    def _build_data(self, value: bytes) -> Event:
+        return Event.from_avro_bytes(value)
+
+    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        await row.callback(row.topic, row.data)

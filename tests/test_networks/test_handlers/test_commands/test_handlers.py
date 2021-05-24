@@ -16,6 +16,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeBroker,
     NaiveAggregate,
 )
 
@@ -96,7 +97,9 @@ class TestCommandHandler(PostgresAsyncTestCase):
         )
         bin_data = instance.avro_bytes
 
-        async with CommandHandler.from_config(config=self.config) as handler:
+        broker = FakeBroker()
+
+        async with CommandHandler.from_config(config=self.config, broker=broker) as handler:
             async with aiopg.connect(**self.commands_queue_db) as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
@@ -119,6 +122,11 @@ class TestCommandHandler(PostgresAsyncTestCase):
                     records = await cur.fetchone()
 
             assert records[0] == 0
+
+        self.assertEqual("add_order", broker.items)
+        self.assertEqual("43434jhijReply", broker.topic)
+        self.assertEqual("43434jhij", broker.saga_id)
+        self.assertEqual("juhjh34", broker.task_id)
 
     async def test_event_dispatch_wrong_event(self):
         async with CommandHandler.from_config(config=self.config) as handler:

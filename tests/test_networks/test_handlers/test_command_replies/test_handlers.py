@@ -16,6 +16,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeSagaManager,
     NaiveAggregate,
 )
 
@@ -95,8 +96,9 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
             reply_on="mkk2334",
         )
         bin_data = instance.avro_bytes
+        saga_manager = FakeSagaManager()
 
-        async with CommandReplyHandler.from_config(config=self.config) as handler:
+        async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:
             async with aiopg.connect(**self.saga_queue_db) as connect:
                 async with connect.cursor() as cur:
                     await cur.execute(
@@ -119,6 +121,9 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
                     records = await cur.fetchone()
 
             assert records[0] == 0
+
+            self.assertEqual(None, saga_manager.name)
+            self.assertEqual(instance, saga_manager.reply)
 
     async def test_command_reply_dispatch_wrong_event(self):
         async with CommandReplyHandler.from_config(config=self.config) as handler:
