@@ -1,9 +1,15 @@
 import os
 import unittest
-from unittest import mock
+from unittest import (
+    mock,
+)
 
-from minos.common import MinosConfig
-from tests.utils import BASE_PATH
+from minos.common import (
+    MinosConfig,
+)
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestMinosConfigWithEnvironment(unittest.TestCase):
