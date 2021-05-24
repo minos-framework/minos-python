@@ -1,4 +1,5 @@
 import datetime
+import unittest
 
 import aiopg
 
@@ -31,21 +32,19 @@ class TestCommandHandler(PostgresAsyncTestCase):
             CommandHandler.from_config()
 
     async def test_if_queue_table_exists(self):
-        handler = CommandHandler.from_config(config=self.config)
-        await handler.setup()
+        async with CommandHandler.from_config(config=self.config):
+            async with aiopg.connect(**self.commands_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute(
+                        "SELECT 1 "
+                        "FROM information_schema.tables "
+                        "WHERE table_schema = 'public' AND table_name = 'command_queue';"
+                    )
+                    ret = []
+                    async for row in cur:
+                        ret.append(row)
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    "SELECT 1 "
-                    "FROM information_schema.tables "
-                    "WHERE table_schema = 'public' AND table_name = 'command_queue';"
-                )
-                ret = []
-                async for row in cur:
-                    ret.append(row)
-
-        assert ret == [(1,)]
+            assert ret == [(1,)]
 
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -86,9 +85,6 @@ class TestCommandHandler(PostgresAsyncTestCase):
         )
 
     async def test_event_dispatch(self):
-        handler = CommandHandler.from_config(config=self.config)
-        await handler.setup()
-
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = Command(
             topic="AddOrder",
@@ -99,55 +95,58 @@ class TestCommandHandler(PostgresAsyncTestCase):
             reply_on="mkk2334",
         )
         bin_data = instance.avro_bytes
-        Command.from_avro_bytes(bin_data)
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
-                    "VALUES (%s, %s, %s, %s) "
-                    "RETURNING id;",
-                    (instance.topic, 0, bin_data, datetime.datetime.now(),),
-                )
+        async with CommandHandler.from_config(config=self.config) as handler:
+            async with aiopg.connect(**self.commands_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute(
+                        "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
+                        "VALUES (%s, %s, %s, %s) "
+                        "RETURNING id;",
+                        (instance.topic, 0, bin_data, datetime.datetime.now(),),
+                    )
 
-                queue_id = await cur.fetchone()
+                    queue_id = await cur.fetchone()
 
-        assert queue_id[0] > 0
+            assert queue_id[0] > 0
 
-        # Must get the record, call on_reply function and delete the record from DB
-        await handler.dispatch()
+            # Must get the record, call on_reply function and delete the record from DB
+            await handler.dispatch()
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
-                records = await cur.fetchone()
+            async with aiopg.connect(**self.commands_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
+                    records = await cur.fetchone()
 
-        assert records[0] == 0
+            assert records[0] == 0
 
     async def test_event_dispatch_wrong_event(self):
-        handler = CommandHandler.from_config(config=self.config)
-        await handler.setup()
-        bin_data = bytes(b"Test")
+        async with CommandHandler.from_config(config=self.config) as handler:
+            bin_data = bytes(b"Test")
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
-                    "VALUES (%s, %s, %s, %s) "
-                    "RETURNING id;",
-                    ("AddOrder", 0, bin_data, datetime.datetime.now(),),
-                )
+            async with aiopg.connect(**self.commands_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute(
+                        "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
+                        "VALUES (%s, %s, %s, %s) "
+                        "RETURNING id;",
+                        ("AddOrder", 0, bin_data, datetime.datetime.now(),),
+                    )
 
-                queue_id = await cur.fetchone()
+                    queue_id = await cur.fetchone()
 
-        assert queue_id[0] > 0
+            assert queue_id[0] > 0
 
-        # Must get the record, call on_reply function and delete the record from DB
-        await handler.dispatch()
+            # Must get the record, call on_reply function and delete the record from DB
+            await handler.dispatch()
 
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
-                records = await cur.fetchone()
+            async with aiopg.connect(**self.commands_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
+                    records = await cur.fetchone()
 
-        assert records[0] == 1
+            assert records[0] == 1
+
+
+if __name__ == "__main__":
+    unittest.main()

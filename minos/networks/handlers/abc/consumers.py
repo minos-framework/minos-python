@@ -10,13 +10,13 @@ from __future__ import (
 
 import asyncio
 import datetime
-import typing as t
 from abc import (
     abstractmethod,
 )
 from typing import (
     Any,
     AsyncIterator,
+    NoReturn,
 )
 
 from aiokafka import (
@@ -43,42 +43,58 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_handler", "_topics", "_broker_group_name"
+    __slots__ = "_tasks", "_handler", "_topics", "_table_name", "_broker_group_name", "_kafka_conn_data", "_consumer"
 
     def __init__(self, *, table_name: str, config, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
-        self._tasks = set()  # type: t.Set[asyncio.Task]
+        self._tasks = set()  # type: set[asyncio.Task]
         self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._topics = list(self._handler.keys())
         self._table_name = table_name
+        self._broker_group_name = None
+        self._kafka_conn_data = None
+        self._consumer = None
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
         return cls(*args, config=config, **kwargs)
 
-    async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:
-        """Insert row to event_queue table.
+    async def _setup(self) -> NoReturn:
+        await super()._setup()
+        self._consumer = await self._build_kafka_consumer()
 
-        Retrieves number of affected rows and row ID.
-
-        Args:
-            topic: Kafka topic. Example: "TicketAdded"
-            partition: Kafka partition number.
-            binary: Event Model in bytes.
-
-        Returns:
-            Queue ID.
-
-            Example: 12
-
-        Raises:
-            Exception: An error occurred inserting record.
-        """
-        queue_id = await self.submit_query_and_fetchone(
-            _INSERT_QUERY, (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now(),),
+    async def _build_kafka_consumer(self) -> AIOKafkaConsumer:
+        # start the Service Event Consumer for Kafka
+        consumer = AIOKafkaConsumer(
+            *self._topics, group_id=self._broker_group_name, bootstrap_servers=self._kafka_conn_data,
         )
 
-        return queue_id[0]
+        await consumer.start()
+
+        return consumer
+
+    async def _destroy(self) -> NoReturn:
+        await self._consumer.stop()
+        await super()._destroy()
+
+    async def dispatch(self) -> NoReturn:
+        """Perform a dispatching step.
+
+        :return: This method does not return anything.
+        """
+        await self.handle_message(self._consumer)
+
+    async def handle_message(self, consumer: AsyncIterator):
+        """Message consumer.
+
+        It consumes the messages and sends them for processing.
+
+        Args:
+            consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
+        """
+
+        async for msg in consumer:
+            await self.handle_single_message(msg)
 
     async def handle_single_message(self, msg):
         """Handle Kafka messages.
@@ -103,27 +119,29 @@ class Consumer(HandlerSetup):
     def _is_valid_instance(self, value: bytes):  # pragma: no cover
         raise Exception("Method not implemented")
 
-    async def handle_message(self, consumer: AsyncIterator):
-        """Message consumer.
+    async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:
+        """Insert row to event_queue table.
 
-        It consumes the messages and sends them for processing.
+        Retrieves number of affected rows and row ID.
 
         Args:
-            consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
+            topic: Kafka topic. Example: "TicketAdded"
+            partition: Kafka partition number.
+            binary: Event Model in bytes.
+
+        Returns:
+            Queue ID.
+
+            Example: 12
+
+        Raises:
+            Exception: An error occurred inserting record.
         """
+        queue_id = await self.submit_query_and_fetchone(
+            _INSERT_QUERY, (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now()),
+        )
 
-        async for msg in consumer:
-            await self.handle_single_message(msg)
-
-    @staticmethod
-    async def kafka_consumer(topics: list, group_name: str, conn: str) -> AIOKafkaConsumer:
-        # start the Service Event Consumer for Kafka
-        consumer = AIOKafkaConsumer(group_id=group_name, auto_offset_reset="latest", bootstrap_servers=conn,)
-
-        await consumer.start()
-        consumer.subscribe(topics)
-
-        return consumer
+        return queue_id[0]
 
 
 _INSERT_QUERY = """
