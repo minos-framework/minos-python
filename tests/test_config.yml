@@ -4,16 +4,16 @@ rest:
     host: localhost
     port: 8080
     endpoints:
-        - name: AddOrder
-          route: /order
-          method: POST
-          controller: tests.services.TestRestService.RestService
-          action: add_order
-        - name: GetOrder
-          route: /order
-          method: GET
-          controller: tests.services.TestRestService.RestService
-          action: get_order
+        -   name: AddOrder
+            route: /order
+            method: POST
+            controller: tests.services.TestRestService.RestService
+            action: add_order
+        -   name: GetOrder
+            route: /order
+            method: GET
+            controller: tests.services.TestRestService.RestService
+            action: get_order
 repository:
     database: order_db
     user: minos
@@ -30,12 +30,12 @@ events:
     broker: localhost
     port: 9092
     items:
-        - name: TicketAdded
-          controller: tests.services.CqrsTestService.CqrsService
-          action: ticket_added
-        - name: TicketDeleted
-          controller: tests.services.CqrsTestService.CqrsService
-          action: ticket_deleted
+        -   name: TicketAdded
+            controller: tests.services.CqrsTestService.CqrsService
+            action: ticket_added
+        -   name: TicketDeleted
+            controller: tests.services.CqrsTestService.CqrsService
+            action: ticket_deleted
     queue:
         database: order_db
         user: minos
@@ -48,18 +48,18 @@ commands:
     broker: localhost
     port: 9092
     items:
-        - name: AddOrder
-          controller: tests.services.CommandTestService.CommandService
-          action: add_order
-        - name: DeleteOrder
-          controller: tests.services.CommandTestService.CommandService
-          action: delete_order
-        - name: UpdateOrder
-          controller: tests.services.CommandTestService.CommandService
-          action: update_order
-        - name: GetOrder
-          controller: tests.service.CommandTestService.CommandService
-          action: get_order
+        -   name: AddOrder
+            controller: tests.services.CommandTestService.CommandService
+            action: add_order
+        -   name: DeleteOrder
+            controller: tests.services.CommandTestService.CommandService
+            action: delete_order
+        -   name: UpdateOrder
+            controller: tests.services.CommandTestService.CommandService
+            action: update_order
+        -   name: GetOrder
+            controller: tests.service.CommandTestService.CommandService
+            action: get_order
     queue:
         database: order_db
         user: minos
@@ -69,13 +69,15 @@ commands:
         records: 10
         retry: 2
 saga:
+    storage:
+        path: "./order.lmdb"
     items:
-        - name: AddOrder
-          controller: tests.services.SagaTestService.SagaService
-          action: add_order
-        - name: DeleteOrder
-          controller: tests.services.SagaTestService.SagaService
-          action: delete_order
+        -   name: AddOrder
+            controller: tests.services.SagaTestService.SagaService
+            action: add_order
+        -   name: DeleteOrder
+            controller: tests.services.SagaTestService.SagaService
+            action: delete_order
     queue:
         database: order_db
         user: minos

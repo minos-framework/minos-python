@@ -5,12 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from .dispatchers import (
-    MinosSnapshotDispatcher,
+from .builders import (
+    SnapshotBuilder,
 )
 from .entries import (
-    MinosSnapshotEntry,
+    SnapshotEntry,
 )
 from .services import (
-    MinosSnapshotService,
+    SnapshotService,
 )
