@@ -15,15 +15,12 @@ from abc import (
 )
 from typing import (
     Any,
-    AsyncIterator,
     NoReturn,
+    Optional,
 )
 
 from aiokafka import (
     AIOKafkaConsumer,
-)
-from cached_property import (
-    cached_property,
 )
 from psycopg2.extensions import (
     AsIs,
@@ -48,7 +45,7 @@ class Consumer(HandlerSetup):
 
     __slots__ = "_tasks", "_handler", "_topics", "_table_name", "_broker_group_name", "_kafka_conn_data"
 
-    def __init__(self, *, table_name: str, config, **kwargs: Any):
+    def __init__(self, *, table_name: str, config, consumer: Optional[Any] = None, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
         self._tasks = set()  # type: set[asyncio.Task]
         self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
@@ -56,6 +53,7 @@ class Consumer(HandlerSetup):
         self._table_name = table_name
         self._broker_group_name = None
         self._kafka_conn_data = None
+        self.__consumer = consumer
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
@@ -65,11 +63,13 @@ class Consumer(HandlerSetup):
         await super()._setup()
         await self._consumer.start()
 
-    @cached_property
+    @property
     def _consumer(self) -> AIOKafkaConsumer:
-        return AIOKafkaConsumer(
-            *self._topics, group_id=self._broker_group_name, bootstrap_servers=self._kafka_conn_data,
-        )
+        if self.__consumer is None:
+            self.__consumer = AIOKafkaConsumer(
+                *self._topics, group_id=self._broker_group_name, bootstrap_servers=self._kafka_conn_data,
+            )
+        return self.__consumer
 
     async def _destroy(self) -> NoReturn:
         await self._consumer.stop()
@@ -82,7 +82,7 @@ class Consumer(HandlerSetup):
         """
         await self.handle_message(self._consumer)
 
-    async def handle_message(self, consumer: AsyncIterator):
+    async def handle_message(self, consumer: Any) -> NoReturn:
         """Message consumer.
 
         It consumes the messages and sends them for processing.

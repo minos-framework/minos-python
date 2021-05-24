@@ -38,9 +38,10 @@ Message = namedtuple("Message", ["topic", "partition", "value"])
 class FakeConsumer:
     """For testing purposes."""
 
-    def __init__(self):
-        self.i = 0
-        self.length = 3
+    def __init__(self, messages=None):
+        if messages is None:
+            messages = [Message(topic="TicketAdded", partition=0, value=bytes())]
+        self.messages = messages
 
     async def start(self):
         """For testing purposes."""
@@ -48,8 +49,12 @@ class FakeConsumer:
     async def stop(self):
         """For testing purposes."""
 
+    async def getmany(self, *args, **kwargs):
+        return dict(enumerate(self.messages))
+
     async def __aiter__(self):
-        yield Message(topic="TicketAdded", partition=0, value=bytes())
+        for message in self.messages:
+            yield message
 
 
 class FakeDispatcher:
