@@ -13,6 +13,9 @@ import datetime
 from abc import (
     abstractmethod,
 )
+from asyncio import (
+    Event,
+)
 from typing import (
     Any,
     AsyncIterator,
@@ -46,7 +49,16 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_handler", "_topics", "_table_name", "_broker_group_name", "_kafka_conn_data"
+    __slots__ = (
+        "_tasks",
+        "_handler",
+        "_topics",
+        "_table_name",
+        "_broker_group_name",
+        "_kafka_conn_data",
+        "_handling",
+        "_closing",
+    )
 
     def __init__(self, *, table_name: str, config, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
@@ -56,6 +68,8 @@ class Consumer(HandlerSetup):
         self._table_name = table_name
         self._broker_group_name = None
         self._kafka_conn_data = None
+        self._handling = False
+        self._closing = None
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
@@ -72,8 +86,11 @@ class Consumer(HandlerSetup):
         )
 
     async def _destroy(self) -> NoReturn:
+        if self._handling:
+            self._closing = Event()
+            await self._closing.wait()
+            self._closing = None
         await self._consumer.stop()
-        del self.__dict__["_consumer"]
         await super()._destroy()
 
     async def dispatch(self) -> NoReturn:
@@ -91,9 +108,16 @@ class Consumer(HandlerSetup):
         Args:
             consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
         """
-
-        async for msg in consumer:
-            await self.handle_single_message(msg)
+        self._handling = True
+        try:
+            async for msg in consumer:
+                if self._closing is not None:
+                    break
+                await self.handle_single_message(msg)
+        finally:
+            self._handling = False
+            if self._closing is not None:
+                self._closing.set()
 
     async def handle_single_message(self, msg):
         """Handle Kafka messages.
