@@ -66,11 +66,10 @@ class Consumer(HandlerSetup):
     async def _build_kafka_consumer(self) -> AIOKafkaConsumer:
         # start the Service Event Consumer for Kafka
         consumer = AIOKafkaConsumer(
-            group_id=self._broker_group_name, auto_offset_reset="latest", bootstrap_servers=self._kafka_conn_data
+            *self._topics, group_id=self._broker_group_name, bootstrap_servers=self._kafka_conn_data,
         )
 
         await consumer.start()
-        consumer.subscribe(self._topics)
 
         return consumer
 
