@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
 
 from aiomisc.service.periodic import (
     PeriodicService,
@@ -14,20 +17,20 @@ from minos.common import (
     MinosConfig,
 )
 
-from .builders import (
-    SnapshotBuilder,
+from .producers import (
+    Producer,
 )
 
 
-class SnapshotService(PeriodicService):
-    """Minos Snapshot Service class."""
+class ProducerService(PeriodicService):
+    """Minos QueueDispatcherService class."""
 
     def __init__(self, config: MinosConfig = None, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = SnapshotBuilder.from_config(config=config)
+        self.dispatcher = Producer.from_config(config=config)
 
     async def start(self) -> None:
-        """Start the service execution.
+        """Method to be called at the startup by the internal ``aiomisc`` loigc.
 
         :return: This method does not return anything.
         """
@@ -35,9 +38,9 @@ class SnapshotService(PeriodicService):
         await super().start()
 
     async def callback(self) -> None:
-        """Callback implementation to be executed periodically.
+        """Method to be called periodically by the internal ``aiomisc`` logic.
 
-        :return: This method does not return anything.
+        :return:This method does not return anything.
         """
         await self.dispatcher.dispatch()
 

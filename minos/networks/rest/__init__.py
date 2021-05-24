@@ -5,12 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+
 from .builders import (
-    SnapshotBuilder,
-)
-from .entries import (
-    SnapshotEntry,
+    RestBuilder,
 )
 from .services import (
-    SnapshotService,
+    RestService,
 )

@@ -7,39 +7,41 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 __version__ = "0.0.2"
 
-from .broker import (
+from .brokers import (
     CommandBroker,
     CommandReplyBroker,
     EventBroker,
-    MinosQueueDispatcher,
-    MinosQueueService,
+    Producer,
+    ProducerService,
 )
 from .exceptions import (
     MinosNetworkException,
     MinosPreviousVersionSnapshotException,
     MinosSnapshotException,
 )
-from .handler import (
-    MinosCommandHandlerDispatcher,
-    MinosCommandHandlerServer,
-    MinosCommandPeriodicService,
-    MinosCommandReplyHandlerDispatcher,
-    MinosCommandReplyHandlerServer,
-    MinosCommandReplyPeriodicService,
-    MinosCommandReplyServerService,
-    MinosCommandServerService,
-    MinosEventHandlerDispatcher,
-    MinosEventHandlerServer,
-    MinosEventPeriodicService,
-    MinosEventServerService,
-    MinosHandlerSetup,
+from .handlers import (
+    CommandConsumer,
+    CommandConsumerService,
+    CommandHandler,
+    CommandHandlerService,
+    CommandReplyConsumer,
+    CommandReplyConsumerService,
+    CommandReplyHandler,
+    CommandReplyHandlerService,
+    Consumer,
+    EventConsumer,
+    EventConsumerService,
+    EventHandler,
+    EventHandlerService,
+    Handler,
+    HandlerSetup,
 )
-from .rest_interface import (
-    REST,
-    RestInterfaceHandler,
+from .rest import (
+    RestBuilder,
+    RestService,
 )
 from .snapshots import (
-    MinosSnapshotDispatcher,
-    MinosSnapshotEntry,
-    MinosSnapshotService,
+    SnapshotBuilder,
+    SnapshotEntry,
+    SnapshotService,
 )
