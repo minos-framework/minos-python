@@ -29,7 +29,7 @@ class CommandReplyBroker(Broker):
 
     ACTION = "commandReply"
 
-    def __init__(self, *args, saga_id: str, task_id: str, **kwargs):
+    def __init__(self, *args, saga_id: Optional[str] = None, task_id: Optional[str] = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.saga_id = saga_id
         self.task_id = task_id

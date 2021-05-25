@@ -29,7 +29,14 @@ class CommandBroker(Broker):
 
     ACTION = "command"
 
-    def __init__(self, *args, saga_id: str, task_id: str, reply_on: str, **kwargs):
+    def __init__(
+        self,
+        *args,
+        saga_id: Optional[str] = None,
+        task_id: Optional[str] = None,
+        reply_on: Optional[str] = None,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.reply_on = reply_on
         self.saga_id = saga_id
