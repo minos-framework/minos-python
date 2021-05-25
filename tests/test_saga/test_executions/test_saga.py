@@ -67,7 +67,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def tearDown(self) -> None:
         self.container.unwire()
 
-    def test_execute(self):
+    async def test_execute(self):
         saga = (
             Saga("OrdersAdd")
             .step()
@@ -85,21 +85,21 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute()
+            await execution.execute()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(reply=reply)
+            await execution.execute(reply=reply)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order2"))
-        context = execution.execute(reply=reply)
+        context = await execution.execute(reply=reply)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2")), context)
 
-    def test_execute_failure(self):
+    async def test_execute_failure(self):
         saga = (
             Saga("OrdersAdd")
             .step()
@@ -115,22 +115,22 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(broker=self.broker)
+            await execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(reply=reply, broker=self.broker)
+            await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         self.publish_mock.reset_mock()
         reply = fake_reply(Foo("order2"))
         with self.assertRaises(MinosSagaFailedExecutionStepException):
-            execution.execute(reply=reply, broker=self.broker)
+            await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual(3, self.publish_mock.call_count)
 
-    def test_rollback(self):
+    async def test_rollback(self):
         saga = (
             Saga("OrdersAdd")
             .step()
@@ -141,17 +141,17 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         )
         execution = SagaExecution.from_saga(saga)
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(broker=self.broker)
+            await execution.execute(broker=self.broker)
         reply = fake_reply(Foo("order1"))
-        execution.execute(reply=reply, broker=self.broker)
+        await execution.execute(reply=reply, broker=self.broker)
 
         self.publish_mock.reset_mock()
-        execution.rollback(broker=self.broker)
+        await execution.rollback(broker=self.broker)
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.publish_mock.reset_mock()
         with self.assertRaises(MinosSagaRollbackExecutionException):
-            execution.rollback(broker=self.broker)
+            await execution.rollback(broker=self.broker)
         self.assertEqual(0, self.publish_mock.call_count)
 
     def test_raw(self):
@@ -210,7 +210,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(expected, observed)
 
-    def test_from_raw(self):
+    async def test_from_raw(self):
         raw = {
             "already_rollback": False,
             "context": SagaContext(order1=Foo("hola")).avro_str,
@@ -277,12 +277,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(saga)
             try:
-                expected.execute()
+                await expected.execute()
             except MinosSagaPausedExecutionStepException:
                 pass
             try:
                 reply = fake_reply(Foo("hola"))
-                expected.execute(reply=reply)
+                await expected.execute(reply=reply)
             except MinosSagaPausedExecutionStepException:
                 pass
 
