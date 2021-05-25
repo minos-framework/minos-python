@@ -222,7 +222,7 @@ python-versions = "*"
 
 [[package]]
 name = "docutils"
-version = "0.17.1"
+version = "0.16"
 description = "Docutils -- Python Documentation Utilities"
 category = "dev"
 optional = false
@@ -265,7 +265,7 @@ pyflakes = ">=2.3.0,<2.4.0"
 
 [[package]]
 name = "identify"
-version = "2.2.5"
+version = "2.2.6"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -604,6 +604,21 @@ test = ["pytest (>=3.1.0)", "typing-extensions (>=3.5)", "sphobjinv (>=2.0)", "S
 type_comments = ["typed-ast (>=1.4.0)"]
 
 [[package]]
+name = "sphinx-rtd-theme"
+version = "0.5.2"
+description = "Read the Docs theme for Sphinx"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+docutils = "<0.17"
+sphinx = "*"
+
+[package.extras]
+dev = ["transifex-client", "sphinxcontrib-httpdomain", "bump2version"]
+
+[[package]]
 name = "sphinxcontrib-apidoc"
 version = "0.3.0"
 description = "A Sphinx extension for running 'sphinx-apidoc' on each build"
@@ -717,7 +732,7 @@ brotli = ["brotlipy (>=0.6.0)"]
 
 [[package]]
 name = "virtualenv"
-version = "20.4.6"
+version = "20.4.7"
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
@@ -736,7 +751,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "5a8b018c68cffcbbaa940710d84a337c76268dcefcaa6aada58155c6fcd48d06"
+content-hash = "eb356e869e615b9ea1fd54d2f14847ccd59dce8c189854d95a3564f273620ace"
 
 [metadata.files]
 aiomisc = [
@@ -977,8 +992,8 @@ distlib = [
     {file = "distlib-0.3.1.zip", hash = "sha256:edf6116872c863e1aa9d5bb7cb5e05a022c519a4594dc703843343a9ddd9bff1"},
 ]
 docutils = [
-    {file = "docutils-0.17.1-py2.py3-none-any.whl", hash = "sha256:cf316c8370a737a022b72b56874f6602acf974a37a9fba42ec2876387549fc61"},
-    {file = "docutils-0.17.1.tar.gz", hash = "sha256:686577d2e4c32380bb50cbb22f575ed742d58168cee37e99117a854bcd88f125"},
+    {file = "docutils-0.16-py2.py3-none-any.whl", hash = "sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af"},
+    {file = "docutils-0.16.tar.gz", hash = "sha256:c2de3a60e9e7d07be26b7f2b00ca0309c207e06c100f9cc2a94931fc75a478fc"},
 ]
 fastavro = [
     {file = "fastavro-1.4.1-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:3f99237de0f853f083a0f9929f54155b408a5c4b04fcfa8c59e589aa853f2111"},
@@ -1005,8 +1020,8 @@ flake8 = [
     {file = "flake8-3.9.2.tar.gz", hash = "sha256:07528381786f2a6237b061f6e96610a4167b226cb926e2aa2b6b1d78057c576b"},
 ]
 identify = [
-    {file = "identify-2.2.5-py2.py3-none-any.whl", hash = "sha256:9c3ab58543c03bd794a1735e4552ef6dec49ec32053278130d525f0982447d47"},
-    {file = "identify-2.2.5.tar.gz", hash = "sha256:bc1705694253763a3160b943316867792ec00ba7a0ee40b46e20aebaf4e0c46a"},
+    {file = "identify-2.2.6-py2.py3-none-any.whl", hash = "sha256:1560bb645b93d5c05c3535c72a4f4884133006423d02c692ac6862a45eb0d521"},
+    {file = "identify-2.2.6.tar.gz", hash = "sha256:01ebbc7af37043806216c7550539210cde4f82451983eb8735a02b3b9d013e40"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
@@ -1304,6 +1319,10 @@ sphinx-autodoc-typehints = [
     {file = "sphinx-autodoc-typehints-1.12.0.tar.gz", hash = "sha256:193617d9dbe0847281b1399d369e74e34cd959c82e02c7efde077fca908a9f52"},
     {file = "sphinx_autodoc_typehints-1.12.0-py3-none-any.whl", hash = "sha256:5e81776ec422dd168d688ab60f034fccfafbcd94329e9537712c93003bddc04a"},
 ]
+sphinx-rtd-theme = [
+    {file = "sphinx_rtd_theme-0.5.2-py2.py3-none-any.whl", hash = "sha256:4a05bdbe8b1446d77a01e20a23ebc6777c74f43237035e76be89699308987d6f"},
+    {file = "sphinx_rtd_theme-0.5.2.tar.gz", hash = "sha256:32bd3b5d13dc8186d7a42fc816a23d32e83a4827d7d9882948e7b837c232da5a"},
+]
 sphinxcontrib-apidoc = [
     {file = "sphinxcontrib-apidoc-0.3.0.tar.gz", hash = "sha256:729bf592cf7b7dd57c4c05794f732dc026127275d785c2a5494521fdde773fb9"},
     {file = "sphinxcontrib_apidoc-0.3.0-py2.py3-none-any.whl", hash = "sha256:6671a46b2c6c5b0dca3d8a147849d159065e50443df79614f921b42fbd15cb09"},
@@ -1373,6 +1392,6 @@ urllib3 = [
     {file = "urllib3-1.26.4.tar.gz", hash = "sha256:e7b021f7241115872f92f43c6508082facffbd1c048e3c6e2bb9c2a157e28937"},
 ]
 virtualenv = [
-    {file = "virtualenv-20.4.6-py2.py3-none-any.whl", hash = "sha256:307a555cf21e1550885c82120eccaf5acedf42978fd362d32ba8410f9593f543"},
-    {file = "virtualenv-20.4.6.tar.gz", hash = "sha256:72cf267afc04bf9c86ec932329b7e94db6a0331ae9847576daaa7ca3c86b29a4"},
+    {file = "virtualenv-20.4.7-py2.py3-none-any.whl", hash = "sha256:2b0126166ea7c9c3661f5b8e06773d28f83322de7a3ff7d06f0aed18c9de6a76"},
+    {file = "virtualenv-20.4.7.tar.gz", hash = "sha256:14fdf849f80dbb29a4eb6caa9875d476ee2a5cf76a5f5415fa2f1606010ab467"},
 ]

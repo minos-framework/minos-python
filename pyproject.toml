@@ -50,6 +50,7 @@ Sphinx = "^4.0.1"
 pre-commit = "^2.12.1"
 sphinx-autodoc-typehints = "^1.12.0"
 sphinxcontrib-apidoc = "^0.3.0"
+sphinx-rtd-theme ="^0.5.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -167,6 +167,7 @@ class MinosConfig(MinosConfigAbstract):
     """
     A Minos configuration provides information on the connection points available at that service.
     It consists of the following parts:
+
     - Service meta-information (such as name, or version).
     - REST Service endpoints available.
     - Repository database connection for event sourcing.
