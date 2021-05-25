@@ -56,7 +56,7 @@ class SagaManager(MinosSagaManager):
         self.definitions = definitions
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSagaManager:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
         """Build an instance from config.
 
         :param args: Additional positional arguments.
