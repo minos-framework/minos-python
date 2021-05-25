@@ -35,7 +35,11 @@ class CommandReplyHandler(Handler):
     saga_manager: MinosSagaManager = Provide["saga_manager"]
 
     def __init__(self, *, config: MinosConfig, saga_manager: MinosSagaManager = None, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, config=config.saga, **kwargs)
+        self._handlers = {
+            f"{item.name}Reply": {"controller": item.controller, "action": item.action} for item in config.saga.items
+        }
+        self._topics = list(self._handlers.keys())
+        super().__init__(table_name=self.TABLE, config=config.commands, topics=self._topics, **kwargs)
 
         self._broker_group_name = f"event_{config.service.name}"
 

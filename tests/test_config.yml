@@ -51,6 +51,9 @@ commands:
         -   name: AddOrder
             controller: tests.services.CommandTestService.CommandService
             action: add_order
+        -   name: AddOrderReply
+            controller: tests.services.CommandTestService.CommandService
+            action: add_order_reply
         -   name: DeleteOrder
             controller: tests.services.CommandTestService.CommandService
             action: delete_order

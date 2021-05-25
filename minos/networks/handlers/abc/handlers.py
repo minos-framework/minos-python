@@ -50,13 +50,12 @@ class Handler(HandlerSetup):
 
     __slots__ = "_handlers", "_event_items", "_topics", "_conf"
 
-    def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
+    def __init__(self, *, table_name: str, config: NamedTuple, topics: list, **kwargs: Any):
         super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
-        self._handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._event_items = config.items
-        self._topics = list(self._handlers.keys())
         self._conf = config
         self._table_name = table_name
+        self._topics = topics
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Handler:
