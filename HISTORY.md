@@ -13,3 +13,9 @@ History
 
 * Moved to Poetry
 * Added actions for documentation
+
+0.0.3 (2021-05-20)
+------------------
+
+* Added Dependency injection Container use
+* Completed Saga Manager
