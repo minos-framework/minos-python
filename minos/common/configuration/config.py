@@ -164,7 +164,17 @@ class MinosConfigAbstract(abc.ABC):
 
 
 class MinosConfig(MinosConfigAbstract):
-    """Minos config class."""
+    """
+    A Minos configuration provides information on the connection points available at that service.
+    It consists of the following parts:
+    - Service meta-information (such as name, or version).
+    - REST Service endpoints available.
+    - Repository database connection for event sourcing.
+    - Snapshot database connection.
+    - Events it publishes/consumes from de given Kafka service.
+    - Commands it reacts to from other microservices.
+    - Sagas it takes part on.
+    """
 
     __slots__ = ("_data", "_with_environment", "_parameterized")
 
