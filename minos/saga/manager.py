@@ -50,13 +50,13 @@ class SagaManager(MinosSagaManager):
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    # noinspection PyUnusedLocal
     def __init__(self, storage: SagaExecutionStorage, definitions: dict[str, Saga], *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.storage = storage
         self.definitions = definitions
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSagaManager:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
         """Build an instance from config.
 
         :param args: Additional positional arguments.
