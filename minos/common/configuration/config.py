@@ -168,7 +168,7 @@ class MinosConfig(MinosConfigAbstract):
 
     __slots__ = ("_data", "_with_environment", "_parameterized")
 
-    def __init__(self, path: t.Union[Path, str], with_environment: bool = True, **kwargs):
+    def __init__(self, path: Path | str, with_environment: bool = True, **kwargs):
         super().__init__(path)
         self._with_environment = with_environment
         self._parameterized = kwargs
