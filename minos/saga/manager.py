@@ -68,24 +68,6 @@ class SagaManager(MinosSagaManager):
         definitions = _build_definitions(config.saga.items)
         return cls(*args, storage=storage, definitions=definitions, **kwargs)
 
-    async def run(self, name=None, reply=None, **kwargs):
-        """Perform a run of a ``Saga``.
-
-        The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
-
-        :param name: The name of the saga to be executed.
-        :param reply: The reply that relaunches a saga execution.
-        :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
-        """
-        if name is not None:
-            return await self._run_new(name, **kwargs)
-
-        if reply is not None:
-            return await self._load_and_run(reply, **kwargs)
-
-        raise ValueError("At least a 'name' or a 'reply' must be provided.")
-
     async def _run_new(self, name: str, **kwargs) -> UUID:
         definition = self.definitions.get(name)
         execution = SagaExecution.from_saga(definition)
