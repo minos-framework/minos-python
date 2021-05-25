@@ -28,7 +28,7 @@ from tests.utils import (
 )
 
 
-class TestSagaManager(unittest.TestCase):
+class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     def setUp(self) -> None:
@@ -41,6 +41,10 @@ class TestSagaManager(unittest.TestCase):
     def test_constructor(self):
         manager = SagaManager.from_config(config=self.config)
         self.assertIsInstance(manager.storage, SagaExecutionStorage)
+
+    async def test_context_manager(self):
+        async with SagaManager.from_config(config=self.config) as saga_manager:
+            self.assertIsInstance(saga_manager, SagaManager)
 
     async def test_run_ok(self):
         manager = SagaManager.from_config(config=self.config)
