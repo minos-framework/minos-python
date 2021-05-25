@@ -19,6 +19,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('..'))
 
 from minos import common
@@ -31,8 +32,12 @@ from minos import common
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
-
+extensions = [
+    "sphinxcontrib.apidoc",
+    'sphinx.ext.autodoc',
+    "sphinx_autodoc_typehints",
+    'sphinx.ext.viewcode',
+]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -77,7 +82,6 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
-
 # -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -89,19 +93,26 @@ html_theme = 'alabaster'
 # theme further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "codecov_button": True,
+    "description": "Reactive microservices for an asynchronous world",
+    "github_button": True,
+    "github_user": "Clariteia",
+    "github_repo": "minos_microservice_common",
+    "github_type": "star",
+}
+
+html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'minosdoc'
-
 
 # -- Options for LaTeX output ------------------------------------------
 
@@ -132,7 +143,6 @@ latex_documents = [
      'Clariteia Devs', 'manual'),
 ]
 
-
 # -- Options for manual page output ------------------------------------
 
 # One entry per manual page. List of tuples
@@ -142,7 +152,6 @@ man_pages = [
      'Minos Microservice Common Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output ----------------------------------------
 
@@ -158,5 +167,26 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
+# "apidoc" extension
+apidoc_module_dir = "../minos/"
+apidoc_output_dir = "api"
+apidoc_separate_modules = True
+autodoc_default_options = {
+    "inherited-members": True,
+    "special-members": "__init__",
+    "undoc-members": True,
+}
 
+apidoc_toc_file = False
+apidoc_module_first = True
+apidoc_extra_args = [
+    "--force",
+    "--implicit-namespaces",
+]
+apidoc_excluded_paths = [
+    '../minos/common/testing.py'
+]
+# "autodoc typehints" extension
 
+set_type_checking_flag = True
+typehints_fully_qualified = True
