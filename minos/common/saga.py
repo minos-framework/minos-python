@@ -14,8 +14,10 @@ from abc import (
     abstractmethod,
 )
 from typing import (
-    NoReturn,
     Optional,
+)
+from uuid import (
+    UUID,
 )
 
 from .model import (
@@ -29,7 +31,7 @@ from .setup import (
 class MinosSagaManager(ABC, MinosSetup):
     """Base class for saga manager implementations."""
 
-    def run(self, name: Optional[str] = None, reply: Optional[CommandReply] = None, **kwargs) -> NoReturn:
+    async def run(self, name: Optional[str] = None, reply: Optional[CommandReply] = None, **kwargs) -> UUID:
         """Perform a run of a ``Saga``.
 
         The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
@@ -40,17 +42,17 @@ class MinosSagaManager(ABC, MinosSetup):
         :return: This method does not return anything.
         """
         if name is not None:
-            return self._run_new(name, **kwargs)
+            return await self._run_new(name, **kwargs)
 
         if reply is not None:
-            return self._load_and_run(reply, **kwargs)
+            return await self._load_and_run(reply, **kwargs)
 
         raise ValueError("At least a 'name' or a 'reply' must be provided.")
 
     @abstractmethod
-    def _run_new(self, name: str, **kwargs) -> NoReturn:
+    async def _run_new(self, name: str, **kwargs) -> UUID:
         raise NotImplementedError
 
     @abstractmethod
-    def _load_and_run(self, reply: CommandReply, **kwargs) -> NoReturn:
+    async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
         raise NotImplementedError
