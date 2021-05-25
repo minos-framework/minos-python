@@ -6,6 +6,9 @@ jobs:
         container: python:3.9-buster
 
         steps:
+            -   name: Install System Dependencies
+                run: apt-get update && apt-get install --yes git
+
             -   name: Check out repository code
                 uses: actions/checkout@v2
 

@@ -373,7 +373,7 @@ PyYAML = "^5.4.1"
 
 [package.source]
 type = "git"
-url = "git@github.com:Clariteia/minos_microservice_common.git"
+url = "git@github.com:Clariteia/minos_microservice_common"
 reference = "0.0.15"
 resolved_reference = "9d2a58ea2bef2be30dd1f29201291a4ca3487a85"
 
@@ -726,7 +726,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "42fd5009b48e11837a0785d70949896a3ba86037a88d0d40d965e02178627e28"
+content-hash = "912b7bdeb1cda195fd80a1b4c7c22e78cf667562dd72b9e7ec7823e1fbf2822d"
 
 [metadata.files]
 aiomisc = [
