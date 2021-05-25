@@ -46,4 +46,4 @@ class CommandReplyHandler(Handler):
         return CommandReply.from_avro_bytes(value)
 
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
-        self.saga_manager.run(reply=row.data)
+        await self.saga_manager.run(reply=row.data)
