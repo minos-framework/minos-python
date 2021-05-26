@@ -69,7 +69,7 @@ class SagaExecutionStep(object):
         current["status"] = SagaStepStatus.from_raw(current["status"])
         return cls(**current)
 
-    def execute(self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
+    async def execute(self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
         """Execution the step.
 
         :param context: The execution context to be used during the execution.
@@ -77,43 +77,43 @@ class SagaExecutionStep(object):
         :return: The updated context.
         """
 
-        self._execute_invoke_participant(context, *args, **kwargs)
-        context = self._execute_on_reply(context, reply, *args, **kwargs)
+        await self._execute_invoke_participant(context, *args, **kwargs)
+        context = await self._execute_on_reply(context, reply, *args, **kwargs)
 
         self.status = SagaStepStatus.Finished
         return context
 
-    def _execute_invoke_participant(self, context: SagaContext, *args, **kwargs) -> NoReturn:
+    async def _execute_invoke_participant(self, context: SagaContext, *args, **kwargs) -> NoReturn:
         if self.status != SagaStepStatus.Created:
             return
 
         self.status = SagaStepStatus.RunningInvokeParticipant
         executor = PublishExecutor(*args, **kwargs)
         try:
-            executor.exec(self.definition.invoke_participant_operation, context)
+            await executor.exec(self.definition.invoke_participant_operation, context)
         except MinosSagaException:
             self.status = SagaStepStatus.ErroredInvokeParticipant
             raise MinosSagaFailedExecutionStepException()
         self.status = SagaStepStatus.FinishedInvokeParticipant
 
-    def _execute_on_reply(
+    async def _execute_on_reply(
         self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
     ) -> SagaContext:
         self.status = SagaStepStatus.RunningOnReply
         executor = OnReplyExecutor(*args, **kwargs)
         # noinspection PyBroadException
         try:
-            context = executor.exec(self.definition.on_reply_operation, context, reply)
+            context = await executor.exec(self.definition.on_reply_operation, context, reply)
         except MinosSagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedOnReply
             raise exc
         except Exception:
             self.status = SagaStepStatus.ErroredOnReply
-            self.rollback(context, *args, **kwargs)
+            await self.rollback(context, *args, **kwargs)
             raise MinosSagaFailedExecutionStepException()
         return context
 
-    def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
+    async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
         """Revert the invoke participant operation with a with compensation operation.
 
         :param context: Execution context.
@@ -126,7 +126,7 @@ class SagaExecutionStep(object):
             raise MinosSagaRollbackExecutionStepException("The step was already rollbacked.")
 
         executor = PublishExecutor(*args, **kwargs)
-        executor.exec(self.definition.with_compensation_operation, context)
+        await executor.exec(self.definition.with_compensation_operation, context)
 
         self.already_rollback = True
         return context

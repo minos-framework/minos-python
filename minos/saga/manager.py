@@ -68,18 +68,18 @@ class SagaManager(MinosSagaManager):
         definitions = _build_definitions(config.saga.items)
         return cls(*args, storage=storage, definitions=definitions, **kwargs)
 
-    def _run_new(self, name: str, **kwargs) -> UUID:
+    async def _run_new(self, name: str, **kwargs) -> UUID:
         definition = self.definitions.get(name)
         execution = SagaExecution.from_saga(definition)
-        return self._run(execution, **kwargs)
+        return await self._run(execution, **kwargs)
 
-    def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
+    async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
         execution = self.storage.load(reply.task_id)
-        return self._run(execution, reply=reply, **kwargs)
+        return await self._run(execution, reply=reply, **kwargs)
 
-    def _run(self, execution: SagaExecution, **kwargs) -> UUID:
+    async def _run(self, execution: SagaExecution, **kwargs) -> UUID:
         try:
-            execution.execute(**kwargs)
+            await execution.execute(**kwargs)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
             return execution.uuid

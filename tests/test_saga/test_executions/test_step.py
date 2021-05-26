@@ -61,64 +61,64 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     def tearDown(self) -> None:
         self.container.unwire()
 
-    def test_execute_invoke_participant(self):
+    async def test_execute_invoke_participant(self):
         step = SagaStep().invoke_participant("FooAdd", foo_fn)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
-        execution.execute(context, broker=self.broker, **self.execute_kwargs)
+        await execution.execute(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
-    def test_execute_invoke_participant_errored(self):
+    async def test_execute_invoke_participant_errored(self):
         step = SagaStep().invoke_participant("FooAdd", foo_fn_raises).with_compensation("FooDelete", foo_fn)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
         with self.assertRaises(MinosSagaFailedExecutionStepException):
-            execution.execute(context, **self.execute_kwargs)
+            await execution.execute(context, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
         self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, execution.status)
 
-    def test_execute_invoke_participant_with_on_reply(self):
+    async def test_execute_invoke_participant_with_on_reply(self):
         step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            execution.execute(context, broker=self.broker, **self.execute_kwargs)
+            await execution.execute(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
 
         reply = fake_reply(Foo("foo"))
-        execution.execute(context, reply=reply, broker=self.broker)
+        await execution.execute(context, reply=reply, broker=self.broker)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
-    def test_execute_on_reply(self):
+    async def test_execute_on_reply(self):
         step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
         reply = fake_reply(Foo("foo"))
-        context = execution.execute(context, reply=reply, **self.execute_kwargs)
+        context = await execution.execute(context, reply=reply, **self.execute_kwargs)
         self.assertEqual(SagaContext(foo=Foo("foo")), context)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
-    def test_execute_on_reply_errored(self):
+    async def test_execute_on_reply_errored(self):
         step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", foo_fn_raises)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
         reply = fake_reply(Foo("foo"))
         with self.assertRaises(MinosSagaFailedExecutionStepException):
-            execution.execute(context, reply=reply, **self.execute_kwargs)
+            await execution.execute(context, reply=reply, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
 
-    def test_rollback(self):
+    async def test_rollback(self):
         step = (
             SagaStep()
             .invoke_participant("FooAdd", foo_fn)
@@ -129,22 +129,22 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         execution = SagaExecutionStep(step)
 
         with self.assertRaises(MinosSagaRollbackExecutionStepException):
-            execution.rollback(context, broker=self.broker, **self.execute_kwargs)
+            await execution.rollback(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
         try:
-            execution.execute(context, broker=self.broker, **self.execute_kwargs)
+            await execution.execute(context, broker=self.broker, **self.execute_kwargs)
         except MinosSagaPausedExecutionStepException:
             pass
         self.assertEqual(1, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
 
-        execution.rollback(context, broker=self.broker, **self.execute_kwargs)
+        await execution.rollback(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.publish_mock.reset_mock()
         with self.assertRaises(MinosSagaRollbackExecutionStepException):
-            execution.rollback(context, broker=self.broker, **self.execute_kwargs)
+            await execution.rollback(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
     def test_raw(self):

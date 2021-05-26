@@ -112,7 +112,7 @@ class SagaExecution(object):
 
         return cls(definition, uuid4(), SagaContext(), *args, **kwargs)
 
-    def execute(self, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
+    async def execute(self, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
         """Execute the ``Saga`` definition.
 
         :param reply: An optional ``CommandReply`` to be consumed by the immediately next executed step.
@@ -124,12 +124,12 @@ class SagaExecution(object):
         for step in self._pending_steps:
             execution_step = SagaExecutionStep(step)
             try:
-                self.context = execution_step.execute(
+                self.context = await execution_step.execute(
                     self.context, reply, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
                 )
                 self._add_executed(execution_step)
             except MinosSagaFailedExecutionStepException as exc:
-                self.rollback(*args, **kwargs)
+                await self.rollback(*args, **kwargs)
                 self.status = SagaStatus.Errored
                 raise exc
             except MinosSagaPausedExecutionStepException as exc:
@@ -141,7 +141,7 @@ class SagaExecution(object):
         self.status = SagaStatus.Finished
         return self.context
 
-    def rollback(self, *args, **kwargs) -> NoReturn:
+    async def rollback(self, *args, **kwargs) -> NoReturn:
         """Revert the invoke participant operation with a with compensation operation.
 
         :param args: Additional positional arguments.
@@ -153,7 +153,7 @@ class SagaExecution(object):
             raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
 
         for execution_step in reversed(self.executed_steps):
-            self.context = execution_step.rollback(
+            self.context = await execution_step.rollback(
                 self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
             )
 

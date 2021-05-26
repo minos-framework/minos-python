@@ -46,29 +46,33 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         async with SagaManager.from_config(config=self.config) as saga_manager:
             self.assertIsInstance(saga_manager, SagaManager)
 
-    def test_run_ok(self):
+    async def test_run_ok(self):
         manager = SagaManager.from_config(config=self.config)
 
-        uuid = manager.run("AddOrder", broker=self.broker)
+        uuid = await manager.run("AddOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], "AddOrder", str(uuid)), broker=self.broker)
+        await manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], "AddOrder", str(uuid)), broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], "AddOrder", str(uuid)), broker=self.broker)
+        await manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], "AddOrder", str(uuid)), broker=self.broker)
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             manager.storage.load(uuid)
 
-    def test_run_err(self):
+    async def test_run_err(self):
         manager = SagaManager.from_config(config=self.config)
 
-        uuid = manager.run("DeleteOrder", broker=self.broker)
+        uuid = await manager.run("DeleteOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        manager.run(reply=CommandReply("DeleteOrderReply", [Foo("foo")], "DeleteOrder", str(uuid)), broker=self.broker)
+        await manager.run(
+            reply=CommandReply("DeleteOrderReply", [Foo("foo")], "DeleteOrder", str(uuid)), broker=self.broker
+        )
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        manager.run(reply=CommandReply("DeleteOrderReply", [Foo("foo")], "DeleteOrder", str(uuid)), broker=self.broker)
+        await manager.run(
+            reply=CommandReply("DeleteOrderReply", [Foo("foo")], "DeleteOrder", str(uuid)), broker=self.broker
+        )
         self.assertEqual(SagaStatus.Errored, manager.storage.load(uuid).status)
 
 
