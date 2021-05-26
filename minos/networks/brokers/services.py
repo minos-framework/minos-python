@@ -13,10 +13,6 @@ from aiomisc.service.periodic import (
     PeriodicService,
 )
 
-from minos.common import (
-    MinosConfig,
-)
-
 from .producers import (
     Producer,
 )
@@ -25,9 +21,9 @@ from .producers import (
 class ProducerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
-    def __init__(self, config: MinosConfig = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = Producer.from_config(config=config)
+        self.dispatcher = Producer.from_config(**kwargs)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
