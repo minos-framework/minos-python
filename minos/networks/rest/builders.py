@@ -11,11 +11,12 @@ from aiohttp import (
 
 from minos.common import (
     MinosConfig,
+    MinosSetup,
     import_module,
 )
 
 
-class RestBuilder:
+class RestBuilder(MinosSetup):
     """
     Rest Interface Handler
 
@@ -25,7 +26,8 @@ class RestBuilder:
 
     __slots__ = "_config", "_app"
 
-    def __init__(self, config: MinosConfig, app: web.Application = web.Application()):
+    def __init__(self, config: MinosConfig, app: web.Application = web.Application(), **kwargs):
+        super().__init__(**kwargs)
         self._config = config
         self._app = app
         self.load_routes()
