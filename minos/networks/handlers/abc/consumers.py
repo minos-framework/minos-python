@@ -43,14 +43,13 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_handler", "_topics", "_broker_group_name", "_kafka_conn_data"
+    __slots__ = "_tasks", "_handler", "_topics", "_kafka_conn_data"
 
     def __init__(self, *, config, consumer: Optional[Any] = None, **kwargs: Any):
         super().__init__(**kwargs, **config.queue._asdict())
         self._tasks = set()  # type: set[asyncio.Task]
         self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._topics = list(self._handler.keys())
-        self._broker_group_name = None
         self._kafka_conn_data = None
         self.__consumer = consumer
 
@@ -65,9 +64,7 @@ class Consumer(HandlerSetup):
     @property
     def _consumer(self) -> AIOKafkaConsumer:
         if self.__consumer is None:  # pragma: no cover
-            self.__consumer = AIOKafkaConsumer(
-                *self._topics, group_id=self._broker_group_name, bootstrap_servers=self._kafka_conn_data,
-            )
+            self.__consumer = AIOKafkaConsumer(*self._topics, bootstrap_servers=self._kafka_conn_data)
         return self.__consumer
 
     async def _destroy(self) -> NoReturn:

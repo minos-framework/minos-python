@@ -27,7 +27,6 @@ class CommandReplyConsumer(Consumer):
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
         super().__init__(config=config.saga, **kwargs)
         self._kafka_conn_data = f"{config.commands.broker.host}:{config.commands.broker.port}"
-        self._broker_group_name = f"event_{config.service.name}"
         self._topics = [f"{topic}Reply" for topic in self._handler.keys()]
 
     def _is_valid_instance(self, value: bytes):
