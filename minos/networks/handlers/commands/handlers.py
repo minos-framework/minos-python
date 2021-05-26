@@ -4,6 +4,9 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
+from __future__ import (
+    annotations,
+)
 
 from typing import (
     Any,
@@ -35,16 +38,19 @@ class CommandHandler(Handler):
 
     broker: MinosBroker = Provide["command_reply_broker"]
 
-    def __init__(self, *, config: MinosConfig, broker: MinosBroker = None, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, config=config.commands, **kwargs)
-
-        self._broker_group_name = f"event_{config.service.name}"
+    def __init__(self, *, service_name: str, broker: MinosBroker = None, **kwargs: Any):
+        super().__init__(table_name=self.TABLE, broker_group_name=f"command_{service_name}", **kwargs)
 
         if broker is not None:
             self.broker = broker
 
     def _build_data(self, value: bytes) -> Command:
         return Command.from_avro_bytes(value)
+
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
+        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
+        return cls(service_name=config.service.name, handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
         command: Command = row.data

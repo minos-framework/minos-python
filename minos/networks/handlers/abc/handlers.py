@@ -18,12 +18,10 @@ from datetime import (
 from typing import (
     Any,
     Callable,
-    NamedTuple,
     NoReturn,
 )
 
 from minos.common import (
-    MinosConfig,
     MinosModel,
     import_module,
 )
@@ -48,19 +46,21 @@ class Handler(HandlerSetup):
 
     """
 
-    __slots__ = "_handlers", "_event_items", "_topics", "_conf"
+    __slots__ = "_handlers", "_handlers"
 
-    def __init__(self, *, table_name: str, config: NamedTuple, **kwargs: Any):
-        super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
-        self._handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
-        self._event_items = config.items
-        self._topics = list(self._handlers.keys())
-        self._conf = config
-        self._table_name = table_name
-
-    @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Handler:
-        return cls(*args, config=config, **kwargs)
+    def __init__(
+        self,
+        *,
+        table_name: str,
+        broker_group_name: str,
+        records: int,
+        handlers: dict[str, dict[str, Any]],
+        **kwargs: Any,
+    ):
+        super().__init__(table_name=table_name, **kwargs)
+        self._handlers = handlers
+        self._records = records
+        self._broker_group_name = broker_group_name
 
     async def dispatch(self) -> NoReturn:
         """Event Queue Checker and dispatcher.
@@ -75,7 +75,7 @@ class Handler(HandlerSetup):
             Exception: An error occurred inserting record.
         """
         iterable = self.submit_query_and_iter(
-            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self._table_name, self._conf.queue.records),
+            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self.table_name, self._records),
         )
         async for row in iterable:
             try:
@@ -83,7 +83,7 @@ class Handler(HandlerSetup):
             except Exception as exc:
                 log.warning(exc)
                 continue
-            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self._table_name, row[0]))
+            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self.table_name, row[0]))
 
     async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
         """Dispatch one row.
@@ -115,21 +115,22 @@ class Handler(HandlerSetup):
             MinosNetworkException: topic TicketAdded have no controller/action configured, please review th
                 configuration file.
         """
-        for event in self._event_items:
-            if event.name == topic:
-                # the topic exist, get the controller and the action
-                controller = event.controller
-                action = event.action
+        if topic not in self._handlers:
+            raise MinosNetworkException(
+                f"topic {topic} have no controller/action configured, " f"please review th configuration file"
+            )
 
-                object_class = import_module(controller)
-                log.debug(object_class())
-                instance_class = object_class()
-                class_method = getattr(instance_class, action)
+        event = self._handlers[topic]
+        # the topic exist, get the controller and the action
+        controller = event["controller"]
+        action = event["action"]
 
-                return class_method
-        raise MinosNetworkException(
-            f"topic {topic} have no controller/action configured, " f"please review th configuration file"
-        )
+        object_class = import_module(controller)
+        log.debug(object_class())
+        instance_class = object_class()
+        class_method = getattr(instance_class, action)
+
+        return class_method
 
     @abstractmethod
     def _build_data(self, value: bytes) -> MinosModel:
