@@ -5,6 +5,8 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
+import functools
+
 from aiohttp import (
     web,
 )
@@ -45,8 +47,7 @@ class RestBuilder(MinosSetup):
         # Load default routes
         self._mount_system_health()
 
-    @staticmethod
-    def class_resolver(controller: str, action: str):
+    def class_resolver(self, controller: str, action: str):
         """Load controller class and action method.
         :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
         :param action: Config instance. Example: "get_order"
@@ -55,8 +56,9 @@ class RestBuilder(MinosSetup):
         object_class = import_module(controller)
         instance_class = object_class()
         class_method = getattr(instance_class, action)
+        partial = functools.partial(class_method, config=self._config)
 
-        return class_method
+        return partial
 
     def get_app(self):
         """Return rest application instance.
