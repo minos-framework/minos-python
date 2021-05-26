@@ -52,7 +52,7 @@ class TestMinosLocalState(unittest.IsolatedAsyncioTestCase):
 
         execution = SagaExecution.from_saga(self.saga)
         try:
-            execution.execute(broker=self.broker)
+            await execution.execute(broker=self.broker)
         except MinosSagaPausedExecutionStepException:
             pass
         reply = fake_reply(Foo("hola"))
