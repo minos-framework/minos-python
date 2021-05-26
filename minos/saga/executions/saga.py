@@ -55,6 +55,7 @@ class SagaExecution(object):
         context: SagaContext,
         status: SagaStatus = SagaStatus.Created,
         steps: list[SagaExecutionStep] = None,
+        paused_step: SagaExecutionStep = None,
         already_rollback: bool = False,
         *args,
         **kwargs
@@ -68,6 +69,7 @@ class SagaExecution(object):
         self.context = context
         self.status = status
         self.already_rollback = already_rollback
+        self.paused_step = paused_step
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaExecution], **kwargs) -> SagaExecution:
@@ -84,6 +86,9 @@ class SagaExecution(object):
         current["definition"] = Saga.from_raw(current["definition"])
         current["status"] = SagaStatus.from_raw(current["status"])
         current["context"] = SagaContext.from_avro_str(current["context"])
+        current["paused_step"] = (
+            None if current["paused_step"] is None else SagaExecutionStep.from_raw(current["paused_step"])
+        )
 
         if isinstance(current["uuid"], str):
             current["uuid"] = UUID(current["uuid"])
@@ -133,6 +138,7 @@ class SagaExecution(object):
                 self.status = SagaStatus.Errored
                 raise exc
             except MinosSagaPausedExecutionStepException as exc:
+                self.paused_step = execution_step
                 self.status = SagaStatus.Paused
                 raise exc
 
@@ -178,6 +184,7 @@ class SagaExecution(object):
             "uuid": str(self.uuid),
             "status": self.status.raw,
             "executed_steps": [step.raw for step in self.executed_steps],
+            "paused_step": None if self.paused_step is None else self.paused_step.raw,
             "context": self.context.avro_str,
             "already_rollback": self.already_rollback,
         }
