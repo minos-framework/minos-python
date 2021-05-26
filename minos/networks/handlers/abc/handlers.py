@@ -49,15 +49,9 @@ class Handler(HandlerSetup):
     __slots__ = "_handlers", "_handlers"
 
     def __init__(
-        self,
-        *,
-        table_name: str,
-        broker_group_name: str,
-        records: int,
-        handlers: dict[str, dict[str, Any]],
-        **kwargs: Any,
+        self, *, broker_group_name: str, records: int, handlers: dict[str, dict[str, Any]], **kwargs: Any,
     ):
-        super().__init__(table_name=table_name, **kwargs)
+        super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
         self._broker_group_name = broker_group_name
@@ -75,7 +69,7 @@ class Handler(HandlerSetup):
             Exception: An error occurred inserting record.
         """
         iterable = self.submit_query_and_iter(
-            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self.table_name, self._records),
+            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self.TABLE_NAME, self._records),
         )
         async for row in iterable:
             try:
@@ -83,7 +77,7 @@ class Handler(HandlerSetup):
             except Exception as exc:
                 log.warning(exc)
                 continue
-            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self.table_name, row[0]))
+            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self.TABLE_NAME, row[0]))
 
     async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
         """Dispatch one row.

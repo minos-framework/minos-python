@@ -29,10 +29,10 @@ from ..entries import (
 class EventHandler(Handler):
     """Event Handler class."""
 
-    TABLE = "event_queue"
+    TABLE_NAME = "event_queue"
 
     def __init__(self, *, service_name: str, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, broker_group_name=f"event_{service_name}", **kwargs)
+        super().__init__(broker_group_name=f"event_{service_name}", **kwargs)
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:

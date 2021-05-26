@@ -43,14 +43,13 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_handler", "_topics", "_table_name", "_broker_group_name", "_kafka_conn_data"
+    __slots__ = "_tasks", "_handler", "_topics", "_broker_group_name", "_kafka_conn_data"
 
-    def __init__(self, *, table_name: str, config, consumer: Optional[Any] = None, **kwargs: Any):
-        super().__init__(table_name=table_name, **kwargs, **config.queue._asdict())
+    def __init__(self, *, config, consumer: Optional[Any] = None, **kwargs: Any):
+        super().__init__(**kwargs, **config.queue._asdict())
         self._tasks = set()  # type: set[asyncio.Task]
         self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
         self._topics = list(self._handler.keys())
-        self._table_name = table_name
         self._broker_group_name = None
         self._kafka_conn_data = None
         self.__consumer = consumer
@@ -136,7 +135,7 @@ class Consumer(HandlerSetup):
             Exception: An error occurred inserting record.
         """
         queue_id = await self.submit_query_and_fetchone(
-            _INSERT_QUERY, (AsIs(self._table_name), topic, partition, binary, datetime.datetime.now()),
+            _INSERT_QUERY, (AsIs(self.TABLE_NAME), topic, partition, binary, datetime.datetime.now()),
         )
 
         return queue_id[0]
