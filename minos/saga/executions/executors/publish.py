@@ -68,7 +68,7 @@ class PublishExecutor(LocalExecutor):
 
         try:
             request = await self.exec_one(operation, context)
-            await self.publish(request)
+            await self._publish(operation, request)
         except MinosSagaException as exc:
             raise exc
         except Exception:
@@ -77,12 +77,11 @@ class PublishExecutor(LocalExecutor):
 
         return context
 
-    async def publish(self, request: MinosModel) -> NoReturn:
-        """Publish a request on the corresponding broker's queue./
-
-        :param request: The request to be published as a command.
-        :return: This method does not return anything.
-        """
+    async def _publish(self, operation: SagaStepOperation, request: MinosModel) -> NoReturn:
         await self._exec_function(
-            self.broker.send_one, item=request, saga_id=self.definition_name, task_id=str(self.execution_uuid)
+            self.broker.send_one,
+            topic=operation.name,
+            item=request,
+            saga_id=self.definition_name,
+            task_id=str(self.execution_uuid),
         )
