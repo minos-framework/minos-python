@@ -10,10 +10,6 @@ from aiomisc.service.periodic import (
     PeriodicService,
 )
 
-from minos.common import (
-    MinosConfig,
-)
-
 from .builders import (
     SnapshotBuilder,
 )
@@ -22,9 +18,9 @@ from .builders import (
 class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
-    def __init__(self, config: MinosConfig = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = SnapshotBuilder.from_config(config=config)
+        self.dispatcher = SnapshotBuilder.from_config(**kwargs)
 
     async def start(self) -> None:
         """Start the service execution.
