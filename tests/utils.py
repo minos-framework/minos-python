@@ -86,10 +86,10 @@ class FakeSagaManager(MinosSagaManager):
         self.name = None
         self.reply = None
 
-    def _run_new(self, name: str, **kwargs) -> NoReturn:
+    async def _run_new(self, name: str, **kwargs) -> NoReturn:
         self.name = name
 
-    def _load_and_run(self, reply: CommandReply, **kwargs) -> NoReturn:
+    async def _load_and_run(self, reply: CommandReply, **kwargs) -> NoReturn:
         self.reply = reply
 
 
