@@ -6,28 +6,18 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from typing import (
-    NoReturn,
-)
 
-from minos.common import (
-    Aggregate,
-    MinosBroker,
-)
 from tests.aggregate_classes import (
     Car,
 )
-
-
-class _MinosBroker(MinosBroker):
-    @classmethod
-    async def send(cls, items: list[Aggregate], **kwargs) -> NoReturn:
-        pass
+from tests.utils import (
+    FakeBroker,
+)
 
 
 class TestMinosBaseBroker(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.broker = _MinosBroker()
+        self.broker = FakeBroker()
 
     async def test_send(self):
         self.assertEqual(None, await self.broker.send([Car(1, 1, 3, "red"), Car(1, 1, 3, "red")]))
