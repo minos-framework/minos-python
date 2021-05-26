@@ -7,9 +7,6 @@ class CommandService(object):
     async def get_order(self, topic: str, command: Command):
         return "get_order"
 
-    async def add_order_reply(self, topic: str, command: Command):
-        return "add_order_reply"
-
     async def add_order(self, topic: str, command: Command):
         return "add_order"
 

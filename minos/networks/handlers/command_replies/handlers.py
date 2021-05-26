@@ -4,6 +4,10 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
+from __future__ import (
+    annotations,
+)
+
 from typing import (
     Any,
     NoReturn,
@@ -34,17 +38,20 @@ class CommandReplyHandler(Handler):
 
     saga_manager: MinosSagaManager = Provide["saga_manager"]
 
-    def __init__(self, *, config: MinosConfig, saga_manager: MinosSagaManager = None, **kwargs: Any):
-        self._handlers = {
-            f"{item.name}Reply": {"controller": item.controller, "action": item.action} for item in config.saga.items
-        }
-        self._topics = list(self._handlers.keys())
-        super().__init__(table_name=self.TABLE, config=config.commands, topics=self._topics, **kwargs)
-
-        self._broker_group_name = f"event_{config.service.name}"
+    def __init__(self, *, service_name: str, saga_manager: MinosSagaManager = None, **kwargs: Any):
+        super().__init__(table_name=self.TABLE, broker_group_name=f"command_reply_{service_name}", **kwargs)
 
         if saga_manager is not None:
             self.saga_manager = saga_manager
+
+    @property
+    def _topics(self):
+        return [f"{topic}Reply" for topic in self._handlers.keys()]
+
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
+        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.saga.items}
+        return cls(*args, service_name=config.service.name, handlers=handlers, **config.saga.queue._asdict(), **kwargs,)
 
     def _build_data(self, value: bytes) -> CommandReply:
         return CommandReply.from_avro_bytes(value)
