@@ -27,7 +27,6 @@ class EventConsumer(Consumer):
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
         super().__init__(config=config.events, **kwargs)
         self._kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
-        self._broker_group_name = f"event_{config.service.name}"
 
     def _is_valid_instance(self, value: bytes):
         try:

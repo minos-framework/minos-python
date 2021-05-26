@@ -48,13 +48,10 @@ class Handler(HandlerSetup):
 
     __slots__ = "_handlers", "_handlers"
 
-    def __init__(
-        self, *, broker_group_name: str, records: int, handlers: dict[str, dict[str, Any]], **kwargs: Any,
-    ):
+    def __init__(self, *, records: int, handlers: dict[str, dict[str, Any]], **kwargs: Any):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
-        self._broker_group_name = broker_group_name
 
     async def dispatch(self) -> NoReturn:
         """Event Queue Checker and dispatcher.
