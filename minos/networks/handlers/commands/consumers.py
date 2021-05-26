@@ -22,10 +22,10 @@ from ..abc import (
 class CommandConsumer(Consumer):
     """Command Consumer class."""
 
-    TABLE = "command_queue"
+    TABLE_NAME = "command_queue"
 
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, config=config.commands, **kwargs)
+        super().__init__(config=config.commands, **kwargs)
         self._kafka_conn_data = f"{config.commands.broker.host}:{config.commands.broker.port}"
         self._broker_group_name = f"event_{config.service.name}"
 

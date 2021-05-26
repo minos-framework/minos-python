@@ -17,9 +17,10 @@ from minos.common import (
 class HandlerSetup(PostgreSqlMinosDatabase):
     """Minos Broker Setup Class"""
 
-    def __init__(self, table_name: str, *args, **kwargs):
+    TABLE_NAME: str
+
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.table_name = table_name
 
     async def _setup(self) -> NoReturn:
         await self._create_event_queue_table()
@@ -31,5 +32,5 @@ class HandlerSetup(PostgreSqlMinosDatabase):
             '"topic" VARCHAR(255) NOT NULL, '
             '"partition_id" INTEGER,'
             '"binary_data" BYTEA NOT NULL, '
-            '"creation_date" TIMESTAMP NOT NULL);' % (self.table_name)
+            '"creation_date" TIMESTAMP NOT NULL);' % (self.TABLE_NAME)
         )

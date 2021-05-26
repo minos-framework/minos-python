@@ -34,12 +34,12 @@ from ..entries import (
 class CommandReplyHandler(Handler):
     """Command Reply Handler class."""
 
-    TABLE = "command_reply_queue"
+    TABLE_NAME = "command_reply_queue"
 
     saga_manager: MinosSagaManager = Provide["saga_manager"]
 
     def __init__(self, *, service_name: str, saga_manager: MinosSagaManager = None, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, broker_group_name=f"command_reply_{service_name}", **kwargs)
+        super().__init__(broker_group_name=f"command_reply_{service_name}", **kwargs)
 
         if saga_manager is not None:
             self.saga_manager = saga_manager

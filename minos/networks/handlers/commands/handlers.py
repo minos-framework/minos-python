@@ -34,12 +34,12 @@ from ..entries import (
 class CommandHandler(Handler):
     """Command Handler class."""
 
-    TABLE = "command_queue"
+    TABLE_NAME = "command_queue"
 
     broker: MinosBroker = Provide["command_reply_broker"]
 
     def __init__(self, *, service_name: str, broker: MinosBroker = None, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, broker_group_name=f"command_{service_name}", **kwargs)
+        super().__init__(broker_group_name=f"command_{service_name}", **kwargs)
 
         if broker is not None:
             self.broker = broker

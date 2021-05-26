@@ -22,10 +22,10 @@ from ..abc import (
 class EventConsumer(Consumer):
     """Event Consumer class."""
 
-    TABLE = "event_queue"
+    TABLE_NAME = "event_queue"
 
     def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, config=config.events, **kwargs)
+        super().__init__(config=config.events, **kwargs)
         self._kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
         self._broker_group_name = f"event_{config.service.name}"
 
