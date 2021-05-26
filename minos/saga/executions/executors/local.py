@@ -9,11 +9,9 @@ import inspect
 from abc import (
     ABC,
 )
-from collections import (
-    Callable,
-)
 from typing import (
     Any,
+    Callable,
 )
 
 from ...definitions import (

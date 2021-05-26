@@ -78,7 +78,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def tearDown(self) -> None:
         self.container.unwire()
 
-    def test_raw(self):
+    def tes_created(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             execution = SagaExecution.from_saga(self.saga)
 
@@ -113,6 +113,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 ],
             },
             "executed_steps": [],
+            "paused_step": None,
             "status": "created",
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
@@ -122,7 +123,60 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(expected, observed)
 
-    async def test_from_raw(self):
+    async def test_partial_step(self):
+        raw = {
+            "already_rollback": False,
+            "context": SagaContext().avro_str,
+            "definition": {
+                "name": "OrdersAdd",
+                "steps": [
+                    {
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_order_callback",
+                            "name": "CreateOrder",
+                        },
+                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
+                    },
+                    {
+                        "invoke_participant": {
+                            "callback": "tests.callbacks.create_ticket_callback",
+                            "name": "CreateTicket",
+                        },
+                        "on_reply": {"callback": "tests.utils.foo_fn_raises", "name": "order2"},
+                        "with_compensation": {
+                            "callback": "tests.callbacks.delete_order_callback",
+                            "name": "DeleteOrder",
+                        },
+                    },
+                ],
+            },
+            "executed_steps": [],
+            "paused_step": {
+                "definition": {
+                    "invoke_participant": {"callback": "tests.callbacks.create_order_callback", "name": "CreateOrder"},
+                    "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                    "with_compensation": {"callback": "tests.callbacks.delete_order_callback", "name": "DeleteOrder"},
+                },
+                "status": "paused-on-reply",
+                "already_rollback": False,
+            },
+            "status": "paused",
+            "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
+        }
+
+        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+            expected = SagaExecution.from_saga(self.saga)
+            with self.assertRaises(MinosSagaPausedExecutionStepException):
+                await expected.execute()
+
+        observed = SagaExecution.from_raw(raw)
+        self.assertEqual(expected, observed)
+
+    async def test_executed_step(self):
         raw = {
             "already_rollback": False,
             "context": SagaContext(order1=Foo("hola")).avro_str,
@@ -170,6 +224,15 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     "already_rollback": False,
                 }
             ],
+            "paused_step": {
+                "definition": {
+                    "invoke_participant": {"callback": "tests.callbacks.create_order_callback", "name": "CreateOrder"},
+                    "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                    "with_compensation": {"callback": "tests.callbacks.delete_order_callback", "name": "DeleteOrder"},
+                },
+                "status": "paused-on-reply",
+                "already_rollback": False,
+            },
             "status": "paused",
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
@@ -188,11 +251,6 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)
-
-    def test_from_raw_already(self):
-        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(self.saga)
-        self.assertEqual(expected, SagaExecution.from_raw(expected))
 
 
 if __name__ == "__main__":
