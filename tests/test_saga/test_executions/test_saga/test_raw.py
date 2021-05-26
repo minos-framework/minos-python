@@ -43,6 +43,21 @@ from tests.utils import (
 
 
 class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1")
+            .step()
+            .invoke_participant("CreateTicket", create_ticket_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order2", foo_fn_raises)
+            .commit()
+        )
+
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
@@ -64,20 +79,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.container.unwire()
 
     def test_raw(self):
-        saga = (
-            Saga("OrdersAdd")
-            .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
-            .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order2", foo_fn_raises)
-            .commit()
-        )
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            execution = SagaExecution.from_saga(saga)
+            execution = SagaExecution.from_saga(self.saga)
 
         expected = {
             "already_rollback": False,
@@ -171,20 +174,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
 
-        saga = (
-            Saga("OrdersAdd")
-            .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
-            .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order2", foo_fn_raises)
-            .commit()
-        )
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(saga)
+            expected = SagaExecution.from_saga(self.saga)
             try:
                 await expected.execute()
             except MinosSagaPausedExecutionStepException:
@@ -199,20 +190,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_from_raw_already(self):
-        saga = (
-            Saga("OrdersAdd")
-            .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
-            .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order2", foo_fn_raises)
-            .commit()
-        )
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(saga)
+            expected = SagaExecution.from_saga(self.saga)
         self.assertEqual(expected, SagaExecution.from_raw(expected))
 
 
