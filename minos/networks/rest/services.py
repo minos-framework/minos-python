@@ -5,7 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import typing as t
 
 from aiomisc.service.aiohttp import (
     AIOHTTPService,
@@ -28,12 +27,11 @@ class RestService(AIOHTTPService):
 
     """
 
-    def __init__(self, config: MinosConfig, **kwds: t.Any):
+    def __init__(self, config: MinosConfig, **kwargs):
         address = config.rest.broker.host
         port = config.rest.broker.port
-        super().__init__(address=address, port=port, **kwds)
-        self._config = config
-        self.rest = RestBuilder(config=self._config)
+        super().__init__(address=address, port=port, **kwargs)
+        self.rest = RestBuilder.from_config(config=config, **kwargs)
 
     async def create_application(self):
         return self.rest.get_app()  # pragma: no cover

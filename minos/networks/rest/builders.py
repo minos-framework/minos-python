@@ -32,6 +32,10 @@ class RestBuilder(MinosSetup):
         self._app = app
         self.load_routes()
 
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs):
+        return cls(*args, config=config, **kwargs)
+
     def load_routes(self):
         """Load routes from config file."""
         for item in self._config.rest.endpoints:
