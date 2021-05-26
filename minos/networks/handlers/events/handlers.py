@@ -32,7 +32,6 @@ class EventHandler(Handler):
     TABLE = "event_queue"
 
     def __init__(self, *, service_name: str, **kwargs: Any):
-
         super().__init__(table_name=self.TABLE, broker_group_name=f"event_{service_name}", **kwargs)
 
     @classmethod
