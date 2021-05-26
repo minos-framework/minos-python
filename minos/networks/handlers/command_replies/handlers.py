@@ -45,7 +45,11 @@ class CommandReplyHandler(Handler):
             self.saga_manager = saga_manager
 
     @property
-    def _topics(self):
+    def topics(self) -> list[str]:
+        """Subscribed topics of the handler.
+
+        :return: A list of string instances.
+        """
         return [f"{topic}Reply" for topic in self._handlers.keys()]
 
     @classmethod

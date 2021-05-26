@@ -63,7 +63,11 @@ class Handler(HandlerSetup):
         self._broker_group_name = broker_group_name
 
     @property
-    def _topics(self):
+    def topics(self) -> list[str]:
+        """Subscribed topics of the handler.
+
+        :return: A list of string instances.
+        """
         return list(self._handlers.keys())
 
     async def dispatch(self) -> NoReturn:

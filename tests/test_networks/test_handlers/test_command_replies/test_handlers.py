@@ -47,6 +47,10 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
             assert ret == [(1,)]
 
+    async def test_topics(self):
+        handler = CommandReplyHandler.from_config(config=self.config)
+        self.assertEqual(["AddOrderReply", "DeleteOrderReply"], handler.topics)
+
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = CommandReply(
