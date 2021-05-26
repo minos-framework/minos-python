@@ -44,17 +44,11 @@ class CommandReplyHandler(Handler):
         if saga_manager is not None:
             self.saga_manager = saga_manager
 
-    @property
-    def topics(self) -> list[str]:
-        """Subscribed topics of the handler.
-
-        :return: A list of string instances.
-        """
-        return [f"{topic}Reply" for topic in self._handlers.keys()]
-
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
-        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.saga.items}
+        handlers = {
+            f"{item.name}Reply": {"controller": item.controller, "action": item.action} for item in config.saga.items
+        }
         return cls(*args, service_name=config.service.name, handlers=handlers, **config.saga.queue._asdict(), **kwargs,)
 
     def _build_data(self, value: bytes) -> CommandReply:

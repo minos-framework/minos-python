@@ -32,10 +32,6 @@ class TestCommandHandler(PostgresAsyncTestCase):
         with self.assertRaises(MinosConfigException):
             CommandHandler.from_config()
 
-    async def test_topics(self):
-        handler = CommandHandler.from_config(config=self.config)
-        self.assertEqual(["AddOrder", "DeleteOrder", "UpdateOrder", "GetOrder"], handler.topics)
-
     async def test_if_queue_table_exists(self):
         async with CommandHandler.from_config(config=self.config):
             async with aiopg.connect(**self.commands_queue_db) as connect:

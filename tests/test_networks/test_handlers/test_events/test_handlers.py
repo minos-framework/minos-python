@@ -31,10 +31,6 @@ class TestEventHandler(PostgresAsyncTestCase):
         with self.assertRaises(MinosConfigException):
             EventHandler.from_config()
 
-    async def test_topics(self):
-        handler = EventHandler.from_config(config=self.config)
-        self.assertEqual(["TicketAdded", "TicketDeleted"], handler.topics)
-
     async def test_if_queue_table_exists(self):
         async with EventHandler.from_config(config=self.config):
             async with aiopg.connect(**self.events_queue_db) as connect:

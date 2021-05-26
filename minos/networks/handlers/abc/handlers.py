@@ -62,14 +62,6 @@ class Handler(HandlerSetup):
         self._records = records
         self._broker_group_name = broker_group_name
 
-    @property
-    def topics(self) -> list[str]:
-        """Subscribed topics of the handler.
-
-        :return: A list of string instances.
-        """
-        return list(self._handlers.keys())
-
     async def dispatch(self) -> NoReturn:
         """Event Queue Checker and dispatcher.
 
@@ -83,7 +75,7 @@ class Handler(HandlerSetup):
             Exception: An error occurred inserting record.
         """
         iterable = self.submit_query_and_iter(
-            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self.TABLE, self._records),
+            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self.table_name, self._records),
         )
         async for row in iterable:
             try:
@@ -91,7 +83,7 @@ class Handler(HandlerSetup):
             except Exception as exc:
                 log.warning(exc)
                 continue
-            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self.TABLE, row[0]))
+            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self.table_name, row[0]))
 
     async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
         """Dispatch one row.
