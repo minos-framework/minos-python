@@ -93,7 +93,7 @@ class SagaExecutionStep(object):
             await executor.exec(
                 self.definition.invoke_participant_operation,
                 context,
-                on_reply=self.definition.on_reply_operation is not None,
+                reply_on=self.definition.on_reply_operation is not None,
             )
         except MinosSagaException:
             self.status = SagaStepStatus.ErroredInvokeParticipant
@@ -130,7 +130,7 @@ class SagaExecutionStep(object):
             raise MinosSagaRollbackExecutionStepException("The step was already rollbacked.")
 
         executor = PublishExecutor(*args, **kwargs)
-        await executor.exec(self.definition.with_compensation_operation, context, on_reply=False)
+        await executor.exec(self.definition.with_compensation_operation, context, reply_on=False)
 
         self.already_rollback = True
         return context
