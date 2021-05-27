@@ -59,4 +59,5 @@ class CommandHandler(Handler):
 
         response = await row.callback(row.topic, command)
 
-        await self.broker.send(response, topic=f"{definition_id}Reply", saga_id=definition_id, task_id=execution_id)
+        if command.reply_on == "yes":
+            await self.broker.send(response, topic=f"{definition_id}Reply", saga_id=definition_id, task_id=execution_id)

@@ -72,5 +72,9 @@ class CommandBroker(Broker):
             task_id = self.task_id
         if reply_on is None:
             reply_on = self.reply_on
+
+        if isinstance(reply_on, bool):
+            reply_on = "yes" if reply_on else "no"
+
         command = Command(topic, items, saga_id, task_id, reply_on)
         return await self._send_bytes(command.topic, command.avro_bytes)

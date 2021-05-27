@@ -88,12 +88,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_event_dispatch(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = Command(
-            topic="AddOrder",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="mkk2334",
+            topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34", reply_on="yes",
         )
         bin_data = instance.avro_bytes
 
@@ -127,6 +122,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual("43434jhijReply", broker.topic)
         self.assertEqual("43434jhij", broker.saga_id)
         self.assertEqual("juhjh34", broker.task_id)
+        self.assertEqual(None, broker.reply_on)
 
     async def test_event_dispatch_wrong_event(self):
         async with CommandHandler.from_config(config=self.config) as handler:
