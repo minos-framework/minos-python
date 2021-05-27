@@ -56,12 +56,12 @@ class PublishExecutor(LocalExecutor):
         self.definition_name = definition_name
         self.execution_uuid = execution_uuid
 
-    async def exec(self, operation: SagaStepOperation, context: SagaContext, with_reply: bool) -> SagaContext:
+    async def exec(self, operation: SagaStepOperation, context: SagaContext, has_reply: bool) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
 
         :param operation: Operation to be executed.
         :param context: Execution context.
-        :param with_reply: If `True` the command is published expecting (and waiting) a reply, otherwise a reply is not
+        :param has_reply: If `True` the command is published expecting (and waiting) a reply, otherwise a reply is not
             expected (and waited)
         :return: A saga context instance.
         """
@@ -70,7 +70,7 @@ class PublishExecutor(LocalExecutor):
 
         try:
             request = await self.exec_one(operation, context)
-            await self._publish(operation, request, with_reply)
+            await self._publish(operation, request, has_reply)
         except MinosSagaException as exc:
             raise exc
         except Exception as exc:
@@ -79,12 +79,12 @@ class PublishExecutor(LocalExecutor):
 
         return context
 
-    async def _publish(self, operation: SagaStepOperation, request: MinosModel, with_reply: bool) -> NoReturn:
+    async def _publish(self, operation: SagaStepOperation, request: MinosModel, has_reply: bool) -> NoReturn:
         await self._exec_function(
             self.broker.send_one,
             topic=operation.name,
             item=request,
             saga_id=self.definition_name,
             task_id=str(self.execution_uuid),
-            reply_on=None if not with_reply else self.definition_name,
+            reply_on=None if not has_reply else self.definition_name,
         )

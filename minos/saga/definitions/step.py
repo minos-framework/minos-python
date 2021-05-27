@@ -183,7 +183,7 @@ class SagaStep(object):
         return self
 
     @property
-    def with_reply(self) -> bool:
+    def has_reply(self) -> bool:
         """Check if the step contains a reply operation or not.
 
         :return: A ``bool`` instance.
