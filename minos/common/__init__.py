@@ -112,8 +112,8 @@ from .networks import (
     MinosBroker,
 )
 from .protocol import (
-    MinosAvroProtocol,
-    MinosAvroValuesDatabase,
+    MinosAvroDatabaseProtocol,
+    MinosAvroMessageProtocol,
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
 )

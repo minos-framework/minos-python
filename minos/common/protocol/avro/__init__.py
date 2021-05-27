@@ -6,8 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from .protocols import (
+    MinosAvroDatabaseProtocol,
+    MinosAvroMessageProtocol,
     MinosAvroProtocol,
-    MinosAvroValuesDatabase,
 )
 from .schemas import (
     DATABASE_AVRO_SCHEMA,
