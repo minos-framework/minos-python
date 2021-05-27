@@ -50,7 +50,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Command(
-            topic="AddOrder",
+            topic="AddOrderReply",
             model=model.classname,
             items=[],
             saga_id="43434jhij",
@@ -62,7 +62,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         cls = m.get_event_handler(topic=event_instance.topic)
         result = await cls(topic=event_instance.topic, command=event_instance)
 
-        assert result == "add_order"
+        assert result == "add_order_saga"
 
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -88,7 +88,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_event_dispatch(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = Command(
-            topic="AddOrder",
+            topic="AddOrderReply",
             model=model.classname,
             items=[],
             saga_id="43434jhij",
@@ -123,7 +123,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
             assert records[0] == 0
 
-        self.assertEqual("add_order", broker.items)
+        self.assertEqual("add_order_saga", broker.items)
         self.assertEqual("43434jhijReply", broker.topic)
         self.assertEqual("43434jhij", broker.saga_id)
         self.assertEqual("juhjh34", broker.task_id)

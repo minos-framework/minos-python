@@ -50,7 +50,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = CommandReply(
-            topic="AddOrderReply",
+            topic="AddOrder",
             model=model.classname,
             items=[],
             saga_id="43434jhij",
@@ -88,7 +88,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     async def test_event_dispatch(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = CommandReply(
-            topic="AddOrderReply",
+            topic="AddOrder",
             model=model.classname,
             items=[],
             saga_id="43434jhij",
