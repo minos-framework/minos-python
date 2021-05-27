@@ -48,10 +48,10 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
 
         mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = mock
-        await executor.exec(operation, context)
+        await executor.exec(operation, context, False)
 
         self.assertEqual(1, mock.call_count)
-        args = call([Foo("hello")], topic="AddBar", saga_id="AddFoo", task_id=str(self.uuid))
+        args = call([Foo("hello")], topic="AddBar", saga_id="AddFoo", task_id=str(self.uuid), on_reply=False)
         self.assertEqual(args, mock.call_args)
 
 
