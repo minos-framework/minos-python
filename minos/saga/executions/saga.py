@@ -126,26 +126,34 @@ class SagaExecution(object):
         :return: A ``SagaContext instance.
         """
         self.status = SagaStatus.Running
+
+        if self.paused_step is not None:
+            try:
+                await self._execute_one(self.paused_step, reply=reply, *args, **kwargs)
+            finally:
+                self.paused_step = None
+
         for step in self._pending_steps:
             execution_step = SagaExecutionStep(step)
-            try:
-                self.context = await execution_step.execute(
-                    self.context, reply, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
-                )
-                self._add_executed(execution_step)
-            except MinosSagaFailedExecutionStepException as exc:
-                await self.rollback(*args, **kwargs)
-                self.status = SagaStatus.Errored
-                raise exc
-            except MinosSagaPausedExecutionStepException as exc:
-                self.paused_step = execution_step
-                self.status = SagaStatus.Paused
-                raise exc
-
-            reply = None  # Response is consumed
+            await self._execute_one(execution_step, *args, **kwargs)
 
         self.status = SagaStatus.Finished
         return self.context
+
+    async def _execute_one(self, execution_step, *args, **kwargs):
+        try:
+            self.context = await execution_step.execute(
+                self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
+            )
+            self._add_executed(execution_step)
+        except MinosSagaFailedExecutionStepException as exc:
+            await self.rollback(*args, **kwargs)
+            self.status = SagaStatus.Errored
+            raise exc
+        except MinosSagaPausedExecutionStepException as exc:
+            self.paused_step = execution_step
+            self.status = SagaStatus.Paused
+            raise exc
 
     async def rollback(self, *args, **kwargs) -> NoReturn:
         """Revert the invoke participant operation with a with compensation operation.

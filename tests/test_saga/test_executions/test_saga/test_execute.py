@@ -124,7 +124,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Errored, execution.status)
-        self.assertEqual(3, self.publish_mock.call_count)
+        self.assertEqual(2, self.publish_mock.call_count)
 
     async def test_rollback(self):
         saga = (
