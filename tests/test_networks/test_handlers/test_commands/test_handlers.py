@@ -108,7 +108,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
         self.assertEqual(1, broker.call_count)
         self.assertEqual("add_order", broker.items)
-        self.assertEqual("UpdateTicketReply", broker.topic)
+        self.assertEqual("UpdateTicket", broker.topic)
         self.assertEqual("43434jhij", broker.saga_id)
         self.assertEqual("juhjh34", broker.task_id)
         self.assertEqual(None, broker.reply_on)

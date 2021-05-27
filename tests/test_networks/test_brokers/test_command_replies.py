@@ -75,9 +75,9 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual(query, args[0])
-        self.assertEqual("CommandBroker", args[1][0])
+        self.assertEqual("CommandBrokerReply", args[1][0])
         self.assertEqual(
-            CommandReply(topic=topic, items=[item], saga_id=saga_id, task_id=task_id),
+            CommandReply(topic=f"{topic}Reply", items=[item], saga_id=saga_id, task_id=task_id),
             CommandReply.from_avro_bytes(args[1][1]),
         )
         self.assertEqual(0, args[1][2])
@@ -89,7 +89,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
         async with CommandReplyBroker.from_config(
-            "CommandReplyBroker-Delete", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232"
+            "TestDeleteReply", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232"
         ) as broker:
             queue_id_1 = await broker.send_one(item)
             queue_id_2 = await broker.send_one(item)
@@ -98,9 +98,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
 
         async with aiopg.connect(**self.events_queue_db) as connection:
             async with connection.cursor() as cursor:
-                await cursor.execute(
-                    "SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandReplyBroker-Delete"
-                )
+                await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "TestDeleteReply")
                 records = await cursor.fetchone()
 
         assert queue_id_1 > 0
@@ -111,7 +109,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
         async with CommandReplyBroker.from_config(
-            "CommandReplyBroker-Delete", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232",
+            "TestDeleteOrder", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232",
         ) as broker:
             queue_id_1 = await broker.send_one(item)
             queue_id_2 = await broker.send_one(item)
@@ -125,9 +123,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
 
         async with aiopg.connect(**self.events_queue_db) as connection:
             async with connection.cursor() as cursor:
-                await cursor.execute(
-                    "SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "CommandReplyBroker-Delete"
-                )
+                await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "TestDeleteOrderReply")
                 records = await cursor.fetchone()
 
                 await cursor.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_1)
