@@ -1,3 +1,8 @@
+import unittest
+from unittest.mock import (
+    MagicMock,
+)
+
 from aiohttp.test_utils import (
     AioHTTPTestCase,
     unittest_run_loop,
@@ -41,3 +46,15 @@ class TestRestService(AioHTTPTestCase):
 
         resp = await self.client.request("GET", "/system/health")
         assert resp.status == 200
+
+
+class TestRestServiceExecution(unittest.TestCase):
+    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+
+    async def test_exec(self):
+        config = MinosConfig(self.CONFIG_FILE_PATH)
+        dispatcher = RestService(config=config)
+        mock = MagicMock(side_effect=dispatcher.rest.load_routes)
+        dispatcher.rest.load_routes = mock
+
+        self.assertEqual(1, mock.call_count)
