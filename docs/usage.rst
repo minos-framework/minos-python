@@ -2,6 +2,8 @@
 Usage
 =====
 
-To use Minos Microservice Networks in a project::
+To use Minos Microservice Common in a project::
 
-    import minos_microservice_networks
+    import minos_microservice_common
+
+

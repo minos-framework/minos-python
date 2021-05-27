@@ -19,7 +19,6 @@
 #
 import os
 import sys
-
 sys.path.insert(0, os.path.abspath('..'))
 
 from minos import networks
@@ -32,13 +31,16 @@ from minos import networks
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+
+import sphinx_rtd_theme
+
 extensions = [
     "sphinxcontrib.apidoc",
     'sphinx.ext.autodoc',
     "sphinx_autodoc_typehints",
-    'sphinx.ext.viewcode',
+    "sphinx.ext.viewcode",
+    "sphinx_rtd_theme"
 ]
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -52,8 +54,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Minos Microservice Networks'
-copyright = "2021, Clariteia Devs"
+project = 'Minos Microservice Network'
+copyright = "2021, Clariteia"
 author = "Clariteia Devs"
 
 # The version info for the project you're documenting, acts as replacement
@@ -89,13 +91,24 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+
+# html_theme_options = {
+#     "codecov_button": True,
+#     "description": "Reactive microservices for an asynchronous world",
+#     "github_button": True,
+#     "github_user": "Clariteia",
+#     "github_repo": "minos_microservice_network",
+#     "github_type": "star",
+# }
+
+html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -134,7 +147,7 @@ latex_elements = {
 # [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'minos.tex',
-     'Minos Microservice Networks Documentation',
+     'Minos Microservice Netowrk Documentation',
      'Clariteia Devs', 'manual'),
 ]
 
@@ -145,7 +158,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'minos',
-     'Minos Microservice Networks Documentation',
+     'Minos Microservice Network Documentation',
      [author], 1)
 ]
 
@@ -157,14 +170,14 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'minos',
-     'Minos Microservice Networks Documentation',
+     'Minos Microservice Network Documentation',
      author,
      'minos',
      'One line description of project.',
      'Miscellaneous'),
 ]
 
-## "apidoc" extension
+# "apidoc" extension
 apidoc_module_dir = "../minos"
 apidoc_output_dir = "api"
 apidoc_separate_modules = True
@@ -181,7 +194,11 @@ apidoc_extra_args = [
     "--implicit-namespaces",
 ]
 
-## "autodoc typehints" extension
+# apidoc_excluded_paths = [
+#     '../minos/network/testing.py'
+# ]
+
+# "autodoc typehints" extension
 
 set_type_checking_flag = True
 typehints_fully_qualified = True
