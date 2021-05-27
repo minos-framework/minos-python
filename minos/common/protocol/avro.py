@@ -28,11 +28,14 @@ from .abc import (
 
 class MinosAvroProtocol(MinosBinaryProtocol):
     @classmethod
-    def encode(cls, headers: t.Dict, body: t.Any = None) -> bytes:
+    def encode(cls, headers: t.Dict, body: t.Union[dict, str, int, list] = None) -> bytes:
         """
-        encoder in avro
-        all the headers are converted in fields with doble underscore name
+        Encodes a message in Avro bytes.
+        All headers are converted in fields with double underscore name
         the body is a set fields coming from the data type.
+
+        :param headers: Header of the Avro schema.
+        :param body: Body of the Avro schema.
         """
 
         # prepare the headers
@@ -102,13 +105,12 @@ class MinosAvroProtocol(MinosBinaryProtocol):
                 },
             ],
         }
-        final_data = {}
-        final_data["headers"] = headers
+
+        final_data = {"headers": headers}
         if body:
             final_data["body"] = body
 
-        if not isinstance(final_data, list):
-            final_data = [final_data]
+        final_data = [final_data]
 
         return cls._encode(schema, final_data)
 
@@ -128,13 +130,19 @@ class MinosAvroProtocol(MinosBinaryProtocol):
 
     @classmethod
     def decode(cls, data: bytes) -> t.Dict:
+        """
+        Decoder in Avro.
+
+        :param data: Avro bytes to be decode.
+        """
+
         data_return: t.Dict = {}
         try:
             data_return["headers"] = {}
             for schema_dict in cls._decode(data):
                 log.debug("Avro: get the request/response in dict format")
                 data_return["headers"] = schema_dict["headers"]
-                # check wich type is body
+                # check which type is body
                 if "body" in schema_dict:
                     if isinstance(schema_dict["body"], dict):
                         data_return["body"] = {}
