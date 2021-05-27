@@ -26,6 +26,8 @@ class MinosAvroDatabaseProtocol(MinosAvroProtocol):
         the body is a set fields coming from the data type.
 
         :param value: The data to be stored.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: A bytes object.
         """
 
@@ -36,11 +38,13 @@ class MinosAvroDatabaseProtocol(MinosAvroProtocol):
         return super().encode(final_data, _AVRO_SCHEMA)
 
     @classmethod
-    def decode(cls, data: bytes, flatten: bool = True) -> Union[dict[str, Any], list[dict[str, Any]]]:
+    def decode(cls, data: bytes, flatten: bool = True, *args, **kwargs) -> Union[dict[str, Any], list[dict[str, Any]]]:
         """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
 
         :param data: A bytes object.
         :param flatten: If ``True`` tries to return the values as flat as possible.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: A dictionary or a list of dictionaries.
         """
         schema_dict = super().decode(data)

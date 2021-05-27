@@ -19,7 +19,7 @@ from .base import (
 
 
 class MinosAvroMessageProtocol(MinosAvroProtocol):
-    """TODO"""
+    """Minos Avro Messages Protocol class."""
 
     @classmethod
     def encode(cls, headers: dict, body: Any = None, *args, **kwargs) -> bytes:
@@ -39,12 +39,12 @@ class MinosAvroMessageProtocol(MinosAvroProtocol):
 
     @classmethod
     def decode(cls, data: bytes, *args, **kwargs) -> dict:
-        """TODO
+        """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
 
-        :param data: TODO
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param data: A bytes object.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A dictionary or a list of dictionaries.
         """
         data_return = {"headers": dict()}
         for schema_dict in super().decode(data, flatten=False):
