@@ -1,3 +1,5 @@
+import unittest
+
 from aiohttp.test_utils import (
     AioHTTPTestCase,
     unittest_run_loop,
@@ -41,3 +43,7 @@ class TestRestService(AioHTTPTestCase):
 
         resp = await self.client.request("GET", "/system/health")
         assert resp.status == 200
+
+
+if __name__ == "__main__":
+    unittest.main()
