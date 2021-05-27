@@ -49,9 +49,7 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        handlers = {
-            f"{item.name}Reply": {"controller": item.controller, "action": item.action} for item in config.saga.items
-        }
+        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
         return cls(service_name=config.service.name, handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:

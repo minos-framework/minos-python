@@ -46,7 +46,9 @@ class CommandReplyHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
-        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.saga.items}
+        handlers = {
+            f"{item.name}Reply": {"controller": item.controller, "action": item.action} for item in config.saga.items
+        }
         return cls(*args, service_name=config.service.name, handlers=handlers, **config.saga.queue._asdict(), **kwargs,)
 
     def _build_data(self, value: bytes) -> CommandReply:
