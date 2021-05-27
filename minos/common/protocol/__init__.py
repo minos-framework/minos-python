@@ -10,8 +10,9 @@ from .abc import (
     MinosBinaryProtocol,
 )
 from .avro import (
+    MinosAvroDatabaseProtocol,
+    MinosAvroMessageProtocol,
     MinosAvroProtocol,
-    MinosAvroValuesDatabase,
 )
 from .json import (
     MinosJsonBinaryProtocol,

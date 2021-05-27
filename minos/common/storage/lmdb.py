@@ -18,7 +18,7 @@ from pathlib import (
 import lmdb
 
 from ..protocol import (
-    MinosAvroValuesDatabase,
+    MinosAvroDatabaseProtocol,
     MinosBinaryProtocol,
 )
 from .abc import (
@@ -31,7 +31,7 @@ class MinosStorageLmdb(MinosStorage):
 
     __slots__ = "_env", "_protocol", "_tables"
 
-    def __init__(self, env: lmdb.Environment, protocol: t.Type[MinosBinaryProtocol] = MinosAvroValuesDatabase):
+    def __init__(self, env: lmdb.Environment, protocol: t.Type[MinosBinaryProtocol] = MinosAvroDatabaseProtocol):
         self._env: lmdb.Environment = env
         self._protocol = protocol
         self._tables = {}
