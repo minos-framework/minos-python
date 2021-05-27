@@ -5,7 +5,58 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-DATABASE_AVRO_SCHEMA = {
+
+from typing import (
+    Any,
+    Union,
+)
+
+from ...logs import (
+    log,
+)
+from .base import (
+    MinosAvroProtocol,
+)
+
+
+class MinosAvroDatabaseProtocol(MinosAvroProtocol):
+    """Encoder/Decoder class for values to be stored on the database with avro format."""
+
+    @classmethod
+    def encode(cls, value: Any, *args, **kwargs) -> bytes:
+        """Encoder in avro for database Values
+        all the headers are converted in fields with double underscore name
+        the body is a set fields coming from the data type.
+
+        :param value: The data to be stored.
+        :return: A bytes object.
+        """
+
+        # prepare the headers
+        final_data = dict()
+        final_data["content"] = value
+
+        return super().encode(final_data, _AVRO_SCHEMA)
+
+    @classmethod
+    def decode(cls, data: bytes, flatten: bool = True) -> Union[dict[str, Any], list[dict[str, Any]]]:
+        """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
+
+        :param data: A bytes object.
+        :param flatten: If ``True`` tries to return the values as flat as possible.
+        :return: A dictionary or a list of dictionaries.
+        """
+        ans = list()
+        for schema_dict in super().decode(data, flatten=False):
+            log.debug("Avro Database: get the values data")
+            schema_dict = schema_dict["content"]
+            ans.append(schema_dict)
+        if flatten and len(ans) == 1:
+            return ans[0]
+        return ans
+
+
+_AVRO_SCHEMA = {
     "type": "record",
     "namespace": "org.minos.protocol.database",
     "name": "value",
@@ -59,63 +110,5 @@ DATABASE_AVRO_SCHEMA = {
                 },
             ],
         }
-    ],
-}
-
-MESSAGE_AVRO_SCHEMA = {
-    "type": "record",
-    "namespace": "org.minos.protocol",
-    "name": "message",
-    "fields": [
-        {"name": "headers", "type": {"type": "map", "values": ["string", "int", "bytes", "long", "float", "boolean"]}},
-        {
-            "name": "body",
-            "type": [
-                "null",
-                "string",
-                "int",
-                "bytes",
-                "boolean",
-                "float",
-                "long",
-                {"type": "array", "items": ["int", "string", "bytes", "long", "boolean", "float"]},
-                {
-                    "type": "map",
-                    "values": [
-                        "null",
-                        "int",
-                        "string",
-                        "bytes",
-                        "boolean",
-                        "float",
-                        "long",
-                        {
-                            "type": "array",
-                            "items": [
-                                "string",
-                                "int",
-                                "bytes",
-                                "long",
-                                "boolean",
-                                "float",
-                                {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]},
-                            ],
-                        },
-                        {
-                            "type": "map",
-                            "values": [
-                                "string",
-                                "int",
-                                "bytes",
-                                "long",
-                                "boolean",
-                                "float",
-                                {"type": "map", "values": ["string", "int", "bytes", "long", "boolean", "float"]},
-                            ],
-                        },
-                    ],
-                },
-            ],
-        },
     ],
 }
