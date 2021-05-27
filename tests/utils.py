@@ -98,6 +98,7 @@ class FakeBroker(MinosBroker):
 
     def __init__(self):
         super().__init__()
+        self.call_count = 0
         self.items = None
         self.topic = None
         self.saga_id = None
@@ -114,6 +115,7 @@ class FakeBroker(MinosBroker):
         **kwargs
     ) -> NoReturn:
         """For testing purposes."""
+        self.call_count += 1
         self.items = items
         self.topic = topic
         self.saga_id = saga_id
