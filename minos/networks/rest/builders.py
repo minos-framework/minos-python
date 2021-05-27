@@ -4,8 +4,14 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
+from __future__ import (
+    annotations,
+)
 
 import functools
+from typing import (
+    Callable,
+)
 
 from aiohttp import (
     web,
@@ -35,19 +41,19 @@ class RestBuilder(MinosSetup):
         self.load_routes()
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs):
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
         return cls(*args, config=config, **kwargs)
 
     def load_routes(self):
         """Load routes from config file."""
         for item in self._config.rest.endpoints:
-            callable_f = self.class_resolver(item.controller, item.action)
+            callable_f = self.resolve_action(item.controller, item.action)
             self._app.router.add_route(item.method, item.route, callable_f)
 
         # Load default routes
         self._mount_system_health()
 
-    def class_resolver(self, controller: str, action: str):
+    def resolve_action(self, controller: str, action: str) -> Callable:
         """Load controller class and action method.
         :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
         :param action: Config instance. Example: "get_order"
