@@ -7,7 +7,10 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import io
-import typing as t
+from typing import (
+    Any,
+    Union,
+)
 
 from fastavro import (
     parse_schema,
@@ -28,7 +31,7 @@ from .abc import (
 
 class MinosAvroProtocol(MinosBinaryProtocol):
     @classmethod
-    def encode(cls, headers: t.Dict, body: t.Any = None) -> bytes:
+    def encode(cls, headers: dict, body: dict = None) -> bytes:
         """
         encoder in avro
         all the headers are converted in fields with doble underscore name
@@ -113,7 +116,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         return cls._encode(schema, final_data)
 
     @classmethod
-    def _encode(cls, schema_val: dict[str, t.Any], final_data: list[dict[str, t.Any]]) -> bytes:
+    def _encode(cls, schema_val: dict[str, Any], final_data: list[dict[str, Any]]) -> bytes:
         try:
             schema_bytes = parse_schema(schema_val)
             with io.BytesIO() as file:
@@ -127,8 +130,8 @@ class MinosAvroProtocol(MinosBinaryProtocol):
             )
 
     @classmethod
-    def decode(cls, data: bytes) -> t.Dict:
-        data_return: t.Dict = {}
+    def decode(cls, data: bytes) -> dict:
+        data_return: dict = {}
         try:
             data_return["headers"] = {}
             for schema_dict in cls._decode(data):
@@ -146,7 +149,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
             raise MinosProtocolException("Error decoding string, check if is a correct Avro Binary data")
 
     @classmethod
-    def _decode(cls, data: bytes) -> list[dict[str, t.Any]]:
+    def _decode(cls, data: bytes) -> list[dict[str, Any]]:
         with io.BytesIO(data) as file:
             return list(reader(file))
 
@@ -155,7 +158,7 @@ class MinosAvroValuesDatabase(MinosAvroProtocol):
     """Encoder/Decoder class for values to be stored on the database with avro format."""
 
     @classmethod
-    def encode(cls, value: t.Any, schema: t.Dict = None) -> bytes:
+    def encode(cls, value: Any, schema: dict = None) -> bytes:
         """Encoder in avro for database Values
         all the headers are converted in fields with double underscore name
         the body is a set fields coming from the data type.
@@ -243,7 +246,7 @@ class MinosAvroValuesDatabase(MinosAvroProtocol):
     @classmethod
     def decode(
         cls, data: bytes, content_root: bool = True, flatten: bool = True
-    ) -> t.Union[dict[str, t.Any], list[dict[str, t.Any]]]:
+    ) -> Union[dict[str, Any], list[dict[str, Any]]]:
         """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
 
         :param data: A bytes object.
