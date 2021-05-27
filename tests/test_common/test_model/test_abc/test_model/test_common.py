@@ -10,10 +10,7 @@ from typing import (
     Optional,
 )
 
-import pytest
-
 from minos.common import (
-    EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
     MinosModelException,
@@ -21,11 +18,6 @@ from minos.common import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     ModelField,
-    MultiTypeMinosModelSequenceException,
-)
-from tests.aggregate_classes import (
-    Car,
-    Owner,
 )
 from tests.model_classes import (
     Analytics,
@@ -85,7 +77,7 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual("John", model.name)
 
     def test_aggregate_wrong_int_type_setter(self):
-        with pytest.raises(MinosTypeAttributeException):
+        with self.assertRaises(MinosTypeAttributeException):
             Customer("1234S")
 
     def test_aggregate_string_type_setter(self):
@@ -95,12 +87,12 @@ class TestMinosModel(unittest.TestCase):
 
     def test_aggregate_wrong_string_type_setter_with_parser(self):
         model = Customer(123)
-        with pytest.raises(MinosParseAttributeException):
+        with self.assertRaises(MinosParseAttributeException):
             model.name = 456
 
     def test_aggregate_wrong_string_type_setter(self):
         model = Customer(123)
-        with pytest.raises(MinosTypeAttributeException):
+        with self.assertRaises(MinosTypeAttributeException):
             model.surname = 456
 
     def test_aggregate_bool_type_setter(self):
@@ -112,16 +104,16 @@ class TestMinosModel(unittest.TestCase):
     def test_aggregate_wrong_bool_type_setter(self):
         model = Customer(123)
         model.name = "John"
-        with pytest.raises(MinosTypeAttributeException):
+        with self.assertRaises(MinosTypeAttributeException):
             model.is_admin = "True"
 
     def test_aggregate_empty_mandatory_field(self):
-        with pytest.raises(MinosReqAttributeException):
+        with self.assertRaises(MinosReqAttributeException):
             Customer()
 
     def test_model_is_freezed_class(self):
         model = Customer(123)
-        with pytest.raises(MinosModelException):
+        with self.assertRaises(MinosModelException):
             model.address = "str kennedy"
 
     def test_model_list_class_attribute(self):
@@ -132,7 +124,7 @@ class TestMinosModel(unittest.TestCase):
 
     def test_model_list_wrong_attribute_type(self):
         model = Customer(123)
-        with pytest.raises(MinosTypeAttributeException):
+        with self.assertRaises(MinosTypeAttributeException):
             model.lists = [1, "hola", 8, 6]
 
     def test_model_ref(self):
@@ -140,168 +132,6 @@ class TestMinosModel(unittest.TestCase):
         user = User(1234)
         shopping_list.user = user
         self.assertEqual(user, shopping_list.user)
-
-    def test_avro_schema(self):
-        expected = {
-            "fields": [
-                {
-                    "name": "user",
-                    "type": [
-                        {
-                            "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
-                            "name": "User",
-                            "namespace": "tests.model_classes",
-                            "type": "record",
-                        },
-                        "null",
-                    ],
-                },
-                {"name": "cost", "type": "float"},
-            ],
-            "name": "ShoppingList",
-            "namespace": "tests.model_classes",
-            "type": "record",
-        }
-        self.assertEqual(expected, ShoppingList.avro_schema)
-
-    def test_avro_data(self):
-        shopping_list = ShoppingList(User(1234))
-        expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
-        self.assertEqual(expected, shopping_list.avro_data)
-
-    def test_avro_bytes(self):
-        shopping_list = ShoppingList(User(1234))
-        self.assertIsInstance(shopping_list.avro_bytes, bytes)
-
-    def test_avro_schema_model_ref(self):
-        # noinspection DuplicatedCode
-        expected = {
-            "fields": [
-                {"name": "id", "type": "int"},
-                {"name": "version", "type": "int"},
-                {"name": "doors", "type": "int"},
-                {"name": "color", "type": "string"},
-                {
-                    "name": "owner",
-                    "type": [
-                        {
-                            "default": [],
-                            "items": [
-                                {
-                                    "fields": [
-                                        {"name": "id", "type": "int"},
-                                        {"name": "version", "type": "int"},
-                                        {"name": "name", "type": "string"},
-                                        {"name": "surname", "type": "string"},
-                                        {"name": "age", "type": ["int", "null"]},
-                                    ],
-                                    "name": "Owner",
-                                    "namespace": "tests.aggregate_classes",
-                                    "type": "record",
-                                },
-                                "int",
-                            ],
-                            "type": "array",
-                        },
-                        "null",
-                    ],
-                },
-            ],
-            "name": "Car",
-            "namespace": "tests.aggregate_classes",
-            "type": "record",
-        }
-        self.assertEqual(expected, Car.avro_schema)
-
-    def test_avro_data_model_ref(self):
-        car = Car(1, 1, 5, "blue", [Owner(1, 1, "Hello", "Good Bye"), Owner(2, 1, "Foo", "Bar")])
-        expected = {
-            "color": "blue",
-            "doors": 5,
-            "id": 1,
-            "owner": [
-                {"age": None, "id": 1, "name": "Hello", "surname": "Good Bye", "version": 1},
-                {"age": None, "id": 2, "name": "Foo", "surname": "Bar", "version": 1},
-            ],
-            "version": 1,
-        }
-        self.assertEqual(expected, car.avro_data)
-
-    def test_avro_bytes_model_ref(self):
-        car = Car(1, 1, 5, "blue", [Owner(1, 1, "Hello", "Good Bye"), Owner(2, 1, "Foo", "Bar")])
-        self.assertIsInstance(car.avro_bytes, bytes)
-
-    def test_avro_schema_simple(self):
-        customer = Customer(1234)
-        expected = {
-            "fields": [
-                {"name": "id", "type": "int"},
-                {"name": "username", "type": ["string", "null"]},
-                {"name": "name", "type": ["string", "null"]},
-                {"name": "surname", "type": ["string", "null"]},
-                {"name": "is_admin", "type": ["boolean", "null"]},
-                {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
-            ],
-            "name": "Customer",
-            "namespace": "tests.model_classes",
-            "type": "record",
-        }
-        self.assertEqual(expected, customer.avro_schema)
-
-    def test_avro_data_simple(self):
-        customer = Customer(1234)
-        expected = {
-            "id": 1234,
-            "is_admin": None,
-            "lists": None,
-            "name": None,
-            "surname": None,
-            "username": None,
-        }
-        self.assertEqual(expected, customer.avro_data)
-
-    def test_avro_avro_str_single(self):
-        customer = Customer(1234)
-        avro_str = customer.avro_str
-        self.assertIsInstance(avro_str, str)
-        decoded_customer = Customer.from_avro_str(avro_str)
-        self.assertEqual(customer, decoded_customer)
-
-    def test_avro_bytes_single(self):
-        customer = Customer(1234)
-        avro_bytes = customer.avro_bytes
-        self.assertIsInstance(avro_bytes, bytes)
-        decoded_customer = Customer.from_avro_bytes(avro_bytes)
-        self.assertEqual(customer, decoded_customer)
-
-    def test_avro_to_avro_str(self):
-        customers = [Customer(1234), Customer(5678)]
-        avro_str = Customer.to_avro_str(customers)
-        self.assertIsInstance(avro_str, str)
-        decoded_customer = Customer.from_avro_str(avro_str)
-        self.assertEqual(customers, decoded_customer)
-
-    def test_avro_bytes_sequence(self):
-        customers = [Customer(1234), Customer(5678)]
-        avro_bytes = Customer.to_avro_bytes(customers)
-        self.assertIsInstance(avro_bytes, bytes)
-        decoded_customer = Customer.from_avro_bytes(avro_bytes)
-        self.assertEqual(customers, decoded_customer)
-
-    def test_avro_bytes_composed(self):
-        shopping_list = ShoppingList(User(1234), cost="1.234")
-        avro_bytes = shopping_list.avro_bytes
-        self.assertIsInstance(avro_bytes, bytes)
-        decoded_shopping_list = ShoppingList.from_avro_bytes(avro_bytes)
-        self.assertEqual(shopping_list, decoded_shopping_list)
-
-    def test_avro_bytes_empty_sequence(self):
-        with self.assertRaises(EmptyMinosModelSequenceException):
-            Customer.to_avro_bytes([])
-
-    def test_avro_bytes_multi_type_sequence(self):
-        with self.assertRaises(MultiTypeMinosModelSequenceException):
-            Customer.to_avro_bytes([User(1234), Customer(5678)])
 
     def test_model_ref_raises(self):
         shopping_list = ShoppingList(cost=3.14)
@@ -318,11 +148,11 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(orders, analytics.orders)
 
     def test_model_fail_list_class_attribute(self):
-        with pytest.raises(MinosMalformedAttributeException):
+        with self.assertRaises(MinosMalformedAttributeException):
             CustomerFailList(123)
 
     def test_model_fail_dict_class_attribute(self):
-        with pytest.raises(MinosMalformedAttributeException):
+        with self.assertRaises(MinosMalformedAttributeException):
             CustomerFailDict(123)
 
     def test_empty_required_value(self):

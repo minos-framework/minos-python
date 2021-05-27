@@ -15,6 +15,19 @@ from minos.common import (
 )
 
 
+class Foo(MinosModel):
+    """For testing purposes"""
+
+    text: str
+
+
+class Bar(MinosModel):
+    """For testing purposes"""
+
+    first: Foo
+    second: Foo
+
+
 class Base(MinosModel):
     """
     base class derived directly from MinosModel
