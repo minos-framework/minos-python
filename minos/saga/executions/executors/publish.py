@@ -56,12 +56,13 @@ class PublishExecutor(LocalExecutor):
         self.definition_name = definition_name
         self.execution_uuid = execution_uuid
 
-    async def exec(self, operation: SagaStepOperation, context: SagaContext, reply_on: bool) -> SagaContext:
+    async def exec(self, operation: SagaStepOperation, context: SagaContext, with_reply: bool) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
 
         :param operation: Operation to be executed.
         :param context: Execution context.
-        :param reply_on: TODO
+        :param with_reply: If `True` the command is published expecting (and waiting) a reply, otherwise a reply is not
+            expected (and waited)
         :return: A saga context instance.
         """
         if operation is None:
@@ -69,21 +70,21 @@ class PublishExecutor(LocalExecutor):
 
         try:
             request = await self.exec_one(operation, context)
-            await self._publish(operation, request, reply_on)
+            await self._publish(operation, request, with_reply)
         except MinosSagaException as exc:
             raise exc
-        except Exception:
-            exc = MinosSagaFailedExecutionStepException()  # FIXME: Include explanation.
+        except Exception as exc:
+            exc = MinosSagaFailedExecutionStepException(f"The raised exception is: {exc!r}")
             raise exc
 
         return context
 
-    async def _publish(self, operation: SagaStepOperation, request: MinosModel, reply_on: bool) -> NoReturn:
+    async def _publish(self, operation: SagaStepOperation, request: MinosModel, with_reply: bool) -> NoReturn:
         await self._exec_function(
             self.broker.send_one,
             topic=operation.name,
             item=request,
             saga_id=self.definition_name,
             task_id=str(self.execution_uuid),
-            reply_on=reply_on,
+            reply_on=None if not with_reply else self.definition_name,
         )
