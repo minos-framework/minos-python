@@ -11,9 +11,6 @@ from typing import (
     Union,
 )
 
-from ...logs import (
-    log,
-)
 from .base import (
     MinosAvroProtocol,
 )
@@ -46,14 +43,8 @@ class MinosAvroDatabaseProtocol(MinosAvroProtocol):
         :param flatten: If ``True`` tries to return the values as flat as possible.
         :return: A dictionary or a list of dictionaries.
         """
-        ans = list()
-        for schema_dict in super().decode(data, flatten=False):
-            log.debug("Avro Database: get the values data")
-            schema_dict = schema_dict["content"]
-            ans.append(schema_dict)
-        if flatten and len(ans) == 1:
-            return ans[0]
-        return ans
+        schema_dict = super().decode(data)
+        return schema_dict["content"]
 
 
 _AVRO_SCHEMA = {
