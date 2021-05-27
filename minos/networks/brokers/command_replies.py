@@ -44,7 +44,7 @@ class CommandReplyBroker(Broker):
         topic: Optional[str] = None,
         saga_id: Optional[str] = None,
         task_id: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> int:
         """Send a list of ``Aggregate`` instances.
 
@@ -60,5 +60,5 @@ class CommandReplyBroker(Broker):
             saga_id = self.saga_id
         if task_id is None:
             task_id = self.task_id
-        command_reply = CommandReply(topic=topic, items=items, saga_id=saga_id, task_id=task_id)
+        command_reply = CommandReply(topic=f"{topic}Reply", items=items, saga_id=saga_id, task_id=task_id)
         return await self._send_bytes(command_reply.topic, command_reply.avro_bytes)

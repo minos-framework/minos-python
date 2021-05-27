@@ -124,7 +124,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
             assert records[0] == 0
 
         self.assertEqual("add_order", broker.items)
-        self.assertEqual("43434jhijReply", broker.topic)
+        self.assertEqual("43434jhij", broker.topic)
         self.assertEqual("43434jhij", broker.saga_id)
         self.assertEqual("juhjh34", broker.task_id)
 
