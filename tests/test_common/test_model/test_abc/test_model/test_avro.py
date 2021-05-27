@@ -188,7 +188,22 @@ class TestMinosModelAvro(unittest.TestCase):
             Customer.to_avro_bytes([User(1234), Customer(5678)])
 
     @unittest.skip
-    def test_multiple_fields(self):
+    def test_multiple_fields_avro_schema(self):
+        bar = Bar(first=Foo("one"), second=Foo("two"))
+        expected = {
+            # TODO
+        }
+
+        self.assertEqual(expected, bar.avro_schema)
+
+    def test_multiple_fields_avro_data(self):
+        bar = Bar(first=Foo("one"), second=Foo("two"))
+        expected = {"first": {"text": "one"}, "second": {"text": "two"}}
+
+        self.assertEqual(expected, bar.avro_data)
+
+    @unittest.skip
+    def test_multiple_fields_avro_bytes(self):
         original = Bar(first=Foo("one"), second=Foo("two"))
         serialized = original.avro_bytes
         recovered = Bar.from_avro_bytes(serialized)
