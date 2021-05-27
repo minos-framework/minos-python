@@ -55,6 +55,7 @@ class SagaExecution(object):
         context: SagaContext,
         status: SagaStatus = SagaStatus.Created,
         steps: list[SagaExecutionStep] = None,
+        paused_step: SagaExecutionStep = None,
         already_rollback: bool = False,
         *args,
         **kwargs
@@ -68,6 +69,7 @@ class SagaExecution(object):
         self.context = context
         self.status = status
         self.already_rollback = already_rollback
+        self.paused_step = paused_step
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaExecution], **kwargs) -> SagaExecution:
@@ -84,6 +86,9 @@ class SagaExecution(object):
         current["definition"] = Saga.from_raw(current["definition"])
         current["status"] = SagaStatus.from_raw(current["status"])
         current["context"] = SagaContext.from_avro_str(current["context"])
+        current["paused_step"] = (
+            None if current["paused_step"] is None else SagaExecutionStep.from_raw(current["paused_step"])
+        )
 
         if isinstance(current["uuid"], str):
             current["uuid"] = UUID(current["uuid"])
@@ -121,25 +126,34 @@ class SagaExecution(object):
         :return: A ``SagaContext instance.
         """
         self.status = SagaStatus.Running
+
+        if self.paused_step is not None:
+            try:
+                await self._execute_one(self.paused_step, reply=reply, *args, **kwargs)
+            finally:
+                self.paused_step = None
+
         for step in self._pending_steps:
             execution_step = SagaExecutionStep(step)
-            try:
-                self.context = await execution_step.execute(
-                    self.context, reply, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
-                )
-                self._add_executed(execution_step)
-            except MinosSagaFailedExecutionStepException as exc:
-                await self.rollback(*args, **kwargs)
-                self.status = SagaStatus.Errored
-                raise exc
-            except MinosSagaPausedExecutionStepException as exc:
-                self.status = SagaStatus.Paused
-                raise exc
-
-            reply = None  # Response is consumed
+            await self._execute_one(execution_step, *args, **kwargs)
 
         self.status = SagaStatus.Finished
         return self.context
+
+    async def _execute_one(self, execution_step, *args, **kwargs):
+        try:
+            self.context = await execution_step.execute(
+                self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
+            )
+            self._add_executed(execution_step)
+        except MinosSagaFailedExecutionStepException as exc:
+            await self.rollback(*args, **kwargs)
+            self.status = SagaStatus.Errored
+            raise exc
+        except MinosSagaPausedExecutionStepException as exc:
+            self.paused_step = execution_step
+            self.status = SagaStatus.Paused
+            raise exc
 
     async def rollback(self, *args, **kwargs) -> NoReturn:
         """Revert the invoke participant operation with a with compensation operation.
@@ -178,6 +192,7 @@ class SagaExecution(object):
             "uuid": str(self.uuid),
             "status": self.status.raw,
             "executed_steps": [step.raw for step in self.executed_steps],
+            "paused_step": None if self.paused_step is None else self.paused_step.raw,
             "context": self.context.avro_str,
             "already_rollback": self.already_rollback,
         }
