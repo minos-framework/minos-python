@@ -84,7 +84,6 @@ class PublishExecutor(LocalExecutor):
             self.broker.send_one,
             topic=operation.name,
             item=request,
-            saga_id=self.definition_name,
-            task_id=str(self.execution_uuid),
+            saga_uuid=str(self.execution_uuid),
             reply_on=None if not has_reply else self.definition_name,
         )
