@@ -39,7 +39,8 @@ extensions = [
     'sphinx.ext.autodoc',
     "sphinx_autodoc_typehints",
     "sphinx.ext.viewcode",
-    "sphinx_rtd_theme"
+    "sphinx_rtd_theme",
+    "m2r2",
 ]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -47,8 +48,7 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The master toctree document.
 master_doc = 'index'
