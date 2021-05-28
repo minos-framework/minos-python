@@ -8,7 +8,6 @@ from __future__ import (
     annotations,
 )
 
-import asyncio
 import datetime
 from abc import (
     abstractmethod,
@@ -43,19 +42,24 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_tasks", "_handler", "_topics", "_kafka_conn_data"
+    __slots__ = "_topics", "_kafka_connection_data", "__consumer"
 
-    def __init__(self, *, config, consumer: Optional[Any] = None, **kwargs: Any):
-        super().__init__(**kwargs, **config.queue._asdict())
-        self._tasks = set()  # type: set[asyncio.Task]
-        self._handler = {item.name: {"controller": item.controller, "action": item.action} for item in config.items}
-        self._topics = list(self._handler.keys())
-        self._kafka_conn_data = None
+    def __init__(
+        self,
+        *,
+        topics: list[str],
+        kafka_connection_data: Optional[str] = None,
+        consumer: Optional[Any] = None,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self._topics = topics
+        self._kafka_connection_data = kafka_connection_data
         self.__consumer = consumer
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
-        return cls(*args, config=config, **kwargs)
+        return cls(*args, config=config, **kwargs)  # pragma: no cover
 
     async def _setup(self) -> NoReturn:
         await super()._setup()
@@ -64,7 +68,7 @@ class Consumer(HandlerSetup):
     @property
     def _consumer(self) -> AIOKafkaConsumer:
         if self.__consumer is None:  # pragma: no cover
-            self.__consumer = AIOKafkaConsumer(*self._topics, bootstrap_servers=self._kafka_conn_data)
+            self.__consumer = AIOKafkaConsumer(*self._topics, bootstrap_servers=self._kafka_connection_data)
         return self.__consumer
 
     async def _destroy(self) -> NoReturn:

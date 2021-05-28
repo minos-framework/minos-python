@@ -98,16 +98,18 @@ class FakeBroker(MinosBroker):
 
     def __init__(self):
         super().__init__()
+        self.call_count = 0
         self.items = None
         self.topic = None
-        self.saga_id = None
-        self.task_id = None
+        self.saga_uuid = None
+        self.reply_topic = None
 
     async def send(
-        self, items: list[MinosModel], topic: str = None, saga_id: str = None, task_id: str = None, **kwargs
+        self, items: list[MinosModel], topic: str = None, saga_uuid: str = None, reply_topic: str = None, **kwargs
     ) -> NoReturn:
         """For testing purposes."""
+        self.call_count += 1
         self.items = items
         self.topic = topic
-        self.saga_id = saga_id
-        self.task_id = task_id
+        self.saga_uuid = saga_uuid
+        self.reply_topic = reply_topic

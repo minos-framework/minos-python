@@ -54,9 +54,9 @@ class CommandHandler(Handler):
 
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
         command: Command = row.data
-        definition_id = command.saga_id
-        execution_id = command.task_id
+        definition_id = command.saga_uuid
 
         response = await row.callback(row.topic, command)
 
-        await self.broker.send(response, topic=f"{definition_id}Reply", saga_id=definition_id, task_id=execution_id)
+        if command.reply_topic is not None:
+            await self.broker.send(response, topic=command.reply_topic, saga_uuid=definition_id)

@@ -42,12 +42,7 @@ class TestCommandConsumer(PostgresAsyncTestCase):
     async def test_queue_add(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Command(
-            topic="AddOrder",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="mkk2334",
+            topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
         bin_data = event_instance.avro_bytes
         Command.from_avro_bytes(bin_data)
@@ -59,12 +54,7 @@ class TestCommandConsumer(PostgresAsyncTestCase):
     async def test_dispatch(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Command(
-            topic="AddOrder",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="mkk2334",
+            topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
         bin_data = event_instance.avro_bytes
 
