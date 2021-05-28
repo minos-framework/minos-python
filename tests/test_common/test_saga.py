@@ -41,7 +41,7 @@ class TestMinosSagaManager(unittest.IsolatedAsyncioTestCase):
         mock = MagicMock(side_effect=manager._load_and_run)
         manager._load_and_run = mock
 
-        reply = CommandReply("hello", [Car(1, 1, 3, "blue")], "saga_id8972348237", "task_id32423432")
+        reply = CommandReply("hello", [Car(1, 1, 3, "blue")], "saga_id8972348237")
 
         await manager.run(reply=reply, foo="bar")
 

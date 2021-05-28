@@ -179,7 +179,7 @@ class MinosModel(object):
         if self._fields is not None and item in self._fields:
             return self._fields[item].value
         else:
-            raise AttributeError
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
     def _list_fields(self, *args, **kwargs) -> t.NoReturn:
         for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
