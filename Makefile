@@ -70,11 +70,8 @@ reformat: ## check code coverage quickly with the default Python
 	poetry run isort --recursive minos tests
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/minos_microservice_saga.rst
-	rm -f docs/modules.rst
-	poetry run sphinx-apidoc -o docs/api minos
-	poetry run $(MAKE) -C docs clean
-	poetry run $(MAKE) -C docs html
+	rm -rf docs/api
+	poetry run $(MAKE) -C docs clean html
 
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
@@ -88,5 +85,8 @@ dist: clean ## builds source and wheel package
 
 install:
 	poetry install
+
+update:
+	poetry update
 
 full-install: clean install
