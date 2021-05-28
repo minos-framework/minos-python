@@ -86,6 +86,14 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(MinosUndefinedInvokeParticipantException):
             SagaStep().with_compensation("UserRemove", foo_fn).validate()
 
+    def test_has_reply_true(self):
+        step = SagaStep().invoke_participant("FoodAdd", foo_fn).on_reply("foo")
+        self.assertTrue(step.has_reply)
+
+    def test_has_reply_false(self):
+        step = SagaStep().invoke_participant("FoodAdd", foo_fn)
+        self.assertFalse(step.has_reply)
+
     def test_raw(self):
         step = SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
         expected = {

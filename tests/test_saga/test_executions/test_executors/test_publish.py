@@ -16,6 +16,7 @@ from uuid import (
 
 from minos.saga import (
     LocalExecutor,
+    MinosSagaFailedExecutionStepException,
     PublishExecutor,
     SagaContext,
     SagaStepOperation,
@@ -48,11 +49,40 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
 
         mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = mock
-        await executor.exec(operation, context)
+        await executor.exec(operation, context, False)
 
         self.assertEqual(1, mock.call_count)
-        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid))
+        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid), reply_on=None)
         self.assertEqual(args, mock.call_args)
+
+    async def test_exec_with_reply(self):
+        executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
+
+        operation = SagaStepOperation("AddBar", foo_fn)
+        context = SagaContext()
+
+        mock = MagicMock(side_effect=self.broker.send)
+        self.broker.send = mock
+        await executor.exec(operation, context, True)
+
+        self.assertEqual(1, mock.call_count)
+        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid), reply_on="AddFoo")
+        self.assertEqual(args, mock.call_args)
+
+    async def test_exec_raises(self):
+        executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
+        operation = SagaStepOperation("AddBar", foo_fn)
+        context = SagaContext()
+
+        async def _fn(*args, **kwargs):
+            raise ValueError("This is an exception")
+
+        mock = MagicMock(side_effect=_fn)
+        self.broker.send = mock
+
+        with self.assertRaises(MinosSagaFailedExecutionStepException) as result:
+            await executor.exec(operation, context, True)
+        self.assertEqual("The raised exception is: ValueError('This is an exception')", str(result.exception))
 
 
 if __name__ == "__main__":
