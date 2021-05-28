@@ -1,19 +1,23 @@
 # Minos Microservice Common
 
 [![codecov](https://codecov.io/gh/Clariteia/minos_microservice_common/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_common)
-
 ![Tests](https://github.com/Clariteia/minos_microservice_common/actions/workflows/python-tests.yml/badge.svg)
 
-
-Python Package with common Classes and Utilities used in Minos Microservices
+Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
+Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
+asynchronous environment.
 
 ## Set up a development environment
 
-Since we use `poetry` as the default package manager, it must be installed. Please refer to
-`https://python-poetry.org/docs/#installation`.
+Minos uses `poetry` as its default package manager. Please refer to
+(https://python-poetry.org/docs/#installation) for instructions on how to install it.
 
-Run
+Now you con install all the dependencies by running
+```bash
+make install
+```
 
+In order to make the pre-commits checks available to git, run
 ```bash
 pre-commit install
 ```
