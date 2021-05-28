@@ -35,7 +35,7 @@ class TestMinosConfigWithEnvironment(unittest.TestCase):
         repository = self.config.repository
         self.assertEqual("order_db", repository.database)
 
-    @mock.patch.dict(os.environ, {"MINOS_SAGA_HOST": "TestHost"})
+    @mock.patch.dict(os.environ, {"MINOS_SAGA_BROKER": "TestHost"})
     @mock.patch.dict(os.environ, {"MINOS_SAGA_PORT": "2222"})
     def test_config_saga_broker(self):
         saga = self.config.saga

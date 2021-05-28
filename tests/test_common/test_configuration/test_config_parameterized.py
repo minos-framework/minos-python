@@ -35,7 +35,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual("bar", repository.database)
 
     def test_config_saga_broker(self):
-        config = MinosConfig(path=self.config_file_path, saga_host="bar", saga_port=333)
+        config = MinosConfig(path=self.config_file_path, saga_broker="bar", saga_port=333)
         saga = config.saga
 
         broker = saga.broker
