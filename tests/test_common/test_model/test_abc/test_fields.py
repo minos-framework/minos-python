@@ -118,7 +118,7 @@ class TestModelField(unittest.TestCase):
                         {"name": "age", "type": ["int", "null"]},
                     ],
                     "name": "Owner",
-                    "namespace": "tests.aggregate_classes",
+                    "namespace": "tests.aggregate_classes.test",
                     "type": "record",
                 },
                 "int",
@@ -137,7 +137,7 @@ class TestModelField(unittest.TestCase):
                     {
                         "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
                         "name": "User",
-                        "namespace": "tests.model_classes",
+                        "namespace": "tests.model_classes.test",
                         "type": "record",
                     },
                     "null",

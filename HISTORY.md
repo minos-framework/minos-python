@@ -139,3 +139,6 @@ History
 * Test cases coverage optimization
 * fixed some Sagas functionalities
 * fixed Sphinx documentation generation process
+
+0.0.16 (2021-05-28)
+--------------------

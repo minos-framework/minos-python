@@ -5,13 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
-from .event import (
-    Event,
+from .base import (
+    MinosAvroProtocol,
 )
-
-
-class CommandReply(Event):
-    """Base Command class."""
-
-    saga_uuid: str
+from .databases import (
+    MinosAvroDatabaseProtocol,
+)
+from .messages import (
+    MinosAvroMessageProtocol,
+)
