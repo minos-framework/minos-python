@@ -67,6 +67,8 @@ commands:
         records: 10
         retry: 2
 saga:
+    host: localhost
+    port: 8900
     storage:
         path: "./order.lmdb"
     items:
