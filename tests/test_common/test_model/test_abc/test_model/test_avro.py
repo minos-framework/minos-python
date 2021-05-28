@@ -38,7 +38,7 @@ class TestMinosModelAvro(unittest.TestCase):
                                     {"name": "username", "type": ["string", "null"]},
                                 ],
                                 "name": "User",
-                                "namespace": "tests.model_classes",
+                                "namespace": "tests.model_classes.user",
                                 "type": "record",
                             },
                             "null",
@@ -86,7 +86,7 @@ class TestMinosModelAvro(unittest.TestCase):
                                             {"name": "age", "type": ["int", "null"]},
                                         ],
                                         "name": "Owner",
-                                        "namespace": "tests.aggregate_classes",
+                                        "namespace": "tests.aggregate_classes.owner",
                                         "type": "record",
                                     },
                                     "int",
@@ -196,12 +196,37 @@ class TestMinosModelAvro(unittest.TestCase):
         with self.assertRaises(MultiTypeMinosModelSequenceException):
             Customer.to_avro_bytes([User(1234), Customer(5678)])
 
-    @unittest.skip
     def test_multiple_fields_avro_schema(self):
         bar = Bar(first=Foo("one"), second=Foo("two"))
         expected = [
             {
-                # TODO
+                "fields": [
+                    {
+                        "name": "first",
+                        "type": [
+                            {
+                                "fields": [{"name": "text", "type": "string"}],
+                                "name": "Foo",
+                                "namespace": "tests.model_classes.first",
+                                "type": "record",
+                            }
+                        ],
+                    },
+                    {
+                        "name": "second",
+                        "type": [
+                            {
+                                "fields": [{"name": "text", "type": "string"}],
+                                "name": "Foo",
+                                "namespace": "tests.model_classes.second",
+                                "type": "record",
+                            }
+                        ],
+                    },
+                ],
+                "name": "Bar",
+                "namespace": "tests.model_classes",
+                "type": "record",
             }
         ]
 
@@ -213,7 +238,6 @@ class TestMinosModelAvro(unittest.TestCase):
 
         self.assertEqual(expected, bar.avro_data)
 
-    @unittest.skip
     def test_multiple_fields_avro_bytes(self):
         original = Bar(first=Foo("one"), second=Foo("two"))
         serialized = original.avro_bytes
