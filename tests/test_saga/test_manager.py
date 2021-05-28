@@ -52,10 +52,10 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         uuid = await manager.run("AddOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        await manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], "AddOrder", str(uuid)), broker=self.broker)
+        await manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], str(uuid)), broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        await manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], "AddOrder", str(uuid)), broker=self.broker)
+        await manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], str(uuid)), broker=self.broker)
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             manager.storage.load(uuid)
 
@@ -65,14 +65,10 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         uuid = await manager.run("DeleteOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        await manager.run(
-            reply=CommandReply("DeleteOrderReply", [Foo("foo")], "DeleteOrder", str(uuid)), broker=self.broker
-        )
+        await manager.run(reply=CommandReply("DeleteOrderReply", [Foo("foo")], str(uuid)), broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        await manager.run(
-            reply=CommandReply("DeleteOrderReply", [Foo("foo")], "DeleteOrder", str(uuid)), broker=self.broker
-        )
+        await manager.run(reply=CommandReply("DeleteOrderReply", [Foo("foo")], str(uuid)), broker=self.broker)
         self.assertEqual(SagaStatus.Errored, manager.storage.load(uuid).status)
 
 
