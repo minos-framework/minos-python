@@ -4,9 +4,8 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-
-from typing import (
-    Any,
+from __future__ import (
+    annotations,
 )
 
 from minos.common import (
@@ -24,9 +23,11 @@ class CommandConsumer(Consumer):
 
     TABLE_NAME = "command_queue"
 
-    def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(config=config.commands, **kwargs)
-        self._kafka_conn_data = f"{config.commands.broker.host}:{config.commands.broker.port}"
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandConsumer:
+        topics = [item.name for item in config.commands.items]
+        kafka_conn_data = f"{config.commands.broker.host}:{config.commands.broker.port}"
+        return cls(topics=topics, kafka_conn_data=kafka_conn_data, **config.commands.queue._asdict(), **kwargs)
 
     def _is_valid_instance(self, value: bytes):
         try:

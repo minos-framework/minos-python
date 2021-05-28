@@ -4,9 +4,8 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-
-from typing import (
-    Any,
+from __future__ import (
+    annotations,
 )
 
 from minos.common import (
@@ -24,12 +23,13 @@ class CommandReplyConsumer(Consumer):
 
     TABLE_NAME = "command_reply_queue"
 
-    def __init__(self, *, config: MinosConfig, **kwargs: Any):
-        super().__init__(config=config.saga, **kwargs)
-        self._kafka_conn_data = f"{config.commands.broker.host}:{config.commands.broker.port}"
-        self._topics = [f"{topic}Reply" for topic in self._handler.keys()]
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyConsumer:
+        topics = [item.name for item in config.saga.items]
+        kafka_conn_data = f"{config.commands.broker.host}:{config.commands.broker.port}"
+        return cls(topics=topics, kafka_conn_data=kafka_conn_data, **config.saga.queue._asdict(), **kwargs)
 
-    def _is_valid_instance(self, value: bytes):
+    def _is_valid_instance(self, value: bytes) -> bool:
         try:
             CommandReply.from_avro_bytes(value)
             return True
