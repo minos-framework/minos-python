@@ -37,9 +37,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_with_args(self):
-        broker = CommandReplyBroker.from_config(
-            "CommandBroker", saga_id="9347839473kfslf", task_id="92839283hjijh232", config=self.config
-        )
+        broker = CommandReplyBroker.from_config("CommandBroker", saga_uuid="9347839473kfslf", config=self.config)
         self.assertIsInstance(broker, CommandReplyBroker)
 
     def test_from_config_default(self):
@@ -51,8 +49,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
             CommandReplyBroker.from_config()
 
     async def test_send_one(self):
-        saga_id = "9347839473kfslf"
-        task_id = "92839283hjijh232"
+        saga_uuid = "9347839473kfslf"
         topic = "CommandBroker"
         query = (
             "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date)\n"
@@ -68,7 +65,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
 
         async with CommandReplyBroker.from_config(config=self.config) as broker:
             broker.submit_query_and_fetchone = mock
-            identifier = await broker.send_one(item, saga_id=saga_id, task_id=task_id, topic=topic)
+            identifier = await broker.send_one(item, saga_uuid=saga_uuid, topic=topic)
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
@@ -77,7 +74,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         self.assertEqual(query, args[0])
         self.assertEqual("CommandBrokerReply", args[1][0])
         self.assertEqual(
-            CommandReply(topic=f"{topic}Reply", items=[item], saga_id=saga_id, task_id=task_id),
+            CommandReply(topic=f"{topic}Reply", items=[item], saga_uuid=saga_uuid),
             CommandReply.from_avro_bytes(args[1][1]),
         )
         self.assertEqual(0, args[1][2])
@@ -89,7 +86,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
         async with CommandReplyBroker.from_config(
-            "TestDeleteReply", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232"
+            "TestDeleteReply", config=self.config, saga_uuid="9347839473kfslf"
         ) as broker:
             queue_id_1 = await broker.send_one(item)
             queue_id_2 = await broker.send_one(item)
@@ -109,7 +106,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
         async with CommandReplyBroker.from_config(
-            "TestDeleteOrder", config=self.config, saga_id="9347839473kfslf", task_id="92839283hjijh232",
+            "TestDeleteOrder", config=self.config, saga_uuid="9347839473kfslf"
         ) as broker:
             queue_id_1 = await broker.send_one(item)
             queue_id_2 = await broker.send_one(item)

@@ -29,18 +29,10 @@ class CommandBroker(Broker):
 
     ACTION = "command"
 
-    def __init__(
-        self,
-        *args,
-        saga_id: Optional[str] = None,
-        task_id: Optional[str] = None,
-        reply_on: Optional[str] = None,
-        **kwargs
-    ):
+    def __init__(self, *args, saga_uuid: Optional[str] = None, reply_topic: Optional[str] = None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.reply_on = reply_on
-        self.saga_id = saga_id
-        self.task_id = task_id
+        self.reply_topic = reply_topic
+        self.saga_uuid = saga_uuid
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandBroker:
@@ -50,27 +42,23 @@ class CommandBroker(Broker):
         self,
         items: list[MinosModel],
         topic: Optional[str] = None,
-        saga_id: Optional[str] = None,
-        task_id: Optional[str] = None,
-        reply_on: Optional[str] = None,
+        saga_uuid: Optional[str] = None,
+        reply_topic: Optional[str] = None,
         **kwargs
     ) -> int:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.
         :param topic: Topic in which the message will be published.
-        :param saga_id: Saga identifier.
-        :param task_id: Saga execution identifier.
-        :param reply_on: Topic name in which the reply will be published.
+        :param saga_uuid: Saga identifier.
+        :param reply_topic: Topic name in which the reply will be published.
         :return: This method does not return anything.
         """
         if topic is None:
             topic = self.topic
-        if saga_id is None:
-            saga_id = self.saga_id
-        if task_id is None:
-            task_id = self.task_id
-        if reply_on is None:
-            reply_on = self.reply_on
-        command = Command(topic, items, saga_id, task_id, reply_on)
+        if saga_uuid is None:
+            saga_uuid = self.saga_uuid
+        if reply_topic is None:
+            reply_topic = self.reply_topic
+        command = Command(topic, items, saga_uuid, reply_topic)
         return await self._send_bytes(command.topic, command.avro_bytes)
