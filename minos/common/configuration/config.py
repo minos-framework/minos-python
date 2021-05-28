@@ -46,7 +46,7 @@ _ENVIRONMENT_MAPPER = {
     "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
     "commands.broker": "MINOS_COMMANDS_BROKER",
     "commands.port": "MINOS_COMMANDS_PORT",
-    "saga.host": "MINOS_SAGA_HOST",
+    "saga.broker": "MINOS_SAGA_HOST",
     "saga.port": "MINOS_SAGA_PORT",
     "saga.queue.host": "MINOS_SAGA_QUEUE_HOST",
     "saga.queue.port": "MINOS_SAGA_QUEUE_PORT",
@@ -80,7 +80,7 @@ _PARAMETERIZED_MAPPER = {
     "commands.queue.password": "commands_queue_password",
     "commands.broker": "commands_broker",
     "commands.port": "commands_port",
-    "saga.host": "saga_host",
+    "saga.broker": "saga_host",
     "saga.port": "saga_port",
     "saga.queue.host": "saga_queue_host",
     "saga.queue.port": "saga_queue_port",
@@ -339,7 +339,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _saga_broker(self) -> BROKER:
-        return BROKER(host=self._get("saga.host"), port=int(self._get("saga.port")))
+        return BROKER(host=self._get("saga.broker"), port=int(self._get("saga.port")))
 
     @property
     def _sagas_queue(self) -> QUEUE:
