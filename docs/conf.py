@@ -146,7 +146,7 @@ latex_elements = {
 # [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'minos.tex',
-     'Minos Microservice Netowrk Documentation',
+     'Minos Microservice Network Documentation',
      'Clariteia Devs', 'manual'),
 ]
 
