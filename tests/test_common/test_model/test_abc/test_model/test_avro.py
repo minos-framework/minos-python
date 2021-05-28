@@ -26,26 +26,31 @@ from tests.model_classes import (
 
 class TestMinosModelAvro(unittest.TestCase):
     def test_avro_schema(self):
-        expected = {
-            "fields": [
-                {
-                    "name": "user",
-                    "type": [
-                        {
-                            "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
-                            "name": "User",
-                            "namespace": "tests.model_classes",
-                            "type": "record",
-                        },
-                        "null",
-                    ],
-                },
-                {"name": "cost", "type": "float"},
-            ],
-            "name": "ShoppingList",
-            "namespace": "tests.model_classes",
-            "type": "record",
-        }
+        expected = [
+            {
+                "fields": [
+                    {
+                        "name": "user",
+                        "type": [
+                            {
+                                "fields": [
+                                    {"name": "id", "type": "int"},
+                                    {"name": "username", "type": ["string", "null"]},
+                                ],
+                                "name": "User",
+                                "namespace": "tests.model_classes",
+                                "type": "record",
+                            },
+                            "null",
+                        ],
+                    },
+                    {"name": "cost", "type": "float"},
+                ],
+                "name": "ShoppingList",
+                "namespace": "tests.model_classes",
+                "type": "record",
+            }
+        ]
         self.assertEqual(expected, ShoppingList.avro_schema)
 
     def test_avro_data(self):
@@ -59,42 +64,44 @@ class TestMinosModelAvro(unittest.TestCase):
 
     def test_avro_schema_model_ref(self):
         # noinspection DuplicatedCode
-        expected = {
-            "fields": [
-                {"name": "id", "type": "int"},
-                {"name": "version", "type": "int"},
-                {"name": "doors", "type": "int"},
-                {"name": "color", "type": "string"},
-                {
-                    "name": "owner",
-                    "type": [
-                        {
-                            "default": [],
-                            "items": [
-                                {
-                                    "fields": [
-                                        {"name": "id", "type": "int"},
-                                        {"name": "version", "type": "int"},
-                                        {"name": "name", "type": "string"},
-                                        {"name": "surname", "type": "string"},
-                                        {"name": "age", "type": ["int", "null"]},
-                                    ],
-                                    "name": "Owner",
-                                    "namespace": "tests.aggregate_classes",
-                                    "type": "record",
-                                },
-                                "int",
-                            ],
-                            "type": "array",
-                        },
-                        "null",
-                    ],
-                },
-            ],
-            "name": "Car",
-            "namespace": "tests.aggregate_classes",
-            "type": "record",
-        }
+        expected = [
+            {
+                "fields": [
+                    {"name": "id", "type": "int"},
+                    {"name": "version", "type": "int"},
+                    {"name": "doors", "type": "int"},
+                    {"name": "color", "type": "string"},
+                    {
+                        "name": "owner",
+                        "type": [
+                            {
+                                "default": [],
+                                "items": [
+                                    {
+                                        "fields": [
+                                            {"name": "id", "type": "int"},
+                                            {"name": "version", "type": "int"},
+                                            {"name": "name", "type": "string"},
+                                            {"name": "surname", "type": "string"},
+                                            {"name": "age", "type": ["int", "null"]},
+                                        ],
+                                        "name": "Owner",
+                                        "namespace": "tests.aggregate_classes",
+                                        "type": "record",
+                                    },
+                                    "int",
+                                ],
+                                "type": "array",
+                            },
+                            "null",
+                        ],
+                    },
+                ],
+                "name": "Car",
+                "namespace": "tests.aggregate_classes",
+                "type": "record",
+            }
+        ]
         self.assertEqual(expected, Car.avro_schema)
 
     def test_avro_data_model_ref(self):
@@ -117,19 +124,21 @@ class TestMinosModelAvro(unittest.TestCase):
 
     def test_avro_schema_simple(self):
         customer = Customer(1234)
-        expected = {
-            "fields": [
-                {"name": "id", "type": "int"},
-                {"name": "username", "type": ["string", "null"]},
-                {"name": "name", "type": ["string", "null"]},
-                {"name": "surname", "type": ["string", "null"]},
-                {"name": "is_admin", "type": ["boolean", "null"]},
-                {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
-            ],
-            "name": "Customer",
-            "namespace": "tests.model_classes",
-            "type": "record",
-        }
+        expected = [
+            {
+                "fields": [
+                    {"name": "id", "type": "int"},
+                    {"name": "username", "type": ["string", "null"]},
+                    {"name": "name", "type": ["string", "null"]},
+                    {"name": "surname", "type": ["string", "null"]},
+                    {"name": "is_admin", "type": ["boolean", "null"]},
+                    {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
+                ],
+                "name": "Customer",
+                "namespace": "tests.model_classes",
+                "type": "record",
+            }
+        ]
         self.assertEqual(expected, customer.avro_schema)
 
     def test_avro_data_simple(self):
@@ -190,9 +199,11 @@ class TestMinosModelAvro(unittest.TestCase):
     @unittest.skip
     def test_multiple_fields_avro_schema(self):
         bar = Bar(first=Foo("one"), second=Foo("two"))
-        expected = {
-            # TODO
-        }
+        expected = [
+            {
+                # TODO
+            }
+        ]
 
         self.assertEqual(expected, bar.avro_schema)
 
