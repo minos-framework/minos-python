@@ -435,10 +435,13 @@ class _MinosModelAvroSchemaBuilder(object):
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
-    @staticmethod
-    def _build_minos_model_schema(type_field: t.Type) -> t.Any:
+    def _build_minos_model_schema(self, type_field: t.Type) -> t.Any:
+        def _patch_namespace(s: dict) -> dict:
+            s["namespace"] += f".{self._name}"
+            return s
+
         # noinspection PyUnresolvedReferences
-        return type_field.avro_schema
+        return [_patch_namespace(s) for s in type_field.avro_schema]
 
     def _build_composed_schema(self, type_field: t.Type) -> t.Any:
         origin_type = t.get_origin(type_field)
