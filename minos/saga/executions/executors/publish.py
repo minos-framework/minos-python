@@ -79,9 +79,5 @@ class PublishExecutor(LocalExecutor):
 
     async def _publish(self, operation: SagaStepOperation, request: MinosModel) -> NoReturn:
         await self._exec_function(
-            self.broker.send_one,
-            topic=operation.name,
-            item=request,
-            saga_id=self.definition_name,
-            task_id=str(self.execution_uuid),
+            self.broker.send_one, topic=operation.name, item=request, saga_uuid=str(self.execution_uuid),
         )

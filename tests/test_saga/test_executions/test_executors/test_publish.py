@@ -51,7 +51,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         await executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
-        args = call([Foo("hello")], topic="AddBar", saga_id="AddFoo", task_id=str(self.uuid))
+        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid))
         self.assertEqual(args, mock.call_args)
 
 

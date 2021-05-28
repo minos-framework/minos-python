@@ -56,7 +56,7 @@ def fake_reply(data: MinosModel) -> CommandReply:
     :param data: Data to be set as response on the command reply.
     :return: A Command reply instance.
     """
-    return CommandReply("FooCreated", [data], "saga_id", "task_id")
+    return CommandReply("FooCreated", [data], "saga_id")
 
 
 class NaiveBroker(MinosBroker):
