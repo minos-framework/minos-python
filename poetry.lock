@@ -381,6 +381,18 @@ python-versions = "*"
 cffi = ">=0.8"
 
 [[package]]
+name = "m2r2"
+version = "0.2.7"
+description = "Markdown and reStructuredText in a single file."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+docutils = "*"
+mistune = "*"
+
+[[package]]
 name = "markupsafe"
 version = "2.0.1"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -413,6 +425,14 @@ fastavro = ">=1.4.0,<2.0.0"
 lmdb = ">=1.2.1,<2.0.0"
 orjson = ">=3.5.2,<4.0.0"
 PyYAML = ">=5.4.1,<6.0.0"
+
+[[package]]
+name = "mistune"
+version = "0.8.4"
+description = "The fastest markdown parser in pure Python"
+category = "dev"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "multidict"
@@ -841,7 +861,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "797ed264fb4a46050cfba4ef62e39e13f684d65bb3912392b351646b9c4943cd"
+content-hash = "289ff2fd56f51f28c5c7b5d45e0a76a8cbc058101b68ff0b5886de80e484d2f8"
 
 [metadata.files]
 aiohttp = [
@@ -1231,6 +1251,10 @@ lmdb = [
     {file = "lmdb-1.2.1-pp36-pypy36_pp73-win32.whl", hash = "sha256:6dc9c23f37c18db7ec9ea9fa2bb6c3b4e325aa8d3558797860f8c9fee9baf49e"},
     {file = "lmdb-1.2.1.tar.gz", hash = "sha256:5f76a90ebd08922acca11948779b5055f7a262687178e9e94f4e804b9f8465bc"},
 ]
+m2r2 = [
+    {file = "m2r2-0.2.7-py3-none-any.whl", hash = "sha256:a1b87b00f4d5163a3616253fca4c045f8351818cd803ba2e24af8897442a0eae"},
+    {file = "m2r2-0.2.7.tar.gz", hash = "sha256:fbf72ade9f648d41658f97c5267687431612451f36b65761a138fbc276294df5"},
+]
 markupsafe = [
     {file = "MarkupSafe-2.0.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:f9081981fe268bd86831e5c75f7de206ef275defcb82bc70740ae6dc507aee51"},
     {file = "MarkupSafe-2.0.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:0955295dd5eec6cb6cc2fe1698f4c6d84af2e92de33fbcac4111913cd100a6ff"},
@@ -1274,6 +1298,10 @@ mccabe = [
 minos-microservice-common = [
     {file = "minos_microservice_common-0.0.15-py3-none-any.whl", hash = "sha256:4d0b7826c98cdbe30576c8ac986b58a3cd60046cdffc42e505a657272dd7e9e2"},
     {file = "minos_microservice_common-0.0.15.tar.gz", hash = "sha256:4cbd72f60722f0731f74456d07e3e2e0b7b98963f7aadca1d3159a4ae2555603"},
+]
+mistune = [
+    {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
+    {file = "mistune-0.8.4.tar.gz", hash = "sha256:59a3429db53c50b5c6bcc8a07f8848cb00d7dc8bdb431a4ab41920d201d4756e"},
 ]
 multidict = [
     {file = "multidict-5.1.0-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:b7993704f1a4b204e71debe6095150d43b2ee6150fa4f44d6d966ec356a8d61f"},

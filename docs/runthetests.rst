@@ -1,1 +1,1 @@
-.. include:: ../RUNTHETESTS.md
+.. mdinclude:: ../RUNTHETESTS.md
