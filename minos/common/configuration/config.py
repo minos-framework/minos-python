@@ -33,7 +33,7 @@ STORAGE = collections.namedtuple("Storage", "path")
 
 EVENTS = collections.namedtuple("Events", "broker items queue")
 COMMANDS = collections.namedtuple("Commands", "broker items queue")
-SAGA = collections.namedtuple("Saga", "items queue storage")
+SAGA = collections.namedtuple("Saga", "items queue storage broker")
 REST = collections.namedtuple("Rest", "broker endpoints")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
@@ -46,6 +46,8 @@ _ENVIRONMENT_MAPPER = {
     "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
     "commands.broker": "MINOS_COMMANDS_BROKER",
     "commands.port": "MINOS_COMMANDS_PORT",
+    "saga.broker": "MINOS_SAGA_BROKER",
+    "saga.port": "MINOS_SAGA_PORT",
     "saga.queue.host": "MINOS_SAGA_QUEUE_HOST",
     "saga.queue.port": "MINOS_SAGA_QUEUE_PORT",
     "saga.queue.database": "MINOS_SAGA_QUEUE_DATABASE",
@@ -78,6 +80,8 @@ _PARAMETERIZED_MAPPER = {
     "commands.queue.password": "commands_queue_password",
     "commands.broker": "commands_broker",
     "commands.port": "commands_port",
+    "saga.broker": "saga_broker",
+    "saga.port": "saga_port",
     "saga.queue.host": "saga_queue_host",
     "saga.queue.port": "saga_queue_port",
     "saga.queue.database": "saga_queue_database",
@@ -294,7 +298,8 @@ class MinosConfig(MinosConfigAbstract):
         queue = self._sagas_queue
         sagas = self._saga_items
         storage = self._saga_storage
-        return SAGA(items=sagas, queue=queue, storage=storage)
+        broker = self._saga_broker
+        return SAGA(items=sagas, queue=queue, storage=storage, broker=broker)
 
     @property
     def _commands_broker(self) -> BROKER:
@@ -331,6 +336,10 @@ class MinosConfig(MinosConfigAbstract):
 
         queue = STORAGE(path=path)
         return queue
+
+    @property
+    def _saga_broker(self) -> BROKER:
+        return BROKER(host=self._get("saga.broker"), port=int(self._get("saga.port")))
 
     @property
     def _sagas_queue(self) -> QUEUE:
