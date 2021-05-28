@@ -61,7 +61,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         named_schemas = {}
         for item in schema[:-1]:
             parse_schema(item, named_schemas)
-        return parse_schema(schema[-1], named_schemas)
+        return parse_schema(schema[-1], named_schemas, expand=True)
 
     @staticmethod
     def _write_data(value: list[dict[str, Any]], schema: bytes):
@@ -85,8 +85,8 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         try:
             with io.BytesIO(data) as file:
                 ans = list(reader(file))
-        except Exception:
-            raise MinosProtocolException("Error decoding string, check if is a correct Avro Binary data")
+        except Exception as exc:
+            raise MinosProtocolException(f"Error decoding the avro bytes: {exc}")
 
         if flatten and len(ans) == 1:
             return ans[0]
