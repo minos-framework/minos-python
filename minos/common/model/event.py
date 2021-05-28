@@ -36,7 +36,7 @@ class Event(MinosModel):
     model: str
     items: list[MinosModel]
 
-    def __init__(self, topic: str, items: list[MinosModel], model: str = None, *args, **kwargs):
+    def __init__(self, topic: str, items: list[MinosModel], *args, model: str = None, **kwargs):
         if model is None:
             model_cls = type(items[0])
             model = model_cls.classname
