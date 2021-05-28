@@ -114,6 +114,7 @@ from .networks import (
 from .protocol import (
     MinosAvroDatabaseProtocol,
     MinosAvroMessageProtocol,
+    MinosAvroProtocol,
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
 )
