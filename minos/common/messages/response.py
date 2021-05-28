@@ -13,7 +13,7 @@ from ..exceptions import (
     MinosMessageException,
 )
 from ..protocol import (
-    MinosAvroProtocol,
+    MinosAvroMessageProtocol,
     MinosBinaryProtocol,
 )
 
@@ -100,7 +100,7 @@ class MinosRPCResponse(MinosBaseResponse):
 
 class MinosResponse(object):
     @staticmethod
-    def build(response_class: MinosBaseResponse, binary: MinosBinaryProtocol = MinosAvroProtocol):
+    def build(response_class: MinosBaseResponse, binary: MinosBinaryProtocol = MinosAvroMessageProtocol):
         request_instance = response_class()
         if isinstance(request_instance, MinosBaseResponse):
             request_instance.binary_class = binary
@@ -111,7 +111,7 @@ class MinosResponse(object):
             raise MinosMessageException("The request class must extend MinosBaseResponse")
 
     @staticmethod
-    def load(data: bytes, response_class: MinosBaseResponse, binary: MinosBinaryProtocol = MinosAvroProtocol):
+    def load(data: bytes, response_class: MinosBaseResponse, binary: MinosBinaryProtocol = MinosAvroMessageProtocol):
         """
         load binary data and convert in the Message Request Instance given
         """

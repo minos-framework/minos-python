@@ -9,7 +9,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import pytest
 
 from minos.common import (
-    MinosAvroProtocol,
+    MinosAvroMessageProtocol,
     MinosRequest,
     MinosResponse,
     MinosRPCBodyRequest,
@@ -34,7 +34,7 @@ def test_request_avro_build_request_headers():
 
 def test_request_avro_import_request_headers():
     headers = {"id": 123, "action": "get"}
-    data_return_bytes = MinosAvroProtocol.encode(headers)
+    data_return_bytes = MinosAvroMessageProtocol.encode(headers)
 
     class_request: MinosRPCHeadersRequest = MinosRequest.load(data_return_bytes, MinosRPCHeadersRequest)
 
@@ -49,7 +49,7 @@ def test_request_avro_build_request_body():
 def test_request_avro_import_request_body():
     headers = {"id": 123, "action": "get"}
     body = {"test": "this is a test"}
-    data_return_bytes = MinosAvroProtocol.encode(headers, body)
+    data_return_bytes = MinosAvroMessageProtocol.encode(headers, body)
 
     class_request: MinosRPCBodyRequest = MinosRequest.load(data_return_bytes, MinosRPCBodyRequest)
 
@@ -67,7 +67,7 @@ def test_request_avro_attributes_error_request():
 def test_request_avro_import_response():
     headers = {"id": 123}
     body = {"test": "this is a response test"}
-    data_return_bytes = MinosAvroProtocol.encode(headers, body)
+    data_return_bytes = MinosAvroMessageProtocol.encode(headers, body)
 
     class_response: MinosRPCResponse = MinosResponse.load(data_return_bytes, MinosRPCResponse)
 

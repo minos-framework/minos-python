@@ -35,7 +35,7 @@ from ...meta import (
     self_or_classmethod,
 )
 from ...protocol import (
-    MinosAvroValuesDatabase,
+    MinosAvroProtocol,
 )
 from .fields import (
     ModelField,
@@ -107,7 +107,7 @@ class MinosModel(object):
         :return: A single instance or a sequence of instances.
         """
 
-        decoded = MinosAvroValuesDatabase().decode(raw, content_root=False)
+        decoded = MinosAvroProtocol().decode(raw)
         if isinstance(decoded, list):
             return [cls.from_dict(d | kwargs) for d in decoded]
         return cls.from_dict(decoded | kwargs)
@@ -148,7 +148,7 @@ class MinosModel(object):
 
         avro_schema = models[0].avro_schema
         # noinspection PyTypeChecker
-        return MinosAvroValuesDatabase().encode([model.avro_data for model in models], avro_schema)
+        return MinosAvroProtocol().encode([model.avro_data for model in models], avro_schema)
 
     # noinspection PyMethodParameters
     @classproperty
@@ -211,7 +211,7 @@ class MinosModel(object):
 
     # noinspection PyMethodParameters
     @property_or_classproperty
-    def avro_schema(self_or_cls) -> dict[str, t.Any]:
+    def avro_schema(self_or_cls) -> list[dict[str, t.Any]]:
         """Compute the avro schema of the model.
 
         :return: A dictionary object.
@@ -225,10 +225,10 @@ class MinosModel(object):
             _MinosModelAvroSchemaBuilder(field_name, field_type).build()
             for field_name, field_type in self_or_cls._type_hints()
         ]
-        return {"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}
+        return [{"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}]
 
     @property
-    def avro_data(self) -> t.Any:
+    def avro_data(self) -> dict[str, t.Any]:
         """Compute the avro data of the model.
 
         :return: A dictionary object.
@@ -251,7 +251,7 @@ class MinosModel(object):
         :return: A bytes object.
         """
         # noinspection PyTypeChecker
-        return MinosAvroValuesDatabase().encode(self.avro_data, self.avro_schema)
+        return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self, other: MinosModel) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
