@@ -53,12 +53,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Command(
-            topic="AddOrder",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="mkk2334",
+            topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
         m = CommandHandler.from_config(config=self.config)
 
@@ -70,12 +65,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = Command(
-            topic="NotExisting",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="UpdateTicket",
+            topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="UpdateTicket",
         )
         m = CommandHandler.from_config(config=self.config)
 
@@ -91,12 +81,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_event_dispatch(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = Command(
-            topic="AddOrder",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="UpdateTicket",
+            topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",
         )
 
         broker = FakeBroker()
@@ -109,13 +94,12 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(1, broker.call_count)
         self.assertEqual("add_order", broker.items)
         self.assertEqual("UpdateTicket", broker.topic)
-        self.assertEqual("43434jhij", broker.saga_id)
-        self.assertEqual("juhjh34", broker.task_id)
-        self.assertEqual(None, broker.reply_on)
+        self.assertEqual("43434jhij", broker.saga_uuid)
+        self.assertEqual(None, broker.reply_topic)
 
     async def test_event_dispatch_without_reply(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = Command(topic="AddOrder", model=model.classname, items=[], saga_id="43434jhij", task_id="juhjh34",)
+        instance = Command(topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij",)
 
         broker = FakeBroker()
 

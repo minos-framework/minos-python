@@ -55,10 +55,9 @@ class TestCommandBroker(PostgresAsyncTestCase):
             CommandBroker.from_config()
 
     async def test_send_one(self):
-        saga_id = "9347839473kfslf"
-        task_id = "92839283hjijh232"
+        saga_uuid = "9347839473kfslf"
         topic = "CommandBroker"
-        reply_on = "test_reply_on"
+        reply_topic = "test_reply_on"
         query = (
             "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date)\n"
             "VALUES (%s, %s, %s, %s, %s, %s)\n"
@@ -73,7 +72,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
 
         async with CommandBroker.from_config(config=self.config) as broker:
             broker.submit_query_and_fetchone = mock
-            identifier = await broker.send_one(item, saga_id=saga_id, task_id=task_id, topic=topic, reply_on=reply_on)
+            identifier = await broker.send_one(item, saga_uuid=saga_uuid, topic=topic, reply_topic=reply_topic)
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
@@ -82,7 +81,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         self.assertEqual(query, args[0])
         self.assertEqual("CommandBroker", args[1][0])
         self.assertEqual(
-            Command(topic=topic, items=[item], saga_id=saga_id, task_id=task_id, reply_on=reply_on),
+            Command(topic=topic, items=[item], saga_uuid=saga_uuid, reply_topic=reply_topic),
             Command.from_avro_bytes(args[1][1]),
         )
         self.assertEqual(0, args[1][2])
@@ -94,11 +93,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
         async with CommandBroker.from_config(
-            "CommandBroker-Delete",
-            config=self.config,
-            saga_id="9347839473kfslf",
-            task_id="92839283hjijh232",
-            reply_on="test_reply_on",
+            "CommandBroker-Delete", config=self.config, saga_uuid="9347839473kfslf", reply_on="test_reply_on",
         ) as broker:
             queue_id_1 = await broker.send_one(item)
             queue_id_2 = await broker.send_one(item)
@@ -118,11 +113,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 
         async with CommandBroker.from_config(
-            "CommandBroker-Delete",
-            config=self.config,
-            saga_id="9347839473kfslf",
-            task_id="92839283hjijh232",
-            reply_on="test_reply_on",
+            "CommandBroker-Delete", config=self.config, saga_uuid="9347839473kfslf", reply_on="test_reply_on",
         ) as broker:
             queue_id_1 = await broker.send_one(item)
             queue_id_2 = await broker.send_one(item)

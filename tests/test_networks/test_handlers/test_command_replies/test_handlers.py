@@ -50,12 +50,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     async def test_get_event_handler(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = CommandReply(
-            topic="AddOrderReply",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="mkk2334",
+            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
         m = CommandReplyHandler.from_config(config=self.config)
 
@@ -67,12 +62,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = CommandReply(
-            topic="NotExisting",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="mkk2334",
+            topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
         m = CommandReplyHandler.from_config(config=self.config)
 
@@ -88,12 +78,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     async def test_event_dispatch(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = CommandReply(
-            topic="AddOrderReply",
-            model=model.classname,
-            items=[],
-            saga_id="43434jhij",
-            task_id="juhjh34",
-            reply_on="mkk2334",
+            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
         bin_data = instance.avro_bytes
         saga_manager = FakeSagaManager()

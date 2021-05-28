@@ -59,7 +59,7 @@ class Consumer(HandlerSetup):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
-        return cls(*args, config=config, **kwargs)
+        return cls(*args, config=config, **kwargs)  # pragma: no cover
 
     async def _setup(self) -> NoReturn:
         await super()._setup()
