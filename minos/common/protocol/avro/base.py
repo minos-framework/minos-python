@@ -31,7 +31,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
 
     @classmethod
     def encode(
-        cls, value: Union[dict[str, Any], list[dict[str, Any]]], schema: dict[str, Any], *args, **kwargs
+        cls, value: Union[dict[str, Any], list[dict[str, Any]]], schema: list[dict[str, Any]], *args, **kwargs
     ) -> bytes:
         """Encoder in avro for database Values
         all the headers are converted in fields with double underscore name
@@ -45,17 +45,31 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         """
         if not isinstance(value, list):
             value = [value]
+        if not isinstance(schema, list):
+            schema = [schema]
+
         try:
-            schema_bytes = parse_schema(schema)
-            with io.BytesIO() as file:
-                writer(file, schema_bytes, value)
-                file.seek(0)
-                content_bytes = file.getvalue()
-                return content_bytes
+            raw_schema = cls._parse_schema(schema)
+            return cls._write_data(value, raw_schema)
         except Exception:
             raise MinosProtocolException(
                 "Error encoding data, check if is a correct Avro Schema and Datum is provided."
             )
+
+    @staticmethod
+    def _parse_schema(schema: list[dict[str, Any]]) -> bytes:
+        named_schemas = {}
+        for item in schema[:-1]:
+            parse_schema(item, named_schemas)
+        return parse_schema(schema[-1], named_schemas)
+
+    @staticmethod
+    def _write_data(value: list[dict[str, Any]], schema: bytes):
+        with io.BytesIO() as file:
+            writer(file, schema, value)
+            file.seek(0)
+            content = file.getvalue()
+        return content
 
     @classmethod
     def decode(cls, data: bytes, flatten: bool = True, *args, **kwargs) -> Union[dict[str, Any], list[dict[str, Any]]]:

@@ -211,7 +211,7 @@ class MinosModel(object):
 
     # noinspection PyMethodParameters
     @property_or_classproperty
-    def avro_schema(self_or_cls) -> dict[str, t.Any]:
+    def avro_schema(self_or_cls) -> list[dict[str, t.Any]]:
         """Compute the avro schema of the model.
 
         :return: A dictionary object.
@@ -225,10 +225,10 @@ class MinosModel(object):
             _MinosModelAvroSchemaBuilder(field_name, field_type).build()
             for field_name, field_type in self_or_cls._type_hints()
         ]
-        return {"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}
+        return [{"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}]
 
     @property
-    def avro_data(self) -> t.Any:
+    def avro_data(self) -> dict[str, t.Any]:
         """Compute the avro data of the model.
 
         :return: A dictionary object.
