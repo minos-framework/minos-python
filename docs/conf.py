@@ -21,7 +21,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-from minos import common
+from minos import saga
 
 # -- General configuration ---------------------------------------------
 
