@@ -1,7 +1,7 @@
 # Minos Microservice Saga
 
-[![codecov](https://codecov.io/gh/Clariteia/minos_microservice_common/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_common)
-![Tests](https://github.com/Clariteia/minos_microservice_common/actions/workflows/python-tests.yml/badge.svg)
+[![codecov](https://codecov.io/gh/Clariteia/minos_microservice_saga/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_saga)
+![Tests](https://github.com/Clariteia/minos_microservice_saga/actions/workflows/python-tests.yml/badge.svg)
 
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
@@ -76,4 +76,3 @@ Please consider these guidelines before you submit any modification.
 ## Credits
 
 This package was created with ![Cookiecutter](https://github.com/audreyr/cookiecutter) and the ![Minos Package](https://github.com/Clariteia/minos-pypackage) project template.
-
