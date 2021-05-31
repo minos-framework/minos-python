@@ -132,10 +132,9 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             await execution.rollback(context, broker=self.broker, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
-        try:
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(context, broker=self.broker, **self.execute_kwargs)
-        except MinosSagaPausedExecutionStepException:
-            pass
+
         self.assertEqual(1, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
 

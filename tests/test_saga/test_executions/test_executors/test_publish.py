@@ -82,7 +82,10 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
 
         with self.assertRaises(MinosSagaFailedExecutionStepException) as result:
             await executor.exec(operation, context, True)
-        self.assertEqual("The raised exception is: ValueError('This is an exception')", str(result.exception))
+        self.assertEqual(
+            "There was a failure while 'SagaExecutionStep' was executing: ValueError('This is an exception')",
+            str(result.exception),
+        )
 
 
 if __name__ == "__main__":

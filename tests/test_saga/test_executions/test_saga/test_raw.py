@@ -239,15 +239,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(self.saga)
-            try:
+            with self.assertRaises(MinosSagaPausedExecutionStepException):
                 await expected.execute()
-            except MinosSagaPausedExecutionStepException:
-                pass
-            try:
-                reply = fake_reply(Foo("hola"))
+
+            reply = fake_reply(Foo("hola"))
+            with self.assertRaises(MinosSagaPausedExecutionStepException):
                 await expected.execute(reply=reply)
-            except MinosSagaPausedExecutionStepException:
-                pass
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)

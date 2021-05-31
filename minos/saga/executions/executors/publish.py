@@ -74,8 +74,7 @@ class PublishExecutor(LocalExecutor):
         except MinosSagaException as exc:
             raise exc
         except Exception as exc:
-            exc = MinosSagaFailedExecutionStepException(f"The raised exception is: {exc!r}")
-            raise exc
+            raise MinosSagaFailedExecutionStepException(exc)
 
         return context
 
