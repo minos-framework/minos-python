@@ -158,7 +158,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'minos',
-     'Minos Microservice Common Documentation',
+     'Minos Microservice Saga Documentation',
      [author], 1)
 ]
 
