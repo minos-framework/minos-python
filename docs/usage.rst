@@ -2,7 +2,6 @@
 Usage
 =====
 
-To use Minos Microservice Common in a project::
+To use Minos Microservice Saga in a project::
 
     from minos import saga
-
