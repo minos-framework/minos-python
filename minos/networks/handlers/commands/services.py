@@ -15,10 +15,6 @@ from aiomisc.service.periodic import (
     Service,
 )
 
-from minos.common import (
-    MinosConfig,
-)
-
 from .consumers import (
     CommandConsumer,
 )
@@ -30,9 +26,9 @@ from .handlers import (
 class CommandConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
-    def __init__(self, config: MinosConfig = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = CommandConsumer.from_config(config=config)
+        self.dispatcher = CommandConsumer.from_config(**kwargs)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -55,9 +51,9 @@ class CommandConsumerService(Service):
 class CommandHandlerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
-    def __init__(self, config: MinosConfig = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = CommandHandler.from_config(config=config)
+        self.dispatcher = CommandHandler.from_config(**kwargs)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.

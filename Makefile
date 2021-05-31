@@ -67,7 +67,7 @@ coverage: ## check code coverage quickly with the default Python
 
 reformat: ## check code coverage quickly with the default Python
 	poetry run black --line-length 120 minos tests
-	poetry run isort --recursive minos tests
+	poetry run isort minos tests
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -rf docs/api
@@ -85,5 +85,8 @@ dist: clean ## builds source and wheel package
 
 install:
 	poetry install
+
+update:
+	poetry update
 
 full-install: clean install

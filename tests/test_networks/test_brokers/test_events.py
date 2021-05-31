@@ -1,8 +1,22 @@
+"""
+Copyright (C) 2021 Clariteia SL
+
+This file is part of minos framework.
+
+Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
+"""
 import unittest
+from datetime import (
+    datetime,
+)
+from unittest.mock import (
+    MagicMock,
+)
 
 import aiopg
 
 from minos.common import (
+    Event,
     MinosConfig,
     MinosConfigException,
 )
@@ -22,16 +36,19 @@ from tests.utils import (
 class TestEventBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    def test_from_config_default(self):
+    def test_from_config_with_args(self):
         self.assertIsInstance(EventBroker.from_config("EventBroker", config=self.config), EventBroker)
+
+    def test_from_config_default(self):
+        self.assertIsInstance(EventBroker.from_config(config=self.config), EventBroker)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
             EventBroker.from_config()
 
     async def test_if_queue_table_exists(self):
-        broker = EventBroker.from_config("EventBroker", config=self.config)
-        await broker.setup()
+        async with EventBroker.from_config("EventBroker", config=self.config):
+            pass
 
         async with aiopg.connect(**self.events_queue_db) as connection:
             async with connection.cursor() as cursor:
@@ -46,22 +63,41 @@ class TestEventBroker(PostgresAsyncTestCase):
 
         assert ret == [(1,)]
 
-    async def test_events_broker_insertion(self):
-        broker = EventBroker.from_config("EventBroker", config=self.config)
-        await broker.setup()
-
+    async def test_send_one(self):
+        topic = "EventBroker"
+        query = (
+            "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date)\n"
+            "VALUES (%s, %s, %s, %s, %s, %s)\n"
+            "RETURNING id;"
+        )
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        queue_id = await broker.send_one(item)
 
-        assert queue_id > 0
+        async def _fn(*args, **kwargs):
+            return (56,)
+
+        mock = MagicMock(side_effect=_fn)
+
+        async with EventBroker.from_config(config=self.config) as broker:
+            broker.submit_query_and_fetchone = mock
+            identifier = await broker.send_one(item, topic=topic)
+
+        self.assertEqual(56, identifier)
+        self.assertEqual(1, mock.call_count)
+
+        args = mock.call_args.args
+        self.assertEqual(query, args[0])
+        self.assertEqual("EventBroker", args[1][0])
+        self.assertEqual(Event(topic=topic, items=[item]), Event.from_avro_bytes(args[1][1]))
+        self.assertEqual(0, args[1][2])
+        self.assertEqual("event", args[1][3])
+        self.assertIsInstance(args[1][4], datetime)
+        self.assertIsInstance(args[1][5], datetime)
 
     async def test_if_events_was_deleted(self):
-        broker = EventBroker.from_config("EventBroker-Delete", config=self.config)
-        await broker.setup()
-
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        queue_id_1 = await broker.send_one(item)
-        queue_id_2 = await broker.send_one(item)
+        async with EventBroker.from_config("EventBroker-Delete", config=self.config) as broker:
+            queue_id_1 = await broker.send_one(item)
+            queue_id_2 = await broker.send_one(item)
 
         await Producer.from_config(config=self.config).dispatch()
 
@@ -75,13 +111,10 @@ class TestEventBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_events_retry_was_incremented(self):
-        broker = EventBroker.from_config("EventBroker-Delete", config=self.config)
-        await broker.setup()
-
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-
-        queue_id_1 = await broker.send_one(item)
-        queue_id_2 = await broker.send_one(item)
+        async with EventBroker.from_config("EventBroker-Delete", config=self.config) as broker:
+            queue_id_1 = await broker.send_one(item)
+            queue_id_2 = await broker.send_one(item)
 
         config = MinosConfig(
             path=BASE_PATH / "wrong_test_config.yml",

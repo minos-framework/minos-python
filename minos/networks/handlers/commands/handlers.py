@@ -4,6 +4,9 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
+from __future__ import (
+    annotations,
+)
 
 from typing import (
     Any,
@@ -31,14 +34,12 @@ from ..entries import (
 class CommandHandler(Handler):
     """Command Handler class."""
 
-    TABLE = "command_queue"
+    TABLE_NAME = "command_queue"
 
     broker: MinosBroker = Provide["command_reply_broker"]
 
-    def __init__(self, *, config: MinosConfig, broker: MinosBroker = None, **kwargs: Any):
-        super().__init__(table_name=self.TABLE, config=config.commands, **kwargs)
-
-        self._broker_group_name = f"event_{config.service.name}"
+    def __init__(self, *, service_name: str, broker: MinosBroker = None, **kwargs: Any):
+        super().__init__(broker_group_name=f"command_{service_name}", **kwargs)
 
         if broker is not None:
             self.broker = broker
@@ -46,11 +47,16 @@ class CommandHandler(Handler):
     def _build_data(self, value: bytes) -> Command:
         return Command.from_avro_bytes(value)
 
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
+        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
+        return cls(service_name=config.service.name, handlers=handlers, **config.commands.queue._asdict(), **kwargs)
+
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
         command: Command = row.data
-        definition_id = command.saga_id
-        execution_id = command.task_id
+        definition_id = command.saga_uuid
 
         response = await row.callback(row.topic, command)
 
-        await self.broker.send(response, topic=f"{definition_id}Reply", saga_id=definition_id, task_id=execution_id)
+        if command.reply_topic is not None:
+            await self.broker.send(response, topic=command.reply_topic, saga_uuid=definition_id)
