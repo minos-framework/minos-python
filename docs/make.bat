@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=minos_microservice_common
+set SPHINXPROJ=minos_microservice_saga
 
 if "%1" == "" goto help
 
