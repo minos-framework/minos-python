@@ -193,9 +193,6 @@ apidoc_extra_args = [
     "--force",
     "--implicit-namespaces",
 ]
-apidoc_excluded_paths = [
-    '../minos/common/testing.py'
-]
 # "autodoc typehints" extension
 
 set_type_checking_flag = True
