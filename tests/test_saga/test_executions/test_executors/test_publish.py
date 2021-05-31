@@ -52,7 +52,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         await executor.exec(operation, context, False)
 
         self.assertEqual(1, mock.call_count)
-        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid), reply_on=None)
+        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid), reply_topic=None)
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_with_reply(self):
@@ -66,7 +66,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         await executor.exec(operation, context, True)
 
         self.assertEqual(1, mock.call_count)
-        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid), reply_on="AddFoo")
+        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid), reply_topic="AddFoo")
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_raises(self):
