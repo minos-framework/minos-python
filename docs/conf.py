@@ -170,7 +170,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'minos',
-     'Minos Microservice Common Documentation',
+     'Minos Microservice Saga Documentation',
      author,
      'minos',
      'One line description of project.',
