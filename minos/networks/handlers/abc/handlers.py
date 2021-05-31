@@ -143,7 +143,9 @@ FROM %s
 WHERE retry <= %d
 AND locked = FALSE
 ORDER BY creation_date
-LIMIT %d;
+LIMIT %d
+FOR UPDATE
+SKIP LOCKED;
 """.strip()
 
 _DELETE_PROCESSED_QUERY = """
