@@ -11,7 +11,6 @@ from __future__ import (
 
 from typing import (
     AsyncIterator,
-    NamedTuple,
     NoReturn,
 )
 
@@ -20,6 +19,8 @@ from aiokafka import (
 )
 
 from minos.common import (
+    BROKER,
+    QUEUE,
     MinosConfig,
 )
 
@@ -32,7 +33,7 @@ class Producer(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
     # noinspection PyUnresolvedReferences
-    def __init__(self, *args, queue: NamedTuple, broker, **kwargs):
+    def __init__(self, *args, queue: QUEUE, broker: BROKER, **kwargs):
         # noinspection PyProtectedMember
         super().__init__(*args, **queue._asdict(), **kwargs)
         self.retry = queue.retry

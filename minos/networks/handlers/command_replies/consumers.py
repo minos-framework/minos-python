@@ -26,8 +26,7 @@ class CommandReplyConsumer(Consumer):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyConsumer:
         topics = [item.name for item in config.saga.items]
-        kafka_conn_data = f"{config.saga.broker.host}:{config.saga.broker.port}"
-        return cls(topics=topics, kafka_conn_data=kafka_conn_data, **config.saga.queue._asdict(), **kwargs)
+        return cls(topics=topics, broker=config.saga.broker, **config.saga.queue._asdict(), **kwargs)
 
     def _is_valid_instance(self, value: bytes) -> bool:
         try:

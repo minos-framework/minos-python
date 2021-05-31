@@ -26,7 +26,7 @@ from psycopg2.extensions import (
 )
 
 from minos.common import (
-    MinosConfig,
+    BROKER,
 )
 
 from .setups import (
@@ -42,24 +42,13 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_topics", "_kafka_connection_data", "__consumer"
+    __slots__ = "_topics", "_broker", "__consumer"
 
-    def __init__(
-        self,
-        *,
-        topics: list[str],
-        kafka_connection_data: Optional[str] = None,
-        consumer: Optional[Any] = None,
-        **kwargs
-    ):
+    def __init__(self, *, topics: list[str], broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._topics = topics
-        self._kafka_connection_data = kafka_connection_data
+        self._broker = broker
         self.__consumer = consumer
-
-    @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Consumer:
-        return cls(*args, config=config, **kwargs)  # pragma: no cover
 
     async def _setup(self) -> NoReturn:
         await super()._setup()
@@ -68,7 +57,9 @@ class Consumer(HandlerSetup):
     @property
     def _consumer(self) -> AIOKafkaConsumer:
         if self.__consumer is None:  # pragma: no cover
-            self.__consumer = AIOKafkaConsumer(*self._topics, bootstrap_servers=self._kafka_connection_data)
+            self.__consumer = AIOKafkaConsumer(
+                *self._topics, bootstrap_servers=f"{self.broker.host}:{self.broker.port}"
+            )
         return self.__consumer
 
     async def _destroy(self) -> NoReturn:
