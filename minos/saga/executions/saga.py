@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Any,
     Iterable,
@@ -29,6 +30,7 @@ from ..definitions import (
     SagaStep,
 )
 from ..exceptions import (
+    MinosSagaExecutionStepException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionException,
@@ -42,6 +44,8 @@ from .status import (
 from .step import (
     SagaExecutionStep,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SagaExecution(object):
@@ -58,7 +62,7 @@ class SagaExecution(object):
         paused_step: SagaExecutionStep = None,
         already_rollback: bool = False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         if steps is None:
             steps = list()
@@ -166,10 +170,18 @@ class SagaExecution(object):
         if self.already_rollback:
             raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
 
+        raised_exception = False
         for execution_step in reversed(self.executed_steps):
-            self.context = await execution_step.rollback(
-                self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
-            )
+            try:
+                self.context = await execution_step.rollback(
+                    self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
+                )
+            except MinosSagaExecutionStepException as exc:
+                logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
+                raised_exception = True
+
+        if raised_exception:
+            raise MinosSagaRollbackExecutionException("Some execution steps failed to rollback.")
 
         self.already_rollback = True
 

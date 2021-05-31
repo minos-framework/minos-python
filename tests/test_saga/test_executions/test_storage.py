@@ -51,15 +51,13 @@ class TestMinosLocalState(unittest.IsolatedAsyncioTestCase):
         )
 
         execution = SagaExecution.from_saga(self.saga)
-        try:
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
-        except MinosSagaPausedExecutionStepException:
-            pass
+
         reply = fake_reply(Foo("hola"))
-        try:
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(reply=reply, broker=self.broker)
-        except MinosSagaPausedExecutionStepException:
-            pass
+
         self.execution = execution
 
     def tearDown(self) -> None:

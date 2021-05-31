@@ -100,9 +100,10 @@ class MinosSagaExecutionStepException(MinosSagaException):
 class MinosSagaFailedExecutionStepException(MinosSagaExecutionStepException):
     """Exception to be raised when a saga execution step failed while running."""
 
-    def __init__(self, message: str = None):
+    def __init__(self, exception: Exception, message: str = None):
+        self.exception = exception
         if message is None:
-            message = "There was a failure while 'SagaExecutionStep' was executing."
+            message = f"There was a failure while 'SagaExecutionStep' was executing: {exception!r}"
         super().__init__(message)
 
 

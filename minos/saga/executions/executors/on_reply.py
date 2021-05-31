@@ -14,6 +14,7 @@ from ...definitions import (
     SagaStepOperation,
 )
 from ...exceptions import (
+    MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
 )
 from ..context import (
@@ -50,6 +51,10 @@ class OnReplyExecutor(LocalExecutor):
         if len(value) == 1:
             value = value[0]
 
-        response = await super().exec_one(operation, value)
-        context.update(operation.name, response)
+        try:
+            response = await super().exec_one(operation, value)
+            context.update(operation.name, response)
+        except Exception as exc:
+            raise MinosSagaFailedExecutionStepException(exc)
+
         return context

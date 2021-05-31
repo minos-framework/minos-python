@@ -29,7 +29,6 @@ from ...definitions import (
     SagaStepOperation,
 )
 from ...exceptions import (
-    MinosSagaException,
     MinosSagaFailedExecutionStepException,
 )
 from ..context import (
@@ -71,11 +70,8 @@ class PublishExecutor(LocalExecutor):
         try:
             request = await self.exec_one(operation, context)
             await self._publish(operation, request, has_reply)
-        except MinosSagaException as exc:
-            raise exc
         except Exception as exc:
-            exc = MinosSagaFailedExecutionStepException(f"The raised exception is: {exc!r}")
-            raise exc
+            raise MinosSagaFailedExecutionStepException(exc)
 
         return context
 

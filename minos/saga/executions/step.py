@@ -25,7 +25,6 @@ from ..definitions import (
     SagaStep,
 )
 from ..exceptions import (
-    MinosSagaException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionStepException,
@@ -93,9 +92,9 @@ class SagaExecutionStep(object):
             await executor.exec(
                 self.definition.invoke_participant_operation, context, has_reply=self.definition.has_reply,
             )
-        except MinosSagaException:
+        except MinosSagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredInvokeParticipant
-            raise MinosSagaFailedExecutionStepException()
+            raise exc
         self.status = SagaStepStatus.FinishedInvokeParticipant
 
     async def _execute_on_reply(
@@ -103,16 +102,17 @@ class SagaExecutionStep(object):
     ) -> SagaContext:
         self.status = SagaStepStatus.RunningOnReply
         executor = OnReplyExecutor(*args, **kwargs)
-        # noinspection PyBroadException
+
         try:
             context = await executor.exec(self.definition.on_reply_operation, context, reply)
         except MinosSagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedOnReply
             raise exc
-        except Exception:
+        except MinosSagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredOnReply
             await self.rollback(context, *args, **kwargs)
-            raise MinosSagaFailedExecutionStepException()
+            raise exc
+
         return context
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
