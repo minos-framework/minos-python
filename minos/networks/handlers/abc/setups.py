@@ -32,5 +32,6 @@ class HandlerSetup(PostgreSqlMinosDatabase):
             '"topic" VARCHAR(255) NOT NULL, '
             '"partition_id" INTEGER,'
             '"binary_data" BYTEA NOT NULL, '
+            '"retry" INTEGER NOT NULL DEFAULT 0,'
             '"creation_date" TIMESTAMP NOT NULL);' % (self.TABLE_NAME)
         )
