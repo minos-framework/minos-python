@@ -27,8 +27,7 @@ class EventConsumer(Consumer):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventConsumer:
         topics = [item.name for item in config.events.items]
-        kafka_conn_data = f"{config.events.broker.host}:{config.events.broker.port}"
-        return cls(topics=topics, kafka_conn_data=kafka_conn_data, **config.events.queue._asdict(), **kwargs)
+        return cls(topics=topics, broker=config.events.broker, **config.events.queue._asdict(), **kwargs)
 
     def _is_valid_instance(self, value: bytes):
         try:
