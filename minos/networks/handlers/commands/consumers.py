@@ -26,8 +26,7 @@ class CommandConsumer(Consumer):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandConsumer:
         topics = [item.name for item in config.commands.items]
-        kafka_conn_data = f"{config.commands.broker.host}:{config.commands.broker.port}"
-        return cls(topics=topics, kafka_conn_data=kafka_conn_data, **config.commands.queue._asdict(), **kwargs)
+        return cls(topics=topics, broker=config.commands.broker, **config.commands.queue._asdict(), **kwargs)
 
     def _is_valid_instance(self, value: bytes):
         try:
