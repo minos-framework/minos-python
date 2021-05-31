@@ -67,12 +67,17 @@ class Handler(HandlerSetup):
         """
         iterable = self.submit_query_and_iter(_SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, 3, self._records),)
         async for row in iterable:
+            dispatched = False
             try:
                 await self.dispatch_one(row)
+                dispatched = True
             except Exception as exc:
                 log.warning(exc)
-                continue
-            await self.submit_query(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+            finally:
+                if dispatched:
+                    await self.submit_query(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+                else:
+                    await self.submit_query(_UPDATE_NON_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
 
     async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
         """Dispatch one row.
@@ -145,7 +150,7 @@ WHERE id = %d;
 """.strip()
 
 _UPDATE_NON_PROCESSED_QUERY = """
-UPDATE producer_queue
+UPDATE %s
     SET retry = retry + 1
 WHERE id = %s;
 """.strip()

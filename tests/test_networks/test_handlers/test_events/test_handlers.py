@@ -126,6 +126,14 @@ class TestEventHandler(PostgresAsyncTestCase):
 
             assert records[0] == 1
 
+            async with aiopg.connect(**self.saga_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute("SELECT * FROM event_queue WHERE id=%d" % (queue_id))
+                    pending_row = await cur.fetchone()
+
+            # Retry attempts
+            assert pending_row[4] == 1
+
 
 if __name__ == "__main__":
     unittest.main()
