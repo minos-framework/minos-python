@@ -8,8 +8,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 import sys
 import unittest
 
+from dependency_injector import (
+    containers,
+    providers,
+)
+
 from minos.common import (
-    MinosDependencyInjector,
     MinosRepositoryDeletedAggregateException,
     PostgreSqlMinosRepository,
 )
@@ -29,11 +33,15 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.injector = MinosDependencyInjector(self.config, repository_cls=PostgreSqlMinosRepository)
-        await self.injector.wire(modules=[sys.modules[__name__]])
+        self.container = containers.DynamicContainer()
+        self.container.config = providers.Object(self.config)
+        self.container.repository = providers.Object(PostgreSqlMinosRepository.from_config(config=self.config))
+        await self.container.repository().setup()
+        self.container.wire(modules=[sys.modules[__name__]])
 
     async def asyncTearDown(self):
-        await self.injector.unwire()
+        self.container.unwire()
+        await self.container.repository().destroy()
         await super().asyncTearDown()
 
     async def test_update(self):
