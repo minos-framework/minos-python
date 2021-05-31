@@ -131,3 +131,14 @@ History
 * Added Dependency Injections Containers
 * Modified .gitignore
 * Moved Borker Class from static method impl to instance by init
+
+0.0.15 (2021-05-26)
+--------------------
+
+* Some code refactoring
+* Test cases coverage optimization
+* fixed some Sagas functionalities
+* fixed Sphinx documentation generation process
+
+0.0.16 (2021-05-28)
+--------------------

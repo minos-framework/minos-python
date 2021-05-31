@@ -17,7 +17,7 @@ from ..logs import (
     log,
 )
 from ..protocol import (
-    MinosAvroProtocol,
+    MinosAvroMessageProtocol,
     MinosBinaryProtocol,
 )
 
@@ -171,7 +171,7 @@ class MinosRPCBodyRequest(MinosBaseRequest):
 
 class MinosRequest(object):
     @staticmethod
-    def build(request_clas: t.Type[MinosBaseRequest], binary: MinosBinaryProtocol = MinosAvroProtocol):
+    def build(request_clas: t.Type[MinosBaseRequest], binary: MinosBinaryProtocol = MinosAvroMessageProtocol):
         """
         this is the Builder that create specific Requests Objects
         """
@@ -185,7 +185,9 @@ class MinosRequest(object):
             raise MinosMessageException("The request class must extend MinosBaseRequest")
 
     @staticmethod
-    def load(data: bytes, request_class: t.Type[MinosBaseRequest], binary: MinosBinaryProtocol = MinosAvroProtocol):
+    def load(
+        data: bytes, request_class: t.Type[MinosBaseRequest], binary: MinosBinaryProtocol = MinosAvroMessageProtocol
+    ):
         """
         load binary data and convert in the Message Request Instance given
         """
