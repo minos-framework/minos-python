@@ -86,4 +86,7 @@ dist: clean ## builds source and wheel package
 install:
 	poetry install
 
+update:
+	poetry update
+
 full-install: clean install
