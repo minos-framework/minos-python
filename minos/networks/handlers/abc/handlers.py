@@ -65,16 +65,14 @@ class Handler(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        iterable = self.submit_query_and_iter(
-            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self.TABLE_NAME, self._records),
-        )
+        iterable = self.submit_query_and_iter(_SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, 3, self._records),)
         async for row in iterable:
             try:
                 await self.dispatch_one(row)
             except Exception as exc:
                 log.warning(exc)
                 continue
-            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self.TABLE_NAME, row[0]))
+            await self.submit_query(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
 
     async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
         """Dispatch one row.
@@ -87,9 +85,10 @@ class Handler(HandlerSetup):
         callback = self.get_event_handler(row[1])
         partition_id = row[2]
         data = self._build_data(row[3])
-        created_at = row[4]
+        retry = row[4]
+        created_at = row[5]
 
-        entry = HandlerEntry(id, topic, callback, partition_id, data, created_at)
+        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
 
         await self._dispatch_one(entry)
 
@@ -130,3 +129,23 @@ class Handler(HandlerSetup):
     @abstractmethod
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
         raise NotImplementedError
+
+
+_SELECT_NON_PROCESSED_ROWS_QUERY = """
+SELECT *
+FROM %s
+WHERE retry <= %d
+ORDER BY creation_date
+LIMIT %d;
+""".strip()
+
+_DELETE_PROCESSED_QUERY = """
+DELETE FROM %s
+WHERE id = %d;
+""".strip()
+
+_UPDATE_NON_PROCESSED_QUERY = """
+UPDATE producer_queue
+    SET retry = retry + 1
+WHERE id = %s;
+""".strip()
