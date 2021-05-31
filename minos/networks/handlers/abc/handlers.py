@@ -91,9 +91,10 @@ class Handler(HandlerSetup):
         partition_id = row[2]
         data = self._build_data(row[3])
         retry = row[4]
-        created_at = row[5]
+        locked = row[5]
+        created_at = row[6]
 
-        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
+        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, locked, created_at)
 
         await self._dispatch_one(entry)
 
@@ -140,6 +141,7 @@ _SELECT_NON_PROCESSED_ROWS_QUERY = """
 SELECT *
 FROM %s
 WHERE retry <= %d
+AND locked = FALSE
 ORDER BY creation_date
 LIMIT %d;
 """.strip()
