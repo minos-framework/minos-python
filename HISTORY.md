@@ -19,3 +19,8 @@ History
 
 * Added Dependency injection Container use
 * Completed Saga Manager
+
+0.0.4 (2021-05-31)
+------------------
+
+* Bugfixes

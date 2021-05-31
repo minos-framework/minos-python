@@ -116,10 +116,10 @@ class TestExceptions(unittest.TestCase):
     def test_execution_step_failed_step_repr(self):
         expected = (
             'MinosSagaFailedExecutionStepException(message="There was '
-            "a failure while 'SagaExecutionStep' was executing.\")"
+            "a failure while 'SagaExecutionStep' was executing: ValueError('test')\")"
         )
 
-        self.assertEqual(expected, repr(MinosSagaFailedExecutionStepException()))
+        self.assertEqual(expected, repr(MinosSagaFailedExecutionStepException(ValueError("test"))))
 
     def test_execution_step_paused_step(self):
         self.assertTrue(issubclass(MinosSagaPausedExecutionStepException, MinosSagaExecutionStepException))

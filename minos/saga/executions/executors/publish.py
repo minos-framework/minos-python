@@ -29,7 +29,6 @@ from ...definitions import (
     SagaStepOperation,
 )
 from ...exceptions import (
-    MinosSagaException,
     MinosSagaFailedExecutionStepException,
 )
 from ..context import (
@@ -56,33 +55,31 @@ class PublishExecutor(LocalExecutor):
         self.definition_name = definition_name
         self.execution_uuid = execution_uuid
 
-    def exec(self, operation: SagaStepOperation, context: SagaContext) -> SagaContext:
+    async def exec(self, operation: SagaStepOperation, context: SagaContext, has_reply: bool) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
 
         :param operation: Operation to be executed.
         :param context: Execution context.
+        :param has_reply: If `True` the command is published expecting (and waiting) a reply, otherwise a reply is not
+            expected (and waited)
         :return: A saga context instance.
         """
         if operation is None:
             return context
 
         try:
-            request = self.exec_one(operation, context)
-            self.publish(request)
-        except MinosSagaException as exc:
-            raise exc
-        except Exception:
-            exc = MinosSagaFailedExecutionStepException()  # FIXME: Include explanation.
-            raise exc
+            request = await self.exec_one(operation, context)
+            await self._publish(operation, request, has_reply)
+        except Exception as exc:
+            raise MinosSagaFailedExecutionStepException(exc)
 
         return context
 
-    def publish(self, request: MinosModel) -> NoReturn:
-        """Publish a request on the corresponding broker's queue./
-
-        :param request: The request to be published as a command.
-        :return: This method does not return anything.
-        """
-        self._exec_function(
-            self.broker.send_one, item=request, saga_id=self.definition_name, task_id=str(self.execution_uuid)
+    async def _publish(self, operation: SagaStepOperation, request: MinosModel, has_reply: bool) -> NoReturn:
+        await self._exec_function(
+            self.broker.send_one,
+            topic=operation.name,
+            item=request,
+            saga_uuid=str(self.execution_uuid),
+            reply_topic=None if not has_reply else self.definition_name,
         )

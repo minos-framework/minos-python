@@ -31,23 +31,31 @@ from minos import saga
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
 
+import sphinx_rtd_theme
+
+extensions = [
+    "sphinxcontrib.apidoc",
+    'sphinx.ext.autodoc',
+    "sphinx_autodoc_typehints",
+    "sphinx.ext.viewcode",
+    "sphinx_rtd_theme",
+    "m2r2",
+]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The master toctree document.
 master_doc = 'index'
 
 # General information about the project.
-project = 'Minos Microservice SAGA'
-copyright = "2021, Clariteia Devs"
+project = 'Minos Microservice Saga'
+copyright = "2021, Clariteia"
 author = "Clariteia Devs"
 
 # The version info for the project you're documenting, acts as replacement
@@ -83,13 +91,24 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+
+# html_theme_options = {
+#     "codecov_button": True,
+#     "description": "Reactive microservices for an asynchronous world",
+#     "github_button": True,
+#     "github_user": "Clariteia",
+#     "github_repo": "minos_microservice_saga",
+#     "github_type": "star",
+# }
+
+html_sidebars = {"**": ["about.html", "navigation.html", "searchbox.html"]}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -128,7 +147,7 @@ latex_elements = {
 # [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'minos.tex',
-     'Minos Microservice SAGA Documentation',
+     'Minos Microservice Saga Documentation',
      'Clariteia Devs', 'manual'),
 ]
 
@@ -139,7 +158,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'minos',
-     'Minos Microservice SAGA Documentation',
+     'Minos Microservice Saga Documentation',
      [author], 1)
 ]
 
@@ -151,12 +170,30 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'minos',
-     'Minos Microservice SAGA Documentation',
+     'Minos Microservice Saga Documentation',
      author,
      'minos',
      'One line description of project.',
      'Miscellaneous'),
 ]
 
+# "apidoc" extension
+apidoc_module_dir = "../minos"
+apidoc_output_dir = "api"
+apidoc_separate_modules = True
+autodoc_default_options = {
+    "inherited-members": True,
+    "special-members": "__init__",
+    "undoc-members": True,
+}
 
+apidoc_toc_file = False
+apidoc_module_first = True
+apidoc_extra_args = [
+    "--force",
+    "--implicit-namespaces",
+]
+# "autodoc typehints" extension
 
+set_type_checking_flag = True
+typehints_fully_qualified = True

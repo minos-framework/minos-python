@@ -50,13 +50,13 @@ class SagaManager(MinosSagaManager):
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    # noinspection PyUnusedLocal
     def __init__(self, storage: SagaExecutionStorage, definitions: dict[str, Saga], *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.storage = storage
         self.definitions = definitions
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> MinosSagaManager:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
         """Build an instance from config.
 
         :param args: Additional positional arguments.
@@ -68,23 +68,23 @@ class SagaManager(MinosSagaManager):
         definitions = _build_definitions(config.saga.items)
         return cls(*args, storage=storage, definitions=definitions, **kwargs)
 
-    def _run_new(self, name: str, **kwargs) -> UUID:
+    async def _run_new(self, name: str, **kwargs) -> UUID:
         definition = self.definitions.get(name)
         execution = SagaExecution.from_saga(definition)
-        return self._run(execution, **kwargs)
+        return await self._run(execution, **kwargs)
 
-    def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
-        execution = self.storage.load(reply.task_id)
-        return self._run(execution, reply=reply, **kwargs)
+    async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
+        execution = self.storage.load(reply.saga_uuid)
+        return await self._run(execution, reply=reply, **kwargs)
 
-    def _run(self, execution: SagaExecution, **kwargs) -> UUID:
+    async def _run(self, execution: SagaExecution, **kwargs) -> UUID:
         try:
-            execution.execute(**kwargs)
+            await execution.execute(**kwargs)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
             return execution.uuid
-        except MinosSagaFailedExecutionStepException:
-            logger.warning(f"The execution identified by {execution.uuid} failed.")
+        except MinosSagaFailedExecutionStepException as exc:
+            logger.warning(f"The {execution.uuid!r} execution failed: {exc!r}")
             self.storage.store(execution)
             return execution.uuid
 

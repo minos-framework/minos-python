@@ -14,6 +14,7 @@ from ...definitions import (
     SagaStepOperation,
 )
 from ...exceptions import (
+    MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
 )
 from ..context import (
@@ -28,7 +29,7 @@ class OnReplyExecutor(LocalExecutor):
     """On Reply Executor class."""
 
     # noinspection PyUnusedLocal
-    def exec(
+    async def exec(
         self, operation: SagaStepOperation, context: SagaContext, reply: CommandReply, *args, **kwargs
     ) -> SagaContext:
         """Execute the on reply operation.
@@ -50,6 +51,10 @@ class OnReplyExecutor(LocalExecutor):
         if len(value) == 1:
             value = value[0]
 
-        response = super().exec_one(operation, value)
-        context.update(operation.name, response)
+        try:
+            response = await super().exec_one(operation, value)
+            context.update(operation.name, response)
+        except Exception as exc:
+            raise MinosSagaFailedExecutionStepException(exc)
+
         return context

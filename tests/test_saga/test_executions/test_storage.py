@@ -32,10 +32,10 @@ from tests.utils import (
 )
 
 
-class TestMinosLocalState(unittest.TestCase):
+class TestMinosLocalState(unittest.IsolatedAsyncioTestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
-    def setUp(self) -> None:
+    async def asyncSetUp(self) -> None:
         self.broker = NaiveBroker()
         self.saga = (
             Saga("OrdersAdd")
@@ -51,15 +51,13 @@ class TestMinosLocalState(unittest.TestCase):
         )
 
         execution = SagaExecution.from_saga(self.saga)
-        try:
-            execution.execute(broker=self.broker)
-        except MinosSagaPausedExecutionStepException:
-            pass
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(broker=self.broker)
+
         reply = fake_reply(Foo("hola"))
-        try:
-            execution.execute(reply=reply, broker=self.broker)
-        except MinosSagaPausedExecutionStepException:
-            pass
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(reply=reply, broker=self.broker)
+
         self.execution = execution
 
     def tearDown(self) -> None:
