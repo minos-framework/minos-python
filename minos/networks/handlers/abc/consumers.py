@@ -58,7 +58,7 @@ class Consumer(HandlerSetup):
     def _consumer(self) -> AIOKafkaConsumer:
         if self.__consumer is None:  # pragma: no cover
             self.__consumer = AIOKafkaConsumer(
-                *self._topics, bootstrap_servers=f"{self.broker.host}:{self.broker.port}"
+                *self._topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}"
             )
         return self.__consumer
 
