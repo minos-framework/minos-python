@@ -170,6 +170,7 @@ class SagaExecution(object):
         if self.already_rollback:
             raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
 
+        raised_exception = False
         for execution_step in reversed(self.executed_steps):
             try:
                 self.context = await execution_step.rollback(
@@ -177,6 +178,10 @@ class SagaExecution(object):
                 )
             except MinosSagaExecutionStepException as exc:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
+                raised_exception = True
+
+        if raised_exception:
+            raise MinosSagaRollbackExecutionException("Some execution steps failed to rollback.")
 
         self.already_rollback = True
 

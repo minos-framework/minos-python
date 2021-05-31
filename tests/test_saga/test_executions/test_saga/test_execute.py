@@ -150,6 +150,30 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             await execution.rollback(broker=self.broker)
         self.assertEqual(0, self.publish_mock.call_count)
 
+    async def test_rollback_raises(self):
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1", lambda order: order)
+            .commit()
+        )
+        execution = SagaExecution.from_saga(saga)
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(broker=self.broker)
+        reply = fake_reply(Foo("order1"))
+        await execution.execute(reply=reply, broker=self.broker)
+
+        async def _fn(*args, **kwargs):
+            raise ValueError("This is an exception")
+
+        self.publish_mock.side_effect = _fn
+        self.publish_mock.reset_mock()
+
+        with self.assertRaises(MinosSagaRollbackExecutionException):
+            await execution.rollback(broker=self.broker)
+
 
 if __name__ == "__main__":
     unittest.main()

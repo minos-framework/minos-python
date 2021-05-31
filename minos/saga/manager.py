@@ -87,9 +87,6 @@ class SagaManager(MinosSagaManager):
             logger.warning(f"The {execution.uuid!r} execution failed: {exc!r}")
             self.storage.store(execution)
             return execution.uuid
-        except Exception as exc:
-            logger.error(f"The {execution.uuid!r} execution failed unexpectedly: {exc!r}")
-            raise exc
 
         self.storage.delete(execution)
         return execution.uuid
