@@ -81,5 +81,5 @@ class PublishExecutor(LocalExecutor):
             topic=operation.name,
             item=request,
             saga_uuid=str(self.execution_uuid),
-            reply_on=None if not has_reply else self.definition_name,
+            reply_topic=None if not has_reply else self.definition_name,
         )
