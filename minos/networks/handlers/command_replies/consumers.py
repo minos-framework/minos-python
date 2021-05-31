@@ -25,7 +25,7 @@ class CommandReplyConsumer(Consumer):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyConsumer:
-        topics = [item.name for item in config.saga.items]
+        topics = [f"{topic}Reply" for topic in config.saga.items]
         return cls(topics=topics, broker=config.saga.broker, **config.saga.queue._asdict(), **kwargs)
 
     def _is_valid_instance(self, value: bytes) -> bool:
