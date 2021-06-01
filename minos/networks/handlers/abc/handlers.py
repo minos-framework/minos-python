@@ -5,16 +5,10 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
-from abc import (
-    abstractmethod,
-)
-from datetime import (
-    datetime,
-)
+from abc import abstractmethod
+from datetime import datetime
 from typing import (
     Any,
     Callable,
@@ -25,19 +19,11 @@ from minos.common import (
     MinosModel,
     import_module,
 )
-from minos.common.logs import (
-    log,
-)
+from minos.common.logs import log
 
-from ...exceptions import (
-    MinosNetworkException,
-)
-from ..entries import (
-    HandlerEntry,
-)
-from .setups import (
-    HandlerSetup,
-)
+from ...exceptions import MinosNetworkException
+from ..entries import HandlerEntry
+from .setups import HandlerSetup
 
 
 class Handler(HandlerSetup):
@@ -66,7 +52,7 @@ class Handler(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        
+
         iterable = self.submit_query_and_iter(
             _SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, self._retry, self._records),
         )
