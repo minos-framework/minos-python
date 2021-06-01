@@ -5,10 +5,16 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
-from abc import abstractmethod
-from datetime import datetime
+from abc import (
+    abstractmethod,
+)
+from datetime import (
+    datetime,
+)
 from typing import (
     Any,
     Callable,
@@ -19,11 +25,19 @@ from minos.common import (
     MinosModel,
     import_module,
 )
-from minos.common.logs import log
+from minos.common.logs import (
+    log,
+)
 
-from ...exceptions import MinosNetworkException
-from ..entries import HandlerEntry
-from .setups import HandlerSetup
+from ...exceptions import (
+    MinosNetworkException,
+)
+from ..entries import (
+    HandlerEntry,
+)
+from .setups import (
+    HandlerSetup,
+)
 
 
 class Handler(HandlerSetup):
