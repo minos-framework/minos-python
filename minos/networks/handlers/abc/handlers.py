@@ -66,7 +66,7 @@ class Handler(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        
+
         iterable = self.submit_query_and_iter(
             _SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, self._retry, self._records),
         )
