@@ -67,21 +67,31 @@ class Handler(HandlerSetup):
             Exception: An error occurred inserting record.
         """
 
-        iterable = self.submit_query_and_iter(
-            _SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, self._retry, self._records),
-        )
-        async for row in iterable:
-            dispatched = False
-            try:
-                await self.dispatch_one(row)
-                dispatched = True
-            except Exception as exc:
-                log.warning(exc)
-            finally:
-                if dispatched:
-                    await self.submit_query(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
-                else:
-                    await self.submit_query(_UPDATE_NON_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+        pool = await self.pool
+        with await pool.cursor() as cursor:
+            # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
+            # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
+            await cursor.execute("BEGIN")
+
+            # Select records and lock them FOR UPDATE
+            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, self._retry, self._records),)
+            result = await cursor.fetchall()
+
+            for row in result:
+                dispatched = False
+                try:
+                    await self.dispatch_one(row)
+                    dispatched = True
+                except Exception as exc:
+                    log.warning(exc)
+                finally:
+                    if dispatched:
+                        await cursor.execute(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+                    else:
+                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+
+            # Manually commit
+            await cursor.execute("COMMIT")
 
     async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
         """Dispatch one row.
