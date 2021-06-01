@@ -109,17 +109,23 @@ class SagaExecution(object):
         return instance
 
     @classmethod
-    def from_saga(cls, definition: Saga, *args, **kwargs) -> SagaExecution:
+    def from_saga(cls, definition: Saga, context: Optional[SagaContext] = None, *args, **kwargs) -> SagaExecution:
         """Build a new instance from a ``Saga`` object.
 
         :param definition: The definition of the saga.
+        :param context: Initial saga execution context. If not provided, then a new empty context is created.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: A new ``SagaExecution`` instance.
         """
         from uuid import (
             uuid4,
         )
 
-        return cls(definition, uuid4(), SagaContext(), *args, **kwargs)
+        if context is None:
+            context = SagaContext()
+
+        return cls(definition, uuid4(), context, *args, **kwargs)
 
     async def execute(self, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
         """Execute the ``Saga`` definition.

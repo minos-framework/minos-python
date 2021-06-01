@@ -10,6 +10,9 @@ from __future__ import (
 )
 
 import logging
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
 )
@@ -29,6 +32,7 @@ from .exceptions import (
     MinosSagaPausedExecutionStepException,
 )
 from .executions import (
+    SagaContext,
     SagaExecution,
     SagaExecutionStorage,
 )
@@ -68,9 +72,9 @@ class SagaManager(MinosSagaManager):
         definitions = _build_definitions(config.saga.items)
         return cls(*args, storage=storage, definitions=definitions, **kwargs)
 
-    async def _run_new(self, name: str, **kwargs) -> UUID:
+    async def _run_new(self, name: str, context: Optional[SagaContext] = None, **kwargs) -> UUID:
         definition = self.definitions.get(name)
-        execution = SagaExecution.from_saga(definition)
+        execution = SagaExecution.from_saga(definition, context=context)
         return await self._run(execution, **kwargs)
 
     async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
