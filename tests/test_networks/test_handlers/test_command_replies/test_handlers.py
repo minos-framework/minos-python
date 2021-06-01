@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import unittest
 
@@ -144,6 +145,63 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
             # Retry attempts
             assert pending_row[4] == 1
+
+    async def test_concurrency_dispatcher(self):
+        # Correct instance
+        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        instance = CommandReply(
+            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
+        )
+        bin_data = instance.avro_bytes
+        saga_manager = FakeSagaManager()
+
+        # Wrong instance
+        bin_data_wrong = bytes(b"Test")
+
+        async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:
+            async with aiopg.connect(**self.saga_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    for x in range(0, 25):
+                        await cur.execute(
+                            "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
+                            "VALUES (%s, %s, %s, %s) "
+                            "RETURNING id;",
+                            (instance.topic, 0, bin_data, datetime.datetime.now(),),
+                        )
+                        await cur.execute(
+                            "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
+                            "VALUES (%s, %s, %s, %s) "
+                            "RETURNING id;",
+                            (instance.topic, 0, bin_data_wrong, datetime.datetime.now(),),
+                        )
+
+            async with aiopg.connect(**self.saga_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute("SELECT COUNT(*) FROM command_reply_queue")
+                    records = await cur.fetchone()
+
+            assert records[0] == 50
+
+            slow_task_1 = asyncio.create_task(handler.dispatch())
+            slow_task_2 = asyncio.create_task(handler.dispatch())
+            slow_task_3 = asyncio.create_task(handler.dispatch())
+            slow_task_4 = asyncio.create_task(handler.dispatch())
+            slow_task_5 = asyncio.create_task(handler.dispatch())
+            slow_task_6 = asyncio.create_task(handler.dispatch())
+
+            await slow_task_1
+            await slow_task_4
+            await slow_task_2
+            await slow_task_6
+            await slow_task_3
+            await slow_task_5
+
+            async with aiopg.connect(**self.saga_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute("SELECT COUNT(*) FROM command_reply_queue")
+                    records = await cur.fetchone()
+
+            assert records[0] == 25
 
 
 if __name__ == "__main__":
