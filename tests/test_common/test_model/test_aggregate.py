@@ -8,9 +8,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 import sys
 import unittest
 
+from dependency_injector import (
+    containers,
+    providers,
+)
+
 from minos.common import (
     MinosConfig,
-    MinosDependencyInjector,
     MinosInMemoryRepository,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
@@ -31,12 +35,12 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
         self.config_file_path = BASE_PATH / "test_config.yml"
         self.config = MinosConfig(path=str(self.config_file_path))
 
-    async def asyncSetUp(self):
-        self.injector = MinosDependencyInjector(self.config)
-        await self.injector.wire(modules=[sys.modules[__name__]])
+        self.container = containers.DynamicContainer()
+        self.container.config = providers.Object(self.config)
+        self.container.wire(modules=[sys.modules[__name__]])
 
-    async def asyncTearDown(self):
-        await self.injector.unwire()
+    def tearDown(self):
+        self.container.unwire()
 
     async def test_create(self):
         async with MinosInMemoryRepository() as repository:
