@@ -29,6 +29,9 @@ from ..abc import (
 from ..entries import (
     HandlerEntry,
 )
+from .messages import (
+    CommandRequest,
+)
 
 
 class CommandHandler(Handler):
@@ -56,7 +59,9 @@ class CommandHandler(Handler):
         command: Command = row.data
         definition_id = command.saga_uuid
 
-        response = await row.callback(row.topic, command)
+        request = CommandRequest(command)
+        response = await row.callback(request)
 
         if command.reply_topic is not None:
-            await self.broker.send(response, topic=command.reply_topic, saga_uuid=definition_id)
+            items = await response.content()
+            await self.broker.send(items, topic=command.reply_topic, saga_uuid=definition_id)

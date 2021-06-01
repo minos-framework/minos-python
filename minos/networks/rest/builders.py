@@ -8,7 +8,9 @@ from __future__ import (
     annotations,
 )
 
-import functools
+from inspect import (
+    isawaitable,
+)
 from typing import (
     Callable,
 )
@@ -21,6 +23,10 @@ from minos.common import (
     MinosConfig,
     MinosSetup,
     import_module,
+)
+
+from .messages import (
+    HttpRequest,
 )
 
 
@@ -53,7 +59,8 @@ class RestBuilder(MinosSetup):
         # Load default routes
         self._mount_system_health()
 
-    def resolve_action(self, controller: str, action: str) -> Callable:
+    @staticmethod
+    def resolve_action(controller: str, action: str) -> Callable:
         """Load controller class and action method.
         :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
         :param action: Config instance. Example: "get_order"
@@ -62,9 +69,15 @@ class RestBuilder(MinosSetup):
         object_class = import_module(controller)
         instance_class = object_class()
         class_method = getattr(instance_class, action)
-        partial = functools.partial(class_method, config=self._config)
 
-        return partial
+        async def _fn(request: web.Request) -> web.Response:
+            request = HttpRequest(request)
+            response = class_method(request)
+            if isawaitable(response):
+                response = await response
+            return web.json_response(await response.content())
+
+        return _fn
 
     def get_app(self):
         """Return rest application instance.
