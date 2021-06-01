@@ -28,7 +28,6 @@ HandlerEntry = namedtuple(
         "partition_id": int,
         "data": MinosModel,
         "retry": int,
-        "locked": bool,
         "created_at": datetime,
     },
 )

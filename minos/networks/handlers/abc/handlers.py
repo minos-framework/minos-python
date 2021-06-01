@@ -52,6 +52,7 @@ class Handler(HandlerSetup):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
+        self._retry = kwargs.get("retry")
 
     async def dispatch(self) -> NoReturn:
         """Event Queue Checker and dispatcher.
@@ -65,7 +66,9 @@ class Handler(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        iterable = self.submit_query_and_iter(_SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, 3, self._records),)
+        iterable = self.submit_query_and_iter(
+            _SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, self._retry, self._records),
+        )
         async for row in iterable:
             dispatched = False
             try:
@@ -91,10 +94,9 @@ class Handler(HandlerSetup):
         partition_id = row[2]
         data = self._build_data(row[3])
         retry = row[4]
-        locked = row[5]
-        created_at = row[6]
+        created_at = row[5]
 
-        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, locked, created_at)
+        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
 
         await self._dispatch_one(entry)
 
@@ -141,7 +143,6 @@ _SELECT_NON_PROCESSED_ROWS_QUERY = """
 SELECT *
 FROM %s
 WHERE retry <= %d
-AND locked = FALSE
 ORDER BY creation_date
 LIMIT %d
 FOR UPDATE
