@@ -21,5 +21,13 @@ from minos.common import (
 
 HandlerEntry = namedtuple(
     "HandlerEntry",
-    {"id": int, "topic": str, "callback": Callable, "partition_id": int, "data": MinosModel, "created_at": datetime},
+    {
+        "id": int,
+        "topic": str,
+        "callback": Callable,
+        "partition_id": int,
+        "data": MinosModel,
+        "retry": int,
+        "created_at": datetime,
+    },
 )

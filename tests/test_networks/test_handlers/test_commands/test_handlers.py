@@ -135,6 +135,41 @@ class TestCommandHandler(PostgresAsyncTestCase):
                 await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id,))
                 return (await cur.fetchone())[0] == 0
 
+    async def test_command_handler_dispatch_wrong_event(self):
+        async with CommandHandler.from_config(config=self.config) as handler:
+            bin_data = bytes(b"Test")
+
+            async with aiopg.connect(**self.saga_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute(
+                        "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
+                        "VALUES (%s, %s, %s, %s) "
+                        "RETURNING id;",
+                        ("AddOrder", 0, bin_data, datetime.datetime.now(),),
+                    )
+
+                    queue_id = await cur.fetchone()
+
+            assert queue_id[0] > 0
+
+            # Must get the record, call on_reply function and delete the record from DB
+            await handler.dispatch()
+
+            async with aiopg.connect(**self.saga_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
+                    records = await cur.fetchone()
+
+            assert records[0] == 1
+
+            async with aiopg.connect(**self.saga_queue_db) as connect:
+                async with connect.cursor() as cur:
+                    await cur.execute("SELECT * FROM command_queue WHERE id=%d" % (queue_id))
+                    pending_row = await cur.fetchone()
+
+            # Retry attempts
+            assert pending_row[4] == 1
+
 
 if __name__ == "__main__":
     unittest.main()
