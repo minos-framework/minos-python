@@ -12,6 +12,10 @@ from .consumers import (
 from .handlers import (
     CommandHandler,
 )
+from .messages import (
+    CommandRequest,
+    CommandResponse,
+)
 from .services import (
     CommandConsumerService,
     CommandHandlerService,

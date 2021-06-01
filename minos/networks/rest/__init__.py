@@ -9,6 +9,10 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .builders import (
     RestBuilder,
 )
+from .messages import (
+    HttpRequest,
+    HttpResponse,
+)
 from .services import (
     RestService,
 )
