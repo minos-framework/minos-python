@@ -16,6 +16,10 @@ from minos.common import (
 
 
 class TestImportlib(unittest.TestCase):
+    def test_import_module_first_level(self):
+        module = import_module("functools")
+        self.assertEqual("functools", classname(module))
+
     def test_import_module(self):
         object_class = import_module("tests.ImportedModule.ImportedClassTest")
         self.assertEqual("tests.ImportedModule.ImportedClassTest", classname(object_class))
