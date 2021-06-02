@@ -4,10 +4,15 @@ from aiohttp import (
     web,
 )
 
+from minos.common import (
+    Request,
+    Response,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    HttpResponse,
     RestBuilder,
 )
 from tests.utils import (
@@ -17,8 +22,16 @@ from tests.utils import (
 
 class _Cls:
     @staticmethod
-    def _fn(request, config):
-        return request, config
+    async def _fn(request: Request) -> Response:
+        return HttpResponse(await request.content())
+
+
+class MockedRequest:
+    def __init__(self, data=None):
+        self.data = data
+
+    async def json(self):
+        return self.data
 
 
 class TestRestBuilder(PostgresAsyncTestCase):
@@ -36,13 +49,16 @@ class TestRestBuilder(PostgresAsyncTestCase):
         dispatcher = RestBuilder.from_config(config=self.config)
         self.assertIsInstance(dispatcher.get_app(), web.Application)
 
-    def test_resolve_action(self):
+    async def test_get_action(self):
         dispatcher = RestBuilder.from_config(config=self.config)
 
-        observed = dispatcher.resolve_action(f"{__name__}._Cls", "_fn")
+        observed = dispatcher.get_action(f"{__name__}._Cls", "_fn")
 
-        observed_response = observed("request")
-        self.assertEqual(("request", self.config), observed_response)
+        observed_response = observed(MockedRequest("request"))
+        response = await observed_response
+        self.assertIsInstance(response, web.Response)
+        self.assertEqual('["request"]', response.text)
+        self.assertEqual("application/json", response.content_type)
 
 
 if __name__ == "__main__":
