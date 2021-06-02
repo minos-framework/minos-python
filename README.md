@@ -7,10 +7,15 @@ Minos is a framework which helps you create [reactive](https://www.reactivemanif
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
 asynchronous environment.
 
+## Documentation
+
+The official documentation as well as the API you can find it under https://clariteia.github.io/minos_microservice_networks/. 
+Please, submit any issue regarding documentation as well!
+
 ## Set up a development environment
 
-Minos uses `poetry` as its default package manager. Please refer to
-(https://python-poetry.org/docs/#installation) for instructions on how to install it.
+Minos uses `poetry` as its default package manager. Please refer to the
+[Poetry installation guide](https://python-poetry.org/docs/#installation) for instructions on how to install it.
 
 Now you con install all the dependencies by running
 ```bash
