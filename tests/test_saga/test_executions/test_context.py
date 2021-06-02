@@ -43,6 +43,19 @@ class TestSagaContext(unittest.TestCase):
         context.three = Foo("three")
         self.assertEqual({"one": "builtins.int", "two": "builtins.str", "three": "tests.utils.Foo"}, context.types_)
 
+    def test_item_setter(self):
+        context = SagaContext()
+        context["one"] = 1
+        context["two"] = "two"
+        context["three"] = Foo("three")
+        self.assertEqual(SagaContext(one=1, two="two", three=Foo("three")), context)
+
+    def test_item_getter(self):
+        context = SagaContext(one=1, two="two", three=Foo("three"))
+        self.assertEqual(1, context["one"])
+        self.assertEqual("two", context["two"])
+        self.assertEqual(Foo("three"), context["three"])
+
     def test_avro(self):
         original = SagaContext(one=1, two="two", three=Foo("three"))
         another = SagaContext.from_avro_bytes(original.avro_bytes)

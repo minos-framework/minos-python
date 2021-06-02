@@ -24,3 +24,11 @@ History
 ------------------
 
 * Bugfixes
+
+0.0.5 (2021-06-02)
+------------------
+
+* Created SagaContext class
+* Documentation improvement
+* implemented __getitem__ and __setitem__ for SagaContext
+
