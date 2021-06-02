@@ -6,6 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
+    Any,
     NoReturn,
     Type,
 )
@@ -34,16 +35,13 @@ class SagaContext(MinosModel):
             types_ = {k: classname(type(v)) for k, v in kwargs.items()}
         super().__init__(types_=types_, **kwargs)
 
-    def update(self, key: str, value: MinosModel) -> NoReturn:
-        """Update the value of the given key.
+    def __getitem__(self, item: str) -> Any:
+        return getattr(self, item)
 
-        :param key: Key to identify the value.
-        :param value: A value to be stored.
-        :return: This method does not return anything.
-        """
+    def __setitem__(self, key: str, value: Any) -> NoReturn:
         setattr(self, key, value)
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value: Any) -> NoReturn:
         try:
             super().__setattr__(key, value)
         except MinosModelException:
