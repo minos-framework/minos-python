@@ -29,9 +29,6 @@ from minos.common import (
     MinosModel,
     import_module,
 )
-from minos.common.logs import (
-    log,
-)
 
 from ...exceptions import (
     MinosNetworkException,
@@ -78,7 +75,7 @@ class Handler(HandlerSetup):
                 await self.dispatch_one(row)
                 dispatched = True
             except Exception as exc:
-                log.warning(exc)
+                logger.warning(f"Raised an exception while dispatching a message: {exc!r}")
             finally:
                 if dispatched:
                     await self.submit_query(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
