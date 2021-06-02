@@ -142,3 +142,12 @@ History
 
 0.0.16 (2021-05-28)
 --------------------
+
+0.0.17 (2021-06-02)
+--------------------
+
+* Documentation improvements
+* Removed DependencyInjector, conflict with minos.microservice package
+* Removed old module messages
+* Added abstract classes Response and Request for Microservice Controller
+* Bugfix
