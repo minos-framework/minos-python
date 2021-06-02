@@ -16,7 +16,7 @@ from tests.aggregate_classes import (
 )
 
 
-class TestSomething(unittest.TestCase):
+class TestResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.items = [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")]
 
