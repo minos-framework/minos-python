@@ -5,7 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 from .brokers import (
     CommandBroker,
@@ -28,6 +28,8 @@ from .handlers import (
     CommandReplyConsumerService,
     CommandReplyHandler,
     CommandReplyHandlerService,
+    CommandRequest,
+    CommandResponse,
     Consumer,
     EventConsumer,
     EventConsumerService,
@@ -37,6 +39,8 @@ from .handlers import (
     HandlerSetup,
 )
 from .rest import (
+    HttpRequest,
+    HttpResponse,
     RestBuilder,
     RestService,
 )

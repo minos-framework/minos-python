@@ -21,6 +21,8 @@ from .commands import (
     CommandConsumerService,
     CommandHandler,
     CommandHandlerService,
+    CommandRequest,
+    CommandResponse,
 )
 from .entries import (
     HandlerEntry,

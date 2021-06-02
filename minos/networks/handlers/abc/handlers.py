@@ -9,11 +9,15 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from abc import (
     abstractmethod,
 )
 from datetime import (
     datetime,
+)
+from inspect import (
+    isclass,
 )
 from typing import (
     Any,
@@ -25,9 +29,6 @@ from minos.common import (
     MinosModel,
     import_module,
 )
-from minos.common.logs import (
-    log,
-)
 
 from ...exceptions import (
     MinosNetworkException,
@@ -38,6 +39,8 @@ from ..entries import (
 from .setups import (
     HandlerSetup,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Handler(HandlerSetup):
@@ -52,6 +55,7 @@ class Handler(HandlerSetup):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
+        self._retry = kwargs.get("retry")
 
     async def dispatch(self) -> NoReturn:
         """Event Queue Checker and dispatcher.
@@ -65,16 +69,32 @@ class Handler(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        iterable = self.submit_query_and_iter(
-            "SELECT * FROM %s ORDER BY creation_date ASC LIMIT %d;" % (self.TABLE_NAME, self._records),
-        )
-        async for row in iterable:
-            try:
-                await self.dispatch_one(row)
-            except Exception as exc:
-                log.warning(exc)
-                continue
-            await self.submit_query("DELETE FROM %s WHERE id=%d;" % (self.TABLE_NAME, row[0]))
+
+        pool = await self.pool
+        with await pool.cursor() as cursor:
+            # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
+            # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
+            await cursor.execute("BEGIN")
+
+            # Select records and lock them FOR UPDATE
+            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, self._retry, self._records),)
+            result = await cursor.fetchall()
+
+            for row in result:
+                dispatched = False
+                try:
+                    await self.dispatch_one(row)
+                    dispatched = True
+                except Exception as exc:
+                    logger.warning(f"Raised an exception while dispatching a message: {exc!r}")
+                finally:
+                    if dispatched:
+                        await cursor.execute(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+                    else:
+                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+
+            # Manually commit
+            await cursor.execute("COMMIT")
 
     async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
         """Dispatch one row.
@@ -84,17 +104,17 @@ class Handler(HandlerSetup):
         """
         id = row[0]
         topic = row[1]
-        callback = self.get_event_handler(row[1])
+        callback = self.get_action(row[1])
         partition_id = row[2]
         data = self._build_data(row[3])
-        created_at = row[4]
+        retry = row[4]
+        created_at = row[5]
 
-        entry = HandlerEntry(id, topic, callback, partition_id, data, created_at)
+        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
 
         await self._dispatch_one(entry)
 
-    def get_event_handler(self, topic: str) -> Callable:
-
+    def get_action(self, topic: str) -> Callable:
         """Get Event instance to call.
 
         Gets the instance of the class and method to call.
@@ -112,16 +132,14 @@ class Handler(HandlerSetup):
             )
 
         event = self._handlers[topic]
-        # the topic exist, get the controller and the action
-        controller = event["controller"]
-        action = event["action"]
 
-        object_class = import_module(controller)
-        log.debug(object_class())
-        instance_class = object_class()
-        class_method = getattr(instance_class, action)
+        controller = import_module(event["controller"])
+        if isclass(controller):
+            controller = controller()
+        action = getattr(controller, event["action"])
 
-        return class_method
+        logger.debug(f"Loaded {action!r} action!")
+        return action
 
     @abstractmethod
     def _build_data(self, value: bytes) -> MinosModel:
@@ -130,3 +148,25 @@ class Handler(HandlerSetup):
     @abstractmethod
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
         raise NotImplementedError
+
+
+_SELECT_NON_PROCESSED_ROWS_QUERY = """
+SELECT *
+FROM %s
+WHERE retry <= %d
+ORDER BY creation_date
+LIMIT %d
+FOR UPDATE
+SKIP LOCKED;
+""".strip()
+
+_DELETE_PROCESSED_QUERY = """
+DELETE FROM %s
+WHERE id = %d;
+""".strip()
+
+_UPDATE_NON_PROCESSED_QUERY = """
+UPDATE %s
+    SET retry = retry + 1
+WHERE id = %s;
+""".strip()
