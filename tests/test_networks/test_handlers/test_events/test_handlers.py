@@ -46,12 +46,12 @@ class TestEventHandler(PostgresAsyncTestCase):
 
             assert ret == [(1,)]
 
-    async def test_get_controller_action(self):
+    async def test_get_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Event(topic="TestEventQueueAdd", model=model.classname, items=[])
         handler = EventHandler.from_config(config=self.config)
 
-        cls = handler.get_controller_action(topic="TicketAdded")
+        cls = handler.get_action(topic="TicketAdded")
         result = await cls(topic="TicketAdded", event=event_instance)
 
         assert result == "request_added"
@@ -62,7 +62,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         handler = EventHandler.from_config(config=self.config)
 
         with self.assertRaises(MinosNetworkException) as context:
-            cls = handler.get_controller_action(topic=event_instance.topic)
+            cls = handler.get_action(topic=event_instance.topic)
             await cls(topic=event_instance.topic, event=event_instance)
 
         self.assertTrue(
