@@ -53,14 +53,14 @@ class RestBuilder(MinosSetup):
     def load_routes(self):
         """Load routes from config file."""
         for item in self._config.rest.endpoints:
-            callable_f = self.resolve_action(item.controller, item.action)
+            callable_f = self.get_action(item.controller, item.action)
             self._app.router.add_route(item.method, item.route, callable_f)
 
         # Load default routes
         self._mount_system_health()
 
     @staticmethod
-    def resolve_action(controller: str, action: str) -> Callable:
+    def get_action(controller: str, action: str) -> Callable:
         """Load controller class and action method.
         :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
         :param action: Config instance. Example: "get_order"

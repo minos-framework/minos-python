@@ -49,10 +49,10 @@ class TestRestBuilder(PostgresAsyncTestCase):
         dispatcher = RestBuilder.from_config(config=self.config)
         self.assertIsInstance(dispatcher.get_app(), web.Application)
 
-    async def test_resolve_action(self):
+    async def test_get_action(self):
         dispatcher = RestBuilder.from_config(config=self.config)
 
-        observed = dispatcher.resolve_action(f"{__name__}._Cls", "_fn")
+        observed = dispatcher.get_action(f"{__name__}._Cls", "_fn")
 
         observed_response = observed(MockedRequest("request"))
         response = await observed_response
