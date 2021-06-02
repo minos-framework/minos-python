@@ -13,8 +13,10 @@ from operator import (
     attrgetter,
 )
 from typing import (
+    Generic,
     NoReturn,
     Optional,
+    TypeVar,
 )
 
 from dependency_injector.wiring import (
@@ -45,8 +47,10 @@ from .abc import (
     MinosModel,
 )
 
+T = TypeVar("T")
 
-class Aggregate(MinosModel):
+
+class Aggregate(MinosModel, Generic[T]):
     """Base aggregate class."""
 
     id: int
@@ -78,7 +82,7 @@ class Aggregate(MinosModel):
         _config: Optional[MinosConfig] = None,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
-    ) -> list[Aggregate]:
+    ) -> list[T]:
         """Get a sequence of aggregates based on a list of identifiers.
 
         :param ids: list of identifiers.
@@ -98,7 +102,7 @@ class Aggregate(MinosModel):
         _config: Optional[MinosConfig] = None,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
-    ) -> Aggregate:
+    ) -> T:
         """Get one aggregate based on an identifier.
 
         :param id: aggregate identifier.
@@ -135,7 +139,7 @@ class Aggregate(MinosModel):
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         **kwargs,
-    ) -> Aggregate:
+    ) -> T:
         """Create a new ``Aggregate`` instance.
 
         :param args: Additional positional arguments.
@@ -181,7 +185,7 @@ class Aggregate(MinosModel):
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         **kwargs,
-    ) -> Aggregate:
+    ) -> T:
         """Update an existing ``Aggregate`` instance.
 
         :param id: If the method call is performed from an instance the identifier is ignored, otherwise it is used to
