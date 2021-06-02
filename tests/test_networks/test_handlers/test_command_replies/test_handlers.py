@@ -182,19 +182,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
             assert records[0] == 50
 
-            slow_task_1 = asyncio.create_task(handler.dispatch())
-            slow_task_2 = asyncio.create_task(handler.dispatch())
-            slow_task_3 = asyncio.create_task(handler.dispatch())
-            slow_task_4 = asyncio.create_task(handler.dispatch())
-            slow_task_5 = asyncio.create_task(handler.dispatch())
-            slow_task_6 = asyncio.create_task(handler.dispatch())
-
-            await slow_task_1
-            await slow_task_4
-            await slow_task_2
-            await slow_task_6
-            await slow_task_3
-            await slow_task_5
+            await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
 
             async with aiopg.connect(**self.saga_queue_db) as connect:
                 async with connect.cursor() as cur:
