@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 import typing as t
 from base64 import (
     b64decode,
@@ -26,9 +27,6 @@ from ...exceptions import (
 from ...importlib import (
     classname,
 )
-from ...logs import (
-    log,
-)
 from ...meta import (
     classproperty,
     property_or_classproperty,
@@ -44,6 +42,8 @@ from .fields import (
 from .types import (
     MissingSentinel,
 )
+
+logger = logging.getLogger(__name__)
 
 # def _process_aggregate(cls):
 #     """
@@ -195,7 +195,7 @@ class MinosModel(object):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def _type_hints(self_or_cls):
+    def _type_hints(self_or_cls) -> dict[str, t.Any]:
         fields = dict()
         if isinstance(self_or_cls, type):
             cls = self_or_cls
@@ -205,8 +205,8 @@ class MinosModel(object):
             base_fields = getattr(b, "_fields", None)
             if base_fields is not None:
                 list_fields = {k: v for k, v in t.get_type_hints(b).items() if not k.startswith("_")}
-                log.debug(f"Fields Derivative {list_fields}")
                 fields |= list_fields
+        logger.debug(f"The obtained fields are: {fields!r}")
         yield from fields.items()
 
     # noinspection PyMethodParameters

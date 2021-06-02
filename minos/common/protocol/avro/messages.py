@@ -5,17 +5,16 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
+import logging
 from typing import (
     Any,
 )
 
-from ...logs import (
-    log,
-)
 from .base import (
     MinosAvroProtocol,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class MinosAvroMessageProtocol(MinosAvroProtocol):
@@ -48,7 +47,7 @@ class MinosAvroMessageProtocol(MinosAvroProtocol):
         """
         data_return = {"headers": dict()}
         for schema_dict in super().decode(data, flatten=False):
-            log.debug("Avro: get the request/response in dict format")
+            logger.debug("Avro: get the request/response in dict format")
             data_return["headers"] = schema_dict["headers"]
             # check wich type is body
             if "body" in schema_dict:
