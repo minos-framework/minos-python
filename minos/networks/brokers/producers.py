@@ -10,7 +10,6 @@ from __future__ import (
 )
 
 from typing import (
-    AsyncIterator,
     NoReturn,
 )
 
@@ -22,6 +21,9 @@ from minos.common import (
     BROKER,
     QUEUE,
     MinosConfig,
+)
+from minos.common.logs import (
+    log,
 )
 
 from .abc import (
@@ -49,29 +51,30 @@ class Producer(BrokerSetup):
 
         :return: This method does not return anything.
         """
-        async for row in self.select():
-            await self._dispatch_one(row)
+        pool = await self.pool
+        with await pool.cursor() as cursor:
+            # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
+            # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
+            await cursor.execute("BEGIN")
 
-    # noinspection PyUnusedLocal
-    async def select(self, *args, **kwargs) -> AsyncIterator[tuple]:
-        """Select a sequence of ``MinosSnapshotEntry`` objects.
+            # Select records and lock them FOR UPDATE
+            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY % (self.retry, self.records),)
+            result = await cursor.fetchall()
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: A sequence of ``MinosSnapshotEntry`` objects.
-        """
-        params = (self.retry, self.records)
-        async for row in self.submit_query_and_iter(_SELECT_NON_PROCESSED_ROWS_QUERY, params):
-            yield row
+            for row in result:
+                published = False
+                try:
+                    published = await self.publish(topic=row[1], message=row[2])
+                except Exception as exc:  # pragma: no cover
+                    log.warning(exc)
+                finally:
+                    if published:
+                        await cursor.execute(_DELETE_PROCESSED_QUERY % (row[0]))
+                    else:
+                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY % (row[0]))
 
-    async def _dispatch_one(self, row: tuple) -> NoReturn:
-        # noinspection PyBroadException
-        published = await self.publish(topic=row[1], message=row[2])
-        await self._update_queue_state(row, published)
-
-    async def _update_queue_state(self, row: tuple, published: bool):
-        update_query = _DELETE_PROCESSED_QUERY if published else _UPDATE_NON_PROCESSED_QUERY
-        await self.submit_query(update_query, (row[0],))
+            # Manually commit
+            await cursor.execute("COMMIT")
 
     async def publish(self, topic: str, message: bytes) -> bool:
         """Publish a new item in in the broker (kafka).
@@ -102,7 +105,9 @@ SELECT *
 FROM producer_queue
 WHERE retry <= %s
 ORDER BY creation_date
-LIMIT %s;
+LIMIT %s
+FOR UPDATE
+SKIP LOCKED;
 """.strip()
 
 _DELETE_PROCESSED_QUERY = """
