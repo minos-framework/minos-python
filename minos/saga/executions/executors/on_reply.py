@@ -53,7 +53,7 @@ class OnReplyExecutor(LocalExecutor):
 
         try:
             response = await super().exec_one(operation, value)
-            context.update(operation.name, response)
+            context[operation.name] = response
         except Exception as exc:
             raise MinosSagaFailedExecutionStepException(exc)
 
