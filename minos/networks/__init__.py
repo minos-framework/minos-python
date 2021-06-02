@@ -28,6 +28,8 @@ from .handlers import (
     CommandReplyConsumerService,
     CommandReplyHandler,
     CommandReplyHandlerService,
+    CommandRequest,
+    CommandResponse,
     Consumer,
     EventConsumer,
     EventConsumerService,
@@ -37,6 +39,8 @@ from .handlers import (
     HandlerSetup,
 )
 from .rest import (
+    HttpRequest,
+    HttpResponse,
     RestBuilder,
     RestService,
 )

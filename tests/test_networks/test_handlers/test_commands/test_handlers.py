@@ -16,6 +16,7 @@ from minos.common.testing import (
 )
 from minos.networks import (
     CommandHandler,
+    CommandRequest,
     MinosNetworkException,
 )
 from tests.utils import (
@@ -51,27 +52,27 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
             assert ret == [(1,)]
 
-    async def test_get_event_handler(self):
+    async def test_get_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
-        m = CommandHandler.from_config(config=self.config)
+        handler = CommandHandler.from_config(config=self.config)
 
-        cls = m.get_event_handler(topic=event_instance.topic)
-        result = await cls(topic=event_instance.topic, command=event_instance)
+        cls = handler.get_action(topic=event_instance.topic)
+        result = await cls(CommandRequest(event_instance))
 
-        assert result == "add_order"
+        self.assertEqual(["add_order"], await result.content())
 
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         instance = Command(
             topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="UpdateTicket",
         )
-        m = CommandHandler.from_config(config=self.config)
+        handler = CommandHandler.from_config(config=self.config)
 
         with self.assertRaises(MinosNetworkException) as context:
-            cls = m.get_event_handler(topic=instance.topic)
+            cls = handler.get_action(topic=instance.topic)
             await cls(topic=instance.topic, command=instance)
 
         self.assertTrue(
@@ -93,7 +94,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
             self.assertTrue(await self._is_processed(queue_id))
 
         self.assertEqual(1, broker.call_count)
-        self.assertEqual("add_order", broker.items)
+        self.assertEqual(["add_order"], broker.items)
         self.assertEqual("UpdateTicket", broker.topic)
         self.assertEqual("43434jhij", broker.saga_uuid)
         self.assertEqual(None, broker.reply_topic)

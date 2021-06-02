@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     NoReturn,
 )
@@ -22,13 +23,12 @@ from minos.common import (
     QUEUE,
     MinosConfig,
 )
-from minos.common.logs import (
-    log,
-)
 
 from .abc import (
     BrokerSetup,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Producer(BrokerSetup):
@@ -66,7 +66,7 @@ class Producer(BrokerSetup):
                 try:
                     published = await self.publish(topic=row[1], message=row[2])
                 except Exception as exc:  # pragma: no cover
-                    log.warning(exc)
+                    logger.warning(f"Raised an exception while publishing a message: {exc!r}")
                 finally:
                     if published:
                         await cursor.execute(_DELETE_PROCESSED_QUERY % (row[0]))
