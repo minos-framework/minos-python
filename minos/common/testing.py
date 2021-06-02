@@ -85,16 +85,11 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         for meta, test in pairs:
             await self._setup_database(dict(meta), dict(test))
 
-    @staticmethod
-    async def _setup_database(meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
+    async def _setup_database(self, meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
+        await self._teardown_database(meta, test)
+
         async with aiopg.connect(**meta) as connection:
             async with connection.cursor() as cursor:
-                template = "DROP DATABASE IF EXISTS {database};"
-                await cursor.execute(template.format(**test))
-
-                template = "DROP ROLE IF EXISTS {user};"
-                await cursor.execute(template.format(**test))
-
                 template = "CREATE ROLE {user} WITH SUPERUSER CREATEDB LOGIN ENCRYPTED PASSWORD {password!r};"
                 await cursor.execute(template.format(**test))
 
@@ -127,4 +122,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         async with aiopg.connect(**meta) as connection:
             async with connection.cursor() as cursor:
                 template = "DROP DATABASE IF EXISTS {database}"
+                await cursor.execute(template.format(**test))
+
+                template = "DROP ROLE IF EXISTS {user};"
                 await cursor.execute(template.format(**test))
