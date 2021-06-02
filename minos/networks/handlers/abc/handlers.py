@@ -9,11 +9,15 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from abc import (
     abstractmethod,
 )
 from datetime import (
     datetime,
+)
+from inspect import (
+    isclass,
 )
 from typing import (
     Any,
@@ -25,9 +29,6 @@ from minos.common import (
     MinosModel,
     import_module,
 )
-from minos.common.logs import (
-    log,
-)
 
 from ...exceptions import (
     MinosNetworkException,
@@ -38,6 +39,8 @@ from ..entries import (
 from .setups import (
     HandlerSetup,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Handler(HandlerSetup):
@@ -72,7 +75,7 @@ class Handler(HandlerSetup):
                 await self.dispatch_one(row)
                 dispatched = True
             except Exception as exc:
-                log.warning(exc)
+                logger.warning(f"Raised an exception while dispatching a message: {exc!r}")
             finally:
                 if dispatched:
                     await self.submit_query(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
@@ -87,7 +90,7 @@ class Handler(HandlerSetup):
         """
         id = row[0]
         topic = row[1]
-        callback = self.get_event_handler(row[1])
+        callback = self.get_action(row[1])
         partition_id = row[2]
         data = self._build_data(row[3])
         retry = row[4]
@@ -97,8 +100,7 @@ class Handler(HandlerSetup):
 
         await self._dispatch_one(entry)
 
-    def get_event_handler(self, topic: str) -> Callable:
-
+    def get_action(self, topic: str) -> Callable:
         """Get Event instance to call.
 
         Gets the instance of the class and method to call.
@@ -116,16 +118,14 @@ class Handler(HandlerSetup):
             )
 
         event = self._handlers[topic]
-        # the topic exist, get the controller and the action
-        controller = event["controller"]
-        action = event["action"]
 
-        object_class = import_module(controller)
-        log.debug(object_class())
-        instance_class = object_class()
-        class_method = getattr(instance_class, action)
+        controller = import_module(event["controller"])
+        if isclass(controller):
+            controller = controller()
+        action = getattr(controller, event["action"])
 
-        return class_method
+        logger.debug(f"Loaded {action!r} action!")
+        return action
 
     @abstractmethod
     def _build_data(self, value: bytes) -> MinosModel:

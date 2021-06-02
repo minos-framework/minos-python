@@ -8,6 +8,9 @@ from __future__ import (
     annotations,
 )
 
+from inspect import (
+    isawaitable,
+)
 from typing import (
     Any,
     NoReturn,
@@ -56,7 +59,9 @@ class CommandHandler(Handler):
         command: Command = row.data
         definition_id = command.saga_uuid
 
-        response = await row.callback(row.topic, command)
+        response = row.callback(row.topic, command)
+        if isawaitable(response):
+            response = await response
 
         if command.reply_topic is not None:
             await self.broker.send(response, topic=command.reply_topic, saga_uuid=definition_id)

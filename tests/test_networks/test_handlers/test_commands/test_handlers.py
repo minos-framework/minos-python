@@ -50,14 +50,14 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
             assert ret == [(1,)]
 
-    async def test_get_event_handler(self):
+    async def test_get_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
         event_instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
-        m = CommandHandler.from_config(config=self.config)
+        handler = CommandHandler.from_config(config=self.config)
 
-        cls = m.get_event_handler(topic=event_instance.topic)
+        cls = handler.get_action(topic=event_instance.topic)
         result = await cls(topic=event_instance.topic, command=event_instance)
 
         assert result == "add_order"
@@ -67,10 +67,10 @@ class TestCommandHandler(PostgresAsyncTestCase):
         instance = Command(
             topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="UpdateTicket",
         )
-        m = CommandHandler.from_config(config=self.config)
+        handler = CommandHandler.from_config(config=self.config)
 
         with self.assertRaises(MinosNetworkException) as context:
-            cls = m.get_event_handler(topic=instance.topic)
+            cls = handler.get_action(topic=instance.topic)
             await cls(topic=instance.topic, command=instance)
 
         self.assertTrue(
