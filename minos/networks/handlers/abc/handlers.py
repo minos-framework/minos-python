@@ -153,7 +153,7 @@ class Handler(HandlerSetup):
 _SELECT_NON_PROCESSED_ROWS_QUERY = """
 SELECT *
 FROM %s
-WHERE retry <= %d
+WHERE retry < %d
 ORDER BY creation_date
 LIMIT %d
 FOR UPDATE
