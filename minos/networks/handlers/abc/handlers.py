@@ -87,7 +87,7 @@ class Handler(HandlerSetup):
         """
         id = row[0]
         topic = row[1]
-        callback = self.get_event_handler(row[1])
+        callback = self.get_controller_action(row[1])
         partition_id = row[2]
         data = self._build_data(row[3])
         retry = row[4]
@@ -97,7 +97,7 @@ class Handler(HandlerSetup):
 
         await self._dispatch_one(entry)
 
-    def get_event_handler(self, topic: str) -> Callable:
+    def get_controller_action(self, topic: str) -> Callable:
 
         """Get Event instance to call.
 
