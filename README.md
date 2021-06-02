@@ -9,7 +9,7 @@ asynchronous environment.
 
 ## Documentation
 
-The official documentation as well as the API you can find it under https://clariteia.github.io/minos_microservice_networks/. 
+The official documentation as well as the API you can find it under https://clariteia.github.io/minos_microservice_saga/. 
 Please, submit any issue regarding documentation as well!
 
 ## Set up a development environment
