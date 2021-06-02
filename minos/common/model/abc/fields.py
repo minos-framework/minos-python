@@ -10,6 +10,7 @@ from __future__ import (
 )
 
 import inspect
+import logging
 import typing as t
 
 from ...exceptions import (
@@ -18,9 +19,6 @@ from ...exceptions import (
     MinosParseAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-)
-from ...logs import (
-    log,
 )
 from .types import (
     BOOLEAN,
@@ -33,6 +31,8 @@ from .types import (
     MissingSentinel,
     ModelRef,
 )
+
+logger = logging.getLogger(__name__)
 
 T = t.TypeVar("T")
 
@@ -118,14 +118,13 @@ class ModelField:
         :param data: new value.
         :return: This method does not return anything.
         """
+        logger.debug(f"Setting {data!r} value to {self._name!r} field with {self._type!r} type...")
+
         if self._parser is not None:
             try:
                 data = self.parser(data)
             except Exception as exc:
                 raise MinosParseAttributeException(self.name, data, exc)
-
-        log.debug(f"Name val {self._name}")
-        log.debug(f"Type val {self._type}")
 
         value = _ModelFieldCaster(self).cast(data)
 
@@ -224,7 +223,6 @@ class _ModelFieldCaster(object):
 
     def _cast_none_value(self, type_field: t.Type, data: t.Any) -> t.Any:
         if data is None or data is MissingSentinel:
-            log.debug("the Value passed is None")
             return None
 
         raise MinosTypeAttributeException(self._name, type_field, data)
@@ -237,23 +235,18 @@ class _ModelFieldCaster(object):
             raise MinosReqAttributeException(f"'{self._name}' field is missing.")
 
         if type_field is int:
-            log.debug("the Value passed is an integer")
             return self._cast_int(data)
 
         if type_field is float:
-            log.debug("the Value passed is an integer")
             return self._cast_float(data)
 
         if type_field is bool:
-            log.debug("the Value passed is an integer")
             return self._cast_bool(data)
 
         if type_field is str:
-            log.debug("the Value passed is a string")
             return self._cast_string(data)
 
         if type_field is bytes:
-            log.debug("the Value passed is a bytes")
             return self._cast_bytes(data)
 
         raise MinosTypeAttributeException(self._name, type_field, data)  # pragma: no cover
