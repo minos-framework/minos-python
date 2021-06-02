@@ -8,6 +8,9 @@ from __future__ import (
     annotations,
 )
 
+from inspect import (
+    isawaitable,
+)
 from typing import (
     Any,
     NoReturn,
@@ -60,7 +63,9 @@ class CommandHandler(Handler):
         definition_id = command.saga_uuid
 
         request = CommandRequest(command)
-        response = await row.callback(request)
+        response = row.callback(request)
+        if isawaitable(response):
+            response = await response
 
         if command.reply_topic is not None:
             items = await response.content()
