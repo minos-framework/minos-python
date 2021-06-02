@@ -17,7 +17,7 @@ from minos.common import (
 
 
 class CommandRequest(Request):
-    """TODO"""
+    """Command Request class."""
 
     __slots__ = "command"
 
@@ -25,20 +25,12 @@ class CommandRequest(Request):
         self.command = command
 
     async def content(self) -> list[Any]:
-        """TODO"""
+        """Request content.
+
+        :return: A list of items.
+        """
         return self.command.items
 
 
 class CommandResponse(Response):
-    """TODO"""
-
-    __slots__ = "_items"
-
-    def __init__(self, items: Any):
-        if not isinstance(items, list):
-            items = [items]
-        self._items = items
-
-    async def content(self) -> list[Any]:
-        """TODO"""
-        return self._items
+    """Command Response class."""

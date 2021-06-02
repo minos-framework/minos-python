@@ -20,20 +20,22 @@ from aiohttp import (
 )
 
 from minos.common import (
-    MinosModel,
     Request,
     Response,
 )
 
 
 class HttpRequest(Request):
-    """TODO"""
+    """Http Request class."""
 
     def __init__(self, request: web.Request):
         self.raw_request = request
 
     async def content(self) -> list[Any]:
-        """TODO"""
+        """Get the request content.
+
+        :return: A list of items.
+        """
         try:
             data = await self.raw_request.json()
         except JSONDecodeError:
@@ -45,10 +47,11 @@ class HttpRequest(Request):
         return data
 
     @property
-    def url_args(self) -> dict[str, Any]:
-        """TODO
+    def url_args(self) -> dict[str, list[Any]]:
+        """Get the url arguments as a dictionary in which the keys are the names and teh values are a list the lists of
+            values.
 
-        :return: TODO
+        :return: A dictionary instance.
         """
         args = defaultdict(list)
         for k, v in self._raw_url_args.items():
@@ -61,13 +64,4 @@ class HttpRequest(Request):
 
 
 class HttpResponse(Response):
-    """TODO"""
-
-    def __init__(self, items: Any):
-        if not isinstance(items, list):
-            items = [items]
-        self._items = items
-
-    async def content(self) -> list[Any]:
-        """TODO"""
-        return [item if not isinstance(item, MinosModel) else item.avro_data for item in self._items]
+    """Http Response class."""

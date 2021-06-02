@@ -75,7 +75,7 @@ class RestBuilder(MinosSetup):
             response = class_method(request)
             if isawaitable(response):
                 response = await response
-            return web.json_response(await response.content())
+            return web.json_response(await response.raw_content())
 
         return _fn
 
