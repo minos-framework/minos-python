@@ -9,11 +9,15 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from abc import (
     abstractmethod,
 )
 from datetime import (
     datetime,
+)
+from inspect import (
+    isclass,
 )
 from typing import (
     Any,
@@ -38,6 +42,8 @@ from ..entries import (
 from .setups import (
     HandlerSetup,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Handler(HandlerSetup):
@@ -116,16 +122,14 @@ class Handler(HandlerSetup):
             )
 
         event = self._handlers[topic]
-        # the topic exist, get the controller and the action
-        controller = event["controller"]
-        action = event["action"]
 
-        object_class = import_module(controller)
-        log.debug(object_class())
-        instance_class = object_class()
-        class_method = getattr(instance_class, action)
+        controller = import_module(event["controller"])
+        if isclass(controller):
+            controller = controller()
+        action = getattr(controller, event["action"])
 
-        return class_method
+        logger.debug(f"Loaded {action!r} action!")
+        return action
 
     @abstractmethod
     def _build_data(self, value: bytes) -> MinosModel:
