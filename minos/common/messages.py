@@ -13,6 +13,10 @@ from typing import (
     Any,
 )
 
+from .model import (
+    MinosModel,
+)
+
 
 class Request(ABC):
     """Request interface."""
@@ -25,12 +29,26 @@ class Request(ABC):
         """
 
 
-class Response(ABC):
+class Response:
     """Response definition."""
 
-    @abstractmethod
-    async def content(self) -> list[Any]:
-        """Get the response content.
+    __slots__ = "_items"
 
-        :return: A list of instances.
+    def __init__(self, items: Any):
+        if not isinstance(items, list):
+            items = [items]
+        self._items = items
+
+    async def content(self) -> list:
+        """Response content.
+
+        :return: A list of items.
         """
+        return self._items
+
+    async def raw_content(self) -> list:
+        """Raw response content.
+
+        :return: A list of raw items.
+        """
+        return [item if not isinstance(item, MinosModel) else item.avro_data for item in self._items]
