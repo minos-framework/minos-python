@@ -56,13 +56,8 @@ from .importlib import (
     import_module,
 )
 from .messages import (
-    MinosBaseRequest,
-    MinosBaseResponse,
-    MinosRequest,
-    MinosResponse,
-    MinosRPCBodyRequest,
-    MinosRPCHeadersRequest,
-    MinosRPCResponse,
+    Request,
+    Response,
 )
 from .meta import (
     classproperty,
