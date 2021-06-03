@@ -103,7 +103,7 @@ class Producer(BrokerSetup):
 _SELECT_NON_PROCESSED_ROWS_QUERY = """
 SELECT *
 FROM producer_queue
-WHERE retry <= %s
+WHERE retry < %s
 ORDER BY creation_date
 LIMIT %s
 FOR UPDATE
