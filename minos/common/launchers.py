@@ -26,9 +26,6 @@ from cached_property import (
     cached_property,
 )
 
-from .configuration import (
-    MinosConfig,
-)
 from .injectors import (
     DependencyInjector,
 )
@@ -48,17 +45,13 @@ class EntrypointLauncher(MinosSetup):
         self.services = services
         self.injector = injector
 
-    @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EntrypointLauncher:
-        return cls(*args, config=config, **kwargs)
-
     def launch(self) -> NoReturn:
         """Launch a new execution and keeps running forever..
 
         :return: This method does not return anything.
         """
         logger.info("Starting microservice...")
-        with self.entrypoint as loop:  # pragma: no cover
+        with self.entrypoint as loop:
             logger.info("Microservice is up and running!")
             loop.run_forever()
 
@@ -86,21 +79,17 @@ class EntrypointLauncher(MinosSetup):
 
         :return: This method does not return anything.
         """
-        modules = list()
-        try:
-            from minos import (
-                common,
-            )
+        from minos import (
+            common,
+        )
 
-            modules += [common]
-        except ImportError:
-            pass
+        modules = [common]
         try:
             from minos import (
                 networks,
             )
 
-            modules += [networks]
+            modules += [networks]  # pragma: no cover
         except ImportError:
             pass
 
@@ -109,7 +98,7 @@ class EntrypointLauncher(MinosSetup):
                 saga,
             )
 
-            modules += [saga]
+            modules += [saga]  # pragma: no cover
         except ImportError:
             pass
         await self.injector.wire(modules=modules)
