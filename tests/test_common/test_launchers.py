@@ -19,7 +19,6 @@ from aiomisc.entrypoint import (
 )
 
 from minos.common import (
-    DependencyInjector,
     EntrypointLauncher,
 )
 from minos.common.testing import (
@@ -39,23 +38,15 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
     def setUp(self):
         super().setUp()
-        self.injector = DependencyInjector(
-            self.config,
-            repository_cls=FakeRepository,
-            event_broker_cls=FakeBroker,
-            command_broker_cls=FakeBroker,
-            command_reply_broker_cls=FakeBroker,
-            saga_manager_cls=FakeSagaManager,
-        )
-        self.services = ["a", "b", "c"]
-
-        self.launcher = EntrypointLauncher(injector=self.injector, services=self.services)
-
-    def test_injector(self):
-        self.assertEqual(self.injector, self.launcher.injector)
-
-    def test_services(self):
-        self.assertEqual(self.services, self.launcher.services)
+        self.injections = {
+            "repository": FakeRepository,
+            "event_broker": FakeBroker,
+            "command_broker": FakeBroker,
+            "command_reply_broker": FakeBroker,
+            "saga_manager": FakeSagaManager,
+        }
+        self.services = []
+        self.launcher = EntrypointLauncher(config=self.config, injections=self.injections, services=self.services)
 
     async def test_entrypoint(self):
         async def _fn(*args, **kwargs):

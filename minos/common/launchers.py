@@ -12,6 +12,8 @@ from __future__ import (
 import logging
 from typing import (
     NoReturn,
+    Type,
+    Union,
 )
 
 from aiomisc import (
@@ -26,6 +28,9 @@ from cached_property import (
     cached_property,
 )
 
+from .configuration import (
+    MinosConfig,
+)
 from .injectors import (
     DependencyInjector,
 )
@@ -39,11 +44,21 @@ logger = logging.getLogger(__name__)
 class EntrypointLauncher(MinosSetup):
     """EntryPoint Launcher class."""
 
-    def __init__(self, services: list[Service], injector: DependencyInjector, *args, **kwargs):
+    def __init__(
+        self,
+        config: MinosConfig,
+        injections: dict[str, Union[MinosSetup, Type[MinosSetup]]],
+        services: list[Union[Service, Type[Service]]],
+        interval: float = 0.1,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
+        self.config = config
+        self.interval = interval
 
-        self.services = services
-        self.injector = injector
+        self._raw_injections = injections
+        self._raw_services = services
 
     def launch(self) -> NoReturn:
         """Launch a new execution and keeps running forever..
@@ -73,6 +88,21 @@ class EntrypointLauncher(MinosSetup):
             await self.destroy()
 
         return entrypoint(*self.services)
+
+    @cached_property
+    def services(self) -> list[Service]:
+        """List of services to be launched.
+
+        :return: A list of ``Service`` instances.
+        """
+        kwargs = {"config": self.config, "interval": self.interval}
+
+        def _fn(raw: Union[Service, Type[Service]]) -> Service:
+            if isinstance(raw, Service):
+                return raw
+            return raw(**kwargs)
+
+        return [_fn(raw) for raw in self._raw_services]
 
     async def _setup(self) -> NoReturn:
         """Wire the dependencies and setup it.
@@ -109,3 +139,11 @@ class EntrypointLauncher(MinosSetup):
         :return: This method does not return anything.
         """
         await self.injector.unwire()
+
+    @cached_property
+    def injector(self) -> DependencyInjector:
+        """Dependency injector instance.
+
+        :return: A ``DependencyInjector`` instance.
+        """
+        return DependencyInjector(config=self.config, **self._raw_injections)
