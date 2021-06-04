@@ -44,15 +44,16 @@ class DependencyInjector:
 
     @cached_property
     def injections(self) -> dict[str, MinosSetup]:
-        """TODO
+        """Get the injections dictionary.
 
-        :return: TODO.
+        :return: A dict of injections..
         """
 
         def _fn(raw: Union[MinosSetup, Type[MinosSetup]]) -> MinosSetup:
-            if isinstance(raw, MinosSetup):
-                return raw
-            return raw.from_config(config=self.config)
+            if isinstance(raw, type):
+                # noinspection PyUnresolvedReferences
+                return raw.from_config(config=self.config)
+            return raw
 
         return {key: _fn(value) for key, value in self._raw_injections.items()}
 

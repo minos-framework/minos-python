@@ -98,9 +98,9 @@ class EntrypointLauncher(MinosSetup):
         kwargs = {"config": self.config, "interval": self.interval}
 
         def _fn(raw: Union[Service, Type[Service]]) -> Service:
-            if isinstance(raw, Service):
-                return raw
-            return raw(**kwargs)
+            if isinstance(raw, type):
+                return raw(**kwargs)
+            return raw
 
         return [_fn(raw) for raw in self._raw_services]
 

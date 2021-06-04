@@ -53,6 +53,15 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(self.config, saga_manager=FakeSagaManager)
         self.assertIsInstance(injector.saga_manager, FakeSagaManager)
 
+    def test_another(self):
+        injector = DependencyInjector(self.config, foo="bar")
+        self.assertEqual("bar", injector.foo)
+
+    def test_raises_attribute_error(self):
+        injector = DependencyInjector(self.config)
+        with self.assertRaises(AttributeError):
+            injector.foo
+
     def test_container(self):
         injector = DependencyInjector(self.config)
         self.assertIsInstance(injector.container, Container)
