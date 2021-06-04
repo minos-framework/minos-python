@@ -106,13 +106,9 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         try:
             with io.BytesIO(data) as file:
                 r = reader(file)
-
-                try:
-                    schema = r.writer_schema
-                except Exception as ex:
-                    raise MinosProtocolException(f"Error getting avro schema: {ex}")
+                schema = r.writer_schema
 
         except Exception as exc:
-            raise MinosProtocolException(f"Error decoding the avro bytes: {exc}")
+            raise MinosProtocolException(f"Error getting avro schema: {exc}")
 
         return schema

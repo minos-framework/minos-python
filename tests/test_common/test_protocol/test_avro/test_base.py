@@ -61,6 +61,14 @@ class TestMinosAvroProtocol(unittest.TestCase):
         decoded_schema = MinosAvroProtocol.decode_schema(serialized)
         self.assertEqual(decoded_schema, expected_schema)
 
+    def test_decode_schema_raise_exception(self):
+        data = b"Test"
+
+        with self.assertRaises(Exception) as context:
+            MinosAvroProtocol.decode_schema(data)
+
+        self.assertTrue("Error getting avro schema" in str(context.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
