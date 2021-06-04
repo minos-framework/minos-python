@@ -55,6 +55,12 @@ from .importlib import (
     classname,
     import_module,
 )
+from .injectors import (
+    DependencyInjector,
+)
+from .launchers import (
+    EntrypointLauncher,
+)
 from .messages import (
     Request,
     Response,
@@ -119,6 +125,9 @@ from .repository import (
 )
 from .saga import (
     MinosSagaManager,
+)
+from .services import (
+    Service,
 )
 from .setup import (
     MinosSetup,
