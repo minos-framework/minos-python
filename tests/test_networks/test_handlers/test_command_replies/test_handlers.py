@@ -46,7 +46,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
                     async for row in cur:
                         ret.append(row)
 
-            assert ret == [(1,)]
+            self.assertEqual(ret, [(1,)])
 
     async def test_get_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -58,7 +58,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         cls = handler.get_action(topic=event_instance.topic)
         result = await cls(topic=event_instance.topic, command=event_instance)
 
-        assert result == "add_order_saga"
+        self.assertEqual(result, "add_order_saga")
 
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -96,7 +96,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
                     queue_id = await cur.fetchone()
 
-            assert queue_id[0] > 0
+            self.assertGreater(queue_id[0], 0)
 
             # Must get the record, call on_reply function and delete the record from DB
             await handler.dispatch()
@@ -106,7 +106,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
                     await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
                     records = await cur.fetchone()
 
-            assert records[0] == 0
+            self.assertEqual(records[0], 0)
 
             self.assertEqual(None, saga_manager.name)
             self.assertEqual(instance, saga_manager.reply)
@@ -126,7 +126,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
                     queue_id = await cur.fetchone()
 
-            assert queue_id[0] > 0
+            self.assertGreater(queue_id[0], 0)
 
             # Must get the record, call on_reply function and delete the record from DB
             await handler.dispatch()
@@ -136,7 +136,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
                     await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
                     records = await cur.fetchone()
 
-            assert records[0] == 1
+            self.assertEqual(records[0], 1)
 
             async with aiopg.connect(**self.saga_queue_db) as connect:
                 async with connect.cursor() as cur:
@@ -144,7 +144,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
                     pending_row = await cur.fetchone()
 
             # Retry attempts
-            assert pending_row[4] == 1
+            self.assertEqual(pending_row[4], 1)
 
     async def test_concurrency_dispatcher(self):
         # Correct instance
@@ -180,16 +180,16 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
                     await cur.execute("SELECT COUNT(*) FROM command_reply_queue")
                     records = await cur.fetchone()
 
-            assert records[0] == 50
+            self.assertEqual(records[0], 50)
 
-            await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
+            await asyncio.gather(*[handler.dispatch() for _ in range(0, 6)])
 
             async with aiopg.connect(**self.saga_queue_db) as connect:
                 async with connect.cursor() as cur:
                     await cur.execute("SELECT COUNT(*) FROM command_reply_queue")
                     records = await cur.fetchone()
 
-            assert records[0] == 25
+            self.assertEqual(records[0], 25)
 
 
 if __name__ == "__main__":

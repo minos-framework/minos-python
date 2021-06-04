@@ -43,7 +43,7 @@ events:
         host: localhost
         port: 5432
         records: 10
-        retry: 2
+        retry: 1
 commands:
     broker: localhost
     port: 9092
@@ -67,7 +67,7 @@ commands:
         host: localhost
         port: 5432
         records: 10
-        retry: 2
+        retry: 1
 saga:
     broker: localhost
     port: 8900
@@ -87,4 +87,4 @@ saga:
         host: localhost
         port: 5432
         records: 10
-        retry: 2
+        retry: 1

@@ -14,6 +14,9 @@ from unittest.mock import (
 )
 
 import aiopg
+from psycopg2.sql import (
+    SQL,
+)
 
 from minos.common import (
     Event,
@@ -65,10 +68,10 @@ class TestEventBroker(PostgresAsyncTestCase):
 
     async def test_send_one(self):
         topic = "EventBroker"
-        query = (
-            "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date)\n"
-            "VALUES (%s, %s, %s, %s, %s, %s)\n"
-            "RETURNING id;"
+        query = SQL(
+            "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) "
+            "VALUES (%s, %s, %s, %s, %s, %s) "
+            "RETURNING id"
         )
         item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
 

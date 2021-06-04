@@ -16,6 +16,10 @@ from typing import (
     Optional,
 )
 
+from psycopg2.sql import (
+    SQL,
+)
+
 from minos.common import (
     MinosBroker,
     PostgreSqlMinosDatabase,
@@ -47,20 +51,19 @@ class Broker(MinosBroker, BrokerSetup, ABC):
         return raw[0]
 
 
-_CREATE_TABLE_QUERY = """
-CREATE TABLE IF NOT EXISTS producer_queue (
-    id BIGSERIAL NOT NULL PRIMARY KEY,
-    topic VARCHAR(255) NOT NULL,
-    model BYTEA NOT NULL,
-    retry INTEGER NOT NULL,
-    action VARCHAR(255) NOT NULL,
-    creation_date TIMESTAMP NOT NULL,
-    update_date TIMESTAMP NOT NULL
-);
-""".strip()
+_CREATE_TABLE_QUERY = SQL(
+    "CREATE TABLE IF NOT EXISTS producer_queue ("
+    "id BIGSERIAL NOT NULL PRIMARY KEY, "
+    "topic VARCHAR(255) NOT NULL, "
+    "model BYTEA NOT NULL, "
+    "retry INTEGER NOT NULL, "
+    "action VARCHAR(255) NOT NULL, "
+    "creation_date TIMESTAMP NOT NULL, "
+    "update_date TIMESTAMP NOT NULL)"
+)
 
-_INSERT_ENTRY_QUERY = """
-INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date)
-VALUES (%s, %s, %s, %s, %s, %s)
-RETURNING id;
-""".strip()
+_INSERT_ENTRY_QUERY = SQL(
+    "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) "
+    "VALUES (%s, %s, %s, %s, %s, %s) "
+    "RETURNING id"
+)

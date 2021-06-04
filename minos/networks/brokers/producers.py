@@ -17,6 +17,9 @@ from typing import (
 from aiokafka import (
     AIOKafkaProducer,
 )
+from psycopg2.sql import (
+    SQL,
+)
 
 from minos.common import (
     BROKER,
@@ -58,7 +61,7 @@ class Producer(BrokerSetup):
             await cursor.execute("BEGIN")
 
             # Select records and lock them FOR UPDATE
-            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY % (self.retry, self.records),)
+            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self.retry, self.records))
             result = await cursor.fetchall()
 
             for row in result:
@@ -69,15 +72,15 @@ class Producer(BrokerSetup):
                     logger.warning(f"Raised an exception while publishing a message: {exc!r}")
                 finally:
                     if published:
-                        await cursor.execute(_DELETE_PROCESSED_QUERY % (row[0]))
+                        await cursor.execute(_DELETE_PROCESSED_QUERY, (row[0],))
                     else:
-                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY % (row[0]))
+                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY, (row[0],))
 
             # Manually commit
             await cursor.execute("COMMIT")
 
     async def publish(self, topic: str, message: bytes) -> bool:
-        """Publish a new item in in the broker (kafka).
+        """Publish a new item in the broker (kafka).
 
         :param topic: The topic in which the message will be published.
         :param message: The message to be published.
@@ -100,23 +103,16 @@ class Producer(BrokerSetup):
         return published
 
 
-_SELECT_NON_PROCESSED_ROWS_QUERY = """
-SELECT *
-FROM producer_queue
-WHERE retry < %s
-ORDER BY creation_date
-LIMIT %s
-FOR UPDATE
-SKIP LOCKED;
-""".strip()
+_SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
+    "SELECT * "
+    "FROM producer_queue "
+    "WHERE retry < %s "
+    "ORDER BY creation_date "
+    "LIMIT %s "
+    "FOR UPDATE "
+    "SKIP LOCKED"
+)
 
-_DELETE_PROCESSED_QUERY = """
-DELETE FROM producer_queue
-WHERE id = %s;
-""".strip()
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue " "WHERE id = %s")
 
-_UPDATE_NON_PROCESSED_QUERY = """
-UPDATE producer_queue
-    SET retry = retry + 1
-WHERE id = %s;
-""".strip()
+_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE producer_queue " "SET retry = retry + 1 " "WHERE id = %s")
