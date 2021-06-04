@@ -21,8 +21,9 @@ from typing import (
 from aiokafka import (
     AIOKafkaConsumer,
 )
-from psycopg2.extensions import (
-    AsIs,
+from psycopg2.sql import (
+    SQL,
+    Identifier,
 )
 
 from minos.common import (
@@ -127,14 +128,12 @@ class Consumer(HandlerSetup):
             Exception: An error occurred inserting record.
         """
         queue_id = await self.submit_query_and_fetchone(
-            _INSERT_QUERY, (AsIs(self.TABLE_NAME), topic, partition, binary, datetime.datetime.now()),
+            _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary, datetime.datetime.now()),
         )
 
         return queue_id[0]
 
 
-_INSERT_QUERY = """
-INSERT INTO %s (topic, partition_id, binary_data, creation_date)
-VALUES (%s, %s, %s, %s)
-RETURNING id;
-""".strip()
+_INSERT_QUERY = SQL(
+    "INSERT INTO {} (topic, partition_id, binary_data, creation_date) " "VALUES (%s, %s, %s, %s) " "RETURNING id"
+)

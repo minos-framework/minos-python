@@ -45,7 +45,7 @@ class TestEventHandler(PostgresAsyncTestCase):
                     async for row in cur:
                         ret.append(row)
 
-            assert ret == [(1,)]
+            self.assertEqual([(1,)], ret)
 
     async def test_get_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -55,7 +55,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         cls = handler.get_action(topic="TicketAdded")
         result = await cls(topic="TicketAdded", event=event_instance)
 
-        assert result == "request_added"
+        self.assertEqual("request_added", result)
 
     async def test_non_implemented_action(self):
         model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
@@ -89,7 +89,7 @@ class TestEventHandler(PostgresAsyncTestCase):
 
                     queue_id = await cur.fetchone()
 
-            assert queue_id[0] > 0
+            self.assertGreater(queue_id[0], 0)
 
             # Must get the record, call on_reply function and delete the record from DB
             await handler.dispatch()
@@ -99,7 +99,7 @@ class TestEventHandler(PostgresAsyncTestCase):
                     await cur.execute("SELECT COUNT(*) FROM event_queue WHERE id=%d" % (queue_id))
                     records = await cur.fetchone()
 
-            assert records[0] == 0
+            self.assertEqual(0, records[0])
 
     async def test_event_dispatch_wrong_event(self):
         async with EventHandler.from_config(config=self.config) as handler:
@@ -115,25 +115,25 @@ class TestEventHandler(PostgresAsyncTestCase):
                     )
 
                     queue_id = await cur.fetchone()
-            assert queue_id[0] > 0
+            self.assertGreater(queue_id[0], 0)
 
             # Must get the record, call on_reply function and delete the record from DB
             await handler.dispatch()
 
             async with aiopg.connect(**self.events_queue_db) as connect:
                 async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue WHERE id=%d" % (queue_id))
+                    await cur.execute("SELECT COUNT(*) FROM event_queue WHERE id = %s", (queue_id,))
                     records = await cur.fetchone()
 
-            assert records[0] == 1
+            self.assertEqual(1, records[0])
 
             async with aiopg.connect(**self.saga_queue_db) as connect:
                 async with connect.cursor() as cur:
-                    await cur.execute("SELECT * FROM event_queue WHERE id=%d" % (queue_id))
+                    await cur.execute("SELECT * FROM event_queue WHERE id=%s", (queue_id,))
                     pending_row = await cur.fetchone()
 
             # Retry attempts
-            assert pending_row[4] == 1
+            self.assertEqual(1, pending_row[4])
 
     async def test_concurrency_dispatcher(self):
         # Correct instance
@@ -166,7 +166,7 @@ class TestEventHandler(PostgresAsyncTestCase):
                     await cur.execute("SELECT COUNT(*) FROM event_queue")
                     records = await cur.fetchone()
 
-            assert records[0] == 50
+            self.assertEqual(50, records[0])
 
             await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
 
@@ -175,7 +175,7 @@ class TestEventHandler(PostgresAsyncTestCase):
                     await cur.execute("SELECT COUNT(*) FROM event_queue")
                     records = await cur.fetchone()
 
-            assert records[0] == 25
+            self.assertEqual(25, records[0])
 
 
 if __name__ == "__main__":

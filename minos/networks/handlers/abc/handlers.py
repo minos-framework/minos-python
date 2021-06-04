@@ -25,6 +25,11 @@ from typing import (
     NoReturn,
 )
 
+from psycopg2.sql import (
+    SQL,
+    Identifier,
+)
+
 from minos.common import (
     MinosModel,
     import_module,
@@ -77,7 +82,9 @@ class Handler(HandlerSetup):
             await cursor.execute("BEGIN")
 
             # Select records and lock them FOR UPDATE
-            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY % (self.TABLE_NAME, self._retry, self._records),)
+            await cursor.execute(
+                _SELECT_NON_PROCESSED_ROWS_QUERY.format(Identifier(self.TABLE_NAME)), (self._retry, self._records)
+            )
             result = await cursor.fetchall()
 
             for row in result:
@@ -89,9 +96,9 @@ class Handler(HandlerSetup):
                     logger.warning(f"Raised an exception while dispatching a message: {exc!r}")
                 finally:
                     if dispatched:
-                        await cursor.execute(_DELETE_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+                        await cursor.execute(_DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
                     else:
-                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY % (self.TABLE_NAME, row[0]))
+                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
 
             # Manually commit
             await cursor.execute("COMMIT")
@@ -150,23 +157,10 @@ class Handler(HandlerSetup):
         raise NotImplementedError
 
 
-_SELECT_NON_PROCESSED_ROWS_QUERY = """
-SELECT *
-FROM %s
-WHERE retry < %d
-ORDER BY creation_date
-LIMIT %d
-FOR UPDATE
-SKIP LOCKED;
-""".strip()
+_SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
+    "SELECT * " "FROM {} " "WHERE retry < %s " "ORDER BY creation_date " "LIMIT %s " "FOR UPDATE " "SKIP LOCKED"
+)
 
-_DELETE_PROCESSED_QUERY = """
-DELETE FROM %s
-WHERE id = %d;
-""".strip()
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM {} " "WHERE id = %s")
 
-_UPDATE_NON_PROCESSED_QUERY = """
-UPDATE %s
-    SET retry = retry + 1
-WHERE id = %s;
-""".strip()
+_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE {} " "SET retry = retry + 1 " "WHERE id = %s")
