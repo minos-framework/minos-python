@@ -92,3 +92,27 @@ class MinosAvroProtocol(MinosBinaryProtocol):
             return ans[0]
 
         return ans
+
+    @classmethod
+    def decode_schema(cls, data: bytes, *args, **kwargs) -> Union[tuple[list, Any]]:
+        """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
+
+        :param data: A bytes object.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A tuple or a list of tuples.
+        """
+
+        try:
+            with io.BytesIO(data) as file:
+                r = reader(file)
+
+                try:
+                    schema = r.writer_schema
+                except Exception as ex:
+                    raise MinosProtocolException(f"Error getting avro schema: {ex}")
+
+        except Exception as exc:
+            raise MinosProtocolException(f"Error decoding the avro bytes: {exc}")
+
+        return schema
