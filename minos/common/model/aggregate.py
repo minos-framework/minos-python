@@ -27,6 +27,7 @@ from dependency_injector.wiring import (
 )
 
 from ..exceptions import (
+    MinosBrokerNonProvidedException,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
@@ -74,6 +75,8 @@ class Aggregate(MinosModel, Generic[T]):
         if _repository is not None:
             self._repository = _repository
 
+        if self._broker is None or isinstance(self._broker, Provide):
+            raise MinosBrokerNonProvidedException("A broker instance is required.")
         if self._repository is None or isinstance(self._repository, Provide):
             raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
@@ -104,6 +107,11 @@ class Aggregate(MinosModel, Generic[T]):
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
+        if _broker is None:
+            _broker = cls._broker
+            if isinstance(_broker, Provide):
+                raise MinosBrokerNonProvidedException("A broker instance is required.")
+
         if _repository is None:
             _repository = cls._repository
             if isinstance(_repository, Provide):

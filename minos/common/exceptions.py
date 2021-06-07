@@ -47,6 +47,14 @@ class MinosConfigDefaultAlreadySetException(MinosConfigException):
     """Exception to be raised when some config is already set as default."""
 
 
+class MinosBrokerException(MinosException):
+    """Base broker exception"""
+
+
+class MinosBrokerNonProvidedException(MinosBrokerException):
+    """Exception to be raised when a broker is needed but none is set."""
+
+
 class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
