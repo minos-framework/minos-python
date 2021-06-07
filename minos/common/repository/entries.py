@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 class MinosRepositoryAction(Enum):
     """Enum class that describes the available repository actions."""
 
-    INSERT = "insert"
+    CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
 

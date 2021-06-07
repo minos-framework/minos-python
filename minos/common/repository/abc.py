@@ -45,8 +45,8 @@ class MinosRepository(ABC, MinosSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
-    async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
-        """Store new insertion entry into de repository.
+    async def create(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
+        """Store new creation entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
@@ -56,7 +56,7 @@ class MinosRepository(ABC, MinosSetup):
         if not isinstance(entry, MinosRepositoryEntry):
             entry = MinosRepositoryEntry.from_aggregate(entry)
 
-        entry.action = MinosRepositoryAction.INSERT
+        entry.action = MinosRepositoryAction.CREATE
         return await self._submit(entry)
 
     async def update(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:

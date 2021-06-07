@@ -74,12 +74,12 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
 
             await car.delete()
 
-    async def test_insert(self):
+    async def test_create(self):
         async with PostgreSqlMinosRepository(**self.repository_db) as repository:
-            await repository.insert(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
+            await repository.create(MinosRepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
 
             expected = [
-                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT)
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.CREATE)
             ]
             observed = [v async for v in repository.select()]
             self._assert_equal_entries(expected, observed)
@@ -103,14 +103,14 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     async def test_select(self):
         async with (await self._build_repository()) as repository:
             expected = [
-                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, MinosRepositoryAction.UPDATE),
-                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, MinosRepositoryAction.UPDATE),
                 MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
                 MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
                 MinosRepositoryEntry(
-                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.INSERT
+                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.CREATE
                 ),
             ]
             observed = [v async for v in repository.select()]
@@ -133,9 +133,9 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     async def test_select_id_lt(self):
         async with (await self._build_repository()) as repository:
             expected = [
-                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, MinosRepositoryAction.UPDATE),
-                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, MinosRepositoryAction.UPDATE),
             ]
             observed = [v async for v in repository.select(id_lt=5)]
@@ -147,7 +147,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
                 MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
                 MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
                 MinosRepositoryEntry(
-                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.INSERT
+                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.CREATE
                 ),
             ]
             observed = [v async for v in repository.select(id_gt=4)]
@@ -156,9 +156,9 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     async def test_select_id_le(self):
         async with (await self._build_repository()) as repository:
             expected = [
-                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, MinosRepositoryAction.UPDATE),
-                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, MinosRepositoryAction.UPDATE),
             ]
             observed = [v async for v in repository.select(id_le=4)]
@@ -170,7 +170,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
                 MinosRepositoryEntry(1, "example.Car", 4, bytes(), 5, MinosRepositoryAction.DELETE),
                 MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
                 MinosRepositoryEntry(
-                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.INSERT
+                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.CREATE
                 ),
             ]
             observed = [v async for v in repository.select(id_ge=5)]
@@ -179,7 +179,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     async def test_select_aggregate_id(self):
         async with (await self._build_repository()) as repository:
             expected = [
-                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
             ]
             observed = [v async for v in repository.select(aggregate_id=2)]
@@ -189,7 +189,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
         async with (await self._build_repository()) as repository:
             expected = [
                 MinosRepositoryEntry(
-                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.INSERT
+                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.CREATE
                 ),
             ]
             observed = [v async for v in repository.select(aggregate_name="example.MotorCycle")]
@@ -206,10 +206,10 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     async def test_select_version_lt(self):
         async with (await self._build_repository()) as repository:
             expected = [
-                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
-                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.CREATE),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(
-                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.INSERT
+                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.CREATE
                 ),
             ]
             observed = [v async for v in repository.select(version_lt=2)]
@@ -229,10 +229,10 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     async def test_select_version_le(self):
         async with (await self._build_repository()) as repository:
             expected = [
-                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.INSERT),
-                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, MinosRepositoryAction.CREATE),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(
-                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.INSERT
+                    1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, MinosRepositoryAction.CREATE
                 ),
             ]
             observed = [v async for v in repository.select(version_le=1)]
@@ -252,7 +252,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     async def test_select_combined(self):
         async with (await self._build_repository()) as repository:
             expected = [
-                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.INSERT),
+                MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, MinosRepositoryAction.CREATE),
                 MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, MinosRepositoryAction.UPDATE),
             ]
             observed = [v async for v in repository.select(aggregate_name="example.Car", aggregate_id=2)]
@@ -260,13 +260,13 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
 
     async def _build_repository(self):
         async with PostgreSqlMinosRepository(**self.repository_db) as repository:
-            await repository.insert(MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8")))
+            await repository.create(MinosRepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8")))
             await repository.update(MinosRepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8")))
-            await repository.insert(MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8")))
+            await repository.create(MinosRepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8")))
             await repository.update(MinosRepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8")))
             await repository.delete(MinosRepositoryEntry(1, "example.Car", 4))
             await repository.update(MinosRepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8")))
-            await repository.insert(MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8")))
+            await repository.create(MinosRepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8")))
             return repository
 
     def _assert_equal_entries(
