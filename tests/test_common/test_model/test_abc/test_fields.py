@@ -6,6 +6,11 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from datetime import (
+    date,
+    datetime,
+    time,
+)
 from typing import (
     Optional,
     Union,
@@ -47,6 +52,45 @@ class TestModelField(unittest.TestCase):
     def test_value_bytes(self):
         field = ModelField("test", bytes, bytes("foo", "utf-8"))
         self.assertEqual(bytes("foo", "utf-8"), field.value)
+
+    def test_value_date(self):
+        value = date(2021, 1, 21)
+        field = ModelField("test", date, value)
+        self.assertEqual(value, field.value)
+
+    def test_value_date_int(self):
+        field = ModelField("test", date, 18648)
+        self.assertEqual(date(2021, 1, 21), field.value)
+
+    def test_value_date_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", date, "2342342")
+
+    def test_value_time(self):
+        value = time(20, 45, 21)
+        field = ModelField("test", time, value)
+        self.assertEqual(value, field.value)
+
+    def test_value_time_int(self):
+        field = ModelField("test", time, 74721000000)
+        self.assertEqual(time(20, 45, 21), field.value)
+
+    def test_value_time_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", time, "2342342")
+
+    def test_value_datetime(self):
+        value = datetime.now()
+        field = ModelField("test", datetime, value)
+        self.assertEqual(value, field.value)
+
+    def test_value_datetime_int(self):
+        field = ModelField("test", datetime, 1615584741000000)
+        self.assertEqual(datetime(2021, 3, 12, 21, 32, 21), field.value)
+
+    def test_value_datetime_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", datetime, "2342342")
 
     def test_value_float_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
@@ -97,6 +141,21 @@ class TestModelField(unittest.TestCase):
     def test_avro_schema_bytes(self):
         field = ModelField("test", bytes, bytes("foo", "utf-8"))
         expected = {"name": "test", "type": "bytes"}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_date(self):
+        field = ModelField("test", date, date(2021, 1, 21))
+        expected = {"name": "test", "type": {"type": "int", "logicalType": "date"}}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_time(self):
+        field = ModelField("test", time, time(20, 32, 12))
+        expected = {"name": "test", "type": {"type": "long", "logicalType": "time-micros"}}
+        self.assertEqual(expected, field.avro_schema)
+
+    def test_avro_schema_datetime(self):
+        field = ModelField("test", datetime, datetime.now())
+        expected = {"name": "test", "type": {"type": "long", "logicalType": "timestamp-micros"}}
         self.assertEqual(expected, field.avro_schema)
 
     def test_avro_schema_dict(self):
@@ -159,6 +218,19 @@ class TestModelField(unittest.TestCase):
     def test_avro_data_bytes(self):
         field = ModelField("test", bytes, bytes("foo", "utf-8"))
         self.assertEqual(b"foo", field.avro_data)
+
+    def test_avro_data_date(self):
+        field = ModelField("test", date, date(2021, 1, 21))
+        self.assertEqual(18648, field.avro_data)
+
+    def test_avro_data_time(self):
+        field = ModelField("test", time, time(20, 45, 21))
+        self.assertEqual(74721000000, field.avro_data)
+
+    def test_avro_data_datetime(self):
+        value = datetime(2021, 3, 12, 21, 32, 21)
+        field = ModelField("test", datetime, value)
+        self.assertEqual(1615584741000000, field.avro_data)
 
     def test_value_list_optional(self):
         field = ModelField("test", list[Optional[int]], [1, None, 3, 4])

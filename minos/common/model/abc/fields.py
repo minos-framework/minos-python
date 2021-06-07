@@ -12,6 +12,12 @@ from __future__ import (
 import inspect
 import logging
 import typing as t
+from datetime import (
+    date,
+    datetime,
+    time,
+    timedelta,
+)
 
 from ...exceptions import (
     MinosAttributeValidationException,
@@ -216,6 +222,13 @@ class _ModelFieldCaster(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._cast_simple_value(type_field, data)
 
+        if type_field is date:
+            return self._cast_date(data)
+        if type_field is time:
+            return self._cast_time(data)
+        if type_field is datetime:
+            return self._cast_datetime(data)
+
         if _is_minos_model_cls(type_field):
             return self._cast_minos_model(type_field, data)
 
@@ -277,6 +290,27 @@ class _ModelFieldCaster(object):
         if not isinstance(data, bytes):
             raise MinosTypeAttributeException(self._name, bytes, data)
         return data
+
+    def _cast_date(self, data: t.Any) -> date:
+        if isinstance(data, date):
+            return data
+        elif isinstance(data, int):
+            return date(1970, 1, 1) + timedelta(days=data)
+        raise MinosTypeAttributeException(self._name, date, data)
+
+    def _cast_time(self, data: t.Any) -> time:
+        if isinstance(data, time):
+            return data
+        if isinstance(data, int):
+            return (datetime(1, 1, 1) + timedelta(microseconds=data)).time()
+        raise MinosTypeAttributeException(self._name, time, data)
+
+    def _cast_datetime(self, data: t.Any) -> datetime:
+        if isinstance(data, datetime):
+            return data
+        if isinstance(data, int):
+            return datetime(1970, 1, 1) + data * timedelta(microseconds=1)
+        raise MinosTypeAttributeException(self._name, datetime, data)
 
     def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
         if isinstance(data, dict):
@@ -397,6 +431,15 @@ class _MinosModelAvroSchemaBuilder(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._build_simple_schema(type_field)
 
+        if type_field is date:
+            return {"type": "int", "logicalType": "date"}
+
+        if type_field is time:
+            return {"type": "long", "logicalType": "time-micros"}
+
+        if type_field is datetime:
+            return {"type": "long", "logicalType": "timestamp-micros"}
+
         if _is_minos_model_cls(type_field):
             return self._build_minos_model_schema(type_field)
 
@@ -480,6 +523,17 @@ class _MinosModelAvroDataBuilder(object):
             return None
         if type(value) in PYTHON_IMMUTABLE_TYPES:
             return value
+
+        if type(value) is date:
+            return (value - date(1970, 1, 1)).days
+
+        if type(value) is time:
+            diff = datetime.combine(date(1, 1, 1), value) - datetime(1, 1, 1)
+            return diff // timedelta(microseconds=1)
+
+        if type(value) is datetime:
+            return (value - datetime(1970, 1, 1)) // timedelta(microseconds=1)
+
         if isinstance(value, list):
             return [self._to_avro_raw(v) for v in value]
         if isinstance(value, dict):
