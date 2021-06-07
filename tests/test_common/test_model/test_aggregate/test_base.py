@@ -45,7 +45,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
     async def test_create(self):
         async with MinosInMemoryRepository() as repository:
             car = await Car.create(doors=3, color="blue", _repository=repository)
-            self.assertEqual(Car(1, 1, 3, "blue"), car)
+            self.assertEqual(Car(1, 1, 3, "blue", _repository=repository), car)
 
     async def test_create_raises(self):
         async with MinosInMemoryRepository() as repository:
@@ -89,11 +89,11 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             car = await Car.create(doors=3, color="blue", _repository=repository)
 
             await car.update(color="red")
-            self.assertEqual(Car(1, 2, 3, "red"), car)
+            self.assertEqual(Car(1, 2, 3, "red", _repository=repository), car)
             self.assertEqual(car, await Car.get_one(car.id, _repository=repository))
 
             await car.update(doors=5)
-            self.assertEqual(Car(1, 3, 5, "red"), car)
+            self.assertEqual(Car(1, 3, 5, "red", _repository=repository), car)
             self.assertEqual(car, await Car.get_one(car.id, _repository=repository))
 
     async def test_update_raises(self):
@@ -110,9 +110,9 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             await car2.update(color="red", _repository=repository)
             await car2.update(doors=5, _repository=repository)
 
-            self.assertEqual(Car(1, 1, 3, "blue"), car)
+            self.assertEqual(Car(1, 1, 3, "blue", _repository=repository), car)
             await car.refresh()
-            self.assertEqual(Car(1, 3, 5, "red"), car)
+            self.assertEqual(Car(1, 3, 5, "red", _repository=repository), car)
 
     async def test_delete(self):
         async with MinosInMemoryRepository() as repository:

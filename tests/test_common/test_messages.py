@@ -11,14 +11,14 @@ import unittest
 from minos.common import (
     Response,
 )
-from tests.aggregate_classes import (
-    Car,
+from tests.model_classes import (
+    Foo,
 )
 
 
 class TestResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.items = [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")]
+        self.items = [Foo("blue"), Foo("red")]
 
     async def test_content(self):
         response = Response(self.items)

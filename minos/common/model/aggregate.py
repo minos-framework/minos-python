@@ -74,6 +74,9 @@ class Aggregate(MinosModel, Generic[T]):
         if _repository is not None:
             self._repository = _repository
 
+        if self._repository is None or isinstance(self._repository, Provide):
+            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+
     @classmethod
     async def get(
         cls, ids: list[int], _broker: Optional[MinosBroker] = None, _repository: Optional[MinosRepository] = None,
@@ -145,11 +148,6 @@ class Aggregate(MinosModel, Generic[T]):
         if _broker is None:
             _broker = cls._broker
 
-        if _repository is None:
-            _repository = cls._repository
-            if isinstance(_repository, Provide):
-                raise MinosRepositoryNonProvidedException("A repository instance is required.")
-
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
         entry = await instance._repository.insert(instance)
@@ -170,9 +168,6 @@ class Aggregate(MinosModel, Generic[T]):
             raise MinosRepositoryManuallySetAggregateVersionException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
-
-        if self._repository is None or isinstance(self._repository, Provide):
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         # Update model...
         for key, value in kwargs.items():
@@ -198,6 +193,4 @@ class Aggregate(MinosModel, Generic[T]):
 
         :return: This method does not return anything.
         """
-        if self._repository is None or isinstance(self._repository, Provide):
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
         await self._repository.delete(self)

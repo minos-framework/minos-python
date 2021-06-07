@@ -25,9 +25,12 @@ from tests.aggregate_classes import (
 from tests.model_classes import (
     User,
 )
+from tests.utils import (
+    FakeRepository,
+)
 
 
-class TestModelField(unittest.TestCase):
+class TestModelField(unittest.IsolatedAsyncioTestCase):
     def test_name(self):
         field = ModelField("test", int, 3)
         self.assertEqual("test", field.name)
@@ -70,9 +73,12 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", list[User], [User(123), User(456)])
         self.assertEqual([User(123), User(456)], field.value)
 
-    def test_value_list_model_ref(self):
-        field = ModelField("test", list[ModelRef[Owner]], [1, 2, Owner(3, 1, "Foo", "Bar", 56)])
-        self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56)], field.value)
+    async def test_value_list_model_ref(self):
+        async with FakeRepository() as repository:
+            field = ModelField(
+                "test", list[ModelRef[Owner]], [1, 2, Owner(3, 1, "Foo", "Bar", 56, _repository=repository)]
+            )
+            self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56, _repository=repository)], field.value)
 
     def test_avro_schema_int(self):
         field = ModelField("test", int, 1)
@@ -185,10 +191,11 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", User, user)
         self.assertEqual(user, field.value)
 
-    def test_value_model_ref_value(self):
-        user = Owner(0, 0, "Foo", "Bar")
-        field = ModelField("test", ModelRef[Owner], user)
-        self.assertEqual(user, field.value)
+    async def test_value_model_ref_value(self):
+        async with FakeRepository() as repository:
+            user = Owner(0, 0, "Foo", "Bar", _repository=repository)
+            field = ModelField("test", ModelRef[Owner], user)
+            self.assertEqual(user, field.value)
 
     def test_value_model_ref_reference(self):
         field = ModelField("test", ModelRef[Owner], 1234)

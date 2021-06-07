@@ -7,8 +7,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
-from tests.aggregate_classes import (
-    Car,
+from tests.model_classes import (
+    Foo,
 )
 from tests.utils import (
     FakeBroker,
@@ -20,10 +20,10 @@ class TestMinosBaseBroker(unittest.IsolatedAsyncioTestCase):
         self.broker = FakeBroker()
 
     async def test_send(self):
-        self.assertEqual(None, await self.broker.send([Car(1, 1, 3, "red"), Car(1, 1, 3, "red")]))
+        self.assertEqual(None, await self.broker.send([Foo("red"), Foo("red")]))
 
     async def test_send_one(self):
-        self.assertEqual(None, await self.broker.send_one(Car(1, 1, 3, "red")))
+        self.assertEqual(None, await self.broker.send_one(Foo("red")))
 
 
 if __name__ == "__main__":
