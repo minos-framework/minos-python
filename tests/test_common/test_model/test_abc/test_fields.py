@@ -90,12 +90,14 @@ class TestModelField(unittest.TestCase):
 
     def test_value_uuid_bytes(self):
         value = uuid4()
-        field = ModelField("test", UUID, value.hex)
+        field = ModelField("test", UUID, value.bytes)
         self.assertEqual(value, field.value)
 
     def test_value_uuid_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
             ModelField("test", UUID, "foo")
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", UUID, bytes())
 
     def test_avro_schema_int(self):
         field = ModelField("test", int, 1)
