@@ -21,12 +21,14 @@ from ...exceptions import (
     MinosTypeAttributeException,
 )
 from .types import (
+    ARRAY,
     BOOLEAN,
     BYTES,
     FLOAT,
     INT,
     NULL,
     PYTHON_IMMUTABLE_TYPES,
+    PYTHON_IMMUTABLE_TYPES_STR,
     STRING,
     MissingSentinel,
     ModelRef,
@@ -148,6 +150,12 @@ class ModelField:
         :return: A dictionary object.
         """
         return _MinosModelAvroDataBuilder(self).build()
+
+    @classmethod
+    def from_avro(cls, schema: dict, value: t.Any) -> ModelField:
+        items = schema["items"] if "items" in schema else None
+        type_val = _MinosModelFromAvroBuilder(schema["name"], schema["type"], items).build()
+        return cls(schema["name"], type_val, value)
 
     def __eq__(self, other: "ModelField") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -349,6 +357,55 @@ class _ModelFieldCaster(object):
             value = self._cast_value(type_params, item)
             converted.append(value)
         return converted
+
+
+class _MinosModelFromAvroBuilder(object):
+    def __init__(self, field_name: str, field_type: str, field_items: t.Union[dict, str, t.Any] = None):
+        self._name = field_name
+        self._type = field_type
+        self._items = field_items
+
+    def build(self) -> t.Type:
+        """Build the avro schema for the given field.
+
+        :return: A dictionary object.
+        """
+        built_type = self._from_schema(self._type, self._items)
+        return built_type
+
+    def _from_schema(self, type_field: str, items: t.Union[dict, str, t.Any] = None) -> t.Type:
+
+        if type_field in PYTHON_IMMUTABLE_TYPES_STR:
+            local_type = self._inmutable_types(type_field)
+        if type_field == ARRAY:
+            local_type = list
+
+        if items is not None and isinstance(items, dict):
+            if "type" in items["type"]:
+                return local_type[self._from_schema(items["type"]["type"], items["type"])]
+            else:
+                return local_type[self._from_schema(items["items"])]
+        else:
+            return local_type
+
+        raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
+
+    @staticmethod
+    def _inmutable_types(type_field: str) -> t.Type:
+        if type_field == INT:
+            return int
+
+        if type_field == BOOLEAN:
+            return bool
+
+        if type_field == FLOAT:
+            return float
+
+        if type_field == STRING:
+            return str
+
+        if type_field == BYTES:
+            return bytes
 
 
 class _MinosModelAvroSchemaBuilder(object):
