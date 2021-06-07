@@ -34,7 +34,6 @@ class TestAggregateWithPostgres(PostgresAsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.container = containers.DynamicContainer()
-        self.container.config = providers.Object(self.config)
         self.container.repository = providers.Object(PostgreSqlMinosRepository.from_config(config=self.config))
         await self.container.repository().setup()
         self.container.wire(modules=[sys.modules[__name__]])
