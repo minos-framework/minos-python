@@ -103,8 +103,8 @@ class Aggregate(MinosModel, Generic[T]):
         """
         if _repository is None:
             _repository = cls._repository
-        if _repository is None or isinstance(_repository, Provide):
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+            if isinstance(_repository, Provide):
+                raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
         # noinspection PyTypeChecker
         entries = [v async for v in _repository.select(aggregate_name=cls.classname, aggregate_id=id)]
