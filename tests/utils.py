@@ -41,9 +41,15 @@ class FakeRepository(MinosRepository):
 class FakeBroker(MinosBroker):
     """For testing purposes."""
 
-    @classmethod
-    async def send(cls, items: list[MinosModel], **kwargs) -> NoReturn:
+    def __init__(self):
+        super().__init__()
+        self.call_count = 0
+        self.call_kwargs = None
+
+    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
         """For testing purposes."""
+        self.call_count += 1
+        self.call_kwargs = {"items": items} | kwargs
 
 
 class FakeSagaManager(MinosSagaManager):
