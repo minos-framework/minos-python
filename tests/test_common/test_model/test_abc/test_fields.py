@@ -10,6 +10,10 @@ from typing import (
     Optional,
     Union,
 )
+from uuid import (
+    UUID,
+    uuid4,
+)
 
 from minos.common import (
     MinosAttributeValidationException,
@@ -73,6 +77,25 @@ class TestModelField(unittest.TestCase):
     def test_value_list_model_ref(self):
         field = ModelField("test", list[ModelRef[Owner]], [1, 2, Owner(3, 1, "Foo", "Bar", 56)])
         self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56)], field.value)
+
+    def test_value_uuid(self):
+        value = uuid4()
+        field = ModelField("test", UUID, value)
+        self.assertEqual(value, field.value)
+
+    def test_value_uuid_str(self):
+        value = uuid4()
+        field = ModelField("test", UUID, str(value))
+        self.assertEqual(value, field.value)
+
+    def test_value_uuid_bytes(self):
+        value = uuid4()
+        field = ModelField("test", UUID, value.hex)
+        self.assertEqual(value, field.value)
+
+    def test_value_uuid_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", UUID, "foo")
 
     def test_avro_schema_int(self):
         field = ModelField("test", int, 1)
@@ -147,6 +170,10 @@ class TestModelField(unittest.TestCase):
         }
         self.assertEqual(expected, field.avro_schema)
 
+    def test_avro_schema_uuid(self):
+        field = ModelField("test", UUID, uuid4())
+        self.assertEqual({"name": "test", "type": {"type": "string", "logicalType": "uuid"}}, field.avro_schema)
+
     def test_avro_data_list_model(self):
         field = ModelField("test", list[Optional[User]], [User(123), User(456)])
         expected = [{"id": 123, "username": None}, {"id": 456, "username": None}]
@@ -159,6 +186,11 @@ class TestModelField(unittest.TestCase):
     def test_avro_data_bytes(self):
         field = ModelField("test", bytes, bytes("foo", "utf-8"))
         self.assertEqual(b"foo", field.avro_data)
+
+    def test_avro_data_uuid(self):
+        value = uuid4()
+        field = ModelField("test", UUID, value)
+        self.assertEqual(str(value), field.avro_data)
 
     def test_value_list_optional(self):
         field = ModelField("test", list[Optional[int]], [1, None, 3, 4])

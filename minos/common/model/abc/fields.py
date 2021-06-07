@@ -12,6 +12,9 @@ from __future__ import (
 import inspect
 import logging
 import typing as t
+from uuid import (
+    UUID,
+)
 
 from ...exceptions import (
     MinosAttributeValidationException,
@@ -216,6 +219,9 @@ class _ModelFieldCaster(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._cast_simple_value(type_field, data)
 
+        if type_field is UUID:
+            return self._cast_uuid(data)
+
         if _is_minos_model_cls(type_field):
             return self._cast_minos_model(type_field, data)
 
@@ -277,6 +283,21 @@ class _ModelFieldCaster(object):
         if not isinstance(data, bytes):
             raise MinosTypeAttributeException(self._name, bytes, data)
         return data
+
+    def _cast_uuid(self, data: t.Any) -> UUID:
+        if isinstance(data, UUID):
+            return data
+        elif isinstance(data, str):
+            try:
+                return UUID(hex=data)
+            except ValueError:
+                pass
+        elif isinstance(data, bytes):
+            try:
+                return UUID(bytes=data)
+            except ValueError:
+                pass
+        raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
         if isinstance(data, dict):
@@ -397,6 +418,9 @@ class _MinosModelAvroSchemaBuilder(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._build_simple_schema(type_field)
 
+        if type_field is UUID:
+            return {"type": "string", "logicalType": "uuid"}
+
         if _is_minos_model_cls(type_field):
             return self._build_minos_model_schema(type_field)
 
@@ -480,6 +504,8 @@ class _MinosModelAvroDataBuilder(object):
             return None
         if type(value) in PYTHON_IMMUTABLE_TYPES:
             return value
+        if isinstance(value, UUID):
+            return str(value)
         if isinstance(value, list):
             return [self._to_avro_raw(v) for v in value]
         if isinstance(value, dict):

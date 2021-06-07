@@ -8,6 +8,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 from typing import (
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from minos.common import (
     MinosModel,
@@ -26,6 +29,12 @@ class Bar(MinosModel):
 
     first: Foo
     second: Foo
+
+
+class FooBar(MinosModel):
+    """For testing purposes"""
+
+    identifier: UUID
 
 
 class Base(MinosModel):
