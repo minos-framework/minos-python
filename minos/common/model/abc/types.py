@@ -108,6 +108,8 @@ TIMESTAMP_MILLIS = "timestamp-millis"
 UUID = "uuid"
 DECIMAL = "decimal"
 
+UUID_TYPE = {"type": STRING, "logicalType": UUID}
+
 PYTHON_TYPE_TO_AVRO = {
     bool: BOOLEAN,
     type(None): NULL,
@@ -123,7 +125,7 @@ PYTHON_TYPE_TO_AVRO = {
     datetime.date: {"type": INT, "logicalType": DATE},
     datetime.time: {"type": INT, "logicalType": TIME_MILLIS},
     datetime.datetime: {"type": LONG, "logicalType": TIMESTAMP_MILLIS},
-    uuid.uuid4: {"type": STRING, "logicalType": UUID},
+    uuid.uuid4: UUID_TYPE,
 }
 
 PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)

@@ -33,6 +33,7 @@ from .types import (
     NULL,
     PYTHON_IMMUTABLE_TYPES,
     STRING,
+    UUID_TYPE,
     MissingSentinel,
     ModelRef,
 )
@@ -421,7 +422,7 @@ class _MinosModelFromAvroBuilder(object):
 
     @staticmethod
     def _build_logical_type(type_field: str) -> t.Type[T]:
-        if type_field == "uuid":
+        if type_field == UUID_TYPE["logicalType"]:
             return UUID
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_field!r}")
 
@@ -495,9 +496,6 @@ class _MinosModelAvroSchemaBuilder(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._build_simple_schema(type_field)
 
-        if type_field is UUID:
-            return {"type": "string", "logicalType": "uuid"}
-
         if _is_minos_model_cls(type_field):
             return self._build_minos_model_schema(type_field)
 
@@ -548,6 +546,9 @@ class _MinosModelAvroSchemaBuilder(object):
 
         if origin_type is ModelRef:
             return self._build_model_ref_schema(type_field)
+
+        if type_field is UUID:
+            return UUID_TYPE
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
