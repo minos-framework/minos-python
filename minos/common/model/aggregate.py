@@ -9,12 +9,6 @@ from __future__ import (
     annotations,
 )
 
-from asyncio import (
-    gather,
-)
-from operator import (
-    attrgetter,
-)
 from typing import (
     Generic,
     NoReturn,
@@ -28,18 +22,19 @@ from dependency_injector.wiring import (
 
 from ..exceptions import (
     MinosBrokerNotProvidedException,
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
+    MinosSnapshotNotProvidedException,
 )
 from ..networks import (
     MinosBroker,
 )
 from ..repository import (
     MinosRepository,
-    MinosRepositoryAction,
+)
+from ..snapshot import (
+    MinosSnapshot,
 )
 from .abc import (
     MinosModel,
@@ -56,6 +51,7 @@ class Aggregate(MinosModel, Generic[T]):
 
     _broker: MinosBroker = Provide["event_broker"]
     _repository: MinosRepository = Provide["repository"]
+    _snapshot: MinosSnapshot = Provide["snapshot"]
 
     # noinspection PyShadowingBuiltins
     def __init__(
@@ -65,6 +61,7 @@ class Aggregate(MinosModel, Generic[T]):
         *args,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
+        _snapshot: Optional[MinosSnapshot] = None,
         **kwargs,
     ):
 
@@ -74,39 +71,33 @@ class Aggregate(MinosModel, Generic[T]):
             self._broker = _broker
         if _repository is not None:
             self._repository = _repository
+        if _snapshot is not None:
+            self._snapshot = _snapshot
 
         if self._broker is None or isinstance(self._broker, Provide):
             raise MinosBrokerNotProvidedException("A broker instance is required.")
         if self._repository is None or isinstance(self._repository, Provide):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
+        if self._snapshot is None or isinstance(self._snapshot, Provide):
+            raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
     @classmethod
     async def get(
-        cls, ids: list[int], _broker: Optional[MinosBroker] = None, _repository: Optional[MinosRepository] = None,
+        cls,
+        ids: list[int],
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
+        _snapshot: Optional[MinosSnapshot] = None,
     ) -> list[T]:
         """Get a sequence of aggregates based on a list of identifiers.
 
         :param ids: list of identifiers.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
+        :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         """
-        # noinspection PyShadowingBuiltins
-        return list(await gather(*(cls.get_one(id, _broker, _repository) for id in ids)))
 
-    # noinspection PyShadowingBuiltins
-    @classmethod
-    async def get_one(
-        cls, id: int, _broker: Optional[MinosBroker] = None, _repository: Optional[MinosRepository] = None,
-    ) -> T:
-        """Get one aggregate based on an identifier.
-
-        :param id: aggregate identifier.
-        :param _broker: Broker to be set to the aggregates.
-        :param _repository: Repository to be set to the aggregate.
-        :return: A list of aggregate instances.
-        :return: An aggregate instance.
-        """
         if _broker is None:
             _broker = cls._broker
             if isinstance(_broker, Provide):
@@ -117,19 +108,33 @@ class Aggregate(MinosModel, Generic[T]):
             if isinstance(_repository, Provide):
                 raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
+        if _snapshot is None:
+            _snapshot = cls._snapshot
+            if isinstance(_snapshot, Provide):
+                raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
+
         # noinspection PyTypeChecker
-        entries = [v async for v in _repository.select(aggregate_name=cls.classname, aggregate_id=id)]
-        if not len(entries):
-            raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
+        return await _snapshot.get(cls.classname, ids, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
 
-        entry = max(entries, key=attrgetter("version"))
-        if entry.action == MinosRepositoryAction.DELETE:
-            raise MinosRepositoryDeletedAggregateException(f"The {id} id points to an already deleted aggregate.")
+    # noinspection PyShadowingBuiltins
+    @classmethod
+    async def get_one(
+        cls,
+        id: int,
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
+        _snapshot: Optional[MinosSnapshot] = None,
+    ) -> T:
+        """Get one aggregate based on an identifier.
 
-        instance = cls.from_avro_bytes(
-            entry.data, id=entry.aggregate_id, version=entry.version, _broker=_broker, _repository=_repository
-        )
-        return instance
+        :param id: aggregate identifier.
+        :param _broker: Broker to be set to the aggregates.
+        :param _repository: Repository to be set to the aggregate.
+        :param _snapshot: Snapshot to be set to the aggregate.
+        :return: A list of aggregate instances.
+        :return: An aggregate instance.
+        """
+        return (await cls.get([id], _broker=_broker, _repository=_repository, _snapshot=_snapshot))[0]
 
     @classmethod
     async def create(
@@ -197,7 +202,9 @@ class Aggregate(MinosModel, Generic[T]):
 
         :return: This method does not return anything.
         """
-        new = await type(self).get_one(self.id, _broker=self._broker, _repository=self._repository)
+        new = await type(self).get_one(
+            self.id, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
+        )
         self._fields |= new.fields
 
     async def delete(self) -> NoReturn:

@@ -16,6 +16,7 @@ from uuid import (
 )
 
 from minos.common import (
+    InMemoryMinosSnapshot,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
     MinosReqAttributeException,
@@ -79,13 +80,16 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([User(123), User(456)], field.value)
 
     async def test_value_list_model_ref(self):
-        async with FakeBroker() as broker, FakeRepository() as repository:
+        async with FakeBroker() as broker, FakeRepository() as repository, InMemoryMinosSnapshot() as snapshot:
             field = ModelField(
                 "test",
                 list[ModelRef[Owner]],
-                [1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository)],
+                [1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)],
             )
-            self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository)], field.value)
+            self.assertEqual(
+                [1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)],
+                field.value,
+            )
 
     def test_value_uuid(self):
         value = uuid4()
@@ -229,8 +233,8 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(user, field.value)
 
     async def test_value_model_ref_value(self):
-        async with FakeBroker() as broker, FakeRepository() as repository:
-            user = Owner(0, 0, "Foo", "Bar", _broker=broker, _repository=repository)
+        async with FakeBroker() as broker, FakeRepository() as repository, InMemoryMinosSnapshot() as snapshot:
+            user = Owner(0, 0, "Foo", "Bar", _broker=broker, _repository=repository, _snapshot=snapshot)
             field = ModelField("test", ModelRef[Owner], user)
             self.assertEqual(user, field.value)
 

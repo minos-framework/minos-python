@@ -50,6 +50,8 @@ from .exceptions import (
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSnapshotException,
+    MinosSnapshotNotProvidedException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
@@ -135,6 +137,7 @@ from .setup import (
     MinosSetup,
 )
 from .snapshot import (
+    InMemoryMinosSnapshot,
     MinosSnapshot,
 )
 from .storage import (

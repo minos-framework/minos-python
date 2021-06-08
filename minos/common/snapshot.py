@@ -17,15 +17,73 @@ from typing import (
     TYPE_CHECKING,
 )
 
+from .setup import (
+    MinosSetup,
+)
+
 if TYPE_CHECKING:
     from .model import (
         Aggregate,
     )
 
 
-class MinosSnapshot(ABC):
+class MinosSnapshot(MinosSetup, ABC):
     """Base Snapshot class."""
 
     @abstractmethod
-    async def get(self, ids: list[int], **kwargs) -> list[Aggregate]:
-        """Retrieves a list of  materialised ``Aggregate`` instances."""
+    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> list[Aggregate]:
+        """Retrieves a list of  materialised ``Aggregate`` instances.
+
+        :param aggregate_name: TODO
+        :param ids: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+
+
+class InMemoryMinosSnapshot(MinosSnapshot):
+    """TODO"""
+
+    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> list[Aggregate]:
+        """TODO
+
+        :param aggregate_name: TODO
+        :param ids: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        from asyncio import (
+            gather,
+        )
+
+        # noinspection PyShadowingBuiltins
+        return list(await gather(*(self._get_one(aggregate_name, id, **kwargs) for id in ids)))
+
+    # noinspection PyShadowingBuiltins
+    @staticmethod
+    async def _get_one(aggregate_name: str, id: int, _repository, **kwargs) -> Aggregate:
+        from operator import (
+            attrgetter,
+        )
+
+        from .exceptions import (
+            MinosRepositoryAggregateNotFoundException,
+            MinosRepositoryDeletedAggregateException,
+        )
+        from .repository import (
+            MinosRepositoryAction,
+        )
+
+        # noinspection PyTypeChecker
+        entries = [v async for v in _repository.select(aggregate_name=aggregate_name, aggregate_id=id)]
+        if not len(entries):
+            raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
+
+        entry = max(entries, key=attrgetter("version"))
+        if entry.action == MinosRepositoryAction.DELETE:
+            raise MinosRepositoryDeletedAggregateException(f"The {id} id points to an already deleted aggregate.")
+        cls = entry.aggregate_cls
+        instance = cls.from_avro_bytes(
+            entry.data, id=entry.aggregate_id, version=entry.version, _repository=_repository, **kwargs
+        )
+        return instance

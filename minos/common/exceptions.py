@@ -83,6 +83,14 @@ class MinosRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a repository is needed but none is set."""
 
 
+class MinosSnapshotException(MinosException):
+    """Base snapshot exception."""
+
+
+class MinosSnapshotNotProvidedException(MinosSnapshotException):
+    """Exception to be raised when a snapshot is needed but none is set."""
+
+
 class MinosModelException(MinosException):
     """Exception to be raised when some mandatory condition is not satisfied by a model."""
 
