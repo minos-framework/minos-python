@@ -365,9 +365,7 @@ class TestModelField(unittest.TestCase):
         self.assertEqual(desired, obtained)
 
     def test_from_avro_plain_array(self):
-        obtained = ModelField.from_avro(
-            {"name": "example", "type": "array", "items": {"type": "array", "items": "string"}}, ["a", "b", "c"]
-        )
+        obtained = ModelField.from_avro({"name": "example", "type": "array", "items": "string"}, ["a", "b", "c"])
         desired = ModelField("example", list[str], ["a", "b", "c"])
         self.assertEqual(desired, obtained)
 
@@ -382,6 +380,16 @@ class TestModelField(unittest.TestCase):
             [["a", "b", "c"]],
         )
         desired = ModelField("example", list[list[str]], [["a", "b", "c"]])
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_none(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "null"}, None)
+        desired = ModelField("example", type(None), None)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_union(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "array", "items": ["int", "string"]}, [1, "a"])
+        desired = ModelField("example", list[Union[int, str]], [1, "a"])
         self.assertEqual(desired, obtained)
 
     """

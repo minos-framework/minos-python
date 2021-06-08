@@ -29,7 +29,6 @@ from .types import (
     MAP,
     NULL,
     PYTHON_IMMUTABLE_TYPES,
-    PYTHON_IMMUTABLE_TYPES_STR,
     STRING,
     MissingSentinel,
     ModelRef,
@@ -371,35 +370,37 @@ class _MinosModelFromAvroBuilder(object):
         built_type = self._builder(self._schema)
         return built_type
 
-    def _builder(self, schema: dict) -> t.Type:
-        if schema["type"] == ARRAY:
-            items = schema["items"] if "items" in schema else None
-            return self._array_builder(schema["type"], items)
-        elif schema["type"] == MAP:
-            values = schema["values"] if "values" in schema else None
-            return self._map_builder(values)
-        elif schema["type"] in PYTHON_IMMUTABLE_TYPES_STR:
-            return self._inmutable_types(schema["type"])
-
-        raise ValueError(f"Given field type is not supported: {schema['type']}")  # pragma: no cover
-
-    def _array_builder(self, type_field: str, items: t.Union[dict, str, t.Any] = None) -> t.Type:
-        if items is not None and isinstance(items, dict):
-            if "type" in items["type"]:
-                return list[self._array_builder(items["type"]["type"], items["type"])]
-            else:
-                return list[self._array_builder(items["items"])]
+    def _builder(self, schema: t.Union[dict, list, str]) -> t.Type:
+        if isinstance(schema, dict):
+            return self._builder_from_dict(schema)
+        elif isinstance(schema, list):
+            return self._builder_from_list(schema)
         else:
-            return self._inmutable_types(type_field)
+            return self._simple_types(schema)
+
+    def _builder_from_list(self, schema: list[t.Any]) -> t.Type:
+        options = tuple(self._builder(entry) for entry in schema)
+        return t.Union[options]
+
+    def _builder_from_dict(self, schema: dict) -> t.Type:
+        if schema["type"] == ARRAY:
+            return self._array_builder(schema["items"])
+        elif schema["type"] == MAP:
+            return self._map_builder(schema["values"])
+        else:
+            return self._builder(schema["type"])
+
+    def _array_builder(self, items: t.Union[dict, str, t.Any] = None) -> t.Type:
+        return list[self._builder(items)]
 
     def _map_builder(self, values: t.Union[dict, str, t.Any] = None) -> t.Type:
-        return dict[str, self._inmutable_types(values)]
-
-    def _build_simple(self, type_field):
-        pass
+        return dict[str, self._builder(values)]
 
     @staticmethod
-    def _inmutable_types(type_field: str) -> t.Type:
+    def _simple_types(type_field: str) -> t.Type:
+        if type_field == NULL:
+            return type(None)
+
         if type_field == INT:
             return int
 
@@ -414,6 +415,8 @@ class _MinosModelFromAvroBuilder(object):
 
         if type_field == BYTES:
             return bytes
+
+        raise ValueError(f"Given field type is not supported: {type_field!r}")  # pragma: no
 
 
 class _MinosModelAvroSchemaBuilder(object):
