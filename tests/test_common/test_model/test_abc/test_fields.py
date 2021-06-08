@@ -354,6 +354,54 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
             "ModelField(name='test', type=typing.Optional[int], value=1, parser=None, validator=None)", repr(field),
         )
 
+    def test_from_avro_int(self):
+        obtained = ModelField.from_avro({"name": "id", "type": "int"}, 1234)
+        desired = ModelField("id", int, 1234)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_bool(self):
+        obtained = ModelField.from_avro({"name": "id", "type": "boolean"}, True)
+        desired = ModelField("id", bool, True)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_float(self):
+        obtained = ModelField.from_avro({"name": "id", "type": "float"}, 3.4)
+        desired = ModelField("id", float, 3.4)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_bytes(self):
+        obtained = ModelField.from_avro({"name": "id", "type": "bytes"}, b"Test")
+        desired = ModelField("id", bytes, b"Test")
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_plain_array(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "array", "items": "string"}, ["a", "b", "c"])
+        desired = ModelField("example", list[str], ["a", "b", "c"])
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_plain_map(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "map", "values": "int"}, {"a": 1, "b": 2})
+        desired = ModelField("example", dict[str, int], {"a": 1, "b": 2})
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_nested_arrays(self):
+        obtained = ModelField.from_avro(
+            {"name": "example", "type": "array", "items": {"type": {"type": "array", "items": "string"}}},
+            [["a", "b", "c"]],
+        )
+        desired = ModelField("example", list[list[str]], [["a", "b", "c"]])
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_none(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "null"}, None)
+        desired = ModelField("example", type(None), None)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_union(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "array", "items": ["int", "string"]}, [1, "a"])
+        desired = ModelField("example", list[Union[int, str]], [1, "a"])
+        self.assertEqual(desired, obtained)
+
 
 if __name__ == "__main__":
     unittest.main()
