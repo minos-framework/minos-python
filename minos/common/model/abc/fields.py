@@ -461,6 +461,12 @@ class _MinosModelFromAvroBuilder(object):
 
     @staticmethod
     def _build_logical_type(type_field: str) -> t.Type[T]:
+        if type_field == DATE_TYPE["logicalType"]:
+            return date
+        if type_field == TIME_TYPE["logicalType"]:
+            return time
+        if type_field == DATETIME_TYPE["logicalType"]:
+            return datetime
         if type_field == UUID_TYPE["logicalType"]:
             return UUID
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_field!r}")

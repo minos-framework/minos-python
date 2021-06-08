@@ -480,6 +480,24 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         desired = ModelField("id", bytes, b"Test")
         self.assertEqual(desired, obtained)
 
+    def test_from_avro_date(self):
+        value = date(2021, 1, 21)
+        obtained = ModelField.from_avro({"name": "id", "type": "int", "logicalType": "date"}, value)
+        desired = ModelField("id", date, value)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_time(self):
+        value = time(20, 45, 21)
+        obtained = ModelField.from_avro({"name": "id", "type": "int", "logicalType": "time-millis"}, value)
+        desired = ModelField("id", time, value)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_datetime(self):
+        value = datetime(2021, 3, 12, 21, 32, 21)
+        obtained = ModelField.from_avro({"name": "id", "type": "long", "logicalType": "timestamp-millis"}, value)
+        desired = ModelField("id", datetime, value)
+        self.assertEqual(desired, obtained)
+
     def test_from_avro_uuid(self):
         uuid = uuid4()
         obtained = ModelField.from_avro({"name": "id", "type": "string", "logicalType": "uuid"}, uuid)
