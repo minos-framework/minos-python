@@ -134,6 +134,9 @@ from .services import (
 from .setup import (
     MinosSetup,
 )
+from .snapshot import (
+    MinosSnapshot,
+)
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,
