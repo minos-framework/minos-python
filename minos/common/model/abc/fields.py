@@ -12,6 +12,12 @@ from __future__ import (
 import inspect
 import logging
 import typing as t
+from datetime import (
+    date,
+    datetime,
+    time,
+    timedelta,
+)
 from uuid import (
     UUID,
 )
@@ -27,12 +33,15 @@ from .types import (
     ARRAY,
     BOOLEAN,
     BYTES,
+    DATE_TYPE,
+    DATETIME_TYPE,
     FLOAT,
     INT,
     MAP,
     NULL,
     PYTHON_IMMUTABLE_TYPES,
     STRING,
+    TIME_TYPE,
     UUID_TYPE,
     MissingSentinel,
     ModelRef,
@@ -233,6 +242,15 @@ class _ModelFieldCaster(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._cast_simple_value(type_field, data)
 
+        if type_field is date:
+            return self._cast_date(data)
+
+        if type_field is time:
+            return self._cast_time(data)
+
+        if type_field is datetime:
+            return self._cast_datetime(data)
+
         if type_field is UUID:
             return self._cast_uuid(data)
 
@@ -297,6 +315,27 @@ class _ModelFieldCaster(object):
         if not isinstance(data, bytes):
             raise MinosTypeAttributeException(self._name, bytes, data)
         return data
+
+    def _cast_date(self, data: t.Any) -> date:
+        if isinstance(data, date):
+            return data
+        elif isinstance(data, int):
+            return date(1970, 1, 1) + timedelta(days=data)
+        raise MinosTypeAttributeException(self._name, date, data)
+
+    def _cast_time(self, data: t.Any) -> time:
+        if isinstance(data, time):
+            return data
+        if isinstance(data, int):
+            return (datetime(1, 1, 1) + timedelta(milliseconds=data)).time()
+        raise MinosTypeAttributeException(self._name, time, data)
+
+    def _cast_datetime(self, data: t.Any) -> datetime:
+        if isinstance(data, datetime):
+            return data
+        if isinstance(data, int):
+            return datetime(1970, 1, 1) + data * timedelta(milliseconds=1)
+        raise MinosTypeAttributeException(self._name, datetime, data)
 
     def _cast_uuid(self, data: t.Any) -> UUID:
         if isinstance(data, UUID):
@@ -422,6 +461,12 @@ class _MinosModelFromAvroBuilder(object):
 
     @staticmethod
     def _build_logical_type(type_field: str) -> t.Type[T]:
+        if type_field == DATE_TYPE["logicalType"]:
+            return date
+        if type_field == TIME_TYPE["logicalType"]:
+            return time
+        if type_field == DATETIME_TYPE["logicalType"]:
+            return datetime
         if type_field == UUID_TYPE["logicalType"]:
             return UUID
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_field!r}")
@@ -496,6 +541,18 @@ class _MinosModelAvroSchemaBuilder(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._build_simple_schema(type_field)
 
+        if type_field is date:
+            return DATE_TYPE
+
+        if type_field is time:
+            return TIME_TYPE
+
+        if type_field is datetime:
+            return DATETIME_TYPE
+
+        if type_field is UUID:
+            return UUID_TYPE
+
         if _is_minos_model_cls(type_field):
             return self._build_minos_model_schema(type_field)
 
@@ -547,9 +604,6 @@ class _MinosModelAvroSchemaBuilder(object):
         if origin_type is ModelRef:
             return self._build_model_ref_schema(type_field)
 
-        if type_field is UUID:
-            return UUID_TYPE
-
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
     def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
@@ -582,13 +636,42 @@ class _MinosModelAvroDataBuilder(object):
             return None
         if type(value) in PYTHON_IMMUTABLE_TYPES:
             return value
+
+        if type(value) is date:
+            return self._date_to_avro_raw(value)
+
+        if type(value) is time:
+            return self._time_to_avro_raw(value)
+
+        if type(value) is datetime:
+            return self._datetime_to_avro_raw(value)
+
         if isinstance(value, UUID):
-            return str(value)
+            return self._uuid_to_avro_raw(value)
+
         if isinstance(value, list):
             return [self._to_avro_raw(v) for v in value]
+
         if isinstance(value, dict):
             return {k: self._to_avro_raw(v) for k, v in value.items()}
+
         return value.avro_data
+
+    @staticmethod
+    def _date_to_avro_raw(value: date) -> int:
+        return (value - date(1970, 1, 1)).days
+
+    @staticmethod
+    def _time_to_avro_raw(value: time) -> int:
+        return (datetime.combine(date(1, 1, 1), value) - datetime(1, 1, 1)) // timedelta(milliseconds=1)
+
+    @staticmethod
+    def _datetime_to_avro_raw(value: datetime) -> int:
+        return (value - datetime(1970, 1, 1)) // timedelta(milliseconds=1)
+
+    @staticmethod
+    def _uuid_to_avro_raw(value: UUID) -> str:
+        return str(value)
 
 
 def _is_minos_model_cls(type_field: t.Type) -> bool:

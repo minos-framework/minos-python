@@ -108,6 +108,9 @@ TIMESTAMP_MILLIS = "timestamp-millis"
 UUID = "uuid"
 DECIMAL = "decimal"
 
+DATE_TYPE = {"type": INT, "logicalType": DATE}
+TIME_TYPE = {"type": INT, "logicalType": TIME_MILLIS}
+DATETIME_TYPE = {"type": LONG, "logicalType": TIMESTAMP_MILLIS}
 UUID_TYPE = {"type": STRING, "logicalType": UUID}
 
 PYTHON_TYPE_TO_AVRO = {
@@ -122,9 +125,9 @@ PYTHON_TYPE_TO_AVRO = {
     dict: MAP,
     Fixed: {"type": FIXED},
     Enum: {"type": ENUM},
-    datetime.date: {"type": INT, "logicalType": DATE},
-    datetime.time: {"type": INT, "logicalType": TIME_MILLIS},
-    datetime.datetime: {"type": LONG, "logicalType": TIMESTAMP_MILLIS},
+    datetime.date: DATE_TYPE,
+    datetime.time: TIME_TYPE,
+    datetime.datetime: DATETIME_TYPE,
     uuid.uuid4: UUID_TYPE,
 }
 
