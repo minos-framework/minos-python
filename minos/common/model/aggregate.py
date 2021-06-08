@@ -163,6 +163,8 @@ class Aggregate(MinosModel, Generic[T]):
         instance.id = entry.aggregate_id
         instance.version = entry.version
 
+        await instance._broker.send_one(instance, topic=f"{type(instance).__name__}Created")
+
         return instance
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
@@ -186,6 +188,8 @@ class Aggregate(MinosModel, Generic[T]):
         self.id = entry.aggregate_id
         self.version = entry.version
 
+        await self._broker.send_one(self, topic=f"{type(self).__name__}Updated")
+
         return self
 
     async def refresh(self) -> NoReturn:
@@ -202,3 +206,4 @@ class Aggregate(MinosModel, Generic[T]):
         :return: This method does not return anything.
         """
         await self._repository.delete(self)
+        await self._broker.send_one(self, topic=f"{type(self).__name__}Deleted")

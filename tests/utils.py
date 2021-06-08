@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from datetime import (
+    datetime,
+)
 from pathlib import (
     Path,
 )
@@ -33,8 +36,19 @@ BASE_PATH = Path(__file__).parent
 class FakeRepository(MinosRepository):
     """For testing purposes."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.id_counter = 0
+        self.items = set()
+
     async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
         """For testing purposes."""
+        self.id_counter += 1
+        entry.id = self.id_counter
+        entry.version += 1
+        entry.aggregate_id = 9999
+        entry.created_at = datetime.now()
+        return entry
 
     async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
         """For testing purposes."""
@@ -59,6 +73,10 @@ class FakeBroker(MinosBroker):
         if len(self.calls_kwargs) == 0:
             return None
         return self.calls_kwargs[-1]
+
+    def reset_mock(self):
+        self.call_count = 0
+        self.calls_kwargs = list()
 
 
 class FakeSagaManager(MinosSagaManager):
