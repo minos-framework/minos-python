@@ -30,6 +30,7 @@ from tests.aggregate_classes import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeBroker,
 )
 
 
@@ -64,12 +65,12 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
                 self.assertTrue(response)
 
     async def test_aggregate(self):
-        async with PostgreSqlMinosRepository(**self.repository_db) as repository:
-            car = await Car.create(doors=3, color="blue", _repository=repository)
+        async with FakeBroker() as broker, PostgreSqlMinosRepository(**self.repository_db) as repository:
+            car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository)
             await car.update(color="red")
             await car.update(doors=5)
 
-            another = await Car.get_one(car.id, _repository=repository)
+            another = await Car.get_one(car.id, _broker=broker, _repository=repository)
             self.assertEqual(car, another)
 
             await car.delete()

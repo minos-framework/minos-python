@@ -11,34 +11,38 @@ from minos.common import (
     Event,
     MultiTypeMinosModelSequenceException,
 )
-from tests.aggregate_classes import (
-    Car,
-    Owner,
+from tests.model_classes import (
+    Base,
+    Foo,
 )
 
 
 class TestEvent(unittest.TestCase):
+    def setUp(self) -> None:
+        self.items = [Foo("blue"), Foo("red")]
+        self.topic = "FooCreated"
+
     def test_constructor(self):
-        event = Event("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")])
-        self.assertEqual("CarCreated", event.topic)
-        self.assertEqual([Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], event.items)
+        event = Event(self.topic, self.items)
+        self.assertEqual(self.topic, event.topic)
+        self.assertEqual(self.items, event.items)
 
     def test_avro_serialization(self):
-        event = Event("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")])
+        event = Event(self.topic, self.items)
         decoded_event = Event.from_avro_bytes(event.avro_bytes)
         self.assertEqual(event, decoded_event)
 
     def test_items_raises(self):
         with self.assertRaises(MultiTypeMinosModelSequenceException):
-            Event("CarCreated", [Car(1, 1, 3, "blue"), Owner(2, 1, "Foo", "Bar")])
+            Event(self.topic, [Foo("blue"), Base(1)])
 
     def test_model(self):
-        event = Event("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")])
-        self.assertEqual("tests.aggregate_classes.Car", event.model)
+        event = Event(self.topic, self.items)
+        self.assertEqual("tests.model_classes.Foo", event.model)
 
     def test_model_cls(self):
-        event = Event("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")])
-        self.assertEqual(Car, event.model_cls)
+        event = Event(self.topic, self.items)
+        self.assertEqual(Foo, event.model_cls)
 
 
 if __name__ == "__main__":
