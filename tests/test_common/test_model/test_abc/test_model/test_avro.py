@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     EmptyMinosModelSequenceException,
@@ -19,6 +22,7 @@ from tests.model_classes import (
     Bar,
     Customer,
     Foo,
+    FooBar,
     ShoppingList,
     User,
 )
@@ -256,6 +260,12 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         original = Bar(first=Foo("one"), second=Foo("two"))
         serialized = original.avro_bytes
         recovered = Bar.from_avro_bytes(serialized)
+        self.assertEqual(original, recovered)
+
+    def test_uuid_avro_bytes(self):
+        original = FooBar(uuid4())
+        serialized = original.avro_bytes
+        recovered = FooBar.from_avro_bytes(serialized)
         self.assertEqual(original, recovered)
 
 

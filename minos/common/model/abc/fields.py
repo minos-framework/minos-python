@@ -12,6 +12,9 @@ from __future__ import (
 import inspect
 import logging
 import typing as t
+from uuid import (
+    UUID,
+)
 
 from ...exceptions import (
     MinosAttributeValidationException,
@@ -30,6 +33,7 @@ from .types import (
     NULL,
     PYTHON_IMMUTABLE_TYPES,
     STRING,
+    UUID_TYPE,
     MissingSentinel,
     ModelRef,
 )
@@ -153,6 +157,12 @@ class ModelField:
 
     @classmethod
     def from_avro(cls, schema: dict, value: t.Any) -> ModelField:
+        """Build a ``ModelField`` instance from the avro information.
+
+        :param schema: Field's schema.
+        :param value: Field's value.
+        :return: A ``ModelField`` instance.
+        """
         type_val = _MinosModelFromAvroBuilder(schema).build()
         return cls(schema["name"], type_val, value)
 
@@ -223,6 +233,9 @@ class _ModelFieldCaster(object):
         if type_field in PYTHON_IMMUTABLE_TYPES:
             return self._cast_simple_value(type_field, data)
 
+        if type_field is UUID:
+            return self._cast_uuid(data)
+
         if _is_minos_model_cls(type_field):
             return self._cast_minos_model(type_field, data)
 
@@ -284,6 +297,21 @@ class _ModelFieldCaster(object):
         if not isinstance(data, bytes):
             raise MinosTypeAttributeException(self._name, bytes, data)
         return data
+
+    def _cast_uuid(self, data: t.Any) -> UUID:
+        if isinstance(data, UUID):
+            return data
+        elif isinstance(data, str):
+            try:
+                return UUID(hex=data)
+            except ValueError:
+                pass
+        elif isinstance(data, bytes):
+            try:
+                return UUID(bytes=data)
+            except ValueError:
+                pass
+        raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
         if isinstance(data, dict):
@@ -362,42 +390,50 @@ class _MinosModelFromAvroBuilder(object):
     def __init__(self, schema: dict):
         self._schema = schema
 
-    def build(self) -> t.Type:
+    def build(self) -> t.Type[T]:
         """Build type from given avro schema item.
 
         :return: A dictionary object.
         """
-        built_type = self._builder(self._schema)
+        built_type = self._build_type(self._schema)
         return built_type
 
-    def _builder(self, schema: t.Union[dict, list, str]) -> t.Type:
+    def _build_type(self, schema: t.Union[dict, list, str]) -> t.Type[T]:
         if isinstance(schema, dict):
-            return self._builder_from_dict(schema)
+            return self._build_type_from_dict(schema)
         elif isinstance(schema, list):
-            return self._builder_from_list(schema)
+            return self._build_type_from_list(schema)
         else:
-            return self._simple_types(schema)
+            return self._build_simple_type(schema)
 
-    def _builder_from_list(self, schema: list[t.Any]) -> t.Type:
-        options = tuple(self._builder(entry) for entry in schema)
+    def _build_type_from_list(self, schema: list[t.Any]) -> t.Type[T]:
+        options = tuple(self._build_type(entry) for entry in schema)
         return t.Union[options]
 
-    def _builder_from_dict(self, schema: dict) -> t.Type:
-        if schema["type"] == ARRAY:
-            return self._array_builder(schema["items"])
+    def _build_type_from_dict(self, schema: dict) -> t.Type[T]:
+        if "logicalType" in schema:
+            return self._build_logical_type(schema["logicalType"])
+        elif schema["type"] == ARRAY:
+            return self._build_list_type(schema["items"])
         elif schema["type"] == MAP:
-            return self._map_builder(schema["values"])
+            return self._build_dict_type(schema["values"])
         else:
-            return self._builder(schema["type"])
-
-    def _array_builder(self, items: t.Union[dict, str, t.Any] = None) -> t.Type:
-        return list[self._builder(items)]
-
-    def _map_builder(self, values: t.Union[dict, str, t.Any] = None) -> t.Type:
-        return dict[str, self._builder(values)]
+            return self._build_type(schema["type"])
 
     @staticmethod
-    def _simple_types(type_field: str) -> t.Type:
+    def _build_logical_type(type_field: str) -> t.Type[T]:
+        if type_field == UUID_TYPE["logicalType"]:
+            return UUID
+        raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_field!r}")
+
+    def _build_list_type(self, items: t.Union[dict, str, t.Any] = None) -> t.Type[T]:
+        return list[self._build_type(items)]
+
+    def _build_dict_type(self, values: t.Union[dict, str, t.Any] = None) -> t.Type[T]:
+        return dict[str, self._build_type(values)]
+
+    @staticmethod
+    def _build_simple_type(type_field: str) -> t.Type[T]:
         if type_field == NULL:
             return type(None)
         if type_field == INT:
@@ -411,7 +447,7 @@ class _MinosModelFromAvroBuilder(object):
         if type_field == BYTES:
             return bytes
 
-        raise ValueError(f"Given field type is not supported: {type_field!r}")  # pragma: no cover
+        raise MinosMalformedAttributeException(f"Given field type is not supported: {type_field!r}")
 
 
 class _MinosModelAvroSchemaBuilder(object):
@@ -511,6 +547,9 @@ class _MinosModelAvroSchemaBuilder(object):
         if origin_type is ModelRef:
             return self._build_model_ref_schema(type_field)
 
+        if type_field is UUID:
+            return UUID_TYPE
+
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
     def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
@@ -543,6 +582,8 @@ class _MinosModelAvroDataBuilder(object):
             return None
         if type(value) in PYTHON_IMMUTABLE_TYPES:
             return value
+        if isinstance(value, UUID):
+            return str(value)
         if isinstance(value, list):
             return [self._to_avro_raw(v) for v in value]
         if isinstance(value, dict):

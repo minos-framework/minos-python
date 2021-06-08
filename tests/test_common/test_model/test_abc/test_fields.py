@@ -10,6 +10,10 @@ from typing import (
     Optional,
     Union,
 )
+from uuid import (
+    UUID,
+    uuid4,
+)
 
 from minos.common import (
     MinosAttributeValidationException,
@@ -82,6 +86,27 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
                 [1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository)],
             )
             self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository)], field.value)
+
+    def test_value_uuid(self):
+        value = uuid4()
+        field = ModelField("test", UUID, value)
+        self.assertEqual(value, field.value)
+
+    def test_value_uuid_str(self):
+        value = uuid4()
+        field = ModelField("test", UUID, str(value))
+        self.assertEqual(value, field.value)
+
+    def test_value_uuid_bytes(self):
+        value = uuid4()
+        field = ModelField("test", UUID, value.bytes)
+        self.assertEqual(value, field.value)
+
+    def test_value_uuid_raises(self):
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", UUID, "foo")
+        with self.assertRaises(MinosTypeAttributeException):
+            ModelField("test", UUID, bytes())
 
     def test_avro_schema_int(self):
         field = ModelField("test", int, 1)
@@ -156,6 +181,10 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         }
         self.assertEqual(expected, field.avro_schema)
 
+    def test_avro_schema_uuid(self):
+        field = ModelField("test", UUID, uuid4())
+        self.assertEqual({"name": "test", "type": {"type": "string", "logicalType": "uuid"}}, field.avro_schema)
+
     def test_avro_data_list_model(self):
         field = ModelField("test", list[Optional[User]], [User(123), User(456)])
         expected = [{"id": 123, "username": None}, {"id": 456, "username": None}]
@@ -168,6 +197,11 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
     def test_avro_data_bytes(self):
         field = ModelField("test", bytes, bytes("foo", "utf-8"))
         self.assertEqual(b"foo", field.avro_data)
+
+    def test_avro_data_uuid(self):
+        value = uuid4()
+        field = ModelField("test", UUID, value)
+        self.assertEqual(str(value), field.avro_data)
 
     def test_value_list_optional(self):
         field = ModelField("test", list[Optional[int]], [1, None, 3, 4])
@@ -374,6 +408,12 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         desired = ModelField("id", bytes, b"Test")
         self.assertEqual(desired, obtained)
 
+    def test_from_avro_uuid(self):
+        uuid = uuid4()
+        obtained = ModelField.from_avro({"name": "id", "type": "string", "logicalType": "uuid"}, uuid)
+        desired = ModelField("id", UUID, uuid)
+        self.assertEqual(desired, obtained)
+
     def test_from_avro_plain_array(self):
         obtained = ModelField.from_avro({"name": "example", "type": "array", "items": "string"}, ["a", "b", "c"])
         desired = ModelField("example", list[str], ["a", "b", "c"])
@@ -401,6 +441,12 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         obtained = ModelField.from_avro({"name": "example", "type": "array", "items": ["int", "string"]}, [1, "a"])
         desired = ModelField("example", list[Union[int, str]], [1, "a"])
         self.assertEqual(desired, obtained)
+
+    def test_from_avro_raises(self):
+        with self.assertRaises(MinosMalformedAttributeException):
+            ModelField.from_avro({"name": "id", "type": "foo"}, None)
+        with self.assertRaises(MinosMalformedAttributeException):
+            ModelField.from_avro({"name": "id", "type": "string", "logicalType": "foo"}, None)
 
 
 if __name__ == "__main__":
