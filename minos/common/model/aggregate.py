@@ -27,6 +27,7 @@ from dependency_injector.wiring import (
 )
 
 from ..exceptions import (
+    MinosBrokerNonProvidedException,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
@@ -74,6 +75,8 @@ class Aggregate(MinosModel, Generic[T]):
         if _repository is not None:
             self._repository = _repository
 
+        if self._broker is None or isinstance(self._broker, Provide):
+            raise MinosBrokerNonProvidedException("A broker instance is required.")
         if self._repository is None or isinstance(self._repository, Provide):
             raise MinosRepositoryNonProvidedException("A repository instance is required.")
 
@@ -104,6 +107,11 @@ class Aggregate(MinosModel, Generic[T]):
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
+        if _broker is None:
+            _broker = cls._broker
+            if isinstance(_broker, Provide):
+                raise MinosBrokerNonProvidedException("A broker instance is required.")
+
         if _repository is None:
             _repository = cls._repository
             if isinstance(_repository, Provide):
@@ -155,6 +163,8 @@ class Aggregate(MinosModel, Generic[T]):
         instance.id = entry.aggregate_id
         instance.version = entry.version
 
+        await instance._broker.send_one(instance, topic=f"{type(instance).__name__}Created")
+
         return instance
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
@@ -178,6 +188,8 @@ class Aggregate(MinosModel, Generic[T]):
         self.id = entry.aggregate_id
         self.version = entry.version
 
+        await self._broker.send_one(self, topic=f"{type(self).__name__}Updated")
+
         return self
 
     async def refresh(self) -> NoReturn:
@@ -194,3 +206,4 @@ class Aggregate(MinosModel, Generic[T]):
         :return: This method does not return anything.
         """
         await self._repository.delete(self)
+        await self._broker.send_one(self, topic=f"{type(self).__name__}Deleted")

@@ -23,6 +23,7 @@ from tests.model_classes import (
     User,
 )
 from tests.utils import (
+    FakeBroker,
     FakeRepository,
 )
 
@@ -108,18 +109,12 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, Car.avro_schema)
 
     async def test_avro_data_model_ref(self):
-        async with FakeRepository() as repository:
-            car = Car(
-                1,
-                1,
-                5,
-                "blue",
-                [
-                    Owner(1, 1, "Hello", "Good Bye", _repository=repository),
-                    Owner(2, 1, "Foo", "Bar", _repository=repository),
-                ],
-                _repository=repository,
-            )
+        async with FakeBroker() as broker, FakeRepository() as repository:
+            owners = [
+                Owner(1, 1, "Hello", "Good Bye", _broker=broker, _repository=repository),
+                Owner(2, 1, "Foo", "Bar", _broker=broker, _repository=repository),
+            ]
+            car = Car(1, 1, 5, "blue", owners, _broker=broker, _repository=repository)
             expected = {
                 "color": "blue",
                 "doors": 5,
@@ -133,18 +128,12 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(expected, car.avro_data)
 
     async def test_avro_bytes_model_ref(self):
-        async with FakeRepository() as repository:
-            car = Car(
-                1,
-                1,
-                5,
-                "blue",
-                [
-                    Owner(1, 1, "Hello", "Good Bye", _repository=repository),
-                    Owner(2, 1, "Foo", "Bar", _repository=repository),
-                ],
-                _repository=repository,
-            )
+        async with FakeBroker() as broker, FakeRepository() as repository:
+            owners = [
+                Owner(1, 1, "Hello", "Good Bye", _broker=broker, _repository=repository),
+                Owner(2, 1, "Foo", "Bar", _broker=broker, _repository=repository),
+            ]
+            car = Car(1, 1, 5, "blue", owners, _broker=broker, _repository=repository)
             self.assertIsInstance(car.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):

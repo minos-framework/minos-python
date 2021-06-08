@@ -15,15 +15,19 @@ from tests.utils import (
 )
 
 
-class TestMinosBaseBroker(unittest.IsolatedAsyncioTestCase):
+class TestMinosBroker(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.broker = FakeBroker()
 
     async def test_send(self):
-        self.assertEqual(None, await self.broker.send([Foo("red"), Foo("red")]))
+        await self.broker.send([Foo("red"), Foo("red")])
+        self.assertEqual(1, self.broker.call_count)
+        self.assertEqual({"items": [Foo("red"), Foo("red")]}, self.broker.call_kwargs)
 
     async def test_send_one(self):
-        self.assertEqual(None, await self.broker.send_one(Foo("red")))
+        await self.broker.send_one(Foo("red"))
+        self.assertEqual(1, self.broker.call_count)
+        self.assertEqual({"items": [Foo("red")]}, self.broker.call_kwargs)
 
 
 if __name__ == "__main__":
