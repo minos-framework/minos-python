@@ -25,7 +25,7 @@ from tests.utils import (
 )
 
 
-class TestSomething(PostgresAsyncTestCase):
+class TestService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def asyncSetUp(self):

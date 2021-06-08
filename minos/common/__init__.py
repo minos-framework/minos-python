@@ -30,6 +30,8 @@ from .database import (
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
+    MinosBrokerException,
+    MinosBrokerNotProvidedException,
     MinosConfigDefaultAlreadySetException,
     MinosConfigException,
     MinosException,
@@ -45,7 +47,7 @@ from .exceptions import (
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException,
+    MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
     MinosTypeAttributeException,

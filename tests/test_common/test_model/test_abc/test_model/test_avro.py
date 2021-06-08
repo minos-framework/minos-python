@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     EmptyMinosModelSequenceException,
@@ -19,12 +22,17 @@ from tests.model_classes import (
     Bar,
     Customer,
     Foo,
+    FooBar,
     ShoppingList,
     User,
 )
+from tests.utils import (
+    FakeBroker,
+    FakeRepository,
+)
 
 
-class TestMinosModelAvro(unittest.TestCase):
+class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
     def test_avro_schema(self):
         expected = [
             {
@@ -104,23 +112,33 @@ class TestMinosModelAvro(unittest.TestCase):
         ]
         self.assertEqual(expected, Car.avro_schema)
 
-    def test_avro_data_model_ref(self):
-        car = Car(1, 1, 5, "blue", [Owner(1, 1, "Hello", "Good Bye"), Owner(2, 1, "Foo", "Bar")])
-        expected = {
-            "color": "blue",
-            "doors": 5,
-            "id": 1,
-            "owner": [
-                {"age": None, "id": 1, "name": "Hello", "surname": "Good Bye", "version": 1},
-                {"age": None, "id": 2, "name": "Foo", "surname": "Bar", "version": 1},
-            ],
-            "version": 1,
-        }
-        self.assertEqual(expected, car.avro_data)
+    async def test_avro_data_model_ref(self):
+        async with FakeBroker() as broker, FakeRepository() as repository:
+            owners = [
+                Owner(1, 1, "Hello", "Good Bye", _broker=broker, _repository=repository),
+                Owner(2, 1, "Foo", "Bar", _broker=broker, _repository=repository),
+            ]
+            car = Car(1, 1, 5, "blue", owners, _broker=broker, _repository=repository)
+            expected = {
+                "color": "blue",
+                "doors": 5,
+                "id": 1,
+                "owner": [
+                    {"age": None, "id": 1, "name": "Hello", "surname": "Good Bye", "version": 1},
+                    {"age": None, "id": 2, "name": "Foo", "surname": "Bar", "version": 1},
+                ],
+                "version": 1,
+            }
+            self.assertEqual(expected, car.avro_data)
 
-    def test_avro_bytes_model_ref(self):
-        car = Car(1, 1, 5, "blue", [Owner(1, 1, "Hello", "Good Bye"), Owner(2, 1, "Foo", "Bar")])
-        self.assertIsInstance(car.avro_bytes, bytes)
+    async def test_avro_bytes_model_ref(self):
+        async with FakeBroker() as broker, FakeRepository() as repository:
+            owners = [
+                Owner(1, 1, "Hello", "Good Bye", _broker=broker, _repository=repository),
+                Owner(2, 1, "Foo", "Bar", _broker=broker, _repository=repository),
+            ]
+            car = Car(1, 1, 5, "blue", owners, _broker=broker, _repository=repository)
+            self.assertIsInstance(car.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):
         customer = Customer(1234)
@@ -242,6 +260,12 @@ class TestMinosModelAvro(unittest.TestCase):
         original = Bar(first=Foo("one"), second=Foo("two"))
         serialized = original.avro_bytes
         recovered = Bar.from_avro_bytes(serialized)
+        self.assertEqual(original, recovered)
+
+    def test_uuid_avro_bytes(self):
+        original = FooBar(uuid4())
+        serialized = original.avro_bytes
+        recovered = FooBar.from_avro_bytes(serialized)
         self.assertEqual(original, recovered)
 
 
