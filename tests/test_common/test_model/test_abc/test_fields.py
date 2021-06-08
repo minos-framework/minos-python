@@ -371,6 +371,11 @@ class TestModelField(unittest.TestCase):
         desired = ModelField("example", list[str], ["a", "b", "c"])
         self.assertEqual(desired, obtained)
 
+    def test_from_avro_plain_map(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "map", "values": "int"}, {"a": 1, "b": 2})
+        desired = ModelField("example", dict[str, int], {"a": 1, "b": 2})
+        self.assertEqual(desired, obtained)
+
     def test_from_avro_nested_arrays(self):
         obtained = ModelField.from_avro(
             {"name": "example", "type": "array", "items": {"type": {"type": "array", "items": "string"}}},
