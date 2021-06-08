@@ -363,7 +363,7 @@ class _MinosModelFromAvroBuilder(object):
         self._schema = schema
 
     def build(self) -> t.Type:
-        """Build the avro schema for the given field.
+        """Build type from given avro schema item.
 
         :return: A dictionary object.
         """
@@ -400,23 +400,18 @@ class _MinosModelFromAvroBuilder(object):
     def _simple_types(type_field: str) -> t.Type:
         if type_field == NULL:
             return type(None)
-
         if type_field == INT:
             return int
-
         if type_field == BOOLEAN:
             return bool
-
         if type_field == FLOAT:
             return float
-
         if type_field == STRING:
             return str
-
         if type_field == BYTES:
             return bytes
 
-        raise ValueError(f"Given field type is not supported: {type_field!r}")  # pragma: no
+        raise ValueError(f"Given field type is not supported: {type_field!r}")  # pragma: no cover
 
 
 class _MinosModelAvroSchemaBuilder(object):

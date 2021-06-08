@@ -392,37 +392,6 @@ class TestModelField(unittest.TestCase):
         desired = ModelField("example", list[Union[int, str]], [1, "a"])
         self.assertEqual(desired, obtained)
 
-    """
-    def test_from_avro_dict(self):
-        obtained = ModelField.from_avro({"name": "example", "type": "map"}, {"a": 1, "b": 2})
-        desired = ModelField("example", list, ["a", "b", "c"])
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_multiple(self):
-        data = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
-        schema = {
-            "type": "record",
-            "name": "tests.model_classes.ShoppingList",
-            "fields": [
-                {
-                    "name": "user",
-                    "type": [
-                        {
-                            "type": "record",
-                            "name": "tests.model_classes.User",
-                            "fields": [
-                                {"name": "id", "type": "int"},
-                                {"name": "username", "type": ["string", "null"]},
-                            ],
-                        },
-                        "null",
-                    ],
-                },
-                {"name": "cost", "type": "float"},
-            ],
-        }
-    """
-
 
 if __name__ == "__main__":
     unittest.main()
