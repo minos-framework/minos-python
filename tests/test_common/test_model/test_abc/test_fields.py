@@ -408,6 +408,12 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         desired = ModelField("id", bytes, b"Test")
         self.assertEqual(desired, obtained)
 
+    def test_from_avro_uuid(self):
+        uuid = uuid4()
+        obtained = ModelField.from_avro({"name": "id", "type": "string", "logicalType": "uuid"}, uuid)
+        desired = ModelField("id", UUID, uuid)
+        self.assertEqual(desired, obtained)
+
     def test_from_avro_plain_array(self):
         obtained = ModelField.from_avro({"name": "example", "type": "array", "items": "string"}, ["a", "b", "c"])
         desired = ModelField("example", list[str], ["a", "b", "c"])
@@ -435,6 +441,12 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         obtained = ModelField.from_avro({"name": "example", "type": "array", "items": ["int", "string"]}, [1, "a"])
         desired = ModelField("example", list[Union[int, str]], [1, "a"])
         self.assertEqual(desired, obtained)
+
+    def test_from_avro_raises(self):
+        with self.assertRaises(MinosMalformedAttributeException):
+            ModelField.from_avro({"name": "id", "type": "foo"}, None)
+        with self.assertRaises(MinosMalformedAttributeException):
+            ModelField.from_avro({"name": "id", "type": "string", "logicalType": "foo"}, None)
 
 
 if __name__ == "__main__":
