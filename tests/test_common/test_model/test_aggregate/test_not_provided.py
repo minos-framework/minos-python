@@ -8,8 +8,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
-    MinosBrokerNonProvidedException,
-    MinosRepositoryNonProvidedException,
+    MinosBrokerNotProvidedException,
+    MinosRepositoryNotProvidedException,
 )
 from tests.aggregate_classes import (
     Car,
@@ -19,36 +19,36 @@ from tests.utils import (
 )
 
 
-class TestAggregateNonProvided(unittest.IsolatedAsyncioTestCase):
+class TestAggregateNotProvided(unittest.IsolatedAsyncioTestCase):
     async def test_create_raises(self):
-        with self.assertRaises(MinosBrokerNonProvidedException):
+        with self.assertRaises(MinosBrokerNotProvidedException):
             await Car.create(doors=3, color="blue")
         async with FakeBroker() as broker:
-            with self.assertRaises(MinosRepositoryNonProvidedException):
+            with self.assertRaises(MinosRepositoryNotProvidedException):
                 await Car.create(doors=3, color="blue", _broker=broker)
 
     async def test_get_one_raises(self):
-        with self.assertRaises(MinosBrokerNonProvidedException):
+        with self.assertRaises(MinosBrokerNotProvidedException):
             await Car.get_one(1)
 
         async with FakeBroker() as broker:
-            with self.assertRaises(MinosRepositoryNonProvidedException):
+            with self.assertRaises(MinosRepositoryNotProvidedException):
                 await Car.get_one(1, _broker=broker)
 
     async def test_update_raises(self):
-        with self.assertRaises(MinosBrokerNonProvidedException):
+        with self.assertRaises(MinosBrokerNotProvidedException):
             await Car(1, 1, 3, "blue").update(doors=1)
 
         async with FakeBroker() as broker:
-            with self.assertRaises(MinosRepositoryNonProvidedException):
+            with self.assertRaises(MinosRepositoryNotProvidedException):
                 await Car(1, 1, 3, "blue", _broker=broker).update(doors=1)
 
     async def test_delete_raises(self):
-        with self.assertRaises(MinosBrokerNonProvidedException):
+        with self.assertRaises(MinosBrokerNotProvidedException):
             await Car(1, 1, 3, "blue").delete()
 
         async with FakeBroker() as broker:
-            with self.assertRaises(MinosRepositoryNonProvidedException):
+            with self.assertRaises(MinosRepositoryNotProvidedException):
                 await Car(1, 1, 3, "blue", _broker=broker).delete()
 
 

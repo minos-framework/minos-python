@@ -27,12 +27,12 @@ from dependency_injector.wiring import (
 )
 
 from ..exceptions import (
-    MinosBrokerNonProvidedException,
+    MinosBrokerNotProvidedException,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException,
+    MinosRepositoryNotProvidedException,
 )
 from ..networks import (
     MinosBroker,
@@ -76,9 +76,9 @@ class Aggregate(MinosModel, Generic[T]):
             self._repository = _repository
 
         if self._broker is None or isinstance(self._broker, Provide):
-            raise MinosBrokerNonProvidedException("A broker instance is required.")
+            raise MinosBrokerNotProvidedException("A broker instance is required.")
         if self._repository is None or isinstance(self._repository, Provide):
-            raise MinosRepositoryNonProvidedException("A repository instance is required.")
+            raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
     @classmethod
     async def get(
@@ -110,12 +110,12 @@ class Aggregate(MinosModel, Generic[T]):
         if _broker is None:
             _broker = cls._broker
             if isinstance(_broker, Provide):
-                raise MinosBrokerNonProvidedException("A broker instance is required.")
+                raise MinosBrokerNotProvidedException("A broker instance is required.")
 
         if _repository is None:
             _repository = cls._repository
             if isinstance(_repository, Provide):
-                raise MinosRepositoryNonProvidedException("A repository instance is required.")
+                raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
         # noinspection PyTypeChecker
         entries = [v async for v in _repository.select(aggregate_name=cls.classname, aggregate_id=id)]

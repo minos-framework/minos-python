@@ -51,7 +51,7 @@ class MinosBrokerException(MinosException):
     """Base broker exception"""
 
 
-class MinosBrokerNonProvidedException(MinosBrokerException):
+class MinosBrokerNotProvidedException(MinosBrokerException):
     """Exception to be raised when a broker is needed but none is set."""
 
 
@@ -79,7 +79,7 @@ class MinosRepositoryUnknownActionException(MinosRepositoryException):
     """Exception to be raised when some entry tries to perform an unknown action."""
 
 
-class MinosRepositoryNonProvidedException(MinosRepositoryException):
+class MinosRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a repository is needed but none is set."""
 
 
