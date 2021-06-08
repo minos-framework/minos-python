@@ -154,9 +154,7 @@ class ModelField:
 
     @classmethod
     def from_avro(cls, schema: dict, value: t.Any) -> ModelField:
-        items = schema["items"] if "items" in schema else None
-        values = schema["values"] if "values" in schema else None
-        type_val = _MinosModelFromAvroBuilder(schema["name"], schema["type"], values, items).build()
+        type_val = _MinosModelFromAvroBuilder(schema).build()
         return cls(schema["name"], type_val, value)
 
     def __eq__(self, other: "ModelField") -> bool:
@@ -362,40 +360,43 @@ class _ModelFieldCaster(object):
 
 
 class _MinosModelFromAvroBuilder(object):
-    def __init__(
-        self, field_name: str, field_type: str, field_values: str = None, field_items: t.Union[dict, str, t.Any] = None
-    ):
-        self._name = field_name
-        self._type = field_type
-        self._items = field_items
-        self._values = field_values
+    def __init__(self, schema: dict):
+        self._schema = schema
 
     def build(self) -> t.Type:
         """Build the avro schema for the given field.
 
         :return: A dictionary object.
         """
-        built_type = self._from_schema(self._type, self._values, self._items)
+        built_type = self._builder(self._schema)
         return built_type
 
-    def _from_schema(self, type_field: str, values: str = None, items: t.Union[dict, str, t.Any] = None) -> t.Type:
+    def _builder(self, schema: dict) -> t.Type:
+        if schema["type"] == ARRAY:
+            items = schema["items"] if "items" in schema else None
+            return self._array_builder(schema["type"], items)
+        elif schema["type"] == MAP:
+            values = schema["values"] if "values" in schema else None
+            return self._map_builder(values)
+        elif schema["type"] in PYTHON_IMMUTABLE_TYPES_STR:
+            return self._inmutable_types(schema["type"])
 
-        if type_field in PYTHON_IMMUTABLE_TYPES_STR:
-            local_type = self._inmutable_types(type_field)
-        if type_field == ARRAY:
-            local_type = list
-        if type_field == MAP:
-            local_type = dict[str, self._inmutable_types(values)]
+        raise ValueError(f"Given field type is not supported: {schema['type']}")  # pragma: no cover
 
+    def _array_builder(self, type_field: str, items: t.Union[dict, str, t.Any] = None) -> t.Type:
         if items is not None and isinstance(items, dict):
             if "type" in items["type"]:
-                return local_type[self._from_schema(items["type"]["type"], "", items["type"])]
+                return list[self._array_builder(items["type"]["type"], items["type"])]
             else:
-                return local_type[self._from_schema(items["items"])]
+                return list[self._array_builder(items["items"])]
         else:
-            return local_type
+            return self._inmutable_types(type_field)
 
-        raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
+    def _map_builder(self, values: t.Union[dict, str, t.Any] = None) -> t.Type:
+        return dict[str, self._inmutable_types(values)]
+
+    def _build_simple(self, type_field):
+        pass
 
     @staticmethod
     def _inmutable_types(type_field: str) -> t.Type:
