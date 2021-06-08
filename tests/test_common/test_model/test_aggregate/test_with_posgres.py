@@ -25,16 +25,17 @@ from tests.aggregate_classes import (
 )
 from tests.utils import (
     BASE_PATH,
+    FakeBroker,
 )
 
 
-class TestAggregateWithConfig(PostgresAsyncTestCase):
+class TestAggregateWithPostgres(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.container = containers.DynamicContainer()
-        self.container.config = providers.Object(self.config)
+        self.container.event_broker = providers.Object(FakeBroker())
         self.container.repository = providers.Object(PostgreSqlMinosRepository.from_config(config=self.config))
         await self.container.repository().setup()
         self.container.wire(modules=[sys.modules[__name__]])
@@ -60,10 +61,10 @@ class TestAggregateWithConfig(PostgresAsyncTestCase):
             await Car.get_one(car.id)
 
         car = await Car.create(doors=3, color="blue")
-        await Car.update(car.id, color="red")
+        await car.update(color="red")
         self.assertEqual(Car(2, 2, 3, "red"), await Car.get_one(car.id))
 
-        await Car.delete(car.id)
+        await car.delete()
         with self.assertRaises(MinosRepositoryDeletedAggregateException):
             await Car.get_one(car.id)
 
