@@ -8,13 +8,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
-    MinosBrokerNonProvidedException,
     MinosInMemoryRepository,
     MinosRepositoryAggregateNotFoundException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException,
 )
 from tests.aggregate_classes import (
     Car,
@@ -36,10 +34,6 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 await Car.create(id=1, doors=3, color="blue", _broker=broker, _repository=repository)
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
                 await Car.create(version=1, doors=3, color="blue", _broker=broker, _repository=repository)
-        with self.assertRaises(MinosBrokerNonProvidedException):
-            await Car.create(doors=3, color="blue")
-        with self.assertRaises(MinosRepositoryNonProvidedException):
-            await Car.create(doors=3, color="blue", _broker=broker)
 
     async def test_classname(self):
         self.assertEqual("tests.aggregate_classes.Car", Car.classname)
@@ -67,12 +61,6 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(MinosRepositoryAggregateNotFoundException):
                 await Car.get_one(0, _broker=broker, _repository=repository)
 
-        with self.assertRaises(MinosBrokerNonProvidedException):
-            await Car.get_one(1)
-
-        with self.assertRaises(MinosRepositoryNonProvidedException):
-            await Car.get_one(1, _broker=broker)
-
     async def test_update(self):
         async with FakeBroker() as broker, MinosInMemoryRepository() as repository:
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository)
@@ -89,12 +77,6 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
         async with FakeBroker() as broker, MinosInMemoryRepository() as repository:
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
                 await Car(1, 1, 3, "blue", _broker=broker, _repository=repository).update(version=1)
-
-        with self.assertRaises(MinosBrokerNonProvidedException):
-            await Car(1, 1, 3, "blue").update(doors=1)
-
-        with self.assertRaises(MinosRepositoryNonProvidedException):
-            await Car(1, 1, 3, "blue", _broker=broker).update(doors=1)
 
     async def test_refresh(self):
         async with FakeBroker() as broker, MinosInMemoryRepository() as repository:
@@ -113,14 +95,6 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             await car.delete()
             with self.assertRaises(MinosRepositoryDeletedAggregateException):
                 await Car.get_one(car.id, _broker=broker, _repository=repository)
-
-    async def test_delete_raises(self):
-        with self.assertRaises(MinosBrokerNonProvidedException):
-            await Car(1, 1, 3, "blue").delete()
-
-        async with FakeBroker() as broker:
-            with self.assertRaises(MinosRepositoryNonProvidedException):
-                await Car(1, 1, 3, "blue", _broker=broker).delete()
 
 
 if __name__ == "__main__":

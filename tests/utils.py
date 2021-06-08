@@ -9,8 +9,10 @@ from pathlib import (
     Path,
 )
 from typing import (
+    Any,
     AsyncIterator,
     NoReturn,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -44,12 +46,19 @@ class FakeBroker(MinosBroker):
     def __init__(self):
         super().__init__()
         self.call_count = 0
-        self.call_kwargs = None
+        self.calls_kwargs = list()
 
     async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
-        self.call_kwargs = {"items": items} | kwargs
+        self.calls_kwargs.append({"items": items} | kwargs)
+
+    @property
+    def call_kwargs(self) -> Optional[dict[str, Any]]:
+        """For testing purposes."""
+        if len(self.calls_kwargs) == 0:
+            return None
+        return self.calls_kwargs[-1]
 
 
 class FakeSagaManager(MinosSagaManager):
