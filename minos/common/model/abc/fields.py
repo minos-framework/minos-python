@@ -24,10 +24,12 @@ from ...exceptions import (
     MinosTypeAttributeException,
 )
 from .types import (
+    ARRAY,
     BOOLEAN,
     BYTES,
     FLOAT,
     INT,
+    MAP,
     NULL,
     PYTHON_IMMUTABLE_TYPES,
     STRING,
@@ -151,6 +153,11 @@ class ModelField:
         :return: A dictionary object.
         """
         return _MinosModelAvroDataBuilder(self).build()
+
+    @classmethod
+    def from_avro(cls, schema: dict, value: t.Any) -> ModelField:
+        type_val = _MinosModelFromAvroBuilder(schema).build()
+        return cls(schema["name"], type_val, value)
 
     def __eq__(self, other: "ModelField") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -370,6 +377,62 @@ class _ModelFieldCaster(object):
             value = self._cast_value(type_params, item)
             converted.append(value)
         return converted
+
+
+class _MinosModelFromAvroBuilder(object):
+    def __init__(self, schema: dict):
+        self._schema = schema
+
+    def build(self) -> t.Type:
+        """Build type from given avro schema item.
+
+        :return: A dictionary object.
+        """
+        built_type = self._builder(self._schema)
+        return built_type
+
+    def _builder(self, schema: t.Union[dict, list, str]) -> t.Type:
+        if isinstance(schema, dict):
+            return self._builder_from_dict(schema)
+        elif isinstance(schema, list):
+            return self._builder_from_list(schema)
+        else:
+            return self._simple_types(schema)
+
+    def _builder_from_list(self, schema: list[t.Any]) -> t.Type:
+        options = tuple(self._builder(entry) for entry in schema)
+        return t.Union[options]
+
+    def _builder_from_dict(self, schema: dict) -> t.Type:
+        if schema["type"] == ARRAY:
+            return self._array_builder(schema["items"])
+        elif schema["type"] == MAP:
+            return self._map_builder(schema["values"])
+        else:
+            return self._builder(schema["type"])
+
+    def _array_builder(self, items: t.Union[dict, str, t.Any] = None) -> t.Type:
+        return list[self._builder(items)]
+
+    def _map_builder(self, values: t.Union[dict, str, t.Any] = None) -> t.Type:
+        return dict[str, self._builder(values)]
+
+    @staticmethod
+    def _simple_types(type_field: str) -> t.Type:
+        if type_field == NULL:
+            return type(None)
+        if type_field == INT:
+            return int
+        if type_field == BOOLEAN:
+            return bool
+        if type_field == FLOAT:
+            return float
+        if type_field == STRING:
+            return str
+        if type_field == BYTES:
+            return bytes
+
+        raise ValueError(f"Given field type is not supported: {type_field!r}")  # pragma: no cover
 
 
 class _MinosModelAvroSchemaBuilder(object):

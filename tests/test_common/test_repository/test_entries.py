@@ -18,6 +18,10 @@ from minos.common import (
 from tests.aggregate_classes import (
     Car,
 )
+from tests.utils import (
+    FakeBroker,
+    FakeRepository,
+)
 
 
 class TestMinosRepositoryAction(unittest.TestCase):
@@ -31,7 +35,7 @@ class TestMinosRepositoryAction(unittest.TestCase):
             MinosRepositoryAction.value_of("foo")
 
 
-class TestMinosRepositoryEntry(unittest.TestCase):
+class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
     def test_constructor(self):
         entry = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(1234, entry.aggregate_id)
@@ -60,9 +64,10 @@ class TestMinosRepositoryEntry(unittest.TestCase):
         self.assertEqual(MinosRepositoryAction.INSERT, entry.action)
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
 
-    def test_from_aggregate(self):
-        car = Car(1, 1, 3, "blue")
-        entry = MinosRepositoryEntry.from_aggregate(car)
+    async def test_from_aggregate(self):
+        async with FakeBroker() as broker, FakeRepository() as repository:
+            car = Car(1, 1, 3, "blue", _broker=broker, _repository=repository)
+            entry = MinosRepositoryEntry.from_aggregate(car)
         self.assertEqual(car.id, entry.aggregate_id)
         self.assertEqual(car.classname, entry.aggregate_name)
         self.assertEqual(car.version, entry.version)

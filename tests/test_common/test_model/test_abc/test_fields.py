@@ -29,9 +29,13 @@ from tests.aggregate_classes import (
 from tests.model_classes import (
     User,
 )
+from tests.utils import (
+    FakeBroker,
+    FakeRepository,
+)
 
 
-class TestModelField(unittest.TestCase):
+class TestModelField(unittest.IsolatedAsyncioTestCase):
     def test_name(self):
         field = ModelField("test", int, 3)
         self.assertEqual("test", field.name)
@@ -74,9 +78,14 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", list[User], [User(123), User(456)])
         self.assertEqual([User(123), User(456)], field.value)
 
-    def test_value_list_model_ref(self):
-        field = ModelField("test", list[ModelRef[Owner]], [1, 2, Owner(3, 1, "Foo", "Bar", 56)])
-        self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56)], field.value)
+    async def test_value_list_model_ref(self):
+        async with FakeBroker() as broker, FakeRepository() as repository:
+            field = ModelField(
+                "test",
+                list[ModelRef[Owner]],
+                [1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository)],
+            )
+            self.assertEqual([1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository)], field.value)
 
     def test_value_uuid(self):
         value = uuid4()
@@ -219,10 +228,11 @@ class TestModelField(unittest.TestCase):
         field = ModelField("test", User, user)
         self.assertEqual(user, field.value)
 
-    def test_value_model_ref_value(self):
-        user = Owner(0, 0, "Foo", "Bar")
-        field = ModelField("test", ModelRef[Owner], user)
-        self.assertEqual(user, field.value)
+    async def test_value_model_ref_value(self):
+        async with FakeBroker() as broker, FakeRepository() as repository:
+            user = Owner(0, 0, "Foo", "Bar", _broker=broker, _repository=repository)
+            field = ModelField("test", ModelRef[Owner], user)
+            self.assertEqual(user, field.value)
 
     def test_value_model_ref_reference(self):
         field = ModelField("test", ModelRef[Owner], 1234)
@@ -377,6 +387,54 @@ class TestModelField(unittest.TestCase):
         self.assertEqual(
             "ModelField(name='test', type=typing.Optional[int], value=1, parser=None, validator=None)", repr(field),
         )
+
+    def test_from_avro_int(self):
+        obtained = ModelField.from_avro({"name": "id", "type": "int"}, 1234)
+        desired = ModelField("id", int, 1234)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_bool(self):
+        obtained = ModelField.from_avro({"name": "id", "type": "boolean"}, True)
+        desired = ModelField("id", bool, True)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_float(self):
+        obtained = ModelField.from_avro({"name": "id", "type": "float"}, 3.4)
+        desired = ModelField("id", float, 3.4)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_bytes(self):
+        obtained = ModelField.from_avro({"name": "id", "type": "bytes"}, b"Test")
+        desired = ModelField("id", bytes, b"Test")
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_plain_array(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "array", "items": "string"}, ["a", "b", "c"])
+        desired = ModelField("example", list[str], ["a", "b", "c"])
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_plain_map(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "map", "values": "int"}, {"a": 1, "b": 2})
+        desired = ModelField("example", dict[str, int], {"a": 1, "b": 2})
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_nested_arrays(self):
+        obtained = ModelField.from_avro(
+            {"name": "example", "type": "array", "items": {"type": {"type": "array", "items": "string"}}},
+            [["a", "b", "c"]],
+        )
+        desired = ModelField("example", list[list[str]], [["a", "b", "c"]])
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_none(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "null"}, None)
+        desired = ModelField("example", type(None), None)
+        self.assertEqual(desired, obtained)
+
+    def test_from_avro_union(self):
+        obtained = ModelField.from_avro({"name": "example", "type": "array", "items": ["int", "string"]}, [1, "a"])
+        desired = ModelField("example", list[Union[int, str]], [1, "a"])
+        self.assertEqual(desired, obtained)
 
 
 if __name__ == "__main__":
