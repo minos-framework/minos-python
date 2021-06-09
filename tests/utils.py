@@ -22,11 +22,13 @@ from uuid import (
 )
 
 from minos.common import (
+    Aggregate,
     CommandReply,
     MinosBroker,
     MinosModel,
     MinosRepository,
     MinosSagaManager,
+    MinosSnapshot,
     RepositoryEntry,
 )
 
@@ -104,3 +106,10 @@ class FakeEntrypoint:
     def run_forever(self):
         """For testing purposes."""
         self.call_count += 1
+
+
+class FakeSnapshot(MinosSnapshot):
+    """For testing purposes."""
+
+    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
+        """For testing purposes."""

@@ -11,6 +11,7 @@ from datetime import (
 )
 
 from minos.common import (
+    InMemorySnapshot,
     MinosRepositoryUnknownActionException,
     RepositoryAction,
     RepositoryEntry,
@@ -65,8 +66,8 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
 
     async def test_from_aggregate(self):
-        async with FakeBroker() as broker, FakeRepository() as repository:
-            car = Car(1, 1, 3, "blue", _broker=broker, _repository=repository)
+        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
+            car = Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
             entry = RepositoryEntry.from_aggregate(car)
         self.assertEqual(car.id, entry.aggregate_id)
         self.assertEqual(car.classname, entry.aggregate_name)

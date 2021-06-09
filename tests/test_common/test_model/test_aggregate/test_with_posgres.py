@@ -16,6 +16,7 @@ from dependency_injector import (
 from minos.common import (
     MinosRepositoryDeletedAggregateException,
     PostgreSqlRepository,
+    PostgreSqlSnapshot,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -36,13 +37,18 @@ class TestAggregateWithPostgres(PostgresAsyncTestCase):
         await super().asyncSetUp()
         self.container = containers.DynamicContainer()
         self.container.event_broker = providers.Object(FakeBroker())
-        self.container.repository = providers.Object(PostgreSqlRepository.from_config(config=self.config))
+        self.container.repository = providers.Singleton(PostgreSqlRepository.from_config, config=self.config)
+        self.container.snapshot = providers.Singleton(
+            PostgreSqlSnapshot.from_config, config=self.config, repository=self.container.repository
+        )
         await self.container.repository().setup()
+        await self.container.snapshot().setup()
         self.container.wire(modules=[sys.modules[__name__]])
 
     async def asyncTearDown(self):
         self.container.unwire()
         await self.container.repository().destroy()
+        await self.container.snapshot().destroy()
         await super().asyncTearDown()
 
     async def test_update(self):

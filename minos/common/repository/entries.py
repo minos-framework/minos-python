@@ -19,11 +19,15 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     Optional,
+    Type,
     Union,
 )
 
 from ..exceptions import (
     MinosRepositoryUnknownActionException,
+)
+from ..importlib import (
+    import_module,
 )
 
 if TYPE_CHECKING:
@@ -89,6 +93,15 @@ class RepositoryEntry(object):
         """
         # noinspection PyTypeChecker
         return cls(aggregate.id, aggregate.classname, aggregate.version, aggregate.avro_bytes)
+
+    @property
+    def aggregate_cls(self) -> Type[Aggregate]:
+        """Load the concrete ``Aggregate`` class.
+
+        :return: A ``Type`` object.
+        """
+        # noinspection PyTypeChecker
+        return import_module(self.aggregate_name)
 
     def __eq__(self, other: "RepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
