@@ -26,8 +26,8 @@ from minos.common import (
     MinosBroker,
     MinosModel,
     MinosRepository,
-    MinosRepositoryEntry,
     MinosSagaManager,
+    RepositoryEntry,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -41,7 +41,7 @@ class FakeRepository(MinosRepository):
         self.id_counter = 0
         self.items = set()
 
-    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         """For testing purposes."""
         self.id_counter += 1
         entry.id = self.id_counter
@@ -50,7 +50,7 @@ class FakeRepository(MinosRepository):
         entry.created_at = datetime.now()
         return entry
 
-    async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """For testing purposes."""
 
 

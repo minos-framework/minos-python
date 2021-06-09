@@ -39,7 +39,7 @@ from ..networks import (
 )
 from ..repository import (
     MinosRepository,
-    MinosRepositoryAction,
+    RepositoryAction,
 )
 from .abc import (
     MinosModel,
@@ -123,7 +123,7 @@ class Aggregate(MinosModel, Generic[T]):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
 
         entry = max(entries, key=attrgetter("version"))
-        if entry.action == MinosRepositoryAction.DELETE:
+        if entry.action == RepositoryAction.DELETE:
             raise MinosRepositoryDeletedAggregateException(f"The {id} id points to an already deleted aggregate.")
 
         instance = cls.from_avro_bytes(
