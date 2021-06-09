@@ -33,10 +33,10 @@ class MinosSnapshot(ABC, MinosSetup):
 
     @abstractmethod
     async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
-        """Retrieves a list of  materialised ``Aggregate`` instances.
+        """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
 
-        :param aggregate_name: TODO
-        :param ids: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
+        :param ids: List of identifiers to be retrieved.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """

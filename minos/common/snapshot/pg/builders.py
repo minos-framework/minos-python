@@ -63,9 +63,12 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         return cls(*args, **config.snapshot._asdict(), **kwargs)
 
     async def are_synced(self, aggregate_name: str, aggregate_ids: list[int]) -> bool:
-        """TODO
+        """Check if the snapshot has the latest version of a list of aggregates.
 
-        :return: TODO
+        :param aggregate_name: Class name of the ``Aggregate`` to be checked.
+        :param aggregate_ids: List of aggregate identifiers to be checked.
+
+        :return: ``True`` if has the latest version for all the identifiers or ``False`` otherwise.
         """
         for aggregate_id in aggregate_ids:
             if not await self.is_synced(aggregate_name, aggregate_id):
@@ -73,11 +76,11 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         return True
 
     async def is_synced(self, aggregate_name: str, aggregate_id: int) -> bool:
-        """TODO
+        """Check if the snapshot has the latest version of an ``Aggregate`` instance.
 
-        :param aggregate_name: TODO
-        :param aggregate_id: TODO
-        :return:
+        :param aggregate_name: Class name of the ``Aggregate`` to be checked.
+        :param aggregate_id: Identifier of the ``Aggregate`` instance to be checked.
+        :return: ``True`` if has the latest version for the identifier or ``False`` otherwise.
         """
         query = self._repository.select(
             id_ge=await self._load_offset(), aggregate_name=aggregate_name, aggregate_id=aggregate_id
