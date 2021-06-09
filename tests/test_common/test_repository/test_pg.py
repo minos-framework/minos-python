@@ -17,7 +17,7 @@ from typing import (
 import aiopg
 
 from minos.common import (
-    InMemoryMinosSnapshot,
+    InMemorySnapshot,
     MinosRepository,
     MinosRepositoryAction,
     MinosRepositoryEntry,
@@ -68,7 +68,7 @@ class TestPostgreSqlMinosRepository(PostgresAsyncTestCase):
     async def test_aggregate(self):
         async with FakeBroker() as broker, PostgreSqlMinosRepository(
             **self.repository_db
-        ) as repository, InMemoryMinosSnapshot() as snapshot:
+        ) as repository, InMemorySnapshot() as snapshot:
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
             await car.update(color="red")
             await car.update(doors=5)

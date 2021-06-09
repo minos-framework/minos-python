@@ -137,7 +137,7 @@ from .setup import (
     MinosSetup,
 )
 from .snapshot import (
-    InMemoryMinosSnapshot,
+    InMemorySnapshot,
     MinosSnapshot,
 )
 from .storage import (

@@ -8,7 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
-    InMemoryMinosSnapshot,
+    InMemorySnapshot,
 )
 from tests.aggregate_classes import (
     Car,
@@ -21,7 +21,7 @@ from tests.utils import (
 
 class TestAggregate(unittest.IsolatedAsyncioTestCase):
     async def test_create(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemoryMinosSnapshot() as snapshot:
+        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
             await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
             self.assertEqual(
                 [
@@ -44,7 +44,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_update(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemoryMinosSnapshot() as snapshot:
+        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
             broker.reset_mock()
 
@@ -70,7 +70,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_delete(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemoryMinosSnapshot() as snapshot:
+        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
             broker.reset_mock()
 

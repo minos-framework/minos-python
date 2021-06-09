@@ -9,40 +9,29 @@ from __future__ import (
     annotations,
 )
 
-from abc import (
-    ABC,
-    abstractmethod,
-)
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
 )
 
-from .setup import (
-    MinosSetup,
+from ..exceptions import (
+    MinosRepositoryAggregateNotFoundException,
+    MinosRepositoryDeletedAggregateException,
+)
+from ..repository import (
+    MinosRepositoryAction,
+)
+from .abc import (
+    MinosSnapshot,
 )
 
 if TYPE_CHECKING:
-    from .model import (
+    from ..model import (
         Aggregate,
     )
 
 
-class MinosSnapshot(MinosSetup, ABC):
-    """Base Snapshot class."""
-
-    @abstractmethod
-    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
-        """Retrieves a list of  materialised ``Aggregate`` instances.
-
-        :param aggregate_name: TODO
-        :param ids: TODO
-        :param kwargs: TODO
-        :return: TODO
-        """
-
-
-class InMemoryMinosSnapshot(MinosSnapshot):
+class InMemorySnapshot(MinosSnapshot):
     """TODO"""
 
     async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
@@ -63,14 +52,6 @@ class InMemoryMinosSnapshot(MinosSnapshot):
     async def _get_one(aggregate_name: str, id: int, _repository, **kwargs) -> Aggregate:
         from operator import (
             attrgetter,
-        )
-
-        from .exceptions import (
-            MinosRepositoryAggregateNotFoundException,
-            MinosRepositoryDeletedAggregateException,
-        )
-        from .repository import (
-            MinosRepositoryAction,
         )
 
         # noinspection PyTypeChecker

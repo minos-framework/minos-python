@@ -12,7 +12,7 @@ from uuid import (
 
 from minos.common import (
     EmptyMinosModelSequenceException,
-    InMemoryMinosSnapshot,
+    InMemorySnapshot,
     MultiTypeMinosModelSequenceException,
 )
 from tests.aggregate_classes import (
@@ -114,7 +114,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, Car.avro_schema)
 
     async def test_avro_data_model_ref(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemoryMinosSnapshot() as snapshot:
+        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
             owners = [
                 Owner(1, 1, "Hello", "Good Bye", _broker=broker, _repository=repository, _snapshot=snapshot),
                 Owner(2, 1, "Foo", "Bar", _broker=broker, _repository=repository, _snapshot=snapshot),
@@ -133,7 +133,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(expected, car.avro_data)
 
     async def test_avro_bytes_model_ref(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemoryMinosSnapshot() as snapshot:
+        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
             owners = [
                 Owner(1, 1, "Hello", "Good Bye", _broker=broker, _repository=repository, _snapshot=snapshot),
                 Owner(2, 1, "Foo", "Bar", _broker=broker, _repository=repository, _snapshot=snapshot),
