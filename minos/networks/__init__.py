@@ -16,8 +16,6 @@ from .brokers import (
 )
 from .exceptions import (
     MinosNetworkException,
-    MinosPreviousVersionSnapshotException,
-    MinosSnapshotException,
 )
 from .handlers import (
     CommandConsumer,
@@ -45,7 +43,5 @@ from .rest import (
     RestService,
 )
 from .snapshots import (
-    SnapshotBuilder,
-    SnapshotEntry,
     SnapshotService,
 )

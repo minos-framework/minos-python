@@ -8,19 +8,14 @@ Minos framework can not be copied and/or distributed without the express permiss
 from collections import (
     namedtuple,
 )
-from datetime import (
-    datetime,
-)
 from pathlib import (
     Path,
 )
 from typing import (
-    AsyncIterator,
     NoReturn,
 )
 
 from minos.common import (
-    Aggregate,
     CommandReply,
     MinosBroker,
     MinosModel,
@@ -31,12 +26,6 @@ BASE_PATH = Path(__file__).parent
 
 
 class Foo(MinosModel):
-    """For testing purposes"""
-
-    text: str
-
-
-class Bar(Aggregate):
     """For testing purposes"""
 
     text: str

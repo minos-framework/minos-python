@@ -17,12 +17,12 @@ from aiomisc.service.periodic import (
 
 from minos.common import (
     MinosConfigException,
+    PostgreSqlSnapshotBuilder,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    SnapshotBuilder,
     SnapshotService,
 )
 from tests.utils import (
@@ -44,7 +44,7 @@ class TestSnapshotService(PostgresAsyncTestCase):
     def test_dispatcher_config(self):
         service = SnapshotService(interval=0.1, config=self.config)
         dispatcher = service.dispatcher
-        self.assertIsInstance(dispatcher, SnapshotBuilder)
+        self.assertIsInstance(dispatcher, PostgreSqlSnapshotBuilder)
         self.assertFalse(dispatcher.already_setup)
 
     async def test_start(self):

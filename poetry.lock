@@ -19,7 +19,7 @@ speedups = ["aiodns", "brotlipy", "cchardet"]
 
 [[package]]
 name = "aiokafka"
-version = "0.7.0"
+version = "0.7.1"
 description = "Kafka integration with asyncio."
 category = "main"
 optional = false
@@ -298,7 +298,7 @@ pyflakes = ">=2.3.0,<2.4.0"
 
 [[package]]
 name = "identify"
-version = "2.2.7"
+version = "2.2.10"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -414,17 +414,24 @@ version = "0.0.17"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
-python-versions = ">=3.9,<4.0"
+python-versions = "^3.9"
+develop = false
 
 [package.dependencies]
-aiomisc = ">=14.0.3,<15.0.0"
-aiopg = ">=1.2.1,<2.0.0"
-cached-property = ">=1.5.2,<2.0.0"
-dependency-injector = ">=4.32.2,<5.0.0"
-fastavro = ">=1.4.0,<2.0.0"
-lmdb = ">=1.2.1,<2.0.0"
-orjson = ">=3.5.2,<4.0.0"
-PyYAML = ">=5.4.1,<6.0.0"
+aiomisc = "^14.0.3"
+aiopg = "^1.2.1"
+cached-property = "^1.5.2"
+dependency-injector = "^4.32.2"
+fastavro = "^1.4.0"
+lmdb = "^1.2.1"
+orjson = "^3.5.2"
+PyYAML = "^5.4.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/Clariteia/minos_microservice_common.git"
+reference = "2662c57a0c06e99823b5089a75eb63efcaec9b72"
+resolved_reference = "2662c57a0c06e99823b5089a75eb63efcaec9b72"
 
 [[package]]
 name = "mistune"
@@ -861,7 +868,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "289ff2fd56f51f28c5c7b5d45e0a76a8cbc058101b68ff0b5886de80e484d2f8"
+content-hash = "25ec094ce675d1a82a0268bad707053c2c7053cb7323e44e138a1ca31e34df48"
 
 [metadata.files]
 aiohttp = [
@@ -904,35 +911,35 @@ aiohttp = [
     {file = "aiohttp-3.7.4.post0.tar.gz", hash = "sha256:493d3299ebe5f5a7c66b9819eacdcfbbaaf1a8e84911ddffcdc48888497afecf"},
 ]
 aiokafka = [
-    {file = "aiokafka-0.7.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:915456fc9b7fd2f2f19fb3734b1135aef68aac98a7847bf404a3ea49402696fc"},
-    {file = "aiokafka-0.7.0-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:29033fd6007a433d4a1c24504aa8a9b846249ff44691e47964d7892b91236d2f"},
-    {file = "aiokafka-0.7.0-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:a5b994e848ae3cafe49976cb499deff68a548d5c9df2b1bfd3d17d674a006e8e"},
-    {file = "aiokafka-0.7.0-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:7a9182e82baec5a7c6e0b6b94ec603a6f740659e0fd1045c1d61eff15395f8b7"},
-    {file = "aiokafka-0.7.0-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:1c46e8299cb3e1dceedc86af3b46adc5ac6af3ca16e48881443cd59859b95b9b"},
-    {file = "aiokafka-0.7.0-cp36-cp36m-win32.whl", hash = "sha256:fbedafff654fefb2bdfa0eb5109b8eda19881baa87804a30ff97c1ea2c12eda2"},
-    {file = "aiokafka-0.7.0-cp36-cp36m-win_amd64.whl", hash = "sha256:2d5ca0e1467985c7f7e28b73e557575c413a53bbbedc11a97d74d6beeccca000"},
-    {file = "aiokafka-0.7.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:0664dabab3afebc9a39d80a41e4438de21b59f90fac5796038e5776013188938"},
-    {file = "aiokafka-0.7.0-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:09a0747b96da6d3add0b2f271d4aaabd67c0d2113883430c003596017e8a61fc"},
-    {file = "aiokafka-0.7.0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:776674fbbbc7941b7b6860a1bd501eaf62a173ae4d54d3842aa8c0e551a61388"},
-    {file = "aiokafka-0.7.0-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:505dc8dd23f18c01cdc0467df6890f2622ffdd570b66be23c748d4560362cfc2"},
-    {file = "aiokafka-0.7.0-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:53ffa97d993867e8dfa62984331af6aa28ce18bdfea410655f0d3fd888cac39a"},
-    {file = "aiokafka-0.7.0-cp37-cp37m-win32.whl", hash = "sha256:bf8db67400f9706ba84dcb0082ee1292095dff87e4ac074092e69403fc6e563a"},
-    {file = "aiokafka-0.7.0-cp37-cp37m-win_amd64.whl", hash = "sha256:1c390e146cb340bbb722c22ef01993ba66d61c37e3d0fe996559a2bebcf53bbb"},
-    {file = "aiokafka-0.7.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:9a165f7c21eea37f2345f97ae52d1231399c66e7640a40087813ff50309cc89d"},
-    {file = "aiokafka-0.7.0-cp38-cp38-manylinux1_i686.whl", hash = "sha256:75c63ef46759d5c1cdb0d152c27c042419d84ac8b15b244c1d6d630cf367758b"},
-    {file = "aiokafka-0.7.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:94b26b766329e309d302b54e20b80022d8ba554674044ed85bc6ef89a84b6560"},
-    {file = "aiokafka-0.7.0-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:2a33397136336b9c33269c8f82c210732a697504121cb67afc09a03ef27372ab"},
-    {file = "aiokafka-0.7.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:50502f434837f604b3d13180cef7f051195fc38c8970e55ea694c64bf41e2e11"},
-    {file = "aiokafka-0.7.0-cp38-cp38-win32.whl", hash = "sha256:7e2f875454f4822fb4701cd45cd4a295f57f9f0695836cb0a3a382ea2ed94b22"},
-    {file = "aiokafka-0.7.0-cp38-cp38-win_amd64.whl", hash = "sha256:af871da87a3a8b0a2788ae2c5f37f2208e3e5372b6e0e6df09851f370844619f"},
-    {file = "aiokafka-0.7.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:efc39946efb2640e0ca46828d8631fa62bd23edfd8f40ee4075e5f0c9bb655d6"},
-    {file = "aiokafka-0.7.0-cp39-cp39-manylinux1_i686.whl", hash = "sha256:8cd5380e1a9356f802988e4f52b2cd255819d82f11655ad86d6cd319b177f48e"},
-    {file = "aiokafka-0.7.0-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:6c76a7bb5d69215dc64bf6c6f646f34f5b7e5c4771e49a1d71922f43d69dd3da"},
-    {file = "aiokafka-0.7.0-cp39-cp39-manylinux2010_i686.whl", hash = "sha256:21cf243a218104ba696dc60cf37e5c773ac2087fb06f3adf012a2a4c9b093c82"},
-    {file = "aiokafka-0.7.0-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:0585b34fc53d35bbf26e0a54f0c5d5d0653042b43a769f55df550398c512a172"},
-    {file = "aiokafka-0.7.0-cp39-cp39-win32.whl", hash = "sha256:9a77c3315640ae94010b38c46a4df9c54e8f29d3f8d706ff398b35754cdb23c5"},
-    {file = "aiokafka-0.7.0-cp39-cp39-win_amd64.whl", hash = "sha256:48dac32e19f596514f0e3fc0a75079cbeaddb4c196696fd7da8c5a27f163dfac"},
-    {file = "aiokafka-0.7.0.tar.gz", hash = "sha256:2a4bf3a7afc6406cb37c153256c35629c1d69caf63e4a3b5b1c3863d97a17b74"},
+    {file = "aiokafka-0.7.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:90a91155aeb28c872b74ecb3c9f671253db10cf23dc3af858bd9ed1630c0d1ae"},
+    {file = "aiokafka-0.7.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:02f67258a78e5d9d17470816ea879a653c5efecc0c6686e18d792fbd38e1f70c"},
+    {file = "aiokafka-0.7.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:dfd8d58f7418aabc07f1e8c1b904f478bf955919b743d4d44607dbf18a2c54b2"},
+    {file = "aiokafka-0.7.1-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:8b5e71d6da8edf0f592080488b198af42fbe9778de077762e4452d574e694efa"},
+    {file = "aiokafka-0.7.1-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:5fac6f1168c15b08f3fcb951347343a78d8c130292127d8a4e23466a5d2510f7"},
+    {file = "aiokafka-0.7.1-cp36-cp36m-win32.whl", hash = "sha256:4cb2544ca8d5d5a4055c57fbb6c4ecfc82e6f3b670485c291b256c90d506acf3"},
+    {file = "aiokafka-0.7.1-cp36-cp36m-win_amd64.whl", hash = "sha256:061799f1b8b005f950012a11948ff8a6ab48114eac91341acd8feec5430f0f31"},
+    {file = "aiokafka-0.7.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:b7390a9d9d03a2a3dbee0f8fa6735b008408e0f561a279b3df13e9758ab6d67f"},
+    {file = "aiokafka-0.7.1-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:e8276baed94281ef4548f19e039b9b4a8af79afee324bd259d8898638ca15da6"},
+    {file = "aiokafka-0.7.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:2294ba68ff87fdf6cf70a5603afb4020c4fc7a39053ccd8e6abdf0aa34ba1ca3"},
+    {file = "aiokafka-0.7.1-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:edcf1cdcf9246edd5c4c1b649609a7ac5bfe4276da586aede470b73f9d00b809"},
+    {file = "aiokafka-0.7.1-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:c70ed4b09e01d774d1821db30f6fbc6475a41224d0dc1488d018ef97610dc3da"},
+    {file = "aiokafka-0.7.1-cp37-cp37m-win32.whl", hash = "sha256:2f1a2fcb5f0643527d77446437d27ed93ae94844c1b324e904a813acce675db8"},
+    {file = "aiokafka-0.7.1-cp37-cp37m-win_amd64.whl", hash = "sha256:035d1fb4cb22273bb0a47f31040fabfd9b248f8026dd306dd50e7e69f005a71d"},
+    {file = "aiokafka-0.7.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:120d3c477e7e9a53dd55f1a16b9c67e8a51cdc38e5e46fc25aae7d20f78519f2"},
+    {file = "aiokafka-0.7.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:6e7d031b8bc08f9d9c4149c6afaedb650082309f01a3b79f0619814cc299fc4d"},
+    {file = "aiokafka-0.7.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:49517e2309826c27eaff940384e90773d89c69da023907663cda7853a00fb9ee"},
+    {file = "aiokafka-0.7.1-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:95edb38631bf5dbb8cd65fecd8620e11a15534cd6dd22e0dc45488b4266b5452"},
+    {file = "aiokafka-0.7.1-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:09cef9cf579193b497d3c65644b71ba1523660b7677805d0efea6c3206e4e643"},
+    {file = "aiokafka-0.7.1-cp38-cp38-win32.whl", hash = "sha256:47cda205e8fe16edf126c362a59071d0a4b74dd07bee6f070b26e5d2580cc37b"},
+    {file = "aiokafka-0.7.1-cp38-cp38-win_amd64.whl", hash = "sha256:8ebb032a05a6696b25abbe5db677890adca9a3284d13e1975842009c1d7678dd"},
+    {file = "aiokafka-0.7.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:45704e5a8c81e4db6333ab6315effc1b83feec1dfc2fc3a28e7c7600b0d80a23"},
+    {file = "aiokafka-0.7.1-cp39-cp39-manylinux1_i686.whl", hash = "sha256:90a4cb54ae23ff55758a9ce8f3ba1ec67c6f2328f9197c3bacc61a24f812cf04"},
+    {file = "aiokafka-0.7.1-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:567a3b856639bff36b8c74a92dfecd64ace8d07d755bb3ee6d5332273d2a8c6e"},
+    {file = "aiokafka-0.7.1-cp39-cp39-manylinux2010_i686.whl", hash = "sha256:b19d00b16637d02cfcee3d5cfdbcfd497702c09ae1f63e194830798cd223f910"},
+    {file = "aiokafka-0.7.1-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:f3a2138649ca2427a91dfc0927ddd445a9a6aaf9a9b0972d683cb230923f821f"},
+    {file = "aiokafka-0.7.1-cp39-cp39-win32.whl", hash = "sha256:02156dee5156a0c5283d45df0f0e8aa516ec7f3d966d7dfeb35f8ada7c8f8557"},
+    {file = "aiokafka-0.7.1-cp39-cp39-win_amd64.whl", hash = "sha256:4c463265252236b7759920998862b56bad3d6eedfdfd3fce0774ad99bb2c4877"},
+    {file = "aiokafka-0.7.1.tar.gz", hash = "sha256:b5a6fb1cfd77eac4b397ef5af3765d1d881c86b157137b12ca4f12aef1db433c"},
 ]
 aiomisc = [
     {file = "aiomisc-14.1.0-py3-none-any.whl", hash = "sha256:886223a4cfb469224b27ef6a1503966ffbe2f22b322be1595874fe9e22ffc09d"},
@@ -1200,8 +1207,8 @@ flake8 = [
     {file = "flake8-3.9.2.tar.gz", hash = "sha256:07528381786f2a6237b061f6e96610a4167b226cb926e2aa2b6b1d78057c576b"},
 ]
 identify = [
-    {file = "identify-2.2.7-py2.py3-none-any.whl", hash = "sha256:92d6ad08eca19ceb17576733759944b94c0761277ddc3acf65e75e57ef190e32"},
-    {file = "identify-2.2.7.tar.gz", hash = "sha256:c29e74c3671fe9537715cb695148231d777170ca1498e1c30c675d4ea782afe9"},
+    {file = "identify-2.2.10-py2.py3-none-any.whl", hash = "sha256:18d0c531ee3dbc112fa6181f34faa179de3f57ea57ae2899754f16a7e0ff6421"},
+    {file = "identify-2.2.10.tar.gz", hash = "sha256:5b41f71471bc738e7b586308c3fca172f78940195cb3bf6734c1e66fdac49306"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
@@ -1295,10 +1302,7 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-microservice-common = [
-    {file = "minos_microservice_common-0.0.17-py3-none-any.whl", hash = "sha256:91fc0c591d6abfd2602fceb59f41d12e92d4d67c7e3556d9f60e2096a3ea66c6"},
-    {file = "minos_microservice_common-0.0.17.tar.gz", hash = "sha256:1a088e17e345305a2297308d2b6ce49e7188a1b75ce49e598d450e0f0a89a9a7"},
-]
+minos-microservice-common = []
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
     {file = "mistune-0.8.4.tar.gz", hash = "sha256:59a3429db53c50b5c6bcc8a07f8848cb00d7dc8bdb431a4ab41920d201d4756e"},
