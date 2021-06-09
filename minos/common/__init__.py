@@ -139,6 +139,10 @@ from .setup import (
 from .snapshot import (
     InMemorySnapshot,
     MinosSnapshot,
+    PostgreSqlSnapshot,
+    PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotSetup,
+    SnapshotEntry,
 )
 from .storage import (
     MinosStorage,
