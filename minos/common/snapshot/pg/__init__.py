@@ -11,6 +11,6 @@ from .abc import (
 from .builders import (
     PostgreSqlSnapshotBuilder,
 )
-from .readers import (
+from .snapshot import (
     PostgreSqlSnapshot,
 )
