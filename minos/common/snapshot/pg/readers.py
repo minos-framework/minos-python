@@ -84,7 +84,8 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
             yield SnapshotEntry(*row)
             count += 1
         if count < len(ids):
-            raise MinosRepositoryDeletedAggregateException("TODO")
+            # FIXME: This is not the ideal exception in this case
+            raise MinosRepositoryDeletedAggregateException(f"Not all {aggregate_name!r} instances were found.")
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
