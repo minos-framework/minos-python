@@ -8,26 +8,26 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
-    DtoModel,
+    DataTransferObject,
     MinosAvroProtocol,
 )
 
 
-class TestDtoField(unittest.IsolatedAsyncioTestCase):
+class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
     def test_build_field(self):
         data = {"cost": 3.43}
         schema = {"name": "cost", "type": "float"}
 
-        dto_model = DtoModel()
+        dto_model = DataTransferObject()
         dto_model.build_field(schema, data["cost"])
 
-        self.assertEqual(3.43, dto_model.fields["cost"].value)
+        self.assertEqual(3.43, dto_model.cost)
 
     def test_avro_from_bytes_float(self):
-        data = {"cost": 3.43}
+        data = {"price": 120}
         schema = [
             {
-                "fields": [{"name": "cost", "type": "float"}],
+                "fields": [{"name": "price", "type": "int"}],
                 "name": "ShoppingList",
                 "namespace": "tests.model_classes",
                 "type": "record",
@@ -36,10 +36,9 @@ class TestDtoField(unittest.IsolatedAsyncioTestCase):
         serialized = MinosAvroProtocol.encode(data, schema)
         self.assertEqual(True, isinstance(serialized, bytes))
 
-        dto_model = DtoModel()
-        dto_model.from_avro_bytes(serialized)
+        dto_model = DataTransferObject().from_avro_bytes(serialized)
 
-        self.assertEqual("{:.2f}".format(3.43), "{:.2f}".format(dto_model.fields["cost"].value))
+        self.assertEqual(data["price"], dto_model.price)
 
     def test_avro_from_bytes_multiple_fields(self):
         data = {"cost": 3, "username": "test"}
@@ -54,8 +53,7 @@ class TestDtoField(unittest.IsolatedAsyncioTestCase):
         serialized = MinosAvroProtocol.encode(data, schema)
         self.assertEqual(True, isinstance(serialized, bytes))
 
-        dto_model = DtoModel()
-        dto_model.from_avro_bytes(serialized)
+        dto_model = DataTransferObject().from_avro_bytes(serialized)
 
-        self.assertEqual(data["cost"], dto_model.fields["cost"].value)
-        self.assertEqual(data["username"], dto_model.fields["username"].value)
+        self.assertEqual(data["cost"], dto_model.cost)
+        self.assertEqual(data["username"], dto_model.username)

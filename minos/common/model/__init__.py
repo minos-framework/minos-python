@@ -30,7 +30,6 @@ from .abc import (
     TIMESTAMP_MILLIS,
     UUID,
     Decimal,
-    DtoModel,
     Enum,
     Fixed,
     MinosModel,
@@ -46,6 +45,9 @@ from .command import (
 )
 from .command_reply import (
     CommandReply,
+)
+from .dto import (
+    DataTransferObject,
 )
 from .event import (
     Event,
