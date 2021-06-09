@@ -30,6 +30,7 @@ from .abc import (
     TIMESTAMP_MILLIS,
     UUID,
     Decimal,
+    DtoModel,
     Enum,
     Fixed,
     MinosModel,

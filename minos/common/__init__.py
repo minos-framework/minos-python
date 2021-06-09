@@ -100,6 +100,7 @@ from .model import (
     Command,
     CommandReply,
     Decimal,
+    DtoModel,
     Enum,
     Event,
     Fixed,
