@@ -50,9 +50,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 await Car.create(doors=3, color="red", _broker=broker, _repository=repository, _snapshot=snapshot),
                 await Car.create(doors=5, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot),
             ]
-            recovered = await Car.get(
-                [o.id for o in originals], _broker=broker, _repository=repository, _snapshot=snapshot
-            )
+            iterable = Car.get([o.id for o in originals], _broker=broker, _repository=repository, _snapshot=snapshot)
+            recovered = [v async for v in iterable]
 
             self.assertEqual(originals, recovered)
 

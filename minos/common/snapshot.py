@@ -15,6 +15,7 @@ from abc import (
 )
 from typing import (
     TYPE_CHECKING,
+    AsyncIterator,
 )
 
 from .setup import (
@@ -31,7 +32,7 @@ class MinosSnapshot(MinosSetup, ABC):
     """Base Snapshot class."""
 
     @abstractmethod
-    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> list[Aggregate]:
+    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
         """Retrieves a list of  materialised ``Aggregate`` instances.
 
         :param aggregate_name: TODO
@@ -44,7 +45,7 @@ class MinosSnapshot(MinosSetup, ABC):
 class InMemoryMinosSnapshot(MinosSnapshot):
     """TODO"""
 
-    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> list[Aggregate]:
+    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
         """TODO
 
         :param aggregate_name: TODO
@@ -52,12 +53,10 @@ class InMemoryMinosSnapshot(MinosSnapshot):
         :param kwargs: TODO
         :return: TODO
         """
-        from asyncio import (
-            gather,
-        )
+        iterable = map(lambda aggregate_id: self._get_one(aggregate_name, aggregate_id, **kwargs), ids)
 
-        # noinspection PyShadowingBuiltins
-        return list(await gather(*(self._get_one(aggregate_name, id, **kwargs) for id in ids)))
+        for item in iterable:
+            yield await item
 
     # noinspection PyShadowingBuiltins
     @staticmethod

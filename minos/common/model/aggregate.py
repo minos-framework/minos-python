@@ -10,6 +10,7 @@ from __future__ import (
 )
 
 from typing import (
+    AsyncIterator,
     Generic,
     NoReturn,
     Optional,
@@ -88,7 +89,7 @@ class Aggregate(MinosModel, Generic[T]):
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
-    ) -> list[T]:
+    ) -> AsyncIterator[T]:
         """Get a sequence of aggregates based on a list of identifiers.
 
         :param ids: list of identifiers.
@@ -114,7 +115,11 @@ class Aggregate(MinosModel, Generic[T]):
                 raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
         # noinspection PyTypeChecker
-        return await _snapshot.get(cls.classname, ids, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
+        iterable = _snapshot.get(cls.classname, ids, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
+
+        # noinspection PyTypeChecker
+        async for aggregate in iterable:
+            yield aggregate
 
     # noinspection PyShadowingBuiltins
     @classmethod
@@ -134,7 +139,7 @@ class Aggregate(MinosModel, Generic[T]):
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
-        return (await cls.get([id], _broker=_broker, _repository=_repository, _snapshot=_snapshot))[0]
+        return await cls.get([id], _broker=_broker, _repository=_repository, _snapshot=_snapshot).__anext__()
 
     @classmethod
     async def create(
