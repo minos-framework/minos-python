@@ -22,7 +22,7 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FakeBroker,
-    Foo,
+    FakeModel,
 )
 
 
@@ -53,7 +53,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
             assert ret == [(1,)]
 
     async def test_get_action(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         event_instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
@@ -65,7 +65,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(["add_order"], await result.content())
 
     async def test_non_implemented_action(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         instance = Command(
             topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="UpdateTicket",
         )
@@ -81,7 +81,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         )
 
     async def test_event_dispatch(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",
         )
@@ -100,7 +100,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(None, broker.reply_topic)
 
     async def test_event_dispatch_without_reply(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         instance = Command(topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij",)
 
         broker = FakeBroker()
@@ -173,7 +173,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
             assert pending_row[4] == 1
 
     async def test_concurrency_dispatcher(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",
         )

@@ -17,7 +17,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    Foo,
+    FakeModel,
 )
 
 
@@ -41,21 +41,21 @@ class TestProducer(PostgresAsyncTestCase):
         assert response is True
 
     async def test_concurrency_dispatcher(self):
-        item = Foo("test")
+        model = FakeModel("foo")
 
         for x in range(0, 20):
             async with CommandReplyBroker.from_config(
                 "TestDeleteReply", config=self.config, saga_uuid="9347839473kfslf"
             ) as broker:
-                await broker.send_one(item)
+                await broker.send_one(model)
 
             async with CommandBroker.from_config(
                 "CommandBroker-Delete", config=self.config, saga_uuid="9347839473kfslf", reply_on="test_reply_on",
             ) as broker:
-                await broker.send_one(item)
+                await broker.send_one(model)
 
             async with EventBroker.from_config("EventBroker-Delete", config=self.config) as broker:
-                await broker.send_one(item)
+                await broker.send_one(model)
 
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:
