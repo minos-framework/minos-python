@@ -19,7 +19,7 @@ from ..exceptions import (
     MinosRepositoryDeletedAggregateException,
 )
 from ..repository import (
-    MinosRepositoryAction,
+    RepositoryAction,
 )
 from .abc import (
     MinosSnapshot,
@@ -60,7 +60,7 @@ class InMemorySnapshot(MinosSnapshot):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {repr(id)} id.")
 
         entry = max(entries, key=attrgetter("version"))
-        if entry.action == MinosRepositoryAction.DELETE:
+        if entry.action == RepositoryAction.DELETE:
             raise MinosRepositoryDeletedAggregateException(f"The {id} id points to an already deleted aggregate.")
         cls = entry.aggregate_cls
         instance = cls.from_avro_bytes(

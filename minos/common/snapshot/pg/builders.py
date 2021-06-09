@@ -29,8 +29,8 @@ from ...exceptions import (
 )
 from ...repository import (
     MinosRepository,
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
+    RepositoryAction,
+    RepositoryEntry,
 )
 from ..entries import (
     SnapshotEntry,
@@ -87,7 +87,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         return True
 
     async def dispatch(self) -> NoReturn:
-        """Perform a dispatching step, based on the sequence of non already processed ``MinosRepositoryEntry`` objects.
+        """Perform a dispatching step, based on the sequence of non already processed ``RepositoryEntry`` objects.
 
         :return: This method does not return anything.
         """
@@ -95,7 +95,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
         ids = set()
 
-        def _update_offset(e: MinosRepositoryEntry, o: int):
+        def _update_offset(e: RepositoryEntry, o: int):
             ids.add(e.id)
             while o + 1 in ids:
                 o += 1
@@ -122,18 +122,18 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
     async def _store_offset(self, offset: int) -> NoReturn:
         await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset})
 
-    async def _dispatch_one(self, event_entry: MinosRepositoryEntry) -> Optional[SnapshotEntry]:
-        if event_entry.action is MinosRepositoryAction.DELETE:
+    async def _dispatch_one(self, event_entry: RepositoryEntry) -> Optional[SnapshotEntry]:
+        if event_entry.action is RepositoryAction.DELETE:
             await self._submit_delete(event_entry)
             return
         instance = await self._build_instance(event_entry)
         return await self._submit_instance(instance)
 
-    async def _submit_delete(self, entry: MinosRepositoryEntry) -> NoReturn:
+    async def _submit_delete(self, entry: RepositoryEntry) -> NoReturn:
         params = {"aggregate_id": entry.aggregate_id, "aggregate_name": entry.aggregate_name}
         await self.submit_query(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params)
 
-    async def _build_instance(self, event_entry: MinosRepositoryEntry) -> Aggregate:
+    async def _build_instance(self, event_entry: RepositoryEntry) -> Aggregate:
         # noinspection PyTypeChecker
         cls: Type[Aggregate] = event_entry.aggregate_cls
         instance = cls.from_avro_bytes(event_entry.data, id=event_entry.aggregate_id, version=event_entry.version)

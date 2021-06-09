@@ -21,11 +21,11 @@ from .abc import (
     MinosRepository,
 )
 from .entries import (
-    MinosRepositoryEntry,
+    RepositoryEntry,
 )
 
 
-class MinosInMemoryRepository(MinosRepository):
+class InMemoryRepository(MinosRepository):
     """Memory-based implementation of the repository class in ``minos``."""
 
     def __init__(self, *args, **kwargs):
@@ -33,7 +33,7 @@ class MinosInMemoryRepository(MinosRepository):
         self._storage = list()
         self._id_generator = count()
 
-    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
@@ -88,10 +88,10 @@ class MinosInMemoryRepository(MinosRepository):
         id_ge: Optional[int] = None,
         *args,
         **kwargs
-    ) -> AsyncIterator[MinosRepositoryEntry]:
+    ) -> AsyncIterator[RepositoryEntry]:
 
         # noinspection DuplicatedCode
-        def _fn_filter(entry: MinosRepositoryEntry) -> bool:
+        def _fn_filter(entry: RepositoryEntry) -> bool:
             if aggregate_id is not None and aggregate_id != entry.aggregate_id:
                 return False
             if aggregate_name is not None and aggregate_name != entry.aggregate_name:

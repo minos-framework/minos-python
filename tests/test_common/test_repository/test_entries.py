@@ -12,9 +12,9 @@ from datetime import (
 
 from minos.common import (
     InMemorySnapshot,
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
     MinosRepositoryUnknownActionException,
+    RepositoryAction,
+    RepositoryEntry,
 )
 from tests.aggregate_classes import (
     Car,
@@ -27,18 +27,18 @@ from tests.utils import (
 
 class TestMinosRepositoryAction(unittest.TestCase):
     def test_value_of(self):
-        self.assertEqual(MinosRepositoryAction.INSERT, MinosRepositoryAction.value_of("insert"))
-        self.assertEqual(MinosRepositoryAction.UPDATE, MinosRepositoryAction.value_of("update"))
-        self.assertEqual(MinosRepositoryAction.DELETE, MinosRepositoryAction.value_of("delete"))
+        self.assertEqual(RepositoryAction.INSERT, RepositoryAction.value_of("insert"))
+        self.assertEqual(RepositoryAction.UPDATE, RepositoryAction.value_of("update"))
+        self.assertEqual(RepositoryAction.DELETE, RepositoryAction.value_of("delete"))
 
     def test_value_of_raises(self):
         with self.assertRaises(MinosRepositoryUnknownActionException):
-            MinosRepositoryAction.value_of("foo")
+            RepositoryAction.value_of("foo")
 
 
 class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
     def test_constructor(self):
-        entry = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(1234, entry.aggregate_id)
         self.assertEqual("example.Car", entry.aggregate_name)
         self.assertEqual(0, entry.version)
@@ -48,13 +48,13 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(None, entry.created_at)
 
     def test_constructor_extended(self):
-        entry = MinosRepositoryEntry(
+        entry = RepositoryEntry(
             aggregate_id=1234,
             aggregate_name="example.Car",
             version=0,
             data=bytes("car", "utf-8"),
             id=5678,
-            action=MinosRepositoryAction.INSERT,
+            action=RepositoryAction.INSERT,
             created_at=datetime(2020, 10, 13, 8, 45, 32),
         )
         self.assertEqual(1234, entry.aggregate_id)
@@ -62,13 +62,13 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, entry.version)
         self.assertEqual(bytes("car", "utf-8"), entry.data)
         self.assertEqual(5678, entry.id)
-        self.assertEqual(MinosRepositoryAction.INSERT, entry.action)
+        self.assertEqual(RepositoryAction.INSERT, entry.action)
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
 
     async def test_from_aggregate(self):
         async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
             car = Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
-            entry = MinosRepositoryEntry.from_aggregate(car)
+            entry = RepositoryEntry.from_aggregate(car)
         self.assertEqual(car.id, entry.aggregate_id)
         self.assertEqual(car.classname, entry.aggregate_name)
         self.assertEqual(car.version, entry.version)
@@ -78,39 +78,39 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(None, entry.created_at)
 
     def test_id_set(self):
-        entry = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.id)
         entry.id = 5678
         self.assertEqual(5678, entry.id)
 
     def test_id_action(self):
-        entry = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.action)
-        entry.action = MinosRepositoryAction.INSERT
-        self.assertEqual(MinosRepositoryAction.INSERT, entry.action)
+        entry.action = RepositoryAction.INSERT
+        self.assertEqual(RepositoryAction.INSERT, entry.action)
 
     def test_equals(self):
-        a = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
-        b = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        a = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        b = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(a, b)
 
     def test_hash(self):
-        entry = MinosRepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertIsInstance(hash(entry), int)
 
     def test_repr(self):
-        entry = MinosRepositoryEntry(
+        entry = RepositoryEntry(
             aggregate_id=1234,
             aggregate_name="example.Car",
             version=0,
             data=bytes("car", "utf-8"),
             id=5678,
-            action=MinosRepositoryAction.INSERT,
+            action=RepositoryAction.INSERT,
             created_at=datetime(2020, 10, 13, 8, 45, 32),
         )
         expected = (
-            "MinosRepositoryEntry(aggregate_id=1234, aggregate_name='example.Car', version=0, data=b'car', id=5678, "
-            "action=<MinosRepositoryAction.INSERT: 'insert'>, created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
+            "RepositoryEntry(aggregate_id=1234, aggregate_name='example.Car', version=0, data=b'car', id=5678, "
+            "action=<RepositoryAction.INSERT: 'insert'>, created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
         )
         self.assertEqual(expected, repr(entry))
 
