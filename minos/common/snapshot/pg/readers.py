@@ -12,10 +12,17 @@ from __future__ import (
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
+    NoReturn,
 )
 
 from ...configuration import (
     MinosConfig,
+)
+from ...exceptions import (
+    MinosRepositoryDeletedAggregateException,
+)
+from ..abc import (
+    MinosSnapshot,
 )
 from ..entries import (
     SnapshotEntry,
@@ -34,7 +41,7 @@ if TYPE_CHECKING:
     )
 
 
-class PostgreSqlSnapshot(PostgreSqlSnapshotSetup):
+class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
     """Minos Snapshot Reader class."""
 
     builder: PostgreSqlSnapshotBuilder
@@ -47,6 +54,14 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshot:
         builder = PostgreSqlSnapshotBuilder.from_config(*args, config=config, **kwargs)
         return cls(*args, builder=builder, **config.snapshot._asdict(), **kwargs)
+
+    async def _setup(self) -> NoReturn:
+        await self.builder.setup()
+        await super()._setup()
+
+    async def _destroy(self) -> NoReturn:
+        await super()._destroy()
+        await self.builder.destroy()
 
     async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
         """TODO
@@ -69,7 +84,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup):
             yield SnapshotEntry(*row)
             count += 1
         if count < len(ids):
-            raise Exception
+            raise MinosRepositoryDeletedAggregateException("TODO")
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:

@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     )
 
 
-class MinosSnapshot(MinosSetup, ABC):
+class MinosSnapshot(ABC, MinosSetup):
     """Base Snapshot class."""
 
     @abstractmethod

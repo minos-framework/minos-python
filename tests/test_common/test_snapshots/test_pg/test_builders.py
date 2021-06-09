@@ -24,6 +24,7 @@ from dependency_injector import (
 from minos.common import (
     MinosConfigException,
     MinosRepositoryEntry,
+    MinosRepositoryNotProvidedException,
     PostgreSqlMinosRepository,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
@@ -42,6 +43,14 @@ from tests.utils import (
     FakeRepository,
     FakeSnapshot,
 )
+
+
+class TestPostgreSqlSnapshotBuilderWithoutContainer(PostgresAsyncTestCase):
+    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+
+    def test_from_config_without_repository(self):
+        with self.assertRaises(MinosRepositoryNotProvidedException):
+            PostgreSqlSnapshotBuilder.from_config(config=self.config)
 
 
 class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
@@ -69,23 +78,18 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         self.assertEqual(self.config.snapshot.database, dispatcher.database)
         self.assertEqual(self.config.snapshot.user, dispatcher.user)
         self.assertEqual(self.config.snapshot.password, dispatcher.password)
-        self.assertEqual(self.config.repository.host, dispatcher.repository.host)
-        self.assertEqual(self.config.repository.port, dispatcher.repository.port)
-        self.assertEqual(self.config.repository.database, dispatcher.repository.database)
-        self.assertEqual(self.config.repository.user, dispatcher.repository.user)
-        self.assertEqual(self.config.repository.password, dispatcher.repository.password)
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigException):
             PostgreSqlSnapshotBuilder.from_config()
 
     async def test_dispatch_select(self):
-        await self._populate()
-        async with PostgreSqlSnapshotBuilder.from_config(config=self.config) as dispatcher:
-            await dispatcher.dispatch()
+        async with await self._populate() as repository:
+            async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
+                await dispatcher.dispatch()
 
-        async with PostgreSqlSnapshot.from_config(config=self.config) as snapshot:
-            observed = [v async for v in snapshot.select()]
+            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+                observed = [v async for v in snapshot.select()]
 
         expected = [
             SnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
@@ -94,18 +98,18 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         self._assert_equal_snapshot_entries(expected, observed)
 
     async def test_are_synced(self):
-        await self._populate()
-        async with PostgreSqlSnapshotBuilder.from_config(config=self.config) as dispatcher:
-            self.assertFalse(await dispatcher.are_synced("tests.aggregate_classes.Car", [1, 2]))
-            await dispatcher.dispatch()
-            self.assertTrue(await dispatcher.are_synced("tests.aggregate_classes.Car", [1, 2]))
+        async with await self._populate() as repository:
+            async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
+                self.assertFalse(await dispatcher.are_synced("tests.aggregate_classes.Car", [1, 2]))
+                await dispatcher.dispatch()
+                self.assertTrue(await dispatcher.are_synced("tests.aggregate_classes.Car", [1, 2]))
 
     async def test_is_synced(self):
-        await self._populate()
-        async with PostgreSqlSnapshotBuilder.from_config(config=self.config) as dispatcher:
-            self.assertFalse(await dispatcher.is_synced("tests.aggregate_classes.Car", 1))
-            await dispatcher.dispatch()
-            self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car", 1))
+        async with await self._populate() as repository:
+            async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
+                self.assertFalse(await dispatcher.is_synced("tests.aggregate_classes.Car", 1))
+                await dispatcher.dispatch()
+                self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car", 1))
 
     async def test_dispatch_ignore_previous_version(self):
         car = Car(1, 2, 3, "blue")
@@ -118,12 +122,15 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
             yield MinosRepositoryEntry(1, aggregate_name, 3, car.avro_bytes)
             yield MinosRepositoryEntry(1, aggregate_name, 2, car.avro_bytes)
 
-        with patch("minos.common.PostgreSqlMinosRepository.select", _fn):
-            async with PostgreSqlSnapshotBuilder.from_config(config=self.config) as dispatcher:
-                await dispatcher.dispatch()
+        async with await self._populate() as repository:
+            with patch("minos.common.PostgreSqlMinosRepository.select", _fn):
+                async with PostgreSqlSnapshotBuilder.from_config(
+                    config=self.config, repository=repository
+                ) as dispatcher:
+                    await dispatcher.dispatch()
 
-        async with PostgreSqlSnapshot.from_config(config=self.config) as snapshot:
-            observed = [v async for v in snapshot.select()]
+            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+                observed = [v async for v in snapshot.select()]
 
         expected = [SnapshotEntry(1, aggregate_name, 3, car.avro_bytes)]
         self._assert_equal_snapshot_entries(expected, observed)
@@ -137,9 +144,9 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
 
     async def test_dispatch_with_offset(self):
         async with await self._populate() as repository:
-            async with PostgreSqlSnapshotBuilder.from_config(config=self.config) as dispatcher:
-                mock = MagicMock(side_effect=dispatcher.repository.select)
-                dispatcher.repository.select = mock
+            async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
+                mock = MagicMock(side_effect=dispatcher._repository.select)
+                dispatcher._repository.select = mock
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)

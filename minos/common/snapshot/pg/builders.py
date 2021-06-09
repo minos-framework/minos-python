@@ -11,10 +11,13 @@ from __future__ import (
 
 from typing import (
     TYPE_CHECKING,
-    Any,
     NoReturn,
     Optional,
     Type,
+)
+
+from dependency_injector.wiring import (
+    Provide,
 )
 
 from ...configuration import (
@@ -22,11 +25,12 @@ from ...configuration import (
 )
 from ...exceptions import (
     MinosPreviousVersionSnapshotException,
+    MinosRepositoryNotProvidedException,
 )
 from ...repository import (
+    MinosRepository,
     MinosRepositoryAction,
     MinosRepositoryEntry,
-    PostgreSqlMinosRepository,
 )
 from ..entries import (
     SnapshotEntry,
@@ -44,21 +48,19 @@ if TYPE_CHECKING:
 class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
     """Minos Snapshot Dispatcher class."""
 
-    def __init__(self, *args, repository: dict[str, Any] = None, **kwargs):
+    _repository: MinosRepository = Provide["repository"]
+
+    def __init__(self, *args, repository: Optional[MinosRepository] = None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.repository = PostgreSqlMinosRepository(**repository)
+        if repository is not None:
+            self._repository = repository
 
-    async def _setup(self) -> NoReturn:
-        await self.repository.setup()
-        await super()._setup()
-
-    async def _destroy(self) -> NoReturn:
-        await super()._destroy()
-        await self.repository.destroy()
+        if self._repository is None or isinstance(self._repository, Provide):
+            raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotBuilder:
-        return cls(*args, **config.snapshot._asdict(), repository=config.repository._asdict(), **kwargs)
+        return cls(*args, **config.snapshot._asdict(), **kwargs)
 
     async def are_synced(self, aggregate_name: str, aggregate_ids: list[int]) -> bool:
         """TODO
@@ -77,7 +79,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         :param aggregate_id: TODO
         :return:
         """
-        query = self.repository.select(
+        query = self._repository.select(
             id_ge=await self._load_offset(), aggregate_name=aggregate_name, aggregate_id=aggregate_id
         )
         async for _ in query:
@@ -100,7 +102,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
                 ids.remove(o)
             return o
 
-        async for entry in self.repository.select(id_ge=offset):
+        async for entry in self._repository.select(id_ge=offset):
             try:
                 await self._dispatch_one(entry)
             except MinosPreviousVersionSnapshotException:
