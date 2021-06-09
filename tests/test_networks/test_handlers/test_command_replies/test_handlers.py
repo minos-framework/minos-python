@@ -18,7 +18,7 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FakeSagaManager,
-    NaiveAggregate,
+    Foo,
 )
 
 
@@ -49,7 +49,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
             self.assertEqual(ret, [(1,)])
 
     async def test_get_action(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = Foo("test")
         event_instance = CommandReply(
             topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
@@ -61,7 +61,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         self.assertEqual(result, "add_order_saga")
 
     async def test_non_implemented_action(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = Foo("test")
         instance = CommandReply(
             topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
@@ -77,7 +77,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         )
 
     async def test_event_dispatch(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = Foo("test")
         instance = CommandReply(
             topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
@@ -148,7 +148,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
     async def test_concurrency_dispatcher(self):
         # Correct instance
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = Foo("test")
         instance = CommandReply(
             topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )

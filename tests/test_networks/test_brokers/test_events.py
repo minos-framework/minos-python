@@ -32,7 +32,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    NaiveAggregate,
+    Foo,
 )
 
 
@@ -73,7 +73,7 @@ class TestEventBroker(PostgresAsyncTestCase):
             "VALUES (%s, %s, %s, %s, %s, %s) "
             "RETURNING id"
         )
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        item = Foo("test")
 
         async def _fn(*args, **kwargs):
             return (56,)
@@ -97,7 +97,7 @@ class TestEventBroker(PostgresAsyncTestCase):
         self.assertIsInstance(args[1][5], datetime)
 
     async def test_if_events_was_deleted(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        item = Foo("test")
         async with EventBroker.from_config("EventBroker-Delete", config=self.config) as broker:
             queue_id_1 = await broker.send_one(item)
             queue_id_2 = await broker.send_one(item)
@@ -114,7 +114,7 @@ class TestEventBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_events_retry_was_incremented(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        item = Foo("test")
         async with EventBroker.from_config("EventBroker-Delete", config=self.config) as broker:
             queue_id_1 = await broker.send_one(item)
             queue_id_2 = await broker.send_one(item)

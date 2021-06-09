@@ -17,7 +17,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    NaiveAggregate,
+    Foo,
 )
 
 
@@ -41,7 +41,7 @@ class TestProducer(PostgresAsyncTestCase):
         assert response is True
 
     async def test_concurrency_dispatcher(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        item = Foo("test")
 
         for x in range(0, 20):
             async with CommandReplyBroker.from_config(

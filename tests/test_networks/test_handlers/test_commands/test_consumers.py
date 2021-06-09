@@ -23,8 +23,8 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FakeConsumer,
+    Foo,
     Message,
-    NaiveAggregate,
 )
 
 
@@ -40,7 +40,7 @@ class TestCommandConsumer(PostgresAsyncTestCase):
             CommandConsumer.from_config()
 
     async def test_queue_add(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = Foo("test")
         event_instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
@@ -52,7 +52,7 @@ class TestCommandConsumer(PostgresAsyncTestCase):
             assert id > 0
 
     async def test_dispatch(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = Foo("test")
         event_instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )

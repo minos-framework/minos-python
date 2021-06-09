@@ -8,10 +8,14 @@ Minos framework can not be copied and/or distributed without the express permiss
 from collections import (
     namedtuple,
 )
+from datetime import (
+    datetime,
+)
 from pathlib import (
     Path,
 )
 from typing import (
+    AsyncIterator,
     NoReturn,
 )
 
@@ -26,10 +30,16 @@ from minos.common import (
 BASE_PATH = Path(__file__).parent
 
 
-class NaiveAggregate(Aggregate):
-    """Naive aggregate class to be used for testing purposes."""
+class Foo(MinosModel):
+    """For testing purposes"""
 
-    test: int
+    text: str
+
+
+class Bar(Aggregate):
+    """For testing purposes"""
+
+    text: str
 
 
 Message = namedtuple("Message", ["topic", "partition", "value"])

@@ -13,67 +13,73 @@ from datetime import (
 from minos.networks import (
     SnapshotEntry,
 )
-from tests.aggregate_classes import (
-    Car,
+from tests.utils import (
+    Bar,
 )
 
 
 class TestSnapshotEntry(unittest.TestCase):
+    def setUp(self) -> None:
+        self.bar = Bar(1, 1, "blue")
+        # noinspection PyTypeChecker
+        self.aggregate_name: str = self.bar.classname
+        self.data = self.bar.avro_bytes
+
     def test_constructor(self):
-        entry = SnapshotEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = SnapshotEntry(1234, self.aggregate_name, 0, self.data)
         self.assertEqual(1234, entry.aggregate_id)
-        self.assertEqual("example.Car", entry.aggregate_name)
+        self.assertEqual(self.aggregate_name, entry.aggregate_name)
         self.assertEqual(0, entry.version)
-        self.assertEqual(bytes("car", "utf-8"), entry.data)
+        self.assertEqual(self.data, entry.data)
         self.assertEqual(None, entry.created_at)
         self.assertEqual(None, entry.updated_at)
 
     def test_constructor_extended(self):
         entry = SnapshotEntry(
-            1234, "example.Car", 0, bytes("car", "utf-8"), datetime(2020, 1, 10, 4, 23), datetime(2020, 1, 10, 4, 25)
+            1234, self.aggregate_name, 0, self.data, datetime(2020, 1, 10, 4, 23), datetime(2020, 1, 10, 4, 25)
         )
         self.assertEqual(1234, entry.aggregate_id)
-        self.assertEqual("example.Car", entry.aggregate_name)
+        self.assertEqual(self.aggregate_name, entry.aggregate_name)
         self.assertEqual(0, entry.version)
-        self.assertEqual(bytes("car", "utf-8"), entry.data)
+        self.assertEqual(self.data, entry.data)
         self.assertEqual(datetime(2020, 1, 10, 4, 23), entry.created_at)
         self.assertEqual(datetime(2020, 1, 10, 4, 25), entry.updated_at)
 
     def test_from_aggregate(self):
-        car = Car(1, 1, 3, "blue")
-        entry = SnapshotEntry.from_aggregate(car)
-        self.assertEqual(car.id, entry.aggregate_id)
-        self.assertEqual(car.classname, entry.aggregate_name)
-        self.assertEqual(car.version, entry.version)
+        bar = Bar(1, 1, "blue")
+        entry = SnapshotEntry.from_aggregate(bar)
+        self.assertEqual(bar.id, entry.aggregate_id)
+        self.assertEqual(self.aggregate_name, entry.aggregate_name)
+        self.assertEqual(bar.version, entry.version)
         self.assertIsInstance(entry.data, bytes)
         self.assertEqual(None, entry.created_at)
         self.assertEqual(None, entry.updated_at)
 
     def test_equals(self):
-        a = SnapshotEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
-        b = SnapshotEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        a = SnapshotEntry(1234, self.aggregate_name, 0, self.data)
+        b = SnapshotEntry(1234, self.aggregate_name, 0, self.data)
         self.assertEqual(a, b)
 
     def test_hash(self):
-        entry = SnapshotEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = SnapshotEntry(1234, self.aggregate_name, 0, self.data)
         self.assertIsInstance(hash(entry), int)
 
     def test_aggregate_cls(self):
-        car = Car(1, 1, 3, "blue")
-        entry = SnapshotEntry.from_aggregate(car)
-        self.assertEqual(Car, entry.aggregate_cls)
+        bar = Bar(1, 1, "blue")
+        entry = SnapshotEntry.from_aggregate(bar)
+        self.assertEqual(Bar, entry.aggregate_cls)
 
     def test_aggregate(self):
-        car = Car(1, 1, 3, "blue")
-        entry = SnapshotEntry.from_aggregate(car)
-        self.assertEqual(car, entry.aggregate)
+        bar = Bar(1, 1, "blue")
+        entry = SnapshotEntry.from_aggregate(bar)
+        self.assertEqual(bar, entry.aggregate)
 
     def test_repr(self):
         entry = SnapshotEntry(
-            1234, "example.Car", 0, bytes("car", "utf-8"), datetime(2020, 1, 10, 4, 23), datetime(2020, 1, 10, 4, 25),
+            1234, self.aggregate_name, 0, self.data, datetime(2020, 1, 10, 4, 23), datetime(2020, 1, 10, 4, 25),
         )
         expected = (
-            "SnapshotEntry(aggregate_id=1234, aggregate_name='example.Car', version=0, data=b'car', "
+            f"SnapshotEntry(aggregate_id=1234, aggregate_name={self.aggregate_name!r}, version=0, data={self.data!r}, "
             "created_at=datetime.datetime(2020, 1, 10, 4, 23), updated_at=datetime.datetime(2020, 1, 10, 4, 25))"
         )
         self.assertEqual(expected, repr(entry))

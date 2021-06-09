@@ -32,7 +32,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    NaiveAggregate,
+    Foo,
 )
 
 
@@ -59,7 +59,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
             "VALUES (%s, %s, %s, %s, %s, %s) "
             "RETURNING id"
         )
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        item = Foo("test")
 
         async def _fn(*args, **kwargs):
             return (56,)
@@ -86,7 +86,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         self.assertIsInstance(args[1][5], datetime)
 
     async def test_if_commands_was_deleted(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        item = Foo("test")
 
         async with CommandReplyBroker.from_config(
             "TestDeleteReply", config=self.config, saga_uuid="9347839473kfslf"
@@ -106,7 +106,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_commands_retry_was_incremented(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        item = Foo("test")
 
         async with CommandReplyBroker.from_config(
             "TestDeleteOrder", config=self.config, saga_uuid="9347839473kfslf"

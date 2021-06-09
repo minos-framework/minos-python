@@ -14,14 +14,14 @@ from minos.networks import (
     CommandRequest,
     CommandResponse,
 )
-from tests.aggregate_classes import (
-    Car,
+from tests.utils import (
+    Foo,
 )
 
 
 class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.command = Command("CarCreated", [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], "12345678", "AddOrderReply")
+        self.command = Command("FooCreated", [Foo("test"), Foo("tost")], "12345678", "AddOrderReply")
 
     def test_command(self):
         request = CommandRequest(self.command)
@@ -29,12 +29,12 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
 
     async def test_content(self):
         request = CommandRequest(self.command)
-        self.assertEqual([Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")], await request.content())
+        self.assertEqual([Foo("test"), Foo("tost")], await request.content())
 
 
 class TestCommandResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.items = [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")]
+        self.items = [Foo("test"), Foo("tost")]
 
     async def test_content(self):
         response = CommandResponse(self.items)

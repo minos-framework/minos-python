@@ -18,8 +18,8 @@ from minos.networks import (
     HttpRequest,
     HttpResponse,
 )
-from tests.aggregate_classes import (
-    Car,
+from tests.utils import (
+    Foo,
 )
 
 
@@ -70,7 +70,7 @@ class TestHttpRequest(unittest.IsolatedAsyncioTestCase):
 
 class TestHttpResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.items = [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")]
+        self.items = [Foo("test"), Foo("tost")]
 
     async def test_content(self):
         response = HttpResponse(self.items)
