@@ -15,8 +15,8 @@ from minos.networks import (
     MinosPreviousVersionSnapshotException,
     MinosSnapshotException,
 )
-from tests.aggregate_classes import (
-    Car,
+from tests.utils import (
+    Bar,
 )
 
 
@@ -31,11 +31,11 @@ class TestExceptions(unittest.TestCase):
         self.assertTrue(issubclass(MinosPreviousVersionSnapshotException, MinosSnapshotException))
 
     def test_snapshot_previous_version_repr(self):
-        previous = Car(1, 2, 3, "blue")
-        new = Car(1, 1, 5, "blue")
+        previous = Bar(1, 2, "blue")
+        new = Bar(1, 1, "blue")
         exception = MinosPreviousVersionSnapshotException(previous, new)
         expected = (
-            "MinosPreviousVersionSnapshotException(message=\"Version for 'tests.aggregate_classes.Car' "
+            "MinosPreviousVersionSnapshotException(message=\"Version for 'tests.utils.Bar' "
             'aggregate must be greater than 2. Obtained: 1")'
         )
         self.assertEqual(expected, repr(exception))

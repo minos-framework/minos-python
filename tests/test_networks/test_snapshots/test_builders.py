@@ -30,11 +30,9 @@ from minos.networks import (
     SnapshotBuilder,
     SnapshotEntry,
 )
-from tests.aggregate_classes import (
-    Car,
-)
 from tests.utils import (
     BASE_PATH,
+    Bar,
 )
 
 
@@ -85,8 +83,8 @@ class TestSnapshotBuilder(PostgresAsyncTestCase):
             observed = [v async for v in dispatcher.select()]
 
         expected = [
-            SnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
-            SnapshotEntry.from_aggregate(Car(3, 1, 3, "blue")),
+            SnapshotEntry.from_aggregate(Bar(2, 2, "blue")),
+            SnapshotEntry.from_aggregate(Bar(3, 1, "blue")),
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 
@@ -95,20 +93,20 @@ class TestSnapshotBuilder(PostgresAsyncTestCase):
         dispatcher = SnapshotBuilder.from_config(config=self.config)
         await dispatcher.setup()
 
-        car = Car(1, 1, 3, "blue")
+        bar = Bar(1, 1, "blue")
         # noinspection PyTypeChecker
-        aggregate_name: str = car.classname
+        aggregate_name: str = bar.classname
 
         async def _fn(*args, **kwargs):
-            yield MinosRepositoryEntry(1, aggregate_name, 1, car.avro_bytes)
-            yield MinosRepositoryEntry(1, aggregate_name, 3, car.avro_bytes)
-            yield MinosRepositoryEntry(1, aggregate_name, 2, car.avro_bytes)
+            yield MinosRepositoryEntry(1, aggregate_name, 1, bar.avro_bytes)
+            yield MinosRepositoryEntry(1, aggregate_name, 3, bar.avro_bytes)
+            yield MinosRepositoryEntry(1, aggregate_name, 2, bar.avro_bytes)
 
         with patch("minos.common.PostgreSqlMinosRepository.select", _fn):
             await dispatcher.dispatch()
             observed = [v async for v in dispatcher.select()]
 
-        expected = [SnapshotEntry(1, aggregate_name, 3, car.avro_bytes)]
+        expected = [SnapshotEntry(1, aggregate_name, 3, bar.avro_bytes)]
         self._assert_equal_snapshot_entries(expected, observed)
 
     def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
@@ -130,7 +128,7 @@ class TestSnapshotBuilder(PostgresAsyncTestCase):
                 mock.reset_mock()
 
                 # noinspection PyTypeChecker
-                await repository.insert(MinosRepositoryEntry(3, Car.classname, 1, Car(1, 1, 3, "blue").avro_bytes))
+                await repository.insert(MinosRepositoryEntry(3, Bar.classname, 1, Bar(1, 1, "blue").avro_bytes))
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
@@ -148,17 +146,17 @@ class TestSnapshotBuilder(PostgresAsyncTestCase):
                 mock.reset_mock()
 
     async def _populate(self):
-        car = Car(1, 1, 3, "blue")
+        bar = Bar(1, 1, "blue")
         # noinspection PyTypeChecker
-        aggregate_name: str = car.classname
+        aggregate_name: str = bar.classname
         async with PostgreSqlMinosRepository.from_config(config=self.config) as repository:
-            await repository.insert(MinosRepositoryEntry(1, aggregate_name, 1, car.avro_bytes))
-            await repository.update(MinosRepositoryEntry(1, aggregate_name, 2, car.avro_bytes))
-            await repository.insert(MinosRepositoryEntry(2, aggregate_name, 1, car.avro_bytes))
-            await repository.update(MinosRepositoryEntry(1, aggregate_name, 3, car.avro_bytes))
+            await repository.insert(MinosRepositoryEntry(1, aggregate_name, 1, bar.avro_bytes))
+            await repository.update(MinosRepositoryEntry(1, aggregate_name, 2, bar.avro_bytes))
+            await repository.insert(MinosRepositoryEntry(2, aggregate_name, 1, bar.avro_bytes))
+            await repository.update(MinosRepositoryEntry(1, aggregate_name, 3, bar.avro_bytes))
             await repository.delete(MinosRepositoryEntry(1, aggregate_name, 4))
-            await repository.update(MinosRepositoryEntry(2, aggregate_name, 2, car.avro_bytes))
-            await repository.insert(MinosRepositoryEntry(3, aggregate_name, 1, car.avro_bytes))
+            await repository.update(MinosRepositoryEntry(2, aggregate_name, 2, bar.avro_bytes))
+            await repository.insert(MinosRepositoryEntry(3, aggregate_name, 1, bar.avro_bytes))
             return repository
 
 

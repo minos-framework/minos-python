@@ -18,8 +18,8 @@ from minos.networks import (
     HttpRequest,
     HttpResponse,
 )
-from tests.aggregate_classes import (
-    Car,
+from tests.utils import (
+    FakeModel,
 )
 
 
@@ -70,15 +70,15 @@ class TestHttpRequest(unittest.IsolatedAsyncioTestCase):
 
 class TestHttpResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.items = [Car(1, 1, 3, "blue"), Car(2, 1, 5, "red")]
+        self.models = [FakeModel("foo"), FakeModel("bar")]
 
     async def test_content(self):
-        response = HttpResponse(self.items)
-        self.assertEqual([item.avro_data for item in self.items], await response.raw_content())
+        response = HttpResponse(self.models)
+        self.assertEqual([item.avro_data for item in self.models], await response.raw_content())
 
     async def test_content_single(self):
-        response = HttpResponse(self.items[0])
-        self.assertEqual([self.items[0].avro_data], await response.raw_content())
+        response = HttpResponse(self.models[0])
+        self.assertEqual([self.models[0].avro_data], await response.raw_content())
 
 
 if __name__ == "__main__":

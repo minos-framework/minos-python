@@ -32,7 +32,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    NaiveAggregate,
+    FakeModel,
 )
 
 
@@ -73,7 +73,7 @@ class TestEventBroker(PostgresAsyncTestCase):
             "VALUES (%s, %s, %s, %s, %s, %s) "
             "RETURNING id"
         )
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = FakeModel("foo")
 
         async def _fn(*args, **kwargs):
             return (56,)
@@ -82,7 +82,7 @@ class TestEventBroker(PostgresAsyncTestCase):
 
         async with EventBroker.from_config(config=self.config) as broker:
             broker.submit_query_and_fetchone = mock
-            identifier = await broker.send_one(item, topic=topic)
+            identifier = await broker.send_one(model, topic=topic)
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
@@ -90,17 +90,17 @@ class TestEventBroker(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual(query, args[0])
         self.assertEqual("EventBroker", args[1][0])
-        self.assertEqual(Event(topic=topic, items=[item]), Event.from_avro_bytes(args[1][1]))
+        self.assertEqual(Event(topic=topic, items=[model]), Event.from_avro_bytes(args[1][1]))
         self.assertEqual(0, args[1][2])
         self.assertEqual("event", args[1][3])
         self.assertIsInstance(args[1][4], datetime)
         self.assertIsInstance(args[1][5], datetime)
 
     async def test_if_events_was_deleted(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = FakeModel("foo")
         async with EventBroker.from_config("EventBroker-Delete", config=self.config) as broker:
-            queue_id_1 = await broker.send_one(item)
-            queue_id_2 = await broker.send_one(item)
+            queue_id_1 = await broker.send_one(model)
+            queue_id_2 = await broker.send_one(model)
 
         await Producer.from_config(config=self.config).dispatch()
 
@@ -114,10 +114,10 @@ class TestEventBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_events_retry_was_incremented(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = FakeModel("foo")
         async with EventBroker.from_config("EventBroker-Delete", config=self.config) as broker:
-            queue_id_1 = await broker.send_one(item)
-            queue_id_2 = await broker.send_one(item)
+            queue_id_1 = await broker.send_one(model)
+            queue_id_2 = await broker.send_one(model)
 
         config = MinosConfig(
             path=BASE_PATH / "wrong_test_config.yml",

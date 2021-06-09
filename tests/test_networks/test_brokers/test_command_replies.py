@@ -32,7 +32,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    NaiveAggregate,
+    FakeModel,
 )
 
 
@@ -59,7 +59,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
             "VALUES (%s, %s, %s, %s, %s, %s) "
             "RETURNING id"
         )
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = FakeModel("foo")
 
         async def _fn(*args, **kwargs):
             return (56,)
@@ -68,7 +68,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
 
         async with CommandReplyBroker.from_config(config=self.config) as broker:
             broker.submit_query_and_fetchone = mock
-            identifier = await broker.send_one(item, saga_uuid=saga_uuid, topic=topic)
+            identifier = await broker.send_one(model, saga_uuid=saga_uuid, topic=topic)
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
@@ -77,7 +77,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         self.assertEqual(query, args[0])
         self.assertEqual("CommandBrokerReply", args[1][0])
         self.assertEqual(
-            CommandReply(topic=f"{topic}Reply", items=[item], saga_uuid=saga_uuid),
+            CommandReply(topic=f"{topic}Reply", items=[model], saga_uuid=saga_uuid),
             CommandReply.from_avro_bytes(args[1][1]),
         )
         self.assertEqual(0, args[1][2])
@@ -86,13 +86,13 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         self.assertIsInstance(args[1][5], datetime)
 
     async def test_if_commands_was_deleted(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = FakeModel("foo")
 
         async with CommandReplyBroker.from_config(
             "TestDeleteReply", config=self.config, saga_uuid="9347839473kfslf"
         ) as broker:
-            queue_id_1 = await broker.send_one(item)
-            queue_id_2 = await broker.send_one(item)
+            queue_id_1 = await broker.send_one(model)
+            queue_id_2 = await broker.send_one(model)
 
         await Producer.from_config(config=self.config).dispatch()
 
@@ -106,13 +106,13 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_commands_retry_was_incremented(self):
-        item = NaiveAggregate(test_id=1, test=2, id=1, version=1)
+        model = FakeModel("foo")
 
         async with CommandReplyBroker.from_config(
             "TestDeleteOrder", config=self.config, saga_uuid="9347839473kfslf"
         ) as broker:
-            queue_id_1 = await broker.send_one(item)
-            queue_id_2 = await broker.send_one(item)
+            queue_id_1 = await broker.send_one(model)
+            queue_id_2 = await broker.send_one(model)
 
         config = MinosConfig(
             path=BASE_PATH / "wrong_test_config.yml",
