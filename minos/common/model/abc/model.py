@@ -36,8 +36,8 @@ from ...protocol import (
     MinosAvroProtocol,
 )
 from .fields import (
+    MinosModelAvroSchemaBuilder,
     ModelField,
-    _MinosModelAvroSchemaBuilder,
 )
 from .types import (
     MissingSentinel,
@@ -222,7 +222,7 @@ class MinosModel(object):
             cls = type(self_or_cls)
 
         fields = [
-            _MinosModelAvroSchemaBuilder(field_name, field_type).build()
+            MinosModelAvroSchemaBuilder(field_name, field_type).build()
             for field_name, field_type in self_or_cls._type_hints()
         ]
         return [{"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}]
