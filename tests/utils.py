@@ -30,7 +30,7 @@ from minos.common import (
 BASE_PATH = Path(__file__).parent
 
 
-class Foo(MinosModel):
+class FakeModel(MinosModel):
     """For testing purposes"""
 
     text: str

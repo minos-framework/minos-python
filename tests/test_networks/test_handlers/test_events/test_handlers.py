@@ -17,7 +17,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    Foo,
+    FakeModel,
 )
 
 
@@ -48,7 +48,7 @@ class TestEventHandler(PostgresAsyncTestCase):
             self.assertEqual([(1,)], ret)
 
     async def test_get_action(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         event_instance = Event(topic="TestEventQueueAdd", model=model.classname, items=[])
         handler = EventHandler.from_config(config=self.config)
 
@@ -58,7 +58,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         self.assertEqual("request_added", result)
 
     async def test_non_implemented_action(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         event_instance = Event(topic="NotExisting", model=model.classname, items=[])
         handler = EventHandler.from_config(config=self.config)
 
@@ -73,7 +73,7 @@ class TestEventHandler(PostgresAsyncTestCase):
 
     async def test_event_dispatch(self):
         async with EventHandler.from_config(config=self.config) as handler:
-            model = Foo("test")
+            model = FakeModel("foo")
             event_instance = Event(topic="TicketAdded", model=model.classname, items=[])
             bin_data = event_instance.avro_bytes
             Event.from_avro_bytes(bin_data)
@@ -137,7 +137,7 @@ class TestEventHandler(PostgresAsyncTestCase):
 
     async def test_concurrency_dispatcher(self):
         # Correct instance
-        model = Foo("test")
+        model = FakeModel("foo")
         instance = Event(topic="TicketAdded", model=model.classname, items=[])
         bin_data = instance.avro_bytes
 

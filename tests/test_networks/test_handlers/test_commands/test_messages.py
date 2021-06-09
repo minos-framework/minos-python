@@ -15,13 +15,14 @@ from minos.networks import (
     CommandResponse,
 )
 from tests.utils import (
-    Foo,
+    FakeModel,
 )
 
 
 class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.command = Command("FooCreated", [Foo("test"), Foo("tost")], "12345678", "AddOrderReply")
+        self.models = [FakeModel("foo"), FakeModel("bar")]
+        self.command = Command("FooCreated", self.models, "12345678", "AddOrderReply")
 
     def test_command(self):
         request = CommandRequest(self.command)
@@ -29,20 +30,20 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
 
     async def test_content(self):
         request = CommandRequest(self.command)
-        self.assertEqual([Foo("test"), Foo("tost")], await request.content())
+        self.assertEqual(self.models, await request.content())
 
 
 class TestCommandResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.items = [Foo("test"), Foo("tost")]
+        self.models = [FakeModel("foo"), FakeModel("bar")]
 
     async def test_content(self):
-        response = CommandResponse(self.items)
-        self.assertEqual(self.items, await response.content())
+        response = CommandResponse(self.models)
+        self.assertEqual(self.models, await response.content())
 
     async def test_content_single(self):
-        response = CommandResponse(self.items[0])
-        self.assertEqual([self.items[0]], await response.content())
+        response = CommandResponse(self.models[0])
+        self.assertEqual([self.models[0]], await response.content())
 
 
 if __name__ == "__main__":

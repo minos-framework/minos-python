@@ -23,7 +23,7 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FakeConsumer,
-    Foo,
+    FakeModel,
     Message,
 )
 
@@ -40,7 +40,7 @@ class TestCommandReplyConsumer(PostgresAsyncTestCase):
             CommandReplyConsumer.from_config()
 
     async def test_queue_add(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         event_instance = CommandReply(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )
@@ -52,7 +52,7 @@ class TestCommandReplyConsumer(PostgresAsyncTestCase):
             assert id > 0
 
     async def test_dispatch(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         event_instance = CommandReply(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
         )

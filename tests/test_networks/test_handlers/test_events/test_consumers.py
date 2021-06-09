@@ -23,7 +23,7 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FakeConsumer,
-    Foo,
+    FakeModel,
     Message,
 )
 
@@ -40,7 +40,7 @@ class TestEventConsumer(PostgresAsyncTestCase):
             EventConsumer.from_config()
 
     async def test_queue_add(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         event_instance = Event(topic="TestEventQueueAdd", model=model.classname, items=[])
         bin_data = event_instance.avro_bytes
         Event.from_avro_bytes(bin_data)
@@ -50,7 +50,7 @@ class TestEventConsumer(PostgresAsyncTestCase):
             assert id > 0
 
     async def test_dispatch(self):
-        model = Foo("test")
+        model = FakeModel("foo")
         event_instance = Event(topic="TicketAdded", model=model.classname, items=[model])
         bin_data = event_instance.avro_bytes
         consumer = FakeConsumer([Message(topic="TicketAdded", partition=0, value=bin_data)])
