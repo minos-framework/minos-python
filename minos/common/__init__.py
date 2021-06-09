@@ -119,11 +119,11 @@ from .protocol import (
     MinosJsonBinaryProtocol,
 )
 from .repository import (
-    MinosInMemoryRepository,
+    InMemoryRepository,
     MinosRepository,
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
-    PostgreSqlMinosRepository,
+    PostgreSqlRepository,
+    RepositoryAction,
+    RepositoryEntry,
 )
 from .saga import (
     MinosSagaManager,

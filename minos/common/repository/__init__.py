@@ -9,12 +9,12 @@ from .abc import (
     MinosRepository,
 )
 from .entries import (
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
+    RepositoryAction,
+    RepositoryEntry,
 )
 from .memory import (
-    MinosInMemoryRepository,
+    InMemoryRepository,
 )
 from .pg import (
-    PostgreSqlMinosRepository,
+    PostgreSqlRepository,
 )
