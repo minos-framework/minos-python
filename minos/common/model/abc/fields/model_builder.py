@@ -74,6 +74,8 @@ class MinosModelFromAvroBuilder(object):
             return self._build_list_type(schema["items"])
         elif schema["type"] == MAP:
             return self._build_dict_type(schema["values"])
+        elif schema["type"] == "record":
+            return self._build_record_type(schema["name"], schema["fields"])
         else:
             return self._build_type(schema["type"])
 
@@ -94,6 +96,9 @@ class MinosModelFromAvroBuilder(object):
 
     def _build_dict_type(self, values: t.Union[dict, str, t.Any] = None) -> t.Type[T]:
         return dict[str, self._build_type(values)]
+
+    def _build_record_type(self, name: str, fields: list[dict[str, t.Any]]) -> t.TypedDict[T]:
+        return t.TypedDict(name, {field["name"]: self._build_type(field["type"]) for field in fields})
 
     @staticmethod
     def _build_simple_type(type_field: str) -> t.Type[T]:

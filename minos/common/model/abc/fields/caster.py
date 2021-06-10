@@ -17,6 +17,9 @@ from datetime import (
     time,
     timedelta,
 )
+from typing import (
+    _TypedDictMeta,
+)
 from uuid import (
     UUID,
 )
@@ -107,6 +110,9 @@ class ModelFieldCaster(object):
 
         if type_field is UUID:
             return self._cast_uuid(data)
+
+        if isinstance(type_field, _TypedDictMeta):
+            return self._cast_typed_dict(type_field, data)
 
         if _is_minos_model_cls(type_field):
             return self._cast_minos_model(type_field, data)
@@ -205,6 +211,13 @@ class ModelFieldCaster(object):
             except ValueError:
                 pass
         raise MinosTypeAttributeException(self._name, UUID, data)
+
+    def _cast_typed_dict(self, type_field: t.TypedDict, data: t.Any) -> t.Any:
+        from ...dto import (
+            DataTransferObject,
+        )
+
+        return DataTransferObject.from_typed_dict(type_field, data)
 
     def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
         if isinstance(data, dict):
