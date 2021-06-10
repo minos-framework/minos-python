@@ -36,7 +36,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         serialized = MinosAvroProtocol.encode(data, schema)
         self.assertEqual(True, isinstance(serialized, bytes))
 
-        dto_model = DataTransferObject().from_avro_bytes(serialized)
+        dto_model = DataTransferObject.from_avro_bytes(serialized)
 
         self.assertEqual(data["price"], dto_model.price)
 
@@ -53,7 +53,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         serialized = MinosAvroProtocol.encode(data, schema)
         self.assertEqual(True, isinstance(serialized, bytes))
 
-        dto_model = DataTransferObject().from_avro_bytes(serialized)
+        dto_model = DataTransferObject.from_avro_bytes(serialized)
 
         self.assertEqual(data["cost"], dto_model.cost)
         self.assertEqual(data["username"], dto_model.username)

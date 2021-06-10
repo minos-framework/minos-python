@@ -23,19 +23,25 @@ from minos.common.protocol import (
 
 
 class DataTransferObject(MinosModel):
-    def from_avro_bytes(self, raw: bytes, **kwargs) -> DataTransferObject:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def from_avro_bytes(cls, raw: bytes, **kwargs) -> DataTransferObject:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
         :return: A single instance or a sequence of instances.
         """
 
+        c = cls(**kwargs)
+
         schema = MinosAvroProtocol.decode_schema(raw)
         decoded = MinosAvroProtocol.decode(raw)
         for item in schema["fields"]:
-            self.build_field(item, decoded[item["name"]])
+            c.build_field(item, decoded[item["name"]])
 
-        return self
+        return c
 
     def build_field(self, schema: dict, value: t.Any) -> t.NoReturn:
         field_name = schema["name"]
