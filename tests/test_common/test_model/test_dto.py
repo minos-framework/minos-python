@@ -23,13 +23,12 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(3.43, dto_model.cost)
 
-    def test_avro_from_bytes_float(self):
+    def test_avro_from_bytes_int(self):
         data = {"price": 120}
         schema = [
             {
                 "fields": [{"name": "price", "type": "int"}],
-                "name": "ShoppingList",
-                "namespace": "tests.model_classes",
+                "name": "tests.model_classes.ShoppingList",
                 "type": "record",
             },
         ]
@@ -40,13 +39,15 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(data["price"], dto_model.price)
 
+        decoded_schema = MinosAvroProtocol.decode_schema(serialized)
+        self.assertEqual(schema[0], decoded_schema)
+
     def test_avro_from_bytes_multiple_fields(self):
         data = {"cost": 3, "username": "test"}
         schema = [
             {
                 "fields": [{"name": "cost", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
-                "name": "ShoppingList",
-                "namespace": "tests.model_classes",
+                "name": "tests.model_classes.ShoppingList",
                 "type": "record",
             },
         ]
@@ -57,3 +58,6 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(data["cost"], dto_model.cost)
         self.assertEqual(data["username"], dto_model.username)
+
+        decoded_schema = MinosAvroProtocol.decode_schema(serialized)
+        self.assertEqual(schema[0], decoded_schema)
