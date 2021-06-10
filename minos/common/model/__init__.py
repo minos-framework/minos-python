@@ -46,6 +46,9 @@ from .command import (
 from .command_reply import (
     CommandReply,
 )
+from .dynamic import (
+    DynamicMinosModel,
+)
 from .event import (
     Event,
 )

@@ -102,6 +102,7 @@ from .model import (
     Command,
     CommandReply,
     Decimal,
+    DynamicMinosModel,
     Enum,
     Event,
     Fixed,
