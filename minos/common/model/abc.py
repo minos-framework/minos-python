@@ -96,26 +96,13 @@ class Model(t.Generic[T]):
         return cls.from_avro_bytes(raw, **kwargs)
 
     @classmethod
+    @abstractmethod
     def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
         :return: A single instance or a sequence of instances.
         """
-
-        decoded = MinosAvroProtocol().decode(raw)
-        if isinstance(decoded, list):
-            return [cls.from_dict(d | kwargs) for d in decoded]
-        return cls.from_dict(decoded | kwargs)
-
-    @classmethod
-    def from_dict(cls, d: dict[str, t.Any]) -> T:
-        """Build a new instance from a dictionary.
-
-        :param d: A dictionary object.
-        :return: A new ``Model`` instance.
-        """
-        return cls(**d)
 
     @classmethod
     def to_avro_str(cls, models: list[T]) -> str:
