@@ -48,16 +48,21 @@ class DataTransferObject(MinosModel):
         self.build_field(schema, decoded)
 
     def build_field(self, schema: dict, value: t.Any) -> t.NoReturn:
+        """Build Model Fields from avro schema and value
+
+        :param schema: Part of avro schema
+        :param value: Decoded avro values
+        """
         field_name = schema["name"]
         self._fields[field_name] = ModelField.from_avro(schema, value)
 
     @classmethod
     def from_typed_dict(cls, typed_dict: t.TypedDict, data: dict[str, t.Any]) -> DataTransferObject:
-        """TODO
+        """Build Model Fields form TypeDict object
 
-        :param typed_dict: TODO
-        :param data: TODO
-        :return: TODO
+        :param typed_dict: TypeDict object
+        :param data: Data
+        :return: DataTransferObject
         """
         fields = dict()
         for name, type_val in typed_dict.__annotations__.items():
