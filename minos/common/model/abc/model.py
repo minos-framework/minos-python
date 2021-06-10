@@ -254,7 +254,7 @@ class MinosModel(object):
         return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self, other: MinosModel) -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
+        return type(self) == type(other) and self.fields == other.fields
 
     def __hash__(self) -> int:
         return hash(tuple(self))
