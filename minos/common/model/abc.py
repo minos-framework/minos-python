@@ -19,20 +19,20 @@ from itertools import (
     zip_longest,
 )
 
-from ...exceptions import (
+from ..exceptions import (
     EmptyMinosModelSequenceException,
     MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
-from ...importlib import (
+from ..importlib import (
     classname,
 )
-from ...meta import (
+from ..meta import (
     classproperty,
     property_or_classproperty,
     self_or_classmethod,
 )
-from ...protocol import (
+from ..protocol import (
     MinosAvroProtocol,
 )
 from .fields import (

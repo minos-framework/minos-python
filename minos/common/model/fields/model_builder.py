@@ -20,10 +20,10 @@ from uuid import (
     UUID,
 )
 
-from minos.common.exceptions import (
+from ...exceptions import (
     MinosMalformedAttributeException,
 )
-from minos.common.model.abc.types import (
+from ..types import (
     ARRAY,
     BOOLEAN,
     BYTES,

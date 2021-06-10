@@ -24,6 +24,8 @@ from ..protocol import (
 )
 from .abc import (
     MinosModel,
+)
+from .fields import (
     ModelField,
 )
 
