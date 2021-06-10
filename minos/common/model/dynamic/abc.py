@@ -16,16 +16,16 @@ from typing import (
     Union,
 )
 
-from ..meta import (
+from ...meta import (
     self_or_classmethod,
 )
-from ..protocol import (
+from ...protocol import (
     MinosAvroProtocol,
 )
-from .abc import (
-    MinosModel,
+from ..abc import (
+    Model,
 )
-from .fields import (
+from ..fields import (
     ModelField,
 )
 
@@ -40,11 +40,8 @@ def _diff(a: dict, b: dict) -> dict:
 T = TypeVar("T")
 
 
-class DynamicMinosModel(MinosModel):
+class DynamicModel(Model):
     """TODO"""
-
-    def __init__(self, fields: dict[str, ModelField]):
-        self._fields = fields
 
     @classmethod
     def from_avro_bytes(cls, raw: bytes, **kwargs) -> Union[T, list[T]]:

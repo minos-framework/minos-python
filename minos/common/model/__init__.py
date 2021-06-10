@@ -6,22 +6,18 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from .abc import (
+    Model,
+)
+from .declarative import (
+    Aggregate,
+    Command,
+    CommandReply,
+    DeclarativeModel,
+    Event,
     MinosModel,
 )
-from .aggregate import (
-    Aggregate,
-)
-from .command import (
-    Command,
-)
-from .command_reply import (
-    CommandReply,
-)
 from .dynamic import (
-    DynamicMinosModel,
-)
-from .event import (
-    Event,
+    DynamicModel,
 )
 from .fields import (
     MinosModelAvroDataBuilder,
