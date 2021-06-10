@@ -27,7 +27,7 @@ class DataTransferObject(MinosModel):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls, raw: bytes, **kwargs) -> DataTransferObject:
+    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[DataTransferObject, list[DataTransferObject]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -35,13 +35,17 @@ class DataTransferObject(MinosModel):
         """
 
         c = cls(**kwargs)
+        m = MinosAvroProtocol
+        schema = m.decode_schema(raw)
+        decoded = m.decode(raw)
 
-        schema = MinosAvroProtocol.decode_schema(raw)
-        decoded = MinosAvroProtocol.decode(raw)
         for item in schema["fields"]:
-            c.build_field(item, decoded[item["name"]])
+            c._iterate_schema(item, decoded[item["name"]])
 
         return c
+
+    def _iterate_schema(self, schema: tuple[list, t.Any], decoded: t.Union[dict[str, t.Any], list[dict[str, t.Any]]]):
+        self.build_field(schema, decoded)
 
     def build_field(self, schema: dict, value: t.Any) -> t.NoReturn:
         field_name = schema["name"]
