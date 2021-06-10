@@ -9,7 +9,9 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
+    TYPE_CHECKING,
     AsyncIterator,
     Generic,
     NoReturn,
@@ -41,7 +43,13 @@ from .abc import (
     MinosModel,
 )
 
+if TYPE_CHECKING:
+    from .aggregate_diff import (
+        AggregateDiff,
+    )
+
 T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 
 class Aggregate(MinosModel, Generic[T]):
@@ -219,3 +227,15 @@ class Aggregate(MinosModel, Generic[T]):
         """
         await self._repository.delete(self)
         await self._broker.send_one(self, topic=f"{type(self).__name__}Deleted")
+
+    def apply_diff(self, version: int, difference: AggregateDiff) -> NoReturn:
+        """TODO
+
+        :param version: TODO
+        :param difference: TODO
+        :return: TODO
+        """
+        logger.debug(f"Applying {difference!r} to {self!r}...")
+        for name, field in difference.fields.items():
+            setattr(self, name, field.value)
+        self.version = version

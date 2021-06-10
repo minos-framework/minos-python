@@ -40,6 +40,9 @@ from .abc import (
 from .aggregate import (
     Aggregate,
 )
+from .aggregate_diff import (
+    AggregateDiff,
+)
 from .command import (
     Command,
 )

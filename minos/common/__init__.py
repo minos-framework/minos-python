@@ -99,6 +99,7 @@ from .model import (
     TIMESTAMP_MILLIS,
     UUID,
     Aggregate,
+    AggregateDiff,
     Command,
     CommandReply,
     Decimal,
