@@ -21,7 +21,7 @@ from uuid import (
     UUID,
 )
 
-from minos.common.model.abc.types import (
+from ..types import (
     PYTHON_IMMUTABLE_TYPES,
 )
 

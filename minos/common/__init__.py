@@ -102,6 +102,8 @@ from .model import (
     Command,
     CommandReply,
     Decimal,
+    DeclarativeModel,
+    DynamicModel,
     Enum,
     Event,
     Fixed,

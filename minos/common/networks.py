@@ -24,14 +24,14 @@ from .setup import (
 
 if TYPE_CHECKING:
     from .model import (
-        MinosModel,
+        Model,
     )
 
 
 class MinosBroker(ABC, MinosSetup):
     """Base Broker class."""
 
-    async def send_one(self, item: MinosModel, **kwargs) -> NoReturn:
+    async def send_one(self, item: Model, **kwargs) -> NoReturn:
         """Send one ``Aggregate`` instance.
 
         :param item: The instance to be send.
@@ -41,7 +41,7 @@ class MinosBroker(ABC, MinosSetup):
         return await self.send([item], **kwargs)
 
     @abstractmethod
-    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
+    async def send(self, items: list[Model], **kwargs) -> NoReturn:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.
