@@ -10,15 +10,15 @@ import typing as t
 
 
 def _is_minos_model_cls(type_field: t.Type) -> bool:
-    from ..model import (
-        MinosModel,
+    from ..abc import (
+        Model,
     )
 
-    return inspect.isclass(type_field) and issubclass(type_field, MinosModel)
+    return inspect.isclass(type_field) and issubclass(type_field, Model)
 
 
 def _is_aggregate_cls(type_field: t.Type) -> bool:
-    from ...aggregate import (
+    from ..declarative import (
         Aggregate,
     )
 

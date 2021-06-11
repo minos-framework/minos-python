@@ -13,14 +13,13 @@ import inspect
 import logging
 import typing as t
 
-from minos.common.exceptions import (
+from ...exceptions import (
     MinosAttributeValidationException,
     MinosParseAttributeException,
 )
-from minos.common.model.abc.types import (
+from ..types import (
     MissingSentinel,
 )
-
 from .avro_data_builder import (
     MinosModelAvroDataBuilder,
 )

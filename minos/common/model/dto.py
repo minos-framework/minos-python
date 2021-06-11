@@ -11,11 +11,9 @@ from __future__ import (
 
 import typing as t
 
-from minos.common.model.abc.fields import (
-    ModelField,
-)
-from minos.common.model.abc.model import (
+from minos.common.model.declarative.abc import (
     MinosModel,
+    ModelField,
 )
 from minos.common.protocol import (
     MinosAvroProtocol,

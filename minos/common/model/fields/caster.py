@@ -24,18 +24,17 @@ from uuid import (
     UUID,
 )
 
-from minos.common.exceptions import (
+from ...exceptions import (
     MinosMalformedAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
 )
-from minos.common.model.abc.types import (
+from ..types import (
     PYTHON_IMMUTABLE_TYPES,
     MissingSentinel,
     ModelRef,
 )
-
-from .common import (
+from .utils import (
     _is_aggregate_cls,
     _is_minos_model_cls,
 )
@@ -213,7 +212,7 @@ class ModelFieldCaster(object):
         raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_typed_dict(self, type_field: t.TypedDict, data: t.Any) -> t.Any:
-        from ...dto import (
+        from ..dto import (
             DataTransferObject,
         )
 

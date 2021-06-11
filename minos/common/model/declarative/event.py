@@ -15,28 +15,31 @@ from typing import (
     Type,
 )
 
-from ..exceptions import (
+from ...exceptions import (
     MultiTypeMinosModelSequenceException,
 )
-from ..importlib import (
+from ...importlib import (
     import_module,
 )
-from ..meta import (
+from ...meta import (
     self_or_classmethod,
 )
+from ..abc import (
+    Model,
+)
 from .abc import (
-    MinosModel,
+    DeclarativeModel,
 )
 
 
-class Event(MinosModel):
+class Event(DeclarativeModel):
     """Base Event class."""
 
     topic: str
     model: str
-    items: list[MinosModel]
+    items: list[Model]
 
-    def __init__(self, topic: str, items: list[MinosModel], *args, model: str = None, **kwargs):
+    def __init__(self, topic: str, items: list[Model], *args, model: str = None, **kwargs):
         if model is None:
             model_cls = type(items[0])
             model = model_cls.classname
@@ -51,11 +54,11 @@ class Event(MinosModel):
         super().__init__(topic, model, list(items), *args, **kwargs)
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> MinosModel:
+    def from_dict(cls, d: dict[str, Any]) -> Event:
         """Build a new instance from a dictionary.
 
         :param d: A dictionary object.
-        :return: A new ``MinosModel`` instance.
+        :return: A new ``Model`` instance.
         """
         if "model" in d and "items" in d:
             model_cls = import_module(d["model"])
@@ -73,7 +76,7 @@ class Event(MinosModel):
         return
 
     @property
-    def model_cls(self) -> Type[MinosModel]:
+    def model_cls(self) -> Type[Model]:
         """Get the model class.
 
         :return: A type object.

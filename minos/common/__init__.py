@@ -103,6 +103,8 @@ from .model import (
     CommandReply,
     DataTransferObject,
     Decimal,
+    DeclarativeModel,
+    DynamicModel,
     Enum,
     Event,
     Fixed,
