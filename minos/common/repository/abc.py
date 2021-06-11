@@ -51,8 +51,6 @@ class MinosRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        await self.setup()
-
         if not isinstance(entry, RepositoryEntry):
             entry = RepositoryEntry.from_aggregate(entry)
 
@@ -65,8 +63,6 @@ class MinosRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        await self.setup()
-
         if not isinstance(entry, RepositoryEntry):
             entry = RepositoryEntry.from_aggregate(entry)
 
@@ -79,8 +75,6 @@ class MinosRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        await self.setup()
-
         if not isinstance(entry, RepositoryEntry):
             entry = RepositoryEntry.from_aggregate(entry)
 
@@ -127,8 +121,6 @@ class MinosRepository(ABC, MinosSetup):
         :param id_ge: Entry identifier greater or equal to the given value.
         :return: A list of entries.
         """
-        await self.setup()
-
         generator = self._select(
             aggregate_id=aggregate_id,
             aggregate_name=aggregate_name,
