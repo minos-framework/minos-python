@@ -45,7 +45,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         observed = FieldsDiff.from_difference(self.car_two, self.car_one, ignore=["id", "version"])
         self.assertEqual(expected, observed)
 
-    def test_from_aggregate(self):
+    def test_from_model(self):
         expected = FieldsDiff(
             {
                 "doors": ModelField("doors", int, 5),
@@ -53,7 +53,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
                 "owner": ModelField("owner", Optional[list[ModelRef[Owner]]], None),
             }
         )
-        observed = FieldsDiff.from_aggregate(self.car_two, ignore=["id", "version"])
+        observed = FieldsDiff.from_model(self.car_two, ignore=["id", "version"])
         self.assertEqual(expected, observed)
 
     def test_simplify(self):
@@ -70,7 +70,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             {
                 "fields": [{"name": "doors", "type": "int"}, {"name": "color", "type": "string"}],
                 "name": "FieldsDiff",
-                "namespace": "minos.common.model.dynamic.diffs",
+                "namespace": "minos.common.model.dynamic.diff",
                 "type": "record",
             }
         ]

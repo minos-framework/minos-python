@@ -55,7 +55,7 @@ class FieldsDiff(DynamicModel):
         return cls(fields)
 
     @classmethod
-    def from_aggregate(cls, aggregate: Model, ignore: Optional[list[str]] = None) -> FieldsDiff:
+    def from_model(cls, aggregate: Model, ignore: Optional[list[str]] = None) -> FieldsDiff:
         """Build an ``FieldsDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.

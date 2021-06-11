@@ -10,9 +10,6 @@ from __future__ import (
 )
 
 import logging
-from operator import (
-    attrgetter,
-)
 from typing import (
     AsyncIterator,
     Generic,
@@ -25,27 +22,27 @@ from dependency_injector.wiring import (
     Provide,
 )
 
-from ...exceptions import (
+from ....exceptions import (
     MinosBrokerNotProvidedException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
 )
-from ...networks import (
+from ....networks import (
     MinosBroker,
 )
-from ...repository import (
+from ....repository import (
     MinosRepository,
 )
-from ...snapshot import (
+from ....snapshot import (
     MinosSnapshot,
 )
-from ..dynamic import (
-    FieldsDiff,
-)
-from .abc import (
+from ..abc import (
     DeclarativeModel,
+)
+from .diff import (
+    AggregateDiff,
 )
 
 T = TypeVar("T")
@@ -250,58 +247,3 @@ class Aggregate(DeclarativeModel, Generic[T]):
         for name, field in difference.fields_diff.fields.items():
             setattr(self, name, field.value)
         self.version = difference.version
-
-
-class AggregateDiff(DeclarativeModel):
-    """TODO"""
-
-    id: int
-    version: int
-    fields_diff: FieldsDiff
-
-    @classmethod
-    def from_difference(cls, a: Aggregate, b: Aggregate) -> AggregateDiff:
-        """Build an ``FieldsDiff`` instance from the difference of two aggregates.
-
-        :param a: One ``Aggregate`` instance.
-        :param b: Another ``Aggregate`` instance.
-        :return: An ``FieldsDiff`` instance.
-        """
-        logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
-
-        if a.id != b.id:
-            raise ValueError(
-                f"To compute aggregate differences, both arguments must have same id. Obtained: {a.id!r} vs {b.id!r}"
-            )
-
-        old, new = sorted([a, b], key=attrgetter("version"))
-
-        fields_diff = FieldsDiff.from_difference(a, b, ignore=["id", "version"])
-
-        return cls(new.id, new.version, fields_diff)
-
-    @classmethod
-    def from_aggregate(cls, aggregate: Aggregate) -> AggregateDiff:
-        """Build an ``FieldsDiff`` from an ``Aggregate`` (considering all fields as differences).
-
-        :param aggregate: An ``Aggregate`` instance.
-        :return: An ``FieldsDiff`` instance.
-        """
-
-        fields_diff = FieldsDiff.from_aggregate(aggregate, ignore=["id", "version"])
-        return cls(aggregate.id, aggregate.version, fields_diff)
-
-    @classmethod
-    def simplify(cls, *args: AggregateDiff) -> AggregateDiff:
-        """Simplify an iterable of aggregate differences into a single one.
-
-        :param args: A sequence of ``FieldsDiff` instances.
-        :return: An ``FieldsDiff`` instance.
-        """
-        args = sorted(args, key=attrgetter("version"))
-
-        current = dict()
-        for another in map(attrgetter("fields_diff"), args):
-            current |= another
-
-        return cls(args[-1].id, args[-1].version, current)
