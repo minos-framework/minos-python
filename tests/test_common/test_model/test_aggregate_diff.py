@@ -7,9 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import (
-    Optional,
-)
+from typing import Optional
 
 from minos.common import (
     AggregateDiff,
