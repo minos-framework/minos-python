@@ -242,7 +242,9 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :return: This method does not return anything.
         """
         if self.id != difference.id:
-            raise Exception
+            raise ValueError(
+                f"To apply the difference, it must have same id. Expected: {self.id!r} Obtained: {difference.id!r}"
+            )
         logger.debug(f"Applying {difference!r} to {self!r}...")
         for name, field in difference.fields_diff.fields.items():
             setattr(self, name, field.value)

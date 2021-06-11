@@ -33,12 +33,22 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         expected = AggregateDiff(
             1, 3, FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
         )
-        observed = AggregateDiff.from_difference(self.final, self.initial)
+        observed = self.final.diff(self.initial)
         self.assertEqual(expected, observed)
 
-    def test_from_difference_raises(self):
+    def test_apply_diff(self):
+        diff = AggregateDiff(
+            1, 3, FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
+        )
+        self.initial.apply_diff(diff)
+        self.assertEqual(self.final, self.initial)
+
+    def test_apply_diff_raises(self):
+        diff = AggregateDiff(
+            2, 3, FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
+        )
         with self.assertRaises(ValueError):
-            AggregateDiff.from_difference(self.initial, self.another)
+            self.initial.apply_diff(diff)
 
 
 if __name__ == "__main__":
