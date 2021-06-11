@@ -141,24 +141,5 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         dto_model = DataTransferObject.from_avro_bytes(serialized)
 
         self.assertEqual(data["price"], dto_model.price)
-        # self.assertEqual(data["user"], dto_model.user)
-
-        """
-        {
-            "type": "record",
-            "name": "tests.model_classes.ShoppingList",
-            "fields": [
-                {
-                    "name": "user",
-                    "type": {
-                        "type": "record",
-                        "name": "tests.model_classes.User",
-                        "fields": [
-                            {"name": "username", "type": {"type": "array", "items": "int"}}
-                        ],
-                    },
-                },
-                {"name": "price", "type": "int"},
-            ],
-        }
-        """
+        self.assertIsInstance(dto_model.user, DataTransferObject)
+        self.assertEqual(data["user"], dto_model.user.avro_data)
