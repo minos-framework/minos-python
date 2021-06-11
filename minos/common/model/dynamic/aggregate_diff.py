@@ -30,15 +30,15 @@ def _diff(a: dict, b: dict) -> dict:
 
 
 class AggregateDiff(DynamicModel):
-    """TODO"""
+    """Aggregate Difference class."""
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate) -> AggregateDiff:
-        """TODO
+        """Build an ``AggregateDiff`` instance from the difference of two aggregates.
 
-        :param a: TODO
-        :param b: TODO
-        :return: TODO
+        :param a: One ``Aggregate`` instance.
+        :param b: Another ``Aggregate`` instance.
+        :return: An ``AggregateDiff`` instance.
         """
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
 
@@ -56,10 +56,10 @@ class AggregateDiff(DynamicModel):
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate) -> AggregateDiff:
-        """TODO
+        """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
 
-        :param aggregate: TODO
-        :return: TODO
+        :param aggregate: An ``Aggregate`` instance.
+        :return: An ``AggregateDiff`` instance.
         """
         fields = dict(aggregate.fields)
         fields.pop("id")
@@ -69,10 +69,10 @@ class AggregateDiff(DynamicModel):
 
     @classmethod
     def simplify(cls, *args: AggregateDiff) -> AggregateDiff:
-        """TODO
+        """Simplify an iterable of aggregate differences into a single one.
 
-        :param args: TODO
-        :return: TODO
+        :param args: A sequence of ``AggregateDiff` instances.
+        :return: An ``AggregateDiff`` instance.
         """
         current = cls(args[0].fields)
         for another in args[1:]:

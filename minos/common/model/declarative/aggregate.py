@@ -229,10 +229,12 @@ class Aggregate(DeclarativeModel, Generic[T]):
         await self._broker.send_one(self, topic=f"{type(self).__name__}Deleted")
 
     def diff(self, another: Aggregate) -> AggregateDiff:
-        """TODO
+        """Compute the difference with another aggregate.
 
-        :param another: TODO
-        :return: TODO
+        Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``id`` value.
+
+        :param another: Another ``Aggregate`` instance.
+        :return: An ``AggregateDiff`` instance.
         """
         from ..dynamic import (
             AggregateDiff,
@@ -241,11 +243,11 @@ class Aggregate(DeclarativeModel, Generic[T]):
         return AggregateDiff.from_difference(self, another)
 
     def apply_diff(self, version: int, difference: AggregateDiff) -> NoReturn:
-        """TODO
+        """Apply the differences over the instance.
 
-        :param version: TODO
-        :param difference: TODO
-        :return: TODO
+        :param version: The new version of the ``Aggregate``.
+        :param difference: The ``AggregateDiff`` containing the values to be set.
+        :return: This method does not return anything.
         """
         logger.debug(f"Applying {difference!r} to {self!r}...")
         for name, field in difference.fields.items():
