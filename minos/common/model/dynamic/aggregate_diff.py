@@ -13,13 +13,18 @@ import logging
 from operator import (
     attrgetter,
 )
-
-from ..declarative import (
-    Aggregate,
+from typing import (
+    TYPE_CHECKING,
 )
+
 from .abc import (
     DynamicModel,
 )
+
+if TYPE_CHECKING:
+    from ..declarative import (
+        Aggregate,
+    )
 
 logger = logging.getLogger(__name__)
 

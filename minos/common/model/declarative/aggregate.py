@@ -11,7 +11,6 @@ from __future__ import (
 
 import logging
 from typing import (
-    TYPE_CHECKING,
     AsyncIterator,
     Generic,
     NoReturn,
@@ -39,14 +38,12 @@ from ...repository import (
 from ...snapshot import (
     MinosSnapshot,
 )
+from ..dynamic import (
+    AggregateDiff,
+)
 from .abc import (
     DeclarativeModel,
 )
-
-if TYPE_CHECKING:
-    from ..dynamic import (
-        AggregateDiff,
-    )
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
@@ -236,10 +233,6 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :param another: Another ``Aggregate`` instance.
         :return: An ``AggregateDiff`` instance.
         """
-        from ..dynamic import (
-            AggregateDiff,
-        )
-
         return AggregateDiff.from_difference(self, another)
 
     def apply_diff(self, version: int, difference: AggregateDiff) -> NoReturn:
