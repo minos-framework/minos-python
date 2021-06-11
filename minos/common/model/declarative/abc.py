@@ -41,7 +41,7 @@ T = t.TypeVar("T")
 
 
 class DeclarativeModel(Model, t.Generic[T]):
-    """Base class for ``minos`` model entities."""
+    """Base class for ``minos`` declarative model entities."""
 
     def __init__(self, *args, **kwargs):
         """Class constructor.

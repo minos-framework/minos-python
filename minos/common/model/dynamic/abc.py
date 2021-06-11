@@ -32,7 +32,7 @@ T = TypeVar("T")
 
 
 class DynamicModel(Model):
-    """TODO"""
+    """Base class for ``minos`` dynamic model entities"""
 
     @classmethod
     def from_avro_bytes(cls, raw: bytes, **kwargs) -> Union[T, list[T]]:
@@ -50,11 +50,11 @@ class DynamicModel(Model):
 
     @classmethod
     def from_avro(cls, schema: dict[str, Any], data: dict[str, Any]) -> T:
-        """TODO
+        """Build a new instance from the ``avro`` schema and data.
 
-        :param schema: TODO
-        :param data: TODO
-        :return: TODO
+        :param schema: The avro schema of the model.
+        :param data: The avro data of the model.
+        :return: A new ``DynamicModel`` instance.
         """
         fields = dict()
         for raw in schema["fields"]:
