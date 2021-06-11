@@ -14,11 +14,11 @@ from operator import (
     attrgetter,
 )
 
-from .dynamic import (
-    DynamicModel,
-)
 from .aggregate import (
     Aggregate,
+)
+from .dynamic import (
+    DynamicModel,
 )
 
 logger = logging.getLogger(__name__)
