@@ -41,7 +41,7 @@ class FieldsDiff(DynamicModel):
 
         :param a: One ``Aggregate`` instance.
         :param b: Another ``Aggregate`` instance.
-        :param ignore: TODO
+        :param ignore: List of fields to be ignored.
         :return: An ``FieldsDiff`` instance.
         """
         if ignore is None:
@@ -59,7 +59,7 @@ class FieldsDiff(DynamicModel):
         """Build an ``FieldsDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
-        :param ignore: TODO
+        :param ignore: List of fields to be ignored.
         :return: An ``FieldsDiff`` instance.
         """
         if ignore is None:

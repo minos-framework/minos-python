@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class AggregateDiff(DeclarativeModel):
-    """TODO"""
+    """Aggregate Difference class."""
 
     id: int
     version: int
