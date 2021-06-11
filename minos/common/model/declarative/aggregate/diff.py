@@ -84,4 +84,4 @@ class AggregateDiff(DeclarativeModel):
         for another in map(attrgetter("fields_diff"), args):
             current |= another
 
-        return cls(args[-1].id, args[-1].version, current)
+        return cls(args[-1].id, args[-1].version, FieldsDiff(current))

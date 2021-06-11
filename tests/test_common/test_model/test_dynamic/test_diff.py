@@ -41,11 +41,35 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(fields, difference.fields)
 
     def test_from_difference(self):
+        expected = FieldsDiff(
+            {
+                "version": ModelField("version", int, 2),
+                "doors": ModelField("doors", int, 5),
+                "color": ModelField("color", str, "red"),
+            }
+        )
+        observed = FieldsDiff.from_difference(self.car_two, self.car_one)
+        self.assertEqual(expected, observed)
+
+    def test_from_difference_with_ignore(self):
         expected = FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "red")})
         observed = FieldsDiff.from_difference(self.car_two, self.car_one, ignore=["id", "version"])
         self.assertEqual(expected, observed)
 
     def test_from_model(self):
+        expected = FieldsDiff(
+            {
+                "id": ModelField("id", int, 1),
+                "version": ModelField("version", int, 2),
+                "doors": ModelField("doors", int, 5),
+                "color": ModelField("color", str, "red"),
+                "owner": ModelField("owner", Optional[list[ModelRef[Owner]]], None),
+            }
+        )
+        observed = FieldsDiff.from_model(self.car_two)
+        self.assertEqual(expected, observed)
+
+    def test_from_model_with_ignore(self):
         expected = FieldsDiff(
             {
                 "doors": ModelField("doors", int, 5),

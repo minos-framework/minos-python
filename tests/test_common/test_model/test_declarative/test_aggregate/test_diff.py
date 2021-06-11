@@ -6,14 +6,19 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from typing import (
+    Optional,
+)
 
 from minos.common import (
     AggregateDiff,
     FieldsDiff,
     ModelField,
+    ModelRef,
 )
 from tests.aggregate_classes import (
     Car,
+    Owner,
 )
 from tests.utils import (
     FakeBroker,
@@ -29,7 +34,22 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             self.final = Car(1, 3, 5, "yellow", _broker=broker, _repository=repository, _snapshot=snapshot)
             self.another = Car(3, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
 
-    def test_diff(self):
+    def test_from_aggregate(self):
+        expected = AggregateDiff(
+            id=1,
+            version=1,
+            fields_diff=FieldsDiff(
+                {
+                    "doors": ModelField("doors", int, 3),
+                    "color": ModelField("color", str, "blue"),
+                    "owner": ModelField("owner", Optional[list[ModelRef[Owner]]], None),
+                }
+            ),
+        )
+        observed = AggregateDiff.from_aggregate(self.initial)
+        self.assertEqual(expected, observed)
+
+    def test_from_difference(self):
         expected = AggregateDiff(
             1, 3, FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
         )
@@ -39,6 +59,19 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
     def test_from_difference_raises(self):
         with self.assertRaises(ValueError):
             AggregateDiff.from_difference(self.initial, self.another)
+
+    def test_simplify(self):
+        expected = AggregateDiff(
+            1, 3, FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "red")})
+        )
+
+        one = AggregateDiff(1, 1, FieldsDiff({"color": ModelField("color", str, "yellow")}))
+        two = AggregateDiff(
+            1, 2, FieldsDiff({"doors": ModelField("doors", int, 1), "color": ModelField("color", str, "red")})
+        )
+        three = AggregateDiff(1, 3, FieldsDiff({"doors": ModelField("doors", int, 5)}))
+        observed = AggregateDiff.simplify(one, two, three)
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
