@@ -20,7 +20,7 @@ from uuid import (
     UUID,
 )
 
-from minos.common.model.abc.types import (
+from ..types import (
     BOOLEAN,
     BYTES,
     DATE_TYPE,
@@ -34,8 +34,7 @@ from minos.common.model.abc.types import (
     UUID_TYPE,
     ModelRef,
 )
-
-from .common import (
+from .utils import (
     _is_minos_model_cls,
 )
 

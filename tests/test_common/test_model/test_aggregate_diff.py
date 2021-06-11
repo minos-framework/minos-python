@@ -74,7 +74,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             {
                 "fields": [{"name": "doors", "type": "int"}, {"name": "color", "type": "string"}],
                 "name": "AggregateDiff",
-                "namespace": "minos.common.model.aggregate_diff",
+                "namespace": "minos.common.model.dynamic.aggregate_diff",
                 "type": "record",
             }
         ]

@@ -14,7 +14,7 @@ from typing import (
 )
 
 from .model import (
-    MinosModel,
+    Model,
 )
 
 
@@ -51,4 +51,4 @@ class Response:
 
         :return: A list of raw items.
         """
-        return [item if not isinstance(item, MinosModel) else item.avro_data for item in self._items]
+        return [item if not isinstance(item, Model) else item.avro_data for item in self._items]

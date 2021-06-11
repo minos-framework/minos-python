@@ -23,24 +23,24 @@ from dependency_injector.wiring import (
     Provide,
 )
 
-from ..exceptions import (
+from ...exceptions import (
     MinosBrokerNotProvidedException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
 )
-from ..networks import (
+from ...networks import (
     MinosBroker,
 )
-from ..repository import (
+from ...repository import (
     MinosRepository,
 )
-from ..snapshot import (
+from ...snapshot import (
     MinosSnapshot,
 )
 from .abc import (
-    MinosModel,
+    DeclarativeModel,
 )
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
-class Aggregate(MinosModel, Generic[T]):
+class Aggregate(DeclarativeModel, Generic[T]):
     """Base aggregate class."""
 
     id: int

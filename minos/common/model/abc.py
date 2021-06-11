@@ -11,36 +11,29 @@ from __future__ import (
 
 import logging
 import typing as t
+from abc import (
+    abstractmethod,
+)
 from base64 import (
     b64decode,
     b64encode,
 )
-from itertools import (
-    zip_longest,
-)
 
-from ...exceptions import (
+from ..exceptions import (
     EmptyMinosModelSequenceException,
     MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
-from ...importlib import (
-    classname,
-)
-from ...meta import (
-    classproperty,
+from ..meta import (
     property_or_classproperty,
     self_or_classmethod,
 )
-from ...protocol import (
+from ..protocol import (
     MinosAvroProtocol,
 )
 from .fields import (
     MinosModelAvroSchemaBuilder,
     ModelField,
-)
-from .types import (
-    MissingSentinel,
 )
 
 logger = logging.getLogger(__name__)
@@ -75,22 +68,25 @@ logger = logging.getLogger(__name__)
 #
 #     return wrap(cls)
 
+T = t.TypeVar("T")
 
-class MinosModel(object):
+
+class Model(t.Generic[T]):
     """Base class for ``minos`` model entities."""
 
     _fields: dict[str, ModelField] = {}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, fields: dict[str, ModelField] = None):
         """Class constructor.
 
-        :param kwargs: Named arguments to be set as model attributes.
+        :param fields: Dictionary that contains the ``ModelField`` instances of the model indexed by name.
         """
-        self._fields = dict()
-        self._list_fields(*args, **kwargs)
+        if fields is None:
+            fields = dict()
+        self._fields = fields
 
     @classmethod
-    def from_avro_str(cls, raw: str, **kwargs) -> t.Union[MinosModel, list[MinosModel]]:
+    def from_avro_str(cls, raw: str, **kwargs) -> t.Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -100,29 +96,16 @@ class MinosModel(object):
         return cls.from_avro_bytes(raw, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[MinosModel, list[MinosModel]]:
+    @abstractmethod
+    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
         :return: A single instance or a sequence of instances.
         """
 
-        decoded = MinosAvroProtocol().decode(raw)
-        if isinstance(decoded, list):
-            return [cls.from_dict(d | kwargs) for d in decoded]
-        return cls.from_dict(decoded | kwargs)
-
     @classmethod
-    def from_dict(cls, d: dict[str, t.Any]) -> MinosModel:
-        """Build a new instance from a dictionary.
-
-        :param d: A dictionary object.
-        :return: A new ``MinosModel`` instance.
-        """
-        return cls(**d)
-
-    @classmethod
-    def to_avro_str(cls, models: list[MinosModel]) -> str:
+    def to_avro_str(cls, models: list[T]) -> str:
         """Create a bytes representation of the given object instances.
 
         :param models: A sequence of minos models.
@@ -131,7 +114,7 @@ class MinosModel(object):
         return b64encode(cls.to_avro_bytes(models)).decode()
 
     @classmethod
-    def to_avro_bytes(cls, models: list[MinosModel]) -> bytes:
+    def to_avro_bytes(cls, models: list[T]) -> bytes:
         """Create a bytes representation of the given object instances.
 
         :param models: A sequence of minos models.
@@ -149,16 +132,6 @@ class MinosModel(object):
         avro_schema = models[0].avro_schema
         # noinspection PyTypeChecker
         return MinosAvroProtocol().encode([model.avro_data for model in models], avro_schema)
-
-    # noinspection PyMethodParameters
-    @classproperty
-    def classname(cls) -> str:
-        """Compute the current class namespace.
-
-        :return: An string object.
-        """
-        # noinspection PyTypeChecker
-        return classname(cls)
 
     @property
     def fields(self) -> dict[str, ModelField]:
@@ -181,33 +154,11 @@ class MinosModel(object):
         else:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
-    def _list_fields(self, *args, **kwargs) -> t.NoReturn:
-        for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
-            if name in kwargs and value is not MissingSentinel:
-                raise TypeError(f"got multiple values for argument {repr(name)}")
-
-            if value is MissingSentinel and name in kwargs:
-                value = kwargs[name]
-
-            self._fields[name] = ModelField(
-                name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
-            )
-
     # noinspection PyMethodParameters
     @self_or_classmethod
+    @abstractmethod
     def _type_hints(self_or_cls) -> dict[str, t.Any]:
-        fields = dict()
-        if isinstance(self_or_cls, type):
-            cls = self_or_cls
-        else:
-            cls = type(self_or_cls)
-        for b in cls.__mro__[::-1]:
-            base_fields = getattr(b, "_fields", None)
-            if base_fields is not None:
-                list_fields = {k: v for k, v in t.get_type_hints(b).items() if not k.startswith("_")}
-                fields |= list_fields
-        logger.debug(f"The obtained fields are: {fields!r}")
-        yield from fields.items()
+        pass
 
     # noinspection PyMethodParameters
     @property_or_classproperty
@@ -253,7 +204,7 @@ class MinosModel(object):
         # noinspection PyTypeChecker
         return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
 
-    def __eq__(self, other: MinosModel) -> bool:
+    def __eq__(self, other: T) -> bool:
         return type(self) == type(other) and self.fields == other.fields
 
     def __hash__(self) -> int:

@@ -14,10 +14,10 @@ from operator import (
     attrgetter,
 )
 
-from .aggregate import (
+from ..declarative import (
     Aggregate,
 )
-from .dynamic import (
+from .abc import (
     DynamicModel,
 )
 
@@ -33,7 +33,7 @@ class AggregateDiff(DynamicModel):
     """TODO"""
 
     @classmethod
-    def from_update(cls, a: Aggregate, b: Aggregate):
+    def from_update(cls, a: Aggregate, b: Aggregate) -> AggregateDiff:
         """TODO
 
         :param a: TODO
@@ -53,7 +53,7 @@ class AggregateDiff(DynamicModel):
         return cls(fields)
 
     @classmethod
-    def from_create(cls, aggregate: Aggregate):
+    def from_create(cls, aggregate: Aggregate) -> AggregateDiff:
         """TODO
 
         :param aggregate: TODO
@@ -66,7 +66,7 @@ class AggregateDiff(DynamicModel):
         return cls(fields)
 
     @classmethod
-    def simplify(cls, *args: AggregateDiff):
+    def simplify(cls, *args: AggregateDiff) -> AggregateDiff:
         """TODO
 
         :param args: TODO
