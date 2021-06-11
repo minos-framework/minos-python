@@ -6,6 +6,29 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from .abc import (
+    Model,
+)
+from .declarative import (
+    Aggregate,
+    AggregateDiff,
+    Command,
+    CommandReply,
+    DeclarativeModel,
+    Event,
+    MinosModel,
+)
+from .dynamic import (
+    DynamicModel,
+    FieldsDiff,
+)
+from .fields import (
+    MinosModelAvroDataBuilder,
+    MinosModelAvroSchemaBuilder,
+    MinosModelFromAvroBuilder,
+    ModelField,
+    ModelFieldCaster,
+)
+from .types import (
     ARRAY,
     BOOLEAN,
     BYTES,
@@ -32,20 +55,6 @@ from .abc import (
     Decimal,
     Enum,
     Fixed,
-    MinosModel,
     MissingSentinel,
-    ModelField,
     ModelRef,
-)
-from .aggregate import (
-    Aggregate,
-)
-from .command import (
-    Command,
-)
-from .command_reply import (
-    CommandReply,
-)
-from .event import (
-    Event,
 )
