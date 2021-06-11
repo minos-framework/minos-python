@@ -238,7 +238,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
             AggregateDiff,
         )
 
-        return AggregateDiff.from_update(self, another)
+        return AggregateDiff.from_difference(self, another)
 
     def apply_diff(self, version: int, difference: AggregateDiff) -> NoReturn:
         """TODO

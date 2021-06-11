@@ -33,7 +33,7 @@ class AggregateDiff(DynamicModel):
     """TODO"""
 
     @classmethod
-    def from_update(cls, a: Aggregate, b: Aggregate) -> AggregateDiff:
+    def from_difference(cls, a: Aggregate, b: Aggregate) -> AggregateDiff:
         """TODO
 
         :param a: TODO
@@ -43,7 +43,9 @@ class AggregateDiff(DynamicModel):
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
 
         if a.id != b.id:
-            raise Exception()  # TODO
+            raise ValueError(
+                f"To compute aggregate differences, both arguments must have same id. Obtained: {a.id!r} vs {b.id!r}"
+            )
 
         new, old = sorted([a, b], key=attrgetter("version"), reverse=True)
         fields = _diff(new.fields, old.fields)
@@ -53,7 +55,7 @@ class AggregateDiff(DynamicModel):
         return cls(fields)
 
     @classmethod
-    def from_create(cls, aggregate: Aggregate) -> AggregateDiff:
+    def from_aggregate(cls, aggregate: Aggregate) -> AggregateDiff:
         """TODO
 
         :param aggregate: TODO

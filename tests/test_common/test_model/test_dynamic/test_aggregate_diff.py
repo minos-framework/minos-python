@@ -33,18 +33,23 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             self.car_one = Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
             self.car_two = Car(1, 2, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot)
             self.car_three = Car(1, 3, 5, "yellow", _broker=broker, _repository=repository, _snapshot=snapshot)
+            self.car_four = Car(2, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
 
     def test_constructor(self):
         fields = {"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "red")}
         difference = AggregateDiff(fields)
         self.assertEqual(fields, difference.fields)
 
-    def test_from_update(self):
+    def test_from_difference(self):
         expected = AggregateDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "red")})
-        observed = AggregateDiff.from_update(self.car_one, self.car_two)
+        observed = AggregateDiff.from_difference(self.car_one, self.car_two)
         self.assertEqual(expected, observed)
 
-    def test_from_create(self):
+    def test_from_difference_raises(self):
+        with self.assertRaises(ValueError):
+            AggregateDiff.from_difference(self.car_one, self.car_four)
+
+    def test_from_aggregate(self):
         expected = AggregateDiff(
             {
                 "doors": ModelField("doors", int, 5),
@@ -52,14 +57,14 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
                 "owner": ModelField("owner", Optional[list[ModelRef[Owner]]], None),
             }
         )
-        observed = AggregateDiff.from_create(self.car_two)
+        observed = AggregateDiff.from_aggregate(self.car_two)
         self.assertEqual(expected, observed)
 
     def test_simplify(self):
         expected = AggregateDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
 
-        first = AggregateDiff.from_update(self.car_one, self.car_two)
-        second = AggregateDiff.from_update(self.car_two, self.car_three)
+        first = AggregateDiff.from_difference(self.car_one, self.car_two)
+        second = AggregateDiff.from_difference(self.car_two, self.car_three)
         observed = AggregateDiff.simplify(first, second)
 
         self.assertEqual(expected, observed)
