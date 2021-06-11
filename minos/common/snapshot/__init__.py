@@ -6,15 +6,16 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from .abc import (
-    MinosRepository,
+    MinosSnapshot,
 )
 from .entries import (
-    RepositoryAction,
-    RepositoryEntry,
+    SnapshotEntry,
 )
 from .memory import (
-    InMemoryRepository,
+    InMemorySnapshot,
 )
 from .pg import (
-    PostgreSqlRepository,
+    PostgreSqlSnapshot,
+    PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotSetup,
 )

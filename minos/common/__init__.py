@@ -50,6 +50,8 @@ from .exceptions import (
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSnapshotException,
+    MinosSnapshotNotProvidedException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
@@ -120,11 +122,11 @@ from .protocol import (
     MinosJsonBinaryProtocol,
 )
 from .repository import (
-    MinosInMemoryRepository,
+    InMemoryRepository,
     MinosRepository,
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
-    PostgreSqlMinosRepository,
+    PostgreSqlRepository,
+    RepositoryAction,
+    RepositoryEntry,
 )
 from .saga import (
     MinosSagaManager,
@@ -134,6 +136,14 @@ from .services import (
 )
 from .setup import (
     MinosSetup,
+)
+from .snapshot import (
+    InMemorySnapshot,
+    MinosSnapshot,
+    PostgreSqlSnapshot,
+    PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotSetup,
+    SnapshotEntry,
 )
 from .storage import (
     MinosStorage,

@@ -19,11 +19,15 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     Optional,
+    Type,
     Union,
 )
 
 from ..exceptions import (
     MinosRepositoryUnknownActionException,
+)
+from ..importlib import (
+    import_module,
 )
 
 if TYPE_CHECKING:
@@ -32,7 +36,7 @@ if TYPE_CHECKING:
     )
 
 
-class MinosRepositoryAction(Enum):
+class RepositoryAction(Enum):
     """Enum class that describes the available repository actions."""
 
     INSERT = "insert"
@@ -40,7 +44,7 @@ class MinosRepositoryAction(Enum):
     DELETE = "delete"
 
     @classmethod
-    def value_of(cls, value: str) -> Optional[MinosRepositoryAction]:
+    def value_of(cls, value: str) -> Optional[RepositoryAction]:
         """Get the action based on its text representation."""
         for item in cls.__members__.values():
             if item.value == value:
@@ -50,7 +54,7 @@ class MinosRepositoryAction(Enum):
         )
 
 
-class MinosRepositoryEntry(object):
+class RepositoryEntry(object):
     """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
 
     __slots__ = "aggregate_id", "aggregate_name", "version", "data", "id", "action", "created_at"
@@ -63,13 +67,13 @@ class MinosRepositoryEntry(object):
         version: int,
         data: Union[bytes, memoryview] = bytes(),
         id: Optional[int] = None,
-        action: Optional[Union[str, MinosRepositoryAction]] = None,
+        action: Optional[Union[str, RepositoryAction]] = None,
         created_at: Optional[datetime] = None,
     ):
         if isinstance(data, memoryview):
             data = data.tobytes()
         if action is not None and isinstance(action, str):
-            action = MinosRepositoryAction.value_of(action)
+            action = RepositoryAction.value_of(action)
 
         self.aggregate_id = aggregate_id
         self.aggregate_name = aggregate_name
@@ -81,16 +85,25 @@ class MinosRepositoryEntry(object):
         self.created_at = created_at
 
     @classmethod
-    def from_aggregate(cls, aggregate: Aggregate) -> MinosRepositoryEntry:
+    def from_aggregate(cls, aggregate: Aggregate) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate: The aggregate instance.
-        :return: A new ``MinosRepositoryEntry`` instance.
+        :return: A new ``RepositoryEntry`` instance.
         """
         # noinspection PyTypeChecker
         return cls(aggregate.id, aggregate.classname, aggregate.version, aggregate.avro_bytes)
 
-    def __eq__(self, other: "MinosRepositoryEntry") -> bool:
+    @property
+    def aggregate_cls(self) -> Type[Aggregate]:
+        """Load the concrete ``Aggregate`` class.
+
+        :return: A ``Type`` object.
+        """
+        # noinspection PyTypeChecker
+        return import_module(self.aggregate_name)
+
+    def __eq__(self, other: "RepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:

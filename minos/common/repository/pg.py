@@ -17,11 +17,11 @@ from .abc import (
     MinosRepository,
 )
 from .entries import (
-    MinosRepositoryEntry,
+    RepositoryEntry,
 )
 
 
-class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
+class PostgreSqlRepository(MinosRepository, PostgreSqlMinosDatabase):
     """PostgreSQL-based implementation of the repository class in ``Minos``."""
 
     async def _setup(self):
@@ -37,7 +37,7 @@ class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
         await self.submit_query(_CREATE_ACTION_ENUM_QUERY)
         await self.submit_query(_CREATE_TABLE_QUERY)
 
-    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         params = {
             "action": entry.action.value,
             "aggregate_id": entry.aggregate_id,
@@ -48,10 +48,10 @@ class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
         entry.id, entry.aggregate_id, entry.version, entry.created_at = response
         return entry
 
-    async def _select(self, **kwargs,) -> AsyncIterator[MinosRepositoryEntry]:
+    async def _select(self, **kwargs,) -> AsyncIterator[RepositoryEntry]:
         query = self._build_select_query(**kwargs)
         async for row in self.submit_query_and_iter(query, kwargs):
-            yield MinosRepositoryEntry(*row)
+            yield RepositoryEntry(*row)
 
     # noinspection PyUnusedLocal
     @staticmethod
