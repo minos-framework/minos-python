@@ -5,13 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import logging
-from operator import attrgetter
+from operator import (
+    attrgetter,
+)
 
-from .dynamic import DynamicModel
-from .aggregate import Aggregate
+from .aggregate import (
+    Aggregate,
+)
+from .dynamic import (
+    DynamicModel,
+)
 
 logger = logging.getLogger(__name__)
 

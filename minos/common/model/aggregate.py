@@ -5,7 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import logging
 from typing import (
@@ -17,7 +19,9 @@ from typing import (
     TypeVar,
 )
 
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import (
+    Provide,
+)
 
 from ..exceptions import (
     MinosBrokerNotProvidedException,
@@ -26,13 +30,23 @@ from ..exceptions import (
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
 )
-from ..networks import MinosBroker
-from ..repository import MinosRepository
-from ..snapshot import MinosSnapshot
-from .abc import MinosModel
+from ..networks import (
+    MinosBroker,
+)
+from ..repository import (
+    MinosRepository,
+)
+from ..snapshot import (
+    MinosSnapshot,
+)
+from .abc import (
+    MinosModel,
+)
 
 if TYPE_CHECKING:
-    from .aggregate_diff import AggregateDiff
+    from .aggregate_diff import (
+        AggregateDiff,
+    )
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
