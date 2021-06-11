@@ -25,7 +25,7 @@ from ..abc import (
 )
 
 if TYPE_CHECKING:
-    from .impl import (
+    from .model import (
         Aggregate,
     )
 
