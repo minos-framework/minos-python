@@ -44,7 +44,7 @@ from .abc import (
 )
 
 if TYPE_CHECKING:
-    from .aggregate_diff import (
+    from ..dynamic import (
         AggregateDiff,
     )
 
@@ -227,6 +227,18 @@ class Aggregate(DeclarativeModel, Generic[T]):
         """
         await self._repository.delete(self)
         await self._broker.send_one(self, topic=f"{type(self).__name__}Deleted")
+
+    def diff(self, another: Aggregate) -> AggregateDiff:
+        """TODO
+
+        :param another: TODO
+        :return: TODO
+        """
+        from ..dynamic import (
+            AggregateDiff,
+        )
+
+        return AggregateDiff.from_update(self, another)
 
     def apply_diff(self, version: int, difference: AggregateDiff) -> NoReturn:
         """TODO

@@ -64,11 +64,6 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    def test_apply_to(self):
-        diff = AggregateDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
-        self.car_one.apply_diff(3, diff)
-        self.assertEqual(self.car_three, self.car_one)
-
     def test_avro_schema(self):
         expected = [
             {
