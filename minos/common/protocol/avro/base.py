@@ -94,7 +94,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         return ans
 
     @classmethod
-    def decode_schema(cls, data: bytes, *args, **kwargs) -> Union[tuple[list, Any]]:
+    def decode_schema(cls, data: bytes, *args, **kwargs) -> Union[dict[str, Any], list[dict[str, Any]]]:
         """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
 
         :param data: A bytes object.

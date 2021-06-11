@@ -28,8 +28,8 @@ from ..setup import (
     MinosSetup,
 )
 from .entries import (
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
+    RepositoryAction,
+    RepositoryEntry,
 )
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ class MinosRepository(ABC, MinosSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
-    async def create(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
+    async def create(self, entry: Union[Aggregate, RepositoryEntry]) -> RepositoryEntry:
         """Store new creation entry into de repository.
 
         :param entry: Entry to be stored.
@@ -53,13 +53,13 @@ class MinosRepository(ABC, MinosSetup):
         """
         await self.setup()
 
-        if not isinstance(entry, MinosRepositoryEntry):
-            entry = MinosRepositoryEntry.from_aggregate(entry)
+        if not isinstance(entry, RepositoryEntry):
+            entry = RepositoryEntry.from_aggregate(entry)
 
-        entry.action = MinosRepositoryAction.CREATE
+        entry.action = RepositoryAction.CREATE
         return await self._submit(entry)
 
-    async def update(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
+    async def update(self, entry: Union[Aggregate, RepositoryEntry]) -> RepositoryEntry:
         """Store new update entry into de repository.
 
         :param entry: Entry to be stored.
@@ -67,13 +67,13 @@ class MinosRepository(ABC, MinosSetup):
         """
         await self.setup()
 
-        if not isinstance(entry, MinosRepositoryEntry):
-            entry = MinosRepositoryEntry.from_aggregate(entry)
+        if not isinstance(entry, RepositoryEntry):
+            entry = RepositoryEntry.from_aggregate(entry)
 
-        entry.action = MinosRepositoryAction.UPDATE
+        entry.action = RepositoryAction.UPDATE
         return await self._submit(entry)
 
-    async def delete(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
+    async def delete(self, entry: Union[Aggregate, RepositoryEntry]) -> RepositoryEntry:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
@@ -81,14 +81,14 @@ class MinosRepository(ABC, MinosSetup):
         """
         await self.setup()
 
-        if not isinstance(entry, MinosRepositoryEntry):
-            entry = MinosRepositoryEntry.from_aggregate(entry)
+        if not isinstance(entry, RepositoryEntry):
+            entry = RepositoryEntry.from_aggregate(entry)
 
-        entry.action = MinosRepositoryAction.DELETE
+        entry.action = RepositoryAction.DELETE
         return await self._submit(entry)
 
     @abstractmethod
-    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         """Submit a new entry into the events table.
 
         :param entry: Entry to be submitted.
@@ -110,7 +110,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
-    ) -> AsyncIterator[MinosRepositoryEntry]:
+    ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
 
         :param aggregate_id: Aggregate identifier.
@@ -148,5 +148,5 @@ class MinosRepository(ABC, MinosSetup):
             yield entry
 
     @abstractmethod
-    async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository."""

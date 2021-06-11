@@ -22,12 +22,14 @@ from uuid import (
 )
 
 from minos.common import (
+    Aggregate,
     CommandReply,
     MinosBroker,
     MinosModel,
     MinosRepository,
-    MinosRepositoryEntry,
     MinosSagaManager,
+    MinosSnapshot,
+    RepositoryEntry,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -41,7 +43,7 @@ class FakeRepository(MinosRepository):
         self.id_counter = 0
         self.items = set()
 
-    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         """For testing purposes."""
         self.id_counter += 1
         entry.id = self.id_counter
@@ -50,7 +52,7 @@ class FakeRepository(MinosRepository):
         entry.created_at = datetime.now()
         return entry
 
-    async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """For testing purposes."""
 
 
@@ -104,3 +106,10 @@ class FakeEntrypoint:
     def run_forever(self):
         """For testing purposes."""
         self.call_count += 1
+
+
+class FakeSnapshot(MinosSnapshot):
+    """For testing purposes."""
+
+    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
+        """For testing purposes."""
