@@ -8,6 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .abc import (
     DynamicModel,
 )
-from .aggregate_diff import (
-    AggregateDiff,
+from .diffs import (
+    FieldsDiff,
 )

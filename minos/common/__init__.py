@@ -107,6 +107,7 @@ from .model import (
     DynamicModel,
     Enum,
     Event,
+    FieldsDiff,
     Fixed,
     MinosModel,
     MissingSentinel,
