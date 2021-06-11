@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     AsyncIterator,
     Generic,
@@ -21,27 +22,31 @@ from dependency_injector.wiring import (
     Provide,
 )
 
-from ...exceptions import (
+from ....exceptions import (
     MinosBrokerNotProvidedException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
 )
-from ...networks import (
+from ....networks import (
     MinosBroker,
 )
-from ...repository import (
+from ....repository import (
     MinosRepository,
 )
-from ...snapshot import (
+from ....snapshot import (
     MinosSnapshot,
 )
-from .abc import (
+from ..abc import (
     DeclarativeModel,
+)
+from .diff import (
+    AggregateDiff,
 )
 
 T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 
 class Aggregate(DeclarativeModel, Generic[T]):
@@ -219,3 +224,28 @@ class Aggregate(DeclarativeModel, Generic[T]):
         """
         await self._repository.delete(self)
         await self._broker.send_one(self, topic=f"{type(self).__name__}Deleted")
+
+    def diff(self, another: Aggregate) -> AggregateDiff:
+        """Compute the difference with another aggregate.
+
+        Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``id`` value.
+
+        :param another: Another ``Aggregate`` instance.
+        :return: An ``FieldsDiff`` instance.
+        """
+        return AggregateDiff.from_difference(self, another)
+
+    def apply_diff(self, difference: AggregateDiff) -> NoReturn:
+        """Apply the differences over the instance.
+
+        :param difference: The ``FieldsDiff`` containing the values to be set.
+        :return: This method does not return anything.
+        """
+        if self.id != difference.id:
+            raise ValueError(
+                f"To apply the difference, it must have same id. Expected: {self.id!r} Obtained: {difference.id!r}"
+            )
+        logger.debug(f"Applying {difference!r} to {self!r}...")
+        for name, field in difference.fields_diff.fields.items():
+            setattr(self, name, field.value)
+        self.version = difference.version

@@ -10,6 +10,7 @@ from .abc import (
 )
 from .declarative import (
     Aggregate,
+    AggregateDiff,
     Command,
     CommandReply,
     DeclarativeModel,
@@ -18,6 +19,7 @@ from .declarative import (
 )
 from .dynamic import (
     DynamicModel,
+    FieldsDiff,
 )
 from .fields import (
     MinosModelAvroDataBuilder,
