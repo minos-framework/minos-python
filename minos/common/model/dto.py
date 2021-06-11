@@ -12,15 +12,19 @@ from __future__ import (
 import typing as t
 
 from minos.common.model.declarative.abc import (
-    MinosModel,
     ModelField,
+)
+from minos.common.model.dynamic.abc import (
+    DynamicModel,
 )
 from minos.common.protocol import (
     MinosAvroProtocol,
 )
 
 
-class DataTransferObject(MinosModel):
+class DataTransferObject(DynamicModel):
+    """Data Transfer Object to build the objects dynamically from bytes """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
