@@ -6,10 +6,14 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from typing import (
+    TypedDict,
+)
 
 from minos.common import (
     DataTransferObject,
     MinosAvroProtocol,
+    ModelField,
 )
 from tests.model_classes import (
     Bar,
@@ -49,7 +53,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(data["tickets"], dto.tickets)
 
-    def test_avro_from_bytes_int(self):
+    def test_from_avro_int(self):
         data = {"price": 120}
         schema = [
             {"fields": [{"name": "price", "type": "int"}], "name": "Order", "type": "record"},
@@ -60,7 +64,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(schema, dto.avro_schema)
 
-    def test_avro_from_bytes_multiple_fields(self):
+    def test_from_avro_multiple_fields(self):
         data = {"cost": 3, "username": "test", "tickets": [3234, 3235, 3236]}
         schema = [
             {
@@ -76,7 +80,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(schema, dto.avro_schema)
 
-    def test_avro_from_bytes_array(self):
+    def test_from_avro_array(self):
         data = {"tickets": [3234, 3235, 3236]}
         schema = [
             {
@@ -91,7 +95,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(schema, dto.avro_schema)
 
-    def test_avro_from_bytes_map(self):
+    def test_from_avro_map(self):
         data = {"tickets": {"a": 1, "b": 2}}
         schema = [
             {
@@ -106,7 +110,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(schema, dto.avro_schema)
 
-    def test_avro_from_bytes_multi_schema(self):
+    def test_from_avro_multi_schema(self):
         data = {"price": 34, "user": {"username": [434324, 66464, 45432]}}
         schema = [
             {
@@ -126,9 +130,22 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         dto = DataTransferObject.from_avro_bytes(serialized)
 
-        self.assertEqual(data["price"], dto.price)
-        self.assertIsInstance(dto.user, DataTransferObject)
-        self.assertEqual(data["user"], dto.user.avro_data)
+        expected = DataTransferObject(
+            "Order",
+            fields={
+                "price": ModelField("price", int, 34),
+                "user": ModelField(
+                    "user",
+                    TypedDict("User", {"username": list[int]}),
+                    DataTransferObject(
+                        "User", fields={"username": ModelField("username", list[int], [434324, 66464, 45432])}
+                    ),
+                ),
+            },
+        )
+
+        self.assertEqual(expected.price, dto.price)
+        self.assertEqual(expected.user, dto.user)
 
     def test_multiple_fields_avro_schema(self):
         expected = Bar(first=Foo("one"), second=Foo("two"))

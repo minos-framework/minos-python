@@ -11,6 +11,7 @@ from __future__ import (
 
 from typing import (
     Any,
+    Optional,
     TypedDict,
     Union,
 )
@@ -35,7 +36,7 @@ from .abc import (
 class DataTransferObject(DynamicModel):
     """Data Transfer Object to build the objects dynamically from bytes """
 
-    def __init__(self, name: str, namespace: str = None, *args, **kwargs):
+    def __init__(self, name: str, namespace: Optional[str] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if namespace is None:
             try:
@@ -89,16 +90,29 @@ class DataTransferObject(DynamicModel):
             namespace, name = typed_dict.__name__.rsplit(".", 1)
         except ValueError:
             namespace, name = None, typed_dict.__name__
-        fields = dict()
-        for name, type_val in typed_dict.__annotations__.items():
-            fields[name] = ModelField(name, type_val, data[name])
+
+        fields = {k: ModelField(k, v, data[k]) for k, v in typed_dict.__annotations__.items()}
         return cls(name, namespace, fields)
 
     # noinspection PyMethodParameters
     @property
-    def _avro_name(self):
+    def _avro_name(self) -> str:
         return self._name
 
     @property
-    def _avro_namespace(self):
+    def _avro_namespace(self) -> Optional[str]:
         return self._namespace
+
+    def __repr__(self) -> str:
+        fields_repr = ", ".join(repr(field) for field in self.fields.values())
+        s = f"{self._name}[DTO](fields=[{fields_repr}])"
+        if self._namespace is not None:
+            s = f"{self._namespace}.{s}"
+        return s
+
+    def __eq__(self, other: DataTransferObject):
+        return (
+            super(DynamicModel, self).__eq__(other)
+            and self._name == other._name
+            and self._namespace == other._namespace
+        )
