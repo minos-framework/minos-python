@@ -100,6 +100,7 @@ from .model import (
     UUID,
     Aggregate,
     AggregateDiff,
+    AvroDataDecoder,
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
@@ -117,7 +118,6 @@ from .model import (
     MissingSentinel,
     Model,
     ModelField,
-    ModelFieldCaster,
     ModelRef,
 )
 from .networks import (

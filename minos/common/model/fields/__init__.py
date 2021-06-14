@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from .avro_data_decoder import (
+    AvroDataDecoder,
+)
 from .avro_data_encoder import (
     AvroDataEncoder,
 )
@@ -13,9 +16,6 @@ from .avro_schema_decoder import (
 )
 from .avro_schema_encoder import (
     AvroSchemaEncoder,
-)
-from .caster import (
-    ModelFieldCaster,
 )
 from .fields import (
     ModelField,

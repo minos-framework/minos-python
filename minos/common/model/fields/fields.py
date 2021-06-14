@@ -20,6 +20,9 @@ from ...exceptions import (
 from ..types import (
     MissingSentinel,
 )
+from .avro_data_decoder import (
+    AvroDataDecoder,
+)
 from .avro_data_encoder import (
     AvroDataEncoder,
 )
@@ -28,9 +31,6 @@ from .avro_schema_decoder import (
 )
 from .avro_schema_encoder import (
     AvroSchemaEncoder,
-)
-from .caster import (
-    ModelFieldCaster,
 )
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ class ModelField:
             except Exception as exc:
                 raise MinosParseAttributeException(self.name, data, exc)
 
-        value = ModelFieldCaster.from_field(self).cast(data)
+        value = AvroDataDecoder.from_field(self).build(data)
 
         if self.validator is not None and value is not None and not self.validator(value):
             raise MinosAttributeValidationException(self.name, value)

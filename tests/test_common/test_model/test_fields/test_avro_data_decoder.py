@@ -12,28 +12,28 @@ from typing import (
 )
 
 from minos.common import (
+    AvroDataDecoder,
     DataTransferObject,
     MinosTypeAttributeException,
     ModelField,
-    ModelFieldCaster,
 )
 
 
-class TestModelFieldCaster(unittest.TestCase):
+class TestAvroDataDecoder(unittest.TestCase):
     def test_typed_dict(self):
-        observed = ModelFieldCaster("test", TypedDict("Foo", {"bar": str})).cast({"bar": "foobar"})
+        observed = AvroDataDecoder("test", TypedDict("Foo", {"bar": str})).build({"bar": "foobar"})
 
         self.assertIsInstance(observed, DataTransferObject)
         self.assertEqual({"bar": "foobar"}, observed.avro_data)
 
     def test_typed_dict_already_casted(self):
         value = DataTransferObject("Foo", fields={"bar": ModelField("bar", str, "foobar")})
-        observed = ModelFieldCaster("test", TypedDict("Foo", {"bar": str})).cast(value)
+        observed = AvroDataDecoder("test", TypedDict("Foo", {"bar": str})).build(value)
         self.assertEqual(value, observed)
 
     def test_typed_dict_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
-            ModelFieldCaster("test", TypedDict("Foo", {"bar": str})).cast(3)
+            AvroDataDecoder("test", TypedDict("Foo", {"bar": str})).build(3)
 
 
 if __name__ == "__main__":

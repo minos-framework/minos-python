@@ -33,6 +33,8 @@ T = t.TypeVar("T")
 
 
 class AvroDataEncoder(object):
+    """Avro Data Encoder class."""
+
     def __init__(self, value: t.Any):
         self._value = value
 
