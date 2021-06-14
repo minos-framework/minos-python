@@ -21,11 +21,7 @@ from uuid import (
 )
 
 from ...exceptions import (
-    MinosImportException,
     MinosMalformedAttributeException,
-)
-from ...importlib import (
-    import_module,
 )
 from ..types import (
     ARRAY,
@@ -105,12 +101,12 @@ class MinosModelFromAvroBuilder(object):
         self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]
     ) -> t.TypedDict[T]:
         if namespace is not None:
-            namespace, _ = namespace.rsplit(".", 1)
+            try:
+                namespace, _ = namespace.rsplit(".", 1)
+            except ValueError:
+                pass
             name = f"{namespace}.{name}"
-        try:
-            return import_module(name)
-        except MinosImportException:
-            return t.TypedDict(name, {field["name"]: self._build_type(field["type"]) for field in fields})
+        return t.TypedDict(name, {field["name"]: self._build_type(field["type"]) for field in fields})
 
     @staticmethod
     def _build_simple_type(type_field: str) -> t.Type[T]:

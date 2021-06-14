@@ -173,23 +173,24 @@ class Model(t.Generic[T]):
             MinosModelAvroSchemaBuilder(field_name, field_type).build()
             for field_name, field_type in self_or_cls._type_hints()
         ]
-        return [
-            {
-                "name": self_or_cls._avro_name,
-                "namespace": self_or_cls._avro_namespace,
-                "type": "record",
-                "fields": fields,
-            }
-        ]
+        schema = {
+            "name": self_or_cls._avro_name,
+            "type": "record",
+            "fields": fields,
+        }
+        if self_or_cls._avro_namespace is not None:
+            schema["namespace"] = self_or_cls._avro_namespace
+
+        return [schema]
 
     # noinspection PyMethodParameters
     @classproperty
-    def _avro_name(cls):
+    def _avro_name(cls) -> str:
         return cls.__name__
 
     # noinspection PyMethodParameters
     @classproperty
-    def _avro_namespace(cls):
+    def _avro_namespace(cls) -> t.Optional[str]:
         return cls.__module__
 
     @property

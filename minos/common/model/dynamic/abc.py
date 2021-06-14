@@ -60,11 +60,10 @@ class DynamicModel(Model):
         :return: A new ``DynamicModel`` instance.
         """
         if isinstance(schema, list):
-            schema = schema[0]
+            schema = schema[-1]
         schema = dict(schema)  # To avoid collateral effects related with the schema modification.
-        fields = dict()
-        for raw in schema.pop("fields"):
-            fields[raw["name"]] = ModelField.from_avro(raw, data[raw["name"]])
+
+        fields = {raw["name"]: ModelField.from_avro(raw, data[raw["name"]]) for raw in schema.pop("fields")}
         return cls(fields=fields, **schema)
 
     def _type_hints(self) -> dict[str, Any]:
