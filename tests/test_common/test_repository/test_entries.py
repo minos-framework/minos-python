@@ -27,7 +27,7 @@ from tests.utils import (
 
 class TestMinosRepositoryAction(unittest.TestCase):
     def test_value_of(self):
-        self.assertEqual(RepositoryAction.INSERT, RepositoryAction.value_of("insert"))
+        self.assertEqual(RepositoryAction.CREATE, RepositoryAction.value_of("create"))
         self.assertEqual(RepositoryAction.UPDATE, RepositoryAction.value_of("update"))
         self.assertEqual(RepositoryAction.DELETE, RepositoryAction.value_of("delete"))
 
@@ -54,7 +54,7 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             version=0,
             data=bytes("car", "utf-8"),
             id=5678,
-            action=RepositoryAction.INSERT,
+            action=RepositoryAction.CREATE,
             created_at=datetime(2020, 10, 13, 8, 45, 32),
         )
         self.assertEqual(1234, entry.aggregate_id)
@@ -62,7 +62,7 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, entry.version)
         self.assertEqual(bytes("car", "utf-8"), entry.data)
         self.assertEqual(5678, entry.id)
-        self.assertEqual(RepositoryAction.INSERT, entry.action)
+        self.assertEqual(RepositoryAction.CREATE, entry.action)
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
 
     async def test_from_aggregate(self):
@@ -86,8 +86,8 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
     def test_id_action(self):
         entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.action)
-        entry.action = RepositoryAction.INSERT
-        self.assertEqual(RepositoryAction.INSERT, entry.action)
+        entry.action = RepositoryAction.CREATE
+        self.assertEqual(RepositoryAction.CREATE, entry.action)
 
     def test_equals(self):
         a = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
@@ -105,12 +105,12 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             version=0,
             data=bytes("car", "utf-8"),
             id=5678,
-            action=RepositoryAction.INSERT,
+            action=RepositoryAction.CREATE,
             created_at=datetime(2020, 10, 13, 8, 45, 32),
         )
         expected = (
             "RepositoryEntry(aggregate_id=1234, aggregate_name='example.Car', version=0, data=b'car', id=5678, "
-            "action=<RepositoryAction.INSERT: 'insert'>, created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
+            "action=<RepositoryAction.CREATE: 'create'>, created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
         )
         self.assertEqual(expected, repr(entry))
 
