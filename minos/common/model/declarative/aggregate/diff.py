@@ -15,6 +15,7 @@ from operator import (
 )
 from typing import (
     TYPE_CHECKING,
+    Any,
 )
 
 from ...dynamic import (
@@ -86,3 +87,11 @@ class AggregateDiff(DeclarativeModel):
             current |= another
 
         return cls(args[-1].id, args[-1].name, args[-1].version, FieldsDiff(current))
+
+    @property
+    def fields_diff_values(self) -> dict[str, Any]:
+        """Get the fields diff values.
+
+        :return: A dictionary in which the keys are the fields diff names and the values are the fields diff values.
+        """
+        return {name: field.value for name, field in self.fields_diff}

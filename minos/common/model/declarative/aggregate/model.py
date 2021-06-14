@@ -252,16 +252,17 @@ class Aggregate(DeclarativeModel, Generic[T]):
                 f"To apply the difference, it must have same id. Expected: {self.id!r} Obtained: {difference.id!r}"
             )
         logger.debug(f"Applying {difference!r} to {self!r}...")
-        for name, field in difference.fields_diff.fields.items():
+        for name, field in difference.fields_diff:
             setattr(self, name, field.value)
         self.version = difference.version
 
     @classmethod
     def from_diff(cls, difference: AggregateDiff, *args, **kwargs) -> T:
-        return cls(
-            *args,
-            difference.id,
-            difference.version,
-            **{name: field.value for name, field in difference.fields_diff.fields.items()},
-            **kwargs,
-        )
+        """Build a new instance from an ``AggregateDiff``.
+
+        :param difference: The difference that contains the data.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A new ``Aggregate`` instance.
+        """
+        return cls(*args, difference.id, difference.version, **difference.fields_diff_values, **kwargs)
