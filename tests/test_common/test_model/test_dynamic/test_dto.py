@@ -12,7 +12,6 @@ from typing import (
 
 from minos.common import (
     DataTransferObject,
-    MinosAvroProtocol,
     ModelField,
 )
 from tests.model_classes import (
@@ -22,31 +21,33 @@ from tests.model_classes import (
 
 
 class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
-    def test_build_field(self):
+    def test_from_avro_float(self):
         data = {"cost": 3.43}
         schema = {
             "name": "ShoppingList",
-            "namespace": "tests.model_classes",
             "fields": [{"name": "cost", "type": "float"}],
+            "type": "record",
         }
 
         dto = DataTransferObject.from_avro(schema, data)
         self.assertEqual(3.43, dto.cost)
 
-    def test_build_array(self):
+    def test_from_avro_list(self):
         data = {"tickets": [3234, 3235, 3236]}
         schema = {
             "name": "ShoppingList",
             "fields": [{"name": "tickets", "type": "array", "items": "int"}],
+            "type": "record",
         }
         dto = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(data["tickets"], dto.tickets)
 
-    def test_build_map(self):
+    def test_from_avro_dict(self):
         data = {"tickets": {"a": 1, "b": 2}}
         schema = {
             "name": "Order",
+            "type": "record",
             "fields": [{"name": "tickets", "type": {"type": "map", "values": "int"}}],
         }
         dto = DataTransferObject.from_avro(schema, data)
@@ -55,16 +56,14 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
     def test_from_avro_int(self):
         data = {"price": 120}
-        schema = [
-            {"fields": [{"name": "price", "type": "int"}], "name": "Order", "type": "record"},
-        ]
+        schema = [{"fields": [{"name": "price", "type": "int"}], "name": "Order", "type": "record"}]
         dto = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(data["price"], dto.price)
 
         self.assertEqual(schema, dto.avro_schema)
 
-    def test_from_avro_multiple_fields(self):
+    def test_from_avro_union(self):
         data = {"cost": 3, "username": "test", "tickets": [3234, 3235, 3236]}
         schema = [
             {
@@ -77,58 +76,26 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(data["cost"], dto.cost)
         self.assertEqual(data["username"], dto.username)
-
         self.assertEqual(schema, dto.avro_schema)
 
-    def test_from_avro_array(self):
-        data = {"tickets": [3234, 3235, 3236]}
-        schema = [
-            {
-                "fields": [{"name": "tickets", "type": {"type": "array", "items": "int"}}],
-                "name": "Order",
-                "type": "record",
-            },
-        ]
-        dto = DataTransferObject.from_avro(schema, data)
-
-        self.assertEqual(data["tickets"], dto.tickets)
-
-        self.assertEqual(schema, dto.avro_schema)
-
-    def test_from_avro_map(self):
-        data = {"tickets": {"a": 1, "b": 2}}
-        schema = [
-            {
-                "fields": [{"name": "tickets", "type": {"type": "map", "values": "int"}}],
-                "name": "Order",
-                "type": "record",
-            },
-        ]
-        dto = DataTransferObject.from_avro(schema, data)
-
-        self.assertEqual(data["tickets"], dto.tickets)
-
-        self.assertEqual(schema, dto.avro_schema)
-
-    def test_from_avro_multi_schema(self):
+    def test_from_avro_dto(self):
         data = {"price": 34, "user": {"username": [434324, 66464, 45432]}}
-        schema = [
-            {
-                "fields": [{"name": "username", "type": {"type": "array", "items": "int"}}],
-                "name": "User",
-                "type": "record",
-            },
-            {
-                "fields": [{"name": "user", "type": "User"}, {"name": "price", "type": "int"}],
-                "name": "Order",
-                "type": "record",
-            },
-        ]
-
-        serialized = MinosAvroProtocol.encode(data, schema)
-        self.assertEqual(True, isinstance(serialized, bytes))
-
-        dto = DataTransferObject.from_avro_bytes(serialized)
+        schema = {
+            "fields": [
+                {
+                    "name": "user",
+                    "type": {
+                        "fields": [{"name": "username", "type": {"type": "array", "items": "int"}}],
+                        "name": "User",
+                        "type": "record",
+                    },
+                },
+                {"name": "price", "type": "int"},
+            ],
+            "name": "Order",
+            "type": "record",
+        }
+        dto = DataTransferObject.from_avro(schema, data)
 
         expected = DataTransferObject(
             "Order",
@@ -147,7 +114,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected.price, dto.price)
         self.assertEqual(expected.user, dto.user)
 
-    def test_multiple_fields_avro_schema(self):
+    def test_from_avro_model(self):
         expected = Bar(first=Foo("one"), second=Foo("two"))
         data = {"first": {"text": "one"}, "second": {"text": "two"}}
         schema = [
