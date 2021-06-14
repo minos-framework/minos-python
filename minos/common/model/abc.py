@@ -156,6 +156,15 @@ class Model(t.Generic[T]):
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
     # noinspection PyMethodParameters
+    @property_or_classproperty
+    def type_hints(self_or_cls) -> dict[str, type]:
+        """Get the type hinting of the instance or class.
+
+        :return: A dictionary in which the keys are the field names and the values are the types.
+        """
+        return dict(self_or_cls._type_hints())
+
+    # noinspection PyMethodParameters
     @self_or_classmethod
     @abstractmethod
     def _type_hints(self_or_cls) -> dict[str, t.Any]:

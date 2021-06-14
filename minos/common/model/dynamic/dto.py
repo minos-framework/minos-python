@@ -103,6 +103,17 @@ class DataTransferObject(DynamicModel):
     def _avro_namespace(self) -> Optional[str]:
         return self._namespace
 
+    @property
+    def classname(self) -> str:
+        """Compute the current class name.
+
+        :return: An string object.
+        """
+        name = self._name
+        if self._namespace is not None:
+            name = f"{self._namespace}.{name}"
+        return name
+
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
         s = f"{self._name}[DTO](fields=[{fields_repr}])"

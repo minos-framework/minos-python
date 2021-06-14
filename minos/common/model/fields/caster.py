@@ -219,14 +219,12 @@ class ModelFieldCaster(object):
         if isinstance(data, dict):
             return DataTransferObject.from_typed_dict(type_field, data)
 
-        if isinstance(data, DataTransferObject):
-            type_hints = dict(data._type_hints())
-            name = data._name
-            if data._namespace is not None:
-                name = f"{data._namespace}.{name}"
-
-            if type_hints == type_field.__annotations__ and name == type_field.__name__:
-                return data
+        if (
+            isinstance(data, DataTransferObject)
+            and data.type_hints == type_field.__annotations__
+            and data.classname == type_field.__name__
+        ):
+            return data
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 
