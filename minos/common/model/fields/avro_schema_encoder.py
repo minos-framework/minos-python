@@ -16,6 +16,9 @@ from datetime import (
     datetime,
     time,
 )
+from typing import (
+    _TypedDictMeta,
+)
 from uuid import (
     UUID,
 )
@@ -106,6 +109,9 @@ class AvroSchemaEncoder(object):
         if type_field is UUID:
             return UUID_TYPE
 
+        if isinstance(type_field, _TypedDictMeta):
+            return self._build_typed_dict_schema(type_field)
+
         if _is_minos_model_cls(type_field):
             return self._build_minos_model_schema(type_field)
 
@@ -136,6 +142,23 @@ class AvroSchemaEncoder(object):
             return BYTES
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
+
+    def _build_typed_dict_schema(self, type_field: t.Type) -> t.Any:
+        try:
+            namespace, name = type_field.__name__.rsplit(".", 1)
+            namespace += f".{self._name}"
+        except ValueError:
+            namespace, name = None, type_field.__name__
+
+        schema = {
+            "name": name,
+            "type": "record",
+            "fields": [AvroSchemaEncoder(k, v).build() for k, v in type_field.__annotations__.items()],
+        }
+        if namespace is not None:
+            schema["namespace"] = namespace
+
+        return schema
 
     def _build_minos_model_schema(self, type_field: t.Type) -> t.Any:
         def _patch_namespace(s: dict) -> dict:

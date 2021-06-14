@@ -23,7 +23,7 @@ from ...exceptions import (
 from ...importlib import (
     import_module,
 )
-from .. import (
+from ..abc import (
     Model,
 )
 from ..fields import (
@@ -48,7 +48,7 @@ class DataTransferObject(DynamicModel):
         self._namespace = namespace
 
     @classmethod
-    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]):
+    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> Model:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.

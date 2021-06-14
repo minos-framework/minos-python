@@ -109,6 +109,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(expected.price, dto.price)
+        self.assertEqual(expected.user, dto.user)
 
     def test_from_avro_model(self):
         expected = Bar(first=Foo("one"), second=Foo("two"))
@@ -133,6 +134,29 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
     def test_from_typed_dict_model_raised(self):
         with self.assertRaises(MinosModelException):
             DataTransferObject.from_typed_dict(TypedDict("tests.model_classes.Foo", {"bar": str}), {"bar": "test"})
+
+    def test_avro_schema(self):
+        data = {"price": 34, "user": {"username": [434324, 66464, 45432]}}
+        schema = [
+            {
+                "fields": [
+                    {
+                        "name": "user",
+                        "type": {
+                            "fields": [{"name": "username", "type": {"type": "array", "items": "int"}}],
+                            "name": "User",
+                            "type": "record",
+                        },
+                    },
+                    {"name": "price", "type": "int"},
+                ],
+                "name": "Order",
+                "type": "record",
+            }
+        ]
+        dto = DataTransferObject.from_avro(schema, data)
+
+        self.assertEqual(schema, dto.avro_schema)
 
 
 if __name__ == "__main__":
