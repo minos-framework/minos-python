@@ -18,6 +18,7 @@ from typing import (
 
 from ...exceptions import (
     MinosImportException,
+    MinosModelException,
 )
 from ...importlib import (
     import_module,
@@ -82,6 +83,8 @@ class DataTransferObject(DynamicModel):
         try:
             # noinspection PyTypeChecker
             model_cls: Model = import_module(typed_dict.__name__)
+            if model_cls.type_hints != typed_dict.__annotations__:
+                raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
             return model_cls.from_dict(data)
         except MinosImportException:
             pass
@@ -116,10 +119,7 @@ class DataTransferObject(DynamicModel):
 
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
-        s = f"{self._name}[DTO](fields=[{fields_repr}])"
-        if self._namespace is not None:
-            s = f"{self._namespace}.{s}"
-        return s
+        return f"{self.classname}[DTO](fields=[{fields_repr}])"
 
     def __eq__(self, other: DataTransferObject):
         return (

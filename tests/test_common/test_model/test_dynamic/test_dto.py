@@ -12,6 +12,7 @@ from typing import (
 
 from minos.common import (
     DataTransferObject,
+    MinosModelException,
     ModelField,
 )
 from tests.model_classes import (
@@ -113,6 +114,25 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         expected = Bar(first=Foo("one"), second=Foo("two"))
         dto = DataTransferObject.from_avro_bytes(expected.avro_bytes)
         self.assertEqual(expected, dto)
+
+    def test_from_avro_with_namespace(self):
+        schema = [
+            {"fields": [{"name": "price", "type": "int"}], "name": "Order", "namespace": "example", "type": "record"}
+        ]
+        dto = DataTransferObject.from_avro(schema, {"price": 120})
+        self.assertEqual(schema, dto.avro_schema)
+
+    def test_classname(self):
+        dto = DataTransferObject("Order", "example", {})
+        self.assertEqual("example.Order", dto.classname)
+
+    def test_from_typed_dict_model(self):
+        dto = DataTransferObject.from_typed_dict(TypedDict("tests.model_classes.Foo", {"text": str}), {"text": "test"})
+        self.assertEqual(Foo("test"), dto)
+
+    def test_from_typed_dict_model_raised(self):
+        with self.assertRaises(MinosModelException):
+            DataTransferObject.from_typed_dict(TypedDict("tests.model_classes.Foo", {"bar": str}), {"bar": "test"})
 
 
 if __name__ == "__main__":
