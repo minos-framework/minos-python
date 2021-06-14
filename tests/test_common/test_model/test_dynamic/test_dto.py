@@ -64,17 +64,10 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(schema, dto.avro_schema)
 
     def test_from_avro_union(self):
-        data = {"cost": 3, "username": "test", "tickets": [3234, 3235, 3236]}
-        schema = [
-            {
-                "fields": [{"name": "cost", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
-                "name": "Order",
-                "type": "record",
-            },
-        ]
+        data = {"username": "test"}
+        schema = [{"fields": [{"name": "username", "type": ["string", "null"]}], "name": "Order", "type": "record"}]
         dto = DataTransferObject.from_avro(schema, data)
 
-        self.assertEqual(data["cost"], dto.cost)
         self.assertEqual(data["username"], dto.username)
         self.assertEqual(schema, dto.avro_schema)
 
@@ -116,39 +109,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
     def test_from_avro_model(self):
         expected = Bar(first=Foo("one"), second=Foo("two"))
-        data = {"first": {"text": "one"}, "second": {"text": "two"}}
-        schema = [
-            {
-                "fields": [
-                    {
-                        "name": "first",
-                        "type": [
-                            {
-                                "fields": [{"name": "text", "type": "string"}],
-                                "name": "Foo",
-                                "namespace": "tests.model_classes.first",
-                                "type": "record",
-                            }
-                        ],
-                    },
-                    {
-                        "name": "second",
-                        "type": [
-                            {
-                                "fields": [{"name": "text", "type": "string"}],
-                                "name": "Foo",
-                                "namespace": "tests.model_classes.second",
-                                "type": "record",
-                            }
-                        ],
-                    },
-                ],
-                "name": "Bar",
-                "namespace": "tests.model_classes",
-                "type": "record",
-            }
-        ]
-        dto = DataTransferObject.from_avro(schema, data)
+        dto = DataTransferObject.from_avro_bytes(expected.avro_bytes)
         self.assertEqual(expected, dto)
 
 
