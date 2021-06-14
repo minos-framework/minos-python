@@ -17,7 +17,9 @@ from dependency_injector import (
 )
 
 from minos.common import (
+    FieldsDiff,
     MinosConfigException,
+    ModelField,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
@@ -104,17 +106,17 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             self.assertIsInstance(obs.updated_at, datetime)
 
     async def _populate(self):
-        car = Car(1, 1, 3, "blue")
+        diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
         # noinspection PyTypeChecker
-        aggregate_name: str = car.classname
+        aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:
-            await repository.create(RepositoryEntry(1, aggregate_name, 1, car.avro_bytes))
-            await repository.update(RepositoryEntry(1, aggregate_name, 2, car.avro_bytes))
-            await repository.create(RepositoryEntry(2, aggregate_name, 1, car.avro_bytes))
-            await repository.update(RepositoryEntry(1, aggregate_name, 3, car.avro_bytes))
+            await repository.create(RepositoryEntry(1, aggregate_name, 1, diff.avro_bytes))
+            await repository.update(RepositoryEntry(1, aggregate_name, 2, diff.avro_bytes))
+            await repository.create(RepositoryEntry(2, aggregate_name, 1, diff.avro_bytes))
+            await repository.update(RepositoryEntry(1, aggregate_name, 3, diff.avro_bytes))
             await repository.delete(RepositoryEntry(1, aggregate_name, 4))
-            await repository.update(RepositoryEntry(2, aggregate_name, 2, car.avro_bytes))
-            await repository.create(RepositoryEntry(3, aggregate_name, 1, car.avro_bytes))
+            await repository.update(RepositoryEntry(2, aggregate_name, 2, diff.avro_bytes))
+            await repository.create(RepositoryEntry(3, aggregate_name, 1, diff.avro_bytes))
             async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
                 await dispatcher.dispatch()
             return repository

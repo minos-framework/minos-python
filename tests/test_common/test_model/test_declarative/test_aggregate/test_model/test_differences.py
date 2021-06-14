@@ -31,21 +31,30 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
 
     def test_diff(self):
         expected = AggregateDiff(
-            1, 3, FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
+            id=1,
+            name=Car.classname,
+            version=3,
+            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")}),
         )
         observed = self.final.diff(self.initial)
         self.assertEqual(expected, observed)
 
     def test_apply_diff(self):
         diff = AggregateDiff(
-            1, 3, FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
+            id=1,
+            name=Car.classname,
+            version=3,
+            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")}),
         )
         self.initial.apply_diff(diff)
         self.assertEqual(self.final, self.initial)
 
     def test_apply_diff_raises(self):
         diff = AggregateDiff(
-            2, 3, FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")})
+            id=2,
+            name=Car.classname,
+            version=3,
+            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")}),
         )
         with self.assertRaises(ValueError):
             self.initial.apply_diff(diff)
