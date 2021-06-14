@@ -34,6 +34,9 @@ T = TypeVar("T")
 class DynamicModel(Model):
     """Base class for ``minos`` dynamic model entities"""
 
+    def __init__(self, fields, **kwargs):
+        super().__init__(fields)
+
     @classmethod
     def from_avro_bytes(cls, raw: bytes, **kwargs) -> Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
@@ -49,17 +52,20 @@ class DynamicModel(Model):
         return cls.from_avro(schema, decoded | kwargs)
 
     @classmethod
-    def from_avro(cls, schema: dict[str, Any], data: dict[str, Any]) -> T:
+    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
         :param data: The avro data of the model.
         :return: A new ``DynamicModel`` instance.
         """
+        if isinstance(schema, list):
+            schema = schema[0]
+        schema = dict(schema)  # To avoid collateral effects related with the schema modification.
         fields = dict()
-        for raw in schema["fields"]:
+        for raw in schema.pop("fields"):
             fields[raw["name"]] = ModelField.from_avro(raw, data[raw["name"]])
-        return cls(fields)
+        return cls(fields=fields, **schema)
 
     def _type_hints(self) -> dict[str, Any]:
         yield from ((field.name, field.type) for field in self.fields.values())

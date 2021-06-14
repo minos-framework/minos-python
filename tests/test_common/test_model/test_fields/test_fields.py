@@ -198,7 +198,7 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
 
     def test_avro_schema_dict(self):
         field = ModelField("test", dict[str, int], {"foo": 1, "bar": 2})
-        expected = {"name": "test", "type": {"default": {}, "type": "map", "values": "int"}}
+        expected = {"name": "test", "type": {"type": "map", "values": "int"}}
         self.assertEqual(expected, field.avro_schema)
 
     def test_avro_schema_model_ref(self):
@@ -229,7 +229,6 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
         expected = {
             "name": "test",
             "type": {
-                "default": [],
                 "items": [
                     {
                         "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],

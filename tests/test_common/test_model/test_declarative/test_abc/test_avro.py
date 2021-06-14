@@ -84,7 +84,6 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                         "name": "owner",
                         "type": [
                             {
-                                "default": [],
                                 "items": [
                                     {
                                         "fields": [
@@ -151,7 +150,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                     {"name": "name", "type": ["string", "null"]},
                     {"name": "surname", "type": ["string", "null"]},
                     {"name": "is_admin", "type": ["boolean", "null"]},
-                    {"name": "lists", "type": [{"default": [], "items": "int", "type": "array"}, "null"]},
+                    {"name": "lists", "type": [{"items": "int", "type": "array"}, "null"]},
                 ],
                 "name": "Customer",
                 "namespace": "tests.model_classes",

@@ -25,6 +25,7 @@ from ..exceptions import (
     MultiTypeMinosModelSequenceException,
 )
 from ..meta import (
+    classproperty,
     property_or_classproperty,
     self_or_classmethod,
 )
@@ -167,16 +168,29 @@ class Model(t.Generic[T]):
 
         :return: A dictionary object.
         """
-        if isinstance(self_or_cls, type):
-            cls = self_or_cls
-        else:
-            cls = type(self_or_cls)
 
         fields = [
             MinosModelAvroSchemaBuilder(field_name, field_type).build()
             for field_name, field_type in self_or_cls._type_hints()
         ]
-        return [{"name": cls.__name__, "namespace": cls.__module__, "type": "record", "fields": fields}]
+        return [
+            {
+                "name": self_or_cls._avro_name,
+                "namespace": self_or_cls._avro_namespace,
+                "type": "record",
+                "fields": fields,
+            }
+        ]
+
+    # noinspection PyMethodParameters
+    @classproperty
+    def _avro_name(cls):
+        return cls.__name__
+
+    # noinspection PyMethodParameters
+    @classproperty
+    def _avro_namespace(cls):
+        return cls.__module__
 
     @property
     def avro_data(self) -> dict[str, t.Any]:
