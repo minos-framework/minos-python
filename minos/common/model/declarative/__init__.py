@@ -11,6 +11,7 @@ from .abc import (
 )
 from .aggregate import (
     Aggregate,
+    AggregateDiff,
 )
 from .command import (
     Command,
