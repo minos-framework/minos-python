@@ -20,17 +20,17 @@ from ...exceptions import (
 from ..types import (
     MissingSentinel,
 )
-from .avro_data_builder import (
-    MinosModelAvroDataBuilder,
+from .avro_data_encoder import (
+    AvroDataEncoder,
+)
+from .avro_schema_decoder import (
+    AvroSchemaDecoder,
+)
+from .avro_schema_encoder import (
+    AvroSchemaEncoder,
 )
 from .caster import (
     ModelFieldCaster,
-)
-from .model_builder import (
-    MinosModelFromAvroBuilder,
-)
-from .schema_builder import (
-    MinosModelAvroSchemaBuilder,
 )
 
 logger = logging.getLogger(__name__)
@@ -140,7 +140,7 @@ class ModelField:
 
         :return: A dictionary object.
         """
-        return MinosModelAvroSchemaBuilder.from_field(self).build()
+        return AvroSchemaEncoder.from_field(self).build()
 
     @property
     def avro_data(self):
@@ -148,7 +148,7 @@ class ModelField:
 
         :return: A dictionary object.
         """
-        return MinosModelAvroDataBuilder.from_field(self).build()
+        return AvroDataEncoder.from_field(self).build()
 
     @classmethod
     def from_avro(cls, schema: dict, value: t.Any) -> ModelField:
@@ -158,7 +158,7 @@ class ModelField:
         :param value: Field's value.
         :return: A ``ModelField`` instance.
         """
-        type_val = MinosModelFromAvroBuilder(schema).build()
+        type_val = AvroSchemaDecoder(schema).build()
         return cls(schema["name"], type_val, value)
 
     def __eq__(self, other: "ModelField") -> bool:

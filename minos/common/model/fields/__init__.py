@@ -5,18 +5,18 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from .avro_data_builder import (
-    MinosModelAvroDataBuilder,
+from .avro_data_encoder import (
+    AvroDataEncoder,
+)
+from .avro_schema_decoder import (
+    AvroSchemaDecoder,
+)
+from .avro_schema_encoder import (
+    AvroSchemaEncoder,
 )
 from .caster import (
     ModelFieldCaster,
 )
 from .fields import (
     ModelField,
-)
-from .model_builder import (
-    MinosModelFromAvroBuilder,
-)
-from .schema_builder import (
-    MinosModelAvroSchemaBuilder,
 )

@@ -23,9 +23,9 @@ from .dynamic import (
     FieldsDiff,
 )
 from .fields import (
-    MinosModelAvroDataBuilder,
-    MinosModelAvroSchemaBuilder,
-    MinosModelFromAvroBuilder,
+    AvroDataEncoder,
+    AvroSchemaDecoder,
+    AvroSchemaEncoder,
     ModelField,
     ModelFieldCaster,
 )

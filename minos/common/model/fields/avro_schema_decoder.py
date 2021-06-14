@@ -43,7 +43,9 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class MinosModelFromAvroBuilder(object):
+class AvroSchemaDecoder(object):
+    """Avro Schema Decoder class."""
+
     def __init__(self, schema: dict):
         self._schema = schema
 

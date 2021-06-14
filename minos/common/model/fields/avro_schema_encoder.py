@@ -46,13 +46,15 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class MinosModelAvroSchemaBuilder(object):
+class AvroSchemaEncoder(object):
+    """Avro Schema Encoder class."""
+
     def __init__(self, field_name: str, field_type: t.Type):
         self._name = field_name
         self._type = field_type
 
     @classmethod
-    def from_field(cls, field: ModelField) -> MinosModelAvroSchemaBuilder:
+    def from_field(cls, field: ModelField) -> AvroSchemaEncoder:
         """Build a new instance from a ``ModelField``.
 
         :param field: The model field.

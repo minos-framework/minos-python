@@ -100,6 +100,9 @@ from .model import (
     UUID,
     Aggregate,
     AggregateDiff,
+    AvroDataEncoder,
+    AvroSchemaDecoder,
+    AvroSchemaEncoder,
     Command,
     CommandReply,
     DataTransferObject,
@@ -112,7 +115,9 @@ from .model import (
     Fixed,
     MinosModel,
     MissingSentinel,
+    Model,
     ModelField,
+    ModelFieldCaster,
     ModelRef,
 )
 from .networks import (

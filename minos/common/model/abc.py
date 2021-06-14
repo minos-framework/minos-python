@@ -33,7 +33,7 @@ from ..protocol import (
     MinosAvroProtocol,
 )
 from .fields import (
-    MinosModelAvroSchemaBuilder,
+    AvroSchemaEncoder,
     ModelField,
 )
 
@@ -170,8 +170,7 @@ class Model(t.Generic[T]):
         """
 
         fields = [
-            MinosModelAvroSchemaBuilder(field_name, field_type).build()
-            for field_name, field_type in self_or_cls._type_hints()
+            AvroSchemaEncoder(field_name, field_type).build() for field_name, field_type in self_or_cls._type_hints()
         ]
         schema = {
             "name": self_or_cls._avro_name,
