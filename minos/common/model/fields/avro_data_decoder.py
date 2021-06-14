@@ -46,13 +46,15 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class ModelFieldCaster(object):
+class AvroDataDecoder(object):
+    """Avro Data Decoder class."""
+
     def __init__(self, field_name: str, field_type: t.Type):
         self._name = field_name
         self._type = field_type
 
     @classmethod
-    def from_field(cls, field: ModelField) -> ModelFieldCaster:
+    def from_field(cls, field: ModelField) -> AvroDataDecoder:
         """Build a new instance from a ``ModelField``.
 
         :param field: The model field.
@@ -60,7 +62,7 @@ class ModelFieldCaster(object):
         """
         return cls(field.name, field.type)
 
-    def cast(self, data: t.Any) -> t.Any:
+    def build(self, data: t.Any) -> t.Any:
         """Cast data type according to the field definition..
 
         :param data: Data to be casted.

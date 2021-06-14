@@ -12,6 +12,7 @@ from __future__ import (
 import logging
 from typing import (
     Any,
+    Generic,
     TypeVar,
     Union,
 )
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-class DynamicModel(Model):
+class DynamicModel(Model, Generic[T]):
     """Base class for ``minos`` dynamic model entities"""
 
     def __init__(self, fields: dict[str, ModelField], **kwargs):

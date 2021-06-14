@@ -23,11 +23,11 @@ from .dynamic import (
     FieldsDiff,
 )
 from .fields import (
+    AvroDataDecoder,
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
     ModelField,
-    ModelFieldCaster,
 )
 from .types import (
     ARRAY,
