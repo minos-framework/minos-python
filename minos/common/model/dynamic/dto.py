@@ -9,8 +9,23 @@ from __future__ import (
     annotations,
 )
 
-import typing as t
+from typing import (
+    Any,
+    Optional,
+    TypedDict,
+    Union,
+)
 
+from ...exceptions import (
+    MinosImportException,
+    MinosModelException,
+)
+from ...importlib import (
+    import_module,
+)
+from ..abc import (
+    Model,
+)
 from ..fields import (
     ModelField,
 )
@@ -22,32 +37,93 @@ from .abc import (
 class DataTransferObject(DynamicModel):
     """Data Transfer Object to build the objects dynamically from bytes """
 
-    def __init__(self, name: str, namespace: str = None, *args, **kwargs):
+    def __init__(self, name: str, namespace: Optional[str] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if namespace is None:
-            namespace, name = name.rsplit(".", 1)
+            try:
+                namespace, name = name.rsplit(".", 1)
+            except ValueError:
+                pass
         self._name = name
         self._namespace = namespace
 
     @classmethod
-    def from_typed_dict(cls, typed_dict: t.TypedDict, data: dict[str, t.Any]) -> DataTransferObject:
+    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> Model:
+        """Build a new instance from the ``avro`` schema and data.
+
+        :param schema: The avro schema of the model.
+        :param data: The avro data of the model.
+        :return: A new ``DynamicModel`` instance.
+        """
+        if isinstance(schema, list):
+            schema = schema[-1]
+
+        if "namespace" in schema:
+            name = "{namespace:}.{name:}".format(**schema)
+        else:
+            name = schema["name"]
+
+        try:
+            # noinspection PyTypeChecker
+            model_cls: Model = import_module(name)
+        except MinosImportException:
+            return super().from_avro(schema, data)
+
+        return model_cls.from_dict(data)
+
+    @classmethod
+    def from_typed_dict(cls, typed_dict: TypedDict, data: dict[str, Any]) -> DataTransferObject:
         """Build Model Fields form TypeDict object
 
         :param typed_dict: TypeDict object
         :param data: Data
         :return: DataTransferObject
         """
-        namespace, name = typed_dict.__name__.rsplit(".", 1)
-        fields = dict()
-        for name, type_val in typed_dict.__annotations__.items():
-            fields[name] = ModelField(name, type_val, data[name])
+
+        try:
+            # noinspection PyTypeChecker
+            model_cls: Model = import_module(typed_dict.__name__)
+            if model_cls.type_hints != typed_dict.__annotations__:
+                raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
+            return model_cls.from_dict(data)
+        except MinosImportException:
+            pass
+
+        try:
+            namespace, name = typed_dict.__name__.rsplit(".", 1)
+        except ValueError:
+            namespace, name = None, typed_dict.__name__
+
+        fields = {k: ModelField(k, v, data[k]) for k, v in typed_dict.__annotations__.items()}
         return cls(name, namespace, fields)
 
     # noinspection PyMethodParameters
     @property
-    def _avro_name(self):
+    def _avro_name(self) -> str:
         return self._name
 
     @property
-    def _avro_namespace(self):
+    def _avro_namespace(self) -> Optional[str]:
         return self._namespace
+
+    @property
+    def classname(self) -> str:
+        """Compute the current class name.
+
+        :return: An string object.
+        """
+        name = self._name
+        if self._namespace is not None:
+            name = f"{self._namespace}.{name}"
+        return name
+
+    def __repr__(self) -> str:
+        fields_repr = ", ".join(repr(field) for field in self.fields.values())
+        return f"{self.classname}[DTO](fields=[{fields_repr}])"
+
+    def __eq__(self, other: DataTransferObject):
+        return (
+            super(DynamicModel, self).__eq__(other)
+            and self._name == other._name
+            and self._namespace == other._namespace
+        )

@@ -33,7 +33,7 @@ from ..protocol import (
     MinosAvroProtocol,
 )
 from .fields import (
-    MinosModelAvroSchemaBuilder,
+    AvroSchemaEncoder,
     ModelField,
 )
 
@@ -156,6 +156,15 @@ class Model(t.Generic[T]):
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
     # noinspection PyMethodParameters
+    @property_or_classproperty
+    def type_hints(self_or_cls) -> dict[str, type]:
+        """Get the type hinting of the instance or class.
+
+        :return: A dictionary in which the keys are the field names and the values are the types.
+        """
+        return dict(self_or_cls._type_hints())
+
+    # noinspection PyMethodParameters
     @self_or_classmethod
     @abstractmethod
     def _type_hints(self_or_cls) -> dict[str, t.Any]:
@@ -170,26 +179,26 @@ class Model(t.Generic[T]):
         """
 
         fields = [
-            MinosModelAvroSchemaBuilder(field_name, field_type).build()
-            for field_name, field_type in self_or_cls._type_hints()
+            AvroSchemaEncoder(field_name, field_type).build() for field_name, field_type in self_or_cls._type_hints()
         ]
-        return [
-            {
-                "name": self_or_cls._avro_name,
-                "namespace": self_or_cls._avro_namespace,
-                "type": "record",
-                "fields": fields,
-            }
-        ]
+        schema = {
+            "name": self_or_cls._avro_name,
+            "type": "record",
+            "fields": fields,
+        }
+        if self_or_cls._avro_namespace is not None:
+            schema["namespace"] = self_or_cls._avro_namespace
+
+        return [schema]
 
     # noinspection PyMethodParameters
     @classproperty
-    def _avro_name(cls):
+    def _avro_name(cls) -> str:
         return cls.__name__
 
     # noinspection PyMethodParameters
     @classproperty
-    def _avro_namespace(cls):
+    def _avro_namespace(cls) -> t.Optional[str]:
         return cls.__module__
 
     @property

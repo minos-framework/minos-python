@@ -211,12 +211,22 @@ class ModelFieldCaster(object):
                 pass
         raise MinosTypeAttributeException(self._name, UUID, data)
 
-    def _cast_typed_dict(self, type_field: t.TypedDict, data: t.Any) -> t.Any:
+    def _cast_typed_dict(self, type_field: t.TypedDict[T], data: t.Any) -> t.Any:
         from ..dynamic import (
             DataTransferObject,
         )
 
-        return DataTransferObject.from_typed_dict(type_field, data)
+        if isinstance(data, dict):
+            return DataTransferObject.from_typed_dict(type_field, data)
+
+        if (
+            isinstance(data, DataTransferObject)
+            and data.type_hints == type_field.__annotations__
+            and data.classname == type_field.__name__
+        ):
+            return data
+
+        raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
         if isinstance(data, dict):
