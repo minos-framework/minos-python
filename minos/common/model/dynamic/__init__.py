@@ -11,3 +11,6 @@ from .abc import (
 from .diff import (
     FieldsDiff,
 )
+from .dto import (
+    DataTransferObject,
+)

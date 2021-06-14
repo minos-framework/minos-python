@@ -158,10 +158,10 @@ class MinosModelAvroSchemaBuilder(object):
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
     def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
-        return {"type": "array", "items": self._build_schema(t.get_args(type_field)[0]), "default": []}
+        return {"type": "array", "items": self._build_schema(t.get_args(type_field)[0])}
 
     def _build_dict_schema(self, type_field: t.Type) -> dict[str, t.Any]:
-        return {"type": "map", "values": self._build_schema(t.get_args(type_field)[1]), "default": {}}
+        return {"type": "map", "values": self._build_schema(t.get_args(type_field)[1])}
 
     def _build_model_ref_schema(self, type_field: t.Type) -> t.Union[bool, t.Any]:
         return self._build_schema(t.Union[t.get_args(type_field)[0], int])

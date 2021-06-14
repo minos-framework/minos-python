@@ -21,7 +21,11 @@ from uuid import (
 )
 
 from ...exceptions import (
+    MinosImportException,
     MinosMalformedAttributeException,
+)
+from ...importlib import (
+    import_module,
 )
 from ..types import (
     ARRAY,
@@ -74,6 +78,8 @@ class MinosModelFromAvroBuilder(object):
             return self._build_list_type(schema["items"])
         elif schema["type"] == MAP:
             return self._build_dict_type(schema["values"])
+        elif schema["type"] == "record":
+            return self._build_record_type(schema["name"], schema.get("namespace", None), schema["fields"])
         else:
             return self._build_type(schema["type"])
 
@@ -94,6 +100,17 @@ class MinosModelFromAvroBuilder(object):
 
     def _build_dict_type(self, values: t.Union[dict, str, t.Any] = None) -> t.Type[T]:
         return dict[str, self._build_type(values)]
+
+    def _build_record_type(
+        self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]
+    ) -> t.TypedDict[T]:
+        if namespace is not None:
+            namespace, _ = namespace.rsplit(".", 1)
+            name = f"{namespace}.{name}"
+        try:
+            return import_module(name)
+        except MinosImportException:
+            return t.TypedDict(name, {field["name"]: self._build_type(field["type"]) for field in fields})
 
     @staticmethod
     def _build_simple_type(type_field: str) -> t.Type[T]:

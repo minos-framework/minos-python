@@ -102,6 +102,7 @@ from .model import (
     AggregateDiff,
     Command,
     CommandReply,
+    DataTransferObject,
     Decimal,
     DeclarativeModel,
     DynamicModel,
