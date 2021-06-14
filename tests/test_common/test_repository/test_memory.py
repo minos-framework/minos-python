@@ -20,11 +20,11 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
         repository = InMemoryRepository()
         self.assertIsInstance(repository, MinosRepository)
 
-    async def test_insert(self):
+    async def test_create(self):
         async with InMemoryRepository() as repository:
-            await repository.insert(RepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
+            await repository.create(RepositoryEntry(0, "example.Car", 1, bytes("foo", "utf-8")))
 
-            expected = [RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.INSERT)]
+            expected = [RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.CREATE)]
             self.assertEqual(expected, [v async for v in repository.select()])
 
     async def test_update(self):
@@ -42,13 +42,13 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
     async def test_select(self):
         repository = await self._build_repository()
         expected = [
-            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.CREATE),
             RepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, RepositoryAction.UPDATE),
-            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.INSERT),
+            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.CREATE),
             RepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, RepositoryAction.UPDATE),
             RepositoryEntry(1, "example.Car", 4, bytes(), 5, RepositoryAction.DELETE),
             RepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, RepositoryAction.UPDATE),
-            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.CREATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select()])
 
@@ -66,9 +66,9 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
     async def test_select_id_lt(self):
         repository = await self._build_repository()
         expected = [
-            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.CREATE),
             RepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, RepositoryAction.UPDATE),
-            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.INSERT),
+            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.CREATE),
             RepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, RepositoryAction.UPDATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select(id_lt=5)])
@@ -78,16 +78,16 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
         expected = [
             RepositoryEntry(1, "example.Car", 4, bytes(), 5, RepositoryAction.DELETE),
             RepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, RepositoryAction.UPDATE),
-            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.CREATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select(id_gt=4)])
 
     async def test_select_id_le(self):
         repository = await self._build_repository()
         expected = [
-            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.CREATE),
             RepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8"), 2, RepositoryAction.UPDATE),
-            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.INSERT),
+            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.CREATE),
             RepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8"), 4, RepositoryAction.UPDATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select(id_le=4)])
@@ -97,14 +97,14 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
         expected = [
             RepositoryEntry(1, "example.Car", 4, bytes(), 5, RepositoryAction.DELETE),
             RepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, RepositoryAction.UPDATE),
-            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.CREATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select(id_ge=5)])
 
     async def test_select_aggregate_id(self):
         repository = await self._build_repository()
         expected = [
-            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.INSERT),
+            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.CREATE),
             RepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8"), 6, RepositoryAction.UPDATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select(aggregate_id=2)])
@@ -112,7 +112,7 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
     async def test_select_aggregate_name(self):
         repository = await self._build_repository()
         expected = [
-            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.CREATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select(aggregate_name="example.MotorCycle")])
 
@@ -126,9 +126,9 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
     async def test_select_version_lt(self):
         repository = await self._build_repository()
         expected = [
-            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.INSERT),
-            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.INSERT),
-            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.CREATE),
+            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.CREATE),
+            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.CREATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select(version_lt=2)])
 
@@ -145,9 +145,9 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
     async def test_select_version_le(self):
         repository = await self._build_repository()
         expected = [
-            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.INSERT),
-            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.INSERT),
-            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.INSERT),
+            RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8"), 1, RepositoryAction.CREATE),
+            RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.CREATE),
+            RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, RepositoryAction.CREATE),
         ]
         self.assertEqual(expected, [v async for v in repository.select(version_le=1)])
 
@@ -173,13 +173,13 @@ class TestStringMethods(unittest.IsolatedAsyncioTestCase):
     @staticmethod
     async def _build_repository():
         repository = InMemoryRepository()
-        await repository.insert(RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8")))
+        await repository.create(RepositoryEntry(1, "example.Car", 1, bytes("foo", "utf-8")))
         await repository.update(RepositoryEntry(1, "example.Car", 2, bytes("bar", "utf-8")))
-        await repository.insert(RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8")))
+        await repository.create(RepositoryEntry(2, "example.Car", 1, bytes("hello", "utf-8")))
         await repository.update(RepositoryEntry(1, "example.Car", 3, bytes("foobar", "utf-8")))
         await repository.delete(RepositoryEntry(1, "example.Car", 4))
         await repository.update(RepositoryEntry(2, "example.Car", 2, bytes("bye", "utf-8")))
-        await repository.insert(RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8")))
+        await repository.create(RepositoryEntry(1, "example.MotorCycle", 1, bytes("one", "utf-8")))
 
         return repository
 

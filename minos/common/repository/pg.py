@@ -113,7 +113,7 @@ $$
                                           ON nsp.oid = typ.typnamespace
                       WHERE nsp.nspname = current_schema()
                         AND typ.typname = 'action_type') THEN
-            CREATE TYPE action_type AS ENUM ('insert', 'update', 'delete');
+            CREATE TYPE action_type AS ENUM ('create', 'update', 'delete');
         END IF;
     END;
 $$

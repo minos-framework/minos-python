@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 class RepositoryAction(Enum):
     """Enum class that describes the available repository actions."""
 
-    INSERT = "insert"
+    CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
 

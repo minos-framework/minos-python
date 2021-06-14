@@ -108,13 +108,13 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         aggregate_name: str = car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:
-            await repository.insert(RepositoryEntry(1, aggregate_name, 1, car.avro_bytes))
+            await repository.create(RepositoryEntry(1, aggregate_name, 1, car.avro_bytes))
             await repository.update(RepositoryEntry(1, aggregate_name, 2, car.avro_bytes))
-            await repository.insert(RepositoryEntry(2, aggregate_name, 1, car.avro_bytes))
+            await repository.create(RepositoryEntry(2, aggregate_name, 1, car.avro_bytes))
             await repository.update(RepositoryEntry(1, aggregate_name, 3, car.avro_bytes))
             await repository.delete(RepositoryEntry(1, aggregate_name, 4))
             await repository.update(RepositoryEntry(2, aggregate_name, 2, car.avro_bytes))
-            await repository.insert(RepositoryEntry(3, aggregate_name, 1, car.avro_bytes))
+            await repository.create(RepositoryEntry(3, aggregate_name, 1, car.avro_bytes))
             async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
                 await dispatcher.dispatch()
             return repository
