@@ -16,10 +16,8 @@ from .declarative import (
     Event,
     MinosModel,
 )
-from .dto import (
-    DataTransferObject,
-)
 from .dynamic import (
+    DataTransferObject,
     DynamicModel,
 )
 from .fields import (

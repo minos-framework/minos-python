@@ -16,28 +16,23 @@ from minos.common import (
 class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
     def test_build_field(self):
         data = {"cost": 3.43}
-        schema = {"name": "cost", "type": "float"}
+        schema = {"fields": [{"name": "cost", "type": "float"}]}
 
-        dto_model = DataTransferObject()
-        dto_model.build_field(schema, data["cost"])
+        dto_model = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(3.43, dto_model.cost)
 
     def test_build_array(self):
         data = {"tickets": [3234, 3235, 3236]}
-        schema = {"name": "tickets", "type": "array", "items": "int"}
-
-        dto_model = DataTransferObject()
-        dto_model.build_field(schema, data["tickets"])
+        schema = {"fields": [{"name": "tickets", "type": "array", "items": "int"}]}
+        dto_model = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(data["tickets"], dto_model.tickets)
 
     def test_build_map(self):
         data = {"tickets": {"a": 1, "b": 2}}
-        schema = {"name": "tickets", "type": {"type": "map", "values": "int"}}
-
-        dto_model = DataTransferObject()
-        dto_model.build_field(schema, data["tickets"])
+        schema = {"fields": [{"name": "tickets", "type": {"type": "map", "values": "int"}}]}
+        dto_model = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(data["tickets"], dto_model.tickets)
 
@@ -143,3 +138,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(data["price"], dto_model.price)
         self.assertIsInstance(dto_model.user, DataTransferObject)
         self.assertEqual(data["user"], dto_model.user.avro_data)
+
+
+if __name__ == "__main__":
+    unittest.main()

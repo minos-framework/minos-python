@@ -212,7 +212,7 @@ class ModelFieldCaster(object):
         raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_typed_dict(self, type_field: t.TypedDict, data: t.Any) -> t.Any:
-        from ..dto import (
+        from ..dynamic import (
             DataTransferObject,
         )
 
