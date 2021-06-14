@@ -34,7 +34,7 @@ T = TypeVar("T")
 class DynamicModel(Model):
     """Base class for ``minos`` dynamic model entities"""
 
-    def __init__(self, fields, **kwargs):
+    def __init__(self, fields: dict[str, ModelField], **kwargs):
         super().__init__(fields)
 
     @classmethod
