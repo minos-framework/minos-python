@@ -23,36 +23,39 @@ from tests.model_classes import (
 class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
     def test_from_avro_float(self):
         data = {"cost": 3.43}
-        schema = {
-            "name": "ShoppingList",
-            "fields": [{"name": "cost", "type": "float"}],
-            "type": "record",
-        }
+        schema = [{"name": "ShoppingList", "fields": [{"name": "cost", "type": "float"}], "type": "record"}]
 
         dto = DataTransferObject.from_avro(schema, data)
         self.assertEqual(3.43, dto.cost)
+        self.assertEqual(schema, dto.avro_schema)
 
     def test_from_avro_list(self):
         data = {"tickets": [3234, 3235, 3236]}
-        schema = {
-            "name": "ShoppingList",
-            "fields": [{"name": "tickets", "type": "array", "items": "int"}],
-            "type": "record",
-        }
+        schema = [
+            {
+                "fields": [{"name": "tickets", "type": {"items": "int", "type": "array"}}],
+                "name": "ShoppingList",
+                "type": "record",
+            }
+        ]
         dto = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(data["tickets"], dto.tickets)
+        self.assertEqual(schema, dto.avro_schema)
 
     def test_from_avro_dict(self):
         data = {"tickets": {"a": 1, "b": 2}}
-        schema = {
-            "name": "Order",
-            "type": "record",
-            "fields": [{"name": "tickets", "type": {"type": "map", "values": "int"}}],
-        }
+        schema = [
+            {
+                "fields": [{"name": "tickets", "type": {"type": "map", "values": "int"}}],
+                "name": "Order",
+                "type": "record",
+            }
+        ]
         dto = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(data["tickets"], dto.tickets)
+        self.assertEqual(schema, dto.avro_schema)
 
     def test_from_avro_int(self):
         data = {"price": 120}
@@ -105,7 +108,6 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(expected.price, dto.price)
-        self.assertEqual(expected.user, dto.user)
 
     def test_from_avro_model(self):
         expected = Bar(first=Foo("one"), second=Foo("two"))
