@@ -53,6 +53,17 @@ class TestDynamicModel(unittest.TestCase):
         model = DynamicModel.from_avro(schema, data)
         self.assertEqual({"text": ModelField("text", str, "test")}, model.fields)
 
+    def test_type_hints(self):
+        data = {"text": "test"}
+        schema = {
+            "fields": [{"name": "text", "type": "string"}],
+            "name": "TestModel",
+            "type": "record",
+        }
+
+        model = DynamicModel.from_avro(schema, data)
+        self.assertEqual({"text": str}, model.type_hints)
+
     def test_from_avro_list_schema(self):
         data = {"text": "test"}
         schema = [{"fields": [{"name": "text", "type": "string"}], "name": "TestModel", "type": "record"}]
