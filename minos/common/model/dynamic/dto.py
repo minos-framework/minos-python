@@ -36,6 +36,4 @@ class DataTransferObject(DynamicModel):
         fields = dict()
         for name, type_val in typed_dict.__annotations__.items():
             fields[name] = ModelField(name, type_val, data[name])
-        c = cls()
-        c._fields = fields
-        return c
+        return cls(fields)
