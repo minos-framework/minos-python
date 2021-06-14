@@ -16,6 +16,9 @@ from typing import (
     Union,
 )
 
+from ...meta import (
+    self_or_classmethod,
+)
 from ...protocol import (
     MinosAvroProtocol,
 )
@@ -61,5 +64,6 @@ class DynamicModel(Model):
             fields[raw["name"]] = ModelField.from_avro(raw, data[raw["name"]])
         return cls(fields)
 
+    @self_or_classmethod
     def _type_hints(self) -> dict[str, Any]:
         yield from ((field.name, field.type) for field in self.fields.values())

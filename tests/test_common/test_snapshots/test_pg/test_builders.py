@@ -22,8 +22,10 @@ from dependency_injector import (
 )
 
 from minos.common import (
+    FieldsDiff,
     MinosConfigException,
     MinosRepositoryNotProvidedException,
+    ModelField,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
@@ -112,15 +114,14 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car", 1))
 
     async def test_dispatch_ignore_previous_version(self):
-        car = Car(1, 2, 3, "blue")
-
+        diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
         # noinspection PyTypeChecker
-        aggregate_name: str = car.classname
+        aggregate_name: str = Car.classname
 
         async def _fn(*args, **kwargs):
-            yield RepositoryEntry(1, aggregate_name, 1, car.avro_bytes)
-            yield RepositoryEntry(1, aggregate_name, 3, car.avro_bytes)
-            yield RepositoryEntry(1, aggregate_name, 2, car.avro_bytes)
+            yield RepositoryEntry(1, aggregate_name, 1, diff.avro_bytes)
+            yield RepositoryEntry(1, aggregate_name, 3, diff.avro_bytes)
+            yield RepositoryEntry(1, aggregate_name, 2, diff.avro_bytes)
 
         async with await self._populate() as repository:
             with patch("minos.common.PostgreSqlRepository.select", _fn):
@@ -132,7 +133,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 observed = [v async for v in snapshot.select()]
 
-        expected = [SnapshotEntry(1, aggregate_name, 3, car.avro_bytes)]
+        expected = [SnapshotEntry(1, aggregate_name, 3, diff.avro_bytes)]
         self._assert_equal_snapshot_entries(expected, observed)
 
     def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
@@ -172,17 +173,17 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 mock.reset_mock()
 
     async def _populate(self):
-        car = Car(1, 1, 3, "blue")
+        diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
         # noinspection PyTypeChecker
-        aggregate_name: str = car.classname
+        aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:
-            await repository.create(RepositoryEntry(1, aggregate_name, 1, car.avro_bytes))
-            await repository.update(RepositoryEntry(1, aggregate_name, 2, car.avro_bytes))
-            await repository.create(RepositoryEntry(2, aggregate_name, 1, car.avro_bytes))
-            await repository.update(RepositoryEntry(1, aggregate_name, 3, car.avro_bytes))
+            await repository.create(RepositoryEntry(1, aggregate_name, 1, diff.avro_bytes))
+            await repository.update(RepositoryEntry(1, aggregate_name, 2, diff.avro_bytes))
+            await repository.create(RepositoryEntry(2, aggregate_name, 1, diff.avro_bytes))
+            await repository.update(RepositoryEntry(1, aggregate_name, 3, diff.avro_bytes))
             await repository.delete(RepositoryEntry(1, aggregate_name, 4))
-            await repository.update(RepositoryEntry(2, aggregate_name, 2, car.avro_bytes))
-            await repository.create(RepositoryEntry(3, aggregate_name, 1, car.avro_bytes))
+            await repository.update(RepositoryEntry(2, aggregate_name, 2, diff.avro_bytes))
+            await repository.create(RepositoryEntry(3, aggregate_name, 1, diff.avro_bytes))
             return repository
 
 

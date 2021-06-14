@@ -34,7 +34,7 @@ from .entries import (
 
 if TYPE_CHECKING:
     from ..model import (
-        Aggregate,
+        AggregateDiff,
     )
 
 
@@ -45,38 +45,38 @@ class MinosRepository(ABC, MinosSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
-    async def create(self, entry: Union[Aggregate, RepositoryEntry]) -> RepositoryEntry:
+    async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new creation entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
         if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate(entry)
+            entry = RepositoryEntry.from_aggregate_diff(entry)
 
         entry.action = RepositoryAction.CREATE
         return await self._submit(entry)
 
-    async def update(self, entry: Union[Aggregate, RepositoryEntry]) -> RepositoryEntry:
+    async def update(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new update entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
         if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate(entry)
+            entry = RepositoryEntry.from_aggregate_diff(entry)
 
         entry.action = RepositoryAction.UPDATE
         return await self._submit(entry)
 
-    async def delete(self, entry: Union[Aggregate, RepositoryEntry]) -> RepositoryEntry:
+    async def delete(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
         if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate(entry)
+            entry = RepositoryEntry.from_aggregate_diff(entry)
 
         entry.action = RepositoryAction.DELETE
         return await self._submit(entry)

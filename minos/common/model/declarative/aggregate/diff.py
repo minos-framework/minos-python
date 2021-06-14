@@ -36,6 +36,7 @@ class AggregateDiff(DeclarativeModel):
     """Aggregate Difference class."""
 
     id: int
+    name: str
     version: int
     fields_diff: FieldsDiff
 
@@ -58,7 +59,7 @@ class AggregateDiff(DeclarativeModel):
 
         fields_diff = FieldsDiff.from_difference(a, b, ignore=["id", "version"])
 
-        return cls(new.id, new.version, fields_diff)
+        return cls(new.id, new.classname, new.version, fields_diff)
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate) -> AggregateDiff:
@@ -69,7 +70,7 @@ class AggregateDiff(DeclarativeModel):
         """
 
         fields_diff = FieldsDiff.from_model(aggregate, ignore=["id", "version"])
-        return cls(aggregate.id, aggregate.version, fields_diff)
+        return cls(aggregate.id, aggregate.classname, aggregate.version, fields_diff)
 
     @classmethod
     def simplify(cls, *args: AggregateDiff) -> AggregateDiff:
@@ -84,4 +85,4 @@ class AggregateDiff(DeclarativeModel):
         for another in map(attrgetter("fields_diff"), args):
             current |= another
 
-        return cls(args[-1].id, args[-1].version, FieldsDiff(current))
+        return cls(args[-1].id, args[-1].name, args[-1].version, FieldsDiff(current))
