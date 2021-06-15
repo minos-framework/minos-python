@@ -18,6 +18,7 @@ from typing import (
 if TYPE_CHECKING:
     from .model import (
         Aggregate,
+        AggregateDiff,
     )
 
 
@@ -104,12 +105,12 @@ class MinosSnapshotNotProvidedException(MinosSnapshotException):
 class MinosPreviousVersionSnapshotException(MinosSnapshotException):
     """Exception to be raised when current version is newer than the one to be processed."""
 
-    def __init__(self, previous: Aggregate, new: Aggregate):
+    def __init__(self, previous: Aggregate, diff: AggregateDiff):
         self.previous = previous
-        self.new = new
+        self.diff = diff
         super().__init__(
             f"Version for {repr(previous.classname)} aggregate must be "
-            f"greater than {previous.version}. Obtained: {new.version}"
+            f"greater than {previous.version}. Obtained: {diff.version}"
         )
 
 

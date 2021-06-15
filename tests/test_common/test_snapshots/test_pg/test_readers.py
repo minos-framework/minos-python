@@ -19,6 +19,8 @@ from dependency_injector import (
 from minos.common import (
     FieldsDiff,
     MinosConfigException,
+    MinosRepositoryAggregateNotFoundException,
+    MinosRepositoryDeletedAggregateException,
     ModelField,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
@@ -82,9 +84,12 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_get_raises(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                with self.assertRaises(Exception):
+                with self.assertRaises(MinosRepositoryDeletedAggregateException):
                     # noinspection PyStatementEffect
-                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [1, 2, 3])]
+                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [1])]
+                with self.assertRaises(MinosRepositoryAggregateNotFoundException):
+                    # noinspection PyStatementEffect
+                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [4])]
 
     async def test_select(self):
         await self._populate()
@@ -92,7 +97,9 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         async with PostgreSqlSnapshot.from_config(config=self.config) as snapshot:
             observed = [v async for v in snapshot.select()]
 
+        # noinspection PyTypeChecker
         expected = [
+            SnapshotEntry(1, Car.classname, 4),
             SnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
             SnapshotEntry.from_aggregate(Car(3, 1, 3, "blue")),
         ]
@@ -101,7 +108,12 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
-            self.assertEqual(exp.aggregate, obs.aggregate)
+            if exp.data is None:
+                with self.assertRaises(MinosRepositoryDeletedAggregateException):
+                    # noinspection PyStatementEffect
+                    obs.aggregate
+            else:
+                self.assertEqual(exp.aggregate, obs.aggregate)
             self.assertIsInstance(obs.created_at, datetime)
             self.assertIsInstance(obs.updated_at, datetime)
 
