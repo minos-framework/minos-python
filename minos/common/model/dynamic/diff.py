@@ -82,3 +82,11 @@ class FieldsDiff(DynamicModel):
         for another in args[1:]:
             current._fields |= another._fields
         return current
+
+    @classmethod
+    def empty(cls) -> FieldsDiff:
+        """Build an empty ``FieldsDiff`` instance.
+
+        :return: A ``FieldsDiff`` instance.
+        """
+        return cls(dict())

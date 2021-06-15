@@ -43,11 +43,11 @@ class AggregateDiff(DeclarativeModel):
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate) -> AggregateDiff:
-        """Build an ``FieldsDiff`` instance from the difference of two aggregates.
+        """Build an ``AggregateDiff`` instance from the difference of two aggregates.
 
         :param a: One ``Aggregate`` instance.
         :param b: Another ``Aggregate`` instance.
-        :return: An ``FieldsDiff`` instance.
+        :return: An ``AggregateDiff`` instance.
         """
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
 
@@ -64,14 +64,23 @@ class AggregateDiff(DeclarativeModel):
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate) -> AggregateDiff:
-        """Build an ``FieldsDiff`` from an ``Aggregate`` (considering all fields as differences).
+        """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
-        :return: An ``FieldsDiff`` instance.
+        :return: An ``AggregateDiff`` instance.
         """
 
         fields_diff = FieldsDiff.from_model(aggregate, ignore=["id", "version"])
         return cls(aggregate.id, aggregate.classname, aggregate.version, fields_diff)
+
+    @classmethod
+    def from_deleted_aggregate(cls, aggregate: Aggregate) -> AggregateDiff:
+        """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
+
+        :param aggregate: An ``Aggregate`` instance.
+        :return: An ``AggregateDiff`` instance.
+        """
+        return cls(aggregate.id, aggregate.classname, aggregate.version, FieldsDiff.empty())
 
     @classmethod
     def simplify(cls, *args: AggregateDiff) -> AggregateDiff:
