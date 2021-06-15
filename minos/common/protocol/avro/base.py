@@ -57,14 +57,14 @@ class MinosAvroProtocol(MinosBinaryProtocol):
             )
 
     @staticmethod
-    def _parse_schema(schema: list[dict[str, Any]]) -> bytes:
+    def _parse_schema(schema: list[dict[str, Any]]) -> dict[str, Any]:
         named_schemas = {}
         for item in schema[:-1]:
             parse_schema(item, named_schemas)
         return parse_schema(schema[-1], named_schemas, expand=True)
 
     @staticmethod
-    def _write_data(value: list[dict[str, Any]], schema: bytes):
+    def _write_data(value: list[dict[str, Any]], schema: dict[str, Any]):
         with io.BytesIO() as file:
             writer(file, schema, value)
             file.seek(0)

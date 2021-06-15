@@ -24,6 +24,9 @@ from ..exceptions import (
     MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
+from ..importlib import (
+    classname,
+)
 from ..meta import (
     classproperty,
     property_or_classproperty,
@@ -134,6 +137,16 @@ class Model(t.Generic[T]):
         # noinspection PyTypeChecker
         return MinosAvroProtocol().encode([model.avro_data for model in models], avro_schema)
 
+    # noinspection PyMethodParameters
+    @classproperty
+    def classname(cls) -> str:
+        """Compute the current class namespace.
+
+        :return: An string object.
+        """
+        # noinspection PyTypeChecker
+        return classname(cls)
+
     @property
     def fields(self) -> dict[str, ModelField]:
         """Fields getter"""
@@ -177,17 +190,21 @@ class Model(t.Generic[T]):
 
         :return: A dictionary object.
         """
+        if not isinstance(self_or_cls, type):
+            fields = [AvroSchemaEncoder.from_field(field).build() for field in self_or_cls.fields.values()]
+        else:
+            # noinspection PyProtectedMember,PyUnresolvedReferences
+            fields = [
+                AvroSchemaEncoder(field_name, field_type).build()
+                for field_name, field_type in self_or_cls._type_hints()
+            ]
 
-        fields = [
-            AvroSchemaEncoder(field_name, field_type).build() for field_name, field_type in self_or_cls._type_hints()
-        ]
         schema = {
             "name": self_or_cls._avro_name,
+            "namespace": self_or_cls._avro_namespace,
             "type": "record",
             "fields": fields,
         }
-        if self_or_cls._avro_namespace is not None:
-            schema["namespace"] = self_or_cls._avro_namespace
 
         return [schema]
 
@@ -240,3 +257,12 @@ class Model(t.Generic[T]):
     def __repr__(self):
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
         return f"{type(self).__name__}(fields=[{fields_repr}])"
+
+    @property
+    def typed_dict(self) -> t.TypedDict:
+        """TODO
+
+        :return: TODO
+        """
+        # noinspection PyTypeChecker
+        return t.TypedDict(self.classname, self.type_hints)

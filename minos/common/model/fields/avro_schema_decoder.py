@@ -102,13 +102,40 @@ class AvroSchemaDecoder(object):
     def _build_record_type(
         self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]
     ) -> t.TypedDict[T]:
+        if namespace is None:
+            try:
+                namespace, name = name.rsplit(".", 1)
+            except ValueError:
+                pass
         if namespace is not None:
             try:
                 namespace, _ = namespace.rsplit(".", 1)
             except ValueError:
                 pass
-            name = f"{namespace}.{name}"
-        return t.TypedDict(name, {field["name"]: self._build_type(field["type"]) for field in fields})
+            if len(namespace) > 0:
+                name = f"{namespace}.{name}"
+
+        type_hints = {field["name"]: self._build_type(field["type"]) for field in fields}
+
+        from ...exceptions import (
+            MinosImportException,
+            MinosModelException,
+        )
+
+        try:
+            from ...importlib import (
+                import_module,
+            )
+
+            # noinspection PyTypeChecker
+            model_cls = import_module(name)
+            if model_cls.type_hints != type_hints:
+                raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
+            return model_cls
+        except MinosImportException:
+            pass
+
+        return t.TypedDict(name, type_hints)
 
     @staticmethod
     def _build_simple_type(type_field: str) -> t.Type[T]:

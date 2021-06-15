@@ -38,6 +38,7 @@ from ..types import (
     ModelRef,
 )
 from .utils import (
+    _is_dynamic_model_cls,
     _is_minos_model_cls,
 )
 
@@ -63,7 +64,10 @@ class AvroSchemaEncoder(object):
         :param field: The model field.
         :return: A new avro schema builder instance.
         """
-        return cls(field.name, field.type)
+        field_type = field.type
+        if _is_dynamic_model_cls(field_type):
+            field_type = field.value.typed_dict
+        return cls(field.name, field_type)
 
     def build(self) -> dict[str, t.Any]:
         """Build the avro schema for the given field.
@@ -148,16 +152,14 @@ class AvroSchemaEncoder(object):
             namespace, name = type_field.__name__.rsplit(".", 1)
             namespace += f".{self._name}"
         except ValueError:
-            namespace, name = None, type_field.__name__
+            namespace, name = str(), type_field.__name__
 
         schema = {
             "name": name,
+            "namespace": namespace,
             "type": "record",
             "fields": [AvroSchemaEncoder(k, v).build() for k, v in type_field.__annotations__.items()],
         }
-        if namespace is not None:
-            schema["namespace"] = namespace
-
         return schema
 
     def _build_minos_model_schema(self, type_field: t.Type) -> t.Any:
