@@ -12,10 +12,14 @@ from __future__ import (
 import logging
 from typing import (
     Any,
+    Generic,
     TypeVar,
     Union,
 )
 
+from ...meta import (
+    self_or_classmethod,
+)
 from ...protocol import (
     MinosAvroProtocol,
 )
@@ -31,8 +35,11 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-class DynamicModel(Model):
+class DynamicModel(Model, Generic[T]):
     """Base class for ``minos`` dynamic model entities"""
+
+    def __init__(self, fields: dict[str, ModelField], **kwargs):
+        super().__init__(fields)
 
     @classmethod
     def from_avro_bytes(cls, raw: bytes, **kwargs) -> Union[T, list[T]]:
@@ -49,17 +56,20 @@ class DynamicModel(Model):
         return cls.from_avro(schema, decoded | kwargs)
 
     @classmethod
-    def from_avro(cls, schema: dict[str, Any], data: dict[str, Any]) -> T:
+    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
         :param data: The avro data of the model.
         :return: A new ``DynamicModel`` instance.
         """
-        fields = dict()
-        for raw in schema["fields"]:
-            fields[raw["name"]] = ModelField.from_avro(raw, data[raw["name"]])
-        return cls(fields)
+        if isinstance(schema, list):
+            schema = schema[-1]
+        schema = dict(schema)  # To avoid collateral effects related with the schema modification.
 
+        fields = {raw["name"]: ModelField.from_avro(raw, data[raw["name"]]) for raw in schema.pop("fields")}
+        return cls(fields=fields, **schema)
+
+    @self_or_classmethod
     def _type_hints(self) -> dict[str, Any]:
         yield from ((field.name, field.type) for field in self.fields.values())

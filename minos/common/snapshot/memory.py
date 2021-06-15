@@ -60,11 +60,13 @@ class InMemorySnapshot(MinosSnapshot):
         if not len(entries):
             raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {id!r} id.")
 
-        entry = max(entries, key=attrgetter("version"))
-        if entry.action == RepositoryAction.DELETE:
+        entries.sort(key=attrgetter("version"))
+        if entries[-1].action == RepositoryAction.DELETE:
             raise MinosRepositoryDeletedAggregateException(f"The {id!r} id points to an already deleted aggregate.")
-        cls = entry.aggregate_cls
-        instance = cls.from_avro_bytes(
-            entry.data, id=entry.aggregate_id, version=entry.version, _repository=_repository, **kwargs
-        )
+
+        cls = entries[0].aggregate_cls
+        instance: Aggregate = cls.from_diff(entries[0].aggregate_diff, _repository=_repository, **kwargs)
+        for entry in entries[1:]:
+            instance.apply_diff(entry.aggregate_diff)
+
         return instance

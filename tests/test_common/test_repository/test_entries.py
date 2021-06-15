@@ -11,17 +11,15 @@ from datetime import (
 )
 
 from minos.common import (
-    InMemorySnapshot,
+    AggregateDiff,
+    FieldsDiff,
     MinosRepositoryUnknownActionException,
+    ModelField,
     RepositoryAction,
     RepositoryEntry,
 )
 from tests.aggregate_classes import (
     Car,
-)
-from tests.utils import (
-    FakeBroker,
-    FakeRepository,
 )
 
 
@@ -65,14 +63,15 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(RepositoryAction.CREATE, entry.action)
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
 
-    async def test_from_aggregate(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
-            car = Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
-            entry = RepositoryEntry.from_aggregate(car)
-        self.assertEqual(car.id, entry.aggregate_id)
-        self.assertEqual(car.classname, entry.aggregate_name)
-        self.assertEqual(car.version, entry.version)
-        self.assertIsInstance(entry.data, bytes)
+    async def test_from_aggregate_diff(self):
+        fields_diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
+        aggregate_diff = AggregateDiff(id=1, name=Car.classname, version=1, fields_diff=fields_diff)
+
+        entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
+        self.assertEqual(1, entry.aggregate_id)
+        self.assertEqual("tests.aggregate_classes.Car", entry.aggregate_name)
+        self.assertEqual(1, entry.version)
+        self.assertEqual(fields_diff, FieldsDiff.from_avro_bytes(entry.data))
         self.assertEqual(None, entry.id)
         self.assertEqual(None, entry.action)
         self.assertEqual(None, entry.created_at)

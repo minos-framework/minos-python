@@ -8,6 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
+    InMemoryRepository,
     InMemorySnapshot,
 )
 from tests.aggregate_classes import (
@@ -44,7 +45,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_update(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
+        async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
             broker.reset_mock()
 
@@ -53,15 +54,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 [
                     {
                         "items": [
-                            Car(
-                                9999,
-                                2,
-                                doors=3,
-                                color="red",
-                                _broker=broker,
-                                _repository=repository,
-                                _snapshot=snapshot,
-                            )
+                            Car(1, 2, doors=3, color="red", _broker=broker, _repository=repository, _snapshot=snapshot,)
                         ],
                         "topic": "CarUpdated",
                     }

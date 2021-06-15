@@ -33,6 +33,7 @@ from ..importlib import (
 if TYPE_CHECKING:
     from ..model import (
         Aggregate,
+        AggregateDiff,
     )
 
 
@@ -85,14 +86,16 @@ class RepositoryEntry(object):
         self.created_at = created_at
 
     @classmethod
-    def from_aggregate(cls, aggregate: Aggregate) -> RepositoryEntry:
+    def from_aggregate_diff(cls, aggregate_diff: AggregateDiff) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
-        :param aggregate: The aggregate instance.
+        :param aggregate_diff: The aggregate instance.
         :return: A new ``RepositoryEntry`` instance.
         """
         # noinspection PyTypeChecker
-        return cls(aggregate.id, aggregate.classname, aggregate.version, aggregate.avro_bytes)
+        return cls(
+            aggregate_diff.id, aggregate_diff.name, aggregate_diff.version, aggregate_diff.fields_diff.avro_bytes
+        )
 
     @property
     def aggregate_cls(self) -> Type[Aggregate]:
@@ -102,6 +105,21 @@ class RepositoryEntry(object):
         """
         # noinspection PyTypeChecker
         return import_module(self.aggregate_name)
+
+    @property
+    def aggregate_diff(self) -> AggregateDiff:
+        """TODO
+
+        :return: TODO
+        """
+        from ..model import (
+            AggregateDiff,
+            FieldsDiff,
+        )
+
+        return AggregateDiff(
+            self.aggregate_id, self.aggregate_name, self.version, FieldsDiff.from_avro_bytes(self.data)
+        )
 
     def __eq__(self, other: "RepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

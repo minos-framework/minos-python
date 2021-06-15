@@ -13,7 +13,6 @@ from typing import (
     TYPE_CHECKING,
     NoReturn,
     Optional,
-    Type,
 )
 
 from dependency_injector.wiring import (
@@ -26,6 +25,9 @@ from ...configuration import (
 from ...exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosRepositoryNotProvidedException,
+)
+from ...importlib import (
+    import_module,
 )
 from ...repository import (
     MinosRepository,
@@ -42,6 +44,7 @@ from .abc import (
 if TYPE_CHECKING:
     from ...model import (
         Aggregate,
+        AggregateDiff,
     )
 
 
@@ -138,24 +141,23 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
     async def _build_instance(self, event_entry: RepositoryEntry) -> Aggregate:
         # noinspection PyTypeChecker
-        cls: Type[Aggregate] = event_entry.aggregate_cls
-        instance = cls.from_avro_bytes(event_entry.data, id=event_entry.aggregate_id, version=event_entry.version)
-        instance = await self._update_if_exists(instance)
+        diff = event_entry.aggregate_diff
+        instance = await self._update_if_exists(diff)
         return instance
 
-    async def _update_if_exists(self, new: Aggregate) -> Aggregate:
+    async def _update_if_exists(self, diff: AggregateDiff) -> Aggregate:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
-            previous = await self._select_one_aggregate(new.id, new.classname)
+            previous = await self._select_one_aggregate(diff.id, diff.name)
         except Exception:
-            return new
+            return import_module(diff.name).from_diff(diff)
 
-        if previous.version >= new.version:
-            raise MinosPreviousVersionSnapshotException(previous, new)
+        if previous.version >= diff.version:
+            raise MinosPreviousVersionSnapshotException(previous, diff)
 
-        new._fields = previous.fields | new.fields
-        return new
+        previous.apply_diff(diff)
+        return previous
 
     async def _select_one_aggregate(self, aggregate_id: int, aggregate_name: str) -> Aggregate:
         snapshot_entry = await self._select_one(aggregate_id, aggregate_name)

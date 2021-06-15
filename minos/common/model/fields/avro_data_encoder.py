@@ -32,12 +32,14 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class MinosModelAvroDataBuilder(object):
+class AvroDataEncoder(object):
+    """Avro Data Encoder class."""
+
     def __init__(self, value: t.Any):
         self._value = value
 
     @classmethod
-    def from_field(cls, field: ModelField) -> MinosModelAvroDataBuilder:
+    def from_field(cls, field: ModelField) -> AvroDataEncoder:
         """Build a new instance from a ``ModelField``.
 
         :param field: The model field.

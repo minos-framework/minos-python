@@ -173,7 +173,8 @@ class Aggregate(DeclarativeModel, Generic[T]):
 
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
-        entry = await instance._repository.create(instance)
+        diff = AggregateDiff.from_aggregate(instance)
+        entry = await instance._repository.create(diff)
 
         instance.id = entry.aggregate_id
         instance.version = entry.version
@@ -198,7 +199,11 @@ class Aggregate(DeclarativeModel, Generic[T]):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        entry = await self._repository.update(self)
+        previous = await self.get_one(
+            self.id, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
+        )
+        diff = AggregateDiff.from_difference(self, previous)
+        entry = await self._repository.update(diff)
 
         self.id = entry.aggregate_id
         self.version = entry.version
@@ -222,7 +227,8 @@ class Aggregate(DeclarativeModel, Generic[T]):
 
         :return: This method does not return anything.
         """
-        await self._repository.delete(self)
+        diff = AggregateDiff.from_aggregate(self)
+        await self._repository.delete(diff)
         await self._broker.send_one(self, topic=f"{type(self).__name__}Deleted")
 
     def diff(self, another: Aggregate) -> AggregateDiff:
@@ -246,6 +252,17 @@ class Aggregate(DeclarativeModel, Generic[T]):
                 f"To apply the difference, it must have same id. Expected: {self.id!r} Obtained: {difference.id!r}"
             )
         logger.debug(f"Applying {difference!r} to {self!r}...")
-        for name, field in difference.fields_diff.fields.items():
+        for name, field in difference.fields_diff:
             setattr(self, name, field.value)
         self.version = difference.version
+
+    @classmethod
+    def from_diff(cls, difference: AggregateDiff, *args, **kwargs) -> T:
+        """Build a new instance from an ``AggregateDiff``.
+
+        :param difference: The difference that contains the data.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A new ``Aggregate`` instance.
+        """
+        return cls(*args, difference.id, difference.version, **difference.fields_diff_values, **kwargs)

@@ -17,6 +17,9 @@ from datetime import (
     time,
     timedelta,
 )
+from typing import (
+    _TypedDictMeta,
+)
 from uuid import (
     UUID,
 )
@@ -43,13 +46,15 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class ModelFieldCaster(object):
+class AvroDataDecoder(object):
+    """Avro Data Decoder class."""
+
     def __init__(self, field_name: str, field_type: t.Type):
         self._name = field_name
         self._type = field_type
 
     @classmethod
-    def from_field(cls, field: ModelField) -> ModelFieldCaster:
+    def from_field(cls, field: ModelField) -> AvroDataDecoder:
         """Build a new instance from a ``ModelField``.
 
         :param field: The model field.
@@ -57,7 +62,7 @@ class ModelFieldCaster(object):
         """
         return cls(field.name, field.type)
 
-    def cast(self, data: t.Any) -> t.Any:
+    def build(self, data: t.Any) -> t.Any:
         """Cast data type according to the field definition..
 
         :param data: Data to be casted.
@@ -106,6 +111,9 @@ class ModelFieldCaster(object):
 
         if type_field is UUID:
             return self._cast_uuid(data)
+
+        if isinstance(type_field, _TypedDictMeta):
+            return self._cast_typed_dict(type_field, data)
 
         if _is_minos_model_cls(type_field):
             return self._cast_minos_model(type_field, data)
@@ -204,6 +212,23 @@ class ModelFieldCaster(object):
             except ValueError:
                 pass
         raise MinosTypeAttributeException(self._name, UUID, data)
+
+    def _cast_typed_dict(self, type_field: t.TypedDict[T], data: t.Any) -> t.Any:
+        from ..dynamic import (
+            DataTransferObject,
+        )
+
+        if isinstance(data, dict):
+            return DataTransferObject.from_typed_dict(type_field, data)
+
+        if (
+            isinstance(data, DataTransferObject)
+            and data.type_hints == type_field.__annotations__
+            and data.classname == type_field.__name__
+        ):
+            return data
+
+        raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
         if isinstance(data, dict):
