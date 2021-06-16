@@ -18,7 +18,6 @@ from typing import (
 
 from ...exceptions import (
     MinosImportException,
-    MinosModelException,
 )
 from ...importlib import (
     import_module,
@@ -91,16 +90,6 @@ class DataTransferObject(DynamicModel):
         :param data: A dictionary containing the values to be stored on the DTO.
         :return: A new ``DataTransferObject`` instance.
         """
-
-        try:
-            # noinspection PyTypeChecker
-            model_cls: Model = import_module(model_type.classname)
-            if model_cls.type_hints != model_type.type_hints:
-                raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
-            return model_cls.from_dict(data)
-        except MinosImportException:
-            pass
-
         fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
         return cls(model_type.name, fields, namespace=model_type.namespace)
 

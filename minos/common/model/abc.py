@@ -83,13 +83,15 @@ class Model(t.Generic[T]):
 
     _fields: dict[str, ModelField] = {}
 
-    def __init__(self, fields: dict[str, ModelField] = None):
+    def __init__(self, fields: t.Union[t.Iterable[ModelField], dict[str, ModelField]] = None):
         """Class constructor.
 
         :param fields: Dictionary that contains the ``ModelField`` instances of the model indexed by name.
         """
         if fields is None:
             fields = dict()
+        if not isinstance(fields, dict):
+            fields = {field.name: field for field in fields}
         self._fields = fields
 
     @classmethod

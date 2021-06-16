@@ -27,6 +27,9 @@ from ..abc import (
 from ..fields import (
     AvroSchemaDecoder,
 )
+from ..types import (
+    ModelType,
+)
 from .abc import (
     DeclarativeModel,
 )
@@ -47,7 +50,7 @@ class Event(DeclarativeModel):
         super().__init__(topic, items, *args, **kwargs)
 
     @property
-    def items_type(self) -> Type[list[Model]]:
+    def items_type(self) -> Type[list[ModelType]]:
         """TODO
 
         :return: TODO

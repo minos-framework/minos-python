@@ -11,21 +11,41 @@ from __future__ import (
 
 import dataclasses
 import datetime
-import typing as t
 import uuid
 from inspect import (
     isclass,
 )
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    Iterable,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
-if t.TYPE_CHECKING:
+from ..exceptions import (
+    MinosImportException,
+    MinosModelException,
+)
+from ..importlib import (
+    import_module,
+)
+
+if TYPE_CHECKING:
     from .abc import (
         Model,
     )
+    from .declarative import (
+        DeclarativeModel,
+    )
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
-class MissingSentinel(t.Generic[T]):
+class MissingSentinel(Generic[T]):
     """
     Class to detect when a field is not initialized
     """
@@ -34,16 +54,16 @@ class MissingSentinel(t.Generic[T]):
 
 
 @dataclasses.dataclass
-class Fixed(t.Generic[T]):
+class Fixed(Generic[T]):
     """
     Represents an Avro Fixed type
     size (int): Specifying the number of bytes per value
     """
 
     size: int
-    default: t.Any = dataclasses.field(default=MissingSentinel)
-    namespace: t.Optional[str] = None
-    aliases: t.Optional[list[t.Any]] = None
+    default: Any = dataclasses.field(default=MissingSentinel)
+    namespace: Optional[str] = None
+    aliases: Optional[list[Any]] = None
     _dataclasses_custom_type: str = "Fixed"
 
     def __repr__(self) -> str:
@@ -51,17 +71,17 @@ class Fixed(t.Generic[T]):
 
 
 @dataclasses.dataclass
-class Enum(t.Generic[T]):
+class Enum(Generic[T]):
     """
     Represents an Avro Enum type
     symbols (typing.List): Specifying the possible values for the enum
     """
 
-    symbols: list[t.Any]
-    default: t.Any = dataclasses.field(default=MissingSentinel)
-    namespace: t.Optional[str] = None
-    aliases: t.Optional[list[t.Any]] = None
-    docs: t.Optional[str] = None
+    symbols: list[Any]
+    default: Any = dataclasses.field(default=MissingSentinel)
+    namespace: Optional[str] = None
+    aliases: Optional[list[Any]] = None
+    docs: Optional[str] = None
     _dataclasses_custom_type: str = "Enum"
 
     def __repr__(self) -> str:
@@ -69,7 +89,7 @@ class Enum(t.Generic[T]):
 
 
 @dataclasses.dataclass
-class Decimal(t.Generic[T]):
+class Decimal(Generic[T]):
     """
     Represents an Avro Decimal type
     precision (int): Specifying the number precision
@@ -78,23 +98,23 @@ class Decimal(t.Generic[T]):
 
     precision: int
     scale: int = 0
-    default: t.Any = dataclasses.field(default=MissingSentinel)
+    default: Any = dataclasses.field(default=MissingSentinel)
     _dataclasses_custom_type: str = "Decimal"
 
     # Decimal serializes to bytes, which doesn't support namespace
-    aliases: t.Optional[list[t.Any]] = None
+    aliases: Optional[list[Any]] = None
 
     def __repr__(self) -> str:
         return f"Decimal(precision={self.precision}, scale={self.scale})"
 
 
 @dataclasses.dataclass
-class ModelRef(t.Generic[T]):
+class ModelRef(Generic[T]):
     """Represents an Avro Model Reference type."""
 
-    default: t.Any = dataclasses.field(default=MissingSentinel)
-    namespace: t.Optional[str] = None
-    aliases: t.Optional[list[t.Any]] = None
+    default: Any = dataclasses.field(default=MissingSentinel)
+    namespace: Optional[str] = None
+    aliases: Optional[list[Any]] = None
     _dataclasses_custom_type: str = "ModelRef"
 
     def __repr__(self) -> str:
@@ -106,10 +126,10 @@ class ModelType(type):
 
     name: str
     namespace: str
-    type_hints: dict[str, t.Type[T]]
+    type_hints: dict[str, Type[T]]
 
     @classmethod
-    def build(mcs, name: str, type_hints: dict[str, type], namespace: t.Optional[str] = None) -> t.Type[T]:
+    def build(mcs, name: str, type_hints: dict[str, type], namespace: Optional[str] = None) -> Type[T]:
         """Build a new ``ModelType`` instance.
 
         :param name: Name of the new type.
@@ -127,7 +147,7 @@ class ModelType(type):
         return mcs(name, tuple(), {"type_hints": type_hints, "namespace": namespace})
 
     @classmethod
-    def from_typed_dict(mcs, typed_dict) -> t.Type[T]:
+    def from_typed_dict(mcs, typed_dict) -> Type[T]:
         """Build a new ``ModelType`` instance from a ``typing.TypedDict``.
 
         :param typed_dict: Typed dict to be used as base.
@@ -135,11 +155,25 @@ class ModelType(type):
         """
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
 
+    def __call__(cls, *args, **kwargs) -> Model:
+        try:
+            # noinspection PyTypeChecker
+            model_cls: DeclarativeModel = import_module(cls.classname)
+            if model_cls.type_hints != cls.type_hints:
+                raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
+            return model_cls(*args, **kwargs)
+        except MinosImportException:
+            from .dynamic import (
+                DataTransferObject,
+            )
+
+            return DataTransferObject.from_model_type(cls, kwargs)
+
     @property
     def name(cls) -> str:
         """Get the type name.
 
-        :return: A string object.
+        :return: A string objec
         """
         return cls.__name__
 
@@ -147,13 +181,13 @@ class ModelType(type):
     def classname(cls) -> str:
         """Get the full class name.
 
-        :return: An string object.
+        :return: An string objec
         """
         if len(cls.namespace) == 0:
             return cls.name
         return f"{cls.namespace}.{cls.name}"
 
-    def __eq__(self, other: t.Union[ModelType, t.Type[Model]]) -> bool:
+    def __eq__(self, other: Union[ModelType, Type[Model]]) -> bool:
         from .abc import (
             Model,
         )
@@ -165,7 +199,7 @@ class ModelType(type):
     def __hash__(self) -> int:
         return hash(tuple(self))
 
-    def __iter__(self) -> t.Iterable:
+    def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
         yield from (self.name, self.namespace, tuple(self.type_hints.items()))
 

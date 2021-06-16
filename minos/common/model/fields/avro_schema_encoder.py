@@ -64,7 +64,7 @@ class AvroSchemaEncoder:
         """
         field_type = field.type
         if _is_dynamic_model_cls(field_type):
-            field_type = field.value.typed_dict
+            field_type = field.value.model_type
         return cls(field.name, field_type)
 
     def build(self) -> dict[str, t.Any]:

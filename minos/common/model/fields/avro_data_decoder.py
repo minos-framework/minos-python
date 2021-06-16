@@ -215,12 +215,9 @@ class AvroDataDecoder:
         from ..abc import (
             Model,
         )
-        from ..dynamic import (
-            DataTransferObject,
-        )
 
         if isinstance(data, dict):
-            return DataTransferObject.from_model_type(type_field, data)
+            return type_field(**data)
 
         if isinstance(data, Model) and data.model_type == type_field:
             return data
