@@ -50,18 +50,6 @@ class DataTransferObject(DynamicModel):
         self._namespace = namespace
 
     @classmethod
-    def cast(cls, model: Model) -> DataTransferObject:
-        """TODO
-
-        :param model: TODO
-        :return: TODO
-        """
-        if isinstance(model, DataTransferObject):
-            return model
-        # noinspection PyTypeChecker
-        return DataTransferObject(model.classname, fields=model.fields)
-
-    @classmethod
     def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> Model:
         """Build a new instance from the ``avro`` schema and data.
 
