@@ -108,9 +108,9 @@ class RepositoryEntry:
 
     @property
     def aggregate_diff(self) -> AggregateDiff:
-        """TODO
+        """Get the stored ``AggregateDiff`` instance.
 
-        :return: TODO
+        :return: An ``AggregateDiff`` instance.
         """
         from ..model import (
             AggregateDiff,
