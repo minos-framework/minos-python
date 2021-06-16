@@ -55,7 +55,7 @@ class RepositoryAction(Enum):
         )
 
 
-class RepositoryEntry(object):
+class RepositoryEntry:
     """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
 
     __slots__ = "aggregate_id", "aggregate_name", "version", "data", "id", "action", "created_at"
@@ -108,9 +108,9 @@ class RepositoryEntry(object):
 
     @property
     def aggregate_diff(self) -> AggregateDiff:
-        """TODO
+        """Get the stored ``AggregateDiff`` instance.
 
-        :return: TODO
+        :return: An ``AggregateDiff`` instance.
         """
         from ..model import (
             AggregateDiff,

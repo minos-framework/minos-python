@@ -36,6 +36,7 @@ from ..types import (
     STRING,
     TIME_TYPE,
     UUID_TYPE,
+    ModelType,
 )
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class AvroSchemaDecoder(object):
+class AvroSchemaDecoder:
     """Avro Schema Decoder class."""
 
     def __init__(self, schema: dict):
@@ -99,9 +100,7 @@ class AvroSchemaDecoder(object):
     def _build_dict_type(self, values: t.Union[dict, str, t.Any] = None) -> t.Type[T]:
         return dict[str, self._build_type(values)]
 
-    def _build_record_type(
-        self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]
-    ) -> t.TypedDict[T]:
+    def _build_record_type(self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]) -> t.Type[T]:
         if namespace is None:
             try:
                 namespace, name = name.rsplit(".", 1)
@@ -112,8 +111,6 @@ class AvroSchemaDecoder(object):
                 namespace, _ = namespace.rsplit(".", 1)
             except ValueError:
                 pass
-            if len(namespace) > 0:
-                name = f"{namespace}.{name}"
 
         type_hints = {field["name"]: self._build_type(field["type"]) for field in fields}
 
@@ -122,20 +119,25 @@ class AvroSchemaDecoder(object):
             MinosModelException,
         )
 
+        if len(namespace) > 0:
+            nm = f"{namespace}.{name}"
+        else:
+            nm = name
+
         try:
             from ...importlib import (
                 import_module,
             )
 
             # noinspection PyTypeChecker
-            model_cls = import_module(name)
+            model_cls = import_module(nm)
             if model_cls.type_hints != type_hints:
                 raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
             return model_cls
         except MinosImportException:
             pass
 
-        return t.TypedDict(name, type_hints)
+        return ModelType.build(name, type_hints, namespace)
 
     @staticmethod
     def _build_simple_type(type_field: str) -> t.Type[T]:

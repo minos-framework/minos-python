@@ -10,11 +10,13 @@ import unittest
 
 from minos.common import (
     AvroSchemaDecoder,
+    ModelType,
 )
 
 
 class TestAvroSchemaDecoder(unittest.TestCase):
     def test_typed_dict(self):
+        expected = ModelType.build("User", {"username": str}, "path.to")
         field_schema = {
             "fields": [{"name": "username", "type": "string"}],
             "name": "User",
@@ -23,11 +25,10 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         }
 
         observed = AvroSchemaDecoder(field_schema).build()
-
-        self.assertEqual("path.to.User", observed.__name__)
-        self.assertEqual({"username": str}, observed.__annotations__)
+        self.assertEqual(expected, observed)
 
     def test_typed_dict_single_module(self):
+        expected = ModelType.build("User", {"username": str}, "example")
         field_schema = {
             "fields": [{"name": "username", "type": "string"}],
             "name": "User",
@@ -36,9 +37,7 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         }
 
         observed = AvroSchemaDecoder(field_schema).build()
-
-        self.assertEqual("example.User", observed.__name__)
-        self.assertEqual({"username": str}, observed.__annotations__)
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":

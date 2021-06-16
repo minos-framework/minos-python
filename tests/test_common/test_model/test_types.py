@@ -9,15 +9,16 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 from typing import (
     Generic,
+    TypedDict,
 )
 
 from minos.common import (
-    CUSTOM_TYPES,
     Decimal,
     Enum,
     Fixed,
     MissingSentinel,
     ModelRef,
+    ModelType,
 )
 
 
@@ -119,11 +120,41 @@ class TestModelRef(unittest.TestCase):
         self.assertEqual("ModelRef()", repr(ref))
 
 
-class TestTypesModule(unittest.TestCase):
-    def test_custom_types(self):
-        self.assertEqual(
-            ("Fixed", "Enum", "Decimal", "ModelRef",), CUSTOM_TYPES,
-        )
+class TestModelTyp(unittest.TestCase):
+    def test_build(self):
+        model_type = ModelType.build("Foo", {"text": int}, "bar")
+        self.assertEqual("Foo", model_type.name)
+        self.assertEqual({"text": int}, model_type.type_hints)
+        self.assertEqual("bar", model_type.namespace)
+
+    def test_classname(self):
+        model_type = ModelType.build("Foo", {"text": int}, "bar")
+        self.assertEqual("bar.Foo", model_type.classname)
+
+    def test_hash(self):
+        model_type = ModelType.build("Foo", {"text": int}, "bar")
+        self.assertIsInstance(hash(model_type), int)
+
+    def test_equal(self):
+        one = ModelType.build("Foo", {"text": int}, "bar")
+        two = ModelType.build("Foo", {"text": int}, "bar")
+        self.assertEqual(one, two)
+
+    def test_not_equal(self):
+        base = ModelType.build("Foo", {"text": int}, "bar")
+        self.assertNotEqual(ModelType.build("aaa", {"text": int}, "bar"), base)
+        self.assertNotEqual(ModelType.build("Foo", {"aaa": float}, "bar"), base)
+        self.assertNotEqual(ModelType.build("Foo", {"text": int}, "aaa"), base)
+
+    def test_from_typed_dict(self):
+        expected = ModelType.build("Foo", {"text": int}, "bar")
+        observed = ModelType.from_typed_dict(TypedDict("bar.Foo", {"text": int}))
+        self.assertEqual(expected, observed)
+
+    def test_from_typed_dict_without_namespace(self):
+        expected = ModelType.build("Foo", {"text": int})
+        observed = ModelType.from_typed_dict(TypedDict("Foo", {"text": int}))
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":

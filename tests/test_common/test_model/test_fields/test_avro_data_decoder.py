@@ -7,33 +7,31 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import (
-    TypedDict,
-)
 
 from minos.common import (
     AvroDataDecoder,
     DataTransferObject,
     MinosTypeAttributeException,
     ModelField,
+    ModelType,
 )
 
 
 class TestAvroDataDecoder(unittest.TestCase):
     def test_typed_dict(self):
-        observed = AvroDataDecoder("test", TypedDict("Foo", {"bar": str})).build({"bar": "foobar"})
+        observed = AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build({"bar": "foobar"})
 
         self.assertIsInstance(observed, DataTransferObject)
         self.assertEqual({"bar": "foobar"}, observed.avro_data)
 
     def test_typed_dict_already_casted(self):
         value = DataTransferObject("Foo", fields={"bar": ModelField("bar", str, "foobar")})
-        observed = AvroDataDecoder("test", TypedDict("Foo", {"bar": str})).build(value)
+        observed = AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build(value)
         self.assertEqual(value, observed)
 
     def test_typed_dict_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
-            AvroDataDecoder("test", TypedDict("Foo", {"bar": str})).build(3)
+            AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build(3)
 
 
 if __name__ == "__main__":
