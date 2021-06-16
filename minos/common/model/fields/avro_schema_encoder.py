@@ -142,14 +142,15 @@ class AvroSchemaEncoder:
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
     def _build_model_type_schema(self, type_field: ModelType) -> t.Any:
+        namespace = type_field.namespace
+        if len(namespace) > 0:
+            namespace = f"{type_field.namespace}.{self._name}"
         schema = {
             "name": type_field.name,
+            "namespace": namespace,
             "type": "record",
             "fields": [AvroSchemaEncoder(k, v).build() for k, v in type_field.type_hints.items()],
         }
-        if type_field.namespace is not None:
-            schema["namespace"] = f"{type_field.namespace}.{self._name}"
-
         return schema
 
     def _build_model_schema(self, type_field: t.Type) -> t.Any:

@@ -101,7 +101,7 @@ class ModelType(type):
     type_hints: dict[str, t.Type[T]]
 
     @classmethod
-    def build(mcs, name: str, type_hints: dict[str, type], namespace: t.Optional[str] = None) -> t.Type[T]:
+    def build(mcs, name: str, type_hints: dict[str, type], namespace: str = str()) -> t.Type[T]:
         """Build a new ``ModelType`` instance.
 
         :param name: Name of the new type.
@@ -122,7 +122,7 @@ class ModelType(type):
         try:
             namespace, name = typed_dict.__name__.rsplit(".", 1)
         except ValueError:
-            namespace, name = None, typed_dict.__name__
+            namespace, name = str(), typed_dict.__name__
         return mcs.build(name, typed_dict.__annotations__, namespace)
 
     @property
@@ -139,7 +139,7 @@ class ModelType(type):
 
         :return: An string object.
         """
-        if cls.namespace is None:
+        if len(cls.namespace) == 0:
             return cls.name
         return f"{cls.namespace}.{cls.name}"
 

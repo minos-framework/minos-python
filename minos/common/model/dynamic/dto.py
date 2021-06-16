@@ -46,7 +46,7 @@ class DataTransferObject(DynamicModel):
             try:
                 namespace, name = name.rsplit(".", 1)
             except ValueError:
-                pass
+                namespace = str()
         self._name = name
         self._namespace = namespace
 
@@ -61,7 +61,7 @@ class DataTransferObject(DynamicModel):
         if isinstance(schema, list):
             schema = schema[-1]
 
-        if "namespace" in schema:
+        if "namespace" in schema and len(schema["namespace"]) > 0:
             name = "{namespace:}.{name:}".format(**schema)
         else:
             name = schema["name"]
@@ -121,7 +121,7 @@ class DataTransferObject(DynamicModel):
         :return: An string object.
         """
         name = self._name
-        if self._namespace is not None:
+        if len(self._namespace) > 0:
             name = f"{self._namespace}.{name}"
         return name
 

@@ -101,11 +101,15 @@ class AvroSchemaDecoder:
         return dict[str, self._build_type(values)]
 
     def _build_record_type(self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]) -> t.Type[T]:
-        if namespace is not None:
+        if namespace is None:
             try:
-                namespace, _ = namespace.rsplit(".", 1)
+                namespace, name = name.rsplit(".", 1)
             except ValueError:
-                pass
+                namespace = str()
+        try:
+            namespace, _ = namespace.rsplit(".", 1)
+        except ValueError:
+            pass
 
         return ModelType.build(name, {field["name"]: self._build_type(field["type"]) for field in fields}, namespace)
 
