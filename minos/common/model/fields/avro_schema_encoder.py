@@ -36,7 +36,7 @@ from ..types import (
     ModelType,
 )
 from .utils import (
-    _is_minos_model_cls,
+    _is_model_cls,
 )
 
 if t.TYPE_CHECKING:
@@ -108,10 +108,10 @@ class AvroSchemaEncoder:
             return UUID_TYPE
 
         if isinstance(type_field, ModelType):
-            return self._build_typed_dict_schema(type_field)
+            return self._build_model_type_schema(type_field)
 
-        if _is_minos_model_cls(type_field):
-            return self._build_minos_model_schema(type_field)
+        if _is_model_cls(type_field):
+            return self._build_model_schema(type_field)
 
         return self._build_composed_schema(type_field)
 
@@ -141,7 +141,7 @@ class AvroSchemaEncoder:
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
-    def _build_typed_dict_schema(self, type_field: ModelType) -> t.Any:
+    def _build_model_type_schema(self, type_field: ModelType) -> t.Any:
         schema = {
             "name": type_field.name,
             "type": "record",
@@ -152,7 +152,7 @@ class AvroSchemaEncoder:
 
         return schema
 
-    def _build_minos_model_schema(self, type_field: t.Type) -> t.Any:
+    def _build_model_schema(self, type_field: t.Type) -> t.Any:
         def _patch_namespace(s: dict) -> dict:
             s["namespace"] += f".{self._name}"
             return s
