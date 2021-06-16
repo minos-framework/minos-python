@@ -101,42 +101,36 @@ class AvroSchemaDecoder:
         return dict[str, self._build_type(values)]
 
     def _build_record_type(self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]) -> t.Type[T]:
-        if namespace is None:
+        def _unpatch_namespace(mt: t.Type[T]) -> t.Type[T]:
             try:
-                namespace, name = name.rsplit(".", 1)
+                mt.namespace, _ = mt.namespace.rsplit(".", 1)
             except ValueError:
                 pass
-        try:
-            namespace, _ = namespace.rsplit(".", 1)
-        except ValueError:
-            pass
+            return mt
 
-        type_hints = {field["name"]: self._build_type(field["type"]) for field in fields}
+        model_type = ModelType.build(
+            name, {field["name"]: self._build_type(field["type"]) for field in fields}, namespace
+        )
+
+        model_type = _unpatch_namespace(model_type)
 
         from ...exceptions import (
             MinosImportException,
             MinosModelException,
         )
-
-        if len(namespace) > 0:
-            nm = f"{namespace}.{name}"
-        else:
-            nm = name
+        from ...importlib import (
+            import_module,
+        )
 
         try:
-            from ...importlib import (
-                import_module,
-            )
-
             # noinspection PyTypeChecker
-            model_cls = import_module(nm)
-            if model_cls.type_hints != type_hints:
+            model_cls = import_module(model_type.classname)
+            if model_cls.type_hints != model_type.type_hints:
                 raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
             return model_cls
         except MinosImportException:
             pass
-
-        return ModelType.build(name, {field["name"]: self._build_type(field["type"]) for field in fields}, namespace)
+        return model_type
 
     @staticmethod
     def _build_simple_type(type_field: str) -> t.Type[T]:

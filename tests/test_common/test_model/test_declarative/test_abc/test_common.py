@@ -18,6 +18,7 @@ from minos.common import (
     MinosReqAttributeException,
     MinosTypeAttributeException,
     ModelField,
+    ModelType,
 )
 from tests.model_classes import (
     Analytics,
@@ -230,6 +231,12 @@ class TestMinosModel(unittest.TestCase):
     def test_classname_instance(self):
         model = Customer(1234, "johndoe", "John", "Doe")
         self.assertEqual("tests.model_classes.Customer", model.classname)
+
+    def test_model_type(self):
+        model = User(1234, "johndoe")
+        self.assertEqual(
+            ModelType.build("tests.model_classes.User", {"id": int, "username": Optional[str]}), model.model_type
+        )
 
 
 if __name__ == "__main__":

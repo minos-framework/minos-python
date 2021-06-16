@@ -40,13 +40,12 @@ from .abc import (
 class DataTransferObject(DynamicModel):
     """Data Transfer Object to build the objects dynamically from bytes """
 
-    def __init__(self, name: str, namespace: Optional[str] = None, *args, **kwargs):
+    def __init__(self, name: str, *args, namespace: str = str(), **kwargs):
         super().__init__(*args, **kwargs)
-        if namespace is None:
-            try:
-                namespace, name = name.rsplit(".", 1)
-            except ValueError:
-                namespace = str()
+        if "." in name:
+            raise ValueError(
+                "The 'name' attribute cannot contain dots. You can use the 'namespace' to qualify the instance"
+            )
         self._name = name
         self._namespace = namespace
 
@@ -115,7 +114,7 @@ class DataTransferObject(DynamicModel):
             pass
 
         fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
-        return cls(model_type.name, model_type.namespace, fields)
+        return cls(model_type.name, fields, namespace=model_type.namespace)
 
     # noinspection PyMethodParameters
     @property
