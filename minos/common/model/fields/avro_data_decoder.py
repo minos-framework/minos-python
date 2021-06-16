@@ -17,9 +17,6 @@ from datetime import (
     time,
     timedelta,
 )
-from typing import (
-    _TypedDictMeta,
-)
 from uuid import (
     UUID,
 )
@@ -33,10 +30,11 @@ from ..types import (
     PYTHON_IMMUTABLE_TYPES,
     MissingSentinel,
     ModelRef,
+    ModelType,
 )
 from .utils import (
     _is_aggregate_cls,
-    _is_minos_model_cls,
+    _is_model_cls,
 )
 
 if t.TYPE_CHECKING:
@@ -112,11 +110,11 @@ class AvroDataDecoder:
         if type_field is UUID:
             return self._cast_uuid(data)
 
-        if isinstance(type_field, _TypedDictMeta):
-            return self._cast_typed_dict(type_field, data)
+        if isinstance(type_field, ModelType):
+            return self._cast_model_type(type_field, data)
 
-        if _is_minos_model_cls(type_field):
-            return self._cast_minos_model(type_field, data)
+        if _is_model_cls(type_field):
+            return self._cast_model(type_field, data)
 
         return self._cast_composed_value(type_field, data)
 
@@ -213,24 +211,24 @@ class AvroDataDecoder:
                 pass
         raise MinosTypeAttributeException(self._name, UUID, data)
 
-    def _cast_typed_dict(self, type_field: t.TypedDict[T], data: t.Any) -> t.Any:
+    def _cast_model_type(self, type_field: ModelType, data: t.Any) -> t.Any:
         from ..dynamic import (
             DataTransferObject,
         )
 
         if isinstance(data, dict):
-            return DataTransferObject.from_typed_dict(type_field, data)
+            return DataTransferObject.from_model_type(type_field, data)
 
         if (
             isinstance(data, DataTransferObject)
-            and data.type_hints == type_field.__annotations__
-            and data.classname == type_field.__name__
+            and data.type_hints == type_field.type_hints
+            and data.classname == type_field.classname
         ):
             return data
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 
-    def _cast_minos_model(self, type_field: t.Type, data: t.Any) -> t.Any:
+    def _cast_model(self, type_field: t.Type, data: t.Any) -> t.Any:
         if isinstance(data, dict):
             # noinspection PyUnresolvedReferences
             return type_field.from_dict(data)

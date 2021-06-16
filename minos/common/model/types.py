@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
 
 import dataclasses
 import datetime
@@ -43,7 +46,7 @@ class Fixed(t.Generic[T]):
 class Enum(t.Generic[T]):
     """
     Represents an Avro Enum type
-    simbols (typing.List): Specifying the possible values for the enum
+    symbols (typing.List): Specifying the possible values for the enum
     """
 
     symbols: list[t.Any]
@@ -88,6 +91,74 @@ class ModelRef(t.Generic[T]):
 
     def __repr__(self) -> str:
         return "ModelRef()"
+
+
+class ModelType(type):
+    """Model Type class."""
+
+    name: str
+    namespace: str
+    type_hints: dict[str, t.Type[T]]
+
+    @classmethod
+    def build(mcs, name: str, type_hints: dict[str, type], namespace: t.Optional[str] = None) -> t.Type[T]:
+        """Build a new ``ModelType`` instance.
+
+        :param name: Name of the new type.
+        :param type_hints: Type hints of the new type.
+        :param namespace: Namespace of the new type.
+        :return: A ``ModelType`` instance.
+        """
+        if namespace is None:
+            try:
+                namespace, name = name.rsplit(".", 1)
+            except ValueError:
+                namespace = str()
+
+        # noinspection PyTypeChecker
+        return mcs(name, tuple(), {"type_hints": type_hints, "namespace": namespace})
+
+    @classmethod
+    def from_typed_dict(mcs, typed_dict) -> t.Type[T]:
+        """Build a new ``ModelType`` instance from a ``typing.TypedDict``.
+
+        :param typed_dict: Typed dict to be used as base.
+        :return: A ``ModelType`` instance.
+        """
+        return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
+
+    @property
+    def name(cls) -> str:
+        """Get the type name.
+
+        :return: A string object.
+        """
+        return cls.__name__
+
+    @property
+    def classname(cls) -> str:
+        """Get the full class name.
+
+        :return: An string object.
+        """
+        if len(cls.namespace) == 0:
+            return cls.name
+        return f"{cls.namespace}.{cls.name}"
+
+    def __eq__(self, other) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
+        yield from (self.name, self.namespace, tuple(self.type_hints.items()))
+
+    def __repr__(self):
+        return (
+            f"{type(self).__name__}(name={self.name!r}, namespace={self.namespace!r}, type_hints={self.type_hints!r})"
+        )
 
 
 BOOLEAN = "boolean"

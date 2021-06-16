@@ -14,6 +14,7 @@ from minos.common import (
     DataTransferObject,
     MinosModelException,
     ModelField,
+    ModelType,
 )
 from tests.model_classes import (
     Bar,
@@ -24,7 +25,9 @@ from tests.model_classes import (
 class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
     def test_from_avro_float(self):
         data = {"cost": 3.43}
-        schema = [{"name": "ShoppingList", "fields": [{"name": "cost", "type": "float"}], "type": "record"}]
+        schema = [
+            {"name": "ShoppingList", "namespace": "", "fields": [{"name": "cost", "type": "float"}], "type": "record"}
+        ]
 
         dto = DataTransferObject.from_avro(schema, data)
         self.assertEqual(3.43, dto.cost)
@@ -36,6 +39,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
             {
                 "fields": [{"name": "tickets", "type": {"items": "int", "type": "array"}}],
                 "name": "ShoppingList",
+                "namespace": "",
                 "type": "record",
             }
         ]
@@ -50,6 +54,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
             {
                 "fields": [{"name": "tickets", "type": {"type": "map", "values": "int"}}],
                 "name": "Order",
+                "namespace": "",
                 "type": "record",
             }
         ]
@@ -60,7 +65,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
     def test_from_avro_int(self):
         data = {"price": 120}
-        schema = [{"fields": [{"name": "price", "type": "int"}], "name": "Order", "type": "record"}]
+        schema = [{"fields": [{"name": "price", "type": "int"}], "name": "Order", "namespace": "", "type": "record"}]
         dto = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(data["price"], dto.price)
@@ -69,13 +74,32 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
     def test_from_avro_union(self):
         data = {"username": "test"}
-        schema = [{"fields": [{"name": "username", "type": ["string", "null"]}], "name": "Order", "type": "record"}]
+        schema = [
+            {
+                "fields": [{"name": "username", "type": ["string", "null"]}],
+                "name": "Order",
+                "namespace": "",
+                "type": "record",
+            }
+        ]
         dto = DataTransferObject.from_avro(schema, data)
 
         self.assertEqual(data["username"], dto.username)
         self.assertEqual(schema, dto.avro_schema)
 
     def test_from_avro_dto(self):
+        expected = DataTransferObject(
+            "Order",
+            {
+                "price": ModelField("price", int, 34),
+                "user": ModelField(
+                    "user",
+                    ModelType.build("User", {"username": list[int]}),
+                    DataTransferObject("User", {"username": ModelField("username", list[int], [434324, 66464, 45432])}),
+                ),
+            },
+        )
+
         data = {"price": 34, "user": {"username": [434324, 66464, 45432]}}
         schema = {
             "fields": [
@@ -84,32 +108,19 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
                     "type": {
                         "fields": [{"name": "username", "type": {"type": "array", "items": "int"}}],
                         "name": "User",
+                        "namespace": "",
                         "type": "record",
                     },
                 },
                 {"name": "price", "type": "int"},
             ],
             "name": "Order",
+            "namespace": "",
             "type": "record",
         }
         dto = DataTransferObject.from_avro(schema, data)
 
-        expected = DataTransferObject(
-            "Order",
-            fields={
-                "price": ModelField("price", int, 34),
-                "user": ModelField(
-                    "user",
-                    TypedDict("User", {"username": list[int]}),
-                    DataTransferObject(
-                        "User", fields={"username": ModelField("username", list[int], [434324, 66464, 45432])}
-                    ),
-                ),
-            },
-        )
-
-        self.assertEqual(expected.price, dto.price)
-        self.assertEqual(expected.user, dto.user)
+        self.assertEqual(expected, dto)
 
     def test_from_avro_model(self):
         expected = Bar(first=Foo("one"), second=Foo("two"))
@@ -124,16 +135,32 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(schema, dto.avro_schema)
 
     def test_classname(self):
-        dto = DataTransferObject("Order", "example", {})
+        dto = DataTransferObject("Order", {}, namespace="example")
         self.assertEqual("example.Order", dto.classname)
+
+    def test_constructor_raises(self):
+        with self.assertRaises(ValueError):
+            DataTransferObject("example.Order", {})
 
     def test_from_typed_dict_model(self):
         dto = DataTransferObject.from_typed_dict(TypedDict("tests.model_classes.Foo", {"text": str}), {"text": "test"})
         self.assertEqual(Foo("test"), dto)
 
+    def test_from_model_type_model(self):
+        dto = DataTransferObject.from_model_type(
+            ModelType.build("tests.model_classes.Foo", {"text": str}), {"text": "test"}
+        )
+        self.assertEqual(Foo("test"), dto)
+
     def test_from_typed_dict_model_raised(self):
         with self.assertRaises(MinosModelException):
             DataTransferObject.from_typed_dict(TypedDict("tests.model_classes.Foo", {"bar": str}), {"bar": "test"})
+
+    def test_from_model_type_raised(self):
+        with self.assertRaises(MinosModelException):
+            DataTransferObject.from_model_type(
+                ModelType.build("tests.model_classes.Foo", {"bar": str}), {"bar": "test"}
+            )
 
     def test_avro_schema(self):
         data = {"price": 34, "user": {"username": [434324, 66464, 45432]}}
@@ -145,12 +172,14 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
                         "type": {
                             "fields": [{"name": "username", "type": {"type": "array", "items": "int"}}],
                             "name": "User",
+                            "namespace": "",
                             "type": "record",
                         },
                     },
                     {"name": "price", "type": "int"},
                 ],
                 "name": "Order",
+                "namespace": "",
                 "type": "record",
             }
         ]

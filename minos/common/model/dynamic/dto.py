@@ -29,6 +29,9 @@ from ..abc import (
 from ..fields import (
     ModelField,
 )
+from ..types import (
+    ModelType,
+)
 from .abc import (
     DynamicModel,
 )
@@ -37,13 +40,12 @@ from .abc import (
 class DataTransferObject(DynamicModel):
     """Data Transfer Object to build the objects dynamically from bytes """
 
-    def __init__(self, name: str, namespace: Optional[str] = None, *args, **kwargs):
+    def __init__(self, name: str, *args, namespace: str = str(), **kwargs):
         super().__init__(*args, **kwargs)
-        if namespace is None:
-            try:
-                namespace, name = name.rsplit(".", 1)
-            except ValueError:
-                pass
+        if "." in name:
+            raise ValueError(
+                "The 'name' attribute cannot contain dots. You can use the 'namespace' to qualify the instance"
+            )
         self._name = name
         self._namespace = namespace
 
@@ -58,7 +60,7 @@ class DataTransferObject(DynamicModel):
         if isinstance(schema, list):
             schema = schema[-1]
 
-        if "namespace" in schema:
+        if "namespace" in schema and len(schema["namespace"]) > 0:
             name = "{namespace:}.{name:}".format(**schema)
         else:
             name = schema["name"]
@@ -73,29 +75,34 @@ class DataTransferObject(DynamicModel):
 
     @classmethod
     def from_typed_dict(cls, typed_dict: TypedDict, data: dict[str, Any]) -> DataTransferObject:
-        """Build Model Fields form TypeDict object
+        """Build a ``DataTransferObject`` from a ``TypeDict`` and ``data``.
 
-        :param typed_dict: TypeDict object
-        :param data: Data
-        :return: DataTransferObject
+        :param typed_dict: ``TypeDict`` object containing the DTO's structure
+        :param data: A dictionary containing the values to be stored on the DTO.
+        :return: A new ``DataTransferObject`` instance.
+        """
+        return cls.from_model_type(ModelType.from_typed_dict(typed_dict), data)
+
+    @classmethod
+    def from_model_type(cls, model_type: ModelType, data: dict[str, Any]) -> DataTransferObject:
+        """Build a ``DataTransferObject`` from a ``ModelType`` and ``data``.
+
+        :param model_type: ``ModelType`` object containing the DTO's structure
+        :param data: A dictionary containing the values to be stored on the DTO.
+        :return: A new ``DataTransferObject`` instance.
         """
 
         try:
             # noinspection PyTypeChecker
-            model_cls: Model = import_module(typed_dict.__name__)
-            if model_cls.type_hints != typed_dict.__annotations__:
+            model_cls: Model = import_module(model_type.classname)
+            if model_cls.type_hints != model_type.type_hints:
                 raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
             return model_cls.from_dict(data)
         except MinosImportException:
             pass
 
-        try:
-            namespace, name = typed_dict.__name__.rsplit(".", 1)
-        except ValueError:
-            namespace, name = None, typed_dict.__name__
-
-        fields = {k: ModelField(k, v, data[k]) for k, v in typed_dict.__annotations__.items()}
-        return cls(name, namespace, fields)
+        fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
+        return cls(model_type.name, fields, namespace=model_type.namespace)
 
     # noinspection PyMethodParameters
     @property
@@ -113,7 +120,7 @@ class DataTransferObject(DynamicModel):
         :return: An string object.
         """
         name = self._name
-        if self._namespace is not None:
+        if len(self._namespace) > 0:
             name = f"{self._namespace}.{name}"
         return name
 

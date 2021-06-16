@@ -7,17 +7,15 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import (
-    TypedDict,
-)
 
 from minos.common import (
     AvroSchemaEncoder,
+    ModelType,
 )
 
 
 class TestAvroSchemaDecoder(unittest.TestCase):
-    def test_typed_dict(self):
+    def test_model_type(self):
         expected = {
             "name": "class",
             "type": {
@@ -28,7 +26,7 @@ class TestAvroSchemaDecoder(unittest.TestCase):
             },
         }
 
-        observed = AvroSchemaEncoder("class", TypedDict("path.to.User", {"username": str})).build()
+        observed = AvroSchemaEncoder("class", ModelType.build("User", {"username": str}, "path.to")).build()
         self.assertEqual(expected, observed)
 
 
