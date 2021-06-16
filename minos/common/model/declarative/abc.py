@@ -15,11 +15,7 @@ from itertools import (
     zip_longest,
 )
 
-from ...importlib import (
-    classname,
-)
 from ...meta import (
-    classproperty,
     self_or_classmethod,
 )
 from ...protocol import (
@@ -72,16 +68,6 @@ class DeclarativeModel(Model, t.Generic[T]):
         :return: A new ``MinosModel`` instance.
         """
         return cls(**d)
-
-    # noinspection PyMethodParameters
-    @classproperty
-    def classname(cls) -> str:
-        """Compute the current class namespace.
-
-        :return: An string object.
-        """
-        # noinspection PyTypeChecker
-        return classname(cls)
 
     def _list_fields(self, *args, **kwargs) -> t.NoReturn:
         for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):

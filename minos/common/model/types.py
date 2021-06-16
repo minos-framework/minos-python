@@ -101,7 +101,7 @@ class ModelType(type):
     type_hints: dict[str, t.Type[T]]
 
     @classmethod
-    def build(mcs, name: str, type_hints: dict[str, type], namespace: str = str()) -> t.Type[T]:
+    def build(mcs, name: str, type_hints: dict[str, type], namespace: t.Optional[str] = None) -> t.Type[T]:
         """Build a new ``ModelType`` instance.
 
         :param name: Name of the new type.
@@ -109,6 +109,12 @@ class ModelType(type):
         :param namespace: Namespace of the new type.
         :return: A ``ModelType`` instance.
         """
+        if namespace is None:
+            try:
+                namespace, name = name.rsplit(".", 1)
+            except ValueError:
+                namespace = str()
+
         # noinspection PyTypeChecker
         return mcs(name, tuple(), {"type_hints": type_hints, "namespace": namespace})
 
@@ -119,11 +125,7 @@ class ModelType(type):
         :param typed_dict: Typed dict to be used as base.
         :return: A ``ModelType`` instance.
         """
-        try:
-            namespace, name = typed_dict.__name__.rsplit(".", 1)
-        except ValueError:
-            namespace, name = str(), typed_dict.__name__
-        return mcs.build(name, typed_dict.__annotations__, namespace)
+        return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
 
     @property
     def name(cls) -> str:

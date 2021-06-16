@@ -24,6 +24,9 @@ from ..exceptions import (
     MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
+from ..importlib import (
+    classname,
+)
 from ..meta import (
     classproperty,
     property_or_classproperty,
@@ -35,6 +38,9 @@ from ..protocol import (
 from .fields import (
     AvroSchemaEncoder,
     ModelField,
+)
+from .types import (
+    ModelType,
 )
 
 logger = logging.getLogger(__name__)
@@ -133,6 +139,25 @@ class Model(t.Generic[T]):
         avro_schema = models[0].avro_schema
         # noinspection PyTypeChecker
         return MinosAvroProtocol().encode([model.avro_data for model in models], avro_schema)
+
+    # noinspection PyMethodParameters
+    @property_or_classproperty
+    def model_type(self_or_cls) -> t.Type[T]:
+        """Get the model type of the instance.
+
+        :return: A ``ModelType`` instance.
+        """
+        # noinspection PyTypeChecker
+        return ModelType.build(self_or_cls.classname, self_or_cls.type_hints)
+
+    # noinspection PyMethodParameters
+    @classproperty
+    def classname(cls) -> str:
+        """Compute the current class namespace.
+        :return: An string object.
+        """
+        # noinspection PyTypeChecker
+        return classname(cls)
 
     @property
     def fields(self) -> dict[str, ModelField]:

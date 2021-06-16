@@ -90,14 +90,12 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
     def test_from_avro_dto(self):
         expected = DataTransferObject(
             "Order",
-            fields={
+            {
                 "price": ModelField("price", int, 34),
                 "user": ModelField(
                     "user",
                     ModelType.build("User", {"username": list[int]}),
-                    DataTransferObject(
-                        "User", fields={"username": ModelField("username", list[int], [434324, 66464, 45432])}
-                    ),
+                    DataTransferObject("User", {"username": ModelField("username", list[int], [434324, 66464, 45432])}),
                 ),
             },
         )
@@ -110,12 +108,14 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
                     "type": {
                         "fields": [{"name": "username", "type": {"type": "array", "items": "int"}}],
                         "name": "User",
+                        "namespace": "",
                         "type": "record",
                     },
                 },
                 {"name": "price", "type": "int"},
             ],
             "name": "Order",
+            "namespace": "",
             "type": "record",
         }
         dto = DataTransferObject.from_avro(schema, data)
@@ -135,8 +135,12 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(schema, dto.avro_schema)
 
     def test_classname(self):
-        dto = DataTransferObject("Order", "example", {})
+        dto = DataTransferObject("Order", {}, namespace="example")
         self.assertEqual("example.Order", dto.classname)
+
+    def test_constructor_raises(self):
+        with self.assertRaises(ValueError):
+            DataTransferObject("example.Order", {})
 
     def test_from_typed_dict_model(self):
         dto = DataTransferObject.from_typed_dict(TypedDict("tests.model_classes.Foo", {"text": str}), {"text": "test"})
