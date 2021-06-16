@@ -13,7 +13,6 @@ from typing import (
 )
 
 from minos.common import (
-    CUSTOM_TYPES,
     Decimal,
     Enum,
     Fixed,
@@ -119,13 +118,6 @@ class TestModelRef(unittest.TestCase):
     def test_repr(self):
         ref = ModelRef()
         self.assertEqual("ModelRef()", repr(ref))
-
-
-class TestTypesModule(unittest.TestCase):
-    def test_custom_types(self):
-        self.assertEqual(
-            ("Fixed", "Enum", "Decimal", "ModelRef",), CUSTOM_TYPES,
-        )
 
 
 class TestModelTyp(unittest.TestCase):
