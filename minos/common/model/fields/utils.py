@@ -9,7 +9,7 @@ import inspect
 import typing as t
 
 
-def _is_minos_model_cls(type_field: t.Type) -> bool:
+def _is_model_cls(type_field: t.Type) -> bool:
     from ..abc import (
         Model,
     )

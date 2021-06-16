@@ -15,7 +15,7 @@ from minos.common import (
 
 
 class TestAvroSchemaDecoder(unittest.TestCase):
-    def test_typed_dict(self):
+    def test_model_type(self):
         expected = ModelType.build("User", {"username": str}, "path.to")
         field_schema = {
             "fields": [{"name": "username", "type": "string"}],
@@ -27,7 +27,7 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         observed = AvroSchemaDecoder(field_schema).build()
         self.assertEqual(expected, observed)
 
-    def test_typed_dict_single_module(self):
+    def test_model_type_single_module(self):
         expected = ModelType.build("User", {"username": str}, "example")
         field_schema = {
             "fields": [{"name": "username", "type": "string"}],
