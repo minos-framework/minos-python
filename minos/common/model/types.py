@@ -173,7 +173,7 @@ class ModelType(type):
     def name(cls) -> str:
         """Get the type name.
 
-        :return: A string objec
+        :return: A string object.
         """
         return cls.__name__
 
@@ -181,7 +181,7 @@ class ModelType(type):
     def classname(cls) -> str:
         """Get the full class name.
 
-        :return: An string objec
+        :return: An string object.
         """
         if len(cls.namespace) == 0:
             return cls.name
