@@ -72,6 +72,14 @@ _ENVIRONMENT_MAPPER = {
     "snapshot.database": "MINOS_SNAPSHOT_DATABASE",
     "snapshot.user": "MINOS_SNAPSHOT_USER",
     "snapshot.password": "MINOS_SNAPSHOT_PASSWORD",
+    "discovery.host": "MINOS_DISCOVERY_HOST",
+    "discovery.port": "MINOS_DISCOVERY_PORT",
+    "discovery.subscribe.path": "MINOS_DISCOVERY_SUBSCRIBE_PATH",
+    "discovery.subscribe.method": "MINOS_DISCOVERY_SUBSCRIBE_METHOD",
+    "discovery.unsubscribe.path": "MINOS_DISCOVERY_UNSUBSCRIBE_PATH",
+    "discovery.unsubscribe.method": "MINOS_DISCOVERY_UNSUBSCRIBE_METHOD",
+    "discovery.discover.path": "MINOS_DISCOVERY_DISCOVER_PATH",
+    "discovery.discover.method": "MINOS_DISCOVERY_DISCOVER_METHOD",
 }
 
 _PARAMETERIZED_MAPPER = {
@@ -106,6 +114,14 @@ _PARAMETERIZED_MAPPER = {
     "snapshot.database": "snapshot_database",
     "snapshot.user": "snapshot_user",
     "snapshot.password": "snapshot_password",
+    "discovery.host": "minos_discovery_host",
+    "discovery.port": "minos_discovery_port",
+    "discovery.subscribe.path": "minos_discovery_subscribe_path",
+    "discovery.subscribe.method": "minos_discovery_subscribe_method",
+    "discovery.unsubscribe.path": "minos_discovery_unsubscribe_path",
+    "discovery.unsubscribe.method": "minos_discovery_unsubscribe_method",
+    "discovery.discover.path": "minos_discovery_discover_path",
+    "discovery.discover.method": "minos_discovery_discover_method",
 }
 
 _default: t.Optional[MinosConfigAbstract] = None

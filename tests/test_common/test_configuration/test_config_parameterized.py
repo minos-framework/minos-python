@@ -41,3 +41,31 @@ class MyTestCase(unittest.TestCase):
         broker = saga.broker
         self.assertEqual("bar", broker.host)
         self.assertEqual(333, broker.port)
+
+    def test_config_discovery(self):
+        config = MinosConfig(
+            path=self.config_file_path,
+            minos_discovery_host="some-host",
+            minos_discovery_port=333,
+            minos_discovery_subscribe_path="subscribe-test",
+            minos_discovery_subscribe_method="TEST-METHOD",
+            minos_discovery_unsubscribe_path="unsubscribe-test",
+            minos_discovery_unsubscribe_method="TEST-METHOD",
+            minos_discovery_discover_path="discover-test",
+            minos_discovery_discover_method="TEST-METHOD",
+        )
+        discovery = config.discovery
+        self.assertEqual("some-host", discovery.host)
+        self.assertEqual(333, discovery.port)
+
+        subscribe = discovery.subscribe
+        self.assertEqual("subscribe-test", subscribe.path)
+        self.assertEqual("TEST-METHOD", subscribe.method)
+
+        unsubscribe = discovery.unsubscribe
+        self.assertEqual("unsubscribe-test", unsubscribe.path)
+        self.assertEqual("TEST-METHOD", unsubscribe.method)
+
+        discover = discovery.discover
+        self.assertEqual("discover-test", discover.path)
+        self.assertEqual("TEST-METHOD", discover.method)
