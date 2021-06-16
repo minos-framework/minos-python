@@ -13,6 +13,14 @@ import dataclasses
 import datetime
 import typing as t
 import uuid
+from inspect import (
+    isclass,
+)
+
+if t.TYPE_CHECKING:
+    from .abc import (
+        Model,
+    )
 
 T = t.TypeVar("T")
 
@@ -145,8 +153,14 @@ class ModelType(type):
             return cls.name
         return f"{cls.namespace}.{cls.name}"
 
-    def __eq__(self, other) -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
+    def __eq__(self, other: t.Union[ModelType, t.Type[Model]]) -> bool:
+        from .abc import (
+            Model,
+        )
+
+        return (type(self) == type(other) and tuple(self) == tuple(other)) or (
+            isclass(other) and issubclass(other, Model) and self == other.model_type
+        )
 
     def __hash__(self) -> int:
         return hash(tuple(self))

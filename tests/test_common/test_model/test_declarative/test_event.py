@@ -45,7 +45,6 @@ class TestEventDto(unittest.TestCase):
         ]
         self.topic = "UserCreated"
 
-    @unittest.skip
     def test_avro_serialization(self):
         event = Event(self.topic, self.items)
         decoded_event = Event.from_avro_bytes(event.avro_bytes)

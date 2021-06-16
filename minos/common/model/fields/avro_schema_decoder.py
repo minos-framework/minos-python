@@ -114,22 +114,6 @@ class AvroSchemaDecoder:
 
         model_type = _unpatch_namespace(model_type)
 
-        from ...exceptions import (
-            MinosImportException,
-            MinosModelException,
-        )
-        from ...importlib import (
-            import_module,
-        )
-
-        try:
-            # noinspection PyTypeChecker
-            model_cls = import_module(model_type.classname)
-            if model_cls.type_hints != model_type.type_hints:
-                raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
-            return model_cls
-        except MinosImportException:
-            pass
         return model_type
 
     @staticmethod

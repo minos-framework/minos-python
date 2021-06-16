@@ -212,6 +212,9 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_model_type(self, type_field: ModelType, data: t.Any) -> t.Any:
+        from ..abc import (
+            Model,
+        )
         from ..dynamic import (
             DataTransferObject,
         )
@@ -219,11 +222,7 @@ class AvroDataDecoder:
         if isinstance(data, dict):
             return DataTransferObject.from_model_type(type_field, data)
 
-        if (
-            isinstance(data, DataTransferObject)
-            and data.type_hints == type_field.type_hints
-            and data.classname == type_field.classname
-        ):
+        if isinstance(data, Model) and data.model_type == type_field:
             return data
 
         raise MinosTypeAttributeException(self._name, type_field, data)

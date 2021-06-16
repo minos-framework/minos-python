@@ -40,9 +40,7 @@ class Event(DeclarativeModel):
 
     def __init__(self, topic: str, items: list[Model], *args, _items_type=None, **kwargs):
         if _items_type is None:
-            items_type = {
-                item.classname: type(item) if isinstance(item, DeclarativeModel) else item.typed_dict for item in items
-            }
+            items_type = {item.classname: item.model_type for item in items}
             items_type = Union[tuple(items_type.values())]
             _items_type = list[items_type]
         self._items_type = _items_type
