@@ -58,4 +58,5 @@ from .types import (
     Fixed,
     MissingSentinel,
     ModelRef,
+    ModelType,
 )

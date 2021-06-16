@@ -16,9 +16,6 @@ from datetime import (
     datetime,
     time,
 )
-from typing import (
-    _TypedDictMeta,
-)
 from uuid import (
     UUID,
 )
@@ -36,6 +33,7 @@ from ..types import (
     TIME_TYPE,
     UUID_TYPE,
     ModelRef,
+    ModelType,
 )
 from .utils import (
     _is_minos_model_cls,
@@ -109,7 +107,7 @@ class AvroSchemaEncoder(object):
         if type_field is UUID:
             return UUID_TYPE
 
-        if isinstance(type_field, _TypedDictMeta):
+        if isinstance(type_field, ModelType):
             return self._build_typed_dict_schema(type_field)
 
         if _is_minos_model_cls(type_field):
@@ -143,20 +141,14 @@ class AvroSchemaEncoder(object):
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
-    def _build_typed_dict_schema(self, type_field: t.Type) -> t.Any:
-        try:
-            namespace, name = type_field.__name__.rsplit(".", 1)
-            namespace += f".{self._name}"
-        except ValueError:
-            namespace, name = None, type_field.__name__
-
+    def _build_typed_dict_schema(self, type_field: ModelType) -> t.Any:
         schema = {
-            "name": name,
+            "name": type_field.name,
             "type": "record",
-            "fields": [AvroSchemaEncoder(k, v).build() for k, v in type_field.__annotations__.items()],
+            "fields": [AvroSchemaEncoder(k, v).build() for k, v in type_field.type_hints.items()],
         }
-        if namespace is not None:
-            schema["namespace"] = namespace
+        if type_field.namespace is not None:
+            schema["namespace"] = f"{type_field.namespace}.{self._name}"
 
         return schema
 

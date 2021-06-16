@@ -29,6 +29,9 @@ from ..abc import (
 from ..fields import (
     ModelField,
 )
+from ..types import (
+    ModelType,
+)
 from .abc import (
     DynamicModel,
 )
@@ -73,6 +76,16 @@ class DataTransferObject(DynamicModel):
 
     @classmethod
     def from_typed_dict(cls, typed_dict: TypedDict, data: dict[str, Any]) -> DataTransferObject:
+        """TODO
+
+        :param typed_dict: TODO
+        :param data: TODO
+        :return: TODO
+        """
+        return cls.from_model_type(ModelType.from_typed_dict(typed_dict), data)
+
+    @classmethod
+    def from_model_type(cls, typed_dict: ModelType, data: dict[str, Any]) -> DataTransferObject:
         """Build Model Fields form TypeDict object
 
         :param typed_dict: TypeDict object
@@ -82,20 +95,15 @@ class DataTransferObject(DynamicModel):
 
         try:
             # noinspection PyTypeChecker
-            model_cls: Model = import_module(typed_dict.__name__)
-            if model_cls.type_hints != typed_dict.__annotations__:
+            model_cls: Model = import_module(typed_dict.classname)
+            if model_cls.type_hints != typed_dict.type_hints:
                 raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
             return model_cls.from_dict(data)
         except MinosImportException:
             pass
 
-        try:
-            namespace, name = typed_dict.__name__.rsplit(".", 1)
-        except ValueError:
-            namespace, name = None, typed_dict.__name__
-
-        fields = {k: ModelField(k, v, data[k]) for k, v in typed_dict.__annotations__.items()}
-        return cls(name, namespace, fields)
+        fields = {k: ModelField(k, v, data[k]) for k, v in typed_dict.type_hints.items()}
+        return cls(typed_dict.name, typed_dict.namespace, fields)
 
     # noinspection PyMethodParameters
     @property

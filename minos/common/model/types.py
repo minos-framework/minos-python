@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
 
 import dataclasses
 import datetime
@@ -88,6 +91,72 @@ class ModelRef(t.Generic[T]):
 
     def __repr__(self) -> str:
         return "ModelRef()"
+
+
+class ModelType(type):
+    """TODO"""
+
+    name: str
+    namespace: str
+    type_hints: dict[str, type]
+
+    @classmethod
+    def build(mcs, name: str, type_hints: dict[str, type], namespace: t.Optional[str] = None) -> t.Type[T]:
+        """TODO
+
+        :param name: TODO
+        :param type_hints: TODO
+        :param namespace: TODO
+        :return: TODO
+        """
+        # noinspection PyTypeChecker
+        return mcs(name, tuple(), {"type_hints": type_hints, "namespace": namespace})
+
+    @classmethod
+    def from_typed_dict(mcs, typed_dict) -> t.Type[T]:
+        """TODO
+
+        :param typed_dict: TODO
+        :return: TODO
+        """
+        try:
+            namespace, name = typed_dict.__name__.rsplit(".", 1)
+        except ValueError:
+            namespace, name = None, typed_dict.__name__
+        return mcs.build(name, typed_dict.__annotations__, namespace)
+
+    @property
+    def name(cls) -> str:
+        """TODO
+
+        :return:TODO
+        """
+        return cls.__name__
+
+    @property
+    def classname(cls) -> str:
+        """TODO
+
+        :return: TODO
+        """
+        if cls.namespace is None:
+            return cls.name
+        return f"{cls.namespace}.{cls.name}"
+
+    def __eq__(self, other) -> bool:
+        return type(self) == type(other) and (self.name, self.namespace, self.type_hints) == (
+            other.name,
+            other.namespace,
+            other.type_hints,
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.namespace, tuple(self.type_hints.items())))
+
+    def __repr__(self):
+        return (
+            f"{type(self).__name__}(name={self.name!r}, namespace={self.namespace!r}, type_hints={self.type_hints!r})"
+        )
 
 
 BOOLEAN = "boolean"

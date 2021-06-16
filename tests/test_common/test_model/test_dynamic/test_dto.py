@@ -14,6 +14,7 @@ from minos.common import (
     DataTransferObject,
     MinosModelException,
     ModelField,
+    ModelType,
 )
 from tests.model_classes import (
     Bar,
@@ -100,7 +101,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
                 "price": ModelField("price", int, 34),
                 "user": ModelField(
                     "user",
-                    TypedDict("User", {"username": list[int]}),
+                    ModelType.build("User", {"username": list[int]}),
                     DataTransferObject(
                         "User", fields={"username": ModelField("username", list[int], [434324, 66464, 45432])}
                     ),
@@ -131,9 +132,21 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         dto = DataTransferObject.from_typed_dict(TypedDict("tests.model_classes.Foo", {"text": str}), {"text": "test"})
         self.assertEqual(Foo("test"), dto)
 
+    def test_from_model_type_model(self):
+        dto = DataTransferObject.from_model_type(
+            ModelType.build("tests.model_classes.Foo", {"text": str}), {"text": "test"}
+        )
+        self.assertEqual(Foo("test"), dto)
+
     def test_from_typed_dict_model_raised(self):
         with self.assertRaises(MinosModelException):
             DataTransferObject.from_typed_dict(TypedDict("tests.model_classes.Foo", {"bar": str}), {"bar": "test"})
+
+    def test_from_model_type_raised(self):
+        with self.assertRaises(MinosModelException):
+            DataTransferObject.from_model_type(
+                ModelType.build("tests.model_classes.Foo", {"bar": str}), {"bar": "test"}
+            )
 
     def test_avro_schema(self):
         data = {"price": 34, "user": {"username": [434324, 66464, 45432]}}

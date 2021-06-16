@@ -36,6 +36,7 @@ from ..types import (
     STRING,
     TIME_TYPE,
     UUID_TYPE,
+    ModelType,
 )
 
 logger = logging.getLogger(__name__)
@@ -99,16 +100,14 @@ class AvroSchemaDecoder(object):
     def _build_dict_type(self, values: t.Union[dict, str, t.Any] = None) -> t.Type[T]:
         return dict[str, self._build_type(values)]
 
-    def _build_record_type(
-        self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]
-    ) -> t.TypedDict[T]:
+    def _build_record_type(self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]) -> t.Type[T]:
         if namespace is not None:
             try:
                 namespace, _ = namespace.rsplit(".", 1)
             except ValueError:
                 pass
-            name = f"{namespace}.{name}"
-        return t.TypedDict(name, {field["name"]: self._build_type(field["type"]) for field in fields})
+
+        return ModelType.build(name, {field["name"]: self._build_type(field["type"]) for field in fields}, namespace)
 
     @staticmethod
     def _build_simple_type(type_field: str) -> t.Type[T]:

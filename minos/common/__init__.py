@@ -119,6 +119,7 @@ from .model import (
     Model,
     ModelField,
     ModelRef,
+    ModelType,
 )
 from .networks import (
     MinosBroker,
