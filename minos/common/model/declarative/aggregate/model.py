@@ -168,18 +168,15 @@ class Aggregate(DeclarativeModel, Generic[T]):
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
 
-        if _broker is None:
-            _broker = cls._broker
-
         instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
 
         diff = AggregateDiff.from_aggregate(instance)
         entry = await instance._repository.create(diff)
 
-        instance.id = entry.aggregate_id
-        instance.version = entry.version
+        instance.id, instance.version = entry.aggregate_id, entry.version
+        diff.id, diff.version = entry.aggregate_id, entry.version
 
-        await instance._broker.send_one(instance, topic=f"{type(instance).__name__}Created")
+        await instance._broker.send_one(diff, topic=f"{type(instance).__name__}Created")
 
         return instance
 
@@ -208,7 +205,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
         self.id = entry.aggregate_id
         self.version = entry.version
 
-        await self._broker.send_one(self, topic=f"{type(self).__name__}Updated")
+        await self._broker.send_one(diff, topic=f"{type(self).__name__}Updated")
 
         return self
 
@@ -227,9 +224,9 @@ class Aggregate(DeclarativeModel, Generic[T]):
 
         :return: This method does not return anything.
         """
-        diff = AggregateDiff.from_aggregate(self)
+        diff = AggregateDiff.from_deleted_aggregate(self)
         await self._repository.delete(diff)
-        await self._broker.send_one(self, topic=f"{type(self).__name__}Deleted")
+        await self._broker.send_one(diff, topic=f"{type(self).__name__}Deleted")
 
     def diff(self, another: Aggregate) -> AggregateDiff:
         """Compute the difference with another aggregate.

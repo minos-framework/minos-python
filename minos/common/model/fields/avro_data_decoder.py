@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class AvroDataDecoder(object):
+class AvroDataDecoder:
     """Avro Data Decoder class."""
 
     def __init__(self, field_name: str, field_type: t.Type):

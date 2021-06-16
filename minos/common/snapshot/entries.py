@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     )
 
 
-class SnapshotEntry(object):
+class SnapshotEntry:
     """Minos Snapshot Entry class.
 
     Is the python object representation of a row in the ``snapshot`` storage system.

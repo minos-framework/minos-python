@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class AvroSchemaDecoder(object):
+class AvroSchemaDecoder:
     """Avro Schema Decoder class."""
 
     def __init__(self, schema: dict):

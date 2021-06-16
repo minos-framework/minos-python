@@ -89,6 +89,9 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
+    def test_empty(self):
+        self.assertEqual(FieldsDiff(dict()), FieldsDiff.empty())
+
     def test_avro_schema(self):
         expected = [
             {
