@@ -50,6 +50,11 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         observed = AggregateDiff.from_aggregate(self.initial)
         self.assertEqual(expected, observed)
 
+    def test_from_deleted_aggregate(self):
+        expected = AggregateDiff(id=1, name=Car.classname, version=1, fields_diff=FieldsDiff.empty(),)
+        observed = AggregateDiff.from_deleted_aggregate(self.initial)
+        self.assertEqual(expected, observed)
+
     def test_from_difference(self):
         expected = AggregateDiff(
             id=1,

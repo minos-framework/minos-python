@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 T = t.TypeVar("T")
 
 
-class AvroDataEncoder(object):
+class AvroDataEncoder:
     """Avro Data Encoder class."""
 
     def __init__(self, value: t.Any):

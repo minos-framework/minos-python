@@ -23,7 +23,7 @@ def classproperty(func):
     return _ClassPropertyDescriptor(func)
 
 
-class _ClassPropertyDescriptor(object):
+class _ClassPropertyDescriptor:
     def __init__(self, fget, fset=None):
         self.fget = fget
         self.fset = fset
