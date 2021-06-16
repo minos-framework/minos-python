@@ -144,14 +144,14 @@ class ModelType(type):
         return f"{cls.namespace}.{cls.name}"
 
     def __eq__(self, other) -> bool:
-        return type(self) == type(other) and (self.name, self.namespace, self.type_hints) == (
-            other.name,
-            other.namespace,
-            other.type_hints,
-        )
+        return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:
-        return hash((self.name, self.namespace, tuple(self.type_hints.items())))
+        return hash(tuple(self))
+
+    def __iter__(self) -> t.Iterable:
+        # noinspection PyRedundantParentheses
+        yield from (self.name, self.namespace, tuple(self.type_hints.items()))
 
     def __repr__(self):
         return (
