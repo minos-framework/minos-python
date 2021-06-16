@@ -106,11 +106,10 @@ class AvroSchemaDecoder:
                 namespace, name = name.rsplit(".", 1)
             except ValueError:
                 pass
-        if namespace is not None:
-            try:
-                namespace, _ = namespace.rsplit(".", 1)
-            except ValueError:
-                pass
+        try:
+            namespace, _ = namespace.rsplit(".", 1)
+        except ValueError:
+            pass
 
         type_hints = {field["name"]: self._build_type(field["type"]) for field in fields}
 
@@ -137,7 +136,7 @@ class AvroSchemaDecoder:
         except MinosImportException:
             pass
 
-        return ModelType.build(name, type_hints, namespace)
+        return ModelType.build(name, {field["name"]: self._build_type(field["type"]) for field in fields}, namespace)
 
     @staticmethod
     def _build_simple_type(type_field: str) -> t.Type[T]:

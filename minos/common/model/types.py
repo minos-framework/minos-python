@@ -101,7 +101,7 @@ class ModelType(type):
     type_hints: dict[str, t.Type[T]]
 
     @classmethod
-    def build(mcs, name: str, type_hints: dict[str, type], namespace: t.Optional[str] = str()) -> t.Type[T]:
+    def build(mcs, name: str, type_hints: dict[str, type], namespace: str = str()) -> t.Type[T]:
         """Build a new ``ModelType`` instance.
 
         :param name: Name of the new type.

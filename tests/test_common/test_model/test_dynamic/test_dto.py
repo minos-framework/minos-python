@@ -26,7 +26,13 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
     def test_from_avro_float(self):
         data = {"cost": 3.43}
         schema = [
-            {"name": "ShoppingList", "fields": [{"name": "cost", "type": "float"}], "namespace": "", "type": "record"}
+            {
+                "name": "ShoppingList",
+                "namespace": "",
+                "fields": [{"name": "cost", "type": "float"}],
+                "namespace": "",
+                "type": "record",
+            }
         ]
 
         dto = DataTransferObject.from_avro(schema, data)
@@ -170,8 +176,8 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
                         "type": {
                             "fields": [{"name": "username", "type": {"type": "array", "items": "int"}}],
                             "name": "User",
-                            "type": "record",
                             "namespace": "",
+                            "type": "record",
                         },
                     },
                     {"name": "price", "type": "int"},
