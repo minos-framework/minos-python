@@ -37,6 +37,8 @@ SAGA = collections.namedtuple("Saga", "items queue storage broker")
 REST = collections.namedtuple("Rest", "broker endpoints")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
+DISCOVERY_ENDPOINT = collections.namedtuple("DiscoveryEndpoint", "path method")
+DISCOVERY = collections.namedtuple("Discovery", "host port subscribe unsubscribe discover")
 
 _ENVIRONMENT_MAPPER = {
     "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
@@ -402,3 +404,37 @@ class MinosConfig(MinosConfigAbstract):
             host=self._get("snapshot.host"),
             port=int(self._get("snapshot.port")),
         )
+
+    @property
+    def discovery(self) -> DISCOVERY:
+        """Get the sagas config.
+
+        :return: A ``DISCOVERY`` NamedTuple instance.
+        """
+        host = self._get("discovery.host")
+        port = self._get("discovery.port")
+        subscribe = self._discovery_subscribe
+        unsubscribe = self._discovery_unsubscribe
+        discover = self._discovery_discover
+        return DISCOVERY(host=host, port=port, subscribe=subscribe, unsubscribe=unsubscribe, discover=discover)
+
+    @property
+    def _discovery_subscribe(self) -> DISCOVERY_ENDPOINT:
+        endpoint = DISCOVERY_ENDPOINT(
+            path=self._get("discovery.subscribe.path"), method=self._get("discovery.subscribe.method"),
+        )
+        return endpoint
+
+    @property
+    def _discovery_unsubscribe(self) -> DISCOVERY_ENDPOINT:
+        endpoint = DISCOVERY_ENDPOINT(
+            path=self._get("discovery.unsubscribe.path"), method=self._get("discovery.unsubscribe.method"),
+        )
+        return endpoint
+
+    @property
+    def _discovery_discover(self) -> DISCOVERY_ENDPOINT:
+        endpoint = DISCOVERY_ENDPOINT(
+            path=self._get("discovery.discover.path"), method=self._get("discovery.discover.method"),
+        )
+        return endpoint
