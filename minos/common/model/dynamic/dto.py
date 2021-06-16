@@ -76,34 +76,34 @@ class DataTransferObject(DynamicModel):
 
     @classmethod
     def from_typed_dict(cls, typed_dict: TypedDict, data: dict[str, Any]) -> DataTransferObject:
-        """TODO
+        """Build a ``DataTransferObject`` from a ``TypeDict`` and ``data``.
 
-        :param typed_dict: TODO
-        :param data: TODO
-        :return: TODO
+        :param typed_dict: ``TypeDict`` object containing the DTO's structure
+        :param data: A dictionary containing the values to be stored on the DTO.
+        :return: A new ``DataTransferObject`` instance.
         """
         return cls.from_model_type(ModelType.from_typed_dict(typed_dict), data)
 
     @classmethod
-    def from_model_type(cls, typed_dict: ModelType, data: dict[str, Any]) -> DataTransferObject:
-        """Build Model Fields form TypeDict object
+    def from_model_type(cls, model_type: ModelType, data: dict[str, Any]) -> DataTransferObject:
+        """Build a ``DataTransferObject`` from a ``ModelType`` and ``data``.
 
-        :param typed_dict: TypeDict object
-        :param data: Data
-        :return: DataTransferObject
+        :param model_type: ``ModelType`` object containing the DTO's structure
+        :param data: A dictionary containing the values to be stored on the DTO.
+        :return: A new ``DataTransferObject`` instance.
         """
 
         try:
             # noinspection PyTypeChecker
-            model_cls: Model = import_module(typed_dict.classname)
-            if model_cls.type_hints != typed_dict.type_hints:
+            model_cls: Model = import_module(model_type.classname)
+            if model_cls.type_hints != model_type.type_hints:
                 raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
             return model_cls.from_dict(data)
         except MinosImportException:
             pass
 
-        fields = {k: ModelField(k, v, data[k]) for k, v in typed_dict.type_hints.items()}
-        return cls(typed_dict.name, typed_dict.namespace, fields)
+        fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
+        return cls(model_type.name, model_type.namespace, fields)
 
     # noinspection PyMethodParameters
     @property

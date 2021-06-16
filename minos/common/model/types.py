@@ -46,7 +46,7 @@ class Fixed(t.Generic[T]):
 class Enum(t.Generic[T]):
     """
     Represents an Avro Enum type
-    simbols (typing.List): Specifying the possible values for the enum
+    symbols (typing.List): Specifying the possible values for the enum
     """
 
     symbols: list[t.Any]
@@ -94,30 +94,30 @@ class ModelRef(t.Generic[T]):
 
 
 class ModelType(type):
-    """TODO"""
+    """Model Type class."""
 
     name: str
     namespace: str
-    type_hints: dict[str, type]
+    type_hints: dict[str, t.Type[T]]
 
     @classmethod
     def build(mcs, name: str, type_hints: dict[str, type], namespace: t.Optional[str] = None) -> t.Type[T]:
-        """TODO
+        """Build a new ``ModelType`` instance.
 
-        :param name: TODO
-        :param type_hints: TODO
-        :param namespace: TODO
-        :return: TODO
+        :param name: Name of the new type.
+        :param type_hints: Type hints of the new type.
+        :param namespace: Namespace of the new type.
+        :return: A ``ModelType`` instance.
         """
         # noinspection PyTypeChecker
         return mcs(name, tuple(), {"type_hints": type_hints, "namespace": namespace})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict) -> t.Type[T]:
-        """TODO
+        """Build a new ``ModelType`` instance from a ``typing.TypedDict``.
 
-        :param typed_dict: TODO
-        :return: TODO
+        :param typed_dict: Typed dict to be used as base.
+        :return: A ``ModelType`` instance.
         """
         try:
             namespace, name = typed_dict.__name__.rsplit(".", 1)
@@ -127,17 +127,17 @@ class ModelType(type):
 
     @property
     def name(cls) -> str:
-        """TODO
+        """Get the type name.
 
-        :return:TODO
+        :return: A string object.
         """
         return cls.__name__
 
     @property
     def classname(cls) -> str:
-        """TODO
+        """Get the full class name.
 
-        :return: TODO
+        :return: An string object.
         """
         if cls.namespace is None:
             return cls.name
