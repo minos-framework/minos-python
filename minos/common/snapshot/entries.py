@@ -21,6 +21,9 @@ from typing import (
     Union,
 )
 
+from .. import (
+    MinosRepositoryDeletedAggregateException,
+)
 from ..importlib import (
     import_module,
 )
@@ -45,7 +48,7 @@ class SnapshotEntry:
         aggregate_id: int,
         aggregate_name: str,
         version: int,
-        data: Union[bytes, memoryview] = bytes(),
+        data: Union[bytes, memoryview, None] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
     ):
@@ -76,6 +79,10 @@ class SnapshotEntry:
 
         :return: A ``Aggregate`` instance.
         """
+        if self.data is None:
+            raise MinosRepositoryDeletedAggregateException(
+                f"The {self.aggregate_id!r} id points to an already deleted aggregate."
+            )
         cls = self.aggregate_cls
         instance = cls.from_avro_bytes(self.data, id=self.aggregate_id, version=self.version)
         return instance
