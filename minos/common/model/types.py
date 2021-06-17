@@ -38,9 +38,6 @@ if TYPE_CHECKING:
     from .abc import (
         Model,
     )
-    from .declarative import (
-        DeclarativeModel,
-    )
 
 T = TypeVar("T")
 
@@ -156,18 +153,28 @@ class ModelType(type):
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
 
     def __call__(cls, *args, **kwargs) -> Model:
+        model_cls = cls.model_cls
+
+        if hasattr(model_cls, "model_type") and cls != model_cls.model_type:
+            raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
+
+        return model_cls.from_model_type(cls, kwargs)
+
+    @property
+    def model_cls(cls) -> Type[Model]:
+        """TODO
+
+        :return:TODO
+        """
         try:
             # noinspection PyTypeChecker
-            model_cls: DeclarativeModel = import_module(cls.classname)
-            if model_cls.type_hints != cls.type_hints:
-                raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
-            return model_cls(*args, **kwargs)
+            return import_module(cls.classname)
         except MinosImportException:
             from .dynamic import (
                 DataTransferObject,
             )
 
-            return DataTransferObject.from_model_type(cls, kwargs)
+            return DataTransferObject
 
     @property
     def name(cls) -> str:
@@ -188,13 +195,38 @@ class ModelType(type):
         return f"{cls.namespace}.{cls.name}"
 
     def __eq__(self, other: Union[ModelType, Type[Model]]) -> bool:
-        from .abc import (
-            Model,
+        if other == Generic:
+            return False
+        from minos.common import (
+            DeclarativeModel,
         )
 
-        return (type(self) == type(other) and tuple(self) == tuple(other)) or (
-            isclass(other) and issubclass(other, Model) and self == other.model_type
+        if (
+            (isclass(other) and issubclass(self.model_cls, other))
+            or (
+                hasattr(other, "model_cls")
+                and self.model_cls != other.model_cls
+                and issubclass(self.model_cls, DeclarativeModel)
+                and issubclass(self.model_cls, other.model_cls)
+            )
+            or (hasattr(other, "model_type") and self == other.model_type)
+        ):
+            return True
+
+        from .fields import (
+            TypeHintComparator,
         )
+
+        if (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.namespace == other.namespace
+            and set(self.type_hints.keys()) == set(other.type_hints.keys())
+            and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in self.type_hints.items())
+        ):
+            return True
+
+        return False
 
     def __hash__(self) -> int:
         return hash(tuple(self))

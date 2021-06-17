@@ -147,7 +147,7 @@ class AvroSchemaEncoder:
 
     def _build_model_type_schema(self, type_field: ModelType) -> t.Any:
         namespace = type_field.namespace
-        if len(namespace) > 0:
+        if len(namespace) > 0 and len(self._name) > 0:
             namespace = f"{type_field.namespace}.{self._name}"
         schema = {
             "name": type_field.name,
@@ -159,7 +159,8 @@ class AvroSchemaEncoder:
 
     def _build_model_schema(self, type_field: t.Type) -> t.Any:
         def _patch_namespace(s: dict) -> dict:
-            s["namespace"] += f".{self._name}"
+            if len(self._name) > 0:
+                s["namespace"] += f".{self._name}"
             return s
 
         # noinspection PyUnresolvedReferences

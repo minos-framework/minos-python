@@ -217,8 +217,10 @@ class AvroDataDecoder:
         )
 
         if isinstance(data, dict):
+            data = {k: self._cast_value(v, data[k]) for k, v in type_field.type_hints.items()}
             return type_field(**data)
 
+        # noinspection PyTypeChecker
         if isinstance(data, Model) and data.model_type == type_field:
             return data
 

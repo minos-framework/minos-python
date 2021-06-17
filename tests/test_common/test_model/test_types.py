@@ -146,6 +146,10 @@ class TestModelTyp(unittest.TestCase):
         two = ModelType.build("Foo", {"text": int}, "bar")
         self.assertEqual(one, two)
 
+    def test_equal_declarative(self):
+        one = ModelType.build("tests.model_classes.Foo", {"text": str})
+        self.assertEqual(one, Foo)
+
     def test_not_equal(self):
         base = ModelType.build("Foo", {"text": int}, "bar")
         self.assertNotEqual(ModelType.build("aaa", {"text": int}, "bar"), base)

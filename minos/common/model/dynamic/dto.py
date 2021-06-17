@@ -13,18 +13,8 @@ from typing import (
     Any,
     Optional,
     TypedDict,
-    Union,
 )
 
-from ...exceptions import (
-    MinosImportException,
-)
-from ...importlib import (
-    import_module,
-)
-from ..abc import (
-    Model,
-)
 from ..fields import (
     ModelField,
 )
@@ -47,30 +37,6 @@ class DataTransferObject(DynamicModel):
             )
         self._name = name
         self._namespace = namespace
-
-    @classmethod
-    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> Model:
-        """Build a new instance from the ``avro`` schema and data.
-
-        :param schema: The avro schema of the model.
-        :param data: The avro data of the model.
-        :return: A new ``DynamicModel`` instance.
-        """
-        if isinstance(schema, list):
-            schema = schema[-1]
-
-        if "namespace" in schema and len(schema["namespace"]) > 0:
-            name = "{namespace:}.{name:}".format(**schema)
-        else:
-            name = schema["name"]
-
-        try:
-            # noinspection PyTypeChecker
-            model_cls: Model = import_module(name)
-        except MinosImportException:
-            return super().from_avro(schema, data)
-
-        return model_cls.from_dict(data)
 
     @classmethod
     def from_typed_dict(cls, typed_dict: TypedDict, data: dict[str, Any]) -> DataTransferObject:

@@ -133,7 +133,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 observed = [v async for v in snapshot.select()]
 
-        expected = [SnapshotEntry(1, aggregate_name, 3, diff.avro_bytes)]
+        expected = [SnapshotEntry(1, aggregate_name, 3, Car(1, 1, 3, "blue").avro_bytes)]
         self._assert_equal_snapshot_entries(expected, observed)
 
     def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
@@ -155,7 +155,13 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 mock.reset_mock()
 
                 # noinspection PyTypeChecker
-                await repository.create(RepositoryEntry(3, Car.classname, 1, Car(1, 1, 3, "blue").avro_bytes))
+                entry = RepositoryEntry(
+                    aggregate_id=3,
+                    aggregate_name=Car.classname,
+                    version=1,
+                    data=FieldsDiff({ModelField("doors", int, 3), ModelField("color", str, "blue")}).avro_bytes,
+                )
+                await repository.create(entry)
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)

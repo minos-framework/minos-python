@@ -28,6 +28,7 @@ from .fields import (
     AvroSchemaDecoder,
     AvroSchemaEncoder,
     ModelField,
+    TypeHintComparator,
 )
 from .types import (
     Decimal,

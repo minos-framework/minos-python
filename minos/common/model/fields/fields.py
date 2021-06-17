@@ -162,7 +162,18 @@ class ModelField:
         return cls(schema["name"], type_val, value)
 
     def __eq__(self, other: "ModelField") -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
+        from minos.common.model.fields.type_hint_comparator import (
+            TypeHintComparator,
+        )
+
+        return (
+            type(self) == type(other)
+            and (
+                (self.name, self.value, self._parser_function, self._validator_function)
+                == (other.name, other.value, other._parser_function, other._validator_function)
+            )
+            and (self.type == other.type or TypeHintComparator(self.type, other.type).match())
+        )
 
     def __hash__(self) -> int:
         return hash(tuple(self))

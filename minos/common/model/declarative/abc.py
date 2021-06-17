@@ -18,9 +18,6 @@ from itertools import (
 from ...meta import (
     self_or_classmethod,
 )
-from ...protocol import (
-    MinosAvroProtocol,
-)
 from ..abc import (
     Model,
 )
@@ -48,26 +45,14 @@ class DeclarativeModel(Model, t.Generic[T]):
         self._list_fields(*args, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[T, list[T]]:
-        """Build a single instance or a sequence of instances from bytes
+    def from_model_type(cls, model_type, data):
+        """Build a ``DataTransferObject`` from a ``ModelType`` and ``data``.
 
-        :param raw: A bytes data.
-        :return: A single instance or a sequence of instances.
+        :param model_type: ``ModelType`` object containing the DTO's structure
+        :param data: A dictionary containing the values to be stored on the DTO.
+        :return: A new ``DataTransferObject`` instance.
         """
-
-        decoded = MinosAvroProtocol().decode(raw)
-        if isinstance(decoded, list):
-            return [cls.from_dict(d | kwargs) for d in decoded]
-        return cls.from_dict(decoded | kwargs)
-
-    @classmethod
-    def from_dict(cls, d: dict[str, t.Any]) -> T:
-        """Build a new instance from a dictionary.
-
-        :param d: A dictionary object.
-        :return: A new ``MinosModel`` instance.
-        """
-        return cls(**d)
+        return cls(**data)
 
     def _list_fields(self, *args, **kwargs) -> t.NoReturn:
         for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):

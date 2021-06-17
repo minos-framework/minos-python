@@ -18,14 +18,8 @@ from typing import (
 from ...meta import (
     self_or_classmethod,
 )
-from ...protocol import (
-    MinosAvroProtocol,
-)
 from ..abc import (
     Model,
-)
-from ..fields import (
-    AvroSchemaDecoder,
 )
 from ..types import (
     ModelType,
@@ -56,18 +50,6 @@ class Event(DeclarativeModel):
         :return: TODO
         """
         return self._items_type
-
-    @classmethod
-    def from_avro_bytes(cls, raw: bytes, **kwargs):
-        """Build a single instance or a sequence of instances from bytes
-
-        :param raw: A bytes data.
-        :return: A single instance or a sequence of instances.
-        """
-        schema = MinosAvroProtocol.decode_schema(raw)
-        items_schema = next(raw for raw in schema["fields"] if raw["name"] == "items")["type"]
-        _items_type = AvroSchemaDecoder(items_schema).build()
-        return super().from_avro_bytes(raw, _items_type=_items_type, **kwargs)
 
     # noinspection PyMethodParameters
     @self_or_classmethod

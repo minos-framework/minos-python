@@ -97,6 +97,7 @@ from .model import (
     ModelField,
     ModelRef,
     ModelType,
+    TypeHintComparator,
 )
 from .networks import (
     MinosBroker,
