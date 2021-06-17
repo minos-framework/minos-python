@@ -80,6 +80,7 @@ class DeclarativeModel(Model, t.Generic[T]):
                 list_fields = {k: v for k, v in t.get_type_hints(b).items() if not k.startswith("_")}
                 fields |= list_fields
         logger.debug(f"The obtained fields are: {fields!r}")
+        fields |= super()._type_hints()
         yield from fields.items()
 
 

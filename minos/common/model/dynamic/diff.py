@@ -12,13 +12,9 @@ from __future__ import (
 import logging
 from typing import (
     TYPE_CHECKING,
-    Any,
     Optional,
 )
 
-from ...meta import (
-    self_or_classmethod,
-)
 from .abc import (
     DynamicModel,
 )
@@ -94,10 +90,3 @@ class FieldsDiff(DynamicModel):
         :return: A ``FieldsDiff`` instance.
         """
         return cls(dict())
-
-    # noinspection PyMethodParameters
-    @self_or_classmethod
-    def _type_hints(self_or_cls) -> dict[str, Any]:
-        if isinstance(self_or_cls, type):
-            return
-        yield from super()._type_hints()

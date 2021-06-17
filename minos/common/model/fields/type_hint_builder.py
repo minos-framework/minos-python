@@ -10,55 +10,57 @@ from __future__ import (
 )
 
 import logging
-import typing as t
+from typing import (
+    Generic,
+    Iterable,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+)
 
 logger = logging.getLogger(__name__)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
-class TypeHintBuilder:
+class TypeHintBuilder(Generic[T]):
     """Avro Schema Decoder class."""
 
-    def __init__(self, value, base=None):
+    def __init__(self, value: T, base: Optional[Type[T]] = None):
         self._value = value
         self._base = base
 
-    def build(self) -> t.Type[T]:
+    def build(self) -> Type[T]:
         """Build type from given avro schema item.
 
         :return: A dictionary object.
         """
-        built_type = self._compare(self._value, self._base)
-        return built_type
+        return self._build(self._value, self._base)
 
-    def _compare(self, value, base) -> t.Type[T]:
-        if base is not None and t.get_origin(base) is t.Union:
-            v = self._compare(value, None)
-            already = set()
-            vs = list()
-            for a in t.get_args(base):
-                if a in already:
-                    continue
-                if v not in already and (not len(t.get_args(a)) and issubclass(v, a)):
-                    a = v
-                vs.append(a)
-                already.add(a)
+    def _build(self, value: T, base: Optional[Type[T]]) -> Type[T]:
+        if base is not None and get_origin(base) is Union:
+            dynamic: Type[T] = self._build(value, None)
+            values = tuple(
+                (dynamic if not len(get_args(static)) and issubclass(dynamic, static) else static)
+                for static in get_args(base)
+            )
+            return Union[values]
 
-            return t.Union[tuple(vs)]
         if isinstance(value, list):
-            b1 = None
-            if base is not None:
-                b1 = t.get_args(base)[0]
+            b1 = None if base is None else get_args(base)[0]
             return list[self._build_from_iterable(value, b1)]
+
         if isinstance(value, dict):
-            b1, b2 = None, None
-            if base is not None:
-                b1, b2 = t.get_args(base)
+            b1, b2 = (None, None) if base is None else get_args(base)
             return dict[self._build_from_iterable(value.keys(), b1), self._build_from_iterable(value.values(), b2)]
+
         if hasattr(value, "model_type"):
             return value.model_type
+
         return type(value)
 
-    def _build_from_iterable(self, values, base) -> t.Type[T]:
-        return t.Union[tuple(set(self._compare(value, base) for value in values))]
+    def _build_from_iterable(self, values: Iterable[T], base: Optional[Type[T]]) -> Type[T]:
+        return Union[tuple(self._build(value, base) for value in values)]

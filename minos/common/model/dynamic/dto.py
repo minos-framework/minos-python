@@ -11,7 +11,6 @@ from __future__ import (
 
 from typing import (
     Any,
-    Optional,
     TypedDict,
 )
 
@@ -58,15 +57,6 @@ class DataTransferObject(DynamicModel):
         """
         fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
         return cls(model_type.name, fields, namespace=model_type.namespace)
-
-    # noinspection PyMethodParameters
-    @property
-    def _avro_name(self) -> str:
-        return self._name
-
-    @property
-    def _avro_namespace(self) -> Optional[str]:
-        return self._namespace
 
     @property
     def classname(self) -> str:

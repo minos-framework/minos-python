@@ -67,12 +67,13 @@ class ModelField:
         return self._name
 
     @property
-    def type(self) -> t.Type:
+    def type(self) -> t.Type[T]:
         """Type getter."""
         return self._type
 
     @property
     def real_type(self):
+        """Real Type getter."""
         return TypeHintBuilder(self.value, self.type).build()
 
     @property

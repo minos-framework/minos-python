@@ -11,9 +11,6 @@ from __future__ import (
 
 import logging
 import typing as t
-from abc import (
-    abstractmethod,
-)
 from base64 import (
     b64decode,
     b64encode,
@@ -116,7 +113,7 @@ class Model(t.Generic[T]):
         schema = MinosAvroProtocol.decode_schema(raw)
         decoded = MinosAvroProtocol.decode(raw)
 
-        # FIXME
+        # FIXME: Extend implementation of the `AvroDataDecoder` to avoid this fix.
         schema["name"] = "{}.fake.{}".format(*schema["name"].rsplit(".", 1))
 
         if isinstance(decoded, list):
@@ -134,7 +131,7 @@ class Model(t.Generic[T]):
         if isinstance(schema, list):
             schema = schema[-1]
         model_type: ModelType = AvroSchemaDecoder(schema).build()
-        return AvroDataDecoder("TODO", model_type).build(data)
+        return AvroDataDecoder("", model_type).build(data)
 
     @classmethod
     def to_avro_str(cls, models: list[T]) -> str:
@@ -172,13 +169,8 @@ class Model(t.Generic[T]):
 
         :return: A ``ModelType`` instance.
         """
-        if not isinstance(self_or_cls, type):
-            d = {field.name: field.real_type for field in self_or_cls.fields.values()}
-        else:
-            # noinspection PyUnresolvedReferences
-            d = self_or_cls.type_hints
         # noinspection PyTypeChecker
-        return ModelType.build(self_or_cls.classname, d)
+        return ModelType.build(self_or_cls.classname, self_or_cls.type_hints)
 
     # noinspection PyMethodParameters
     @classproperty
@@ -221,9 +213,9 @@ class Model(t.Generic[T]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    @abstractmethod
     def _type_hints(self_or_cls) -> dict[str, t.Any]:
-        pass
+        if not isinstance(self_or_cls, type):
+            yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
 
     # noinspection PyMethodParameters
     @property_or_classproperty
@@ -232,20 +224,8 @@ class Model(t.Generic[T]):
 
         :return: A dictionary object.
         """
-        mt = self_or_cls.model_type
-        schema = AvroSchemaEncoder("", mt).build()["type"]
-
-        return [schema]
-
-    # noinspection PyMethodParameters
-    @classproperty
-    def _avro_name(cls) -> str:
-        return cls.__name__
-
-    # noinspection PyMethodParameters
-    @classproperty
-    def _avro_namespace(cls) -> t.Optional[str]:
-        return cls.__module__
+        # noinspection PyTypeChecker
+        return [AvroSchemaEncoder("", self_or_cls.model_type).build()["type"]]
 
     @property
     def avro_data(self) -> dict[str, t.Any]:

@@ -18,9 +18,6 @@ from typing import (
     Union,
 )
 
-from ...meta import (
-    self_or_classmethod,
-)
 from ..abc import (
     Model,
 )
@@ -52,7 +49,3 @@ class DynamicModel(Model, Generic[T]):
         """
         fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
         return cls(fields)
-
-    @self_or_classmethod
-    def _type_hints(self) -> dict[str, Any]:
-        yield from ((field.name, field.type) for field in self.fields.values())
