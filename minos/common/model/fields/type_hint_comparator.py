@@ -10,7 +10,13 @@ from __future__ import (
 )
 
 import logging
-import typing as t
+from typing import (
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+)
 
 from ..types import (
     ModelRef,
@@ -21,13 +27,13 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
 class TypeHintComparator:
     """TODO"""
 
-    def __init__(self, first: t.Type, second: t.Type):
+    def __init__(self, first: Type, second: Type):
         self._first = first
         self._second = second
 
@@ -39,13 +45,12 @@ class TypeHintComparator:
 
         return self._compare(self._first, self._second)
 
-    def _compare(self, first: t.Type, second: t.Type) -> bool:
-        if t.get_origin(first) is ModelRef:
-            tt = (*t.get_args(first), int)
-            first = t.Union[tt]
-        if t.get_origin(second) is ModelRef:
-            tt = (*t.get_args(second), int)
-            second = t.Union[tt]
+    def _compare(self, first: Type, second: Type) -> bool:
+        if get_origin(first) is ModelRef:
+            first = Union[(*get_args(first), int)]
+
+        if get_origin(second) is ModelRef:
+            second = Union[(*get_args(second), int)]
 
         if _is_model_cls(first):
             first = first.model_type
@@ -56,15 +61,14 @@ class TypeHintComparator:
         if first == second:
             return True
 
-        first_origin, second_origin = t.get_origin(first), t.get_origin(second)
-
+        first_origin, second_origin = get_origin(first), get_origin(second)
         if first_origin is not None and self._compare(first_origin, second_origin):
             return self._compare_args(first, second)
+
         return False
 
-    def _compare_args(self, first: t.Type, second: t.Type) -> bool:
-        f1, f2 = t.get_args(first), t.get_args(second)
-        if len(f1) != len(f2):
+    def _compare_args(self, first: Type, second: Type) -> bool:
+        first_args, second_args = get_args(first), get_args(second)
+        if len(first_args) != len(second_args):
             return False
-        alternatives = zip(f1, f2)
-        return all(self._compare(f1, f2) for f1, f2 in alternatives)
+        return all(self._compare(fi, si) for fi, si in zip(first_args, second_args))

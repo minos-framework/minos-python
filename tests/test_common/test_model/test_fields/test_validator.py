@@ -56,6 +56,7 @@ class TestTypeHintComparator(unittest.TestCase):
         self.assertFalse(TypeHintComparator(dict[str, int], dict[str, float]).match())
         self.assertFalse(TypeHintComparator(dict[str, int], dict[int, int]).match())
         self.assertFalse(TypeHintComparator(dict[str, int], dict).match())
+        self.assertFalse(TypeHintComparator(dict[str, int], dict[str]).match())
 
     def test_model_ref_union(self):
         self.assertTrue(TypeHintComparator(ModelRef[str], Union[str, int]).match())
