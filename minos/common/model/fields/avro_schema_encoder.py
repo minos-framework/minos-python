@@ -36,7 +36,6 @@ from ..types import (
     ModelType,
 )
 from .utils import (
-    _is_dynamic_model_cls,
     _is_model_cls,
 )
 
@@ -62,10 +61,7 @@ class AvroSchemaEncoder:
         :param field: The model field.
         :return: A new avro schema builder instance.
         """
-        field_type = field.type
-        if _is_dynamic_model_cls(field_type):
-            field_type = field.value.model_type
-        return cls(field.name, field_type)
+        return cls(field.name, field.type)
 
     def build(self) -> dict[str, t.Any]:
         """Build the avro schema for the given field.

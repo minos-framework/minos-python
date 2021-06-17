@@ -116,9 +116,6 @@ class Model(t.Generic[T]):
         schema = MinosAvroProtocol.decode_schema(raw)
         decoded = MinosAvroProtocol.decode(raw)
 
-        if isinstance(schema, list):
-            schema = schema[-1]
-
         # FIXME
         schema["name"] = "{}.fake.{}".format(*schema["name"].rsplit(".", 1))
 

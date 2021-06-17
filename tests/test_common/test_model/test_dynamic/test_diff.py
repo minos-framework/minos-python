@@ -15,6 +15,7 @@ from minos.common import (
     FieldsDiff,
     ModelField,
     ModelRef,
+    ModelType,
 )
 from tests.aggregate_classes import (
     Car,
@@ -39,6 +40,12 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         fields = {"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "red")}
         difference = FieldsDiff(fields)
         self.assertEqual(fields, difference.fields)
+
+    def test_model_type(self):
+        fields = {ModelField("doors", int, 5), ModelField("color", str, "red")}
+        difference = FieldsDiff(fields)
+        # noinspection PyTypeChecker
+        self.assertEqual(ModelType.build(FieldsDiff.classname, {"doors": int, "color": str}), difference.model_type)
 
     def test_from_difference(self):
         expected = FieldsDiff(

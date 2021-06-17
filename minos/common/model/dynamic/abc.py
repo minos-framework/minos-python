@@ -13,7 +13,9 @@ import logging
 from typing import (
     Any,
     Generic,
+    Iterable,
     TypeVar,
+    Union,
 )
 
 from ...meta import (
@@ -37,7 +39,7 @@ T = TypeVar("T")
 class DynamicModel(Model, Generic[T]):
     """Base class for ``minos`` dynamic model entities"""
 
-    def __init__(self, fields: dict[str, ModelField], **kwargs):
+    def __init__(self, fields: Union[Iterable[ModelField], dict[str, ModelField]], **kwargs):
         super().__init__(fields)
 
     @classmethod

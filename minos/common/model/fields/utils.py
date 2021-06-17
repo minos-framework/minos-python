@@ -23,11 +23,3 @@ def _is_aggregate_cls(type_field: t.Type) -> bool:
     )
 
     return inspect.isclass(type_field) and issubclass(type_field, Aggregate)
-
-
-def _is_dynamic_model_cls(type_field: t.Type) -> bool:
-    from ..dynamic import (
-        DynamicModel,
-    )
-
-    return inspect.isclass(type_field) and issubclass(type_field, DynamicModel)
