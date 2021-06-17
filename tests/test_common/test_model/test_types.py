@@ -126,7 +126,7 @@ class TestModelRef(unittest.TestCase):
         self.assertEqual("ModelRef()", repr(ref))
 
 
-class TestModelTyp(unittest.TestCase):
+class TestModelType(unittest.TestCase):
     def test_build(self):
         model_type = ModelType.build("Foo", {"text": int}, "bar")
         self.assertEqual("Foo", model_type.name)

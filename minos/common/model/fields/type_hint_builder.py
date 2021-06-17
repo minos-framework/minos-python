@@ -27,16 +27,16 @@ T = TypeVar("T")
 
 
 class TypeHintBuilder(Generic[T]):
-    """Avro Schema Decoder class."""
+    """Type Hint Builder class."""
 
     def __init__(self, value: T, base: Optional[Type[T]] = None):
         self._value = value
         self._base = base
 
     def build(self) -> Type[T]:
-        """Build type from given avro schema item.
+        """Build type hint from an instance..
 
-        :return: A dictionary object.
+        :return: A type.
         """
         return self._build(self._value, self._base)
 
