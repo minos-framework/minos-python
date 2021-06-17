@@ -134,14 +134,15 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("discovery-service", discovery.host)
         self.assertEqual(8080, discovery.port)
 
-        subscribe = discovery.subscribe
+        endpoints = discovery.endpoints
+        subscribe = endpoints.subscribe
         self.assertEqual("subscribe", subscribe.path)
         self.assertEqual("POST", subscribe.method)
 
-        unsubscribe = discovery.unsubscribe
+        unsubscribe = endpoints.unsubscribe
         self.assertEqual("unsubscribe?name=", unsubscribe.path)
         self.assertEqual("POST", unsubscribe.method)
 
-        discover = discovery.discover
+        discover = endpoints.discover
         self.assertEqual("discover?name=", discover.path)
         self.assertEqual("GET", discover.method)
