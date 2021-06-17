@@ -24,6 +24,7 @@ from dependency_injector import (
 from minos.common import (
     FieldsDiff,
     MinosConfigException,
+    MinosRepositoryDeletedAggregateException,
     MinosRepositoryNotProvidedException,
     ModelField,
     PostgreSqlRepository,
@@ -93,7 +94,9 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 observed = [v async for v in snapshot.select()]
 
+        # noinspection PyTypeChecker
         expected = [
+            SnapshotEntry(1, Car.classname, 4),
             SnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
             SnapshotEntry.from_aggregate(Car(3, 1, 3, "blue")),
         ]
@@ -139,7 +142,12 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
     def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
-            self.assertEqual(exp.aggregate, obs.aggregate)
+            if exp.data is None:
+                with self.assertRaises(MinosRepositoryDeletedAggregateException):
+                    # noinspection PyStatementEffect
+                    obs.aggregate
+            else:
+                self.assertEqual(exp.aggregate, obs.aggregate)
             self.assertIsInstance(obs.created_at, datetime)
             self.assertIsInstance(obs.updated_at, datetime)
 

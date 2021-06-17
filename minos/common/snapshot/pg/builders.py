@@ -13,6 +13,7 @@ from typing import (
     TYPE_CHECKING,
     NoReturn,
     Optional,
+    Type,
 )
 
 from dependency_injector.wiring import (
@@ -130,14 +131,19 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
     async def _dispatch_one(self, event_entry: RepositoryEntry) -> Optional[SnapshotEntry]:
         if event_entry.action is RepositoryAction.DELETE:
-            await self._submit_delete(event_entry)
-            return
+            return await self._submit_delete(event_entry)
+
         instance = await self._build_instance(event_entry)
         return await self._submit_instance(instance)
 
     async def _submit_delete(self, entry: RepositoryEntry) -> NoReturn:
-        params = {"aggregate_id": entry.aggregate_id, "aggregate_name": entry.aggregate_name}
-        await self.submit_query(_DELETE_ONE_SNAPSHOT_ENTRY_QUERY, params)
+        params = {
+            "aggregate_id": entry.aggregate_id,
+            "aggregate_name": entry.aggregate_name,
+            "version": entry.version,
+            "data": None,
+        }
+        await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params)
 
     async def _build_instance(self, event_entry: RepositoryEntry) -> Aggregate:
         # noinspection PyTypeChecker
@@ -151,7 +157,9 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(diff.id, diff.name)
         except Exception:
-            return import_module(diff.name).from_diff(diff)
+            # noinspection PyTypeChecker
+            aggregate_cls: Type[Aggregate] = import_module(diff.name)
+            return aggregate_cls.from_diff(diff)
 
         if previous.version >= diff.version:
             raise MinosPreviousVersionSnapshotException(previous, diff)
@@ -185,16 +193,6 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
         return entry
 
-
-_SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_id, aggregate_name, version, data, created_at, updated_at
-FROM snapshot;
-""".strip()
-
-_DELETE_ONE_SNAPSHOT_ENTRY_QUERY = """
-DELETE FROM snapshot
-WHERE aggregate_id = %(aggregate_id)s and aggregate_name = %(aggregate_name)s;
-""".strip()
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
 SELECT version, data, created_at, updated_at

@@ -19,7 +19,7 @@ from ...configuration import (
     MinosConfig,
 )
 from ...exceptions import (
-    MinosRepositoryDeletedAggregateException,
+    MinosRepositoryAggregateNotFoundException,
 )
 from ..abc import (
     MinosSnapshot,
@@ -79,13 +79,14 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
             yield item.aggregate
 
     async def _get(self, aggregate_name: str, ids: list[int]) -> AsyncIterator[SnapshotEntry]:
-        count = 0
+        found = set()
         async for row in self.submit_query_and_iter(_SELECT_MULTIPLE_ENTRIES_QUERY, (aggregate_name, tuple(ids))):
+            found.add(row[0])
             yield SnapshotEntry(*row)
-            count += 1
-        if count < len(ids):
-            # FIXME: This is not the ideal exception in this case
-            raise MinosRepositoryDeletedAggregateException(f"Not all {aggregate_name!r} instances were found.")
+
+        missing = set(ids) - found
+        if missing:
+            raise MinosRepositoryAggregateNotFoundException(f"Not found entries identified with {missing!r} ids.")
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:

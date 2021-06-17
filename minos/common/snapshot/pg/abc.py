@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS snapshot (
     aggregate_id BIGINT NOT NULL,
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
-    data BYTEA NOT NULL,
+    data BYTEA,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (aggregate_id, aggregate_name)
