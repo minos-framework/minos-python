@@ -24,7 +24,10 @@ class TestTypeHintBuilder(unittest.TestCase):
         self.assertEqual(int, TypeHintBuilder(34).build())
 
     def test_list(self):
-        self.assertEqual(list[Union[int, str]], TypeHintBuilder([34, "hello"]).build())
+        self.assertEqual(list[Union[int, str]], TypeHintBuilder([34, "hello", 12]).build())
+
+    def test_list_empty(self):
+        self.assertEqual(list[int], TypeHintBuilder([], list[int]).build())
 
     def test_model_type(self):
         one = ModelType.build("tests.model_classes.Foo", {"text": str})

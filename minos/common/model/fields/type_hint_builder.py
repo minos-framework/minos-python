@@ -43,11 +43,11 @@ class TypeHintBuilder(Generic[T]):
     def _build(self, value: T, base: Optional[Type[T]]) -> Type[T]:
         if base is not None and get_origin(base) is Union:
             dynamic: Type[T] = self._build(value, None)
-            values = tuple(
+            type_hints = tuple(
                 (dynamic if not len(get_args(static)) and issubclass(dynamic, static) else static)
                 for static in get_args(base)
             )
-            return Union[values]
+            return Union[type_hints]
 
         if isinstance(value, list):
             b1 = None if base is None else get_args(base)[0]
@@ -63,4 +63,9 @@ class TypeHintBuilder(Generic[T]):
         return type(value)
 
     def _build_from_iterable(self, values: Iterable[T], base: Optional[Type[T]]) -> Type[T]:
-        return Union[tuple(self._build(value, base) for value in values)]
+        values = tuple(values)
+        if len(values) == 0:
+            type_hints = base
+        else:
+            type_hints = tuple(self._build(value, base) for value in values)
+        return Union[type_hints]
