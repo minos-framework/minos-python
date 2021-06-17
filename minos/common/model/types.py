@@ -12,9 +12,6 @@ from __future__ import (
 import dataclasses
 import datetime
 import uuid
-from inspect import (
-    isclass,
-)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -195,45 +192,43 @@ class ModelType(type):
         return f"{cls.namespace}.{cls.name}"
 
     def __eq__(cls, other: Union[ModelType, Type[Model]]) -> bool:
-        if other == Generic:
-            return False
-
-        from minos.common import (
-            DeclarativeModel,
-            FieldsDiff,
+        conditions = (
+            cls._equal_with_model_type,
+            cls._equal_with_model,
+            cls._equal_with_inherited_model,
+            cls._equal_with_fields_diff,
         )
+        # noinspection PyArgumentList
+        return any(condition(other) for condition in conditions)
 
-        if (isclass(other) and issubclass(cls.model_cls, FieldsDiff) and issubclass(other, FieldsDiff)) or (
-            hasattr(other, "model_cls") and issubclass(other.model_cls, FieldsDiff)
-        ):
-            return True
-
-        if (
-            (isclass(other) and issubclass(cls.model_cls, other))
-            or (
-                hasattr(other, "model_cls")
-                and cls.model_cls != other.model_cls
-                and issubclass(cls.model_cls, DeclarativeModel)
-                and issubclass(cls.model_cls, other.model_cls)
-            )
-            or (hasattr(other, "model_type") and cls == other.model_type)
-        ):
-            return True
-
+    def _equal_with_model_type(cls, other: ModelType) -> bool:
         from .fields import (
             TypeHintComparator,
         )
 
-        if (
+        return (
             type(cls) == type(other)
             and cls.name == other.name
             and cls.namespace == other.namespace
             and set(cls.type_hints.keys()) == set(other.type_hints.keys())
             and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
-        ):
-            return True
+        )
 
-        return False
+    def _equal_with_model(cls, other: Any) -> bool:
+        return hasattr(other, "model_type") and cls == other.model_type
+
+    def _equal_with_inherited_model(cls, other: ModelType) -> bool:
+        return (
+            type(cls) == type(other) and cls.model_cls != other.model_cls and issubclass(cls.model_cls, other.model_cls)
+        )
+
+    @staticmethod
+    def _equal_with_fields_diff(other: Any) -> bool:
+        from .dynamic import (
+            FieldsDiff,
+        )
+
+        return hasattr(other, "model_cls") and issubclass(other.model_cls, FieldsDiff)
 
     def __hash__(cls) -> int:
         return hash(tuple(cls))
