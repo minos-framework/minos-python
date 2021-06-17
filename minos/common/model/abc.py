@@ -176,8 +176,9 @@ class Model(t.Generic[T]):
         :return: A ``ModelType`` instance.
         """
         if not isinstance(self_or_cls, type):
-            d = {field.name: field.type for field in self_or_cls.fields.values()}
+            d = {field.name: field.real_type for field in self_or_cls.fields.values()}
         else:
+            # noinspection PyUnresolvedReferences
             d = self_or_cls.type_hints
         # noinspection PyTypeChecker
         return ModelType.build(self_or_cls.classname, d)

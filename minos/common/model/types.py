@@ -197,9 +197,16 @@ class ModelType(type):
     def __eq__(self, other: Union[ModelType, Type[Model]]) -> bool:
         if other == Generic:
             return False
+
         from minos.common import (
             DeclarativeModel,
+            FieldsDiff,
         )
+
+        if (isclass(other) and issubclass(self.model_cls, FieldsDiff) and issubclass(other, FieldsDiff)) or (
+            hasattr(other, "model_cls") and issubclass(other.model_cls, FieldsDiff)
+        ):
+            return True
 
         if (
             (isclass(other) and issubclass(self.model_cls, other))

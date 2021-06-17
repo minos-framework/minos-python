@@ -88,7 +88,6 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         observed = AggregateDiff.simplify(one, two, three)
         self.assertEqual(expected, observed)
 
-    @unittest.skip
     def test_avro_serialization(self):
         initial = AggregateDiff(
             id=1,

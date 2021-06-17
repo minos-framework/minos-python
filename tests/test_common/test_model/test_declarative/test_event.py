@@ -32,10 +32,6 @@ class TestEvent(unittest.TestCase):
         decoded_event = Event.from_avro_bytes(event.avro_bytes)
         self.assertEqual(event, decoded_event)
 
-    def test_items_type(self):
-        event = Event(self.topic, self.items)
-        self.assertEqual(list[Foo], event.items_type)
-
 
 class TestEventDto(unittest.TestCase):
     def setUp(self) -> None:

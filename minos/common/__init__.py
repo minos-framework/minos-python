@@ -97,6 +97,7 @@ from .model import (
     ModelField,
     ModelRef,
     ModelType,
+    TypeHintBuilder,
     TypeHintComparator,
 )
 from .networks import (

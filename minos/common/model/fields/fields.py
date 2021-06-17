@@ -32,6 +32,9 @@ from .avro_schema_decoder import (
 from .avro_schema_encoder import (
     AvroSchemaEncoder,
 )
+from .type_hint_builder import (
+    TypeHintBuilder,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +70,10 @@ class ModelField:
     def type(self) -> t.Type:
         """Type getter."""
         return self._type
+
+    @property
+    def real_type(self):
+        return TypeHintBuilder(self.value, self.type).build()
 
     @property
     def parser(self) -> t.Optional[t.Callable[[t.Any], T]]:

@@ -28,6 +28,7 @@ from .fields import (
     AvroSchemaDecoder,
     AvroSchemaEncoder,
     ModelField,
+    TypeHintBuilder,
     TypeHintComparator,
 )
 from .types import (
