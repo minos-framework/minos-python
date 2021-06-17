@@ -216,11 +216,18 @@ class Aggregate(DeclarativeModel, Generic[T]):
         """
         is_creation = self.id == 0
         if is_creation != (self.version == 0):
-            raise ValueError()  # TODO: raise a more descriptive exception.
+            if is_creation:
+                raise MinosRepositoryManuallySetAggregateVersionException(
+                    f"The version must be computed internally on the repository. Obtained: {self.version}"
+                )
+            else:
+                raise MinosRepositoryManuallySetAggregateIdException(
+                    f"The id must be computed internally on the repository. Obtained: {self.id}"
+                )
 
         if is_creation:
             new = await self.create(
-                **{k: field.value for k, field in self.fields.items()},
+                **{k: field.value for k, field in self.fields.items() if k not in ("id", "version")},
                 _broker=self._broker,
                 _repository=self._repository,
                 _snapshot=self._snapshot,
@@ -228,7 +235,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
             self._fields |= new.fields
         else:
             await self.update(
-                **{k: field.value for k, field in self.fields.items()},
+                **{k: field.value for k, field in self.fields.items() if k not in ("id", "version")},
                 _broker=self._broker,
                 _repository=self._repository,
                 _snapshot=self._snapshot,
