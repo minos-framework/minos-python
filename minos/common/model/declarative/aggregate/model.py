@@ -209,6 +209,31 @@ class Aggregate(DeclarativeModel, Generic[T]):
 
         return self
 
+    async def save(self) -> NoReturn:
+        """Store the current instance on the repository.
+
+        If didn't exist previously creates a new one, otherwise updates the existing one.
+        """
+        is_creation = self.id == 0
+        if is_creation != (self.version == 0):
+            raise ValueError()  # TODO: raise a more descriptive exception.
+
+        if is_creation:
+            new = await self.create(
+                **{k: field.value for k, field in self.fields.items()},
+                _broker=self._broker,
+                _repository=self._repository,
+                _snapshot=self._snapshot,
+            )
+            self._fields |= new.fields
+        else:
+            await self.update(
+                **{k: field.value for k, field in self.fields.items()},
+                _broker=self._broker,
+                _repository=self._repository,
+                _snapshot=self._snapshot,
+            )
+
     async def refresh(self) -> NoReturn:
         """Refresh the state of the given instance.
 
