@@ -47,4 +47,4 @@ class DynamicModel(Model, Generic[T]):
         :param data: A dictionary containing the values to be stored on the DTO.
         :return: A new ``DynamicModel`` instance.
         """
-        return cls({k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()})
+        return cls(fields={k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()})
