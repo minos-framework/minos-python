@@ -97,8 +97,8 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
-            SnapshotEntry.from_aggregate(Car(3, 1, 3, "blue")),
+            SnapshotEntry.from_aggregate(Car(3, "blue", id=2, version=2)),
+            SnapshotEntry.from_aggregate(Car(3, "blue", id=3, version=1)),
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 
@@ -163,7 +163,9 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 mock.reset_mock()
 
                 # noinspection PyTypeChecker
-                await repository.create(RepositoryEntry(3, Car.classname, 1, Car(1, 1, 3, "blue").avro_bytes))
+                await repository.create(
+                    RepositoryEntry(3, Car.classname, 1, Car(3, "blue", id=1, version=1).avro_bytes)
+                )
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)

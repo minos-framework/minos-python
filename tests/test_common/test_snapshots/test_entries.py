@@ -61,7 +61,7 @@ class TestSnapshotEntry(unittest.TestCase):
         self.assertEqual(datetime(2020, 1, 10, 4, 25), entry.updated_at)
 
     def test_from_aggregate(self):
-        car = Car(1, 1, 3, "blue")
+        car = Car(3, "blue", id=1, version=1)
         entry = SnapshotEntry.from_aggregate(car)
         self.assertEqual(car.id, entry.aggregate_id)
         self.assertEqual(car.classname, entry.aggregate_name)
@@ -80,12 +80,12 @@ class TestSnapshotEntry(unittest.TestCase):
         self.assertIsInstance(hash(entry), int)
 
     def test_aggregate_cls(self):
-        car = Car(1, 1, 3, "blue")
+        car = Car(3, "blue", id=1, version=1)
         entry = SnapshotEntry.from_aggregate(car)
         self.assertEqual(Car, entry.aggregate_cls)
 
     def test_aggregate(self):
-        car = Car(1, 1, 3, "blue")
+        car = Car(3, "blue", id=1, version=1)
         entry = SnapshotEntry.from_aggregate(car)
         self.assertEqual(car, entry.aggregate)
 

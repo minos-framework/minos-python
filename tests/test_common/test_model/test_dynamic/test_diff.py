@@ -30,10 +30,12 @@ from tests.utils import (
 class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         async with FakeBroker() as broker, FakeRepository() as repository, FakeSnapshot() as snapshot:
-            self.car_one = Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
-            self.car_two = Car(1, 2, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot)
-            self.car_three = Car(1, 3, 5, "yellow", _broker=broker, _repository=repository, _snapshot=snapshot)
-            self.car_four = Car(2, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
+            self.car_one = Car(3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
+            self.car_two = Car(5, "red", id=1, version=2, _broker=broker, _repository=repository, _snapshot=snapshot)
+            self.car_three = Car(
+                5, "yellow", id=1, version=3, _broker=broker, _repository=repository, _snapshot=snapshot
+            )
+            self.car_four = Car(3, "blue", id=2, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
 
     def test_constructor(self):
         fields = {"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "red")}

@@ -25,9 +25,9 @@ from tests.utils import (
 class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         async with FakeBroker() as broker, FakeRepository() as repository, FakeSnapshot() as snapshot:
-            self.initial = Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
-            self.final = Car(1, 3, 5, "yellow", _broker=broker, _repository=repository, _snapshot=snapshot)
-            self.another = Car(3, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
+            self.initial = Car(3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
+            self.final = Car(5, "yellow", id=1, version=3, _broker=broker, _repository=repository, _snapshot=snapshot)
+            self.another = Car(3, "blue", id=3, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
 
     def test_diff(self):
         expected = AggregateDiff(

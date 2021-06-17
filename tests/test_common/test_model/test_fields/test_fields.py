@@ -128,10 +128,10 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
             field = ModelField(
                 "test",
                 list[ModelRef[Owner]],
-                [1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)],
+                [1, 2, Owner("Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)],
             )
             self.assertEqual(
-                [1, 2, Owner(3, 1, "Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)],
+                [1, 2, Owner("Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)],
                 field.value,
             )
 
@@ -305,7 +305,7 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
 
     async def test_value_model_ref_value(self):
         async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
-            user = Owner(0, 0, "Foo", "Bar", _broker=broker, _repository=repository, _snapshot=snapshot)
+            user = Owner("Foo", "Bar", _broker=broker, _repository=repository, _snapshot=snapshot)
             field = ModelField("test", ModelRef[Owner], user)
             self.assertEqual(user, field.value)
 

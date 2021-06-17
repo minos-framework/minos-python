@@ -62,9 +62,9 @@ class Aggregate(DeclarativeModel, Generic[T]):
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
-        id: int,
-        version: int,
         *args,
+        id: int = 0,
+        version: int = 0,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
@@ -168,7 +168,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
 
-        instance = cls(0, 0, *args, _broker=_broker, _repository=_repository, **kwargs)
+        instance = cls(*args, _broker=_broker, _repository=_repository, **kwargs)
 
         diff = AggregateDiff.from_aggregate(instance)
         entry = await instance._repository.create(diff)
@@ -294,4 +294,4 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        return cls(*args, difference.id, difference.version, **difference.fields_diff_values, **kwargs)
+        return cls(*args, id=difference.id, version=difference.version, **difference.fields_diff_values, **kwargs)

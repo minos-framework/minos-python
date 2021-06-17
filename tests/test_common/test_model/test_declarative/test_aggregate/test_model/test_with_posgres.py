@@ -55,11 +55,11 @@ class TestAggregateWithPostgres(PostgresAsyncTestCase):
         car = await Car.create(doors=3, color="blue")
 
         await car.update(color="red")
-        self.assertEqual(Car(1, 2, 3, "red"), car)
+        self.assertEqual(Car(3, "red", id=1, version=2), car)
         self.assertEqual(car, await Car.get_one(car.id))
 
         await car.update(doors=5)
-        self.assertEqual(Car(1, 3, 5, "red"), car)
+        self.assertEqual(Car(5, "red", id=1, version=3), car)
         self.assertEqual(car, await Car.get_one(car.id))
 
         await car.delete()
@@ -68,7 +68,7 @@ class TestAggregateWithPostgres(PostgresAsyncTestCase):
 
         car = await Car.create(doors=3, color="blue")
         await car.update(color="red")
-        self.assertEqual(Car(2, 2, 3, "red"), await Car.get_one(car.id))
+        self.assertEqual(Car(3, "red", id=2, version=2), await Car.get_one(car.id))
 
         await car.delete()
         with self.assertRaises(MinosRepositoryDeletedAggregateException):
