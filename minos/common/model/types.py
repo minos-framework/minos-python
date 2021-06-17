@@ -162,9 +162,9 @@ class ModelType(type):
 
     @property
     def model_cls(cls) -> Type[Model]:
-        """TODO
+        """Get the model class if defined or ``DataTransferObject`` otherwise.
 
-        :return:TODO
+        :return: A model class.
         """
         try:
             # noinspection PyTypeChecker
@@ -194,7 +194,7 @@ class ModelType(type):
             return cls.name
         return f"{cls.namespace}.{cls.name}"
 
-    def __eq__(self, other: Union[ModelType, Type[Model]]) -> bool:
+    def __eq__(cls, other: Union[ModelType, Type[Model]]) -> bool:
         if other == Generic:
             return False
 
@@ -203,20 +203,20 @@ class ModelType(type):
             FieldsDiff,
         )
 
-        if (isclass(other) and issubclass(self.model_cls, FieldsDiff) and issubclass(other, FieldsDiff)) or (
+        if (isclass(other) and issubclass(cls.model_cls, FieldsDiff) and issubclass(other, FieldsDiff)) or (
             hasattr(other, "model_cls") and issubclass(other.model_cls, FieldsDiff)
         ):
             return True
 
         if (
-            (isclass(other) and issubclass(self.model_cls, other))
+            (isclass(other) and issubclass(cls.model_cls, other))
             or (
                 hasattr(other, "model_cls")
-                and self.model_cls != other.model_cls
-                and issubclass(self.model_cls, DeclarativeModel)
-                and issubclass(self.model_cls, other.model_cls)
+                and cls.model_cls != other.model_cls
+                and issubclass(cls.model_cls, DeclarativeModel)
+                and issubclass(cls.model_cls, other.model_cls)
             )
-            or (hasattr(other, "model_type") and self == other.model_type)
+            or (hasattr(other, "model_type") and cls == other.model_type)
         ):
             return True
 
@@ -225,27 +225,25 @@ class ModelType(type):
         )
 
         if (
-            type(self) == type(other)
-            and self.name == other.name
-            and self.namespace == other.namespace
-            and set(self.type_hints.keys()) == set(other.type_hints.keys())
-            and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in self.type_hints.items())
+            type(cls) == type(other)
+            and cls.name == other.name
+            and cls.namespace == other.namespace
+            and set(cls.type_hints.keys()) == set(other.type_hints.keys())
+            and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
         ):
             return True
 
         return False
 
-    def __hash__(self) -> int:
-        return hash(tuple(self))
+    def __hash__(cls) -> int:
+        return hash(tuple(cls))
 
-    def __iter__(self) -> Iterable:
+    def __iter__(cls) -> Iterable:
         # noinspection PyRedundantParentheses
-        yield from (self.name, self.namespace, tuple(self.type_hints.items()))
+        yield from (cls.name, cls.namespace, tuple(cls.type_hints.items()))
 
-    def __repr__(self):
-        return (
-            f"{type(self).__name__}(name={self.name!r}, namespace={self.namespace!r}, type_hints={self.type_hints!r})"
-        )
+    def __repr__(cls):
+        return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
 
 
 BOOLEAN = "boolean"

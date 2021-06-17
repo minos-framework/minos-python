@@ -64,10 +64,9 @@ class DataTransferObject(DynamicModel):
 
         :return: An string object.
         """
-        name = self._name
-        if len(self._namespace) > 0:
-            name = f"{self._namespace}.{name}"
-        return name
+        if len(self._namespace) == 0:
+            return self._name
+        return f"{self._namespace}.{self._name}"
 
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
