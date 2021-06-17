@@ -81,6 +81,7 @@ from .model import (
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
+    BucketModel,
     Command,
     CommandReply,
     DataTransferObject,

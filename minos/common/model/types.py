@@ -196,7 +196,7 @@ class ModelType(type):
             cls._equal_with_model_type,
             cls._equal_with_model,
             cls._equal_with_inherited_model,
-            cls._equal_with_fields_diff,
+            cls._equal_with_bucket_model,
         )
         # noinspection PyArgumentList
         return any(condition(other) for condition in conditions)
@@ -223,12 +223,12 @@ class ModelType(type):
         )
 
     @staticmethod
-    def _equal_with_fields_diff(other: Any) -> bool:
+    def _equal_with_bucket_model(other: Any) -> bool:
         from .dynamic import (
-            FieldsDiff,
+            BucketModel,
         )
 
-        return hasattr(other, "model_cls") and issubclass(other.model_cls, FieldsDiff)
+        return hasattr(other, "model_cls") and issubclass(other.model_cls, BucketModel)
 
     def __hash__(cls) -> int:
         return hash(tuple(cls))

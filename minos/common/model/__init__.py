@@ -18,6 +18,7 @@ from .declarative import (
     MinosModel,
 )
 from .dynamic import (
+    BucketModel,
     DataTransferObject,
     DynamicModel,
     FieldsDiff,

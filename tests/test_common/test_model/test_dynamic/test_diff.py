@@ -28,7 +28,7 @@ from tests.utils import (
 )
 
 
-class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
+class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         async with FakeBroker() as broker, FakeRepository() as repository, FakeSnapshot() as snapshot:
             self.car_one = Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
@@ -95,9 +95,6 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         observed = FieldsDiff.simplify(first, second)
 
         self.assertEqual(expected, observed)
-
-    def test_empty(self):
-        self.assertEqual(FieldsDiff(dict()), FieldsDiff.empty())
 
     def test_avro_schema(self):
         expected = [
