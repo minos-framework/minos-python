@@ -11,6 +11,7 @@ from __future__ import (
 
 import logging
 from typing import (
+    Generic,
     Type,
     TypeVar,
     Union,
@@ -30,10 +31,10 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-class TypeHintComparator:
-    """TODO"""
+class TypeHintComparator(Generic[T]):
+    """Type Hint Comparator class."""
 
-    def __init__(self, first: Type, second: Type):
+    def __init__(self, first: Type[T], second: Type[T]):
         self._first = first
         self._second = second
 
@@ -45,7 +46,7 @@ class TypeHintComparator:
 
         return self._compare(self._first, self._second)
 
-    def _compare(self, first: Type, second: Type) -> bool:
+    def _compare(self, first: Type[T], second: Type[T]) -> bool:
         if get_origin(first) is ModelRef:
             first = Union[(*get_args(first), int)]
 
@@ -67,7 +68,7 @@ class TypeHintComparator:
 
         return False
 
-    def _compare_args(self, first: Type, second: Type) -> bool:
+    def _compare_args(self, first: Type[T], second: Type) -> bool:
         first_args, second_args = get_args(first), get_args(second)
         if len(first_args) != len(second_args):
             return False
