@@ -41,11 +41,10 @@ class DynamicModel(Model, Generic[T]):
 
     @classmethod
     def from_model_type(cls, model_type: ModelType, data: dict[str, Any]) -> T:
-        """Build a ``DataTransferObject`` from a ``ModelType`` and ``data``.
+        """Build a ``DynamicModel`` from a ``ModelType`` and ``data``.
 
         :param model_type: ``ModelType`` object containing the DTO's structure
         :param data: A dictionary containing the values to be stored on the DTO.
-        :return: A new ``DataTransferObject`` instance.
+        :return: A new ``DynamicModel`` instance.
         """
-        fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
-        return cls(fields)
+        return cls({k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()})

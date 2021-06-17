@@ -26,6 +26,7 @@ from ..fields import (
 )
 from ..types import (
     MissingSentinel,
+    ModelType,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,13 +45,14 @@ class DeclarativeModel(Model, t.Generic[T]):
         super().__init__()
         self._list_fields(*args, **kwargs)
 
+    # noinspection PyUnusedLocal
     @classmethod
-    def from_model_type(cls, model_type, data):
-        """Build a ``DataTransferObject`` from a ``ModelType`` and ``data``.
+    def from_model_type(cls, model_type: ModelType, data: dict[str, t.Any]):
+        """Build a ``DeclarativeModel`` from a ``ModelType`` and ``data``.
 
         :param model_type: ``ModelType`` object containing the DTO's structure
         :param data: A dictionary containing the values to be stored on the DTO.
-        :return: A new ``DataTransferObject`` instance.
+        :return: A new ``DeclarativeModel`` instance.
         """
         return cls(**data)
 
