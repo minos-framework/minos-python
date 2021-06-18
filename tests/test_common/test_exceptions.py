@@ -10,6 +10,8 @@ import unittest
 from minos.common import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
+    MinosBrokerException,
+    MinosBrokerNotProvidedException,
     MinosConfigDefaultAlreadySetException,
     MinosConfigException,
     MinosException,
@@ -22,7 +24,7 @@ from minos.common import (
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException,
+    MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
@@ -48,6 +50,15 @@ class TestExceptions(unittest.TestCase):
     def test_config_default_already_set(self):
         self.assertTrue(issubclass(MinosConfigDefaultAlreadySetException, MinosConfigException))
 
+    def test_broker(self):
+        self.assertTrue(issubclass(MinosBrokerException, MinosException))
+
+    def test_broker_not_set(self):
+        self.assertTrue(issubclass(MinosBrokerNotProvidedException, MinosBrokerException))
+
+    def test_repository(self):
+        self.assertTrue(issubclass(MinosRepositoryException, MinosException))
+
     def test_repository_aggregate_not_found(self):
         self.assertTrue(issubclass(MinosRepositoryAggregateNotFoundException, MinosRepositoryException))
 
@@ -63,8 +74,8 @@ class TestExceptions(unittest.TestCase):
     def test_repository_bad_action(self):
         self.assertTrue(issubclass(MinosRepositoryUnknownActionException, MinosRepositoryException))
 
-    def test_repository_non_set(self):
-        self.assertTrue(issubclass(MinosRepositoryNonProvidedException, MinosRepositoryException))
+    def test_repository_not_set(self):
+        self.assertTrue(issubclass(MinosRepositoryNotProvidedException, MinosRepositoryException))
 
     def test_model(self):
         self.assertTrue(issubclass(MinosModelException, MinosException))

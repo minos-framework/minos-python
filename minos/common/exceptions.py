@@ -5,10 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from typing import (
+    TYPE_CHECKING,
     Any,
     Type,
 )
+
+if TYPE_CHECKING:
+    from .model import (
+        Aggregate,
+        AggregateDiff,
+    )
 
 
 class MinosException(Exception):
@@ -47,6 +58,14 @@ class MinosConfigDefaultAlreadySetException(MinosConfigException):
     """Exception to be raised when some config is already set as default."""
 
 
+class MinosBrokerException(MinosException):
+    """Base broker exception"""
+
+
+class MinosBrokerNotProvidedException(MinosBrokerException):
+    """Exception to be raised when a broker is needed but none is set."""
+
+
 class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
@@ -71,8 +90,28 @@ class MinosRepositoryUnknownActionException(MinosRepositoryException):
     """Exception to be raised when some entry tries to perform an unknown action."""
 
 
-class MinosRepositoryNonProvidedException(MinosRepositoryException):
+class MinosRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a repository is needed but none is set."""
+
+
+class MinosSnapshotException(MinosException):
+    """Base snapshot exception."""
+
+
+class MinosSnapshotNotProvidedException(MinosSnapshotException):
+    """Exception to be raised when a snapshot is needed but none is set."""
+
+
+class MinosPreviousVersionSnapshotException(MinosSnapshotException):
+    """Exception to be raised when current version is newer than the one to be processed."""
+
+    def __init__(self, previous: Aggregate, diff: AggregateDiff):
+        self.previous = previous
+        self.diff = diff
+        super().__init__(
+            f"Version for {repr(previous.classname)} aggregate must be "
+            f"greater than {previous.version}. Obtained: {diff.version}"
+        )
 
 
 class MinosModelException(MinosException):

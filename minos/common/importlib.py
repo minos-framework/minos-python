@@ -27,13 +27,13 @@ def import_module(module_name: str) -> Callable:
     try:
         kallable = importlib.import_module(parts[0])
     except ImportError:
-        raise MinosImportException("Error importing Package: the module does not exist")
+        raise MinosImportException("Error importing {module_name!r}: the module does not exist")
 
     if len(parts) > 1:
         try:
             kallable = getattr(kallable, parts[1])
         except AttributeError:
-            raise MinosImportException("Error importing Package: the qualname does not exist.")
+            raise MinosImportException(f"Error importing {module_name!r}: the qualname does not exist.")
 
     return kallable
 

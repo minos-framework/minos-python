@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.0.17"
+__version__ = "0.1.0"
 
 from .configuration import (
     BROKER,
@@ -30,6 +30,8 @@ from .database import (
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
+    MinosBrokerException,
+    MinosBrokerNotProvidedException,
     MinosConfigDefaultAlreadySetException,
     MinosConfigException,
     MinosException,
@@ -45,15 +47,23 @@ from .exceptions import (
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException,
+    MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSnapshotException,
+    MinosSnapshotNotProvidedException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
 from .importlib import (
     classname,
     import_module,
+)
+from .injectors import (
+    DependencyInjector,
+)
+from .launchers import (
+    EntrypointLauncher,
 )
 from .messages import (
     Request,
@@ -65,40 +75,31 @@ from .meta import (
     self_or_classmethod,
 )
 from .model import (
-    ARRAY,
-    BOOLEAN,
-    BYTES,
-    CUSTOM_TYPES,
-    DATE,
-    DECIMAL,
-    DOUBLE,
-    ENUM,
-    FIXED,
-    FLOAT,
-    INT,
-    LONG,
-    MAP,
-    NULL,
-    PYTHON_ARRAY_TYPES,
-    PYTHON_IMMUTABLE_TYPES,
-    PYTHON_LIST_TYPES,
-    PYTHON_NULL_TYPE,
-    PYTHON_TYPE_TO_AVRO,
-    STRING,
-    TIME_MILLIS,
-    TIMESTAMP_MILLIS,
-    UUID,
     Aggregate,
+    AggregateDiff,
+    AvroDataDecoder,
+    AvroDataEncoder,
+    AvroSchemaDecoder,
+    AvroSchemaEncoder,
+    BucketModel,
     Command,
     CommandReply,
+    DataTransferObject,
     Decimal,
+    DeclarativeModel,
+    DynamicModel,
     Enum,
     Event,
+    FieldsDiff,
     Fixed,
     MinosModel,
     MissingSentinel,
+    Model,
     ModelField,
     ModelRef,
+    ModelType,
+    TypeHintBuilder,
+    TypeHintComparator,
 )
 from .networks import (
     MinosBroker,
@@ -111,17 +112,28 @@ from .protocol import (
     MinosJsonBinaryProtocol,
 )
 from .repository import (
-    MinosInMemoryRepository,
+    InMemoryRepository,
     MinosRepository,
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
-    PostgreSqlMinosRepository,
+    PostgreSqlRepository,
+    RepositoryAction,
+    RepositoryEntry,
 )
 from .saga import (
     MinosSagaManager,
 )
+from .services import (
+    Service,
+)
 from .setup import (
     MinosSetup,
+)
+from .snapshot import (
+    InMemorySnapshot,
+    MinosSnapshot,
+    PostgreSqlSnapshot,
+    PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotSetup,
+    SnapshotEntry,
 )
 from .storage import (
     MinosStorage,

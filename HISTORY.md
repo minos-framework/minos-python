@@ -84,3 +84,10 @@ History
 * Removed old module messages
 * Added abstract classes Response and Request for Microservice Controller
 * Bugfix
+
+0.1.0 (2021-07-18)
+--------------------
+
+* Enrich exception messages
+* Classes refactors
+* Added support for DTO Model class

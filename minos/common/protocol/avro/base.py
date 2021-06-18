@@ -57,14 +57,14 @@ class MinosAvroProtocol(MinosBinaryProtocol):
             )
 
     @staticmethod
-    def _parse_schema(schema: list[dict[str, Any]]) -> bytes:
+    def _parse_schema(schema: list[dict[str, Any]]) -> dict[str, Any]:
         named_schemas = {}
         for item in schema[:-1]:
             parse_schema(item, named_schemas)
         return parse_schema(schema[-1], named_schemas, expand=True)
 
     @staticmethod
-    def _write_data(value: list[dict[str, Any]], schema: bytes):
+    def _write_data(value: list[dict[str, Any]], schema: dict[str, Any]):
         with io.BytesIO() as file:
             writer(file, schema, value)
             file.seek(0)
@@ -92,3 +92,23 @@ class MinosAvroProtocol(MinosBinaryProtocol):
             return ans[0]
 
         return ans
+
+    @classmethod
+    def decode_schema(cls, data: bytes, *args, **kwargs) -> Union[dict[str, Any], list[dict[str, Any]]]:
+        """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
+
+        :param data: A bytes object.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A tuple or a list of tuples.
+        """
+
+        try:
+            with io.BytesIO(data) as file:
+                r = reader(file)
+                schema = r.writer_schema
+
+        except Exception as exc:
+            raise MinosProtocolException(f"Error getting avro schema: {exc}")
+
+        return schema
