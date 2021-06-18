@@ -154,7 +154,7 @@ class SagaExecution(object):
         self.status = SagaStatus.Finished
         return self.context
 
-    async def _execute_one(self, execution_step, *args, **kwargs):
+    async def _execute_one(self, execution_step: SagaExecutionStep, *args, **kwargs) -> NoReturn:
         try:
             self.context = await execution_step.execute(
                 self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs

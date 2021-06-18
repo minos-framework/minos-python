@@ -6,9 +6,6 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import inspect
-from abc import (
-    ABC,
-)
 from typing import (
     Any,
     Callable,
@@ -17,18 +14,15 @@ from typing import (
 from ...definitions import (
     SagaStepOperation,
 )
-from ..context import (
-    SagaContext,
-)
 
 
-class LocalExecutor(ABC):
+class LocalExecutor:
     """Local executor class."""
 
     def __init__(self, *args, **kwargs):
         pass
 
-    async def exec_one(self, operation: SagaStepOperation, *args, **kwargs) -> Any:
+    async def exec_operation(self, operation: SagaStepOperation, *args, **kwargs) -> Any:
         """Execute the given operation locally.
 
         :param operation: The operation to be executed.
@@ -37,10 +31,17 @@ class LocalExecutor(ABC):
         :return: The execution response.
         """
 
-        return await self._exec_function(operation.callback, *args, **kwargs)
+        return await self.exec_function(operation.callback, *args, **kwargs)
 
     @staticmethod
-    async def _exec_function(func: Callable, *args, **kwargs) -> SagaContext:
+    async def exec_function(func: Callable, *args, **kwargs) -> Any:
+        """Execute a function.
+
+        :param func: Function to be executed.
+        :param args: Additional positional arguments to the function.
+        :param kwargs: Additional named arguments to the function.
+        :return: The ``func`` result.
+        """
         result = func(*args, **kwargs)
         if inspect.isawaitable(result):
             result = await result

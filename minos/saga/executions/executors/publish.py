@@ -55,7 +55,7 @@ class PublishExecutor(LocalExecutor):
         self.definition_name = definition_name
         self.execution_uuid = execution_uuid
 
-    async def exec(self, operation: SagaStepOperation, context: SagaContext, has_reply: bool) -> SagaContext:
+    async def exec(self, operation: SagaStepOperation, context: SagaContext, has_reply: bool = False) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
 
         :param operation: Operation to be executed.
@@ -68,7 +68,7 @@ class PublishExecutor(LocalExecutor):
             return context
 
         try:
-            request = await self.exec_one(operation, context)
+            request = await self.exec_operation(operation, context)
             await self._publish(operation, request, has_reply)
         except Exception as exc:
             raise MinosSagaFailedExecutionStepException(exc)
@@ -76,7 +76,7 @@ class PublishExecutor(LocalExecutor):
         return context
 
     async def _publish(self, operation: SagaStepOperation, request: MinosModel, has_reply: bool) -> NoReturn:
-        await self._exec_function(
+        await self.exec_function(
             self.broker.send_one,
             topic=operation.name,
             item=request,

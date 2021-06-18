@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from typing import (
+    Optional,
+)
 
 from minos.common import (
     CommandReply,
@@ -30,7 +33,7 @@ class OnReplyExecutor(LocalExecutor):
 
     # noinspection PyUnusedLocal
     async def exec(
-        self, operation: SagaStepOperation, context: SagaContext, reply: CommandReply, *args, **kwargs
+        self, operation: SagaStepOperation, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
     ) -> SagaContext:
         """Execute the on reply operation.
 
@@ -52,7 +55,7 @@ class OnReplyExecutor(LocalExecutor):
             value = value[0]
 
         try:
-            response = await super().exec_one(operation, value)
+            response = await self.exec_operation(operation, value)
             context[operation.name] = response
         except Exception as exc:
             raise MinosSagaFailedExecutionStepException(exc)
