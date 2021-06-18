@@ -16,10 +16,6 @@ from aiomisc.service.aiohttp import (
     AIOHTTPService,
 )
 
-from minos.common import (
-    MinosConfig,
-)
-
 from .builders import (
     RestBuilder,
 )
@@ -33,7 +29,7 @@ class RestService(AIOHTTPService):
 
     """
 
-    def __init__(self, config: MinosConfig, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(port=8080, **kwargs)
 
     @cached_property
