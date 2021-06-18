@@ -118,3 +118,7 @@ class MinosSagaPausedExecutionStepException(MinosSagaExecutionStepException):
 
 class MinosSagaRollbackExecutionStepException(MinosSagaExecutionStepException):
     """Exception to be raised when a saga execution step failed while performing a rollback."""
+
+
+class MinosSagaAlreadyCommittedException(MinosSagaException):
+    """Exception to be raised when trying to modifying an already committed saga."""

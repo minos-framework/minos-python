@@ -200,15 +200,17 @@ class SagaStep(object):
             raise MinosSagaNotDefinedException()
         return self.saga.step()
 
-    def commit(self) -> Saga:
+    def commit(self, *args, **kwargs) -> Saga:
         """Commit the current ``SagaStep`` on the ``Saga``.
 
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: A ``Saga`` instance.
         """
         self.validate()
         if self.saga is None:
             raise MinosSagaNotDefinedException()
-        return self.saga
+        return self.saga.commit(*args, **kwargs)
 
     def validate(self) -> NoReturn:
         """Performs a validation about the structure of the defined ``SagaStep``.

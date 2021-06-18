@@ -12,6 +12,7 @@ from __future__ import (
 
 from typing import (
     Any,
+    Callable,
     Iterable,
     Optional,
     Union,
@@ -19,9 +20,11 @@ from typing import (
 
 from ..exceptions import (
     MinosAlreadyOnSagaException,
+    MinosSagaAlreadyCommittedException,
 )
 from .step import (
     SagaStep,
+    identity_fn,
 )
 
 
@@ -31,12 +34,13 @@ class Saga(object):
     The purpose of this class is to define a sequence of operations among microservices.
     """
 
-    def __init__(self, name: str, steps: list[SagaStep] = None):
+    def __init__(self, name: str, steps: list[SagaStep] = None, commit_callback: Optional[Callable] = None):
         if steps is None:
             steps = list()
 
         self.name = name
         self.steps = steps
+        self.commit_callback = commit_callback
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
@@ -62,6 +66,11 @@ class Saga(object):
 
         :return: A ``SagaStep`` instance.
         """
+        if self.already_committed:
+            raise MinosSagaAlreadyCommittedException(
+                "It is not possible to add more steps to an already committed saga."
+            )
+
         if step is None:
             step = SagaStep(self)
         else:
@@ -91,3 +100,29 @@ class Saga(object):
             self.name,
             self.steps,
         )
+
+    # noinspection PyUnusedLocal
+    def commit(self, callback: Optional[Callable] = None, *args, **kwargs) -> Saga:
+        """Commit the instance to be ready for execution.
+
+        :param callback: Optional function to be called at the end of execution.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A ``Saga`` instance.
+        """
+        if self.already_committed:
+            raise MinosSagaAlreadyCommittedException("It is not possible to commit a saga multiple times.")
+
+        if callback is None:
+            callback = identity_fn
+
+        self.commit_callback = callback
+        return self
+
+    @property
+    def already_committed(self) -> bool:
+        """Check if the instance is already committed.
+
+        :return: A boolean value.
+        """
+        return self.commit_callback is not None

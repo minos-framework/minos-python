@@ -18,6 +18,7 @@ from .exceptions import (
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
+    MinosSagaAlreadyCommittedException,
     MinosSagaEmptyStepException,
     MinosSagaException,
     MinosSagaExecutionException,

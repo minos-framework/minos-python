@@ -9,6 +9,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 from unittest.mock import (
     MagicMock,
+    call,
 )
 
 from minos.saga import (
@@ -68,6 +69,22 @@ class TestSagaStep(unittest.TestCase):
     def test_step_raises_not_saga(self):
         with self.assertRaises(MinosSagaNotDefinedException):
             SagaStep().invoke_participant("FooAdded", foo_fn).step()
+
+    def test_commit(self):
+        saga = Saga("SagaTest")
+        step = SagaStep(saga).invoke_participant("FoodAdd", foo_fn)
+        mock = MagicMock(return_value=True)
+        saga.commit = mock
+        step.commit(foo_fn)
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(foo_fn), mock.call_args)
+
+    def test_commit_validates(self):
+        step = SagaStep(Saga("SagaTest"))
+        mock = MagicMock(return_value=True)
+        step.validate = mock
+        step.commit()
+        self.assertEqual(1, mock.call_count)
 
     def test_submit(self):
         expected = Saga("SagaTest")

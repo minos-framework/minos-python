@@ -13,10 +13,12 @@ from shutil import (
 
 from minos.saga import (
     MinosAlreadyOnSagaException,
+    MinosSagaAlreadyCommittedException,
     MinosSagaException,
     Saga,
     SagaExecution,
     SagaStep,
+    identity_fn,
 )
 from tests.callbacks import (
     create_ticket_on_reply_callback,
@@ -33,6 +35,37 @@ class TestSaga(unittest.TestCase):
     # noinspection PyMissingOrEmptyDocstring
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
+
+    def test_commit(self):
+        saga = Saga("AddOrder")
+        observed = saga.commit()
+        self.assertEqual(saga, observed)
+        self.assertEqual(identity_fn, saga.commit_callback)
+
+    def test_commit_define_callback(self):
+        saga = Saga("AddOrder")
+        observed = saga.commit(foo_fn)
+        self.assertEqual(saga, observed)
+        self.assertEqual(foo_fn, saga.commit_callback)
+
+    def test_commit_raises(self):
+        saga = Saga("AddOrder").commit()
+        with self.assertRaises(MinosSagaAlreadyCommittedException):
+            saga.commit()
+
+    def test_already_committed_true(self):
+        saga = Saga("AddOrder")
+        saga.commit_callback = identity_fn
+        self.assertTrue(saga.already_committed)
+
+    def test_already_committed_false(self):
+        saga = Saga("AddOrder")
+        self.assertFalse(saga.already_committed)
+
+    def test_step_raises(self):
+        saga = Saga("AddOrder").commit()
+        with self.assertRaises(MinosSagaAlreadyCommittedException):
+            saga.step()
 
     def test_empty_step_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:
