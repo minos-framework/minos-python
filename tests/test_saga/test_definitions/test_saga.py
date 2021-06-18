@@ -53,14 +53,14 @@ class TestSaga(unittest.TestCase):
         with self.assertRaises(MinosSagaAlreadyCommittedException):
             saga.commit()
 
-    def test_already_committed_true(self):
+    def test_committed_true(self):
         saga = Saga("AddOrder")
         saga.commit_callback = identity_fn
-        self.assertTrue(saga.already_committed)
+        self.assertTrue(saga.committed)
 
-    def test_already_committed_false(self):
+    def test_committed_false(self):
         saga = Saga("AddOrder")
-        self.assertFalse(saga.already_committed)
+        self.assertFalse(saga.committed)
 
     def test_step_raises(self):
         saga = Saga("AddOrder").commit()
@@ -140,6 +140,7 @@ class TestSaga(unittest.TestCase):
         )
         expected = {
             "name": "CreateShipment",
+            "commit_callback": "minos.saga.definitions.step.identity_fn",
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateOrder"},
@@ -163,6 +164,7 @@ class TestSaga(unittest.TestCase):
     def test_from_raw(self):
         raw = {
             "name": "CreateShipment",
+            "commit_callback": "minos.saga.definitions.step.identity_fn",
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateOrder"},

@@ -18,6 +18,11 @@ from typing import (
     Union,
 )
 
+from minos.common import (
+    classname,
+    import_module,
+)
+
 from ..exceptions import (
     MinosAlreadyOnSagaException,
     MinosSagaAlreadyCommittedException,
@@ -54,11 +59,15 @@ class Saga(object):
             return raw
 
         current = raw | kwargs
-        steps = (SagaStep.from_raw(step) for step in current.pop("steps"))
 
-        instance = cls(**current)
-        for step in steps:
-            instance.step(step)
+        commit_callback = current.pop("commit_callback", None)
+        if commit_callback is not None:
+            commit_callback = import_module(commit_callback)
+
+        steps = [SagaStep.from_raw(step) for step in current.pop("steps")]
+
+        instance = cls(steps=steps, commit_callback=commit_callback, **current)
+
         return instance
 
     def step(self, step: Optional[SagaStep] = None) -> SagaStep:
@@ -66,7 +75,7 @@ class Saga(object):
 
         :return: A ``SagaStep`` instance.
         """
-        if self.already_committed:
+        if self.committed:
             raise MinosSagaAlreadyCommittedException(
                 "It is not possible to add more steps to an already committed saga."
             )
@@ -90,6 +99,7 @@ class Saga(object):
         return {
             "name": self.name,
             "steps": [step.raw for step in self.steps],
+            "commit_callback": None if self.commit_callback is None else classname(self.commit_callback),
         }
 
     def __eq__(self, other: SagaStep) -> bool:
@@ -99,6 +109,7 @@ class Saga(object):
         yield from (
             self.name,
             self.steps,
+            self.commit_callback,
         )
 
     # noinspection PyUnusedLocal
@@ -110,7 +121,7 @@ class Saga(object):
         :param kwargs: Additional named arguments.
         :return: A ``Saga`` instance.
         """
-        if self.already_committed:
+        if self.committed:
             raise MinosSagaAlreadyCommittedException("It is not possible to commit a saga multiple times.")
 
         if callback is None:
@@ -120,7 +131,7 @@ class Saga(object):
         return self
 
     @property
-    def already_committed(self) -> bool:
+    def committed(self) -> bool:
         """Check if the instance is already committed.
 
         :return: A boolean value.

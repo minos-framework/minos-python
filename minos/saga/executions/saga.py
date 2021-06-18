@@ -32,6 +32,7 @@ from ..definitions import (
 from ..exceptions import (
     MinosSagaExecutionStepException,
     MinosSagaFailedExecutionStepException,
+    MinosSagaNotCommittedException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionException,
 )
@@ -64,6 +65,9 @@ class SagaExecution(object):
         *args,
         **kwargs,
     ):
+        if not definition.committed:
+            raise MinosSagaNotCommittedException("The definition must be committed before executing it.")
+
         if steps is None:
             steps = list()
 

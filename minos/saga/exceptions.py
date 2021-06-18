@@ -93,6 +93,10 @@ class MinosSagaRollbackExecutionException(MinosSagaExecutionException):
     """Exception to be raised when a saga exception cannot be rollbacked"""
 
 
+class MinosSagaNotCommittedException(MinosSagaExecutionException):
+    """Exception to be raised when trying to exec a  not committed saga."""
+
+
 class MinosSagaExecutionStepException(MinosSagaException):
     """Base exception for saga execution step."""
 

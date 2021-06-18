@@ -93,6 +93,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext().avro_str,
             "definition": {
                 "name": "OrdersAdd",
+                "commit_callback": "minos.saga.definitions.step.identity_fn",
                 "steps": [
                     {
                         "invoke_participant": {
@@ -135,6 +136,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext().avro_str,
             "definition": {
                 "name": "OrdersAdd",
+                "commit_callback": "minos.saga.definitions.step.identity_fn",
                 "steps": [
                     {
                         "invoke_participant": {
@@ -188,6 +190,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext(order1=Foo("hola")).avro_str,
             "definition": {
                 "name": "OrdersAdd",
+                "commit_callback": "minos.saga.definitions.step.identity_fn",
                 "steps": [
                     {
                         "invoke_participant": {
