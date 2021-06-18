@@ -11,9 +11,6 @@ from __future__ import (
 
 import logging
 import typing as t
-from abc import (
-    abstractmethod,
-)
 from base64 import (
     b64decode,
     b64encode,
@@ -36,6 +33,8 @@ from ..protocol import (
     MinosAvroProtocol,
 )
 from .fields import (
+    AvroDataDecoder,
+    AvroSchemaDecoder,
     AvroSchemaEncoder,
     ModelField,
 )
@@ -83,13 +82,15 @@ class Model(t.Generic[T]):
 
     _fields: dict[str, ModelField] = {}
 
-    def __init__(self, fields: dict[str, ModelField] = None):
+    def __init__(self, fields: t.Union[t.Iterable[ModelField], dict[str, ModelField]] = None):
         """Class constructor.
 
         :param fields: Dictionary that contains the ``ModelField`` instances of the model indexed by name.
         """
         if fields is None:
             fields = dict()
+        if not isinstance(fields, dict):
+            fields = {field.name: field for field in fields}
         self._fields = fields
 
     @classmethod
@@ -103,13 +104,34 @@ class Model(t.Generic[T]):
         return cls.from_avro_bytes(raw, **kwargs)
 
     @classmethod
-    @abstractmethod
     def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
         :return: A single instance or a sequence of instances.
         """
+        schema = MinosAvroProtocol.decode_schema(raw)
+        decoded = MinosAvroProtocol.decode(raw)
+
+        # FIXME: Extend implementation of the `AvroDataDecoder` to avoid this fix.
+        schema["name"] = "{}.fake.{}".format(*schema["name"].rsplit(".", 1))
+
+        if isinstance(decoded, list):
+            return [cls.from_avro(schema, d | kwargs) for d in decoded]
+        return cls.from_avro(schema, decoded | kwargs)
+
+    @classmethod
+    def from_avro(cls, schema: t.Union[dict[str, t.Any], list[dict[str, t.Any]]], data: dict[str, t.Any]) -> T:
+        """Build a new instance from the ``avro`` schema and data.
+
+        :param schema: The avro schema of the model.
+        :param data: The avro data of the model.
+        :return: A new ``DynamicModel`` instance.
+        """
+        if isinstance(schema, list):
+            schema = schema[-1]
+        model_type: ModelType = AvroSchemaDecoder(schema).build()
+        return AvroDataDecoder("", model_type).build(data)
 
     @classmethod
     def to_avro_str(cls, models: list[T]) -> str:
@@ -191,9 +213,9 @@ class Model(t.Generic[T]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    @abstractmethod
     def _type_hints(self_or_cls) -> dict[str, t.Any]:
-        pass
+        if not isinstance(self_or_cls, type):
+            yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
 
     # noinspection PyMethodParameters
     @property_or_classproperty
@@ -202,29 +224,8 @@ class Model(t.Generic[T]):
 
         :return: A dictionary object.
         """
-
-        fields = [
-            AvroSchemaEncoder(field_name, field_type).build() for field_name, field_type in self_or_cls._type_hints()
-        ]
-        schema = {
-            "name": self_or_cls._avro_name,
-            "type": "record",
-            "fields": fields,
-        }
-        if self_or_cls._avro_namespace is not None:
-            schema["namespace"] = self_or_cls._avro_namespace
-
-        return [schema]
-
-    # noinspection PyMethodParameters
-    @classproperty
-    def _avro_name(cls) -> str:
-        return cls.__name__
-
-    # noinspection PyMethodParameters
-    @classproperty
-    def _avro_namespace(cls) -> t.Optional[str]:
-        return cls.__module__
+        # noinspection PyTypeChecker
+        return [AvroSchemaEncoder("", self_or_cls.model_type).build()["type"]]
 
     @property
     def avro_data(self) -> dict[str, t.Any]:

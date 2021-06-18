@@ -32,6 +32,9 @@ from .avro_schema_decoder import (
 from .avro_schema_encoder import (
     AvroSchemaEncoder,
 )
+from .type_hint_builder import (
+    TypeHintBuilder,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +67,14 @@ class ModelField:
         return self._name
 
     @property
-    def type(self) -> t.Type:
+    def type(self) -> t.Type[T]:
         """Type getter."""
         return self._type
+
+    @property
+    def real_type(self):
+        """Real Type getter."""
+        return TypeHintBuilder(self.value, self.type).build()
 
     @property
     def parser(self) -> t.Optional[t.Callable[[t.Any], T]]:
@@ -162,7 +170,18 @@ class ModelField:
         return cls(schema["name"], type_val, value)
 
     def __eq__(self, other: "ModelField") -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
+        from .type_hint_comparator import (
+            TypeHintComparator,
+        )
+
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.value == other.value
+            and self._parser_function == other._parser_function
+            and self._validator_function == other._validator_function
+            and TypeHintComparator(self.type, other.type).match()
+        )
 
     def __hash__(self) -> int:
         return hash(tuple(self))

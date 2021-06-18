@@ -88,6 +88,26 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         observed = AggregateDiff.simplify(one, two, three)
         self.assertEqual(expected, observed)
 
+    def test_avro_serialization(self):
+        initial = AggregateDiff(
+            id=1,
+            name=Car.classname,
+            version=1,
+            fields_diff=FieldsDiff(
+                {
+                    "doors": ModelField("doors", int, 3),
+                    "color": ModelField("color", str, "blue"),
+                    "owner": ModelField("owner", Optional[list[ModelRef[Owner]]], None),
+                }
+            ),
+        )
+
+        serialized = initial.avro_bytes
+        self.assertIsInstance(serialized, bytes)
+
+        deserialized = AggregateDiff.from_avro_bytes(serialized)
+        self.assertEqual(initial, deserialized)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -221,25 +221,21 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                 "fields": [
                     {
                         "name": "first",
-                        "type": [
-                            {
-                                "fields": [{"name": "text", "type": "string"}],
-                                "name": "Foo",
-                                "namespace": "tests.model_classes.first",
-                                "type": "record",
-                            }
-                        ],
+                        "type": {
+                            "fields": [{"name": "text", "type": "string"}],
+                            "name": "Foo",
+                            "namespace": "tests.model_classes.first",
+                            "type": "record",
+                        },
                     },
                     {
                         "name": "second",
-                        "type": [
-                            {
-                                "fields": [{"name": "text", "type": "string"}],
-                                "name": "Foo",
-                                "namespace": "tests.model_classes.second",
-                                "type": "record",
-                            }
-                        ],
+                        "type": {
+                            "fields": [{"name": "text", "type": "string"}],
+                            "name": "Foo",
+                            "namespace": "tests.model_classes.second",
+                            "type": "record",
+                        },
                     },
                 ],
                 "name": "Bar",

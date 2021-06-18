@@ -18,6 +18,7 @@ from .declarative import (
     MinosModel,
 )
 from .dynamic import (
+    BucketModel,
     DataTransferObject,
     DynamicModel,
     FieldsDiff,
@@ -28,6 +29,8 @@ from .fields import (
     AvroSchemaDecoder,
     AvroSchemaEncoder,
     ModelField,
+    TypeHintBuilder,
+    TypeHintComparator,
 )
 from .types import (
     Decimal,

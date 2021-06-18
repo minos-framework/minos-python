@@ -15,8 +15,8 @@ from typing import (
     Optional,
 )
 
-from .abc import (
-    DynamicModel,
+from .bucket import (
+    BucketModel,
 )
 
 if TYPE_CHECKING:
@@ -32,7 +32,7 @@ def _diff(a: dict, b: dict) -> dict:
     return dict(d)
 
 
-class FieldsDiff(DynamicModel):
+class FieldsDiff(BucketModel):
     """Aggregate Difference class."""
 
     @classmethod
@@ -82,11 +82,3 @@ class FieldsDiff(DynamicModel):
         for another in args[1:]:
             current._fields |= another._fields
         return current
-
-    @classmethod
-    def empty(cls) -> FieldsDiff:
-        """Build an empty ``FieldsDiff`` instance.
-
-        :return: A ``FieldsDiff`` instance.
-        """
-        return cls(dict())
