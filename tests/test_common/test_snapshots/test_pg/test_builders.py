@@ -97,8 +97,8 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(Car(2, 2, 3, "blue")),
-            SnapshotEntry.from_aggregate(Car(3, 1, 3, "blue")),
+            SnapshotEntry.from_aggregate(Car(3, "blue", id=2, version=2)),
+            SnapshotEntry.from_aggregate(Car(3, "blue", id=3, version=1)),
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 
@@ -136,7 +136,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 observed = [v async for v in snapshot.select()]
 
-        expected = [SnapshotEntry(1, aggregate_name, 3, Car(1, 1, 3, "blue").avro_bytes)]
+        expected = [SnapshotEntry(1, aggregate_name, 3, Car(3, "blue", id=1, version=1).avro_bytes)]
         self._assert_equal_snapshot_entries(expected, observed)
 
     def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):

@@ -27,7 +27,9 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
     async def test_create(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
-            self.assertEqual(Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot), car)
+            self.assertEqual(
+                Car(3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot), car
+            )
 
     async def test_create_raises(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
@@ -74,17 +76,23 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
 
             await car.update(color="red")
-            self.assertEqual(Car(1, 2, 3, "red", _broker=broker, _repository=repository, _snapshot=snapshot), car)
+            self.assertEqual(
+                Car(3, "red", id=1, version=2, _broker=broker, _repository=repository, _snapshot=snapshot), car
+            )
             self.assertEqual(car, await Car.get_one(car.id, _broker=broker, _repository=repository, _snapshot=snapshot))
 
             await car.update(doors=5)
-            self.assertEqual(Car(1, 3, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot), car)
+            self.assertEqual(
+                Car(5, "red", id=1, version=3, _broker=broker, _repository=repository, _snapshot=snapshot), car
+            )
             self.assertEqual(car, await Car.get_one(car.id, _broker=broker, _repository=repository, _snapshot=snapshot))
 
     async def test_update_raises(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
-                await Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot).update(version=1)
+                await Car(
+                    3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot
+                ).update(version=1)
 
     async def test_refresh(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
@@ -93,13 +101,17 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             await car2.update(color="red", _broker=broker, _repository=repository, _snapshot=snapshot)
             await car2.update(doors=5, _broker=broker, _repository=repository, _snapshot=snapshot)
 
-            self.assertEqual(Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot), car)
+            self.assertEqual(
+                Car(3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot), car
+            )
             await car.refresh()
-            self.assertEqual(Car(1, 3, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot), car)
+            self.assertEqual(
+                Car(5, "red", id=1, version=3, _broker=broker, _repository=repository, _snapshot=snapshot), car
+            )
 
     async def test_save_create(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
-            car = Car(0, 0, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
+            car = Car(3, "blue", id=0, version=0, _broker=broker, _repository=repository, _snapshot=snapshot)
             car.color = "red"
             car.doors = 5
 
@@ -107,7 +119,9 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 await car.refresh()
 
             await car.save()
-            self.assertEqual(Car(1, 1, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot), car)
+            self.assertEqual(
+                Car(5, "red", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot), car
+            )
 
     async def test_save_update(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
@@ -116,23 +130,25 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             car.doors = 5
 
             self.assertEqual(
-                Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot),
+                Car(3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot),
                 await Car.get_one(car.id, _broker=broker, _repository=repository, _snapshot=snapshot),
             )
 
             await car.save()
-            self.assertEqual(Car(1, 2, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot), car)
             self.assertEqual(
-                Car(1, 2, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot),
+                Car(5, "red", id=1, version=2, _broker=broker, _repository=repository, _snapshot=snapshot), car
+            )
+            self.assertEqual(
+                Car(5, "red", id=1, version=2, _broker=broker, _repository=repository, _snapshot=snapshot),
                 await Car.get_one(car.id, _broker=broker, _repository=repository, _snapshot=snapshot),
             )
 
     async def test_save_raises(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
             with self.assertRaises(MinosRepositoryManuallySetAggregateIdException):
-                await Car(1, 0, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot).save()
+                await Car(3, "blue", id=1, version=0, _broker=broker, _repository=repository, _snapshot=snapshot).save()
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
-                await Car(0, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot).save()
+                await Car(3, "blue", id=0, version=1, _broker=broker, _repository=repository, _snapshot=snapshot).save()
 
     async def test_delete(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:

@@ -44,30 +44,6 @@ class TestAggregateNotProvided(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(MinosSnapshotNotProvidedException):
                 await Car.get_one(1, _broker=broker, _repository=repository)
 
-    async def test_update_raises(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
-            await Car(1, 1, 3, "blue").update(doors=1)
-
-        async with FakeBroker() as broker:
-            with self.assertRaises(MinosRepositoryNotProvidedException):
-                await Car(1, 1, 3, "blue", _broker=broker).update(doors=1)
-
-        async with FakeBroker() as broker, FakeRepository() as repository:
-            with self.assertRaises(MinosSnapshotNotProvidedException):
-                await Car(1, 1, 3, "blue", _broker=broker, _repository=repository).update(doors=1)
-
-    async def test_delete_raises(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
-            await Car(1, 1, 3, "blue").delete()
-
-        async with FakeBroker() as broker:
-            with self.assertRaises(MinosRepositoryNotProvidedException):
-                await Car(1, 1, 3, "blue", _broker=broker).delete()
-
-        async with FakeBroker() as broker, FakeRepository() as repository:
-            with self.assertRaises(MinosSnapshotNotProvidedException):
-                await Car(1, 1, 3, "blue", _broker=broker, _repository=repository).delete()
-
 
 if __name__ == "__main__":
     unittest.main()
