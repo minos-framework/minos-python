@@ -12,33 +12,12 @@ from minos.common import (
 )
 from minos.networks import (
     MinosNetworkException,
-    MinosPreviousVersionSnapshotException,
-    MinosSnapshotException,
-)
-from tests.utils import (
-    Bar,
 )
 
 
 class TestExceptions(unittest.TestCase):
     def test_type(self):
         self.assertTrue(issubclass(MinosNetworkException, MinosException))
-
-    def test_snapshot(self):
-        self.assertTrue(issubclass(MinosSnapshotException, MinosNetworkException))
-
-    def test_snapshot_previous_version(self):
-        self.assertTrue(issubclass(MinosPreviousVersionSnapshotException, MinosSnapshotException))
-
-    def test_snapshot_previous_version_repr(self):
-        previous = Bar(1, 2, "blue")
-        new = Bar(1, 1, "blue")
-        exception = MinosPreviousVersionSnapshotException(previous, new)
-        expected = (
-            "MinosPreviousVersionSnapshotException(message=\"Version for 'tests.utils.Bar' "
-            'aggregate must be greater than 2. Obtained: 1")'
-        )
-        self.assertEqual(expected, repr(exception))
 
 
 if __name__ == "__main__":
