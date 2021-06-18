@@ -24,6 +24,8 @@ from .exceptions import (
     MinosSagaExecutionException,
     MinosSagaExecutionNotFoundException,
     MinosSagaExecutionStepException,
+    MinosSagaFailedCommitCallbackException,
+    MinosSagaFailedExecutionException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotCommittedException,
     MinosSagaNotDefinedException,

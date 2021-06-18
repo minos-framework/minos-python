@@ -74,3 +74,12 @@ def e_callback(context: SagaContext) -> MinosModel:
 def f_callback(context: SagaContext) -> MinosModel:
     treated_response = "async create_ticket_on_reply_callback response!!!!"
     return Foo(treated_response)
+
+
+def commit_callback(context: SagaContext) -> SagaContext:
+    context["status"] = "Finished!"
+    return context
+
+
+def commit_callback_raises(context: SagaContext) -> SagaContext:
+    raise ValueError()

@@ -32,6 +32,7 @@ from ..definitions import (
 from ..exceptions import (
     MinosSagaExecutionStepException,
     MinosSagaExecutorException,
+    MinosSagaFailedCommitCallbackException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotCommittedException,
     MinosSagaPausedExecutionStepException,
@@ -181,7 +182,7 @@ class SagaExecution(object):
         except MinosSagaExecutorException as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
-            raise exc
+            raise MinosSagaFailedCommitCallbackException(exc.exception)
 
     async def rollback(self, *args, **kwargs) -> NoReturn:
         """Revert the invoke participant operation with a with compensation operation.

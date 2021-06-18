@@ -97,18 +97,22 @@ class MinosSagaNotCommittedException(MinosSagaExecutionException):
     """Exception to be raised when trying to exec a  not committed saga."""
 
 
-class MinosSagaExecutionStepException(MinosSagaException):
-    """Base exception for saga execution step."""
-
-
-class MinosSagaFailedExecutionStepException(MinosSagaExecutionStepException):
-    """Exception to be raised when a saga execution step failed while running."""
+class MinosSagaFailedExecutionException(MinosSagaExecutionException):
+    """Exception to be raised when a saga execution failed while running."""
 
     def __init__(self, exception: Exception, message: str = None):
         self.exception = exception
         if message is None:
             message = f"There was a failure while 'SagaExecutionStep' was executing: {exception!r}"
         super().__init__(message)
+
+
+class MinosSagaExecutionStepException(MinosSagaException):
+    """Base exception for saga execution step."""
+
+
+class MinosSagaFailedExecutionStepException(MinosSagaExecutionStepException, MinosSagaFailedExecutionException):
+    """Exception to be raised when a saga execution step failed while running."""
 
 
 class MinosSagaPausedExecutionStepException(MinosSagaExecutionStepException):
@@ -134,5 +138,9 @@ class MinosSagaExecutorException(MinosSagaException):
     def __init__(self, exception: Exception, message: str = None):
         self.exception = exception
         if message is None:
-            message = f"There was a failure while executor was executing: {exception!r}"
+            message = f"There was a failure while 'SagaExecutionStep' was executing: {exception!r}"
         super().__init__(message)
+
+
+class MinosSagaFailedCommitCallbackException(MinosSagaFailedExecutionException):
+    """Exception to be raised when a saga commit callback raises some exception"""
