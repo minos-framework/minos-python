@@ -126,3 +126,13 @@ class MinosSagaRollbackExecutionStepException(MinosSagaExecutionStepException):
 
 class MinosSagaAlreadyCommittedException(MinosSagaException):
     """Exception to be raised when trying to modifying an already committed saga."""
+
+
+class MinosSagaExecutorException(MinosSagaException):
+    """Exception to be raised when a saga executor raises some exception."""
+
+    def __init__(self, exception: Exception, message: str = None):
+        self.exception = exception
+        if message is None:
+            message = f"There was a failure while executor was executing: {exception!r}"
+        super().__init__(message)

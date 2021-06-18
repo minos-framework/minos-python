@@ -11,6 +11,7 @@ from __future__ import (
 )
 
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Iterable,
@@ -32,6 +33,13 @@ from .step import (
     identity_fn,
 )
 
+if TYPE_CHECKING:
+    from ..executions import (
+        SagaContext,
+    )
+
+    CommitCallback = Callable[[SagaContext], SagaContext]
+
 
 class Saga(object):
     """Saga class.
@@ -39,7 +47,7 @@ class Saga(object):
     The purpose of this class is to define a sequence of operations among microservices.
     """
 
-    def __init__(self, name: str, steps: list[SagaStep] = None, commit_callback: Optional[Callable] = None):
+    def __init__(self, name: str, steps: list[SagaStep] = None, commit_callback: Optional[CommitCallback] = None):
         if steps is None:
             steps = list()
 
@@ -113,7 +121,7 @@ class Saga(object):
         )
 
     # noinspection PyUnusedLocal
-    def commit(self, callback: Optional[Callable] = None, *args, **kwargs) -> Saga:
+    def commit(self, callback: Optional[CommitCallback] = None, *args, **kwargs) -> Saga:
         """Commit the instance to be ready for execution.
 
         :param callback: Optional function to be called at the end of execution.

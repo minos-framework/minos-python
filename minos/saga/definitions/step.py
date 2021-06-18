@@ -17,6 +17,7 @@ from typing import (
     Iterable,
     NoReturn,
     Optional,
+    TypeVar,
     Union,
 )
 
@@ -46,13 +47,15 @@ if TYPE_CHECKING:
         Saga,
     )
 
+    T = TypeVar("T")
+
     CallBack = Callable[
         [SagaContext],
         Union[MinosModel, list[MinosModel], Coroutine[Any, Any, MinosModel], Coroutine[Any, Any, list[MinosModel]]],
     ]
 
 
-def identity_fn(x: Any) -> Any:
+def identity_fn(x: T) -> T:
     """A identity function, that returns the same value without any transformation.
 
     :param x: The input value.

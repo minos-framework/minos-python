@@ -25,11 +25,14 @@ from minos.common import (
     MinosModel,
 )
 
+from ... import (
+    MinosSagaFailedExecutionStepException,
+)
 from ...definitions import (
     SagaStepOperation,
 )
 from ...exceptions import (
-    MinosSagaFailedExecutionStepException,
+    MinosSagaExecutorException,
 )
 from ..context import (
     SagaContext,
@@ -70,9 +73,8 @@ class PublishExecutor(LocalExecutor):
         try:
             request = await self.exec_operation(operation, context)
             await self._publish(operation, request, has_reply)
-        except Exception as exc:
-            raise MinosSagaFailedExecutionStepException(exc)
-
+        except MinosSagaExecutorException as exc:
+            raise MinosSagaFailedExecutionStepException(exc.exception)
         return context
 
     async def _publish(self, operation: SagaStepOperation, request: MinosModel, has_reply: bool) -> NoReturn:

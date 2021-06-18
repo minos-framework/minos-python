@@ -31,6 +31,7 @@ from ..definitions import (
 )
 from ..exceptions import (
     MinosSagaExecutionStepException,
+    MinosSagaExecutorException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotCommittedException,
     MinosSagaPausedExecutionStepException,
@@ -38,6 +39,9 @@ from ..exceptions import (
 )
 from .context import (
     SagaContext,
+)
+from .executors import (
+    LocalExecutor,
 )
 from .status import (
     SagaStatus,
@@ -151,6 +155,7 @@ class SagaExecution(object):
             execution_step = SagaExecutionStep(step)
             await self._execute_one(execution_step, *args, **kwargs)
 
+        await self._execute_commit_callback(*args, **kwargs)
         self.status = SagaStatus.Finished
         return self.context
 
@@ -167,6 +172,15 @@ class SagaExecution(object):
         except MinosSagaPausedExecutionStepException as exc:
             self.paused_step = execution_step
             self.status = SagaStatus.Paused
+            raise exc
+
+    async def _execute_commit_callback(self, *args, **kwargs) -> NoReturn:
+        try:
+            executor = LocalExecutor()
+            self.context = await executor.exec_function(self.definition.commit_callback, self.context)
+        except MinosSagaExecutorException as exc:
+            await self.rollback(*args, **kwargs)
+            self.status = SagaStatus.Errored
             raise exc
 
     async def rollback(self, *args, **kwargs) -> NoReturn:

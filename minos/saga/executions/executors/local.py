@@ -14,6 +14,9 @@ from typing import (
 from ...definitions import (
     SagaStepOperation,
 )
+from ...exceptions import (
+    MinosSagaExecutorException,
+)
 
 
 class LocalExecutor:
@@ -42,7 +45,10 @@ class LocalExecutor:
         :param kwargs: Additional named arguments to the function.
         :return: The ``func`` result.
         """
-        result = func(*args, **kwargs)
-        if inspect.isawaitable(result):
-            result = await result
+        try:
+            result = func(*args, **kwargs)
+            if inspect.isawaitable(result):
+                result = await result
+        except Exception as exc:
+            raise MinosSagaExecutorException(exc)
         return result
