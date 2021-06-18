@@ -32,12 +32,14 @@ T = TypeVar("T")
 class MinosSetup(Generic[T]):
     """Minos setup base class."""
 
+    _config: MinosConfig = Provide["config"]
+
     def __init__(self, *args, already_setup: bool = False, **kwargs):
         self.already_setup = already_setup
         self.already_destroyed = False
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = Provide["config"], **kwargs) -> T:
+    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> T:
         """Build a new instance from config.
 
         :param args: Additional positional arguments.
@@ -45,8 +47,10 @@ class MinosSetup(Generic[T]):
         :param kwargs: Additional named arguments.
         :return: A instance of the called class.
         """
-        if config is None or isinstance(config, Provide):
-            raise MinosConfigException("The config object must be setup.")
+        if config is None:
+            config = cls._config
+            if isinstance(config, Provide):
+                raise MinosConfigException("The config object must be setup.")
         return cls._from_config(*args, config=config, **kwargs)
 
     @classmethod
