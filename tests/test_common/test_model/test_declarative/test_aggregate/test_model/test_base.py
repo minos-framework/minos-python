@@ -97,6 +97,43 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             await car.refresh()
             self.assertEqual(Car(1, 3, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot), car)
 
+    async def test_save_create(self):
+        async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
+            car = Car(0, 0, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot)
+            car.color = "red"
+            car.doors = 5
+
+            with self.assertRaises(MinosRepositoryAggregateNotFoundException):
+                await car.refresh()
+
+            await car.save()
+            self.assertEqual(Car(1, 1, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot), car)
+
+    async def test_save_update(self):
+        async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
+            car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
+            car.color = "red"
+            car.doors = 5
+
+            self.assertEqual(
+                Car(1, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot),
+                await Car.get_one(car.id, _broker=broker, _repository=repository, _snapshot=snapshot),
+            )
+
+            await car.save()
+            self.assertEqual(Car(1, 2, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot), car)
+            self.assertEqual(
+                Car(1, 2, 5, "red", _broker=broker, _repository=repository, _snapshot=snapshot),
+                await Car.get_one(car.id, _broker=broker, _repository=repository, _snapshot=snapshot),
+            )
+
+    async def test_save_raises(self):
+        async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
+            with self.assertRaises(MinosRepositoryManuallySetAggregateIdException):
+                await Car(1, 0, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot).save()
+            with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
+                await Car(0, 1, 3, "blue", _broker=broker, _repository=repository, _snapshot=snapshot).save()
+
     async def test_delete(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)

@@ -209,6 +209,38 @@ class Aggregate(DeclarativeModel, Generic[T]):
 
         return self
 
+    async def save(self) -> NoReturn:
+        """Store the current instance on the repository.
+
+        If didn't exist previously creates a new one, otherwise updates the existing one.
+        """
+        is_creation = self.id == 0
+        if is_creation != (self.version == 0):
+            if is_creation:
+                raise MinosRepositoryManuallySetAggregateVersionException(
+                    f"The version must be computed internally on the repository. Obtained: {self.version}"
+                )
+            else:
+                raise MinosRepositoryManuallySetAggregateIdException(
+                    f"The id must be computed internally on the repository. Obtained: {self.id}"
+                )
+
+        if is_creation:
+            new = await self.create(
+                **{k: field.value for k, field in self.fields.items() if k not in ("id", "version")},
+                _broker=self._broker,
+                _repository=self._repository,
+                _snapshot=self._snapshot,
+            )
+            self._fields |= new.fields
+        else:
+            await self.update(
+                **{k: field.value for k, field in self.fields.items() if k not in ("id", "version")},
+                _broker=self._broker,
+                _repository=self._repository,
+                _snapshot=self._snapshot,
+            )
+
     async def refresh(self) -> NoReturn:
         """Refresh the state of the given instance.
 
