@@ -13,12 +13,18 @@ from typing import (
 )
 
 from minos.common import (
+    DataTransferObject,
     Decimal,
     Enum,
     Fixed,
+    MinosModelException,
     MissingSentinel,
+    ModelField,
     ModelRef,
     ModelType,
+)
+from tests.model_classes import (
+    Foo,
 )
 
 
@@ -120,7 +126,7 @@ class TestModelRef(unittest.TestCase):
         self.assertEqual("ModelRef()", repr(ref))
 
 
-class TestModelTyp(unittest.TestCase):
+class TestModelType(unittest.TestCase):
     def test_build(self):
         model_type = ModelType.build("Foo", {"text": int}, "bar")
         self.assertEqual("Foo", model_type.name)
@@ -140,6 +146,10 @@ class TestModelTyp(unittest.TestCase):
         two = ModelType.build("Foo", {"text": int}, "bar")
         self.assertEqual(one, two)
 
+    def test_equal_declarative(self):
+        one = ModelType.build("tests.model_classes.Foo", {"text": str})
+        self.assertEqual(one, Foo)
+
     def test_not_equal(self):
         base = ModelType.build("Foo", {"text": int}, "bar")
         self.assertNotEqual(ModelType.build("aaa", {"text": int}, "bar"), base)
@@ -155,6 +165,21 @@ class TestModelTyp(unittest.TestCase):
         expected = ModelType.build("Foo", {"text": int})
         observed = ModelType.from_typed_dict(TypedDict("Foo", {"text": int}))
         self.assertEqual(expected, observed)
+
+    def test_call_declarative_model(self):
+        model_type = ModelType.build("tests.model_classes.Foo", {"text": str})
+        dto = model_type(text="test")
+        self.assertEqual(Foo("test"), dto)
+
+    def test_call_declarative_model_raises(self):
+        model_type = ModelType.build("tests.model_classes.Foo", {"bar": str})
+        with self.assertRaises(MinosModelException):
+            model_type(bar="test")
+
+    def test_call_dto_model(self):
+        model_type = ModelType.build("Foo", {"text": str})
+        dto = model_type(text="test")
+        self.assertEqual(DataTransferObject("Foo", [ModelField("text", str, "test")]), dto)
 
 
 if __name__ == "__main__":

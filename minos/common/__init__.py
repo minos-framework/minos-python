@@ -81,6 +81,7 @@ from .model import (
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
+    BucketModel,
     Command,
     CommandReply,
     DataTransferObject,
@@ -97,6 +98,8 @@ from .model import (
     ModelField,
     ModelRef,
     ModelType,
+    TypeHintBuilder,
+    TypeHintComparator,
 )
 from .networks import (
     MinosBroker,

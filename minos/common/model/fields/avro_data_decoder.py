@@ -212,27 +212,16 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_model_type(self, type_field: ModelType, data: t.Any) -> t.Any:
-        from ..dynamic import (
-            DataTransferObject,
-        )
-
         if isinstance(data, dict):
-            return DataTransferObject.from_model_type(type_field, data)
+            data = {k: self._cast_value(v, data[k]) for k, v in type_field.type_hints.items()}
+            return type_field(**data)
 
-        if (
-            isinstance(data, DataTransferObject)
-            and data.type_hints == type_field.type_hints
-            and data.classname == type_field.classname
-        ):
+        if hasattr(data, "model_type") and type_field == data.model_type:
             return data
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_model(self, type_field: t.Type, data: t.Any) -> t.Any:
-        if isinstance(data, dict):
-            # noinspection PyUnresolvedReferences
-            return type_field.from_dict(data)
-
         if not isinstance(data, type_field):
             raise MinosTypeAttributeException(self._name, type_field, data)
         return data

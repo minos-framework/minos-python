@@ -11,21 +11,9 @@ from __future__ import (
 
 from typing import (
     Any,
-    Optional,
     TypedDict,
-    Union,
 )
 
-from ...exceptions import (
-    MinosImportException,
-    MinosModelException,
-)
-from ...importlib import (
-    import_module,
-)
-from ..abc import (
-    Model,
-)
 from ..fields import (
     ModelField,
 )
@@ -50,30 +38,6 @@ class DataTransferObject(DynamicModel):
         self._namespace = namespace
 
     @classmethod
-    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> Model:
-        """Build a new instance from the ``avro`` schema and data.
-
-        :param schema: The avro schema of the model.
-        :param data: The avro data of the model.
-        :return: A new ``DynamicModel`` instance.
-        """
-        if isinstance(schema, list):
-            schema = schema[-1]
-
-        if "namespace" in schema and len(schema["namespace"]) > 0:
-            name = "{namespace:}.{name:}".format(**schema)
-        else:
-            name = schema["name"]
-
-        try:
-            # noinspection PyTypeChecker
-            model_cls: Model = import_module(name)
-        except MinosImportException:
-            return super().from_avro(schema, data)
-
-        return model_cls.from_dict(data)
-
-    @classmethod
     def from_typed_dict(cls, typed_dict: TypedDict, data: dict[str, Any]) -> DataTransferObject:
         """Build a ``DataTransferObject`` from a ``TypeDict`` and ``data``.
 
@@ -91,27 +55,8 @@ class DataTransferObject(DynamicModel):
         :param data: A dictionary containing the values to be stored on the DTO.
         :return: A new ``DataTransferObject`` instance.
         """
-
-        try:
-            # noinspection PyTypeChecker
-            model_cls: Model = import_module(model_type.classname)
-            if model_cls.type_hints != model_type.type_hints:
-                raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
-            return model_cls.from_dict(data)
-        except MinosImportException:
-            pass
-
         fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
         return cls(model_type.name, fields, namespace=model_type.namespace)
-
-    # noinspection PyMethodParameters
-    @property
-    def _avro_name(self) -> str:
-        return self._name
-
-    @property
-    def _avro_namespace(self) -> Optional[str]:
-        return self._namespace
 
     @property
     def classname(self) -> str:
@@ -119,10 +64,9 @@ class DataTransferObject(DynamicModel):
 
         :return: An string object.
         """
-        name = self._name
-        if len(self._namespace) > 0:
-            name = f"{self._namespace}.{name}"
-        return name
+        if len(self._namespace) == 0:
+            return self._name
+        return f"{self._namespace}.{self._name}"
 
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())

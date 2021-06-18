@@ -15,6 +15,7 @@ from minos.common import (
     FieldsDiff,
     ModelField,
     ModelRef,
+    ModelType,
 )
 from tests.aggregate_classes import (
     Car,
@@ -27,7 +28,7 @@ from tests.utils import (
 )
 
 
-class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
+class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         async with FakeBroker() as broker, FakeRepository() as repository, FakeSnapshot() as snapshot:
             self.car_one = Car(3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
@@ -41,6 +42,12 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         fields = {"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "red")}
         difference = FieldsDiff(fields)
         self.assertEqual(fields, difference.fields)
+
+    def test_model_type(self):
+        fields = {ModelField("doors", int, 5), ModelField("color", str, "red")}
+        difference = FieldsDiff(fields)
+        # noinspection PyTypeChecker
+        self.assertEqual(ModelType.build(FieldsDiff.classname, {"doors": int, "color": str}), difference.model_type)
 
     def test_from_difference(self):
         expected = FieldsDiff(
@@ -90,9 +97,6 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         observed = FieldsDiff.simplify(first, second)
 
         self.assertEqual(expected, observed)
-
-    def test_empty(self):
-        self.assertEqual(FieldsDiff(dict()), FieldsDiff.empty())
 
     def test_avro_schema(self):
         expected = [
