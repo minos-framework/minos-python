@@ -12,6 +12,9 @@ from __future__ import (
 from aiomisc.service.periodic import (
     PeriodicService,
 )
+from cached_property import (
+    cached_property,
+)
 
 from .producers import (
     Producer,
@@ -21,9 +24,13 @@ from .producers import (
 class ProducerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.dispatcher = Producer.from_config(**kwargs)
+    @cached_property
+    def dispatcher(self):
+        """TODO
+
+        :return: TODO
+        """
+        return Producer.from_config()
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.

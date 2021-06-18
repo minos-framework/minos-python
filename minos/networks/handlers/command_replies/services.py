@@ -14,6 +14,9 @@ from aiomisc.service.periodic import (
     PeriodicService,
     Service,
 )
+from cached_property import (
+    cached_property,
+)
 
 from .consumers import (
     CommandReplyConsumer,
@@ -26,9 +29,13 @@ from .handlers import (
 class CommandReplyConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.dispatcher = CommandReplyConsumer.from_config(**kwargs)
+    @cached_property
+    def dispatcher(self):
+        """TODO
+
+        :return: TODO
+        """
+        return CommandReplyConsumer.from_config()
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -50,9 +57,13 @@ class CommandReplyConsumerService(Service):
 class CommandReplyHandlerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.dispatcher = CommandReplyHandler.from_config(**kwargs)
+    @cached_property
+    def dispatcher(self):
+        """TODO
+
+        :return: TODO
+        """
+        return CommandReplyHandler.from_config()
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.

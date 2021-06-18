@@ -5,16 +5,15 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from typing import (
-    Type,
-)
 
 from aiomisc.service.periodic import (
     PeriodicService,
 )
+from cached_property import (
+    cached_property,
+)
 
 from minos.common import (
-    MinosSetup,
     PostgreSqlSnapshotBuilder,
 )
 
@@ -22,9 +21,13 @@ from minos.common import (
 class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
-    def __init__(self, snapshot_builder_cls: Type[MinosSetup] = PostgreSqlSnapshotBuilder, **kwargs):
-        super().__init__(**kwargs)
-        self.dispatcher = snapshot_builder_cls.from_config(**kwargs)
+    @cached_property
+    def dispatcher(self):
+        """TODO
+
+        :return: TODO
+        """
+        return PostgreSqlSnapshotBuilder.from_config()
 
     async def start(self) -> None:
         """Start the service execution.

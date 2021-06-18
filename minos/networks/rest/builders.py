@@ -45,6 +45,8 @@ class RestBuilder(MinosSetup):
         self._config = config
         self._app = app
         self.load_routes()
+        self.address = config.rest.broker.host
+        self.port = config.rest.broker.port
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
