@@ -37,7 +37,7 @@ from ..exceptions import (
 
 if TYPE_CHECKING:
     from minos.common import (
-        MinosModel,
+        Model,
     )
 
     from ..executions import (
@@ -50,8 +50,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
     CallBack = Callable[
-        [SagaContext],
-        Union[MinosModel, list[MinosModel], Coroutine[Any, Any, MinosModel], Coroutine[Any, Any, list[MinosModel]]],
+        [SagaContext], Union[Model, list[Model], Coroutine[Any, Any, Model], Coroutine[Any, Any, list[Model]]],
     ]
 
 
