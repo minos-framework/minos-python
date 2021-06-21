@@ -26,7 +26,9 @@ class SagaContext(BucketModel):
 
     def __init__(self, **kwargs):
         if "fields" not in kwargs:
-            kwargs["fields"] = {ModelField(k, TypeHintBuilder(v).build(), v) for k, v in kwargs.items()}
+            kwargs["fields"] = {
+                name: ModelField(name, TypeHintBuilder(value).build(), value) for name, value in kwargs.items()
+            }
         super().__init__(**kwargs)
 
     def __setattr__(self, key: str, value: Any) -> NoReturn:
