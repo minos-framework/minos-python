@@ -53,9 +53,9 @@ class ProducerService(PeriodicService):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self):
-        """TODO
+    def dispatcher(self) -> Producer:
+        """Get the service dispatcher.
 
-        :return: TODO
+        :return: A ``Producer`` instance.
         """
         return Producer.from_config(**self._init_kwargs)

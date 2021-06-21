@@ -46,10 +46,10 @@ class CommandConsumerService(Service):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self):
-        """TODO
+    def dispatcher(self) -> CommandConsumer:
+        """Get the service dispatcher.
 
-        :return: TODO
+        :return: A ``CommandConsumer`` instance.
         """
         return CommandConsumer.from_config()
 
@@ -86,9 +86,9 @@ class CommandHandlerService(PeriodicService):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self):
-        """TODO
+    def dispatcher(self) -> CommandHandler:
+        """Get the service dispatcher.
 
-        :return: TODO
+        :return: A ``CommandHandler`` instance.
         """
         return CommandHandler.from_config(**self._init_kwargs)

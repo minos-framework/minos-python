@@ -46,10 +46,10 @@ class EventConsumerService(Service):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self):
-        """TODO
+    def dispatcher(self) -> EventConsumer:
+        """Get the service dispatcher.
 
-        :return: TODO
+        :return: A ``EventConsumer`` instance.
         """
         return EventConsumer.from_config()
 
@@ -86,9 +86,9 @@ class EventHandlerService(PeriodicService):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self):
-        """TODO
+    def dispatcher(self) -> EventHandler:
+        """Get the service dispatcher.
 
-        :return: TODO
+        :return: A ``EventHandler`` instance.
         """
         return EventHandler.from_config(**self._init_kwargs)

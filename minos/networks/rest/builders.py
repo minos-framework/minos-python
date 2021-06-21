@@ -50,17 +50,17 @@ class RestBuilder(MinosSetup):
 
     @property
     def host(self) -> str:
-        """TODO
+        """Get the rest host.
 
-        :return: TODO
+        :return: A ``str`` object.
         """
         return self._host
 
     @property
     def port(self) -> int:
-        """TODO
+        """Get the rest port.
 
-        :return: TODO
+        :return: An integer value.
         """
         return self._port
 

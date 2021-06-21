@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from aiohttp import (
+    web,
+)
 from aiomisc import (
     bind_socket,
 )
@@ -32,18 +35,18 @@ class RestService(AIOHTTPService):
         super().__init__(**({"port": 9999} | kwargs))
         self._init_kwargs = kwargs
 
-    async def create_application(self):
-        """TODO
+    async def create_application(self) -> web.Application:
+        """Create the web application.
 
-        :return: TODO
+        :return: A ``web.Application`` instance.
         """
         return self.builder.get_app()  # pragma: no cover
 
     @cached_property
     def builder(self) -> RestBuilder:
-        """TODO
+        """Get the service builder.
 
-        :return: TODO
+        :return: A ``RestBuilder`` instance.
         """
         builder = RestBuilder.from_config(**self._init_kwargs)
 
