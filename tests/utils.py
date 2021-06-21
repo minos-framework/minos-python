@@ -59,7 +59,7 @@ class FakeRepository(MinosRepository):
 class FakeBroker(MinosBroker):
     """For testing purposes."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
         self.call_count = 0
         self.calls_kwargs = list()

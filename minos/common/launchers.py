@@ -109,12 +109,17 @@ class EntrypointLauncher(MinosSetup):
 
         :return: This method does not return anything.
         """
+        await self.injector.wire(modules=self._internal_modules)
+
+    @property
+    def _internal_modules(self):
         from minos import (
             common,
         )
 
         modules = [common]
         try:
+            # noinspection PyUnresolvedReferences
             from minos import (
                 networks,
             )
@@ -124,6 +129,7 @@ class EntrypointLauncher(MinosSetup):
             pass
 
         try:
+            # noinspection PyUnresolvedReferences
             from minos import (
                 saga,
             )
@@ -131,7 +137,7 @@ class EntrypointLauncher(MinosSetup):
             modules += [saga]  # pragma: no cover
         except ImportError:
             pass
-        await self.injector.wire(modules=modules)
+        return modules
 
     async def _destroy(self) -> NoReturn:
         """Unwire the injected dependencies and destroys it.

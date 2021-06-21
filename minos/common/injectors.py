@@ -48,14 +48,18 @@ class DependencyInjector:
 
         :return: A dict of injections..
         """
+        injections = dict()
 
         def _fn(raw: Union[MinosSetup, Type[MinosSetup]]) -> MinosSetup:
             if isinstance(raw, type):
                 # noinspection PyUnresolvedReferences
-                return raw.from_config(config=self.config)
+                return raw.from_config(config=self.config, **injections)
             return raw
 
-        return {key: _fn(value) for key, value in self._raw_injections.items()}
+        for key, value in self._raw_injections.items():
+            injections[key] = _fn(value)
+
+        return injections
 
     async def wire(self, *args, **kwargs) -> NoReturn:
         """Connect the configuration.
