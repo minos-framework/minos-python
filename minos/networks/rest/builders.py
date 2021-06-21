@@ -8,7 +8,9 @@ from __future__ import (
     annotations,
 )
 
-from functools import cached_property
+from functools import (
+    cached_property,
+)
 from inspect import (
     isawaitable,
 )
@@ -21,9 +23,10 @@ from aiohttp import (
 )
 
 from minos.common import (
+    ENDPOINT,
     MinosConfig,
     MinosSetup,
-    import_module, ENDPOINT,
+    import_module,
 )
 
 from .messages import (
