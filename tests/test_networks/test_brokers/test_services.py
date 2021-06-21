@@ -37,8 +37,10 @@ class TestProducerService(PostgresAsyncTestCase):
         self.assertIsInstance(service, PeriodicService)
 
     def test_dispatcher_empty(self):
+        service = ProducerService(interval=0.1)
         with self.assertRaises(MinosConfigException):
-            ProducerService(interval=0.1).dispatcher
+            # noinspection PyStatementEffect
+            service.dispatcher
 
     def test_dispatcher_config(self):
         service = ProducerService(interval=0.1, config=self.config)
