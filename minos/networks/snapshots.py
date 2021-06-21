@@ -21,13 +21,17 @@ from minos.common import (
 class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._init_kwargs = kwargs
+
     @cached_property
     def dispatcher(self):
         """TODO
 
         :return: TODO
         """
-        return PostgreSqlSnapshotBuilder.from_config()
+        return PostgreSqlSnapshotBuilder.from_config(**self._init_kwargs)
 
     async def start(self) -> None:
         """Start the service execution.

@@ -8,6 +8,7 @@ from __future__ import (
     annotations,
 )
 
+from functools import cached_property
 from inspect import (
     isawaitable,
 )
@@ -22,7 +23,7 @@ from aiohttp import (
 from minos.common import (
     MinosConfig,
     MinosSetup,
-    import_module,
+    import_module, ENDPOINT,
 )
 
 from .messages import (
@@ -38,28 +39,54 @@ class RestBuilder(MinosSetup):
 
     """
 
-    __slots__ = "_config", "_app"
-
-    def __init__(self, config: MinosConfig, app: web.Application = web.Application(), **kwargs):
+    def __init__(self, host: str, port: int, endpoints: list[ENDPOINT], **kwargs):
         super().__init__(**kwargs)
-        self._config = config
-        self._app = app
-        self.load_routes()
-        self.address = config.rest.broker.host
-        self.port = config.rest.broker.port
+        self._host = host
+        self._port = port
+        self._endpoints = endpoints
+
+    @property
+    def host(self) -> str:
+        """TODO
+
+        :return: TODO
+        """
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """TODO
+
+        :return: TODO
+        """
+        return self._port
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
-        return cls(*args, config=config, **kwargs)
+        host = config.rest.broker.host
+        port = config.rest.broker.port
+        return cls(host=host, port=port, endpoints=config.rest.endpoints, **kwargs)
 
-    def load_routes(self):
+    def get_app(self):
+        """Return rest application instance.
+        :return: A `web.Application` instance.
+        """
+        return self._app
+
+    @cached_property
+    def _app(self) -> web.Application:
+        app = web.Application()
+        self._mount_routes(app)
+        return app
+
+    def _mount_routes(self, app: web.Application):
         """Load routes from config file."""
-        for item in self._config.rest.endpoints:
+        for item in self._endpoints:
             callable_f = self.get_action(item.controller, item.action)
-            self._app.router.add_route(item.method, item.route, callable_f)
+            app.router.add_route(item.method, item.route, callable_f)
 
         # Load default routes
-        self._mount_system_health()
+        self._mount_system_health(app)
 
     @staticmethod
     def get_action(controller: str, action: str) -> Callable:
@@ -81,15 +108,9 @@ class RestBuilder(MinosSetup):
 
         return _fn
 
-    def get_app(self):
-        """Return rest application instance.
-        :return: A `web.Application` instance.
-        """
-        return self._app
-
-    def _mount_system_health(self):
+    def _mount_system_health(self, app: web.Application):
         """Mount System Health Route."""
-        self._app.router.add_get("/system/health", self._system_health_handler)
+        app.router.add_get("/system/health", self._system_health_handler)
 
     @staticmethod
     async def _system_health_handler(request):

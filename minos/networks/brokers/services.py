@@ -24,13 +24,17 @@ from .producers import (
 class ProducerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._init_kwargs = kwargs
+
     @cached_property
     def dispatcher(self):
         """TODO
 
         :return: TODO
         """
-        return Producer.from_config()
+        return Producer.from_config(**self._init_kwargs)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.

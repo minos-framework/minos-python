@@ -44,7 +44,7 @@ class TestSnapshotService(PostgresAsyncTestCase):
 
     def test_dispatcher_config_raises(self):
         with self.assertRaises(MinosConfigException):
-            SnapshotService(interval=0.1)
+            SnapshotService(interval=0.1).dispatcher
 
     def test_dispatcher_config(self):
         service = SnapshotService(interval=0.1, loop=None, config=self.config, repository=self.repository)

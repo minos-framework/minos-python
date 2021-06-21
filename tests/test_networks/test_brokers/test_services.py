@@ -38,7 +38,7 @@ class TestProducerService(PostgresAsyncTestCase):
 
     def test_dispatcher_empty(self):
         with self.assertRaises(MinosConfigException):
-            ProducerService(interval=0.1)
+            ProducerService(interval=0.1).dispatcher
 
     def test_dispatcher_config(self):
         service = ProducerService(interval=0.1, config=self.config)
