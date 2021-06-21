@@ -48,6 +48,12 @@ class RestBuilder(MinosSetup):
         self._port = port
         self._endpoints = endpoints
 
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
+        host = config.rest.broker.host
+        port = config.rest.broker.port
+        return cls(host=host, port=port, endpoints=config.rest.endpoints, **kwargs)
+
     @property
     def host(self) -> str:
         """Get the rest host.
@@ -64,14 +70,9 @@ class RestBuilder(MinosSetup):
         """
         return self._port
 
-    @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
-        host = config.rest.broker.host
-        port = config.rest.broker.port
-        return cls(host=host, port=port, endpoints=config.rest.endpoints, **kwargs)
-
-    def get_app(self):
+    def get_app(self) -> web.Application:
         """Return rest application instance.
+
         :return: A `web.Application` instance.
         """
         return self._app
