@@ -5,15 +5,15 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from aiomisc.service.aiohttp import (
+    AIOHTTPService,
+)
 from cached_property import (
     cached_property,
 )
 
-from aiomisc import (
-    bind_socket,
-)
-from aiomisc.service.aiohttp import (
-    AIOHTTPService,
+from minos.common import (
+    MinosConfig,
 )
 
 from .builders import (
@@ -29,8 +29,17 @@ class RestService(AIOHTTPService):
 
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(port=8080, **kwargs)
+    def __init__(self, config: MinosConfig, **kwargs):
+        address = config.rest.broker.host
+        port = config.rest.broker.port
+        super().__init__(address=address, port=port, **kwargs)
+
+    async def create_application(self):
+        """TODO
+
+        :return: TODO
+        """
+        return self.builder.get_app()  # pragma: no cover
 
     @cached_property
     def builder(self):
@@ -38,9 +47,4 @@ class RestService(AIOHTTPService):
 
         :return: TODO
         """
-        builder = RestBuilder.from_config()
-        self.socket = bind_socket(address=builder.address, port=builder.port, proto_name="http",)
-        return builder
-
-    async def create_application(self):
-        return self.builder.get_app()  # pragma: no cover
+        return RestBuilder.from_config()
