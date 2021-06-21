@@ -19,6 +19,7 @@ from minos.common import (
     MinosConfig,
 )
 from minos.saga import (
+    MinosSagaFailedCommitCallbackException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionException,
@@ -28,6 +29,8 @@ from minos.saga import (
     SagaStatus,
 )
 from tests.callbacks import (
+    commit_callback,
+    commit_callback_raises,
     create_order_callback,
     create_ticket_callback,
     delete_order_callback,
@@ -125,6 +128,71 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual(2, self.publish_mock.call_count)
+
+    async def test_execute_commit(self):
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1")
+            .step()
+            .invoke_participant("CreateTicket", create_ticket_callback)
+            .on_reply("order2")
+            .step()
+            .invoke_participant("Shopping", shipping_callback)
+            .with_compensation("BlockOrder", shipping_callback)
+            .commit(commit_callback)
+        )
+        execution = SagaExecution.from_saga(saga)
+
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute()
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = fake_reply(Foo("order1"))
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(reply=reply)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = fake_reply(Foo("order2"))
+        context = await execution.execute(reply=reply)
+
+        self.assertEqual(SagaStatus.Finished, execution.status)
+        self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2"), status="Finished!"), context)
+
+    async def test_execute_commit_raises(self):
+        saga = (
+            Saga("OrdersAdd")
+            .step()
+            .invoke_participant("CreateOrder", create_order_callback)
+            .with_compensation("DeleteOrder", delete_order_callback)
+            .on_reply("order1")
+            .step()
+            .invoke_participant("CreateTicket", create_ticket_callback)
+            .on_reply("order2")
+            .step()
+            .invoke_participant("Shopping", shipping_callback)
+            .with_compensation("BlockOrder", shipping_callback)
+            .commit(commit_callback_raises)
+        )
+        execution = SagaExecution.from_saga(saga)
+
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute()
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = fake_reply(Foo("order1"))
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(reply=reply)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = fake_reply(Foo("order2"))
+        with self.assertRaises(MinosSagaFailedCommitCallbackException):
+            await execution.execute(reply=reply, broker=self.broker)
+
+        self.assertEqual(SagaStatus.Errored, execution.status)
+        self.assertEqual(3, self.publish_mock.call_count)
 
     async def test_rollback(self):
         saga = (

@@ -78,7 +78,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def tearDown(self) -> None:
         self.container.unwire()
 
-    def tes_created(self):
+    def test_from_raw(self):
+        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+            expected = SagaExecution.from_saga(self.saga)
+        observed = SagaExecution.from_raw(expected)
+        self.assertEqual(expected, observed)
+
+    def test_created(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             execution = SagaExecution.from_saga(self.saga)
 
@@ -87,6 +93,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext().avro_str,
             "definition": {
                 "name": "OrdersAdd",
+                "commit_callback": "minos.saga.definitions.step.identity_fn",
                 "steps": [
                     {
                         "invoke_participant": {
@@ -129,6 +136,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext().avro_str,
             "definition": {
                 "name": "OrdersAdd",
+                "commit_callback": "minos.saga.definitions.step.identity_fn",
                 "steps": [
                     {
                         "invoke_participant": {
@@ -182,6 +190,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext(order1=Foo("hola")).avro_str,
             "definition": {
                 "name": "OrdersAdd",
+                "commit_callback": "minos.saga.definitions.step.identity_fn",
                 "steps": [
                     {
                         "invoke_participant": {
