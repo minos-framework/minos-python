@@ -25,14 +25,6 @@ class SnapshotService(PeriodicService):
         super().__init__(**kwargs)
         self._init_kwargs = kwargs
 
-    @cached_property
-    def dispatcher(self):
-        """TODO
-
-        :return: TODO
-        """
-        return PostgreSqlSnapshotBuilder.from_config(**self._init_kwargs)
-
     async def start(self) -> None:
         """Start the service execution.
 
@@ -56,3 +48,11 @@ class SnapshotService(PeriodicService):
         """
         await super().stop(err)
         await self.dispatcher.destroy()
+
+    @cached_property
+    def dispatcher(self):
+        """TODO
+
+        :return: TODO
+        """
+        return PostgreSqlSnapshotBuilder.from_config(**self._init_kwargs)

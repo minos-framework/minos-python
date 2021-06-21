@@ -29,14 +29,6 @@ from .handlers import (
 class CommandConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
-    @cached_property
-    def dispatcher(self):
-        """TODO
-
-        :return: TODO
-        """
-        return CommandConsumer.from_config()
-
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
 
@@ -53,6 +45,14 @@ class CommandConsumerService(Service):
         """
         await self.dispatcher.destroy()
 
+    @cached_property
+    def dispatcher(self):
+        """TODO
+
+        :return: TODO
+        """
+        return CommandConsumer.from_config()
+
 
 class CommandHandlerService(PeriodicService):
     """Minos QueueDispatcherService class."""
@@ -60,14 +60,6 @@ class CommandHandlerService(PeriodicService):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._init_kwargs = kwargs
-
-    @cached_property
-    def dispatcher(self):
-        """TODO
-
-        :return: TODO
-        """
-        return CommandHandler.from_config(**self._init_kwargs)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -92,3 +84,11 @@ class CommandHandlerService(PeriodicService):
         """
         await super().stop(err)
         await self.dispatcher.destroy()
+
+    @cached_property
+    def dispatcher(self):
+        """TODO
+
+        :return: TODO
+        """
+        return CommandHandler.from_config(**self._init_kwargs)

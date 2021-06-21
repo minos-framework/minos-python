@@ -28,14 +28,6 @@ class ProducerService(PeriodicService):
         super().__init__(**kwargs)
         self._init_kwargs = kwargs
 
-    @cached_property
-    def dispatcher(self):
-        """TODO
-
-        :return: TODO
-        """
-        return Producer.from_config(**self._init_kwargs)
-
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
 
@@ -59,3 +51,11 @@ class ProducerService(PeriodicService):
         """
         await super().stop(err)
         await self.dispatcher.destroy()
+
+    @cached_property
+    def dispatcher(self):
+        """TODO
+
+        :return: TODO
+        """
+        return Producer.from_config(**self._init_kwargs)
