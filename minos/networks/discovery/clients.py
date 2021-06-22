@@ -12,6 +12,10 @@ from typing import (
 
 import aiohttp
 
+from ..exceptions import (
+    MinosDiscoveryConnectorException,
+)
+
 
 class MinosDiscoveryClient:
     """Minos Discovery Client class."""
@@ -38,10 +42,12 @@ class MinosDiscoveryClient:
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/subscribe"
-        async with aiohttp.ClientSession() as session:
-            service_metadata = {"ip": host, "port": port, "name": name}
+        service_metadata = {"ip": host, "port": port, "name": name}
 
-            await session.post(endpoint, json=service_metadata)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(endpoint, json=service_metadata) as response:
+                if not response.ok:
+                    raise MinosDiscoveryConnectorException("There was a problem while trying to subscribe.")
 
     async def unsubscribe(self, name: str) -> NoReturn:
         """Perform an unsubscribe query.
@@ -50,7 +56,9 @@ class MinosDiscoveryClient:
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/unsubscribe"
-        async with aiohttp.ClientSession() as session:
-            query_param = f"?name={name}"
+        query_param = f"?name={name}"
 
-            await session.post(endpoint + query_param)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(endpoint + query_param) as response:
+                if not response.ok:
+                    raise MinosDiscoveryConnectorException("There was a problem while trying to unsubscribe.")
