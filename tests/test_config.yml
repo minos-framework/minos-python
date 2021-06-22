@@ -88,3 +88,16 @@ saga:
         port: 5432
         records: 10
         retry: 1
+discovery:
+    host: discovery-service
+    port: 8080
+    endpoints:
+        subscribe:
+            path: subscribe
+            method: POST
+        unsubscribe:
+            path: unsubscribe
+            method: POST
+        discover:
+            path: discover
+            method: GET
