@@ -14,6 +14,10 @@ from .brokers import (
     Producer,
     ProducerService,
 )
+from .discovery import (
+    DiscoveryConnector,
+    MinosDiscoveryClient,
+)
 from .exceptions import (
     MinosNetworkException,
 )

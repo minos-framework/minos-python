@@ -14,6 +14,9 @@ from aiomisc.service.periodic import (
     PeriodicService,
     Service,
 )
+from cached_property import (
+    cached_property,
+)
 
 from .consumers import (
     CommandConsumer,
@@ -26,10 +29,6 @@ from .handlers import (
 class CommandConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.dispatcher = CommandConsumer.from_config(**kwargs)
-
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
 
@@ -39,7 +38,6 @@ class CommandConsumerService(Service):
         await self.dispatcher.dispatch()
 
     async def stop(self, exception: Exception = None) -> Any:
-
         """Stop the service execution.
 
         :param exception: Optional exception that stopped the execution.
@@ -47,13 +45,21 @@ class CommandConsumerService(Service):
         """
         await self.dispatcher.destroy()
 
+    @cached_property
+    def dispatcher(self) -> CommandConsumer:
+        """Get the service dispatcher.
+
+        :return: A ``CommandConsumer`` instance.
+        """
+        return CommandConsumer.from_config()
+
 
 class CommandHandlerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = CommandHandler.from_config(**kwargs)
+        self._init_kwargs = kwargs
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -78,3 +84,11 @@ class CommandHandlerService(PeriodicService):
         """
         await super().stop(err)
         await self.dispatcher.destroy()
+
+    @cached_property
+    def dispatcher(self) -> CommandHandler:
+        """Get the service dispatcher.
+
+        :return: A ``CommandHandler`` instance.
+        """
+        return CommandHandler.from_config(**self._init_kwargs)
