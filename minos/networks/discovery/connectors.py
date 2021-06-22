@@ -25,8 +25,8 @@ from .clients import (
 )
 
 
-class Discovery(MinosSetup):
-    """Discovery class."""
+class DiscoveryConnector(MinosSetup):
+    """Discovery Connector class."""
 
     def __init__(self, client, name: str, host: str, port: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,7 +38,7 @@ class Discovery(MinosSetup):
         self.port = port
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Discovery:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DiscoveryConnector:
         client = MinosDiscoveryClient(host=config.discovery.host, port=config.discovery.port)
         port = config.rest.broker.port
         name = config.service.name

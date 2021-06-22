@@ -8,6 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .clients import (
     MinosDiscoveryClient,
 )
-from .managers import (
-    Discovery,
+from .connectors import (
+    DiscoveryConnector,
 )
