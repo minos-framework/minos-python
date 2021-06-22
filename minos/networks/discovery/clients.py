@@ -29,17 +29,17 @@ class MinosDiscoveryClient:
         # noinspection HttpUrlsUsage
         return f"http://{self.host}:{self.port}"
 
-    async def subscribe(self, ip: str, port: int, name: str) -> NoReturn:
+    async def subscribe(self, host: str, port: int, name: str) -> NoReturn:
         """Perform a subscription query.
 
-        :param ip: The ip of the microservice to be subscribed.
+        :param host: The ip of the microservice to be subscribed.
         :param port: The port of the microservice to be subscribed.
         :param name: The name of the microservice to be subscribed.
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/subscribe"
         async with aiohttp.ClientSession() as session:
-            service_metadata = {"ip": ip, "port": port, "name": name}
+            service_metadata = {"ip": host, "port": port, "name": name}
 
             await session.post(endpoint, json=service_metadata)
 
