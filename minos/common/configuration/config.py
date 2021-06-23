@@ -464,3 +464,19 @@ class MinosConfig(MinosConfigAbstract):
             method=self._get("discovery.endpoints.discover.method"),
         )
         return endpoint
+
+    @property
+    def injections(self) -> dict[str, str]:
+        """TODO
+
+        :return: TODO
+        """
+        return self._get("service.injections")
+
+    @property
+    def services(self) -> list[str]:
+        """TODO
+
+        :return: TODO
+        """
+        return self._get("service.services")

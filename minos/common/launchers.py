@@ -31,6 +31,9 @@ from cached_property import (
 from .configuration import (
     MinosConfig,
 )
+from .importlib import (
+    import_module,
+)
 from .injectors import (
     DependencyInjector,
 )
@@ -47,8 +50,8 @@ class EntrypointLauncher(MinosSetup):
     def __init__(
         self,
         config: MinosConfig,
-        injections: dict[str, Union[MinosSetup, Type[MinosSetup]]],
-        services: list[Union[Service, Type[Service]]],
+        injections: dict[str, Union[MinosSetup, Type[MinosSetup], str]],
+        services: list[Union[Service, Type[Service], str]],
         interval: float = 0.1,
         *args,
         **kwargs
@@ -59,6 +62,14 @@ class EntrypointLauncher(MinosSetup):
 
         self._raw_injections = injections
         self._raw_services = services
+
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EntrypointLauncher:
+        if "injections" not in kwargs:
+            kwargs["injections"] = config.injections
+        if "services" not in kwargs:
+            kwargs["services"] = config.injections
+        return cls(config, *args, **kwargs)
 
     def launch(self) -> NoReturn:
         """Launch a new execution and keeps running forever..
@@ -97,7 +108,9 @@ class EntrypointLauncher(MinosSetup):
         """
         kwargs = {"config": self.config, "interval": self.interval}
 
-        def _fn(raw: Union[Service, Type[Service]]) -> Service:
+        def _fn(raw: Union[Service, Type[Service], str]) -> Service:
+            if isinstance(raw, str):
+                raw = import_module(raw)
             if isinstance(raw, type):
                 return raw(**kwargs)
             return raw

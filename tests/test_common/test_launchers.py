@@ -50,11 +50,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
             "command_reply_broker": FakeBroker,
             "saga_manager": FakeSagaManager,
         }
-        self.services = ["a", "b", Foo]
+        self.services = [1, 2, Foo]
         self.launcher = EntrypointLauncher(config=self.config, injections=self.injections, services=self.services)
 
     def test_services(self):
-        self.assertEqual(["a", "b"], self.launcher.services[:2])
+        self.assertEqual([1, 2], self.launcher.services[:2])
         self.assertIsInstance(self.launcher.services[2], Foo)
         self.assertEqual({"config": self.config, "interval": 0.1}, self.launcher.services[2].kwargs)
 
