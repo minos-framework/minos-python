@@ -66,9 +66,9 @@ class EntrypointLauncher(MinosSetup):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EntrypointLauncher:
         if "injections" not in kwargs:
-            kwargs["injections"] = config.injections
+            kwargs["injections"] = config.service.injections
         if "services" not in kwargs:
-            kwargs["services"] = config.services
+            kwargs["services"] = config.service.services
         return cls(config, *args, **kwargs)
 
     def launch(self) -> NoReturn:

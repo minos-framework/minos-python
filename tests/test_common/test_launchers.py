@@ -20,6 +20,7 @@ from aiomisc.entrypoint import (
 
 from minos.common import (
     EntrypointLauncher,
+    classname,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -50,8 +51,15 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
             "command_reply_broker": FakeBroker,
             "saga_manager": FakeSagaManager,
         }
-        self.services = [1, 2, Foo]
+        self.services = [1, 2, Foo, classname(Foo)]
         self.launcher = EntrypointLauncher(config=self.config, injections=self.injections, services=self.services)
+
+    def test_from_config(self):
+        launcher = EntrypointLauncher.from_config(config=self.config)
+        self.assertIsInstance(launcher, EntrypointLauncher)
+        self.assertEqual(self.config, launcher.config)
+        self.assertEqual(dict(), launcher.injector.injections)
+        self.assertEqual(list(), launcher.services)
 
     def test_services(self):
         self.assertEqual([1, 2], self.launcher.services[:2])
