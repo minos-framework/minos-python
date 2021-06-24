@@ -12,3 +12,7 @@ from minos.common import (
 
 class MinosNetworkException(MinosException):
     """Base network exception."""
+
+
+class MinosDiscoveryConnectorException(MinosNetworkException):
+    """Exception to be raised when there is a failure while communicating with the discovery."""

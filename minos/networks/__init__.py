@@ -19,6 +19,7 @@ from .discovery import (
     MinosDiscoveryClient,
 )
 from .exceptions import (
+    MinosDiscoveryConnectorException,
     MinosNetworkException,
 )
 from .handlers import (
