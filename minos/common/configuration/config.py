@@ -27,7 +27,7 @@ from ..exceptions import (
 BROKER = collections.namedtuple("Broker", "host port")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
 ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
-SERVICE = collections.namedtuple("Service", "name injections services",)
+SERVICE = collections.namedtuple("Service", "name injections services")
 CONTROLLER = collections.namedtuple("Controller", "name controller action")
 STORAGE = collections.namedtuple("Storage", "path")
 
