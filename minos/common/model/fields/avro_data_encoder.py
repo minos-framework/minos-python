@@ -90,7 +90,7 @@ class AvroDataEncoder:
 
     @staticmethod
     def _datetime_to_avro_raw(value: datetime) -> int:
-        return (value - datetime(1970, 1, 1)) // timedelta(milliseconds=1)
+        return (value - datetime(1970, 1, 1, tzinfo=value.tzinfo)) // timedelta(milliseconds=1)
 
     @staticmethod
     def _uuid_to_avro_raw(value: UUID) -> str:
