@@ -27,7 +27,7 @@ from ..exceptions import (
 BROKER = collections.namedtuple("Broker", "host port")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
 ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
-SERVICE = collections.namedtuple("Service", "name")
+SERVICE = collections.namedtuple("Service", "name injections services")
 CONTROLLER = collections.namedtuple("Controller", "name controller action")
 STORAGE = collections.namedtuple("Storage", "path")
 
@@ -238,7 +238,23 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``SERVICE`` NamedTuple instance.
         """
-        return SERVICE(name=self._get("service.name"))
+        return SERVICE(
+            name=self._get("service.name"), injections=self._service_injections, services=self._service_services
+        )
+
+    @property
+    def _service_injections(self) -> dict[str, str]:
+        try:
+            return self._get("service.injections")
+        except KeyError:
+            return dict()
+
+    @property
+    def _service_services(self) -> list[str]:
+        try:
+            return self._get("service.services")
+        except KeyError:
+            return list()
 
     @property
     def rest(self) -> REST:

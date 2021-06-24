@@ -19,6 +19,7 @@ from dependency_injector.containers import (
 from minos.common import (
     DependencyInjector,
     MinosConfig,
+    classname,
 )
 from tests.utils import (
     BASE_PATH,
@@ -32,6 +33,10 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config_file_path = BASE_PATH / "test_config.yml"
         self.config = MinosConfig(path=str(self.config_file_path))
+
+    def test_from_str(self):
+        injector = DependencyInjector(self.config, repository=classname(FakeRepository))
+        self.assertIsInstance(injector.repository, FakeRepository)
 
     def test_repository(self):
         injector = DependencyInjector(self.config, repository=FakeRepository)
@@ -54,8 +59,8 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(injector.saga_manager, FakeSagaManager)
 
     def test_another(self):
-        injector = DependencyInjector(self.config, foo="bar")
-        self.assertEqual("bar", injector.foo)
+        injector = DependencyInjector(self.config, foo=1)
+        self.assertEqual(1, injector.foo)
 
     def test_raises_attribute_error(self):
         injector = DependencyInjector(self.config)
