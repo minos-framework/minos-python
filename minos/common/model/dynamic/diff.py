@@ -23,13 +23,11 @@ if TYPE_CHECKING:
     from ..abc import (
         Model,
     )
+    from ..fields import (
+        ModelField,
+    )
 
 logger = logging.getLogger(__name__)
-
-
-def _diff(a: dict, b: dict) -> dict:
-    d = set(a.items()) - set(b.items())
-    return dict(d)
 
 
 class FieldsDiff(BucketModel):
@@ -48,11 +46,28 @@ class FieldsDiff(BucketModel):
             ignore = list()
 
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
-        fields = _diff(a.fields, b.fields)
+        fields = cls._diff(a.fields, b.fields)
         for name in ignore:
             fields.pop(name, None)
 
         return cls(fields)
+
+    @staticmethod
+    def _diff(a: dict[str, ModelField], b: dict[str, ModelField]) -> dict[str, ModelField]:
+        """Compute the difference between ``a`` and ``b``.
+
+        The implemented approach is equivalent to `dict(set(a.items()) -`set(b.items()))` but without requesting any
+        hashing assumptions.
+
+        :param a: The first dictionary of fields.
+        :param b: The second dictionary of fields.
+        :return: The differences dictionary between ``a`` and ``b``.
+        """
+
+        def _condition(key: str) -> bool:
+            return key not in b or a[key] != b[key]
+
+        return {key: a[key] for key in a if _condition(key)}
 
     @classmethod
     def from_model(cls, aggregate: Model, ignore: Optional[list[str]] = None) -> FieldsDiff:
