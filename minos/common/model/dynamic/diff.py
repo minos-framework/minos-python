@@ -54,8 +54,20 @@ class FieldsDiff(BucketModel):
 
     @staticmethod
     def _diff(a: dict[str, ModelField], b: dict[str, ModelField]) -> dict[str, ModelField]:
-        d: set[(str, ModelField)] = set(a.items()) - set(b.items())
-        return dict(d)
+        """Compute the difference between ``a`` and ``b``.
+
+        The implemented approach is equivalent to `dict(set(a.items()) -`set(b.items()))` but without requesting any
+        hashing assumptions.
+
+        :param a: The first dictionary of fields.
+        :param b: The second dictionary of fields.
+        :return: The differences dictionary between ``a`` and ``b``.
+        """
+
+        def _condition(key: str) -> bool:
+            return key not in b or a[key] != b[key]
+
+        return {key: a[key] for key in a if _condition(key)}
 
     @classmethod
     def from_model(cls, aggregate: Model, ignore: Optional[list[str]] = None) -> FieldsDiff:
