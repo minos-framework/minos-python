@@ -195,3 +195,6 @@ class ModelField:
             f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
             f"parser={self._parser_name}, validator={self._validator_name})"
         )
+
+    def __str__(self):
+        return f"{self.name}={self.value}"

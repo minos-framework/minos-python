@@ -463,6 +463,11 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
             "ModelField(name='test', type=typing.Optional[int], value=1, parser=None, validator=None)", repr(field),
         )
 
+    def test_str(self):
+        field = ModelField("test", Optional[int], 1, parser=lambda x: x * 10, validator=lambda x: x > 0)
+        expected = "test=10"
+        self.assertEqual(expected, str(field))
+
     def test_from_avro_int(self):
         obtained = ModelField.from_avro({"name": "id", "type": "int"}, 1234)
         desired = ModelField("id", int, 1234)

@@ -225,6 +225,11 @@ class TestMinosModel(unittest.TestCase):
         )
         self.assertEqual(expected, repr(shopping_list))
 
+    def test_str(self):
+        shopping_list = ShoppingList(User(1234), cost="1.234,56")
+        expected = "ShoppingList(user=User(id=1234, username=None), cost=1234.56)"
+        self.assertEqual(expected, str(shopping_list))
+
     def test_classname_cls(self):
         self.assertEqual("tests.model_classes.Customer", Customer.classname)
 

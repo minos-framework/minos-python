@@ -266,3 +266,7 @@ class Model(t.Generic[T]):
     def __repr__(self):
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
         return f"{type(self).__name__}(fields=[{fields_repr}])"
+
+    def __str__(self):
+        fields_repr = ", ".join(str(field) for field in self.fields.values())
+        return f"{type(self).__name__}({fields_repr})"
