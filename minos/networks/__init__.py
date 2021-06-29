@@ -8,6 +8,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 __version__ = "0.0.6"
 
 from .brokers import (
+    Broker,
+    BrokerSetup,
     CommandBroker,
     CommandReplyBroker,
     EventBroker,

@@ -45,8 +45,15 @@ class Broker(MinosBroker, BrokerSetup, ABC):
         super().__init__(*args, **kwargs)
         self.topic = topic
 
-    async def _send_bytes(self, topic: str, raw: bytes) -> int:
-        params = (topic, raw, 0, self.ACTION, datetime.now(), datetime.now())
+    async def send_bytes(self, topic: str, raw: bytes) -> int:
+        """Send a sequence of bytes to the given topic.
+
+        :param topic: Topic in which the bytes will be send.
+        :param raw: Bytes sequence to be send.
+        :return: The identifier of the message in the queue.
+        """
+        now = datetime.now()
+        params = (topic, raw, 0, self.ACTION, now, now)
         raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
         return raw[0]
 

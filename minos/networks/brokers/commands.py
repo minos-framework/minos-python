@@ -61,4 +61,4 @@ class CommandBroker(Broker):
         if reply_topic is None:
             reply_topic = self.reply_topic
         command = Command(topic, items, saga_uuid, reply_topic)
-        return await self._send_bytes(command.topic, command.avro_bytes)
+        return await self.send_bytes(command.topic, command.avro_bytes)
