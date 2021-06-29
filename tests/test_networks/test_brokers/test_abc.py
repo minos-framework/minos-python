@@ -11,7 +11,7 @@ from typing import (
     NoReturn,
 )
 from unittest.mock import (
-    MagicMock,
+    AsyncMock,
     call,
 )
 
@@ -81,10 +81,7 @@ class TestBroker(PostgresAsyncTestCase):
             "RETURNING id"
         )
 
-        async def _fn(*args, **kwargs):
-            return (56,)
-
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock(return_value=(56,))
 
         async with self.broker:
             self.broker.submit_query_and_fetchone = mock

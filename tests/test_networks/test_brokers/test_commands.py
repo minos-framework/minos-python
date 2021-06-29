@@ -7,7 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 from unittest.mock import (
-    MagicMock,
+    AsyncMock,
 )
 
 from minos.common import (
@@ -46,10 +46,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         self.assertEqual("command", CommandBroker.ACTION)
 
     async def test_send_one(self):
-        async def _fn(*args, **kwargs):
-            return 56
-
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock(return_value=56)
 
         async with CommandBroker.from_config(config=self.config) as broker:
             broker.send_bytes = mock
