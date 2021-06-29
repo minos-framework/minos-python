@@ -72,7 +72,7 @@ class TestBroker(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.broker = _FakeBroker(**self.config.saga.queue._asdict())
+        self.broker = _FakeBroker(**self.saga_queue_db)
 
     async def test_send_bytes(self):
         query = SQL(

@@ -6,7 +6,6 @@ import aiopg
 
 from minos.common import (
     CommandReply,
-    MinosConfigException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -28,25 +27,6 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     def test_from_config(self):
         dispatcher = CommandReplyHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, CommandReplyHandler)
-
-    def test_from_config_raises(self):
-        with self.assertRaises(MinosConfigException):
-            CommandReplyHandler.from_config()
-
-    async def test_if_queue_table_exists(self):
-        async with CommandReplyHandler.from_config(config=self.config):
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "SELECT 1 "
-                        "FROM information_schema.tables "
-                        "WHERE table_schema = 'public' AND table_name = 'command_reply_queue';"
-                    )
-                    ret = []
-                    async for row in cur:
-                        ret.append(row)
-
-            self.assertEqual(ret, [(1,)])
 
     async def test_get_action(self):
         model = FakeModel("foo")
