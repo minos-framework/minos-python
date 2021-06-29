@@ -174,6 +174,38 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(schema, dto.avro_schema)
 
+    def test_repr(self):
+        dto = DataTransferObject.from_avro(
+            [
+                {
+                    "name": "ShoppingList",
+                    "namespace": "lalala",
+                    "fields": [{"name": "cost", "type": "float"}],
+                    "type": "record",
+                }
+            ],
+            {"cost": 3.43},
+        )
+        expected = (
+            "lalala.ShoppingList[DTO](fields=[ModelField(name='cost', type=<class 'float'>, "
+            "value=3.43, parser=None, validator=None)])"
+        )
+        self.assertEqual(expected, repr(dto))
+
+    def test_str(self):
+        dto = DataTransferObject.from_avro(
+            [
+                {
+                    "name": "ShoppingList",
+                    "namespace": "",
+                    "fields": [{"name": "cost", "type": "float"}],
+                    "type": "record",
+                }
+            ],
+            {"cost": 3.43},
+        )
+        self.assertEqual("ShoppingList[DTO](cost=3.43)", str(dto))
+
 
 if __name__ == "__main__":
     unittest.main()
