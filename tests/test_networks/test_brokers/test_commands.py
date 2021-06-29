@@ -42,6 +42,9 @@ class TestCommandBroker(PostgresAsyncTestCase):
         broker = CommandBroker.from_config(config=self.config)
         self.assertIsInstance(broker, CommandBroker)
 
+    def test_action(self):
+        self.assertEqual("command", CommandBroker.ACTION)
+
     async def test_send_one(self):
         async def _fn(*args, **kwargs):
             return 56

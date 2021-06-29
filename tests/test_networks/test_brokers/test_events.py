@@ -34,6 +34,9 @@ class TestEventBroker(PostgresAsyncTestCase):
     def test_from_config_default(self):
         self.assertIsInstance(EventBroker.from_config(config=self.config), EventBroker)
 
+    def test_action(self):
+        self.assertEqual("event", EventBroker.ACTION)
+
     async def test_send_one(self):
         async def _fn(*args, **kwargs):
             return 56
