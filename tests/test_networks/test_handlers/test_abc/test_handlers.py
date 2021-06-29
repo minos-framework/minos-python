@@ -5,9 +5,17 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from asyncio import (
+    gather,
+)
+from collections import (
+    namedtuple,
+)
 from typing import (
     NoReturn,
 )
+
+import aiopg
 
 from minos.common import (
     MinosModel,
@@ -33,11 +41,21 @@ from tests.utils import (
 class _FakeHandler(Handler):
     TABLE_NAME = "fake"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.call_count = 0
+        self.call_args = None
+
     def _build_data(self, value: bytes) -> MinosModel:
-        pass
+        from minos.common import (
+            Command,
+        )
+
+        return Command.from_avro_bytes(value)
 
     async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
-        pass
+        self.call_count += 1
+        self.call_args = (row,)
 
 
 class TestHandler(PostgresAsyncTestCase):
@@ -64,3 +82,85 @@ class TestHandler(PostgresAsyncTestCase):
             "topic NotExisting have no controller/action configured, please review th configuration file"
             in str(context.exception)
         )
+
+    async def test_dispatch(self):
+        from minos.common import (
+            Command,
+        )
+        from tests.utils import (
+            FakeModel,
+        )
+
+        instance = Command(
+            topic="AddOrder",
+            model=FakeModel.classname,
+            items=[FakeModel("foo")],
+            saga_uuid="43434jhij",
+            reply_topic="UpdateTicket",
+        )
+
+        async with self.handler:
+            queue_id = await self._insert_one(instance)
+            await self.handler.dispatch()
+            self.assertTrue(await self._is_processed(queue_id))
+
+        self.assertEqual(1, self.handler.call_count)
+
+    async def test_dispatch_wrong(self):
+        instance = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
+
+        async with self.handler:
+            queue_id = await self._insert_one(instance)
+            await self.handler.dispatch()
+            self.assertFalse(await self._is_processed(queue_id))
+
+    async def test_dispatch_concurrent(self):
+        from minos.common import (
+            Command,
+        )
+        from tests.utils import (
+            FakeModel,
+        )
+
+        instance = Command(
+            topic="AddOrder",
+            model=FakeModel.classname,
+            items=[FakeModel("foo")],
+            saga_uuid="43434jhij",
+            reply_topic="UpdateTicket",
+        )
+        instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
+
+        async with self.handler:
+            for x in range(0, 25):
+                await self._insert_one(instance)
+                await self._insert_one(instance_wrong)
+
+            self.assertEqual(50, await self._count())
+
+            await gather(*[self.handler.dispatch() for _ in range(0, 6)])
+
+            self.assertEqual(25, await self._count())
+
+    async def _insert_one(self, instance):
+        async with aiopg.connect(**self.commands_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(
+                    "INSERT INTO fake (topic, partition_id, binary_data, creation_date) "
+                    "VALUES (%s, %s, %s, NOW()) "
+                    "RETURNING id;",
+                    (instance.topic, 0, instance.avro_bytes),
+                )
+                return (await cur.fetchone())[0]
+
+    async def _count(self):
+        async with aiopg.connect(**self.commands_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("SELECT COUNT(*) FROM fake")
+                return (await cur.fetchone())[0]
+
+    async def _is_processed(self, queue_id):
+        async with aiopg.connect(**self.commands_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute("SELECT COUNT(*) FROM fake WHERE id=%d" % (queue_id,))
+                return (await cur.fetchone())[0] == 0

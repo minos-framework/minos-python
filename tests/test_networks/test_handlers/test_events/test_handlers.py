@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import unittest
 
@@ -89,48 +88,6 @@ class TestEventHandler(PostgresAsyncTestCase):
 
             # Retry attempts
             self.assertEqual(1, pending_row[4])
-
-    async def test_dispatch_concurrent(self):
-        # Correct instance
-        model = FakeModel("foo")
-        instance = Event(topic="TicketAdded", model=model.classname, items=[])
-        bin_data = instance.avro_bytes
-
-        # Wrong instance
-        bin_data_wrong = bytes(b"Test")
-
-        async with EventHandler.from_config(config=self.config) as handler:
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    for x in range(0, 25):
-                        await cur.execute(
-                            "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data, datetime.datetime.now(),),
-                        )
-                        await cur.execute(
-                            "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data_wrong, datetime.datetime.now(),),
-                        )
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue")
-                    records = await cur.fetchone()
-
-            self.assertEqual(50, records[0])
-
-            await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue")
-                    records = await cur.fetchone()
-
-            self.assertEqual(25, records[0])
 
 
 if __name__ == "__main__":

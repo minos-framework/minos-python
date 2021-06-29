@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import unittest
 
@@ -96,51 +95,6 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
             # Retry attempts
             self.assertEqual(pending_row[4], 1)
-
-    async def test_dispatch_concurrent(self):
-        # Correct instance
-        model = FakeModel("foo")
-        instance = CommandReply(
-            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
-        )
-        bin_data = instance.avro_bytes
-        saga_manager = FakeSagaManager()
-
-        # Wrong instance
-        bin_data_wrong = bytes(b"Test")
-
-        async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    for x in range(0, 25):
-                        await cur.execute(
-                            "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data, datetime.datetime.now(),),
-                        )
-                        await cur.execute(
-                            "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data_wrong, datetime.datetime.now(),),
-                        )
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_reply_queue")
-                    records = await cur.fetchone()
-
-            self.assertEqual(records[0], 50)
-
-            await asyncio.gather(*[handler.dispatch() for _ in range(0, 6)])
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_reply_queue")
-                    records = await cur.fetchone()
-
-            self.assertEqual(records[0], 25)
 
 
 if __name__ == "__main__":
