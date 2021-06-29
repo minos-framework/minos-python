@@ -27,7 +27,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         dispatcher = CommandReplyHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, CommandReplyHandler)
 
-    async def test_event_dispatch(self):
+    async def test_dispatch(self):
         model = FakeModel("foo")
         instance = CommandReply(
             topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
@@ -62,7 +62,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
             self.assertEqual(None, saga_manager.name)
             self.assertEqual(instance, saga_manager.reply)
 
-    async def test_command_reply_dispatch_wrong_event(self):
+    async def test_dispatch_wrong(self):
         async with CommandReplyHandler.from_config(config=self.config) as handler:
             bin_data = bytes(b"Test")
 
@@ -97,7 +97,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
             # Retry attempts
             self.assertEqual(pending_row[4], 1)
 
-    async def test_concurrency_dispatcher(self):
+    async def test_dispatch_concurrent(self):
         # Correct instance
         model = FakeModel("foo")
         instance = CommandReply(

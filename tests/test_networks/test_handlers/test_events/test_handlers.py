@@ -26,7 +26,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         dispatcher = EventHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, EventHandler)
 
-    async def test_event_dispatch(self):
+    async def test_dispatch(self):
         async with EventHandler.from_config(config=self.config) as handler:
             model = FakeModel("foo")
             event_instance = Event(topic="TicketAdded", model=model.classname, items=[])
@@ -56,7 +56,7 @@ class TestEventHandler(PostgresAsyncTestCase):
 
             self.assertEqual(0, records[0])
 
-    async def test_event_dispatch_wrong_event(self):
+    async def test_dispatch_wrong(self):
         async with EventHandler.from_config(config=self.config) as handler:
             bin_data = bytes(b"Test")
 
@@ -90,7 +90,7 @@ class TestEventHandler(PostgresAsyncTestCase):
             # Retry attempts
             self.assertEqual(1, pending_row[4])
 
-    async def test_concurrency_dispatcher(self):
+    async def test_dispatch_concurrent(self):
         # Correct instance
         model = FakeModel("foo")
         instance = Event(topic="TicketAdded", model=model.classname, items=[])

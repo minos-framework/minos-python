@@ -30,7 +30,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         dispatcher = CommandHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, CommandHandler)
 
-    async def test_event_dispatch(self):
+    async def test_dispatch(self):
         model = FakeModel("foo")
         instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",
@@ -49,7 +49,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual("43434jhij", broker.saga_uuid)
         self.assertEqual(None, broker.reply_topic)
 
-    async def test_event_dispatch_without_reply(self):
+    async def test_dispatch_without_reply(self):
         model = FakeModel("foo")
         instance = Command(topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij",)
 
@@ -62,7 +62,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
         self.assertEqual(0, broker.call_count)
 
-    async def test_event_dispatch_wrong_event(self):
+    async def test_dispatch_wrong(self):
         instance = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         async with CommandHandler.from_config(config=self.config) as handler:
@@ -87,42 +87,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
                 await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id,))
                 return (await cur.fetchone())[0] == 0
 
-    async def test_command_handler_dispatch_wrong_event(self):
-        async with CommandHandler.from_config(config=self.config) as handler:
-            bin_data = bytes(b"Test")
-
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
-                        "VALUES (%s, %s, %s, %s) "
-                        "RETURNING id;",
-                        ("AddOrder", 0, bin_data, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-
-            assert queue_id[0] > 0
-
-            # Must get the record, call on_reply function and delete the record from DB
-            await handler.dispatch()
-
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
-                    records = await cur.fetchone()
-
-            assert records[0] == 1
-
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT * FROM command_queue WHERE id=%d" % (queue_id))
-                    pending_row = await cur.fetchone()
-
-            # Retry attempts
-            assert pending_row[4] == 1
-
-    async def test_concurrency_dispatcher(self):
+    async def test_dispatch_concurrent(self):
         model = FakeModel("foo")
         instance = Command(
             topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",
