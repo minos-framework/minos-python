@@ -18,7 +18,6 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FakeBroker,
-    FakeModel,
 )
 
 
@@ -29,11 +28,11 @@ class TestCommandHandler(PostgresAsyncTestCase):
         dispatcher = CommandHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, CommandHandler)
 
+    def test_entry_model_cls(self):
+        self.assertEqual(Command, CommandHandler.ENTRY_MODEL_CLS)
+
     async def test_dispatch(self):
-        model = FakeModel("foo")
-        instance = Command(
-            topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",
-        )
+        instance = Command(topic="AddOrder", items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",)
 
         broker = FakeBroker()
 
@@ -49,8 +48,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(None, broker.reply_topic)
 
     async def test_dispatch_without_reply(self):
-        model = FakeModel("foo")
-        instance = Command(topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij",)
+        instance = Command(topic="AddOrder", items=[], saga_uuid="43434jhij",)
 
         broker = FakeBroker()
 

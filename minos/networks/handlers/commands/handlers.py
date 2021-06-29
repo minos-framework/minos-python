@@ -41,6 +41,7 @@ class CommandHandler(Handler):
     """Command Handler class."""
 
     TABLE_NAME = "command_queue"
+    ENTRY_MODEL_CLS = Command
 
     broker: MinosBroker = Provide["command_reply_broker"]
 
@@ -50,15 +51,17 @@ class CommandHandler(Handler):
         if broker is not None:
             self.broker = broker
 
-    def _build_data(self, value: bytes) -> Command:
-        return Command.from_avro_bytes(value)
-
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
         handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
         return cls(service_name=config.service.name, handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
-    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        """Dispatch one row.
+
+        :param row: Row to be dispatched.
+        :return: This method does not return anything.
+        """
         command: Command = row.data
         definition_id = command.saga_uuid
 

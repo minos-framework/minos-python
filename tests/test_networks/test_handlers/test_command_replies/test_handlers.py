@@ -14,7 +14,6 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeModel,
     FakeSagaManager,
 )
 
@@ -26,11 +25,11 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         dispatcher = CommandReplyHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, CommandReplyHandler)
 
+    def test_entry_model_cls(self):
+        self.assertEqual(CommandReply, CommandReplyHandler.ENTRY_MODEL_CLS)
+
     async def test_dispatch(self):
-        model = FakeModel("foo")
-        instance = CommandReply(
-            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
-        )
+        instance = CommandReply(topic="AddOrderReply", items=[], saga_uuid="43434jhij", reply_on="mkk2334",)
         bin_data = instance.avro_bytes
         saga_manager = FakeSagaManager()
 

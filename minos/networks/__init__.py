@@ -42,6 +42,7 @@ from .handlers import (
     EventHandler,
     EventHandlerService,
     Handler,
+    HandlerEntry,
     HandlerSetup,
 )
 from .rest import (

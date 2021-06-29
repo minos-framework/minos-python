@@ -35,6 +35,7 @@ class CommandReplyHandler(Handler):
     """Command Reply Handler class."""
 
     TABLE_NAME = "command_reply_queue"
+    ENTRY_MODEL_CLS = CommandReply
 
     saga_manager: MinosSagaManager = Provide["saga_manager"]
 
@@ -51,8 +52,10 @@ class CommandReplyHandler(Handler):
         }
         return cls(*args, service_name=config.service.name, handlers=handlers, **config.saga.queue._asdict(), **kwargs,)
 
-    def _build_data(self, value: bytes) -> CommandReply:
-        return CommandReply.from_avro_bytes(value)
+    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        """Dispatch one row.
 
-    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        :param row: Row to be dispatched.
+        :return: This method does not return anything.
+        """
         await self.saga_manager.run(reply=row.data)

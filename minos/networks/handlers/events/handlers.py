@@ -30,6 +30,7 @@ class EventHandler(Handler):
     """Event Handler class."""
 
     TABLE_NAME = "event_queue"
+    ENTRY_MODEL_CLS = Event
 
     def __init__(self, *, service_name: str, **kwargs: Any):
         super().__init__(broker_group_name=f"event_{service_name}", **kwargs)
@@ -39,8 +40,10 @@ class EventHandler(Handler):
         handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.events.items}
         return cls(service_name=config.service.name, handlers=handlers, **config.events.queue._asdict(), **kwargs)
 
-    def _build_data(self, value: bytes) -> Event:
-        return Event.from_avro_bytes(value)
+    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        """Dispatch one row.
 
-    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        :param row: Row to be dispatched.
+        :return: This method does not return anything.
+        """
         await row.callback(row.topic, row.data)

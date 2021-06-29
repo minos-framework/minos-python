@@ -1,7 +1,11 @@
-import datetime
 import unittest
-
-import aiopg
+from datetime import (
+    datetime,
+)
+from unittest.mock import (
+    AsyncMock,
+    call,
+)
 
 from minos.common import (
     Event,
@@ -11,6 +15,7 @@ from minos.common.testing import (
 )
 from minos.networks import (
     EventHandler,
+    HandlerEntry,
 )
 from tests.utils import (
     BASE_PATH,
@@ -25,69 +30,19 @@ class TestEventHandler(PostgresAsyncTestCase):
         dispatcher = EventHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, EventHandler)
 
-    async def test_dispatch(self):
+    def test_entry_model_cls(self):
+        self.assertEqual(Event, EventHandler.ENTRY_MODEL_CLS)
+
+    async def test_dispatch_one(self):
+        mock = AsyncMock()
+        topic = "TicketAdded"
+        event = Event(topic, [FakeModel("foo")])
+        entry = HandlerEntry(1, topic, mock, 0, event, 1, datetime.now())
+
         async with EventHandler.from_config(config=self.config) as handler:
-            model = FakeModel("foo")
-            event_instance = Event(topic="TicketAdded", model=model.classname, items=[])
-            bin_data = event_instance.avro_bytes
-            Event.from_avro_bytes(bin_data)
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
-                        "VALUES (%s, %s, %s, %s) "
-                        "RETURNING id;",
-                        (event_instance.topic, 0, bin_data, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-
-            self.assertGreater(queue_id[0], 0)
-
-            # Must get the record, call on_reply function and delete the record from DB
-            await handler.dispatch()
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue WHERE id=%d" % (queue_id))
-                    records = await cur.fetchone()
-
-            self.assertEqual(0, records[0])
-
-    async def test_dispatch_wrong(self):
-        async with EventHandler.from_config(config=self.config) as handler:
-            bin_data = bytes(b"Test")
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
-                        "VALUES (%s, %s, %s, %s) "
-                        "RETURNING id;",
-                        ("TicketAdded", 0, bin_data, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-            self.assertGreater(queue_id[0], 0)
-
-            # Must get the record, call on_reply function and delete the record from DB
-            await handler.dispatch()
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue WHERE id = %s", (queue_id,))
-                    records = await cur.fetchone()
-
-            self.assertEqual(1, records[0])
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT * FROM event_queue WHERE id=%s", (queue_id,))
-                    pending_row = await cur.fetchone()
-
-            # Retry attempts
-            self.assertEqual(1, pending_row[4])
+            await handler.dispatch_one(entry)
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(topic, event), mock.call_args)
 
 
 if __name__ == "__main__":

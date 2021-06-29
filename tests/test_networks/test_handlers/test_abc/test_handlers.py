@@ -5,6 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import unittest
 from asyncio import (
     gather,
 )
@@ -18,7 +19,7 @@ from typing import (
 import aiopg
 
 from minos.common import (
-    MinosModel,
+    DataTransferObject,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -40,20 +41,15 @@ from tests.utils import (
 
 class _FakeHandler(Handler):
     TABLE_NAME = "fake"
+    ENTRY_MODEL_CLS = DataTransferObject
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.call_count = 0
         self.call_args = None
 
-    def _build_data(self, value: bytes) -> MinosModel:
-        from minos.common import (
-            Command,
-        )
-
-        return Command.from_avro_bytes(value)
-
-    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        """For testing purposes."""
         self.call_count += 1
         self.call_args = (row,)
 
@@ -92,11 +88,7 @@ class TestHandler(PostgresAsyncTestCase):
         )
 
         instance = Command(
-            topic="AddOrder",
-            model=FakeModel.classname,
-            items=[FakeModel("foo")],
-            saga_uuid="43434jhij",
-            reply_topic="UpdateTicket",
+            topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij", reply_topic="UpdateTicket",
         )
 
         async with self.handler:
@@ -123,16 +115,12 @@ class TestHandler(PostgresAsyncTestCase):
         )
 
         instance = Command(
-            topic="AddOrder",
-            model=FakeModel.classname,
-            items=[FakeModel("foo")],
-            saga_uuid="43434jhij",
-            reply_topic="UpdateTicket",
+            topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij", reply_topic="UpdateTicket",
         )
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         async with self.handler:
-            for x in range(0, 25):
+            for _ in range(0, 25):
                 await self._insert_one(instance)
                 await self._insert_one(instance_wrong)
 
@@ -164,3 +152,7 @@ class TestHandler(PostgresAsyncTestCase):
             async with connect.cursor() as cur:
                 await cur.execute("SELECT COUNT(*) FROM fake WHERE id=%d" % (queue_id,))
                 return (await cur.fetchone())[0] == 0
+
+
+if __name__ == "__main__":
+    unittest.main()
