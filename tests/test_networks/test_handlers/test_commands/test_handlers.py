@@ -1,23 +1,27 @@
-import datetime
 import unittest
-from collections import (
-    namedtuple,
+from datetime import (
+    datetime,
 )
-
-import aiopg
+from unittest.mock import (
+    AsyncMock,
+)
 
 from minos.common import (
     Command,
+    Response,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     CommandHandler,
+    CommandRequest,
+    HandlerEntry,
 )
 from tests.utils import (
     BASE_PATH,
     FakeBroker,
+    FakeModel,
 )
 
 
@@ -32,14 +36,14 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(Command, CommandHandler.ENTRY_MODEL_CLS)
 
     async def test_dispatch(self):
-        instance = Command(topic="AddOrder", items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",)
-
+        mock = AsyncMock(return_value=Response("add_order"))
         broker = FakeBroker()
 
+        reply = Command(topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij", reply_topic="UpdateTicket")
+        entry = HandlerEntry(1, "AddOrder", mock, 0, reply, 1, datetime.now())
+
         async with CommandHandler.from_config(config=self.config, broker=broker) as handler:
-            queue_id = await self._insert_one(instance)
-            await handler.dispatch()
-            self.assertTrue(await self._is_processed(queue_id))
+            await handler.dispatch_one(entry)
 
         self.assertEqual(1, broker.call_count)
         self.assertEqual(["add_order"], broker.items)
@@ -47,42 +51,27 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual("43434jhij", broker.saga_uuid)
         self.assertEqual(None, broker.reply_topic)
 
-    async def test_dispatch_without_reply(self):
-        instance = Command(topic="AddOrder", items=[], saga_uuid="43434jhij",)
+        self.assertEqual(1, mock.call_count)
+        observed = mock.call_args[0][0]
+        self.assertIsInstance(observed, CommandRequest)
+        self.assertEqual([FakeModel("foo")], await observed.content())
 
+    async def test_dispatch_without_reply(self):
+        mock = AsyncMock()
         broker = FakeBroker()
 
+        reply = Command(topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij")
+        entry = HandlerEntry(1, "AddOrder", mock, 0, reply, 1, datetime.now())
+
         async with CommandHandler.from_config(config=self.config, broker=broker) as handler:
-            queue_id = await self._insert_one(instance)
-            await handler.dispatch()
-            self.assertTrue(await self._is_processed(queue_id))
+            await handler.dispatch_one(entry)
 
         self.assertEqual(0, broker.call_count)
 
-    async def test_dispatch_wrong(self):
-        instance = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-
-        async with CommandHandler.from_config(config=self.config) as handler:
-            queue_id = await self._insert_one(instance)
-            await handler.dispatch()
-            self.assertFalse(await self._is_processed(queue_id))
-
-    async def _insert_one(self, instance):
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
-                    "VALUES (%s, %s, %s, %s) "
-                    "RETURNING id;",
-                    (instance.topic, 0, instance.avro_bytes, datetime.datetime.now(),),
-                )
-                return (await cur.fetchone())[0]
-
-    async def _is_processed(self, queue_id):
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id,))
-                return (await cur.fetchone())[0] == 0
+        self.assertEqual(1, mock.call_count)
+        observed = mock.call_args[0][0]
+        self.assertIsInstance(observed, CommandRequest)
+        self.assertEqual([FakeModel("foo")], await observed.content())
 
 
 if __name__ == "__main__":
