@@ -24,8 +24,27 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = CommandReplyHandler.from_config(config=self.config)
+        saga_manager = FakeSagaManager()
+        dispatcher = CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager)
         self.assertIsInstance(dispatcher, CommandReplyHandler)
+        self.assertEqual(
+            {
+                "AddOrderReply": {"action": "add_order", "controller": "tests.services.SagaTestService.SagaService"},
+                "DeleteOrderReply": {
+                    "action": "delete_order",
+                    "controller": "tests.services.SagaTestService.SagaService",
+                },
+            },
+            dispatcher._handlers,
+        )
+        self.assertEqual(self.config.saga.queue.records, dispatcher._records)
+        self.assertEqual(self.config.saga.queue.retry, dispatcher._retry)
+        self.assertEqual(self.config.saga.queue.host, dispatcher.host)
+        self.assertEqual(self.config.saga.queue.port, dispatcher.port)
+        self.assertEqual(self.config.saga.queue.database, dispatcher.database)
+        self.assertEqual(self.config.saga.queue.user, dispatcher.user)
+        self.assertEqual(self.config.saga.queue.password, dispatcher.password)
+        self.assertEqual(saga_manager, dispatcher.saga_manager)
 
     def test_entry_model_cls(self):
         self.assertEqual(CommandReply, CommandReplyHandler.ENTRY_MODEL_CLS)

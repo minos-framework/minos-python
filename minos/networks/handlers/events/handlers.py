@@ -9,7 +9,6 @@ from __future__ import (
 )
 
 from typing import (
-    Any,
     NoReturn,
 )
 
@@ -32,13 +31,10 @@ class EventHandler(Handler):
     TABLE_NAME = "event_queue"
     ENTRY_MODEL_CLS = Event
 
-    def __init__(self, *, service_name: str, **kwargs: Any):
-        super().__init__(broker_group_name=f"event_{service_name}", **kwargs)
-
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
         handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.events.items}
-        return cls(service_name=config.service.name, handlers=handlers, **config.events.queue._asdict(), **kwargs)
+        return cls(handlers=handlers, **config.events.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
         """Dispatch one row.

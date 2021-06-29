@@ -55,15 +55,15 @@ class Handler(HandlerSetup):
 
     """
 
-    __slots__ = "_handlers", "_handlers"
+    __slots__ = "_handlers", "_records", "_retry"
 
     ENTRY_MODEL_CLS: Type[MinosModel]
 
-    def __init__(self, *, records: int, handlers: dict[str, dict[str, Any]], **kwargs: Any):
+    def __init__(self, records: int, handlers: dict[str, dict[str, Any]], retry: int, **kwargs: Any):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
-        self._retry = kwargs.get("retry")
+        self._retry = retry
 
     async def dispatch(self) -> NoReturn:
         """Event Queue Checker and dispatcher.

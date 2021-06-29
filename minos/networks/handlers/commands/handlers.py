@@ -45,8 +45,8 @@ class CommandHandler(Handler):
 
     broker: MinosBroker = Provide["command_reply_broker"]
 
-    def __init__(self, *, service_name: str, broker: MinosBroker = None, **kwargs: Any):
-        super().__init__(broker_group_name=f"command_{service_name}", **kwargs)
+    def __init__(self, broker: MinosBroker = None, **kwargs: Any):
+        super().__init__(**kwargs)
 
         if broker is not None:
             self.broker = broker
@@ -54,7 +54,7 @@ class CommandHandler(Handler):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
         handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
-        return cls(service_name=config.service.name, handlers=handlers, **config.commands.queue._asdict(), **kwargs)
+        return cls(handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
         """Dispatch one row.

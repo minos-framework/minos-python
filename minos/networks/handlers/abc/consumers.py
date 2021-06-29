@@ -41,7 +41,7 @@ class Consumer(HandlerSetup):
 
     __slots__ = "_topics", "_broker", "__consumer"
 
-    def __init__(self, *, topics: list[str], broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
+    def __init__(self, topics: list[str], broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._topics = topics
         self._broker = broker

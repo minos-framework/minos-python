@@ -62,9 +62,7 @@ class TestHandler(PostgresAsyncTestCase):
         handlers = {
             item.name: {"controller": item.controller, "action": item.action} for item in self.config.commands.items
         }
-        self.handler = _FakeHandler(
-            service_name=self.config.service.name, handlers=handlers, **self.config.commands.queue._asdict()
-        )
+        self.handler = _FakeHandler(handlers=handlers, **self.config.commands.queue._asdict())
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")

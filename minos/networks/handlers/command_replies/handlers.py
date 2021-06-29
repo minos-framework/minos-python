@@ -39,8 +39,8 @@ class CommandReplyHandler(Handler):
 
     saga_manager: MinosSagaManager = Provide["saga_manager"]
 
-    def __init__(self, *, service_name: str, saga_manager: MinosSagaManager = None, **kwargs: Any):
-        super().__init__(broker_group_name=f"command_reply_{service_name}", **kwargs)
+    def __init__(self, saga_manager: MinosSagaManager = None, **kwargs: Any):
+        super().__init__(**kwargs)
 
         if saga_manager is not None:
             self.saga_manager = saga_manager
@@ -50,7 +50,7 @@ class CommandReplyHandler(Handler):
         handlers = {
             f"{item.name}Reply": {"controller": item.controller, "action": item.action} for item in config.saga.items
         }
-        return cls(*args, service_name=config.service.name, handlers=handlers, **config.saga.queue._asdict(), **kwargs,)
+        return cls(*args, handlers=handlers, **config.saga.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
         """Dispatch one row.
