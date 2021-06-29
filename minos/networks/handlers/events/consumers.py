@@ -10,7 +10,6 @@ from __future__ import (
 )
 
 from minos.common import (
-    Event,
     MinosConfig,
 )
 
@@ -28,10 +27,3 @@ class EventConsumer(Consumer):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventConsumer:
         topics = [item.name for item in config.events.items]
         return cls(topics=topics, broker=config.events.broker, **config.events.queue._asdict(), **kwargs)
-
-    def _is_valid_instance(self, value: bytes):
-        try:
-            Event.from_avro_bytes(value)
-            return True
-        except:  # noqa E722
-            return False

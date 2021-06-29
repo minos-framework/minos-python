@@ -8,9 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 from abc import (
     ABC,
 )
-from datetime import (
-    datetime,
-)
 from typing import (
     NoReturn,
     Optional,
@@ -52,8 +49,7 @@ class Broker(MinosBroker, BrokerSetup, ABC):
         :param raw: Bytes sequence to be send.
         :return: The identifier of the message in the queue.
         """
-        now = datetime.now()
-        params = (topic, raw, 0, self.ACTION, now, now)
+        params = (topic, raw, 0, self.ACTION)
         raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
         return raw[0]
 
@@ -71,6 +67,6 @@ _CREATE_TABLE_QUERY = SQL(
 
 _INSERT_ENTRY_QUERY = SQL(
     "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) "
-    "VALUES (%s, %s, %s, %s, %s, %s) "
+    "VALUES (%s, %s, %s, %s, NOW(), NOW()) "
     "RETURNING id"
 )

@@ -9,7 +9,6 @@ from __future__ import (
 )
 
 from minos.common import (
-    Command,
     MinosConfig,
 )
 
@@ -27,10 +26,3 @@ class CommandConsumer(Consumer):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandConsumer:
         topics = [item.name for item in config.commands.items]
         return cls(topics=topics, broker=config.commands.broker, **config.commands.queue._asdict(), **kwargs)
-
-    def _is_valid_instance(self, value: bytes):
-        try:
-            Command.from_avro_bytes(value)
-            return True
-        except:  # noqa E722
-            return False

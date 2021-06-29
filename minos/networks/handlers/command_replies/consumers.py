@@ -9,7 +9,6 @@ from __future__ import (
 )
 
 from minos.common import (
-    CommandReply,
     MinosConfig,
 )
 
@@ -27,10 +26,3 @@ class CommandReplyConsumer(Consumer):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyConsumer:
         topics = [f"{item.name}Reply" for item in config.saga.items]
         return cls(topics=topics, broker=config.saga.broker, **config.saga.queue._asdict(), **kwargs)
-
-    def _is_valid_instance(self, value: bytes) -> bool:
-        try:
-            CommandReply.from_avro_bytes(value)
-            return True
-        except:  # noqa E722
-            return False

@@ -7,14 +7,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from datetime import (
-    datetime,
-)
 from typing import (
     NoReturn,
 )
 from unittest.mock import (
     MagicMock,
+    call,
 )
 
 import aiopg
@@ -79,7 +77,7 @@ class TestBroker(PostgresAsyncTestCase):
     async def test_send_bytes(self):
         query = SQL(
             "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) "
-            "VALUES (%s, %s, %s, %s, %s, %s) "
+            "VALUES (%s, %s, %s, %s, NOW(), NOW()) "
             "RETURNING id"
         )
 
@@ -96,14 +94,7 @@ class TestBroker(PostgresAsyncTestCase):
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
 
-        args = mock.call_args.args
-        self.assertEqual(query, args[0])
-        self.assertEqual("test_topic", args[1][0])
-        self.assertEqual(b"test", args[1][1])
-        self.assertEqual(0, args[1][2])
-        self.assertEqual("fake", args[1][3])
-        self.assertIsInstance(args[1][4], datetime)
-        self.assertIsInstance(args[1][5], datetime)
+        self.assertEqual(call(query, ("test_topic", b"test", 0, "fake")), mock.call_args)
 
 
 if __name__ == "__main__":
