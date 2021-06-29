@@ -52,6 +52,8 @@ class _FakeHandler(Handler):
         """For testing purposes."""
         self.call_count += 1
         self.call_args = (row,)
+        if row.topic == "DeleteOrder":
+            raise ValueError()
 
 
 class TestHandler(PostgresAsyncTestCase):
@@ -79,15 +81,13 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_dispatch(self):
         from minos.common import (
-            Command,
+            Event,
         )
         from tests.utils import (
             FakeModel,
         )
 
-        instance = Command(
-            topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij", reply_topic="UpdateTicket",
-        )
+        instance = Event(topic="AddOrder", items=[FakeModel("foo")])
 
         async with self.handler:
             queue_id = await self._insert_one(instance)
@@ -97,12 +97,19 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(1, self.handler.call_count)
 
     async def test_dispatch_wrong(self):
-        instance = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
+        from minos.common import (
+            Event,
+        )
+
+        instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
+        instance_2 = Event(topic="DeleteOrder", items=[])
 
         async with self.handler:
-            queue_id = await self._insert_one(instance)
+            queue_id_1 = await self._insert_one(instance_1)
+            queue_id_2 = await self._insert_one(instance_2)
             await self.handler.dispatch()
-            self.assertFalse(await self._is_processed(queue_id))
+            self.assertFalse(await self._is_processed(queue_id_1))
+            self.assertFalse(await self._is_processed(queue_id_2))
 
     async def test_dispatch_concurrent(self):
         from minos.common import (
