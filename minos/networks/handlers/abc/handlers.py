@@ -107,11 +107,12 @@ class Handler(HandlerSetup):
             logger.warning(f"Raised an exception while building the message with id={row[0]}: {exc!r}")
             return False
 
-        logger.info(f"Dispatching a {entry.topic!r} message...")
+        logger.debug(f"Dispatching {entry.data!s}...")
+
         try:
             await self.dispatch_one(entry)
         except Exception as exc:
-            logger.warning(f"Raised an exception while dispatching the {entry.topic!r} message: {exc!r}")
+            logger.warning(f"Raised an exception while dispatching {entry.data!s}: {exc!r}")
             return False
 
         return True
