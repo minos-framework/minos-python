@@ -23,13 +23,11 @@ if TYPE_CHECKING:
     from ..abc import (
         Model,
     )
+    from ..fields import (
+        ModelField,
+    )
 
 logger = logging.getLogger(__name__)
-
-
-def _diff(a: dict, b: dict) -> dict:
-    d = set(a.items()) - set(b.items())
-    return dict(d)
 
 
 class FieldsDiff(BucketModel):
@@ -48,11 +46,16 @@ class FieldsDiff(BucketModel):
             ignore = list()
 
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
-        fields = _diff(a.fields, b.fields)
+        fields = cls._diff(a.fields, b.fields)
         for name in ignore:
             fields.pop(name, None)
 
         return cls(fields)
+
+    @staticmethod
+    def _diff(a: dict[str, ModelField], b: dict[str, ModelField]) -> dict[str, ModelField]:
+        d: set[(str, ModelField)] = set(a.items()) - set(b.items())
+        return dict(d)
 
     @classmethod
     def from_model(cls, aggregate: Model, ignore: Optional[list[str]] = None) -> FieldsDiff:
