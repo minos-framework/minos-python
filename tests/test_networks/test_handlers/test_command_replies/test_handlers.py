@@ -12,7 +12,6 @@ from minos.common.testing import (
 )
 from minos.networks import (
     CommandReplyHandler,
-    MinosNetworkException,
 )
 from tests.utils import (
     BASE_PATH,
@@ -27,34 +26,6 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     def test_from_config(self):
         dispatcher = CommandReplyHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, CommandReplyHandler)
-
-    async def test_get_action(self):
-        model = FakeModel("foo")
-        event_instance = CommandReply(
-            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
-        )
-        handler = CommandReplyHandler.from_config(config=self.config)
-
-        cls = handler.get_action(topic=event_instance.topic)
-        result = await cls(topic=event_instance.topic, command=event_instance)
-
-        self.assertEqual(result, "add_order_saga")
-
-    async def test_non_implemented_action(self):
-        model = FakeModel("foo")
-        instance = CommandReply(
-            topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
-        )
-        handler = CommandReplyHandler.from_config(config=self.config)
-
-        with self.assertRaises(MinosNetworkException) as context:
-            cls = handler.get_action(topic=instance.topic)
-            await cls(topic=instance.topic, command=instance)
-
-        self.assertTrue(
-            "topic NotExisting have no controller/action configured, please review th configuration file"
-            in str(context.exception)
-        )
 
     async def test_event_dispatch(self):
         model = FakeModel("foo")

@@ -36,7 +36,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    MinosNetworkException,
+    MinosActionNotFoundException,
 )
 from ..entries import (
     HandlerEntry,
@@ -134,7 +134,7 @@ class Handler(HandlerSetup):
                 configuration file.
         """
         if topic not in self._handlers:
-            raise MinosNetworkException(
+            raise MinosActionNotFoundException(
                 f"topic {topic} have no controller/action configured, " f"please review th configuration file"
             )
 

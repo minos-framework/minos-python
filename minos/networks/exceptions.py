@@ -16,3 +16,7 @@ class MinosNetworkException(MinosException):
 
 class MinosDiscoveryConnectorException(MinosNetworkException):
     """Exception to be raised when there is a failure while communicating with the discovery."""
+
+
+class MinosActionNotFoundException(MinosNetworkException):
+    """Exception to be raised when an action cannot be found,"""

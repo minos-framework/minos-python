@@ -12,7 +12,6 @@ from minos.common.testing import (
 )
 from minos.networks import (
     EventHandler,
-    MinosNetworkException,
 )
 from tests.utils import (
     BASE_PATH,
@@ -26,30 +25,6 @@ class TestEventHandler(PostgresAsyncTestCase):
     def test_from_config(self):
         dispatcher = EventHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, EventHandler)
-
-    async def test_get_action(self):
-        model = FakeModel("foo")
-        event_instance = Event(topic="TestEventQueueAdd", model=model.classname, items=[])
-        handler = EventHandler.from_config(config=self.config)
-
-        cls = handler.get_action(topic="TicketAdded")
-        result = await cls(topic="TicketAdded", event=event_instance)
-
-        self.assertEqual("request_added", result)
-
-    async def test_non_implemented_action(self):
-        model = FakeModel("foo")
-        event_instance = Event(topic="NotExisting", model=model.classname, items=[])
-        handler = EventHandler.from_config(config=self.config)
-
-        with self.assertRaises(MinosNetworkException) as context:
-            cls = handler.get_action(topic=event_instance.topic)
-            await cls(topic=event_instance.topic, event=event_instance)
-
-        self.assertTrue(
-            "topic NotExisting have no controller/action configured, please review th configuration file"
-            in str(context.exception)
-        )
 
     async def test_event_dispatch(self):
         async with EventHandler.from_config(config=self.config) as handler:

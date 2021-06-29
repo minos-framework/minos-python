@@ -21,6 +21,7 @@ from .discovery import (
     MinosDiscoveryClient,
 )
 from .exceptions import (
+    MinosActionNotFoundException,
     MinosDiscoveryConnectorException,
     MinosNetworkException,
 )

@@ -24,7 +24,7 @@ class _FakeHandlerSetup(HandlerSetup):
     TABLE_NAME = "fake"
 
 
-class TestCommandHandler(PostgresAsyncTestCase):
+class TestHandlerSetup(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_if_queue_table_exists(self):
