@@ -56,7 +56,7 @@ class DiscoveryConnector(MinosSetup):
 
         :return: This method does not return anything.
         """
-        logger.info(f"Subscribing {self.name!r} microservice into the discovery...")
+        logger.info("Performing discovery subscription...")
         await self.client.subscribe(self.host, self.port, self.name)
 
     async def _destroy(self) -> NoReturn:
@@ -67,5 +67,5 @@ class DiscoveryConnector(MinosSetup):
 
         :return: This method does not return anything.
         """
-        logger.info(f"Unsubscribing {self.name!r} microservice into the discovery...")
+        logger.info("Performing discovery unsubscription...")
         await self.client.unsubscribe(self.name)
