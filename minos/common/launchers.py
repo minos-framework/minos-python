@@ -110,7 +110,7 @@ class EntrypointLauncher(MinosSetup):
                 logger.info("Microservice is up and running!")
                 self.loop.run_forever()
         except KeyboardInterrupt:
-            logger.info("Stopping microservice...")
+            logger.info("Stopping microservice...")  # pragma: no cover
         finally:
             self.graceful_shutdown()
 
