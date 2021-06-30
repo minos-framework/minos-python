@@ -48,10 +48,10 @@ class _FakeHandler(Handler):
         self.call_count = 0
         self.call_args = None
 
-    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
-        self.call_args = (row,)
+        self.call_args = (entry,)
 
 
 class TestHandler(PostgresAsyncTestCase):
