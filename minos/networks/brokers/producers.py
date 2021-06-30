@@ -86,6 +86,8 @@ class Producer(BrokerSetup):
         :param message: The message to be published.
         :return: A boolean flag, ``True`` when the message is properly published or ``False`` otherwise.
         """
+        logger.debug(f"Producing message with {topic!s} topic...")
+
         producer = AIOKafkaProducer(bootstrap_servers=f"{self.broker.host}:{self.broker.port}")
         # noinspection PyBroadException
         try:
