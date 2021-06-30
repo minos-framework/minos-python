@@ -39,10 +39,11 @@ class EventHandler(Handler):
         handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.events.items}
         return cls(handlers=handlers, **config.events.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         """Dispatch one row.
 
-        :param row: Row to be dispatched.
+        :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        await row.callback(row.topic, row.data)
+        logger.info(f"Dispatching '{entry.data!s}'...")
+        await entry.callback(entry.topic, entry.data)

@@ -8,6 +8,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from functools import (
     cached_property,
 )
@@ -26,12 +27,15 @@ from minos.common import (
     ENDPOINT,
     MinosConfig,
     MinosSetup,
+    classname,
     import_module,
 )
 
 from .messages import (
     HttpRequest,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class RestBuilder(MinosSetup):
@@ -104,6 +108,7 @@ class RestBuilder(MinosSetup):
         class_method = getattr(instance_class, action)
 
         async def _fn(request: web.Request) -> web.Response:
+            logger.info(f"Dispatching {classname(class_method)!s} from {request.remote!s}...")
             request = HttpRequest(request)
             response = class_method(request)
             if isawaitable(response):
@@ -117,8 +122,9 @@ class RestBuilder(MinosSetup):
         app.router.add_get("/system/health", self._system_health_handler)
 
     @staticmethod
-    async def _system_health_handler(request):
+    async def _system_health_handler(request: web.Request) -> web.Response:
         """System Health Route Handler.
         :return: A `web.json_response` response.
         """
+        logger.info(f"Dispatching 'health' from {request.remote!s}...")
         return web.json_response({"host": request.host}, status=200)

@@ -8,6 +8,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Any,
     NoReturn,
@@ -29,6 +30,8 @@ from ..abc import (
 from ..entries import (
     HandlerEntry,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class CommandReplyHandler(Handler):
@@ -52,10 +55,11 @@ class CommandReplyHandler(Handler):
         }
         return cls(*args, handlers=handlers, **config.saga.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         """Dispatch one row.
 
-        :param row: Row to be dispatched.
+        :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        await self.saga_manager.run(reply=row.data)
+        logger.info(f"Dispatching '{entry.data!s}'...")
+        await self.saga_manager.run(reply=entry.data)

@@ -8,6 +8,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from inspect import (
     isawaitable,
 )
@@ -36,6 +37,8 @@ from .messages import (
     CommandRequest,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class CommandHandler(Handler):
     """Command Handler class."""
@@ -56,17 +59,19 @@ class CommandHandler(Handler):
         handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
         return cls(handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         """Dispatch one row.
 
-        :param row: Row to be dispatched.
+        :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        command: Command = row.data
+        logger.info(f"Dispatching '{entry.data!s}'...")
+
+        command: Command = entry.data
         definition_id = command.saga_uuid
 
         request = CommandRequest(command)
-        response = row.callback(request)
+        response = entry.callback(request)
         if isawaitable(response):
             response = await response
 

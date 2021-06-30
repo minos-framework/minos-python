@@ -107,7 +107,7 @@ class Handler(HandlerSetup):
             logger.warning(f"Raised an exception while building the message with id={row[0]}: {exc!r}")
             return False
 
-        logger.info(f"Dispatching {entry.data!s}...")
+        logger.debug(f"Dispatching '{entry.data!s}'...")
 
         try:
             await self.dispatch_one(entry)
@@ -157,10 +157,10 @@ class Handler(HandlerSetup):
         return action
 
     @abstractmethod
-    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         """Dispatch one row.
 
-        :param row: Row to be dispatched.
+        :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
         raise NotImplementedError
