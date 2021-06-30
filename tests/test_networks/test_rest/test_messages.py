@@ -28,6 +28,9 @@ class MockedRequest:
         self.data = data
         self.remote = "test"
 
+    def __repr__(self):
+        return "repr"
+
     async def json(self):
         if self.data is None:
             raise JSONDecodeError("", "", 1)
@@ -39,6 +42,17 @@ class TestHttpRequest(unittest.IsolatedAsyncioTestCase):
         raw_request = MockedRequest()
         request = HttpRequest(raw_request)
         self.assertEqual(raw_request, request.raw_request)
+
+    def test_repr(self):
+        request = HttpRequest(MockedRequest())
+        self.assertEqual("HttpRequest(repr)", repr(request))
+
+    def test_eq_true(self):
+        request = MockedRequest()
+        self.assertEqual(HttpRequest(request), HttpRequest(request))
+
+    def test_eq_false(self):
+        self.assertNotEqual(HttpRequest(MockedRequest()), HttpRequest(MockedRequest()))
 
     async def test_content(self):
         raw_request = MockedRequest(

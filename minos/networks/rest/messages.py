@@ -5,6 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from collections import (
     defaultdict,
 )
@@ -30,6 +34,12 @@ class HttpRequest(Request):
 
     def __init__(self, request: web.Request):
         self.raw_request = request
+
+    def __eq__(self, other: HttpRequest) -> bool:
+        return type(self) == type(other) and self.raw_request == other.raw_request
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.raw_request!r})"
 
     async def content(self) -> list[Any]:
         """Get the request content.

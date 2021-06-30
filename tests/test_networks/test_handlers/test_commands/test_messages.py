@@ -24,6 +24,21 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
         self.models = [FakeModel("foo"), FakeModel("bar")]
         self.command = Command("FooCreated", self.models, "12345678", "AddOrderReply")
 
+    def test_repr(self):
+        request = CommandRequest(self.command)
+        expected = (
+            "CommandRequest(Command(topic=FooCreated, items=[FakeModel(text=foo), FakeModel(text=bar)], "
+            "saga_uuid=12345678, reply_topic=AddOrderReply))"
+        )
+        self.assertEqual(expected, repr(request))
+
+    def test_eq_true(self):
+        self.assertEqual(CommandRequest(self.command), CommandRequest(self.command))
+
+    def test_eq_false(self):
+        another = CommandRequest(Command("FooUpdated", self.models, "12345678", "AddOrderReply"))
+        self.assertNotEqual(CommandRequest(self.command), another)
+
     def test_command(self):
         request = CommandRequest(self.command)
         self.assertEqual(self.command, request.command)
