@@ -21,11 +21,14 @@ from typing import (
 
 from aiomisc import (
     Service,
-    entrypoint,
     receiver,
 )
 from aiomisc.entrypoint import (
     Entrypoint,
+)
+from aiomisc.log import (
+    LogFormat,
+    basic_config,
 )
 from aiomisc.utils import (
     create_default_event_loop,
@@ -51,7 +54,7 @@ logger = logging.getLogger(__name__)
 
 
 def _create_entrypoint(*args, **kwargs) -> Entrypoint:  # pragma: no cover
-    return entrypoint(*args, **kwargs)
+    return Entrypoint(*args, **kwargs)
 
 
 def _create_loop() -> AbstractEventLoop:  # pragma: no cover
@@ -67,12 +70,17 @@ class EntrypointLauncher(MinosSetup):
         injections: dict[str, Union[MinosSetup, Type[MinosSetup], str]],
         services: list[Union[Service, Type[Service], str]],
         interval: float = 0.1,
+        log_level: Union[int, str] = logging.INFO,
+        log_format: Union[str, LogFormat] = "color",
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.config = config
         self.interval = interval
+
+        self._log_level = log_level
+        self._log_format = log_format
 
         self._raw_injections = injections
         self._raw_services = services
@@ -90,18 +98,24 @@ class EntrypointLauncher(MinosSetup):
 
         :return: This method does not return anything.
         """
+
+        basic_config(
+            level=self._log_level, log_format=self._log_format, buffered=False,
+        )
+
         logger.info("Starting microservice...")
 
         try:
             with self.entrypoint:
                 logger.info("Microservice is up and running!")
+                self.loop.run_forever()
         finally:
             self.graceful_shutdown()
 
     def graceful_shutdown(self, err: Exception = None) -> NoReturn:
-        """TODO
+        """Shutdown the services execution gracefully.
 
-        :return: TODO
+        :return: This method does not return anything.
         """
         self.loop.run_until_complete(self.entrypoint.graceful_shutdown(err))
 
@@ -113,23 +127,22 @@ class EntrypointLauncher(MinosSetup):
         """
 
         # noinspection PyUnusedLocal
-        @receiver(entrypoint.PRE_START)
+        @receiver(Entrypoint.PRE_START)
         async def _start(*args, **kwargs):
             await self.setup()
 
         # noinspection PyUnusedLocal
-        @receiver(entrypoint.POST_STOP)
+        @receiver(Entrypoint.POST_STOP)
         async def _stop(*args, **kwargs):
-            # await self.destroy()
-            pass
+            await self.destroy()
 
-        return _create_entrypoint(*self.services, loop=self.loop)
+        return _create_entrypoint(*self.services, loop=self.loop, log_config=False)
 
     @cached_property
     def loop(self) -> AbstractEventLoop:
-        """TODO
+        """Create the loop.
 
-        :return: TODO
+        :return: An ``AbstractEventLoop`` instance.
         """
         return _create_loop()
 

@@ -99,14 +99,14 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         mock_destroy = AsyncMock()
         self.launcher.destroy = mock_destroy
 
-        with patch("minos.common.launchers._create_entrypoint") as mock1:
-            mock1.side_effect = FakeEntrypoint
-            with patch("minos.common.launchers._create_loop") as mock2:
-                mock2.side_effect = FakeLoop
+        with patch("minos.common.launchers._create_entrypoint") as mock_launcher:
+            mock_launcher.side_effect = FakeEntrypoint
+            with patch("minos.common.launchers._create_loop") as mock_loop:
+                mock_loop.side_effect = FakeLoop
                 self.launcher.launch()
 
-        self.assertEqual(1, mock1.call_count)
-        self.assertEqual(1, mock2.call_count)
+        self.assertEqual(1, mock_launcher.call_count)
+        self.assertEqual(1, mock_loop.call_count)
         # FIXME: Improve this tests.
 
 
