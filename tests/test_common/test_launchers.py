@@ -13,10 +13,6 @@ from unittest.mock import (
     patch,
 )
 
-from aiomisc.entrypoint import (
-    Entrypoint,
-)
-
 from minos.common import (
     EntrypointLauncher,
     classname,
@@ -67,10 +63,27 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         self.assertEqual({"config": self.config, "interval": 0.1}, self.launcher.services[2].kwargs)
 
     async def test_entrypoint(self):
-        mock = AsyncMock()
-        self.launcher.setup = mock
-        self.launcher.destroy = mock
-        self.assertIsInstance(self.launcher.entrypoint, Entrypoint)
+        mock_setup = AsyncMock()
+        self.launcher.setup = mock_setup
+
+        mock_destroy = AsyncMock()
+        self.launcher.destroy = mock_destroy
+
+        with patch("minos.common.launchers._create_loop") as mock_loop:
+            loop = FakeLoop()
+            mock_loop.return_value = loop
+            with patch("minos.common.launchers._create_entrypoint") as mock_entrypoint:
+                entrypoint = FakeEntrypoint()
+                mock_entrypoint.return_value = entrypoint
+                self.assertEqual(entrypoint, self.launcher.entrypoint)
+                self.assertEqual(dict(loop=loop, log_config=False), mock_entrypoint.call_args.kwargs)
+
+    async def test_loop(self):
+        with patch("minos.common.launchers._create_loop") as mock_loop:
+            loop = FakeLoop()
+            mock_loop.return_value = loop
+            self.assertEqual(loop, self.launcher.loop)
+            self.assertEqual(call(), mock_loop.call_args)
 
     async def test_setup(self):
         mock = AsyncMock()
@@ -99,15 +112,16 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         mock_destroy = AsyncMock()
         self.launcher.destroy = mock_destroy
 
-        with patch("minos.common.launchers._create_entrypoint") as mock_launcher:
-            mock_launcher.side_effect = FakeEntrypoint
-            with patch("minos.common.launchers._create_loop") as mock_loop:
-                mock_loop.side_effect = FakeLoop
+        with patch("minos.common.launchers._create_loop") as mock_loop:
+            loop = FakeLoop()
+            mock_loop.return_value = loop
+            with patch("minos.common.launchers._create_entrypoint") as mock_entrypoint:
+                entrypoint = FakeEntrypoint()
+                mock_entrypoint.return_value = entrypoint
                 self.launcher.launch()
 
-        self.assertEqual(1, mock_launcher.call_count)
+        self.assertEqual(1, mock_entrypoint.call_count)
         self.assertEqual(1, mock_loop.call_count)
-        # FIXME: Improve this tests.
 
 
 if __name__ == "__main__":
