@@ -50,8 +50,6 @@ class MinosDiscoveryClient:
         :param retry_interval: Number of seconds to wait between attempts.
         :return: This method does not return anything.
         """
-        logger.info(f"Subscribing {name!r} microservice...")
-
         endpoint = f"{self.route}/subscribe"
         service_metadata = {"ip": host, "port": port, "name": name}
 
@@ -78,8 +76,6 @@ class MinosDiscoveryClient:
         :param retry_interval: Number of seconds to wait between attempts.
         :return: This method does not return anything.
         """
-        logger.info(f"Unsubscribing {name!r} microservice...")
-
         endpoint = f"{self.route}/unsubscribe"
         query_param = f"?name={name}"
 
