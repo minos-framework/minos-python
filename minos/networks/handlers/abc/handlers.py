@@ -23,6 +23,7 @@ from typing import (
     Any,
     Callable,
     NoReturn,
+    Type,
 )
 
 from psycopg2.sql import (
@@ -36,7 +37,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    MinosNetworkException,
+    MinosActionNotFoundException,
 )
 from ..entries import (
     HandlerEntry,
@@ -54,13 +55,15 @@ class Handler(HandlerSetup):
 
     """
 
-    __slots__ = "_handlers", "_handlers"
+    __slots__ = "_handlers", "_records", "_retry"
 
-    def __init__(self, *, records: int, handlers: dict[str, dict[str, Any]], **kwargs: Any):
+    ENTRY_MODEL_CLS: Type[MinosModel]
+
+    def __init__(self, records: int, handlers: dict[str, dict[str, Any]], retry: int, **kwargs: Any):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
-        self._retry = kwargs.get("retry")
+        self._retry = retry
 
     async def dispatch(self) -> NoReturn:
         """Event Queue Checker and dispatcher.
@@ -90,7 +93,8 @@ class Handler(HandlerSetup):
             for row in result:
                 dispatched = False
                 try:
-                    await self.dispatch_one(row)
+                    entry = await self._build_entry(row)
+                    await self.dispatch_one(entry)
                     dispatched = True
                 except Exception as exc:
                     logger.warning(f"Raised an exception while dispatching a message: {exc!r}")
@@ -103,23 +107,17 @@ class Handler(HandlerSetup):
             # Manually commit
             await cursor.execute("COMMIT")
 
-    async def dispatch_one(self, row: tuple[int, str, int, bytes, datetime]) -> NoReturn:
-        """Dispatch one row.
-
-        :param row: Row to be dispatched.
-        :return: This method does not return anything.
-        """
+    async def _build_entry(self, row: tuple[int, str, int, bytes, datetime]) -> HandlerEntry:
         id = row[0]
         topic = row[1]
         callback = self.get_action(row[1])
         partition_id = row[2]
-        data = self._build_data(row[3])
+        data = self.ENTRY_MODEL_CLS.from_avro_bytes(row[3])
         retry = row[4]
         created_at = row[5]
 
         entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
-
-        await self._dispatch_one(entry)
+        return entry
 
     def get_action(self, topic: str) -> Callable:
         """Get Event instance to call.
@@ -134,7 +132,7 @@ class Handler(HandlerSetup):
                 configuration file.
         """
         if topic not in self._handlers:
-            raise MinosNetworkException(
+            raise MinosActionNotFoundException(
                 f"topic {topic} have no controller/action configured, " f"please review th configuration file"
             )
 
@@ -149,16 +147,17 @@ class Handler(HandlerSetup):
         return action
 
     @abstractmethod
-    def _build_data(self, value: bytes) -> MinosModel:
-        raise NotImplementedError
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+        """Dispatch one row.
 
-    @abstractmethod
-    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
+        :param entry: Entry to be dispatched.
+        :return: This method does not return anything.
+        """
         raise NotImplementedError
 
 
 _SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
-    "SELECT * " "FROM {} " "WHERE retry < %s " "ORDER BY creation_date " "LIMIT %s " "FOR UPDATE " "SKIP LOCKED"
+    "SELECT * FROM {} WHERE retry < %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
 )
 
 _DELETE_PROCESSED_QUERY = SQL("DELETE FROM {} " "WHERE id = %s")

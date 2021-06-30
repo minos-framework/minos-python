@@ -9,7 +9,6 @@ from __future__ import (
 )
 
 from typing import (
-    Any,
     NoReturn,
 )
 
@@ -30,17 +29,17 @@ class EventHandler(Handler):
     """Event Handler class."""
 
     TABLE_NAME = "event_queue"
-
-    def __init__(self, *, service_name: str, **kwargs: Any):
-        super().__init__(broker_group_name=f"event_{service_name}", **kwargs)
+    ENTRY_MODEL_CLS = Event
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
         handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.events.items}
-        return cls(service_name=config.service.name, handlers=handlers, **config.events.queue._asdict(), **kwargs)
+        return cls(handlers=handlers, **config.events.queue._asdict(), **kwargs)
 
-    def _build_data(self, value: bytes) -> Event:
-        return Event.from_avro_bytes(value)
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+        """Dispatch one row.
 
-    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
-        await row.callback(row.topic, row.data)
+        :param entry: Entry to be dispatched.
+        :return: This method does not return anything.
+        """
+        await entry.callback(entry.topic, entry.data)

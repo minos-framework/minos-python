@@ -1,15 +1,14 @@
-import asyncio
-import datetime
 import unittest
-from collections import (
-    namedtuple,
+from datetime import (
+    datetime,
 )
-
-import aiopg
+from unittest.mock import (
+    AsyncMock,
+)
 
 from minos.common import (
     Command,
-    MinosConfigException,
+    Response,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -17,7 +16,7 @@ from minos.common.testing import (
 from minos.networks import (
     CommandHandler,
     CommandRequest,
-    MinosNetworkException,
+    HandlerEntry,
 )
 from tests.utils import (
     BASE_PATH,
@@ -30,68 +29,45 @@ class TestCommandHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = CommandHandler.from_config(config=self.config)
+        broker = FakeBroker()
+        dispatcher = CommandHandler.from_config(config=self.config, broker=broker)
         self.assertIsInstance(dispatcher, CommandHandler)
-
-    def test_from_config_raises(self):
-        with self.assertRaises(MinosConfigException):
-            CommandHandler.from_config()
-
-    async def test_if_queue_table_exists(self):
-        async with CommandHandler.from_config(config=self.config):
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "SELECT 1 "
-                        "FROM information_schema.tables "
-                        "WHERE table_schema = 'public' AND table_name = 'command_queue';"
-                    )
-                    ret = []
-                    async for row in cur:
-                        ret.append(row)
-
-            assert ret == [(1,)]
-
-    async def test_get_action(self):
-        model = FakeModel("foo")
-        event_instance = Command(
-            topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
+        self.assertEqual(
+            {
+                "AddOrder": {"action": "add_order", "controller": "tests.services.CommandTestService.CommandService"},
+                "DeleteOrder": {
+                    "action": "delete_order",
+                    "controller": "tests.services.CommandTestService.CommandService",
+                },
+                "GetOrder": {"action": "get_order", "controller": "tests.service.CommandTestService.CommandService"},
+                "UpdateOrder": {
+                    "action": "update_order",
+                    "controller": "tests.services.CommandTestService.CommandService",
+                },
+            },
+            dispatcher._handlers,
         )
-        handler = CommandHandler.from_config(config=self.config)
+        self.assertEqual(self.config.commands.queue.records, dispatcher._records)
+        self.assertEqual(self.config.commands.queue.retry, dispatcher._retry)
+        self.assertEqual(self.config.commands.queue.host, dispatcher.host)
+        self.assertEqual(self.config.commands.queue.port, dispatcher.port)
+        self.assertEqual(self.config.commands.queue.database, dispatcher.database)
+        self.assertEqual(self.config.commands.queue.user, dispatcher.user)
+        self.assertEqual(self.config.commands.queue.password, dispatcher.password)
+        self.assertEqual(broker, dispatcher.broker)
 
-        cls = handler.get_action(topic=event_instance.topic)
-        result = await cls(CommandRequest(event_instance))
+    def test_entry_model_cls(self):
+        self.assertEqual(Command, CommandHandler.ENTRY_MODEL_CLS)
 
-        self.assertEqual(["add_order"], await result.content())
-
-    async def test_non_implemented_action(self):
-        model = FakeModel("foo")
-        instance = Command(
-            topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="UpdateTicket",
-        )
-        handler = CommandHandler.from_config(config=self.config)
-
-        with self.assertRaises(MinosNetworkException) as context:
-            cls = handler.get_action(topic=instance.topic)
-            await cls(topic=instance.topic, command=instance)
-
-        self.assertTrue(
-            "topic NotExisting have no controller/action configured, please review th configuration file"
-            in str(context.exception)
-        )
-
-    async def test_event_dispatch(self):
-        model = FakeModel("foo")
-        instance = Command(
-            topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",
-        )
-
+    async def test_dispatch(self):
+        mock = AsyncMock(return_value=Response("add_order"))
         broker = FakeBroker()
 
+        reply = Command(topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij", reply_topic="UpdateTicket")
+        entry = HandlerEntry(1, "AddOrder", mock, 0, reply, 1, datetime.now())
+
         async with CommandHandler.from_config(config=self.config, broker=broker) as handler:
-            queue_id = await self._insert_one(instance)
-            await handler.dispatch()
-            self.assertTrue(await self._is_processed(queue_id))
+            await handler.dispatch_one(entry)
 
         self.assertEqual(1, broker.call_count)
         self.assertEqual(["add_order"], broker.items)
@@ -99,121 +75,27 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual("43434jhij", broker.saga_uuid)
         self.assertEqual(None, broker.reply_topic)
 
-    async def test_event_dispatch_without_reply(self):
-        model = FakeModel("foo")
-        instance = Command(topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij",)
+        self.assertEqual(1, mock.call_count)
+        observed = mock.call_args[0][0]
+        self.assertIsInstance(observed, CommandRequest)
+        self.assertEqual([FakeModel("foo")], await observed.content())
 
+    async def test_dispatch_without_reply(self):
+        mock = AsyncMock()
         broker = FakeBroker()
 
+        reply = Command(topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij")
+        entry = HandlerEntry(1, "AddOrder", mock, 0, reply, 1, datetime.now())
+
         async with CommandHandler.from_config(config=self.config, broker=broker) as handler:
-            queue_id = await self._insert_one(instance)
-            await handler.dispatch()
-            self.assertTrue(await self._is_processed(queue_id))
+            await handler.dispatch_one(entry)
 
         self.assertEqual(0, broker.call_count)
 
-    async def test_event_dispatch_wrong_event(self):
-        instance = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-
-        async with CommandHandler.from_config(config=self.config) as handler:
-            queue_id = await self._insert_one(instance)
-            await handler.dispatch()
-            self.assertFalse(await self._is_processed(queue_id))
-
-    async def _insert_one(self, instance):
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute(
-                    "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
-                    "VALUES (%s, %s, %s, %s) "
-                    "RETURNING id;",
-                    (instance.topic, 0, instance.avro_bytes, datetime.datetime.now(),),
-                )
-                return (await cur.fetchone())[0]
-
-    async def _is_processed(self, queue_id):
-        async with aiopg.connect(**self.commands_queue_db) as connect:
-            async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id,))
-                return (await cur.fetchone())[0] == 0
-
-    async def test_command_handler_dispatch_wrong_event(self):
-        async with CommandHandler.from_config(config=self.config) as handler:
-            bin_data = bytes(b"Test")
-
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
-                        "VALUES (%s, %s, %s, %s) "
-                        "RETURNING id;",
-                        ("AddOrder", 0, bin_data, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-
-            assert queue_id[0] > 0
-
-            # Must get the record, call on_reply function and delete the record from DB
-            await handler.dispatch()
-
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_queue WHERE id=%d" % (queue_id))
-                    records = await cur.fetchone()
-
-            assert records[0] == 1
-
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT * FROM command_queue WHERE id=%d" % (queue_id))
-                    pending_row = await cur.fetchone()
-
-            # Retry attempts
-            assert pending_row[4] == 1
-
-    async def test_concurrency_dispatcher(self):
-        model = FakeModel("foo")
-        instance = Command(
-            topic="AddOrder", model=model.classname, items=[], saga_uuid="43434jhij", reply_topic="UpdateTicket",
-        )
-        bin_data = instance.avro_bytes
-
-        broker = FakeBroker()
-        bin_data_wrong = bytes(b"Test")
-
-        async with CommandHandler.from_config(config=self.config, broker=broker) as handler:
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    for x in range(0, 25):
-                        await cur.execute(
-                            "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data, datetime.datetime.now(),),
-                        )
-                        await cur.execute(
-                            "INSERT INTO command_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data_wrong, datetime.datetime.now(),),
-                        )
-
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_queue")
-                    records = await cur.fetchone()
-
-            assert records[0] == 50
-
-            await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
-
-            async with aiopg.connect(**self.commands_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_queue")
-                    records = await cur.fetchone()
-
-            assert records[0] == 25
+        self.assertEqual(1, mock.call_count)
+        observed = mock.call_args[0][0]
+        self.assertIsInstance(observed, CommandRequest)
+        self.assertEqual([FakeModel("foo")], await observed.content())
 
 
 if __name__ == "__main__":

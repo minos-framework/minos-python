@@ -8,10 +8,6 @@ from __future__ import (
     annotations,
 )
 
-import datetime
-from abc import (
-    abstractmethod,
-)
 from typing import (
     Any,
     NoReturn,
@@ -45,7 +41,7 @@ class Consumer(HandlerSetup):
 
     __slots__ = "_topics", "_broker", "__consumer"
 
-    def __init__(self, *, topics: list[str], broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
+    def __init__(self, topics: list[str], broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._topics = topics
         self._broker = broker
@@ -86,28 +82,20 @@ class Consumer(HandlerSetup):
         async for msg in consumer:
             await self.handle_single_message(msg)
 
-    async def handle_single_message(self, msg):
+    async def handle_single_message(self, message):
         """Handle Kafka messages.
 
         Evaluate if the binary of message is an Event instance.
         Add Event instance to the event_queue table.
 
         Args:
-            msg: Kafka message.
+            message: Kafka message.
 
         Raises:
             Exception: An error occurred inserting record.
         """
-        # the handler receive a message and store in the queue database
-        # check if the event binary string is well formatted
-        if not self._is_valid_instance(msg.value):
-            return
 
-        return await self.queue_add(msg.topic, msg.partition, msg.value)
-
-    @abstractmethod
-    def _is_valid_instance(self, value: bytes):  # pragma: no cover
-        raise Exception("Method not implemented")
+        return await self.queue_add(message.topic, message.partition, message.value)
 
     async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:
         """Insert row to event_queue table.
@@ -128,12 +116,12 @@ class Consumer(HandlerSetup):
             Exception: An error occurred inserting record.
         """
         queue_id = await self.submit_query_and_fetchone(
-            _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary, datetime.datetime.now()),
+            _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary),
         )
 
         return queue_id[0]
 
 
 _INSERT_QUERY = SQL(
-    "INSERT INTO {} (topic, partition_id, binary_data, creation_date) " "VALUES (%s, %s, %s, %s) " "RETURNING id"
+    "INSERT INTO {} (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, NOW()) RETURNING id"
 )

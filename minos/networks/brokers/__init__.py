@@ -7,6 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from .abc import (
     Broker,
+    BrokerSetup,
 )
 from .command_replies import (
     CommandReplyBroker,

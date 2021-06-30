@@ -52,4 +52,4 @@ class CommandReplyBroker(Broker):
         if saga_uuid is None:
             saga_uuid = self.saga_uuid
         command_reply = CommandReply(topic=f"{topic}Reply", items=items, saga_uuid=saga_uuid)
-        return await self._send_bytes(command_reply.topic, command_reply.avro_bytes)
+        return await self.send_bytes(command_reply.topic, command_reply.avro_bytes)

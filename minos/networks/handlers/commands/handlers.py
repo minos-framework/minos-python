@@ -41,29 +41,32 @@ class CommandHandler(Handler):
     """Command Handler class."""
 
     TABLE_NAME = "command_queue"
+    ENTRY_MODEL_CLS = Command
 
     broker: MinosBroker = Provide["command_reply_broker"]
 
-    def __init__(self, *, service_name: str, broker: MinosBroker = None, **kwargs: Any):
-        super().__init__(broker_group_name=f"command_{service_name}", **kwargs)
+    def __init__(self, broker: MinosBroker = None, **kwargs: Any):
+        super().__init__(**kwargs)
 
         if broker is not None:
             self.broker = broker
 
-    def _build_data(self, value: bytes) -> Command:
-        return Command.from_avro_bytes(value)
-
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
         handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
-        return cls(service_name=config.service.name, handlers=handlers, **config.commands.queue._asdict(), **kwargs)
+        return cls(handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
-    async def _dispatch_one(self, row: HandlerEntry) -> NoReturn:
-        command: Command = row.data
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+        """Dispatch one row.
+
+        :param entry: Entry to be dispatched.
+        :return: This method does not return anything.
+        """
+        command: Command = entry.data
         definition_id = command.saga_uuid
 
         request = CommandRequest(command)
-        response = row.callback(request)
+        response = entry.callback(request)
         if isawaitable(response):
             response = await response
 

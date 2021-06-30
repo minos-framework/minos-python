@@ -43,4 +43,4 @@ class EventBroker(Broker):
         if topic is None:
             topic = self.topic
         event = Event(topic, items)
-        return await self._send_bytes(event.topic, event.avro_bytes)
+        return await self.send_bytes(event.topic, event.avro_bytes)

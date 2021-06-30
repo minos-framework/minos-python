@@ -1,7 +1,7 @@
 import socket
 import unittest
 from unittest.mock import (
-    MagicMock,
+    AsyncMock,
     call,
 )
 
@@ -17,10 +17,6 @@ from tests.utils import (
 )
 
 
-async def _fn(*args, **kwargs):
-    pass
-
-
 class TestDiscovery(unittest.IsolatedAsyncioTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
@@ -33,22 +29,22 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(self.discovery.client, MinosDiscoveryClient)
 
     async def test_subscription(self):
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock()
         self.discovery.client.subscribe = mock
         await self.discovery.subscribe()
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(self.host, 8080, "Order"), mock.call_args)
 
     async def test_unsubscribe(self):
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock()
         self.discovery.client.unsubscribe = mock
         await self.discovery.unsubscribe()
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("Order"), mock.call_args)
 
     async def test_async_context_manager(self):
-        mock_start = MagicMock(side_effect=_fn)
-        mock_end = MagicMock(side_effect=_fn)
+        mock_start = AsyncMock()
+        mock_end = AsyncMock()
         self.discovery.subscribe = mock_start
         self.discovery.unsubscribe = mock_end
 
