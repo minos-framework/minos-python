@@ -59,7 +59,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         mock.return_value.__aenter__ = _fn_failure
 
         with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.subscribe("56.56.56.56", 56, "test", retry_interval=0)
+            await self.client.subscribe("56.56.56.56", 56, "test", retry_delay=0)
         self.assertEqual(3, mock.call_count)
 
     @patch("aiohttp.ClientSession.post")
@@ -67,7 +67,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         mock.return_value.__aenter__ = _fn_raises
 
         with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.subscribe("56.56.56.56", 56, "test", retry_interval=0)
+            await self.client.subscribe("56.56.56.56", 56, "test", retry_delay=0)
         self.assertEqual(3, mock.call_count)
 
     @patch("aiohttp.ClientSession.post")
@@ -83,7 +83,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         mock.return_value.__aenter__ = _fn_failure
 
         with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.unsubscribe("test", retry_interval=0)
+            await self.client.unsubscribe("test", retry_delay=0)
         self.assertEqual(3, mock.call_count)
 
     @patch("aiohttp.ClientSession.post")
@@ -91,7 +91,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         mock.return_value.__aenter__ = _fn_raises
 
         with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.unsubscribe("test", retry_interval=0)
+            await self.client.unsubscribe("test", retry_delay=0)
         self.assertEqual(3, mock.call_count)
 
 

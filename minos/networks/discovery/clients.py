@@ -39,15 +39,15 @@ class MinosDiscoveryClient:
         return f"http://{self.host}:{self.port}"
 
     async def subscribe(
-        self, host: str, port: int, name: str, retry_attempts: int = 2, retry_interval: float = 5
+        self, host: str, port: int, name: str, retry_tries: int = 3, retry_delay: float = 5
     ) -> NoReturn:
         """Perform a subscription query.
 
         :param host: The ip of the microservice to be subscribed.
         :param port: The port of the microservice to be subscribed.
         :param name: The name of the microservice to be subscribed.
-        :param retry_attempts: Number of attempts before raising a failure exception.
-        :param retry_interval: Number of seconds to wait between attempts.
+        :param retry_tries: Number of attempts before raising a failure exception.
+        :param retry_delay: Seconds to wait between attempts.
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/subscribe"
@@ -63,18 +63,18 @@ class MinosDiscoveryClient:
             success = False
 
         if not success:
-            if retry_attempts > 0:
-                await sleep(retry_interval)
-                return await self.subscribe(host, port, name, retry_attempts - 1, retry_interval)
+            if retry_tries > 1:
+                await sleep(retry_delay)
+                return await self.subscribe(host, port, name, retry_tries - 1, retry_delay)
             else:
                 raise MinosDiscoveryConnectorException("There was a problem while trying to subscribe.")
 
-    async def unsubscribe(self, name: str, retry_attempts: int = 2, retry_interval: float = 5) -> NoReturn:
+    async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> NoReturn:
         """Perform an unsubscribe query.
 
         :param name: The name of the microservice to be unsubscribed.
-        :param retry_attempts: Number of attempts before raising a failure exception.
-        :param retry_interval: Number of seconds to wait between attempts.
+        :param retry_tries: Number of attempts before raising a failure exception.
+        :param retry_delay: Seconds to wait between attempts.
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/unsubscribe?name={name}"
@@ -89,8 +89,8 @@ class MinosDiscoveryClient:
             success = False
 
         if not success:
-            if retry_attempts > 0:
-                await sleep(retry_interval)
-                return await self.unsubscribe(name, retry_attempts - 1, retry_interval)
+            if retry_tries > 1:
+                await sleep(retry_delay)
+                return await self.unsubscribe(name, retry_tries - 1, retry_delay)
             else:
                 raise MinosDiscoveryConnectorException("There was a problem while trying to unsubscribe.")
