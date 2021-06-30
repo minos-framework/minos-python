@@ -5,7 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
+import logging
 from typing import (
     NoReturn,
 )
@@ -15,6 +15,8 @@ import aiohttp
 from ..exceptions import (
     MinosDiscoveryConnectorException,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class MinosDiscoveryClient:
@@ -44,6 +46,7 @@ class MinosDiscoveryClient:
         endpoint = f"{self.route}/subscribe"
         service_metadata = {"ip": host, "port": port, "name": name}
 
+        logger.debug(f"Subscribing into {endpoint!r}...")
         async with aiohttp.ClientSession() as session:
             async with session.post(endpoint, json=service_metadata) as response:
                 if not response.ok:
@@ -55,10 +58,10 @@ class MinosDiscoveryClient:
         :param name: The name of the microservice to be unsubscribed.
         :return: This method does not return anything.
         """
-        endpoint = f"{self.route}/unsubscribe"
-        query_param = f"?name={name}"
+        endpoint = f"{self.route}/unsubscribe?name={name}"
 
+        logger.debug(f"Unsubscribing into {endpoint!r}...")
         async with aiohttp.ClientSession() as session:
-            async with session.post(endpoint + query_param) as response:
+            async with session.post(endpoint) as response:
                 if not response.ok:
                     raise MinosDiscoveryConnectorException("There was a problem while trying to unsubscribe.")

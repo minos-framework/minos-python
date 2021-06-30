@@ -8,6 +8,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Any,
     NoReturn,
@@ -29,6 +30,8 @@ from minos.common import (
 from .setups import (
     HandlerSetup,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Consumer(HandlerSetup):
@@ -79,8 +82,8 @@ class Consumer(HandlerSetup):
             consumer: Kafka Consumer instance (at the moment only Kafka consumer is supported).
         """
 
-        async for msg in consumer:
-            await self.handle_single_message(msg)
+        async for message in consumer:
+            await self.handle_single_message(message)
 
     async def handle_single_message(self, message):
         """Handle Kafka messages.
@@ -94,6 +97,7 @@ class Consumer(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
+        logger.debug(f"Consuming message with {message.topic!s} topic...")
 
         return await self.queue_add(message.topic, message.partition, message.value)
 

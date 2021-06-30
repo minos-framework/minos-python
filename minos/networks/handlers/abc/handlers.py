@@ -91,21 +91,31 @@ class Handler(HandlerSetup):
             result = await cursor.fetchall()
 
             for row in result:
-                dispatched = False
-                try:
-                    entry = await self._build_entry(row)
-                    await self.dispatch_one(entry)
-                    dispatched = True
-                except Exception as exc:
-                    logger.warning(f"Raised an exception while dispatching a message: {exc!r}")
-                finally:
-                    if dispatched:
-                        await cursor.execute(_DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
-                    else:
-                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
+                dispatched = await self._dispatch_one(row)
+                if dispatched:
+                    await cursor.execute(_DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
+                else:
+                    await cursor.execute(_UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
 
             # Manually commit
             await cursor.execute("COMMIT")
+
+    async def _dispatch_one(self, row: tuple) -> bool:
+        try:
+            entry = await self._build_entry(row)
+        except Exception as exc:
+            logger.warning(f"Raised an exception while building the message with id={row[0]}: {exc!r}")
+            return False
+
+        logger.debug(f"Dispatching '{entry.data!s}'...")
+
+        try:
+            await self.dispatch_one(entry)
+        except Exception as exc:
+            logger.warning(f"Raised an exception while dispatching {entry.data!s}: {exc!r}")
+            return False
+
+        return True
 
     async def _build_entry(self, row: tuple[int, str, int, bytes, datetime]) -> HandlerEntry:
         id = row[0]

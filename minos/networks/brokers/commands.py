@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Optional,
 )
@@ -22,6 +23,8 @@ from minos.common import (
 from .abc import (
     Broker,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class CommandBroker(Broker):
@@ -44,7 +47,7 @@ class CommandBroker(Broker):
         topic: Optional[str] = None,
         saga_uuid: Optional[str] = None,
         reply_topic: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> int:
         """Send a list of ``Aggregate`` instances.
 
@@ -61,4 +64,5 @@ class CommandBroker(Broker):
         if reply_topic is None:
             reply_topic = self.reply_topic
         command = Command(topic, items, saga_uuid, reply_topic)
+        logger.info(f"Sending '{command!s}'...")
         return await self.send_bytes(command.topic, command.avro_bytes)

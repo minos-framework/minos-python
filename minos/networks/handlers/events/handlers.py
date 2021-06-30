@@ -8,6 +8,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     NoReturn,
 )
@@ -23,6 +24,8 @@ from ..abc import (
 from ..entries import (
     HandlerEntry,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class EventHandler(Handler):
@@ -42,4 +45,5 @@ class EventHandler(Handler):
         :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
+        logger.info(f"Dispatching '{entry.data!s}'...")
         await entry.callback(entry.topic, entry.data)

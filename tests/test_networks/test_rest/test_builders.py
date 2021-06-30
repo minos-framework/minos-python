@@ -29,6 +29,7 @@ class _Cls:
 class MockedRequest:
     def __init__(self, data=None):
         self.data = data
+        self.remote = "test"
 
     async def json(self):
         return self.data

@@ -8,6 +8,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from inspect import (
     isawaitable,
 )
@@ -36,6 +37,8 @@ from .messages import (
     CommandRequest,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class CommandHandler(Handler):
     """Command Handler class."""
@@ -62,6 +65,8 @@ class CommandHandler(Handler):
         :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
+        logger.info(f"Dispatching '{entry.data!s}'...")
+
         command: Command = entry.data
         definition_id = command.saga_uuid
 

@@ -10,6 +10,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 import socket
 from typing import (
     NoReturn,
@@ -23,6 +24,8 @@ from minos.common import (
 from .clients import (
     MinosDiscoveryClient,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class DiscoveryConnector(MinosSetup):
@@ -53,6 +56,7 @@ class DiscoveryConnector(MinosSetup):
 
         :return: This method does not return anything.
         """
+        logger.info(f"Subscribing {self.name!r} microservice into the discovery...")
         await self.client.subscribe(self.host, self.port, self.name)
 
     async def _destroy(self) -> NoReturn:
@@ -63,4 +67,5 @@ class DiscoveryConnector(MinosSetup):
 
         :return: This method does not return anything.
         """
+        logger.info(f"Unsubscribing {self.name!r} microservice into the discovery...")
         await self.client.unsubscribe(self.name)
