@@ -82,12 +82,6 @@ class ModelField:
         return self._parser
 
     @property
-    def _parser_name(self) -> t.Optional[str]:
-        if self.parser is None:
-            return None
-        return self.parser.__name__
-
-    @property
     def _parser_function(self) -> t.Optional[t.Callable[[t.Any], T]]:
         if self.parser is None:
             return None
@@ -100,12 +94,6 @@ class ModelField:
     def validator(self) -> t.Optional[t.Callable[[t.Any], T]]:
         """Parser getter."""
         return self._validator
-
-    @property
-    def _validator_name(self) -> t.Optional[str]:
-        if self.validator is None:
-            return None
-        return self.validator.__name__
 
     @property
     def _validator_function(self) -> t.Optional[t.Callable[[t.Any], T]]:
@@ -191,7 +179,4 @@ class ModelField:
         yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
 
     def __repr__(self):
-        return (
-            f"ModelField(name={repr(self.name)}, type={repr(self.type)}, value={repr(self.value)}, "
-            f"parser={self._parser_name}, validator={self._validator_name})"
-        )
+        return f"{self.name}={self.value}"
