@@ -53,6 +53,7 @@ class MinosDiscoveryClient:
         endpoint = f"{self.route}/subscribe"
         service_metadata = {"ip": host, "port": port, "name": name}
 
+        logger.debug(f"Subscribing into {endpoint!r}...")
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(endpoint, json=service_metadata) as response:
@@ -76,12 +77,12 @@ class MinosDiscoveryClient:
         :param retry_interval: Number of seconds to wait between attempts.
         :return: This method does not return anything.
         """
-        endpoint = f"{self.route}/unsubscribe"
-        query_param = f"?name={name}"
+        endpoint = f"{self.route}/unsubscribe?name={name}"
 
+        logger.debug(f"Unsubscribing into {endpoint!r}...")
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(endpoint + query_param) as response:
+                async with session.post(endpoint) as response:
                     success = response.ok
         except Exception as exc:
             logger.warning(f"An exception was raised while trying to unsubscribe: {exc!r}")
