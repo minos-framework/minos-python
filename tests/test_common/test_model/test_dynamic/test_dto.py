@@ -186,11 +186,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
             ],
             {"cost": 3.43},
         )
-        expected = (
-            "lalala.ShoppingList[DTO](fields=[ModelField(name='cost', type=<class 'float'>, "
-            "value=3.43, parser=None, validator=None)])"
-        )
-        self.assertEqual(expected, repr(dto))
+        self.assertEqual("ShoppingList[DTO](cost=3.43)", repr(dto))
 
     def test_str(self):
         dto = DataTransferObject.from_avro(
@@ -204,7 +200,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
             ],
             {"cost": 3.43},
         )
-        self.assertEqual("ShoppingList[DTO](cost=3.43)", str(dto))
+        self.assertEqual(repr(dto), str(dto))
 
 
 if __name__ == "__main__":

@@ -263,10 +263,6 @@ class Model(t.Generic[T]):
         # noinspection PyRedundantParentheses
         yield from self.fields.items()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
-        return f"{type(self).__name__}(fields=[{fields_repr}])"
-
-    def __str__(self):
-        fields_repr = ", ".join(str(field) for field in self.fields.values())
         return f"{type(self).__name__}({fields_repr})"
