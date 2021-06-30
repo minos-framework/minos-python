@@ -8,8 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import unittest
 from unittest.mock import (
-    MagicMock,
-    PropertyMock,
+    AsyncMock,
     call,
     patch,
 )
@@ -29,6 +28,7 @@ from tests.utils import (
     BASE_PATH,
     FakeBroker,
     FakeEntrypoint,
+    FakeLoop,
     FakeRepository,
     FakeSagaManager,
 )
@@ -67,19 +67,13 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         self.assertEqual({"config": self.config, "interval": 0.1}, self.launcher.services[2].kwargs)
 
     async def test_entrypoint(self):
-        async def _fn(*args, **kwargs):
-            pass
-
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock()
         self.launcher.setup = mock
         self.launcher.destroy = mock
         self.assertIsInstance(self.launcher.entrypoint, Entrypoint)
 
     async def test_setup(self):
-        async def _fn(*args, **kwargs):
-            pass
-
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock()
         self.launcher.injector.wire = mock
         await self.launcher.setup()
 
@@ -91,10 +85,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         self.assertEqual(call(modules=[common]), mock.call_args)
 
     async def test_destroy(self):
-        async def _fn(*args, **kwargs):
-            pass
-
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock()
         self.launcher.injector.unwire = mock
         await self.launcher.destroy()
 
@@ -102,11 +93,21 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         self.assertEqual(call(), mock.call_args)
 
     def test_launch(self):
-        entrypoint = FakeEntrypoint()
-        with patch("minos.common.EntrypointLauncher.entrypoint", new_callable=PropertyMock) as mock:
-            mock.return_value = entrypoint
-            self.launcher.launch()
-        self.assertEqual(1, entrypoint.call_count)
+        mock_setup = AsyncMock()
+        self.launcher.setup = mock_setup
+
+        mock_destroy = AsyncMock()
+        self.launcher.destroy = mock_destroy
+
+        with patch("minos.common.launchers._create_entrypoint") as mock1:
+            mock1.side_effect = FakeEntrypoint
+            with patch("minos.common.launchers._create_loop") as mock2:
+                mock2.side_effect = FakeLoop
+                self.launcher.launch()
+
+        self.assertEqual(1, mock1.call_count)
+        self.assertEqual(1, mock2.call_count)
+        # FIXME: Improve this tests.
 
 
 if __name__ == "__main__":

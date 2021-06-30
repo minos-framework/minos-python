@@ -10,6 +10,9 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    AbstractEventLoop,
+)
 from typing import (
     NoReturn,
     Type,
@@ -23,6 +26,9 @@ from aiomisc import (
 )
 from aiomisc.entrypoint import (
     Entrypoint,
+)
+from aiomisc.utils import (
+    create_default_event_loop,
 )
 from cached_property import (
     cached_property,
@@ -42,6 +48,14 @@ from .setup import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _create_entrypoint(*args, **kwargs) -> Entrypoint:  # pragma: no cover
+    return entrypoint(*args, **kwargs)
+
+
+def _create_loop() -> AbstractEventLoop:  # pragma: no cover
+    return create_default_event_loop()[0]
 
 
 class EntrypointLauncher(MinosSetup):
@@ -77,9 +91,19 @@ class EntrypointLauncher(MinosSetup):
         :return: This method does not return anything.
         """
         logger.info("Starting microservice...")
-        with self.entrypoint as loop:
-            logger.info("Microservice is up and running!")
-            loop.run_forever()
+
+        try:
+            with self.entrypoint:
+                logger.info("Microservice is up and running!")
+        finally:
+            self.graceful_shutdown()
+
+    def graceful_shutdown(self, err: Exception = None) -> NoReturn:
+        """TODO
+
+        :return: TODO
+        """
+        self.loop.run_until_complete(self.entrypoint.graceful_shutdown(err))
 
     @cached_property
     def entrypoint(self) -> Entrypoint:
@@ -96,9 +120,18 @@ class EntrypointLauncher(MinosSetup):
         # noinspection PyUnusedLocal
         @receiver(entrypoint.POST_STOP)
         async def _stop(*args, **kwargs):
-            await self.destroy()
+            # await self.destroy()
+            pass
 
-        return entrypoint(*self.services)
+        return _create_entrypoint(*self.services, loop=self.loop)
+
+    @cached_property
+    def loop(self) -> AbstractEventLoop:
+        """TODO
+
+        :return: TODO
+        """
+        return _create_loop()
 
     @cached_property
     def services(self) -> list[Service]:

@@ -94,8 +94,24 @@ class FakeSagaManager(MinosSagaManager):
 class FakeEntrypoint:
     """For testing purposes."""
 
+    def __init__(self, *args, **kwargs):
+        """For testing purposes."""
+
+    def __enter__(self):
+        return
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return
+
+    async def graceful_shutdown(*args, **kwargs):
+        """For testing purposes."""
+
+
+class FakeLoop:
+    """For testing purposes."""
+
     def __init__(self):
-        self.call_count = 0
+        """For testing purposes."""
 
     def __enter__(self):
         return self
@@ -105,7 +121,9 @@ class FakeEntrypoint:
 
     def run_forever(self):
         """For testing purposes."""
-        self.call_count += 1
+
+    def run_until_complete(self, *args, **kwargs):
+        """For testing purposes."""
 
 
 class FakeSnapshot(MinosSnapshot):
