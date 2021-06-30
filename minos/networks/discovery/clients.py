@@ -60,7 +60,7 @@ class MinosDiscoveryClient:
                 async with session.post(endpoint, json=service_metadata) as response:
                     success = response.ok
         except Exception as exc:
-            logger.warning(f"An exception was raised while trying to unsubscribe: {exc!r}")
+            logger.warning(f"An exception was raised while trying to subscribe: {exc!r}")
             success = False
 
         if not success:
