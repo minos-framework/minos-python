@@ -66,7 +66,6 @@ class Response:
         """
         return [item if not isinstance(item, Model) else item.avro_data for item in self._items]
 
-    @abstractmethod
     def __eq__(self, other: Response) -> bool:
         return type(self) == type(other) and self._items == other._items
 
