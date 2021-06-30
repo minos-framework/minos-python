@@ -64,5 +64,5 @@ class CommandBroker(Broker):
         if reply_topic is None:
             reply_topic = self.reply_topic
         command = Command(topic, items, saga_uuid, reply_topic)
-        logger.info(f"Sending {command!s}...")
+        logger.info(f"Sending '{command!s}'...")
         return await self.send_bytes(command.topic, command.avro_bytes)

@@ -108,7 +108,7 @@ class RestBuilder(MinosSetup):
         class_method = getattr(instance_class, action)
 
         async def _fn(request: web.Request) -> web.Response:
-            logger.info(f"Dispatching {classname(class_method)!s} from {request.remote!s}...")
+            logger.info(f"Dispatching {classname(class_method)!r} from {request.remote!r}...")
             request = HttpRequest(request)
             response = class_method(request)
             if isawaitable(response):
@@ -126,5 +126,5 @@ class RestBuilder(MinosSetup):
         """System Health Route Handler.
         :return: A `web.json_response` response.
         """
-        logger.info(f"Dispatching 'health' from {request.remote!s}...")
+        logger.info(f"Dispatching 'health' from {request.remote!r}...")
         return web.json_response({"host": request.host}, status=200)

@@ -46,5 +46,5 @@ class EventBroker(Broker):
         if topic is None:
             topic = self.topic
         event = Event(topic, items)
-        logger.info(f"Sending {event!s}...")
+        logger.info(f"Sending '{event!s}'...")
         return await self.send_bytes(event.topic, event.avro_bytes)
