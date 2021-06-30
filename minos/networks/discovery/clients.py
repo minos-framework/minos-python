@@ -5,12 +5,17 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
+from asyncio import (
+    sleep,
+)
 from typing import (
     NoReturn,
 )
 
 import aiohttp
+from aiohttp import (
+    ClientConnectorError,
+)
 
 from ..exceptions import (
     MinosDiscoveryConnectorException,
@@ -33,32 +38,56 @@ class MinosDiscoveryClient:
         # noinspection HttpUrlsUsage
         return f"http://{self.host}:{self.port}"
 
-    async def subscribe(self, host: str, port: int, name: str) -> NoReturn:
+    async def subscribe(
+        self, host: str, port: int, name: str, retry_attempts: int = 3, retry_interval: float = 5
+    ) -> NoReturn:
         """Perform a subscription query.
 
         :param host: The ip of the microservice to be subscribed.
         :param port: The port of the microservice to be subscribed.
         :param name: The name of the microservice to be subscribed.
+        :param retry_attempts: Number of attempts before raising a failure exception.
+        :param retry_interval: Number of seconds to wait between attempts.
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/subscribe"
         service_metadata = {"ip": host, "port": port, "name": name}
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(endpoint, json=service_metadata) as response:
-                if not response.ok:
-                    raise MinosDiscoveryConnectorException("There was a problem while trying to subscribe.")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(endpoint, json=service_metadata) as response:
+                    success = response.ok
+        except ClientConnectorError:
+            success = False
 
-    async def unsubscribe(self, name: str) -> NoReturn:
+        if not success:
+            if retry_attempts > 0:
+                await sleep(retry_interval)
+                return await self.subscribe(host, port, name, retry_attempts - 1)
+            else:
+                raise MinosDiscoveryConnectorException("There was a problem while trying to subscribe.")
+
+    async def unsubscribe(self, name: str, retry_attempts: int = 3, retry_interval: float = 5) -> NoReturn:
         """Perform an unsubscribe query.
 
         :param name: The name of the microservice to be unsubscribed.
+        :param retry_attempts: Number of attempts before raising a failure exception.
+        :param retry_interval: Number of seconds to wait between attempts.
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/unsubscribe"
         query_param = f"?name={name}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(endpoint + query_param) as response:
-                if not response.ok:
-                    raise MinosDiscoveryConnectorException("There was a problem while trying to unsubscribe.")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(endpoint + query_param) as response:
+                    success = response.ok
+        except ClientConnectorError:
+            success = False
+
+        if not success:
+            if retry_attempts > 0:
+                await sleep(retry_interval)
+                return await self.unsubscribe(name, retry_attempts - 1)
+            else:
+                raise MinosDiscoveryConnectorException("There was a problem while trying to unsubscribe.")
