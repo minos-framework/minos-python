@@ -31,6 +31,10 @@ async def _fn_failure(*args, **kwargs):
     return _Response(False)
 
 
+async def _fn_raises(*args, **kwargs):
+    raise ValueError
+
+
 class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.client = MinosDiscoveryClient("123.456.123.1", 1234)
@@ -51,11 +55,20 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, mock.call_args)
 
     @patch("aiohttp.ClientSession.post")
-    async def test_subscribe_raises(self, mock):
+    async def test_subscribe_raises_failure(self, mock):
         mock.return_value.__aenter__ = _fn_failure
 
         with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.subscribe("56.56.56.56", 56, "test")
+            await self.client.subscribe("56.56.56.56", 56, "test", retry_delay=0)
+        self.assertEqual(3, mock.call_count)
+
+    @patch("aiohttp.ClientSession.post")
+    async def test_subscribe_raises_exception(self, mock):
+        mock.return_value.__aenter__ = _fn_raises
+
+        with self.assertRaises(MinosDiscoveryConnectorException):
+            await self.client.subscribe("56.56.56.56", 56, "test", retry_delay=0)
+        self.assertEqual(3, mock.call_count)
 
     @patch("aiohttp.ClientSession.post")
     async def test_unsubscribe(self, mock):
@@ -66,11 +79,20 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(call("http://123.456.123.1:1234/unsubscribe?name=test"), mock.call_args)
 
     @patch("aiohttp.ClientSession.post")
-    async def test_unsubscribe_raises(self, mock):
+    async def test_unsubscribe_raises_failure(self, mock):
         mock.return_value.__aenter__ = _fn_failure
 
         with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.unsubscribe("test")
+            await self.client.unsubscribe("test", retry_delay=0)
+        self.assertEqual(3, mock.call_count)
+
+    @patch("aiohttp.ClientSession.post")
+    async def test_unsubscribe_raises_exception(self, mock):
+        mock.return_value.__aenter__ = _fn_raises
+
+        with self.assertRaises(MinosDiscoveryConnectorException):
+            await self.client.unsubscribe("test", retry_delay=0)
+        self.assertEqual(3, mock.call_count)
 
 
 if __name__ == "__main__":
