@@ -8,6 +8,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Any,
     NoReturn,
@@ -29,6 +30,8 @@ from ..abc import (
 from ..entries import (
     HandlerEntry,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class CommandReplyHandler(Handler):
@@ -58,4 +61,5 @@ class CommandReplyHandler(Handler):
         :param row: Row to be dispatched.
         :return: This method does not return anything.
         """
+        logger.info(f"Dispatching '{row.data!s}'...")
         await self.saga_manager.run(reply=row.data)

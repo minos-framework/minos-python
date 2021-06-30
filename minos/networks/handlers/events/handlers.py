@@ -45,4 +45,5 @@ class EventHandler(Handler):
         :param row: Row to be dispatched.
         :return: This method does not return anything.
         """
+        logger.info(f"Dispatching '{row.data!s}'...")
         await row.callback(row.topic, row.data)
