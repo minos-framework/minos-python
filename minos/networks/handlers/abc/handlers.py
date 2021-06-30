@@ -157,10 +157,10 @@ class Handler(HandlerSetup):
         return action
 
     @abstractmethod
-    async def dispatch_one(self, row: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         """Dispatch one row.
 
-        :param row: Row to be dispatched.
+        :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
         raise NotImplementedError
