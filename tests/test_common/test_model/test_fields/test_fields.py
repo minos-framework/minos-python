@@ -168,7 +168,7 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
 
     def test_avro_schema_float(self):
         field = ModelField("test", float, 3.4)
-        expected = {"name": "test", "type": "float"}
+        expected = {"name": "test", "type": "double"}
         self.assertEqual(expected, field.avro_schema)
 
     def test_avro_schema_string(self):
@@ -246,6 +246,10 @@ class TestModelField(unittest.IsolatedAsyncioTestCase):
     def test_avro_schema_uuid(self):
         field = ModelField("test", UUID, uuid4())
         self.assertEqual({"name": "test", "type": {"type": "string", "logicalType": "uuid"}}, field.avro_schema)
+
+    def test_avro_data_float(self):
+        field = ModelField("test", float, 3.14159265359)
+        self.assertEqual(3.14159265359, field.avro_data)
 
     def test_avro_data_list_model(self):
         field = ModelField("test", list[Optional[User]], [User(123), User(456)])

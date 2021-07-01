@@ -29,6 +29,7 @@ from ..types import (
     BYTES,
     DATE_TYPE,
     DATETIME_TYPE,
+    DOUBLE,
     FLOAT,
     INT,
     MAP,
@@ -125,6 +126,8 @@ class AvroSchemaDecoder:
         if type_field == BOOLEAN:
             return bool
         if type_field == FLOAT:
+            return float
+        if type_field == DOUBLE:
             return float
         if type_field == STRING:
             return str
