@@ -18,6 +18,9 @@ from yarl import (
     URL,
 )
 
+from minos.common import (
+    ModelType,
+)
 from minos.networks import (
     HttpRequest,
     HttpResponse,
@@ -61,6 +64,12 @@ class TestHttpRequest(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(HttpRequest(MockedRequest()), HttpRequest(MockedRequest()))
 
     async def test_content(self):
+        Item = ModelType.build("Item", {"id": int, "version": int, "doors": int, "color": str, "owner": type(None)})
+        expected = [
+            Item(id=1, version=1, doors=3, color="blue", owner=None),
+            Item(id=2, version=1, doors=5, color="red", owner=None),
+        ]
+
         raw_request = MockedRequest(
             [
                 {"id": 1, "version": 1, "doors": 3, "color": "blue", "owner": None},
@@ -68,36 +77,48 @@ class TestHttpRequest(unittest.IsolatedAsyncioTestCase):
             ]
         )
         request = HttpRequest(raw_request)
-        self.assertEqual(
-            raw_request.data, await request.content(),
-        )
+        observed = await request.content()
+
+        self.assertEqual(expected, observed)
 
     async def test_content_single(self):
+        Item = ModelType.build("Item", {"id": int, "version": int, "doors": int, "color": str, "owner": type(None)})
+        expected = [Item(id=1, version=1, doors=3, color="blue", owner=None)]
+
         raw_request = MockedRequest({"id": 1, "version": 1, "doors": 3, "color": "blue", "owner": None})
         request = HttpRequest(raw_request)
-        self.assertEqual(
-            [raw_request.data], await request.content(),
-        )
+        observed = await request.content()
+
+        self.assertEqual(expected, observed)
 
     async def test_content_raw_url_args(self):
+        Item = ModelType.build("Item", {"foo": list[int], "bar": int})
+        expected = [Item(foo=[1, 3], bar=2)]
+
         raw_request = MockedRequest()
         with patch("minos.networks.HttpRequest._raw_url_args", new_callable=PropertyMock) as mock:
             mock.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
             request = HttpRequest(raw_request)
-            self.assertEqual(
-                [{"foo": [1, 3], "bar": 2}], await request.content(),
-            )
+            observed = await request.content()
+
+        self.assertEqual(expected, observed)
 
     async def test_content_raw_path_args(self):
+        Item = ModelType.build("Item", {"foo": list[int], "bar": int})
+        expected = [Item(foo=[1, 3], bar=2)]
+
         raw_request = MockedRequest()
         with patch("minos.networks.HttpRequest._raw_path_args", new_callable=PropertyMock) as mock:
             mock.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
             request = HttpRequest(raw_request)
-            self.assertEqual(
-                [{"foo": [1, 3], "bar": 2}], await request.content(),
-            )
+            observed = await request.content()
+
+        self.assertEqual(expected, observed)
 
     async def test_content_mixed_single(self):
+        Item = ModelType.build("Item", {"foo": list[int], "bar": int, "one": list[int], "two": int, "color": str})
+        expected = [Item(foo=[1, 3], bar=2, one=[1, 3], two=2, color="blue")]
+
         raw_request = MockedRequest({"color": "blue"})
         with patch("minos.networks.HttpRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
             mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
@@ -106,10 +127,15 @@ class TestHttpRequest(unittest.IsolatedAsyncioTestCase):
                 request = HttpRequest(raw_request)
                 observed = await request.content()
 
-        expected = [{"foo": [1, 3], "bar": 2, "one": [1, 3], "two": 2, "color": "blue"}]
         self.assertEqual(expected, observed)
 
     async def test_content_mixed(self):
+        Item = ModelType.build("Item", {"foo": list[int], "bar": int, "one": list[int], "two": int, "color": str})
+        expected = [
+            Item(foo=[1, 3], bar=2, one=[1, 3], two=2, color="blue"),
+            Item(foo=[1, 3], bar=2, one=[1, 3], two=2, color="red"),
+        ]
+
         raw_request = MockedRequest([{"color": "blue"}, {"color": "red"}])
         with patch("minos.networks.HttpRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
             mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
@@ -118,10 +144,6 @@ class TestHttpRequest(unittest.IsolatedAsyncioTestCase):
                 request = HttpRequest(raw_request)
                 observed = await request.content()
 
-        expected = [
-            {"foo": [1, 3], "bar": 2, "one": [1, 3], "two": 2, "color": "blue"},
-            {"foo": [1, 3], "bar": 2, "one": [1, 3], "two": 2, "color": "red"},
-        ]
         self.assertEqual(expected, observed)
 
 

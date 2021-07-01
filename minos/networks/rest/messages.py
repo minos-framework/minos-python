@@ -24,8 +24,11 @@ from cached_property import (
 )
 
 from minos.common import (
+    DataTransferObject,
+    ModelType,
     Request,
     Response,
+    TypeHintBuilder,
 )
 
 
@@ -41,13 +44,14 @@ class HttpRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw_request!r})"
 
-    async def content(self) -> list[Any]:
+    async def content(self, model_name: str = "Item") -> list[DataTransferObject]:
         """Get the request content.
 
         :return: A list of items.
         """
         data = await self._raw_json()
         data = [(entry | self.url_args | self.path_args) for entry in data]
+        data = self._build_models(data, model_name)
         return data
 
     async def _raw_json(self) -> list[dict[str, Any]]:
@@ -92,6 +96,15 @@ class HttpRequest(Request):
     @property
     def _raw_path_args(self):
         return self.raw_request.match_info.items()  # pragma: no cover
+
+    @staticmethod
+    def _build_models(data: list[dict[str, Any]], name: str) -> list[DataTransferObject]:
+        def _fn(entry: dict[str, Any]) -> DataTransferObject:
+            type_hints = {k: TypeHintBuilder(v).build() for k, v in entry.items()}
+            model_type = ModelType.build(name, type_hints)
+            return model_type(**entry)
+
+        return [_fn(entry) for entry in data]
 
 
 class HttpResponse(Response):
