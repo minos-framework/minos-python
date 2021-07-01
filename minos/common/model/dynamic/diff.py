@@ -24,7 +24,7 @@ if TYPE_CHECKING:
         Model,
     )
     from ..fields import (
-        ModelField,
+        Field,
     )
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class FieldsDiff(BucketModel):
         return cls(fields)
 
     @staticmethod
-    def _diff(a: dict[str, ModelField], b: dict[str, ModelField]) -> dict[str, ModelField]:
+    def _diff(a: dict[str, Field], b: dict[str, Field]) -> dict[str, Field]:
         """Compute the difference between ``a`` and ``b``.
 
         The implemented approach is equivalent to `dict(set(a.items()) -`set(b.items()))` but without requesting any

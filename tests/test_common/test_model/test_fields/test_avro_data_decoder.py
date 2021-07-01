@@ -11,8 +11,8 @@ import unittest
 from minos.common import (
     AvroDataDecoder,
     DataTransferObject,
+    Field,
     MinosTypeAttributeException,
-    ModelField,
     ModelType,
 )
 
@@ -25,7 +25,7 @@ class TestAvroDataDecoder(unittest.TestCase):
         self.assertEqual({"bar": "foobar"}, observed.avro_data)
 
     def test_model_type_already_casted(self):
-        value = DataTransferObject("Foo", {"bar": ModelField("bar", str, "foobar")})
+        value = DataTransferObject("Foo", {"bar": Field("bar", str, "foobar")})
         observed = AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build(value)
         self.assertEqual(value, observed)
 

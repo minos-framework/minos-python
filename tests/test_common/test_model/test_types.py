@@ -16,10 +16,10 @@ from minos.common import (
     DataTransferObject,
     Decimal,
     Enum,
+    Field,
     Fixed,
     MinosModelException,
     MissingSentinel,
-    ModelField,
     ModelRef,
     ModelType,
 )
@@ -179,7 +179,7 @@ class TestModelType(unittest.TestCase):
     def test_call_dto_model(self):
         model_type = ModelType.build("Foo", {"text": str})
         dto = model_type(text="test")
-        self.assertEqual(DataTransferObject("Foo", [ModelField("text", str, "test")]), dto)
+        self.assertEqual(DataTransferObject("Foo", [Field("text", str, "test")]), dto)
 
 
 if __name__ == "__main__":

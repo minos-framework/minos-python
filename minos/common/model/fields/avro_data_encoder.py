@@ -30,7 +30,7 @@ from ..types import (
 )
 
 if TYPE_CHECKING:
-    from .fields import ModelField  # pragma: no cover
+    from .fields import Field  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -43,8 +43,8 @@ class AvroDataEncoder:
         self._value = value
 
     @classmethod
-    def from_field(cls, field: ModelField) -> AvroDataEncoder:
-        """Build a new instance from a ``ModelField``.
+    def from_field(cls, field: Field) -> AvroDataEncoder:
+        """Build a new instance from a ``Field``.
 
         :param field: The model field.
         :return: A new avro schema builder instance.

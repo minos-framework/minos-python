@@ -90,6 +90,7 @@ from .model import (
     DynamicModel,
     Enum,
     Event,
+    Field,
     FieldsDiff,
     Fixed,
     MinosModel,

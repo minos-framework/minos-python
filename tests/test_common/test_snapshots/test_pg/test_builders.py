@@ -22,11 +22,11 @@ from dependency_injector import (
 )
 
 from minos.common import (
+    Field,
     FieldsDiff,
     MinosConfigException,
     MinosRepositoryDeletedAggregateException,
     MinosRepositoryNotProvidedException,
-    ModelField,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
@@ -117,7 +117,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car", 1))
 
     async def test_dispatch_ignore_previous_version(self):
-        diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
+        diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
 
@@ -167,7 +167,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                     aggregate_id=3,
                     aggregate_name=Car.classname,
                     version=1,
-                    data=FieldsDiff({ModelField("doors", int, 3), ModelField("color", str, "blue")}).avro_bytes,
+                    data=FieldsDiff({Field("doors", int, 3), Field("color", str, "blue")}).avro_bytes,
                 )
                 await repository.create(entry)
 
@@ -187,7 +187,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 mock.reset_mock()
 
     async def _populate(self):
-        diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
+        diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:
