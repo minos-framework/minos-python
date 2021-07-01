@@ -34,6 +34,8 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_service(self):
         service = self.config.service
         self.assertEqual("Order", service.name)
+        self.assertEqual(dict(), service.injections)
+        self.assertEqual(list(), service.services)
 
     def test_config_rest(self):
         rest = self.config.rest
@@ -146,3 +148,7 @@ class TestMinosConfig(unittest.TestCase):
         discover = endpoints.discover
         self.assertEqual("discover?name=", discover.path)
         self.assertEqual("GET", discover.method)
+
+
+if __name__ == "__main__":
+    unittest.main()

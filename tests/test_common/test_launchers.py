@@ -8,18 +8,14 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import unittest
 from unittest.mock import (
-    MagicMock,
-    PropertyMock,
+    AsyncMock,
     call,
     patch,
 )
 
-from aiomisc.entrypoint import (
-    Entrypoint,
-)
-
 from minos.common import (
     EntrypointLauncher,
+    classname,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -28,6 +24,7 @@ from tests.utils import (
     BASE_PATH,
     FakeBroker,
     FakeEntrypoint,
+    FakeLoop,
     FakeRepository,
     FakeSagaManager,
 )
@@ -50,28 +47,46 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
             "command_reply_broker": FakeBroker,
             "saga_manager": FakeSagaManager,
         }
-        self.services = ["a", "b", Foo]
+        self.services = [1, 2, Foo, classname(Foo)]
         self.launcher = EntrypointLauncher(config=self.config, injections=self.injections, services=self.services)
 
+    def test_from_config(self):
+        launcher = EntrypointLauncher.from_config(config=self.config)
+        self.assertIsInstance(launcher, EntrypointLauncher)
+        self.assertEqual(self.config, launcher.config)
+        self.assertEqual(dict(), launcher.injector.injections)
+        self.assertEqual(list(), launcher.services)
+
     def test_services(self):
-        self.assertEqual(["a", "b"], self.launcher.services[:2])
+        self.assertEqual([1, 2], self.launcher.services[:2])
         self.assertIsInstance(self.launcher.services[2], Foo)
         self.assertEqual({"config": self.config, "interval": 0.1}, self.launcher.services[2].kwargs)
 
     async def test_entrypoint(self):
-        async def _fn(*args, **kwargs):
-            pass
+        mock_setup = AsyncMock()
+        self.launcher.setup = mock_setup
 
-        mock = MagicMock(side_effect=_fn)
-        self.launcher.setup = mock
-        self.launcher.destroy = mock
-        self.assertIsInstance(self.launcher.entrypoint, Entrypoint)
+        mock_destroy = AsyncMock()
+        self.launcher.destroy = mock_destroy
+
+        with patch("minos.common.launchers._create_loop") as mock_loop:
+            loop = FakeLoop()
+            mock_loop.return_value = loop
+            with patch("minos.common.launchers._create_entrypoint") as mock_entrypoint:
+                entrypoint = FakeEntrypoint()
+                mock_entrypoint.return_value = entrypoint
+                self.assertEqual(entrypoint, self.launcher.entrypoint)
+                self.assertEqual(dict(loop=loop, log_config=False), mock_entrypoint.call_args.kwargs)
+
+    async def test_loop(self):
+        with patch("minos.common.launchers._create_loop") as mock_loop:
+            loop = FakeLoop()
+            mock_loop.return_value = loop
+            self.assertEqual(loop, self.launcher.loop)
+            self.assertEqual(call(), mock_loop.call_args)
 
     async def test_setup(self):
-        async def _fn(*args, **kwargs):
-            pass
-
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock()
         self.launcher.injector.wire = mock
         await self.launcher.setup()
 
@@ -83,10 +98,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         self.assertEqual(call(modules=[common]), mock.call_args)
 
     async def test_destroy(self):
-        async def _fn(*args, **kwargs):
-            pass
-
-        mock = MagicMock(side_effect=_fn)
+        mock = AsyncMock()
         self.launcher.injector.unwire = mock
         await self.launcher.destroy()
 
@@ -94,11 +106,22 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         self.assertEqual(call(), mock.call_args)
 
     def test_launch(self):
-        entrypoint = FakeEntrypoint()
-        with patch("minos.common.EntrypointLauncher.entrypoint", new_callable=PropertyMock) as mock:
-            mock.return_value = entrypoint
-            self.launcher.launch()
-        self.assertEqual(1, entrypoint.call_count)
+        mock_setup = AsyncMock()
+        self.launcher.setup = mock_setup
+
+        mock_destroy = AsyncMock()
+        self.launcher.destroy = mock_destroy
+
+        with patch("minos.common.launchers._create_loop") as mock_loop:
+            loop = FakeLoop()
+            mock_loop.return_value = loop
+            with patch("minos.common.launchers._create_entrypoint") as mock_entrypoint:
+                entrypoint = FakeEntrypoint()
+                mock_entrypoint.return_value = entrypoint
+                self.launcher.launch()
+
+        self.assertEqual(1, mock_entrypoint.call_count)
+        self.assertEqual(1, mock_loop.call_count)
 
 
 if __name__ == "__main__":

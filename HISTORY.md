@@ -85,9 +85,15 @@ History
 * Added abstract classes Response and Request for Microservice Controller
 * Bugfix
 
-0.1.0 (2021-07-18)
+0.1.0 (2021-06-18)
 --------------------
 
 * Enrich exception messages
 * Classes refactors
 * Added support for DTO Model class
+
+0.1.1 (2021-07-01)
+--------------------
+
+* Resolved float problem with avro
+* Bugfixes

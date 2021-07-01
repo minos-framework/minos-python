@@ -30,6 +30,9 @@ from dependency_injector import (
 from .configuration import (
     MinosConfig,
 )
+from .importlib import (
+    import_module,
+)
 from .setup import (
     MinosSetup,
 )
@@ -38,7 +41,7 @@ from .setup import (
 class DependencyInjector:
     """Async wrapper of ``dependency_injector.containers.Container``. """
 
-    def __init__(self, config: MinosConfig, **kwargs: Union[MinosSetup, Type[MinosSetup]]):
+    def __init__(self, config: MinosConfig, **kwargs: Union[MinosSetup, Type[MinosSetup], str]):
         self.config = config
         self._raw_injections = kwargs
 
@@ -48,14 +51,20 @@ class DependencyInjector:
 
         :return: A dict of injections..
         """
+        injections = dict()
 
-        def _fn(raw: Union[MinosSetup, Type[MinosSetup]]) -> MinosSetup:
+        def _fn(raw: Union[MinosSetup, Type[MinosSetup], str]) -> MinosSetup:
+            if isinstance(raw, str):
+                raw = import_module(raw)
             if isinstance(raw, type):
                 # noinspection PyUnresolvedReferences
-                return raw.from_config(config=self.config)
+                return raw.from_config(config=self.config, **injections)
             return raw
 
-        return {key: _fn(value) for key, value in self._raw_injections.items()}
+        for key, value in self._raw_injections.items():
+            injections[key] = _fn(value)
+
+        return injections
 
     async def wire(self, *args, **kwargs) -> NoReturn:
         """Connect the configuration.

@@ -256,12 +256,14 @@ FIXED = "fixed"
 DATE = "date"
 TIME_MILLIS = "time-millis"
 TIMESTAMP_MILLIS = "timestamp-millis"
+TIME_MICROS = "time-micros"
+TIMESTAMP_MICROS = "timestamp-micros"
 UUID = "uuid"
 DECIMAL = "decimal"
 
 DATE_TYPE = {"type": INT, "logicalType": DATE}
-TIME_TYPE = {"type": INT, "logicalType": TIME_MILLIS}
-DATETIME_TYPE = {"type": LONG, "logicalType": TIMESTAMP_MILLIS}
+TIME_TYPE = {"type": INT, "logicalType": TIME_MICROS}
+DATETIME_TYPE = {"type": LONG, "logicalType": TIMESTAMP_MICROS}
 UUID_TYPE = {"type": STRING, "logicalType": UUID}
 
 PYTHON_TYPE_TO_AVRO = {
@@ -283,7 +285,7 @@ PYTHON_TYPE_TO_AVRO = {
 }
 
 PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
-PYTHON_IMMUTABLE_TYPES_STR = (STRING, INT, BOOLEAN, FLOAT, BYTES)
+PYTHON_IMMUTABLE_TYPES_STR = (STRING, INT, BOOLEAN, FLOAT, DOUBLE, BYTES)
 PYTHON_LIST_TYPES = (list, tuple)
 PYTHON_ARRAY_TYPES = (dict,)
 PYTHON_NULL_TYPE = type(None)

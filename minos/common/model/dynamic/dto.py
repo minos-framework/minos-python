@@ -70,7 +70,7 @@ class DataTransferObject(DynamicModel):
 
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
-        return f"{self.classname}[DTO](fields=[{fields_repr}])"
+        return f"{self._name}[DTO]({fields_repr})"
 
     def __eq__(self, other: DataTransferObject):
         return (

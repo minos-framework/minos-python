@@ -59,7 +59,7 @@ class FakeRepository(MinosRepository):
 class FakeBroker(MinosBroker):
     """For testing purposes."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
         self.call_count = 0
         self.calls_kwargs = list()
@@ -94,18 +94,30 @@ class FakeSagaManager(MinosSagaManager):
 class FakeEntrypoint:
     """For testing purposes."""
 
-    def __init__(self):
-        self.call_count = 0
+    def __init__(self, *args, **kwargs):
+        """For testing purposes."""
 
     def __enter__(self):
-        return self
+        return
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return
 
+    async def graceful_shutdown(*args, **kwargs):
+        """For testing purposes."""
+
+
+class FakeLoop:
+    """For testing purposes."""
+
+    def __init__(self):
+        """For testing purposes."""
+
     def run_forever(self):
         """For testing purposes."""
-        self.call_count += 1
+
+    def run_until_complete(self, *args, **kwargs):
+        """For testing purposes."""
 
 
 class FakeSnapshot(MinosSnapshot):

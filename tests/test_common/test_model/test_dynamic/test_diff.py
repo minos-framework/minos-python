@@ -65,6 +65,14 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
         observed = FieldsDiff.from_difference(self.car_two, self.car_one, ignore=["id", "version"])
         self.assertEqual(expected, observed)
 
+    def test_with_difference_not_hashable(self):
+        expected = FieldsDiff({"values": ModelField("values", list[int], [1, 2, 3])})
+
+        model_type = ModelType.build("Foo", {"values": list[int]})
+        a, b = model_type(values=[0]), model_type(values=[1, 2, 3])
+        observed = FieldsDiff.from_difference(b, a)
+        self.assertEqual(expected, observed)
+
     def test_from_model(self):
         expected = FieldsDiff(
             {
