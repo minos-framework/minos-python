@@ -186,14 +186,14 @@ class AvroDataDecoder:
         if isinstance(data, time):
             return data
         if isinstance(data, int):
-            return (datetime(1, 1, 1) + timedelta(milliseconds=data)).time()
+            return (datetime(1, 1, 1) + timedelta(microseconds=data)).time()
         raise MinosTypeAttributeException(self._name, time, data)
 
     def _cast_datetime(self, data: t.Any) -> datetime:
         if isinstance(data, datetime):
             return data
         if isinstance(data, int):
-            return datetime(1970, 1, 1) + data * timedelta(milliseconds=1)
+            return datetime(1970, 1, 1) + data * timedelta(microseconds=1)
         raise MinosTypeAttributeException(self._name, datetime, data)
 
     def _cast_uuid(self, data: t.Any) -> UUID:
