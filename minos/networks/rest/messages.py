@@ -66,8 +66,7 @@ class HttpRequest(Request):
 
     @cached_property
     def url_args(self) -> dict[str, Any]:
-        """Get the url arguments as a dictionary in which the keys are the names and teh values are a list the lists of
-            values.
+        """Get the url arguments as a dictionary.
 
         :return: A dictionary instance.
         """
@@ -83,9 +82,9 @@ class HttpRequest(Request):
 
     @cached_property
     def path_args(self) -> dict[str, Any]:
-        """TODO
+        """Get the path arguments as a dictionary.
 
-        :return: TODO
+        :return: A dictionary instance.
         """
         args = defaultdict(list)
         for k, v in self._raw_path_args:
