@@ -80,7 +80,8 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
     async def _get(self, aggregate_name: str, ids: list[int]) -> AsyncIterator[SnapshotEntry]:
         found = set()
-        async for row in self.submit_query_and_iter(_SELECT_MULTIPLE_ENTRIES_QUERY, (aggregate_name, tuple(ids))):
+        parameters = (aggregate_name, tuple(map(int, ids)))
+        async for row in self.submit_query_and_iter(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters):
             found.add(row[0])
             yield SnapshotEntry(*row)
 
