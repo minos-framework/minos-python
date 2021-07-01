@@ -26,7 +26,7 @@ class Request(ABC):
     """Request interface."""
 
     @abstractmethod
-    async def content(self) -> list[Any]:
+    async def content(self) -> list[Model]:
         """Get the request content.
 
         :return: A list of instances.
