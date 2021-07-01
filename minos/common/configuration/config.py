@@ -12,9 +12,14 @@ from __future__ import (
 import abc
 import collections
 import os
-import typing as t
 from pathlib import (
     Path,
+)
+from typing import (
+    Any,
+    NoReturn,
+    Optional,
+    Union,
 )
 
 import yaml
@@ -125,7 +130,7 @@ _PARAMETERIZED_MAPPER = {
     "discovery.endpoints.discover.method": "minos_discovery_endpoints_discover_method",
 }
 
-_default: t.Optional[MinosConfigAbstract] = None
+_default: Optional[MinosConfigAbstract] = None
 
 
 class MinosConfigAbstract(abc.ABC):
@@ -133,7 +138,7 @@ class MinosConfigAbstract(abc.ABC):
 
     __slots__ = "_services", "_path"
 
-    def __init__(self, path: t.Union[Path, str]):
+    def __init__(self, path: Union[Path, str]):
         if isinstance(path, str):
             path = Path(path)
         self._services = {}
@@ -145,18 +150,18 @@ class MinosConfigAbstract(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _get(self, key: str, **kwargs: t.Any):
+    def _get(self, key: str, **kwargs: Any):
         raise NotImplementedError
 
     def __enter__(self) -> MinosConfigAbstract:
         self.set_default(self)
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> t.NoReturn:
+    def __exit__(self, exc_type, exc_val, exc_tb) -> NoReturn:
         self.unset_default()
 
     @staticmethod
-    def set_default(value: MinosConfigAbstract) -> t.NoReturn:
+    def set_default(value: MinosConfigAbstract) -> NoReturn:
         """Set default config.
 
         :param value: Default config.
@@ -177,7 +182,7 @@ class MinosConfigAbstract(abc.ABC):
         return _default
 
     @staticmethod
-    def unset_default() -> t.NoReturn:
+    def unset_default() -> NoReturn:
         """Unset the default config.
 
         :return: This method does not return anything.
@@ -207,21 +212,21 @@ class MinosConfig(MinosConfigAbstract):
         self._with_environment = with_environment
         self._parameterized = kwargs
 
-    def _load(self, path: Path) -> t.NoReturn:
+    def _load(self, path: Path) -> NoReturn:
         if not path.exists():
             raise MinosConfigException(f"Check if this path: {path} is correct")
 
         with path.open() as file:
             self._data = yaml.load(file, Loader=yaml.FullLoader)
 
-    def _get(self, key: str, **kwargs: t.Any) -> t.Any:
+    def _get(self, key: str, **kwargs: Any) -> Any:
         if key in _PARAMETERIZED_MAPPER and _PARAMETERIZED_MAPPER[key] in self._parameterized:
             return self._parameterized[_PARAMETERIZED_MAPPER[key]]
 
         if self._with_environment and key in _ENVIRONMENT_MAPPER and _ENVIRONMENT_MAPPER[key] in os.environ:
             return os.environ[_ENVIRONMENT_MAPPER[key]]
 
-        def _fn(k: str, data: dict[str, t.Any]) -> t.Any:
+        def _fn(k: str, data: dict[str, Any]) -> Any:
             current, _, following = k.partition(".")
 
             part = data[current]
@@ -278,7 +283,7 @@ class MinosConfig(MinosConfigAbstract):
         return endpoints
 
     @staticmethod
-    def _rest_endpoints_entry(endpoint: dict[str, t.Any]) -> ENDPOINT:
+    def _rest_endpoints_entry(endpoint: dict[str, Any]) -> ENDPOINT:
         return ENDPOINT(
             name=endpoint["name"],
             route=endpoint["route"],
@@ -321,7 +326,7 @@ class MinosConfig(MinosConfigAbstract):
         return events
 
     @staticmethod
-    def _events_items_entry(event: dict[str, t.Any]) -> CONTROLLER:
+    def _events_items_entry(event: dict[str, Any]) -> CONTROLLER:
         return CONTROLLER(name=event["name"], controller=event["controller"], action=event["action"])
 
     @property
@@ -372,7 +377,7 @@ class MinosConfig(MinosConfigAbstract):
         return commands
 
     @staticmethod
-    def _commands_items_entry(command: dict[str, t.Any]) -> CONTROLLER:
+    def _commands_items_entry(command: dict[str, Any]) -> CONTROLLER:
         return CONTROLLER(name=command["name"], controller=command["controller"], action=command["action"])
 
     @property
@@ -407,7 +412,7 @@ class MinosConfig(MinosConfigAbstract):
         return sagas
 
     @staticmethod
-    def _sagas_items_entry(saga: dict[str, t.Any]) -> CONTROLLER:
+    def _sagas_items_entry(saga: dict[str, Any]) -> CONTROLLER:
         return CONTROLLER(name=saga["name"], controller=saga["controller"], action=saga["action"])
 
     @property

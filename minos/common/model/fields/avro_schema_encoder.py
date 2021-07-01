@@ -10,11 +10,19 @@ from __future__ import (
 )
 
 import logging
-import typing as t
 from datetime import (
     date,
     datetime,
     time,
+)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
 )
 from uuid import (
     UUID,
@@ -39,18 +47,18 @@ from .utils import (
     _is_model_cls,
 )
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .fields import ModelField  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
 class AvroSchemaEncoder:
     """Avro Schema Encoder class."""
 
-    def __init__(self, field_name: str, field_type: t.Type):
+    def __init__(self, field_name: str, field_type: Type):
         self._name = field_name
         self._type = field_type
 
@@ -63,7 +71,7 @@ class AvroSchemaEncoder:
         """
         return cls(field.name, field.type)
 
-    def build(self) -> dict[str, t.Any]:
+    def build(self) -> dict[str, Any]:
         """Build the avro schema for the given field.
 
         :return: A dictionary object.
@@ -71,15 +79,15 @@ class AvroSchemaEncoder:
 
         return {"name": self._name, "type": self._build_schema(self._type)}
 
-    def _build_schema(self, type_field: t.Type) -> t.Any:
-        origin = t.get_origin(type_field)
-        if origin is not t.Union:
+    def _build_schema(self, type_field: Type) -> Any:
+        origin = get_origin(type_field)
+        if origin is not Union:
             return self._build_single_schema(type_field)
         return self._build_union_schema(type_field)
 
-    def _build_union_schema(self, type_field: t.Type) -> t.Any:
+    def _build_union_schema(self, type_field: Type) -> Any:
         ans = list()
-        alternatives = t.get_args(type_field)
+        alternatives = get_args(type_field)
         for alternative_type in alternatives:
             step = self._build_single_schema(alternative_type)
             if isinstance(step, list):
@@ -88,7 +96,7 @@ class AvroSchemaEncoder:
                 ans.append(step)
         return ans
 
-    def _build_single_schema(self, type_field: t.Type) -> t.Any:
+    def _build_single_schema(self, type_field: Type) -> Any:
         if type_field is type(None):  # noqa: E721
             return self._build_none_schema(type_field)
 
@@ -116,14 +124,14 @@ class AvroSchemaEncoder:
         return self._build_composed_schema(type_field)
 
     @staticmethod
-    def _build_none_schema(type_field: t.Type) -> t.Any:
+    def _build_none_schema(type_field: Type) -> Any:
         if type_field is type(None):  # noqa: E721
             return NULL
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
     @staticmethod
-    def _build_simple_schema(type_field: t.Type) -> t.Any:
+    def _build_simple_schema(type_field: Type) -> Any:
         if type_field is int:
             return INT
 
@@ -141,7 +149,7 @@ class AvroSchemaEncoder:
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
-    def _build_model_type_schema(self, type_field: ModelType) -> t.Any:
+    def _build_model_type_schema(self, type_field: ModelType) -> Any:
         namespace = type_field.namespace
         if len(namespace) > 0 and len(self._name) > 0:
             namespace = f"{type_field.namespace}.{self._name}"
@@ -153,7 +161,7 @@ class AvroSchemaEncoder:
         }
         return schema
 
-    def _build_model_schema(self, type_field: t.Type) -> t.Any:
+    def _build_model_schema(self, type_field: Type) -> Any:
         def _patch_namespace(s: dict) -> dict:
             if len(self._name) > 0:
                 s["namespace"] += f".{self._name}"
@@ -162,8 +170,8 @@ class AvroSchemaEncoder:
         # noinspection PyUnresolvedReferences
         return [_patch_namespace(s) for s in type_field.avro_schema]
 
-    def _build_composed_schema(self, type_field: t.Type) -> t.Any:
-        origin_type = t.get_origin(type_field)
+    def _build_composed_schema(self, type_field: Type) -> Any:
+        origin_type = get_origin(type_field)
 
         if origin_type is list:
             return self._build_list_schema(type_field)
@@ -176,11 +184,11 @@ class AvroSchemaEncoder:
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
-    def _build_list_schema(self, type_field: t.Type) -> dict[str, t.Any]:
-        return {"type": "array", "items": self._build_schema(t.get_args(type_field)[0])}
+    def _build_list_schema(self, type_field: Type) -> dict[str, Any]:
+        return {"type": "array", "items": self._build_schema(get_args(type_field)[0])}
 
-    def _build_dict_schema(self, type_field: t.Type) -> dict[str, t.Any]:
-        return {"type": "map", "values": self._build_schema(t.get_args(type_field)[1])}
+    def _build_dict_schema(self, type_field: Type) -> dict[str, Any]:
+        return {"type": "map", "values": self._build_schema(get_args(type_field)[1])}
 
-    def _build_model_ref_schema(self, type_field: t.Type) -> t.Union[bool, t.Any]:
-        return self._build_schema(t.Union[t.get_args(type_field)[0], int])
+    def _build_model_ref_schema(self, type_field: Type) -> Union[bool, Any]:
+        return self._build_schema(Union[get_args(type_field)[0], int])

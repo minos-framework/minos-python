@@ -10,10 +10,18 @@ from __future__ import (
 )
 
 import logging
-import typing as t
 from base64 import (
     b64decode,
     b64encode,
+)
+from typing import (
+    Any,
+    Generic,
+    Iterable,
+    NoReturn,
+    Type,
+    TypeVar,
+    Union,
 )
 
 from ..exceptions import (
@@ -74,15 +82,15 @@ logger = logging.getLogger(__name__)
 #
 #     return wrap(cls)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
-class Model(t.Generic[T]):
+class Model(Generic[T]):
     """Base class for ``minos`` model entities."""
 
     _fields: dict[str, ModelField] = {}
 
-    def __init__(self, fields: t.Union[t.Iterable[ModelField], dict[str, ModelField]] = None):
+    def __init__(self, fields: Union[Iterable[ModelField], dict[str, ModelField]] = None):
         """Class constructor.
 
         :param fields: Dictionary that contains the ``ModelField`` instances of the model indexed by name.
@@ -94,7 +102,7 @@ class Model(t.Generic[T]):
         self._fields = fields
 
     @classmethod
-    def from_avro_str(cls, raw: str, **kwargs) -> t.Union[T, list[T]]:
+    def from_avro_str(cls, raw: str, **kwargs) -> Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -104,7 +112,7 @@ class Model(t.Generic[T]):
         return cls.from_avro_bytes(raw, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls, raw: bytes, **kwargs) -> t.Union[T, list[T]]:
+    def from_avro_bytes(cls, raw: bytes, **kwargs) -> Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -121,7 +129,7 @@ class Model(t.Generic[T]):
         return cls.from_avro(schema, decoded | kwargs)
 
     @classmethod
-    def from_avro(cls, schema: t.Union[dict[str, t.Any], list[dict[str, t.Any]]], data: dict[str, t.Any]) -> T:
+    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
@@ -164,7 +172,7 @@ class Model(t.Generic[T]):
 
     # noinspection PyMethodParameters
     @property_or_classproperty
-    def model_type(self_or_cls) -> t.Type[T]:
+    def model_type(self_or_cls) -> Type[T]:
         """Get the model type of the instance.
 
         :return: A ``ModelType`` instance.
@@ -186,7 +194,7 @@ class Model(t.Generic[T]):
         """Fields getter"""
         return self._fields
 
-    def __setattr__(self, key: str, value: t.Any) -> t.NoReturn:
+    def __setattr__(self, key: str, value: Any) -> NoReturn:
         if self._fields is not None and key in self._fields:
             field_class: ModelField = self._fields[key]
             field_class.value = value
@@ -196,7 +204,7 @@ class Model(t.Generic[T]):
         else:
             raise MinosModelException(f"model attribute {key} doesn't exist")
 
-    def __getattr__(self, item: str) -> t.Any:
+    def __getattr__(self, item: str) -> Any:
         if self._fields is not None and item in self._fields:
             return self._fields[item].value
         else:
@@ -213,13 +221,13 @@ class Model(t.Generic[T]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def _type_hints(self_or_cls) -> dict[str, t.Any]:
+    def _type_hints(self_or_cls) -> dict[str, Any]:
         if not isinstance(self_or_cls, type):
             yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
 
     # noinspection PyMethodParameters
     @property_or_classproperty
-    def avro_schema(self_or_cls) -> list[dict[str, t.Any]]:
+    def avro_schema(self_or_cls) -> list[dict[str, Any]]:
         """Compute the avro schema of the model.
 
         :return: A dictionary object.
@@ -228,7 +236,7 @@ class Model(t.Generic[T]):
         return [AvroSchemaEncoder("", self_or_cls.model_type).build()["type"]]
 
     @property
-    def avro_data(self) -> dict[str, t.Any]:
+    def avro_data(self) -> dict[str, Any]:
         """Compute the avro data of the model.
 
         :return: A dictionary object.
@@ -259,7 +267,7 @@ class Model(t.Generic[T]):
     def __hash__(self) -> int:
         return hash(tuple(self))
 
-    def __iter__(self) -> t.Iterable:
+    def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
         yield from self.fields.items()
 

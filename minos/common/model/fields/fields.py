@@ -11,7 +11,15 @@ from __future__ import (
 
 import inspect
 import logging
-import typing as t
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    NoReturn,
+    Optional,
+    Type,
+    TypeVar,
+)
 
 from ...exceptions import (
     MinosAttributeValidationException,
@@ -38,7 +46,7 @@ from .type_hint_builder import (
 
 logger = logging.getLogger(__name__)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
 class ModelField:
@@ -49,10 +57,10 @@ class ModelField:
     def __init__(
         self,
         name: str,
-        type_val: t.Type[T],
+        type_val: Type[T],
         value: T = MissingSentinel,
-        parser: t.Optional[t.Callable[[t.Any], T]] = None,
-        validator: t.Optional[t.Callable[[t.Any], bool]] = None,
+        parser: Optional[Callable[[Any], T]] = None,
+        validator: Optional[Callable[[Any], bool]] = None,
     ):
         self._name = name
         self._type = type_val
@@ -67,7 +75,7 @@ class ModelField:
         return self._name
 
     @property
-    def type(self) -> t.Type[T]:
+    def type(self) -> Type[T]:
         """Type getter."""
         return self._type
 
@@ -77,12 +85,12 @@ class ModelField:
         return TypeHintBuilder(self.value, self.type).build()
 
     @property
-    def parser(self) -> t.Optional[t.Callable[[t.Any], T]]:
+    def parser(self) -> Optional[Callable[[Any], T]]:
         """Parser getter."""
         return self._parser
 
     @property
-    def _parser_function(self) -> t.Optional[t.Callable[[t.Any], T]]:
+    def _parser_function(self) -> Optional[Callable[[Any], T]]:
         if self.parser is None:
             return None
         if inspect.ismethod(self.parser):
@@ -91,12 +99,12 @@ class ModelField:
         return self.parser
 
     @property
-    def validator(self) -> t.Optional[t.Callable[[t.Any], T]]:
+    def validator(self) -> Optional[Callable[[Any], T]]:
         """Parser getter."""
         return self._validator
 
     @property
-    def _validator_function(self) -> t.Optional[t.Callable[[t.Any], T]]:
+    def _validator_function(self) -> Optional[Callable[[Any], T]]:
         if self.validator is None:
             return None
         if inspect.ismethod(self.validator):
@@ -104,12 +112,12 @@ class ModelField:
             return self.validator.__func__
 
     @property
-    def value(self) -> t.Any:
+    def value(self) -> Any:
         """Value getter."""
         return self._value
 
     @value.setter
-    def value(self, data: t.Any) -> t.NoReturn:
+    def value(self, data: Any) -> NoReturn:
         """Check if the given value is correct and stores it if ``True``, otherwise raises an exception.
 
         :param data: new value.
@@ -131,7 +139,7 @@ class ModelField:
         self._value = value
 
     @property
-    def avro_schema(self) -> dict[str, t.Any]:
+    def avro_schema(self) -> dict[str, Any]:
         """Compute the avro schema of the field.
 
         :return: A dictionary object.
@@ -147,7 +155,7 @@ class ModelField:
         return AvroDataEncoder.from_field(self).build()
 
     @classmethod
-    def from_avro(cls, schema: dict, value: t.Any) -> ModelField:
+    def from_avro(cls, schema: dict, value: Any) -> ModelField:
         """Build a ``ModelField`` instance from the avro information.
 
         :param schema: Field's schema.
@@ -174,7 +182,7 @@ class ModelField:
     def __hash__(self) -> int:
         return hash(tuple(self))
 
-    def __iter__(self) -> t.Iterable:
+    def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
         yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
 
