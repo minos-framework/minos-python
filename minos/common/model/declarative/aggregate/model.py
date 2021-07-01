@@ -281,8 +281,8 @@ class Aggregate(DeclarativeModel, Generic[T]):
                 f"To apply the difference, it must have same id. Expected: {self.id!r} Obtained: {difference.id!r}"
             )
         logger.debug(f"Applying {difference!r} to {self!r}...")
-        for name, field in difference.fields_diff:
-            setattr(self, name, field.value)
+        for field in difference.fields_diff:
+            setattr(self, field.name, field.value)
         self.version = difference.version
 
     @classmethod
@@ -294,4 +294,4 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        return cls(*args, id=difference.id, version=difference.version, **difference.fields_diff_values, **kwargs)
+        return cls(*args, id=difference.id, version=difference.version, **difference.fields_diff, **kwargs)

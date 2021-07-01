@@ -207,14 +207,18 @@ class TestMinosModel(unittest.TestCase):
         a, b = User(123), User(456)
         self.assertNotEqual(a, b)
 
-    def test_iter(self):
+    def test_list(self):
         user = User(123)
-        expected = {
-            "id": ModelField("id", int, 123, validator=user.validate_id),
-            "username": ModelField(
-                "username", Optional[str], parser=user.parse_username, validator=user.validate_username
-            ),
-        }
+        expected = [
+            ModelField("id", int, 123, validator=user.validate_id),
+            ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
+        ]
+
+        self.assertEqual(expected, list(user))
+
+    def test_dict(self):
+        user = User(123)
+        expected = {"id": 123, "username": None}
         self.assertEqual(expected, dict(user))
 
     def test_hash(self):
@@ -222,11 +226,8 @@ class TestMinosModel(unittest.TestCase):
 
         expected = hash(
             (
-                ("id", ModelField("id", int, 123, validator=user.validate_id)),
-                (
-                    "username",
-                    ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
-                ),
+                ModelField("id", int, 123, validator=user.validate_id),
+                ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
             )
         )
         self.assertEqual(expected, hash(user))
