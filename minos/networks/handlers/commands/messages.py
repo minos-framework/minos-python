@@ -37,9 +37,12 @@ class CommandRequest(Request):
     async def content(self) -> Any:
         """Request content.
 
-        :return: A list of items.
+        :return: The command content.
         """
-        return self.command.items
+        data = self.command.items
+        if len(data) == 1:
+            return data[0]
+        return data
 
 
 class CommandResponse(Response):

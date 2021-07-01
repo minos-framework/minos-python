@@ -44,14 +44,17 @@ class HttpRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw_request!r})"
 
-    async def content(self, model_name: str = "Item") -> Any:
+    async def content(self, model_name: str = "Content") -> Any:
         """Get the request content.
 
-        :return: A list of items.
+        :return: The command content.
         """
         data = await self._raw_json()
         data = [(entry | self.url_args | self.path_args) for entry in data]
         data = self._build_models(data, model_name)
+
+        if len(data) == 1:
+            return data[0]
         return data
 
     async def _raw_json(self) -> list[dict[str, Any]]:

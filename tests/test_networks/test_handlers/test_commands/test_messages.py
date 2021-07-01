@@ -47,6 +47,10 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
         request = CommandRequest(self.command)
         self.assertEqual(self.models, await request.content())
 
+    async def test_content_single(self):
+        request = CommandRequest(Command("FooCreated", [self.models[0]], "12345678", "AddOrderReply"))
+        self.assertEqual(self.models[0], await request.content())
+
 
 class TestCommandResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
