@@ -15,7 +15,6 @@ from abc import (
 )
 from typing import (
     Any,
-    Union,
 )
 
 from .model import (
@@ -27,7 +26,7 @@ class Request(ABC):
     """Request interface."""
 
     @abstractmethod
-    async def content(self) -> list[Model]:
+    async def content(self) -> Any:
         """Get the request content.
 
         :return: A list of instances.
@@ -48,19 +47,19 @@ class Response:
 
     __slots__ = "_items"
 
-    def __init__(self, items: Union[Model, list[Model]]):
+    def __init__(self, items: Any):
         if not isinstance(items, list):
             items = [items]
         self._items = items
 
-    async def content(self) -> list[Model]:
+    async def content(self) -> Any:
         """Response content.
 
         :return: A list of items.
         """
         return self._items
 
-    async def raw_content(self) -> list[dict[str, Any]]:
+    async def raw_content(self) -> Any:
         """Raw response content.
 
         :return: A list of raw items.

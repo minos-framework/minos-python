@@ -10,12 +10,16 @@ from __future__ import (
 )
 
 import logging
-import typing as t
 from datetime import (
     date,
     datetime,
     time,
     timedelta,
+)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    TypeVar,
 )
 from uuid import (
     UUID,
@@ -25,17 +29,17 @@ from ..types import (
     PYTHON_IMMUTABLE_TYPES,
 )
 
-if t.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .fields import ModelField  # pragma: no cover
 logger = logging.getLogger(__name__)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
 class AvroDataEncoder:
     """Avro Data Encoder class."""
 
-    def __init__(self, value: t.Any):
+    def __init__(self, value: Any):
         self._value = value
 
     @classmethod
@@ -54,7 +58,7 @@ class AvroDataEncoder:
         """
         return self._to_avro_raw(self._value)
 
-    def _to_avro_raw(self, value: t.Any) -> t.Any:
+    def _to_avro_raw(self, value: Any) -> Any:
         if value is None:
             return None
         if type(value) in PYTHON_IMMUTABLE_TYPES:

@@ -10,9 +10,15 @@ from __future__ import (
 )
 
 import logging
-import typing as t
 from itertools import (
     zip_longest,
+)
+from typing import (
+    Any,
+    Generic,
+    NoReturn,
+    TypeVar,
+    get_type_hints,
 )
 
 from ...meta import (
@@ -31,10 +37,10 @@ from ..types import (
 
 logger = logging.getLogger(__name__)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
-class DeclarativeModel(Model, t.Generic[T]):
+class DeclarativeModel(Model, Generic[T]):
     """Base class for ``minos`` declarative model entities."""
 
     def __init__(self, *args, **kwargs):
@@ -47,7 +53,7 @@ class DeclarativeModel(Model, t.Generic[T]):
 
     # noinspection PyUnusedLocal
     @classmethod
-    def from_model_type(cls, model_type: ModelType, data: dict[str, t.Any]):
+    def from_model_type(cls, model_type: ModelType, data: dict[str, Any]):
         """Build a ``DeclarativeModel`` from a ``ModelType`` and ``data``.
 
         :param model_type: ``ModelType`` object containing the DTO's structure
@@ -56,7 +62,7 @@ class DeclarativeModel(Model, t.Generic[T]):
         """
         return cls(**data)
 
-    def _list_fields(self, *args, **kwargs) -> t.NoReturn:
+    def _list_fields(self, *args, **kwargs) -> NoReturn:
         for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
             if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
@@ -70,7 +76,7 @@ class DeclarativeModel(Model, t.Generic[T]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def _type_hints(self_or_cls) -> dict[str, t.Any]:
+    def _type_hints(self_or_cls) -> dict[str, Any]:
         fields = dict()
         if isinstance(self_or_cls, type):
             cls = self_or_cls
@@ -79,7 +85,7 @@ class DeclarativeModel(Model, t.Generic[T]):
         for b in cls.__mro__[::-1]:
             base_fields = getattr(b, "_fields", None)
             if base_fields is not None:
-                list_fields = {k: v for k, v in t.get_type_hints(b).items() if not k.startswith("_")}
+                list_fields = {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
                 fields |= list_fields
         logger.debug(f"The obtained fields are: {fields!r}")
         fields |= super()._type_hints()
