@@ -423,8 +423,8 @@ PyYAML = "^5.4.1"
 [package.source]
 type = "git"
 url = "https://github.com/Clariteia/minos_microservice_common.git"
-reference = "885d7092baecd4d5e7033a1d9b60cfdbe5cf1e64"
-resolved_reference = "885d7092baecd4d5e7033a1d9b60cfdbe5cf1e64"
+reference = "a92554562cb124f673f415dd303d4a78982bc947"
+resolved_reference = "a92554562cb124f673f415dd303d4a78982bc947"
 
 [[package]]
 name = "mistune"
@@ -842,7 +842,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "df4dbc1fb85531ff168b482174abdc5e15ed2e618ab5fa1656993b70bce74644"
+content-hash = "0c927cbf827cc4dd9d0244b75a50ecd651f985f41e11897f6d4cb19cfb7aece9"
 
 [metadata.files]
 aiohttp = [

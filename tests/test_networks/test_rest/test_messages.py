@@ -14,6 +14,10 @@ from unittest.mock import (
     patch,
 )
 
+from yarl import (
+    URL,
+)
+
 from minos.networks import (
     HttpRequest,
     HttpResponse,
@@ -26,7 +30,9 @@ from tests.utils import (
 class MockedRequest:
     def __init__(self, data=None):
         self.data = data
-        self.remote = "test"
+        self.remote = "127.0.0.1"
+        self.rel_url = URL("localhost")
+        self.match_info = dict()
 
     def __repr__(self):
         return "repr"
@@ -73,14 +79,50 @@ class TestHttpRequest(unittest.IsolatedAsyncioTestCase):
             [raw_request.data], await request.content(),
         )
 
-    async def test_content_no_json(self):
+    async def test_content_raw_url_args(self):
         raw_request = MockedRequest()
         with patch("minos.networks.HttpRequest._raw_url_args", new_callable=PropertyMock) as mock:
-            mock.return_value = {"id": 1}
+            mock.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
             request = HttpRequest(raw_request)
             self.assertEqual(
-                [1], await request.content(),
+                [{"foo": [1, 3], "bar": 2}], await request.content(),
             )
+
+    async def test_content_raw_path_args(self):
+        raw_request = MockedRequest()
+        with patch("minos.networks.HttpRequest._raw_path_args", new_callable=PropertyMock) as mock:
+            mock.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
+            request = HttpRequest(raw_request)
+            self.assertEqual(
+                [{"foo": [1, 3], "bar": 2}], await request.content(),
+            )
+
+    async def test_content_mixed_single(self):
+        raw_request = MockedRequest({"color": "blue"})
+        with patch("minos.networks.HttpRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
+            mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
+            with patch("minos.networks.HttpRequest._raw_path_args", new_callable=PropertyMock) as mock_path:
+                mock_path.return_value = [("one", 1), ("two", 2), ("one", 3)]
+                request = HttpRequest(raw_request)
+                observed = await request.content()
+
+        expected = [{"foo": [1, 3], "bar": 2, "one": [1, 3], "two": 2, "color": "blue"}]
+        self.assertEqual(expected, observed)
+
+    async def test_content_mixed(self):
+        raw_request = MockedRequest([{"color": "blue"}, {"color": "red"}])
+        with patch("minos.networks.HttpRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
+            mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
+            with patch("minos.networks.HttpRequest._raw_path_args", new_callable=PropertyMock) as mock_path:
+                mock_path.return_value = [("one", 1), ("two", 2), ("one", 3)]
+                request = HttpRequest(raw_request)
+                observed = await request.content()
+
+        expected = [
+            {"foo": [1, 3], "bar": 2, "one": [1, 3], "two": 2, "color": "blue"},
+            {"foo": [1, 3], "bar": 2, "one": [1, 3], "two": 2, "color": "red"},
+        ]
+        self.assertEqual(expected, observed)
 
 
 class TestHttpResponse(unittest.IsolatedAsyncioTestCase):

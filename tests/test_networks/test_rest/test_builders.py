@@ -3,6 +3,9 @@ import unittest
 from aiohttp import (
     web,
 )
+from yarl import (
+    URL,
+)
 
 from minos.common import (
     Request,
@@ -29,7 +32,9 @@ class _Cls:
 class MockedRequest:
     def __init__(self, data=None):
         self.data = data
-        self.remote = "test"
+        self.remote = "127.0.0.1"
+        self.rel_url = URL("localhost")
+        self.match_info = dict()
 
     async def json(self):
         return self.data
@@ -55,10 +60,10 @@ class TestRestBuilder(PostgresAsyncTestCase):
 
         observed = dispatcher.get_action(f"{__name__}._Cls", "_fn")
 
-        observed_response = observed(MockedRequest("request"))
+        observed_response = observed(MockedRequest({"foo": "bar"}))
         response = await observed_response
         self.assertIsInstance(response, web.Response)
-        self.assertEqual('["request"]', response.text)
+        self.assertEqual('[{"foo": "bar"}]', response.text)
         self.assertEqual("application/json", response.content_type)
 
 
