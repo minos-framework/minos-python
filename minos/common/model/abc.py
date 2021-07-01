@@ -263,6 +263,12 @@ class Model(t.Generic[T]):
         # noinspection PyRedundantParentheses
         yield from self.fields.items()
 
+    def __getitem__(self, item: str) -> t.Any:
+        return getattr(self, item)
+
+    def __setitem__(self, key: str, value: t.Any) -> t.NoReturn:
+        setattr(self, key, value)
+
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
         return f"{type(self).__name__}({fields_repr})"

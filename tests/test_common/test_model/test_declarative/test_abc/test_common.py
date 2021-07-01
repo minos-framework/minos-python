@@ -59,6 +59,23 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual("Doe", model.surname)
         self.assertEqual("John", model.name)
 
+    def test_get_item(self):
+        model = Customer(1234)
+        model.name = "John"
+        model.surname = "Doe"
+        self.assertEqual(1234, model["id"])
+        self.assertEqual("Doe", model["surname"])
+        self.assertEqual("John", model["name"])
+
+    def test_set_item(self):
+        expected = Customer(1234, name="John", surname="Doe")
+
+        observed = Customer(1234)
+        observed["name"] = "John"
+        observed["surname"] = "Doe"
+
+        self.assertEqual(expected, observed)
+
     def test_attribute_parser_same_type(self):
         model = Customer(1234, name="john")
         self.assertEqual("John", model.name)
