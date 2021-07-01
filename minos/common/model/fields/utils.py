@@ -5,7 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import inspect
 import typing as t
 
 
@@ -14,7 +13,7 @@ def _is_model_cls(type_field: t.Type) -> bool:
         Model,
     )
 
-    return inspect.isclass(type_field) and issubclass(type_field, Model)
+    return issubclass(type(type_field), type(type)) and issubclass(type_field, Model)
 
 
 def _is_aggregate_cls(type_field: t.Type) -> bool:
@@ -22,4 +21,4 @@ def _is_aggregate_cls(type_field: t.Type) -> bool:
         Aggregate,
     )
 
-    return inspect.isclass(type_field) and issubclass(type_field, Aggregate)
+    return issubclass(type(type_field), type(type)) and issubclass(type_field, Aggregate)
