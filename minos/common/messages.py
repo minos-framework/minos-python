@@ -15,6 +15,7 @@ from abc import (
 )
 from typing import (
     Any,
+    Union,
 )
 
 from .model import (
@@ -47,19 +48,19 @@ class Response:
 
     __slots__ = "_items"
 
-    def __init__(self, items: Any):
+    def __init__(self, items: Union[Model, list[Model]]):
         if not isinstance(items, list):
             items = [items]
         self._items = items
 
-    async def content(self) -> list:
+    async def content(self) -> list[Model]:
         """Response content.
 
         :return: A list of items.
         """
         return self._items
 
-    async def raw_content(self) -> list:
+    async def raw_content(self) -> list[dict[str, Any]]:
         """Raw response content.
 
         :return: A list of raw items.
