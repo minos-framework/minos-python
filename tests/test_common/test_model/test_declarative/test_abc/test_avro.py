@@ -53,7 +53,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                             "null",
                         ],
                     },
-                    {"name": "cost", "type": "float"},
+                    {"name": "cost", "type": "double"},
                 ],
                 "name": "ShoppingList",
                 "namespace": "tests.model_classes",

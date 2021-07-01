@@ -69,6 +69,17 @@ class TestMinosAvroProtocol(unittest.TestCase):
 
         self.assertTrue("Error getting avro schema" in str(context.exception))
 
+    def test_float(self):
+        schema = {
+            "type": "record",
+            "name": "tests.model_classes.ShoppingList",
+            "fields": [{"type": "double", "name": "foo"}],
+        }
+        data = {"foo": 3.14159265359}
+        serialized = MinosAvroProtocol.encode(data, schema)
+        deserialized = MinosAvroProtocol.decode(serialized)
+        self.assertEqual(data, deserialized)
+
 
 if __name__ == "__main__":
     unittest.main()

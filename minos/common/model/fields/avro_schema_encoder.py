@@ -25,7 +25,7 @@ from ..types import (
     BYTES,
     DATE_TYPE,
     DATETIME_TYPE,
-    FLOAT,
+    DOUBLE,
     INT,
     NULL,
     PYTHON_IMMUTABLE_TYPES,
@@ -131,7 +131,7 @@ class AvroSchemaEncoder:
             return BOOLEAN
 
         if type_field is float:
-            return FLOAT
+            return DOUBLE
 
         if type_field is str:
             return STRING
