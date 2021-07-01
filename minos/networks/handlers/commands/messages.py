@@ -9,9 +9,12 @@ from __future__ import (
     annotations,
 )
 
+from typing import (
+    Any,
+)
+
 from minos.common import (
     Command,
-    Model,
     Request,
     Response,
 )
@@ -31,7 +34,7 @@ class CommandRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.command!r})"
 
-    async def content(self) -> list[Model]:
+    async def content(self) -> Any:
         """Request content.
 
         :return: A list of items.

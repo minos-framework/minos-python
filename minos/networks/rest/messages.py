@@ -44,7 +44,7 @@ class HttpRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw_request!r})"
 
-    async def content(self, model_name: str = "Item") -> list[DataTransferObject]:
+    async def content(self, model_name: str = "Item") -> Any:
         """Get the request content.
 
         :return: A list of items.
