@@ -44,7 +44,7 @@ from .fields import (
     AvroDataDecoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
-    ModelField,
+    Field,
 )
 from .types import (
     ModelType,
@@ -88,12 +88,12 @@ T = TypeVar("T")
 class Model(Generic[T]):
     """Base class for ``minos`` model entities."""
 
-    _fields: dict[str, ModelField] = {}
+    _fields: dict[str, Field] = {}
 
-    def __init__(self, fields: Union[Iterable[ModelField], dict[str, ModelField]] = None):
+    def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
         """Class constructor.
 
-        :param fields: Dictionary that contains the ``ModelField`` instances of the model indexed by name.
+        :param fields: Dictionary that contains the ``Field`` instances of the model indexed by name.
         """
         if fields is None:
             fields = dict()
@@ -190,13 +190,13 @@ class Model(Generic[T]):
         return classname(cls)
 
     @property
-    def fields(self) -> dict[str, ModelField]:
+    def fields(self) -> dict[str, Field]:
         """Fields getter"""
         return self._fields
 
     def __setattr__(self, key: str, value: Any) -> NoReturn:
         if self._fields is not None and key in self._fields:
-            field_class: ModelField = self._fields[key]
+            field_class: Field = self._fields[key]
             field_class.value = value
             self._fields[key] = field_class
         elif key.startswith("_"):

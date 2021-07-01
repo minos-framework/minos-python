@@ -18,6 +18,7 @@ from .avro_schema_encoder import (
     AvroSchemaEncoder,
 )
 from .fields import (
+    Field,
     ModelField,
 )
 from .type_hint_builder import (

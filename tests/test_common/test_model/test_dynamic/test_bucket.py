@@ -10,20 +10,20 @@ import unittest
 
 from minos.common import (
     BucketModel,
-    ModelField,
+    Field,
 )
 
 
 class TestBucketModel(unittest.IsolatedAsyncioTestCase):
     def test_get_item(self):
-        bucket = BucketModel({ModelField("doors", int, 5), ModelField("color", str, "red")})
+        bucket = BucketModel({Field("doors", int, 5), Field("color", str, "red")})
         self.assertEqual(5, bucket["doors"])
         self.assertEqual("red", bucket["color"])
 
     def test_set_item(self):
-        expected = BucketModel({ModelField("doors", int, 5), ModelField("color", str, "red")})
+        expected = BucketModel({Field("doors", int, 5), Field("color", str, "red")})
 
-        observed = BucketModel({ModelField("doors", int, 3), ModelField("color", str, "blue")})
+        observed = BucketModel({Field("doors", int, 3), Field("color", str, "blue")})
         observed["doors"] = 5
         observed["color"] = "red"
 

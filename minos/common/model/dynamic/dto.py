@@ -15,7 +15,7 @@ from typing import (
 )
 
 from ..fields import (
-    ModelField,
+    Field,
 )
 from ..types import (
     ModelType,
@@ -55,7 +55,7 @@ class DataTransferObject(DynamicModel):
         :param data: A dictionary containing the values to be stored on the DTO.
         :return: A new ``DataTransferObject`` instance.
         """
-        fields = {k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()}
+        fields = {k: Field(k, v, data[k]) for k, v in model_type.type_hints.items()}
         return cls(model_type.name, fields, namespace=model_type.namespace)
 
     @property

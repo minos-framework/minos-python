@@ -12,8 +12,8 @@ from typing import (
 
 from minos.common import (
     AggregateDiff,
+    Field,
     FieldsDiff,
-    ModelField,
     ModelRef,
 )
 from tests.aggregate_classes import (
@@ -41,9 +41,9 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             version=1,
             fields_diff=FieldsDiff(
                 {
-                    "doors": ModelField("doors", int, 3),
-                    "color": ModelField("color", str, "blue"),
-                    "owner": ModelField("owner", Optional[list[ModelRef[Owner]]], None),
+                    "doors": Field("doors", int, 3),
+                    "color": Field("color", str, "blue"),
+                    "owner": Field("owner", Optional[list[ModelRef[Owner]]], None),
                 }
             ),
         )
@@ -60,7 +60,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             id=1,
             name=Car.classname,
             version=3,
-            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")}),
+            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
         )
         observed = AggregateDiff.from_difference(self.final, self.initial)
         self.assertEqual(expected, observed)
@@ -74,17 +74,17 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             id=1,
             name=Car.classname,
             version=3,
-            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "red")}),
+            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "red")}),
         )
 
-        one = AggregateDiff(1, Car.classname, 1, FieldsDiff({"color": ModelField("color", str, "yellow")}))
+        one = AggregateDiff(1, Car.classname, 1, FieldsDiff({"color": Field("color", str, "yellow")}))
         two = AggregateDiff(
             id=1,
             name=Car.classname,
             version=2,
-            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 1), "color": ModelField("color", str, "red")}),
+            fields_diff=FieldsDiff({"doors": Field("doors", int, 1), "color": Field("color", str, "red")}),
         )
-        three = AggregateDiff(1, Car.classname, 3, FieldsDiff({"doors": ModelField("doors", int, 5)}))
+        three = AggregateDiff(1, Car.classname, 3, FieldsDiff({"doors": Field("doors", int, 5)}))
         observed = AggregateDiff.simplify(one, two, three)
         self.assertEqual(expected, observed)
 
@@ -95,9 +95,9 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             version=1,
             fields_diff=FieldsDiff(
                 {
-                    "doors": ModelField("doors", int, 3),
-                    "color": ModelField("color", str, "blue"),
-                    "owner": ModelField("owner", Optional[list[ModelRef[Owner]]], None),
+                    "doors": Field("doors", int, 3),
+                    "color": Field("color", str, "blue"),
+                    "owner": Field("owner", Optional[list[ModelRef[Owner]]], None),
                 }
             ),
         )

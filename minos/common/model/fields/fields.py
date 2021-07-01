@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-class ModelField:
+class Field:
     """Represents a model field."""
 
     __slots__ = "_name", "_type", "_value", "_parser", "_validator"
@@ -155,17 +155,17 @@ class ModelField:
         return AvroDataEncoder.from_field(self).build()
 
     @classmethod
-    def from_avro(cls, schema: dict, value: Any) -> ModelField:
-        """Build a ``ModelField`` instance from the avro information.
+    def from_avro(cls, schema: dict, value: Any) -> Field:
+        """Build a ``Field`` instance from the avro information.
 
         :param schema: Field's schema.
         :param value: Field's value.
-        :return: A ``ModelField`` instance.
+        :return: A ``Field`` instance.
         """
         type_val = AvroSchemaDecoder(schema).build()
         return cls(schema["name"], type_val, value)
 
-    def __eq__(self, other: "ModelField") -> bool:
+    def __eq__(self, other: Field) -> bool:
         from .type_hint_comparator import (
             TypeHintComparator,
         )
@@ -188,3 +188,6 @@ class ModelField:
 
     def __repr__(self):
         return f"{self.name}={self.value}"
+
+
+ModelField = Field

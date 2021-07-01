@@ -11,13 +11,13 @@ from typing import (
 )
 
 from minos.common import (
+    Field,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
     MinosModelException,
     MinosParseAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
-    ModelField,
     ModelType,
 )
 from tests.model_classes import (
@@ -171,10 +171,8 @@ class TestMinosModel(unittest.TestCase):
     def test_fields(self):
         user = User(123)
         fields = {
-            "id": ModelField("id", int, 123, validator=user.validate_id),
-            "username": ModelField(
-                "username", Optional[str], parser=user.parse_username, validator=user.validate_username
-            ),
+            "id": Field("id", int, 123, validator=user.validate_id),
+            "username": Field("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
         }
         self.assertEqual(fields, user.fields)
 
@@ -193,10 +191,8 @@ class TestMinosModel(unittest.TestCase):
     def test_iter(self):
         user = User(123)
         expected = {
-            "id": ModelField("id", int, 123, validator=user.validate_id),
-            "username": ModelField(
-                "username", Optional[str], parser=user.parse_username, validator=user.validate_username
-            ),
+            "id": Field("id", int, 123, validator=user.validate_id),
+            "username": Field("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
         }
         self.assertEqual(expected, dict(user))
 
@@ -205,10 +201,10 @@ class TestMinosModel(unittest.TestCase):
 
         expected = hash(
             (
-                ("id", ModelField("id", int, 123, validator=user.validate_id)),
+                ("id", Field("id", int, 123, validator=user.validate_id)),
                 (
                     "username",
-                    ModelField("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
+                    Field("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
                 ),
             )
         )

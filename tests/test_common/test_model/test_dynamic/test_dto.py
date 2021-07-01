@@ -12,7 +12,7 @@ from typing import (
 
 from minos.common import (
     DataTransferObject,
-    ModelField,
+    Field,
     ModelType,
 )
 from tests.model_classes import (
@@ -90,11 +90,11 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         expected = DataTransferObject(
             "Order",
             {
-                "price": ModelField("price", int, 34),
-                "user": ModelField(
+                "price": Field("price", int, 34),
+                "user": Field(
                     "user",
                     ModelType.build("User", {"username": list[int]}),
-                    DataTransferObject("User", {"username": ModelField("username", list[int], [434324, 66464, 45432])}),
+                    DataTransferObject("User", {"username": Field("username", list[int], [434324, 66464, 45432])}),
                 ),
             },
         )
@@ -143,11 +143,11 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
     def test_from_typed_dict_model(self):
         dto = DataTransferObject.from_typed_dict(TypedDict("Foo", {"text": str}), {"text": "test"})
-        self.assertEqual(DataTransferObject("Foo", {ModelField("text", str, "test")}), dto)
+        self.assertEqual(DataTransferObject("Foo", {Field("text", str, "test")}), dto)
 
     def test_from_model_type_model(self):
         dto = DataTransferObject.from_model_type(ModelType.build("Foo", {"text": str}), {"text": "test"})
-        self.assertEqual(DataTransferObject("Foo", {ModelField("text", str, "test")}), dto)
+        self.assertEqual(DataTransferObject("Foo", {Field("text", str, "test")}), dto)
 
     def test_avro_schema(self):
         data = {"price": 34, "user": {"username": [434324, 66464, 45432]}}

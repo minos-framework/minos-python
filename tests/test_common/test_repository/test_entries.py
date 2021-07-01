@@ -12,9 +12,9 @@ from datetime import (
 
 from minos.common import (
     AggregateDiff,
+    Field,
     FieldsDiff,
     MinosRepositoryUnknownActionException,
-    ModelField,
     RepositoryAction,
     RepositoryEntry,
 )
@@ -64,7 +64,7 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
 
     async def test_from_aggregate_diff(self):
-        fields_diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
+        fields_diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
         aggregate_diff = AggregateDiff(id=1, name=Car.classname, version=1, fields_diff=fields_diff)
 
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)

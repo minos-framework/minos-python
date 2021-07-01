@@ -28,7 +28,7 @@ from ..abc import (
     Model,
 )
 from ..fields import (
-    ModelField,
+    Field,
 )
 from ..types import (
     MissingSentinel,
@@ -70,7 +70,7 @@ class DeclarativeModel(Model, Generic[T]):
             if value is MissingSentinel and name in kwargs:
                 value = kwargs[name]
 
-            self._fields[name] = ModelField(
+            self._fields[name] = Field(
                 name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
             )
 

@@ -10,7 +10,7 @@ import unittest
 from minos.common import (
     DataTransferObject,
     Event,
-    ModelField,
+    Field,
 )
 from tests.model_classes import (
     Foo,
@@ -36,8 +36,8 @@ class TestEvent(unittest.TestCase):
 class TestEventDto(unittest.TestCase):
     def setUp(self) -> None:
         self.items = [
-            DataTransferObject("User", fields={"username": ModelField("username", str, "foo")}),
-            DataTransferObject("User", fields={"username": ModelField("username", str, "bar")}),
+            DataTransferObject("User", fields={"username": Field("username", str, "foo")}),
+            DataTransferObject("User", fields={"username": Field("username", str, "bar")}),
         ]
         self.topic = "UserCreated"
 
