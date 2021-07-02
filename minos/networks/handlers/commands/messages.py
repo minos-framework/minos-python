@@ -34,9 +34,10 @@ class CommandRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.command!r})"
 
-    async def content(self) -> Any:
+    async def content(self, **kwargs) -> Any:
         """Request content.
 
+        :param kwargs: Additional named arguments.
         :return: The command content.
         """
         data = self.command.items
