@@ -15,3 +15,4 @@ class CommandReply(Event):
     """Base Command class."""
 
     saga_uuid: str
+    # status: int
