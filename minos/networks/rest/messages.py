@@ -48,16 +48,16 @@ class HttpRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw_request!r})"
 
-    async def content(self, model: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
+    async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
         """Get the request content.
 
-        :param model: TODO
+        :param model_type: TODO
         :param kwargs: Additional named arguments.
         :return: The command content.
         """
         data = await self._raw_json()
         data = [(entry | self.url_args | self.path_args) for entry in data]
-        data = self._build_models(data, model)
+        data = self._build_models(data, model_type)
 
         if len(data) == 1:
             return data[0]
@@ -105,22 +105,19 @@ class HttpRequest(Request):
     def _raw_path_args(self):
         return self.raw_request.match_info.items()  # pragma: no cover
 
-    def _build_models(self, data: list[dict[str, Any]], model: Union[ModelType, Type[Model], str]) -> list[Model]:
-        def _fn(entry: dict[str, Any]) -> Model:
-            try:
-                model_type = self._build_model_type(model)
-            except MinosImportException:
-                type_hints = {k: TypeHintBuilder(v).build() for k, v in entry.items()}
-                model_type = ModelType.build(model, type_hints)
-            return model_type(**entry)
-
-        return [_fn(entry) for entry in data]
+    def _build_models(self, data: list[dict[str, Any]], model_type: Union[ModelType, Type[Model], str]) -> list[Model]:
+        return [self._build_one_model(entry, model_type) for entry in data]
 
     @staticmethod
-    def _build_model_type(model: Union[ModelType, Type[Model], str]):
-        if isinstance(model, str):
-            return import_module(model)
-        return model
+    def _build_one_model(entry: dict[str, Any], model_type: Union[ModelType, Type[Model], str]) -> Model:
+        if isinstance(model_type, str):
+            try:
+                model_type = import_module(model_type)
+            except MinosImportException:
+                type_hints = {k: TypeHintBuilder(v).build() for k, v in entry.items()}
+                model_type = ModelType.build(model_type, type_hints)
+
+        return model_type(**entry)
 
 
 class HttpResponse(Response):
