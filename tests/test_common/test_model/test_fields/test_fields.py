@@ -58,10 +58,6 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         field = Field("test", float, 3.14)
         self.assertEqual(3.14, field.value)
 
-    def test_value_float_list(self):
-        field = Field("test", float, [3.14])
-        self.assertEqual(3.14, field.value)
-
     def test_value_bytes(self):
         field = Field("test", bytes, bytes("foo", "utf-8"))
         self.assertEqual(bytes("foo", "utf-8"), field.value)
@@ -107,6 +103,8 @@ class TestField(unittest.IsolatedAsyncioTestCase):
 
     def test_value_float_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
+            Field("test", float, [3])
+        with self.assertRaises(MinosTypeAttributeException):
             Field("test", float, "foo")
 
     def test_value_bytes_raises(self):
@@ -116,10 +114,6 @@ class TestField(unittest.IsolatedAsyncioTestCase):
     def test_value_list_int(self):
         field = Field("test", list[int], [1, 2, 3])
         self.assertEqual([1, 2, 3], field.value)
-
-    def test_value_list_not_list(self):
-        field = Field("test", list[int], 3)
-        self.assertEqual([3], field.value)
 
     def test_value_list_str(self):
         field = Field("test", list[str], ["foo", "bar", "foobar"])
@@ -294,7 +288,7 @@ class TestField(unittest.IsolatedAsyncioTestCase):
 
     def test_value_list_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
-            Field("test", list[int], "hello")
+            Field("test", list[int], 3)
 
     def test_value_dict(self):
         field = Field("test", dict[str, bool], {"foo": True, "bar": False})
