@@ -51,7 +51,7 @@ class HttpRequest(Request):
     async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
         """Get the request content.
 
-        :param model_type: TODO
+        :param model_type: Optional ``ModelType`` that defines the request content structure.
         :param kwargs: Additional named arguments.
         :return: The command content.
         """
