@@ -135,6 +135,9 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_simple_value(self, type_field: Type, data: Any) -> Any:
+        if isinstance(data, (tuple, list)) and len(data) == 1:
+            data = data[0]
+
         if data is None:
             raise MinosReqAttributeException(f"{self._name!r} field is '{None!r}'.")
 
@@ -261,7 +264,7 @@ class AvroDataDecoder:
     def _convert_list(self, data: list, type_values: Any) -> list[Any]:
         type_values = get_args(type_values)[0]
         if not isinstance(data, list):
-            raise MinosTypeAttributeException(self._name, list, data)
+            data = [data]
 
         return self._convert_list_params(data, type_values)
 
