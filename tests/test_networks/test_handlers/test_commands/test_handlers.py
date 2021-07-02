@@ -78,7 +78,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(1, mock.call_count)
         observed = mock.call_args[0][0]
         self.assertIsInstance(observed, CommandRequest)
-        self.assertEqual([FakeModel("foo")], await observed.content())
+        self.assertEqual(FakeModel("foo"), await observed.content())
 
     async def test_dispatch_without_reply(self):
         mock = AsyncMock()
@@ -95,7 +95,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(1, mock.call_count)
         observed = mock.call_args[0][0]
         self.assertIsInstance(observed, CommandRequest)
-        self.assertEqual([FakeModel("foo")], await observed.content())
+        self.assertEqual(FakeModel("foo"), await observed.content())
 
 
 if __name__ == "__main__":
