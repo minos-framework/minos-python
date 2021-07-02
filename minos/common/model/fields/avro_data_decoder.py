@@ -79,6 +79,8 @@ class AvroDataDecoder:
         return self._cast_value(self._type, data)
 
     def _cast_value(self, type_field: Type, data: Any) -> Any:
+        if type_field is Any:
+            type_field = type(data)
         origin = get_origin(type_field)
         if origin is not Union:
             return self._cast_single_value(type_field, data)

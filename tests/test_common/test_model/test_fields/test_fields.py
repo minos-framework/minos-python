@@ -12,6 +12,7 @@ from datetime import (
     time,
 )
 from typing import (
+    Any,
     Optional,
     Union,
 )
@@ -156,6 +157,10 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosTypeAttributeException):
             Field("test", UUID, bytes())
 
+    def test_value_any(self):
+        field = Field("test", Any, 3)
+        self.assertEqual(3, field.value)
+
     def test_avro_schema_int(self):
         field = Field("test", int, 1)
         expected = {"name": "test", "type": "int"}
@@ -247,6 +252,10 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         field = Field("test", UUID, uuid4())
         self.assertEqual({"name": "test", "type": {"type": "string", "logicalType": "uuid"}}, field.avro_schema)
 
+    def test_schema_any(self):
+        field = Field("test", Any, 3)
+        self.assertEqual({"name": "test", "type": "int"}, field.avro_schema)
+
     def test_avro_data_float(self):
         field = Field("test", float, 3.14159265359)
         self.assertEqual(3.14159265359, field.avro_data)
@@ -276,6 +285,10 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         value = datetime(2021, 3, 12, 21, 32, 21)
         field = Field("test", datetime, value)
         self.assertEqual(1615584741000000, field.avro_data)
+
+    def test_avro_data_any(self):
+        field = Field("test", Any, 3)
+        self.assertEqual(3, field.avro_data)
 
     def test_avro_data_uuid(self):
         value = uuid4()
@@ -541,6 +554,12 @@ class TestField(unittest.IsolatedAsyncioTestCase):
             Field.from_avro({"name": "id", "type": "foo"}, None)
         with self.assertRaises(MinosMalformedAttributeException):
             Field.from_avro({"name": "id", "type": "string", "logicalType": "foo"}, None)
+
+    @unittest.skip
+    def test_from_avro_any(self):
+        obtained = Field.from_avro({"name": "id", "type": "int"}, 3)
+        desired = Field("id", Any, 3)
+        self.assertEqual(desired, obtained)
 
 
 if __name__ == "__main__":
