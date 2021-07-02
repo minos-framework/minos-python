@@ -27,6 +27,7 @@ from minos.common import (
     ENDPOINT,
     MinosConfig,
     MinosSetup,
+    ResponseException,
     classname,
     import_module,
 )
@@ -103,16 +104,22 @@ class RestBuilder(MinosSetup):
         :param action: Config instance. Example: "get_order"
         :return: A class method callable instance.
         """
-        object_class = import_module(controller)
-        instance_class = object_class()
-        class_method = getattr(instance_class, action)
+        controller_cls = import_module(controller)
+        controller = controller_cls()
+        action_fn = getattr(controller, action)
 
         async def _fn(request: web.Request) -> web.Response:
-            logger.info(f"Dispatching {classname(class_method)!r} from {request.remote!r}...")
+            logger.info(f"Dispatching {classname(action_fn)!r} from {request.remote!r}...")
             request = HttpRequest(request)
-            response = class_method(request)
-            if isawaitable(response):
-                response = await response
+
+            try:
+                response = action_fn(request)
+                if isawaitable(response):
+                    response = await response
+            except ResponseException as exc:
+                logger.warning(f"Raised an exception: {exc!r}")
+                raise web.HTTPBadRequest(text=exc.message)
+
             return web.json_response(await response.raw_content())
 
         return _fn
