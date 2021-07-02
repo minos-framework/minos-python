@@ -82,4 +82,4 @@ class Response:
 
 
 class ResponseException(MinosException):
-    """TODO"""
+    """Response Exception class."""
