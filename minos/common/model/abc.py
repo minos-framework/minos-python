@@ -269,7 +269,20 @@ class Model(Generic[T]):
 
     def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
-        yield from self.fields.items()
+        yield from self.fields.values()
+
+    def __getitem__(self, item: str) -> Any:
+        return getattr(self, item)
+
+    def __setitem__(self, key: str, value: Any) -> NoReturn:
+        setattr(self, key, value)
+
+    def keys(self) -> Iterable[str]:
+        """Get the field names.
+
+        :return: An iterable of string values.
+        """
+        return self.fields.keys()
 
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
