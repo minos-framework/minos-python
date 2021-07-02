@@ -14,9 +14,13 @@ from functools import (
 )
 from inspect import (
     isawaitable,
+    isclass,
 )
 from typing import (
+    Awaitable,
     Callable,
+    NoReturn,
+    Union,
 )
 
 from aiohttp import (
@@ -26,6 +30,7 @@ from aiohttp import (
 from minos.common import (
     ENDPOINT,
     MinosConfig,
+    MinosException,
     MinosSetup,
     ResponseException,
     classname,
@@ -34,6 +39,7 @@ from minos.common import (
 
 from .messages import (
     HttpRequest,
+    HttpResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -91,11 +97,15 @@ class RestBuilder(MinosSetup):
     def _mount_routes(self, app: web.Application):
         """Load routes from config file."""
         for item in self._endpoints:
-            callable_f = self.get_action(item.controller, item.action)
-            app.router.add_route(item.method, item.route, callable_f)
+            self._mount_one_route(item, app)
 
         # Load default routes
         self._mount_system_health(app)
+
+    def _mount_one_route(self, item: ENDPOINT, app: web.Application) -> NoReturn:
+        action = self.get_action(item.controller, item.action)
+        handler = self.get_handler(action)
+        app.router.add_route(item.method, item.route, handler)
 
     @staticmethod
     def get_action(controller: str, action: str) -> Callable:
@@ -104,21 +114,37 @@ class RestBuilder(MinosSetup):
         :param action: Config instance. Example: "get_order"
         :return: A class method callable instance.
         """
-        controller_cls = import_module(controller)
-        controller = controller_cls()
+        controller = import_module(controller)
+        if isclass(controller):
+            controller = controller()
         action_fn = getattr(controller, action)
+        return action_fn
+
+    @staticmethod
+    def get_handler(fn: Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]):
+        """TODO
+
+        :param fn:TODO
+        :return: TODO
+        """
 
         async def _fn(request: web.Request) -> web.Response:
-            logger.info(f"Dispatching {classname(action_fn)!r} from {request.remote!r}...")
+            logger.info(f"Dispatching {classname(fn)!r} from {request.remote!r}...")
             request = HttpRequest(request)
 
             try:
-                response = action_fn(request)
+                response = fn(request)
                 if isawaitable(response):
                     response = await response
             except ResponseException as exc:
-                logger.warning(f"Raised an exception: {exc!r}")
-                raise web.HTTPBadRequest(text=exc.message)
+                logger.info(f"Raised a user exception: {exc!r}")
+                raise web.HTTPBadRequest(text=str(exc))
+            except MinosException as exc:
+                logger.warning(f"Raised a framework exception: {exc!r}")
+                raise web.HTTPInternalServerError()
+            except Exception as exc:
+                logger.exception(f"Raised an exception: {exc!r}.")
+                raise web.HTTPInternalServerError()
 
             return web.json_response(await response.raw_content())
 
