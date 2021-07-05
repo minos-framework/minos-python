@@ -89,9 +89,7 @@ class SagaExecutionStep(object):
         self.status = SagaStepStatus.RunningInvokeParticipant
         executor = PublishExecutor(*args, **kwargs)
         try:
-            await executor.exec(
-                self.definition.invoke_participant_operation, context, has_reply=self.definition.has_reply,
-            )
+            await executor.exec(self.definition.invoke_participant_operation, context)
         except MinosSagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredInvokeParticipant
             raise exc
