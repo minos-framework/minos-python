@@ -12,7 +12,6 @@ from minos.common import (
     MinosAttributeValidationException,
     MinosBrokerException,
     MinosBrokerNotProvidedException,
-    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
     MinosException,
     MinosMalformedAttributeException,
@@ -46,9 +45,6 @@ class TestExceptions(unittest.TestCase):
 
     def test_config(self):
         self.assertTrue(issubclass(MinosConfigException, MinosException))
-
-    def test_config_default_already_set(self):
-        self.assertTrue(issubclass(MinosConfigDefaultAlreadySetException, MinosConfigException))
 
     def test_broker(self):
         self.assertTrue(issubclass(MinosBrokerException, MinosException))

@@ -54,10 +54,6 @@ class MinosConfigException(MinosException):
     """Base config exception."""
 
 
-class MinosConfigDefaultAlreadySetException(MinosConfigException):
-    """Exception to be raised when some config is already set as default."""
-
-
 class MinosBrokerException(MinosException):
     """Base broker exception"""
 

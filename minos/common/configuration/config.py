@@ -18,14 +18,12 @@ from pathlib import (
 from typing import (
     Any,
     NoReturn,
-    Optional,
     Union,
 )
 
 import yaml
 
 from ..exceptions import (
-    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
 )
 
@@ -130,8 +128,6 @@ _PARAMETERIZED_MAPPER = {
     "discovery.endpoints.discover.method": "minos_discovery_endpoints_discover_method",
 }
 
-_default: Optional[MinosConfigAbstract] = None
-
 
 class MinosConfigAbstract(abc.ABC):
     """Minos abstract config class."""
@@ -152,43 +148,6 @@ class MinosConfigAbstract(abc.ABC):
     @abc.abstractmethod
     def _get(self, key: str, **kwargs: Any):
         raise NotImplementedError
-
-    def __enter__(self) -> MinosConfigAbstract:
-        self.set_default(self)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> NoReturn:
-        self.unset_default()
-
-    @staticmethod
-    def set_default(value: MinosConfigAbstract) -> NoReturn:
-        """Set default config.
-
-        :param value: Default config.
-        :return: This method does not return anything.
-        """
-        if MinosConfigAbstract.get_default() is not None:
-            raise MinosConfigDefaultAlreadySetException("There is already another config set as default.")
-        global _default
-        _default = value
-
-    @classmethod
-    def get_default(cls) -> MinosConfigAbstract:
-        """Get default config.
-
-        :return: A ``MinosConfigAbstract`` instance.
-        """
-        global _default
-        return _default
-
-    @staticmethod
-    def unset_default() -> NoReturn:
-        """Unset the default config.
-
-        :return: This method does not return anything.
-        """
-        global _default
-        _default = None
 
 
 class MinosConfig(MinosConfigAbstract):

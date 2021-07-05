@@ -32,7 +32,6 @@ from .exceptions import (
     MinosAttributeValidationException,
     MinosBrokerException,
     MinosBrokerNotProvidedException,
-    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
     MinosException,
     MinosImportException,
