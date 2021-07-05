@@ -31,6 +31,7 @@ from minos.common import (
     ModelType,
     Request,
     Response,
+    ResponseException,
     TypeHintBuilder,
     import_module,
 )
@@ -122,3 +123,7 @@ class HttpRequest(Request):
 
 class HttpResponse(Response):
     """Http Response class."""
+
+
+class HttpResponseException(ResponseException):
+    """Http Response Exception class."""

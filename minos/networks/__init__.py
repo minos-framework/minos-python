@@ -48,6 +48,7 @@ from .handlers import (
 from .rest import (
     HttpRequest,
     HttpResponse,
+    HttpResponseException,
     RestBuilder,
     RestService,
 )

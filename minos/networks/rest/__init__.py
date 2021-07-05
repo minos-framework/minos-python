@@ -12,6 +12,7 @@ from .builders import (
 from .messages import (
     HttpRequest,
     HttpResponse,
+    HttpResponseException,
 )
 from .services import (
     RestService,
