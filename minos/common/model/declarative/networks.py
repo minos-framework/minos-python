@@ -13,9 +13,6 @@ from __future__ import (
 from enum import (
     IntEnum,
 )
-from typing import (
-    Optional,
-)
 
 from ..abc import (
     Model,
@@ -31,7 +28,7 @@ class Command(DeclarativeModel):
     topic: str
     items: list[Model]
     saga_uuid: str
-    reply_topic: Optional[str]
+    reply_topic: str
 
 
 class CommandReply(DeclarativeModel):

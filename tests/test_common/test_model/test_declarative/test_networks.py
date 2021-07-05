@@ -24,13 +24,6 @@ class TestCommand(unittest.TestCase):
         self.items = [Foo("blue"), Foo("red")]
 
     def test_constructor(self):
-        command = Command(self.topic, self.items, "saga_id4234")
-        self.assertEqual(self.topic, command.topic)
-        self.assertEqual(self.items, command.items)
-        self.assertEqual("saga_id4234", command.saga_uuid)
-        self.assertEqual(None, command.reply_topic)
-
-    def test_constructor_with_reply_on(self):
         command = Command(self.topic, self.items, "saga_id4234", "AddOrderReply")
         self.assertEqual(self.topic, command.topic)
         self.assertEqual(self.items, command.items)
