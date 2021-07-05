@@ -104,7 +104,7 @@ class RestBuilder(MinosSetup):
 
     def _mount_one_route(self, item: ENDPOINT, app: web.Application) -> NoReturn:
         action = self.get_action(item.controller, item.action)
-        handler = self.get_handler(action)
+        handler = self.get_callback(action)
         app.router.add_route(item.method, item.route, handler)
 
     @staticmethod
@@ -123,7 +123,7 @@ class RestBuilder(MinosSetup):
         return action_fn
 
     @staticmethod
-    def get_handler(
+    def get_callback(
         fn: Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]
     ) -> Callable[[web.Request], Awaitable[web.Response]]:
         """Get the handler function to be used by ``aiohttp``.
