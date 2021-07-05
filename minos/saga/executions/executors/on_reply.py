@@ -11,6 +11,8 @@ from typing import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
+    MinosException,
 )
 
 from ...definitions import (
@@ -27,6 +29,10 @@ from ..context import (
 from .local import (
     LocalExecutor,
 )
+
+
+class BadCommandReplyStatusException(MinosException):
+    """Exception to be used when ``CommandStatus`` is not ``SUCCESS``"""
 
 
 class OnReplyExecutor(LocalExecutor):
@@ -47,6 +53,10 @@ class OnReplyExecutor(LocalExecutor):
         """
         if reply is None:
             raise MinosSagaPausedExecutionStepException()
+
+        if reply.status != CommandStatus.SUCCESS:
+            exc = BadCommandReplyStatusException(f"CommandReply status is not success. Obtained: {reply.status!s}")
+            raise MinosSagaFailedExecutionStepException(exc)
 
         if operation is None:
             return context
