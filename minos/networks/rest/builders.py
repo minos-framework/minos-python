@@ -108,7 +108,9 @@ class RestBuilder(MinosSetup):
         app.router.add_route(item.method, item.route, handler)
 
     @staticmethod
-    def get_action(controller: str, action: str) -> Callable:
+    def get_action(
+        controller: str, action: str
+    ) -> Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]:
         """Load controller class and action method.
         :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
         :param action: Config instance. Example: "get_order"
@@ -121,11 +123,13 @@ class RestBuilder(MinosSetup):
         return action_fn
 
     @staticmethod
-    def get_handler(fn: Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]):
-        """TODO
+    def get_handler(
+        fn: Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]
+    ) -> Callable[[web.Request], Awaitable[web.Response]]:
+        """Get the handler function to be used by ``aiohttp``.
 
-        :param fn:TODO
-        :return: TODO
+        :param fn: The action function.
+        :return: A wrapper function of the passed one that is able to be used by ``aiohttp``.
         """
 
         async def _fn(request: web.Request) -> web.Response:

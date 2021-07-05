@@ -3,6 +3,10 @@ import unittest
 from aiohttp import (
     web,
 )
+from aiohttp.web_exceptions import (
+    HTTPBadRequest,
+    HTTPInternalServerError,
+)
 from yarl import (
     URL,
 )
@@ -11,6 +15,7 @@ from minos.common import (
     ModelType,
     Request,
     Response,
+    ResponseException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -18,6 +23,7 @@ from minos.common.testing import (
 from minos.networks import (
     HttpRequest,
     HttpResponse,
+    MinosActionNotFoundException,
     RestBuilder,
 )
 from tests.utils import (
@@ -29,6 +35,18 @@ class _Cls:
     @staticmethod
     async def _fn(request: Request) -> Response:
         return HttpResponse(await request.content())
+
+    @staticmethod
+    async def _fn_raises_response(request: Request) -> Response:
+        raise ResponseException("")
+
+    @staticmethod
+    async def _fn_raises_minos(request: Request) -> Response:
+        raise MinosActionNotFoundException("")
+
+    @staticmethod
+    async def _fn_raises_exception(request: Request) -> Response:
+        raise ValueError
 
 
 class MockedRequest:
@@ -45,34 +63,46 @@ class MockedRequest:
 class TestRestBuilder(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
+    def setUp(self) -> None:
+        super().setUp()
+        self.dispatcher = RestBuilder.from_config(config=self.config)
+
     def test_from_config(self):
-        dispatcher = RestBuilder.from_config(config=self.config)
-        self.assertIsInstance(dispatcher, RestBuilder)
+        self.assertIsInstance(self.dispatcher, RestBuilder)
 
     def test_from_config_raises(self):
         with self.assertRaises(Exception):
             RestBuilder.from_config()
 
     def test_get_app(self):
-        dispatcher = RestBuilder.from_config(config=self.config)
-        self.assertIsInstance(dispatcher.get_app(), web.Application)
+        self.assertIsInstance(self.dispatcher.get_app(), web.Application)
 
     async def test_get_handler(self):
-        dispatcher = RestBuilder.from_config(config=self.config)
-
-        observed = dispatcher.get_handler(_Cls._fn)
-
-        observed_response = observed(MockedRequest({"foo": "bar"}))
-        response = await observed_response
+        handler = self.dispatcher.get_handler(_Cls._fn)
+        response = await handler(MockedRequest({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
         self.assertEqual('[{"foo": "bar"}]', response.text)
         self.assertEqual("application/json", response.content_type)
 
+    async def test_get_handler_raises_response(self):
+        handler = self.dispatcher.get_handler(_Cls._fn_raises_response)
+        with self.assertRaises(HTTPBadRequest):
+            await handler(MockedRequest({"foo": "bar"}))
+
+    async def test_get_handler_raises_minos(self):
+        handler = self.dispatcher.get_handler(_Cls._fn_raises_minos)
+        with self.assertRaises(HTTPInternalServerError):
+            await handler(MockedRequest({"foo": "bar"}))
+
+    async def test_get_handler_raises_exception(self):
+        handler = self.dispatcher.get_handler(_Cls._fn_raises_exception)
+        with self.assertRaises(HTTPInternalServerError):
+            await handler(MockedRequest({"foo": "bar"}))
+
     async def test_get_action(self):
         Content = ModelType.build("Content", {"foo": str})
-        dispatcher = RestBuilder.from_config(config=self.config)
 
-        observed = dispatcher.get_action(f"{__name__}._Cls", "_fn")
+        observed = self.dispatcher.get_action(f"{__name__}._Cls", "_fn")
 
         observed_response = observed(HttpRequest(MockedRequest({"foo": "bar"})))
         response = await observed_response
