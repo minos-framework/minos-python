@@ -10,6 +10,7 @@ import unittest
 from minos.common import (
     Command,
     CommandReply,
+    CommandStatus,
     Event,
 )
 from tests.model_classes import (
@@ -47,15 +48,17 @@ class TestCommandReply(unittest.TestCase):
         self.topic = "FooCreated"
         self.items = [Foo("blue"), Foo("red")]
         self.saga_uuid = "saga_id8972348237"
+        self.status = CommandStatus.SUCCESS
 
     def test_constructor(self):
-        command_reply = CommandReply(self.topic, self.items, self.saga_uuid)
+        command_reply = CommandReply(self.topic, self.items, self.saga_uuid, self.status)
         self.assertEqual(self.topic, command_reply.topic)
         self.assertEqual(self.items, command_reply.items)
         self.assertEqual(self.saga_uuid, command_reply.saga_uuid)
+        self.assertEqual(self.status, command_reply.status)
 
     def test_avro_serialization(self):
-        command_reply = CommandReply(self.topic, self.items, self.saga_uuid)
+        command_reply = CommandReply(self.topic, self.items, self.saga_uuid, self.status)
         decoded_command = CommandReply.from_avro_bytes(command_reply.avro_bytes)
         self.assertEqual(command_reply, decoded_command)
 

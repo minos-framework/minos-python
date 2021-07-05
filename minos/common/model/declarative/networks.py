@@ -10,6 +10,9 @@ from __future__ import (
     annotations,
 )
 
+from enum import (
+    IntEnum,
+)
 from typing import (
     Optional,
 )
@@ -37,7 +40,15 @@ class CommandReply(DeclarativeModel):
     topic: str
     items: list[Model]
     saga_uuid: str
-    # status: int
+    status: CommandStatus
+
+
+class CommandStatus(IntEnum):
+    """Command Status class."""
+
+    SUCCESS = 200
+    ERROR = 400
+    SYSTEM_ERROR = 500
 
 
 class Event(DeclarativeModel):

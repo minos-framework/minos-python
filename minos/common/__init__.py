@@ -84,6 +84,7 @@ from .model import (
     BucketModel,
     Command,
     CommandReply,
+    CommandStatus,
     DataTransferObject,
     Decimal,
     DeclarativeModel,

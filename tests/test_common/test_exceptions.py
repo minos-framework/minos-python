@@ -99,7 +99,7 @@ class TestExceptions(unittest.TestCase):
         exception = MinosTypeAttributeException("foo", float, True)
         message = (
             "MinosTypeAttributeException(message=\"The <class 'float'> expected type for 'foo' "
-            "does not match with the given data type: <class 'bool'>\")"
+            "does not match with the given data type: <class 'bool'> (True)\")"
         )
         self.assertEqual(message, repr(exception))
 

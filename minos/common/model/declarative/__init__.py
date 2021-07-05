@@ -16,5 +16,6 @@ from .aggregate import (
 from .networks import (
     Command,
     CommandReply,
+    CommandStatus,
     Event,
 )

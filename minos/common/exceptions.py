@@ -152,8 +152,8 @@ class MinosTypeAttributeException(MinosModelAttributeException):
         self.target_type = target_type
         self.value = value
         super().__init__(
-            f"The {repr(target_type)} expected type for {repr(name)} does not match with "
-            f"the given data type: {type(value)}"
+            f"The {target_type!r} expected type for {name!r} does not match with "
+            f"the given data type: {type(value)!r} ({value!r})"
         )
 
 
