@@ -68,6 +68,7 @@ from .launchers import (
 from .messages import (
     Request,
     Response,
+    ResponseException,
 )
 from .meta import (
     classproperty,
