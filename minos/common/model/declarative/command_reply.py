@@ -6,13 +6,18 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-from .event import (
-    Event,
+from ..abc import (
+    Model,
+)
+from .abc import (
+    DeclarativeModel,
 )
 
 
-class CommandReply(Event):
+class CommandReply(DeclarativeModel):
     """Base Command class."""
 
+    topic: str
+    items: list[Model]
     saga_uuid: str
     # status: int

@@ -9,12 +9,18 @@ from typing import (
     Optional,
 )
 
-from .command_reply import (
-    CommandReply,
+from ..abc import (
+    Model,
+)
+from .abc import (
+    DeclarativeModel,
 )
 
 
-class Command(CommandReply):
+class Command(DeclarativeModel):
     """Base Command class."""
 
+    topic: str
+    items: list[Model]
+    saga_uuid: str
     reply_topic: Optional[str]
