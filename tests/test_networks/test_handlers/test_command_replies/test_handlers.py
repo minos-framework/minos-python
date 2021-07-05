@@ -5,6 +5,7 @@ from datetime import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -52,7 +53,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     async def test_dispatch(self):
         saga_manager = FakeSagaManager()
 
-        command = CommandReply("TicketAdded", [FakeModel("foo")], saga_uuid="43434jhij", reply_on="mkk2334")
+        command = CommandReply("TicketAdded", [FakeModel("foo")], saga_uuid="43434jhij", status=CommandStatus.SUCCESS)
         entry = HandlerEntry(1, "TicketAdded", None, 0, command, 1, datetime.now())
 
         async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:

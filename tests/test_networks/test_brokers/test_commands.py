@@ -28,16 +28,6 @@ from tests.utils import (
 class TestCommandBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    def test_from_config_with_arguments(self):
-        broker = CommandBroker.from_config(
-            "CommandBroker",
-            saga_id="9347839473kfslf",
-            task_id="92839283hjijh232",
-            reply_on="test_reply_on",
-            config=self.config,
-        )
-        self.assertIsInstance(broker, CommandBroker)
-
     def test_from_config_default(self):
         broker = CommandBroker.from_config(config=self.config)
         self.assertIsInstance(broker, CommandBroker)

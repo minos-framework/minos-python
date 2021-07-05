@@ -16,6 +16,7 @@ from typing import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
     MinosConfig,
     MinosModel,
 )
@@ -32,28 +33,38 @@ class CommandReplyBroker(Broker):
 
     ACTION = "commandReply"
 
-    def __init__(self, *args, saga_uuid: Optional[str] = None, **kwargs):
+    def __init__(self, *args, saga_uuid: Optional[str] = None, status: Optional[CommandStatus] = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.saga_uuid = saga_uuid
+        self.status = status
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyBroker:
         return cls(*args, **config.saga.queue._asdict(), **kwargs)
 
     async def send(
-        self, items: list[MinosModel], topic: Optional[str] = None, saga_uuid: Optional[str] = None, **kwargs,
+        self,
+        items: list[MinosModel],
+        topic: Optional[str] = None,
+        saga_uuid: Optional[str] = None,
+        status: CommandStatus = None,
+        **kwargs,
     ) -> int:
         """Send a list of ``Aggregate`` instances.
 
         :param items: A list of aggregates.
         :param topic: Topic in which the message will be published.
         :param saga_uuid: Saga identifier.
+        :param status: Command status.
         :return: This method does not return anything.
         """
         if topic is None:
             topic = self.topic
         if saga_uuid is None:
             saga_uuid = self.saga_uuid
-        command_reply = CommandReply(topic=f"{topic}Reply", items=items, saga_uuid=saga_uuid)
+        if status is None:
+            status = self.status
+
+        command_reply = CommandReply(topic=f"{topic}Reply", items=items, saga_uuid=saga_uuid, status=status)
         logger.info(f"Sending '{command_reply!s}'...")
         return await self.send_bytes(command_reply.topic, command_reply.avro_bytes)

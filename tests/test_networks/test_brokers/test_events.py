@@ -28,9 +28,6 @@ from tests.utils import (
 class TestEventBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    def test_from_config_with_args(self):
-        self.assertIsInstance(EventBroker.from_config("EventBroker", config=self.config), EventBroker)
-
     def test_from_config_default(self):
         self.assertIsInstance(EventBroker.from_config(config=self.config), EventBroker)
 

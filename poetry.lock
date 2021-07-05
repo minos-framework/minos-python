@@ -423,8 +423,8 @@ PyYAML = "^5.4.1"
 [package.source]
 type = "git"
 url = "https://github.com/Clariteia/minos_microservice_common.git"
-reference = "75eb5b08a170135809e919f881d842cbb0a187c2"
-resolved_reference = "75eb5b08a170135809e919f881d842cbb0a187c2"
+reference = "85bfa5335ded41a7b49dc4ae2aacaf634edaadbb"
+resolved_reference = "85bfa5335ded41a7b49dc4ae2aacaf634edaadbb"
 
 [[package]]
 name = "mistune"
@@ -460,11 +460,11 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "packaging"
-version = "20.9"
+version = "21.0"
 description = "Core utilities for Python packages"
 category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+python-versions = ">=3.6"
 
 [package.dependencies]
 pyparsing = ">=2.0.2"
@@ -842,7 +842,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ed2370481e14fb52b9ccf68768472ba698c724a1cba557d9d67af4e1cb1b9cdc"
+content-hash = "c051bef67a2f3866b789048671abbea5c527643aa9b4772d330a4ffc8e15131a"
 
 [metadata.files]
 aiohttp = [
@@ -1346,8 +1346,8 @@ orjson = [
     {file = "orjson-3.5.4.tar.gz", hash = "sha256:ff518ad10adf5fdefe20e1098b55710d73ac6774bd6840e6edb2a3b55d640240"},
 ]
 packaging = [
-    {file = "packaging-20.9-py2.py3-none-any.whl", hash = "sha256:67714da7f7bc052e064859c05c595155bd1ee9f69f76557e21f051443c20947a"},
-    {file = "packaging-20.9.tar.gz", hash = "sha256:5b327ac1320dc863dca72f4514ecc086f31186744b84a230374cc1fd776feae5"},
+    {file = "packaging-21.0-py3-none-any.whl", hash = "sha256:c86254f9220d55e31cc94d69bade760f0847da8000def4dfe1c6b872fd14ff14"},
+    {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
 ]
 pathspec = [
     {file = "pathspec-0.8.1-py2.py3-none-any.whl", hash = "sha256:aa0cb481c4041bf52ffa7b0d8fa6cd3e88a2ca4879c533c9153882ee2556790d"},
