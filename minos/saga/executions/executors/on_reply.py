@@ -45,11 +45,11 @@ class OnReplyExecutor(LocalExecutor):
         :param kwargs: Additional named arguments.
         :return: An updated context instance.
         """
-        if operation is None:
-            return context
-
         if reply is None:
             raise MinosSagaPausedExecutionStepException()
+
+        if operation is None:
+            return context
 
         value = reply.items
         if len(value) == 1:
