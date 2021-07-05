@@ -17,6 +17,9 @@ from typing import (
     Any,
 )
 
+from .exceptions import (
+    MinosException,
+)
 from .model import (
     Model,
 )
@@ -76,3 +79,7 @@ class Response:
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._items!r})"
+
+
+class ResponseException(MinosException):
+    """Response Exception class."""
