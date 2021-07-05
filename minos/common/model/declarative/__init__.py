@@ -13,12 +13,8 @@ from .aggregate import (
     Aggregate,
     AggregateDiff,
 )
-from .command import (
+from .networks import (
     Command,
-)
-from .command_reply import (
     CommandReply,
-)
-from .event import (
     Event,
 )
