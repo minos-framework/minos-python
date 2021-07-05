@@ -25,6 +25,7 @@ from ..definitions import (
     SagaStep,
 )
 from ..exceptions import (
+    MinosCommandReplyFailedException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionStepException,
@@ -106,6 +107,9 @@ class SagaExecutionStep(object):
         except MinosSagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedOnReply
             raise exc
+        except MinosCommandReplyFailedException as exc:
+            self.status = SagaStepStatus.ErroredOnReply
+            raise MinosSagaFailedExecutionStepException(exc)
         except MinosSagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredOnReply
             await self.rollback(context, *args, **kwargs)

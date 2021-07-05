@@ -16,6 +16,7 @@ from minos.common import (
 )
 from minos.saga import (
     LocalExecutor,
+    MinosCommandReplyFailedException,
     MinosSagaFailedExecutionStepException,
     OnReplyExecutor,
     SagaContext,
@@ -43,7 +44,7 @@ class TesOnReplyExecutor(unittest.IsolatedAsyncioTestCase):
     async def test_exec_raises_reply_status(self):
         reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.ERROR)
         operation = SagaStepOperation("foo", identity_fn)
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(MinosCommandReplyFailedException):
             await self.executor.exec(operation, SagaContext(), reply=reply)
 
 

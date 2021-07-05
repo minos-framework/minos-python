@@ -15,6 +15,7 @@ from .definitions import (
 )
 from .exceptions import (
     MinosAlreadyOnSagaException,
+    MinosCommandReplyFailedException,
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,

@@ -144,3 +144,7 @@ class MinosSagaExecutorException(MinosSagaException):
 
 class MinosSagaFailedCommitCallbackException(MinosSagaFailedExecutionException):
     """Exception to be raised when a saga commit callback raises some exception"""
+
+
+class MinosCommandReplyFailedException(MinosException):
+    """Exception to be used when ``CommandStatus`` is not ``SUCCESS``"""
