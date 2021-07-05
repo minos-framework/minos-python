@@ -36,6 +36,7 @@ from .handlers import (
     CommandReplyHandlerService,
     CommandRequest,
     CommandResponse,
+    CommandResponseException,
     Consumer,
     EventConsumer,
     EventConsumerService,

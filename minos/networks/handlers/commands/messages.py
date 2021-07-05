@@ -17,6 +17,7 @@ from minos.common import (
     Command,
     Request,
     Response,
+    ResponseException,
 )
 
 
@@ -48,3 +49,7 @@ class CommandRequest(Request):
 
 class CommandResponse(Response):
     """Command Response class."""
+
+
+class CommandResponseException(ResponseException):
+    """Command Response Exception class."""

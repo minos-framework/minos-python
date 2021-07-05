@@ -14,7 +14,11 @@ from inspect import (
 )
 from typing import (
     Any,
+    Awaitable,
+    Callable,
     NoReturn,
+    Tuple,
+    Union,
 )
 
 from dependency_injector.wiring import (
@@ -23,8 +27,12 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     Command,
+    CommandStatus,
     MinosBroker,
     MinosConfig,
+    MinosException,
+    Model,
+    ResponseException,
 )
 
 from ..abc import (
@@ -65,15 +73,39 @@ class CommandHandler(Handler):
         :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        logger.info(f"Dispatching '{entry.data!s}'...")
+        command = entry.data
+        logger.info(f"Dispatching '{command!s}'...")
 
-        command: Command = entry.data
-        definition_id = command.saga_uuid
+        fn = self.get_callback(entry.callback)
+        items, status = await fn(command)
 
-        request = CommandRequest(command)
-        response = entry.callback(request)
-        if isawaitable(response):
-            response = await response
+        await self.broker.send(items, topic=command.reply_topic, saga_uuid=command.saga_uuid, status=status)
 
-        items = await response.content()
-        await self.broker.send(items, topic=command.reply_topic, saga_uuid=definition_id)
+    @staticmethod
+    def get_callback(
+        fn: Callable[[CommandRequest], Union[CommandRequest, Awaitable[CommandRequest]]]
+    ) -> Callable[[Command], Awaitable[Tuple[list[Model], CommandStatus]]]:
+        """TODO
+
+        :param fn: TODO
+        :return: TODO
+        """
+
+        async def _fn(command: Command) -> Tuple[list[Model], CommandStatus]:
+            try:
+                request = CommandRequest(command)
+                response = fn(request)
+                if isawaitable(response):
+                    response = await response
+                return await response.content(), CommandStatus.SUCCESS
+            except ResponseException as exc:
+                logger.info(f"Raised a user exception: {exc!r}")
+                return [], CommandStatus.ERROR
+            except MinosException as exc:
+                logger.warning(f"Raised a framework exception: {exc!r}")
+                return [], CommandStatus.SYSTEM_ERROR
+            except Exception as exc:
+                logger.exception(f"Raised an exception: {exc!r}.")
+                return [], CommandStatus.SYSTEM_ERROR
+
+        return _fn
