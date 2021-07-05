@@ -15,7 +15,6 @@ from minos.common import (
     ModelType,
     Request,
     Response,
-    ResponseException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -23,6 +22,7 @@ from minos.common.testing import (
 from minos.networks import (
     HttpRequest,
     HttpResponse,
+    HttpResponseException,
     MinosActionNotFoundException,
     RestBuilder,
 )
@@ -38,7 +38,7 @@ class _Cls:
 
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
-        raise ResponseException("")
+        raise HttpResponseException("")
 
     @staticmethod
     async def _fn_raises_minos(request: Request) -> Response:
@@ -77,25 +77,25 @@ class TestRestBuilder(PostgresAsyncTestCase):
     def test_get_app(self):
         self.assertIsInstance(self.dispatcher.get_app(), web.Application)
 
-    async def test_get_handler(self):
-        handler = self.dispatcher.get_handler(_Cls._fn)
+    async def test_get_callback(self):
+        handler = self.dispatcher.get_callback(_Cls._fn)
         response = await handler(MockedRequest({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
         self.assertEqual('[{"foo": "bar"}]', response.text)
         self.assertEqual("application/json", response.content_type)
 
-    async def test_get_handler_raises_response(self):
-        handler = self.dispatcher.get_handler(_Cls._fn_raises_response)
+    async def test_get_callback_raises_response(self):
+        handler = self.dispatcher.get_callback(_Cls._fn_raises_response)
         with self.assertRaises(HTTPBadRequest):
             await handler(MockedRequest({"foo": "bar"}))
 
-    async def test_get_handler_raises_minos(self):
-        handler = self.dispatcher.get_handler(_Cls._fn_raises_minos)
+    async def test_get_callback_raises_minos(self):
+        handler = self.dispatcher.get_callback(_Cls._fn_raises_minos)
         with self.assertRaises(HTTPInternalServerError):
             await handler(MockedRequest({"foo": "bar"}))
 
-    async def test_get_handler_raises_exception(self):
-        handler = self.dispatcher.get_handler(_Cls._fn_raises_exception)
+    async def test_get_callback_raises_exception(self):
+        handler = self.dispatcher.get_callback(_Cls._fn_raises_exception)
         with self.assertRaises(HTTPInternalServerError):
             await handler(MockedRequest({"foo": "bar"}))
 
