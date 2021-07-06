@@ -32,3 +32,11 @@ History
 * Documentation improvement
 * implemented __getitem__ and __setitem__ for SagaContext
 
+0.0.6 (2021-07-06)
+------------------
+
+* Completed the Saga process workflow implementation
+* Bugfixes
+* Completed the Compensation process
+* Added Reply Command to Saga process
+
