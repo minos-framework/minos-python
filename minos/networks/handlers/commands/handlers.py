@@ -99,10 +99,10 @@ class CommandHandler(Handler):
                     response = await response
                 return await response.content(), CommandStatus.SUCCESS
             except ResponseException as exc:
-                logger.info(f"Raised a user exception: {exc!r}")
+                logger.info(f"Raised a user exception: {exc!s}")
                 return [], CommandStatus.ERROR
             except MinosException as exc:
-                logger.warning(f"Raised a framework exception: {exc!r}")
+                logger.warning(f"Raised a 'minos' exception: {exc!r}")
                 return [], CommandStatus.SYSTEM_ERROR
             except Exception as exc:
                 logger.exception(f"Raised an exception: {exc!r}.")
