@@ -84,14 +84,12 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         with (await self.cursor()) as cursor:
             await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, (aggregate_name, ids))
             if cursor.rowcount != len(ids):
-                found = set()
-                async for row in cursor:
-                    found.add(row[0])
-
-                missing = set(ids) - found
+                # noinspection PyUnresolvedReferences
+                missing = set(ids) - {row[0] async for row in cursor}
                 raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
 
             async for row in cursor:
+                # noinspection PyArgumentList
                 yield SnapshotEntry(*row)
 
     # noinspection PyUnusedLocal
