@@ -66,14 +66,6 @@ class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
 
-class MinosRepositoryAggregateNotFoundException(MinosRepositoryException):
-    """Exception to be raised when some aggregate is not found on the repository."""
-
-
-class MinosRepositoryDeletedAggregateException(MinosRepositoryException):
-    """Exception to be raised when some aggregate is already deleted from the repository."""
-
-
 class MinosRepositoryManuallySetAggregateIdException(MinosRepositoryException):
     """Exception to be raised when some aggregate is trying to be created with a manually set id."""
 
@@ -108,6 +100,14 @@ class MinosPreviousVersionSnapshotException(MinosSnapshotException):
             f"Version for {repr(previous.classname)} aggregate must be "
             f"greater than {previous.version}. Obtained: {diff.version}"
         )
+
+
+class MinosSnapshotAggregateNotFoundException(MinosSnapshotException):
+    """Exception to be raised when some aggregate is not found on the repository."""
+
+
+class MinosSnapshotDeletedAggregateException(MinosSnapshotException):
+    """Exception to be raised when some aggregate is already deleted from the repository."""
 
 
 class MinosModelException(MinosException):

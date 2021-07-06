@@ -18,14 +18,15 @@ from minos.common import (
     MinosModelAttributeException,
     MinosModelException,
     MinosParseAttributeException,
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
+    MinosSnapshotException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
@@ -55,12 +56,6 @@ class TestExceptions(unittest.TestCase):
     def test_repository(self):
         self.assertTrue(issubclass(MinosRepositoryException, MinosException))
 
-    def test_repository_aggregate_not_found(self):
-        self.assertTrue(issubclass(MinosRepositoryAggregateNotFoundException, MinosRepositoryException))
-
-    def test_repository_deleted_aggregate(self):
-        self.assertTrue(issubclass(MinosRepositoryDeletedAggregateException, MinosRepositoryException))
-
     def test_repository_manually_set_aggregate_id(self):
         self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateIdException, MinosRepositoryException))
 
@@ -73,10 +68,19 @@ class TestExceptions(unittest.TestCase):
     def test_repository_not_set(self):
         self.assertTrue(issubclass(MinosRepositoryNotProvidedException, MinosRepositoryException))
 
+    def test_snapshot(self):
+        self.assertTrue(issubclass(MinosSnapshotException, MinosException))
+
+    def test_snapshot_aggregate_not_found(self):
+        self.assertTrue(issubclass(MinosSnapshotAggregateNotFoundException, MinosSnapshotException))
+
+    def test_snapshot_deleted_aggregate(self):
+        self.assertTrue(issubclass(MinosSnapshotDeletedAggregateException, MinosSnapshotException))
+
     def test_model(self):
         self.assertTrue(issubclass(MinosModelException, MinosException))
 
-    def test_model_emtpy_sequence(self):
+    def test_model_empty_sequence(self):
         self.assertTrue(issubclass(EmptyMinosModelSequenceException, MinosModelException))
 
     def test_model_multi_type_sequence(self):
