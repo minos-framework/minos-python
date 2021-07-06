@@ -159,7 +159,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_ge=0), mock.call_args)
+                self.assertEqual(call(id_gt=0), mock.call_args)
                 mock.reset_mock()
 
                 # noinspection PyTypeChecker
@@ -173,17 +173,17 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_ge=7), mock.call_args)
+                self.assertEqual(call(id_gt=7), mock.call_args)
                 mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_ge=8), mock.call_args)
+                self.assertEqual(call(id_gt=8), mock.call_args)
                 mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_ge=8), mock.call_args)
+                self.assertEqual(call(id_gt=8), mock.call_args)
                 mock.reset_mock()
 
     async def _populate(self):
