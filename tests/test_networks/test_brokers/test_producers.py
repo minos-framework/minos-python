@@ -4,6 +4,7 @@ import unittest
 import aiopg
 
 from minos.common import (
+    CommandStatus,
     MinosConfig,
 )
 from minos.common.testing import (
@@ -35,19 +36,23 @@ class TestProducer(PostgresAsyncTestCase):
     async def test_concurrency_dispatcher(self):
         model = FakeModel("foo")
 
+        command_broker = CommandBroker.from_config(
+            "CommandBroker-Delete", config=self.config, saga_uuid="9347839473kfslf", reply_topic="TestDeleteReply"
+        )
+        command_reply_broker = CommandReplyBroker.from_config(
+            "TestDeleteReply", config=self.config, saga_uuid="9347839473kfslf", status=CommandStatus.SUCCESS
+        )
+        event_broker = EventBroker.from_config("EventBroker-Delete", config=self.config)
+
         for x in range(0, 20):
-            async with CommandReplyBroker.from_config(
-                "TestDeleteReply", config=self.config, saga_uuid="9347839473kfslf"
-            ) as broker:
-                await broker.send_one(model)
+            async with command_reply_broker:
+                await command_reply_broker.send_one(model)
 
-            async with CommandBroker.from_config(
-                "CommandBroker-Delete", config=self.config, saga_uuid="9347839473kfslf", reply_on="test_reply_on",
-            ) as broker:
-                await broker.send_one(model)
+            async with command_broker:
+                await command_broker.send_one(model)
 
-            async with EventBroker.from_config("EventBroker-Delete", config=self.config) as broker:
-                await broker.send_one(model)
+            async with event_broker:
+                await event_broker.send_one(model)
 
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -70,9 +75,7 @@ class TestProducer(PostgresAsyncTestCase):
     async def test_if_commands_was_deleted(self):
         model = FakeModel("foo")
 
-        async with CommandReplyBroker.from_config(
-            "TestDeleteReply", config=self.config, saga_uuid="9347839473kfslf"
-        ) as broker:
+        async with EventBroker.from_config("TestDeleteReply", config=self.config) as broker:
             queue_id_1 = await broker.send_one(model)
             queue_id_2 = await broker.send_one(model)
 
@@ -91,7 +94,7 @@ class TestProducer(PostgresAsyncTestCase):
         model = FakeModel("foo")
 
         async with CommandReplyBroker.from_config(
-            "TestDeleteOrder", config=self.config, saga_uuid="9347839473kfslf"
+            "TestDeleteOrder", config=self.config, saga_uuid="9347839473kfslf", status=CommandStatus.SUCCESS
         ) as broker:
             queue_id_1 = await broker.send_one(model)
             queue_id_2 = await broker.send_one(model)

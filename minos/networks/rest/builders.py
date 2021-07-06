@@ -14,9 +14,13 @@ from functools import (
 )
 from inspect import (
     isawaitable,
+    isclass,
 )
 from typing import (
+    Awaitable,
     Callable,
+    NoReturn,
+    Union,
 )
 
 from aiohttp import (
@@ -26,13 +30,16 @@ from aiohttp import (
 from minos.common import (
     ENDPOINT,
     MinosConfig,
+    MinosException,
     MinosSetup,
+    ResponseException,
     classname,
     import_module,
 )
 
 from .messages import (
     HttpRequest,
+    HttpResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -90,29 +97,59 @@ class RestBuilder(MinosSetup):
     def _mount_routes(self, app: web.Application):
         """Load routes from config file."""
         for item in self._endpoints:
-            callable_f = self.get_action(item.controller, item.action)
-            app.router.add_route(item.method, item.route, callable_f)
+            self._mount_one_route(item, app)
 
         # Load default routes
         self._mount_system_health(app)
 
+    def _mount_one_route(self, item: ENDPOINT, app: web.Application) -> NoReturn:
+        action = self.get_action(item.controller, item.action)
+        handler = self.get_callback(action)
+        app.router.add_route(item.method, item.route, handler)
+
     @staticmethod
-    def get_action(controller: str, action: str) -> Callable:
+    def get_action(
+        controller: str, action: str
+    ) -> Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]:
         """Load controller class and action method.
         :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
         :param action: Config instance. Example: "get_order"
         :return: A class method callable instance.
         """
-        object_class = import_module(controller)
-        instance_class = object_class()
-        class_method = getattr(instance_class, action)
+        controller = import_module(controller)
+        if isclass(controller):
+            controller = controller()
+        action_fn = getattr(controller, action)
+        return action_fn
+
+    @staticmethod
+    def get_callback(
+        fn: Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]
+    ) -> Callable[[web.Request], Awaitable[web.Response]]:
+        """Get the handler function to be used by ``aiohttp``.
+
+        :param fn: The action function.
+        :return: A wrapper function of the passed one that is able to be used by ``aiohttp``.
+        """
 
         async def _fn(request: web.Request) -> web.Response:
-            logger.info(f"Dispatching {classname(class_method)!r} from {request.remote!r}...")
+            logger.info(f"Dispatching {classname(fn)!r} from {request.remote!r}...")
             request = HttpRequest(request)
-            response = class_method(request)
-            if isawaitable(response):
-                response = await response
+
+            try:
+                response = fn(request)
+                if isawaitable(response):
+                    response = await response
+            except ResponseException as exc:
+                logger.info(f"Raised a user exception: {exc!s}")
+                raise web.HTTPBadRequest(text=str(exc))
+            except MinosException as exc:
+                logger.warning(f"Raised a 'minos' exception: {exc!r}")
+                raise web.HTTPInternalServerError()
+            except Exception as exc:
+                logger.exception(f"Raised an exception: {exc!r}.")
+                raise web.HTTPInternalServerError()
+
             return web.json_response(await response.raw_content())
 
         return _fn

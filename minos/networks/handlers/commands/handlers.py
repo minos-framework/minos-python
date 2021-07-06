@@ -75,6 +75,5 @@ class CommandHandler(Handler):
         if isawaitable(response):
             response = await response
 
-        if command.reply_topic is not None:
-            items = await response.content()
-            await self.broker.send(items, topic=command.reply_topic, saga_uuid=definition_id)
+        items = await response.content()
+        await self.broker.send(items, topic=command.reply_topic, saga_uuid=definition_id)

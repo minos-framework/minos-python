@@ -12,6 +12,7 @@ from unittest.mock import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -28,10 +29,6 @@ from tests.utils import (
 class TestCommandReplyBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    def test_from_config_with_args(self):
-        broker = CommandReplyBroker.from_config("CommandBroker", saga_uuid="9347839473kfslf", config=self.config)
-        self.assertIsInstance(broker, CommandReplyBroker)
-
     def test_from_config_default(self):
         broker = CommandReplyBroker.from_config(config=self.config)
         self.assertIsInstance(broker, CommandReplyBroker)
@@ -44,17 +41,19 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
 
         async with CommandReplyBroker.from_config(config=self.config) as broker:
             broker.send_bytes = mock
-            identifier = await broker.send_one(FakeModel("foo"), saga_uuid="9347839473kfslf", topic="fake")
+            identifier = await broker.send_one(
+                FakeModel("foo"), saga_uuid="9347839473kfslf", topic="fake", status=CommandStatus.SUCCESS
+            )
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fakeReply", args[0])
-        self.assertEqual(
-            CommandReply(topic="fakeReply", items=[FakeModel("foo")], saga_uuid="9347839473kfslf"),
-            CommandReply.from_avro_bytes(args[1]),
-        )
+
+        expected = CommandReply("fakeReply", [FakeModel("foo")], "9347839473kfslf", CommandStatus.SUCCESS)
+        observed = CommandReply.from_avro_bytes(args[1])
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
