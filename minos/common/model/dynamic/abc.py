@@ -22,7 +22,7 @@ from ..abc import (
     Model,
 )
 from ..fields import (
-    ModelField,
+    Field,
 )
 from ..types import (
     ModelType,
@@ -36,7 +36,7 @@ T = TypeVar("T")
 class DynamicModel(Model, Generic[T]):
     """Base class for ``minos`` dynamic model entities"""
 
-    def __init__(self, fields: Union[Iterable[ModelField], dict[str, ModelField]], **kwargs):
+    def __init__(self, fields: Union[Iterable[Field], dict[str, Field]], **kwargs):
         super().__init__(fields)
 
     @classmethod
@@ -47,4 +47,4 @@ class DynamicModel(Model, Generic[T]):
         :param data: A dictionary containing the values to be stored on the DTO.
         :return: A new ``DynamicModel`` instance.
         """
-        return cls(fields={k: ModelField(k, v, data[k]) for k, v in model_type.type_hints.items()})
+        return cls(fields={k: Field(k, v, data[k]) for k, v in model_type.type_hints.items()})

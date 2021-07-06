@@ -9,7 +9,7 @@ import unittest
 
 from minos.common import (
     DynamicModel,
-    ModelField,
+    Field,
 )
 from tests.model_classes import (
     Foo,
@@ -37,7 +37,7 @@ class TestDynamicModel(unittest.TestCase):
         }
 
         model = DynamicModel.from_avro(schema, data)
-        self.assertEqual({"text": ModelField("text", str, "test")}, model.fields)
+        self.assertEqual({"text": Field("text", str, "test")}, model.fields)
 
     def test_type_hints(self):
         data = {"text": "test"}
@@ -54,7 +54,7 @@ class TestDynamicModel(unittest.TestCase):
         data = {"text": "test"}
         schema = [{"fields": [{"name": "text", "type": "string"}], "name": "TestModel", "type": "record"}]
         model = DynamicModel.from_avro(schema, data)
-        self.assertEqual({"text": ModelField("text", str, "test")}, model.fields)
+        self.assertEqual({"text": Field("text", str, "test")}, model.fields)
 
 
 if __name__ == "__main__":

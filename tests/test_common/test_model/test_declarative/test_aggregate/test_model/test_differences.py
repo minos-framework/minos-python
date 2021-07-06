@@ -9,8 +9,8 @@ import unittest
 
 from minos.common import (
     AggregateDiff,
+    Field,
     FieldsDiff,
-    ModelField,
 )
 from tests.aggregate_classes import (
     Car,
@@ -34,7 +34,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             id=1,
             name=Car.classname,
             version=3,
-            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")}),
+            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
         )
         observed = self.final.diff(self.initial)
         self.assertEqual(expected, observed)
@@ -44,7 +44,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             id=1,
             name=Car.classname,
             version=3,
-            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")}),
+            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
         )
         self.initial.apply_diff(diff)
         self.assertEqual(self.final, self.initial)
@@ -54,7 +54,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             id=2,
             name=Car.classname,
             version=3,
-            fields_diff=FieldsDiff({"doors": ModelField("doors", int, 5), "color": ModelField("color", str, "yellow")}),
+            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
         )
         with self.assertRaises(ValueError):
             self.initial.apply_diff(diff)

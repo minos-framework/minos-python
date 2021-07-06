@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 from .configuration import (
     BROKER,
@@ -32,7 +32,6 @@ from .exceptions import (
     MinosAttributeValidationException,
     MinosBrokerException,
     MinosBrokerNotProvidedException,
-    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
     MinosException,
     MinosImportException,
@@ -42,14 +41,14 @@ from .exceptions import (
     MinosModelException,
     MinosParseAttributeException,
     MinosProtocolException,
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
     MinosSnapshotException,
     MinosSnapshotNotProvidedException,
     MinosTypeAttributeException,
@@ -68,6 +67,7 @@ from .launchers import (
 from .messages import (
     Request,
     Response,
+    ResponseException,
 )
 from .meta import (
     classproperty,
@@ -84,12 +84,14 @@ from .model import (
     BucketModel,
     Command,
     CommandReply,
+    CommandStatus,
     DataTransferObject,
     Decimal,
     DeclarativeModel,
     DynamicModel,
     Enum,
     Event,
+    Field,
     FieldsDiff,
     Fixed,
     MinosModel,

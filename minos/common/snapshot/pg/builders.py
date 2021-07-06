@@ -109,7 +109,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
                 ids.remove(o)
             return o
 
-        async for entry in self._repository.select(id_ge=offset):
+        async for entry in self._repository.select(id_gt=offset):
             try:
                 await self._dispatch_one(entry)
             except MinosPreviousVersionSnapshotException:

@@ -10,37 +10,44 @@ from __future__ import (
 )
 
 import logging
-import typing as t
 from datetime import (
     date,
     datetime,
     time,
     timedelta,
 )
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    TypeVar,
+)
 from uuid import (
     UUID,
 )
 
+from ...exceptions import (
+    MinosMalformedAttributeException,
+)
 from ..types import (
     PYTHON_IMMUTABLE_TYPES,
 )
 
-if t.TYPE_CHECKING:
-    from .fields import ModelField  # pragma: no cover
+if TYPE_CHECKING:
+    from .fields import Field  # pragma: no cover
 logger = logging.getLogger(__name__)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
 class AvroDataEncoder:
     """Avro Data Encoder class."""
 
-    def __init__(self, value: t.Any):
+    def __init__(self, value: Any):
         self._value = value
 
     @classmethod
-    def from_field(cls, field: ModelField) -> AvroDataEncoder:
-        """Build a new instance from a ``ModelField``.
+    def from_field(cls, field: Field) -> AvroDataEncoder:
+        """Build a new instance from a ``Field``.
 
         :param field: The model field.
         :return: A new avro schema builder instance.
@@ -54,20 +61,21 @@ class AvroDataEncoder:
         """
         return self._to_avro_raw(self._value)
 
-    def _to_avro_raw(self, value: t.Any) -> t.Any:
+    def _to_avro_raw(self, value: Any) -> Any:
         if value is None:
             return None
-        if type(value) in PYTHON_IMMUTABLE_TYPES:
+
+        if isinstance(value, PYTHON_IMMUTABLE_TYPES):
             return value
 
-        if type(value) is date:
+        if isinstance(value, datetime):
+            return self._datetime_to_avro_raw(value)
+
+        if isinstance(value, date):
             return self._date_to_avro_raw(value)
 
-        if type(value) is time:
+        if isinstance(value, time):
             return self._time_to_avro_raw(value)
-
-        if type(value) is datetime:
-            return self._datetime_to_avro_raw(value)
 
         if isinstance(value, UUID):
             return self._uuid_to_avro_raw(value)
@@ -78,7 +86,10 @@ class AvroDataEncoder:
         if isinstance(value, dict):
             return {k: self._to_avro_raw(v) for k, v in value.items()}
 
-        return value.avro_data
+        if hasattr(value, "avro_data"):
+            return value.avro_data
+
+        raise MinosMalformedAttributeException(f"Given type is not supported: {type(value)!r} ({value!r})")
 
     @staticmethod
     def _date_to_avro_raw(value: date) -> int:

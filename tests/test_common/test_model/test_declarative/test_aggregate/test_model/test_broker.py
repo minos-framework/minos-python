@@ -12,10 +12,10 @@ from typing import (
 
 from minos.common import (
     AggregateDiff,
+    Field,
     FieldsDiff,
     InMemoryRepository,
     InMemorySnapshot,
-    ModelField,
     ModelRef,
 )
 from tests.aggregate_classes import (
@@ -41,9 +41,9 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                                 version=1,
                                 fields_diff=FieldsDiff(
                                     {
-                                        "doors": ModelField("doors", int, 3),
-                                        "color": ModelField("color", str, "blue"),
-                                        "owner": ModelField("owner", Optional[list[ModelRef[Owner]]], None),
+                                        "doors": Field("doors", int, 3),
+                                        "color": Field("color", str, "blue"),
+                                        "owner": Field("owner", Optional[list[ModelRef[Owner]]], None),
                                     }
                                 ),
                             )
@@ -68,7 +68,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                                 id=1,
                                 name=Car.classname,
                                 version=1,
-                                fields_diff=FieldsDiff({"color": ModelField("color", str, "red")}),
+                                fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
                             )
                         ],
                         "topic": "CarUpdated",

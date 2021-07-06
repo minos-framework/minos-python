@@ -10,11 +10,14 @@ from abc import (
 )
 from typing import (
     AsyncIterator,
+    ContextManager,
     NoReturn,
+    Optional,
 )
 
 import aiopg
 from aiopg import (
+    Cursor,
     Pool,
 )
 
@@ -57,22 +60,37 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        pool = await self.pool
-        with await pool.cursor() as cursor:
+        with (await self.cursor()) as cursor:
             await cursor.execute(*args, **kwargs)
             async for row in cursor:
                 yield row
 
-    async def submit_query(self, *args, **kwargs) -> NoReturn:
+    async def submit_query(self, *args, lock: Optional[int] = None, **kwargs) -> NoReturn:
         """Submit a SQL query.
 
         :param args: Additional positional arguments.
+        :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
+            lock.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        pool = await self.pool
-        with await pool.cursor() as cursor:
-            await cursor.execute(*args, **kwargs)
+        with (await self.cursor()) as cursor:
+            if lock is not None:
+                await cursor.execute("select pg_advisory_lock(%s)", (lock,))
+            try:
+                await cursor.execute(*args, **kwargs)
+            finally:
+                if lock is not None:
+                    await cursor.execute("select pg_advisory_unlock(%s)", (lock,))
+
+    async def cursor(self, *args, **kwargs) -> ContextManager[Cursor]:
+        """Get a connection cursor from the pool.
+
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A ``Cursor`` instance wrapped inside a context manager.
+        """
+        return await (await self.pool).cursor(*args, **kwargs)
 
     @property
     async def pool(self) -> Pool:

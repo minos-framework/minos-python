@@ -15,9 +15,11 @@ from abc import (
 )
 from typing import (
     Any,
-    Union,
 )
 
+from .exceptions import (
+    MinosException,
+)
 from .model import (
     Model,
 )
@@ -27,9 +29,10 @@ class Request(ABC):
     """Request interface."""
 
     @abstractmethod
-    async def content(self) -> list[Model]:
+    async def content(self, **kwargs) -> Any:
         """Get the request content.
 
+        :param kwargs: Additional named arguments.
         :return: A list of instances.
         """
         raise NotImplementedError
@@ -48,21 +51,25 @@ class Response:
 
     __slots__ = "_items"
 
-    def __init__(self, items: Union[Model, list[Model]]):
+    def __init__(self, items: Any):
         if not isinstance(items, list):
             items = [items]
         self._items = items
 
-    async def content(self) -> list[Model]:
+    # noinspection PyUnusedLocal
+    async def content(self, **kwargs) -> Any:
         """Response content.
 
+        :param kwargs: Additional named arguments.
         :return: A list of items.
         """
         return self._items
 
-    async def raw_content(self) -> list[dict[str, Any]]:
+    # noinspection PyUnusedLocal
+    async def raw_content(self, **kwargs) -> Any:
         """Raw response content.
 
+        :param kwargs: Additional named arguments.
         :return: A list of raw items.
         """
         return [item if not isinstance(item, Model) else item.avro_data for item in self._items]
@@ -72,3 +79,7 @@ class Response:
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._items!r})"
+
+
+class ResponseException(MinosException):
+    """Response Exception class."""

@@ -14,6 +14,7 @@ from unittest.mock import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
 )
 from tests.model_classes import (
     Foo,
@@ -41,7 +42,7 @@ class TestMinosSagaManager(unittest.IsolatedAsyncioTestCase):
         mock = MagicMock(side_effect=manager._load_and_run)
         manager._load_and_run = mock
 
-        reply = CommandReply("hello", [Foo("blue")], "saga_id8972348237")
+        reply = CommandReply("hello", [Foo("blue")], "saga_id8972348237", CommandStatus.SUCCESS)
 
         await manager.run(reply=reply, foo="bar")
 

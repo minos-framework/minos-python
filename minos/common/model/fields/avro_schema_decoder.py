@@ -10,11 +10,17 @@ from __future__ import (
 )
 
 import logging
-import typing as t
 from datetime import (
     date,
     datetime,
     time,
+)
+from typing import (
+    Any,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
 )
 from uuid import (
     UUID,
@@ -42,7 +48,7 @@ from ..types import (
 
 logger = logging.getLogger(__name__)
 
-T = t.TypeVar("T")
+T = TypeVar("T")
 
 
 class AvroSchemaDecoder:
@@ -51,7 +57,7 @@ class AvroSchemaDecoder:
     def __init__(self, schema: dict):
         self._schema = schema
 
-    def build(self) -> t.Type[T]:
+    def build(self) -> Type[T]:
         """Build type from given avro schema item.
 
         :return: A dictionary object.
@@ -59,7 +65,7 @@ class AvroSchemaDecoder:
         built_type = self._build_type(self._schema)
         return built_type
 
-    def _build_type(self, schema: t.Union[dict, list, str]) -> t.Type[T]:
+    def _build_type(self, schema: Union[dict, list, str]) -> Type[T]:
         if isinstance(schema, dict):
             return self._build_type_from_dict(schema)
         elif isinstance(schema, list):
@@ -67,11 +73,11 @@ class AvroSchemaDecoder:
         else:
             return self._build_simple_type(schema)
 
-    def _build_type_from_list(self, schema: list[t.Any]) -> t.Type[T]:
+    def _build_type_from_list(self, schema: list[Any]) -> Type[T]:
         options = tuple(self._build_type(entry) for entry in schema)
-        return t.Union[options]
+        return Union[options]
 
-    def _build_type_from_dict(self, schema: dict) -> t.Type[T]:
+    def _build_type_from_dict(self, schema: dict) -> Type[T]:
         if "logicalType" in schema:
             return self._build_logical_type(schema["logicalType"])
         elif schema["type"] == ARRAY:
@@ -84,7 +90,7 @@ class AvroSchemaDecoder:
             return self._build_type(schema["type"])
 
     @staticmethod
-    def _build_logical_type(type_field: str) -> t.Type[T]:
+    def _build_logical_type(type_field: str) -> Type[T]:
         if type_field == DATE_TYPE["logicalType"]:
             return date
         if type_field == TIME_TYPE["logicalType"]:
@@ -95,14 +101,14 @@ class AvroSchemaDecoder:
             return UUID
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_field!r}")
 
-    def _build_list_type(self, items: t.Union[dict, str, t.Any] = None) -> t.Type[T]:
+    def _build_list_type(self, items: Union[dict, str, Any] = None) -> Type[T]:
         return list[self._build_type(items)]
 
-    def _build_dict_type(self, values: t.Union[dict, str, t.Any] = None) -> t.Type[T]:
+    def _build_dict_type(self, values: Union[dict, str, Any] = None) -> Type[T]:
         return dict[str, self._build_type(values)]
 
-    def _build_record_type(self, name: str, namespace: t.Optional[str], fields: list[dict[str, t.Any]]) -> t.Type[T]:
-        def _unpatch_namespace(mt: t.Type[T]) -> t.Type[T]:
+    def _build_record_type(self, name: str, namespace: Optional[str], fields: list[dict[str, Any]]) -> Type[T]:
+        def _unpatch_namespace(mt: Type[T]) -> Type[T]:
             try:
                 mt.namespace, _ = mt.namespace.rsplit(".", 1)
             except ValueError:
@@ -118,7 +124,7 @@ class AvroSchemaDecoder:
         return model_type
 
     @staticmethod
-    def _build_simple_type(type_field: str) -> t.Type[T]:
+    def _build_simple_type(type_field: str) -> Type[T]:
         if type_field == NULL:
             return type(None)
         if type_field == INT:

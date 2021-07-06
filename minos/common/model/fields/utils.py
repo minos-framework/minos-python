@@ -5,21 +5,26 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import inspect
-import typing as t
+from typing import (
+    Type,
+)
 
 
-def _is_model_cls(type_field: t.Type) -> bool:
+def _is_model_cls(type_field: Type) -> bool:
     from ..abc import (
         Model,
     )
 
-    return inspect.isclass(type_field) and issubclass(type_field, Model)
+    return issubclass(type_field, Model)
 
 
-def _is_aggregate_cls(type_field: t.Type) -> bool:
+def _is_aggregate_cls(type_field: Type) -> bool:
     from ..declarative import (
         Aggregate,
     )
 
-    return inspect.isclass(type_field) and issubclass(type_field, Aggregate)
+    return issubclass(type_field, Aggregate)
+
+
+def _is_type(type_field) -> bool:
+    return issubclass(type(type_field), type(type))

@@ -9,8 +9,6 @@ import unittest
 
 from minos.common import (
     MinosConfig,
-    MinosConfigAbstract,
-    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
 )
 from tests.utils import (
@@ -119,16 +117,6 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("min0s", snapshot.password)
         self.assertEqual("localhost", snapshot.host)
         self.assertEqual(5432, snapshot.port)
-
-    def test_get_default_default(self):
-        with MinosConfig(path=self.config_file_path) as config:
-            self.assertEqual(config, MinosConfigAbstract.get_default())
-
-    def test_multiple_default_config_raises(self):
-        with self.assertRaises(MinosConfigDefaultAlreadySetException):
-            with MinosConfig(path=self.config_file_path):
-                with MinosConfig(path=self.config_file_path):
-                    pass
 
     def test_config_discovery(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)

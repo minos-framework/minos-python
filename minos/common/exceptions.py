@@ -54,10 +54,6 @@ class MinosConfigException(MinosException):
     """Base config exception."""
 
 
-class MinosConfigDefaultAlreadySetException(MinosConfigException):
-    """Exception to be raised when some config is already set as default."""
-
-
 class MinosBrokerException(MinosException):
     """Base broker exception"""
 
@@ -68,14 +64,6 @@ class MinosBrokerNotProvidedException(MinosBrokerException):
 
 class MinosRepositoryException(MinosException):
     """Base repository exception."""
-
-
-class MinosRepositoryAggregateNotFoundException(MinosRepositoryException):
-    """Exception to be raised when some aggregate is not found on the repository."""
-
-
-class MinosRepositoryDeletedAggregateException(MinosRepositoryException):
-    """Exception to be raised when some aggregate is already deleted from the repository."""
 
 
 class MinosRepositoryManuallySetAggregateIdException(MinosRepositoryException):
@@ -112,6 +100,14 @@ class MinosPreviousVersionSnapshotException(MinosSnapshotException):
             f"Version for {repr(previous.classname)} aggregate must be "
             f"greater than {previous.version}. Obtained: {diff.version}"
         )
+
+
+class MinosSnapshotAggregateNotFoundException(MinosSnapshotException):
+    """Exception to be raised when some aggregate is not found on the repository."""
+
+
+class MinosSnapshotDeletedAggregateException(MinosSnapshotException):
+    """Exception to be raised when some aggregate is already deleted from the repository."""
 
 
 class MinosModelException(MinosException):
@@ -152,8 +148,8 @@ class MinosTypeAttributeException(MinosModelAttributeException):
         self.target_type = target_type
         self.value = value
         super().__init__(
-            f"The {repr(target_type)} expected type for {repr(name)} does not match with "
-            f"the given data type: {type(value)}"
+            f"The {target_type!r} expected type for {name!r} does not match with "
+            f"the given data type: {type(value)!r} ({value!r})"
         )
 
 

@@ -18,8 +18,8 @@ class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
     """Minos Snapshot Setup Class"""
 
     async def _setup(self) -> NoReturn:
-        await self.submit_query(_CREATE_TABLE_QUERY)
-        await self.submit_query(_CREATE_OFFSET_TABLE_QUERY)
+        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("snapshot"))
+        await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock=hash("snapshot"))
 
 
 _CREATE_TABLE_QUERY = """

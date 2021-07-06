@@ -22,11 +22,11 @@ from dependency_injector import (
 )
 
 from minos.common import (
+    Field,
     FieldsDiff,
     MinosConfigException,
-    MinosRepositoryDeletedAggregateException,
     MinosRepositoryNotProvidedException,
-    ModelField,
+    MinosSnapshotDeletedAggregateException,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
@@ -117,7 +117,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car", 1))
 
     async def test_dispatch_ignore_previous_version(self):
-        diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
+        diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
 
@@ -143,7 +143,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             if exp.data is None:
-                with self.assertRaises(MinosRepositoryDeletedAggregateException):
+                with self.assertRaises(MinosSnapshotDeletedAggregateException):
                     # noinspection PyStatementEffect
                     obs.aggregate
             else:
@@ -159,7 +159,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_ge=0), mock.call_args)
+                self.assertEqual(call(id_gt=0), mock.call_args)
                 mock.reset_mock()
 
                 # noinspection PyTypeChecker
@@ -167,27 +167,27 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                     aggregate_id=3,
                     aggregate_name=Car.classname,
                     version=1,
-                    data=FieldsDiff({ModelField("doors", int, 3), ModelField("color", str, "blue")}).avro_bytes,
+                    data=FieldsDiff({Field("doors", int, 3), Field("color", str, "blue")}).avro_bytes,
                 )
                 await repository.create(entry)
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_ge=7), mock.call_args)
+                self.assertEqual(call(id_gt=7), mock.call_args)
                 mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_ge=8), mock.call_args)
+                self.assertEqual(call(id_gt=8), mock.call_args)
                 mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_ge=8), mock.call_args)
+                self.assertEqual(call(id_gt=8), mock.call_args)
                 mock.reset_mock()
 
     async def _populate(self):
-        diff = FieldsDiff({"doors": ModelField("doors", int, 3), "color": ModelField("color", str, "blue")})
+        diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:
