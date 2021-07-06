@@ -5,15 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from typing import (
+    Optional,
+)
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
 )
 
 from ...definitions import (
     SagaStepOperation,
 )
 from ...exceptions import (
+    MinosCommandReplyFailedException,
+    MinosSagaExecutorException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
 )
@@ -30,7 +36,7 @@ class OnReplyExecutor(LocalExecutor):
 
     # noinspection PyUnusedLocal
     async def exec(
-        self, operation: SagaStepOperation, context: SagaContext, reply: CommandReply, *args, **kwargs
+        self, operation: SagaStepOperation, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
     ) -> SagaContext:
         """Execute the on reply operation.
 
@@ -41,18 +47,25 @@ class OnReplyExecutor(LocalExecutor):
         :param kwargs: Additional named arguments.
         :return: An updated context instance.
         """
-        if operation is None:
-            return context
-
         if reply is None:
             raise MinosSagaPausedExecutionStepException()
+
+        if reply.status != CommandStatus.SUCCESS:
+            raise MinosCommandReplyFailedException(f"CommandReply status is not success. Obtained: {reply.status!s}")
+
+        if operation is None:
+            return context
 
         value = reply.items
         if len(value) == 1:
             value = value[0]
 
         try:
-            response = await super().exec_one(operation, value)
+            response = await self.exec_operation(operation, value)
+        except MinosSagaExecutorException as exc:
+            raise MinosSagaFailedExecutionStepException(exc.exception)
+
+        try:
             context[operation.name] = response
         except Exception as exc:
             raise MinosSagaFailedExecutionStepException(exc)

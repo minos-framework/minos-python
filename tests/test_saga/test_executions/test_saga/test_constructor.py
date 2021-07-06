@@ -12,6 +12,7 @@ from uuid import (
 )
 
 from minos.saga import (
+    MinosSagaNotCommittedException,
     Saga,
     SagaContext,
     SagaExecution,
@@ -52,6 +53,10 @@ class TestSagaExecutionConstructor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStatus.Created, execution.status)
         self.assertFalse(execution.already_rollback)
         self.assertIsNone(execution.paused_step)
+
+    def test_from_saga_raises(self):
+        with self.assertRaises(MinosSagaNotCommittedException):
+            SagaExecution.from_saga(Saga("AddOrder"))
 
     def test_from_saga_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")

@@ -32,45 +32,27 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
         self.uuid = uuid4()
+        self.executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
 
     def test_constructor(self):
-        executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
-
-        self.assertIsInstance(executor, LocalExecutor)
-        self.assertEqual("AddFoo", executor.definition_name)
-        self.assertEqual(self.uuid, executor.execution_uuid)
-        self.assertEqual(self.broker, executor.broker)
+        self.assertIsInstance(self.executor, LocalExecutor)
+        self.assertEqual("AddFoo", self.executor.definition_name)
+        self.assertEqual(self.uuid, self.executor.execution_uuid)
+        self.assertEqual(self.broker, self.executor.broker)
 
     async def test_exec(self):
-        executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
-
         operation = SagaStepOperation("AddBar", foo_fn)
         context = SagaContext()
 
         mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = mock
-        await executor.exec(operation, context, False)
-
-        self.assertEqual(1, mock.call_count)
-        args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid), reply_topic=None)
-        self.assertEqual(args, mock.call_args)
-
-    async def test_exec_with_reply(self):
-        executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
-
-        operation = SagaStepOperation("AddBar", foo_fn)
-        context = SagaContext()
-
-        mock = MagicMock(side_effect=self.broker.send)
-        self.broker.send = mock
-        await executor.exec(operation, context, True)
+        await self.executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
         args = call([Foo("hello")], topic="AddBar", saga_uuid=str(self.uuid), reply_topic="AddFoo")
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_raises(self):
-        executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
         operation = SagaStepOperation("AddBar", foo_fn)
         context = SagaContext()
 
@@ -81,7 +63,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         self.broker.send = mock
 
         with self.assertRaises(MinosSagaFailedExecutionStepException) as result:
-            await executor.exec(operation, context, True)
+            await self.executor.exec(operation, context)
         self.assertEqual(
             "There was a failure while 'SagaExecutionStep' was executing: ValueError('This is an exception')",
             str(result.exception),

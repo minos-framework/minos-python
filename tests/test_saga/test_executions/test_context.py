@@ -23,10 +23,6 @@ class TestSagaContext(unittest.TestCase):
         self.assertEqual("two", context.two)
         self.assertEqual(Foo("three"), context.three)
 
-    def test_constructor_types(self):
-        context = SagaContext(one=1, two="two", three=Foo("three"))
-        self.assertEqual({"one": "builtins.int", "two": "builtins.str", "three": "tests.utils.Foo"}, context.types_)
-
     def test_setter(self):
         context = SagaContext()
         context.one = 1
@@ -35,13 +31,6 @@ class TestSagaContext(unittest.TestCase):
         self.assertEqual(1, context.one)
         self.assertEqual("two", context.two)
         self.assertEqual(Foo("three"), context.three)
-
-    def test_setter_types(self):
-        context = SagaContext()
-        context.one = 1
-        context.two = "two"
-        context.three = Foo("three")
-        self.assertEqual({"one": "builtins.int", "two": "builtins.str", "three": "tests.utils.Foo"}, context.types_)
 
     def test_item_setter(self):
         context = SagaContext()

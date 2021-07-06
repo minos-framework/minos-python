@@ -30,13 +30,20 @@ from ..definitions import (
     SagaStep,
 )
 from ..exceptions import (
+    MinosSagaExecutionAlreadyExecutedException,
     MinosSagaExecutionStepException,
+    MinosSagaExecutorException,
+    MinosSagaFailedCommitCallbackException,
     MinosSagaFailedExecutionStepException,
+    MinosSagaNotCommittedException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionException,
 )
 from .context import (
     SagaContext,
+)
+from .executors import (
+    LocalExecutor,
 )
 from .status import (
     SagaStatus,
@@ -64,6 +71,9 @@ class SagaExecution(object):
         *args,
         **kwargs,
     ):
+        if not definition.committed:
+            raise MinosSagaNotCommittedException("The definition must be committed before executing it.")
+
         if steps is None:
             steps = list()
 
@@ -135,6 +145,19 @@ class SagaExecution(object):
         :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
         """
+        if self.status == SagaStatus.Finished:
+            raise MinosSagaExecutionAlreadyExecutedException(
+                f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
+            )
+        if self.status == SagaStatus.Errored:
+            if reply is None or UUID(reply.saga_uuid) != self.uuid:
+                raise MinosSagaExecutionAlreadyExecutedException(
+                    f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
+                )
+
+            logger.info(f"Received 'with_compensation' reply: {reply!s}")
+            return self.context
+
         self.status = SagaStatus.Running
 
         if self.paused_step is not None:
@@ -147,10 +170,11 @@ class SagaExecution(object):
             execution_step = SagaExecutionStep(step)
             await self._execute_one(execution_step, *args, **kwargs)
 
+        await self._execute_commit_callback(*args, **kwargs)
         self.status = SagaStatus.Finished
         return self.context
 
-    async def _execute_one(self, execution_step, *args, **kwargs):
+    async def _execute_one(self, execution_step: SagaExecutionStep, *args, **kwargs) -> NoReturn:
         try:
             self.context = await execution_step.execute(
                 self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
@@ -164,6 +188,15 @@ class SagaExecution(object):
             self.paused_step = execution_step
             self.status = SagaStatus.Paused
             raise exc
+
+    async def _execute_commit_callback(self, *args, **kwargs) -> NoReturn:
+        try:
+            executor = LocalExecutor()
+            self.context = await executor.exec_function(self.definition.commit_callback, self.context)
+        except MinosSagaExecutorException as exc:
+            await self.rollback(*args, **kwargs)
+            self.status = SagaStatus.Errored
+            raise MinosSagaFailedCommitCallbackException(exc.exception)
 
     async def rollback(self, *args, **kwargs) -> NoReturn:
         """Revert the invoke participant operation with a with compensation operation.

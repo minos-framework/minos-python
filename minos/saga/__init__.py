@@ -5,7 +5,7 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 from .definitions import (
     Saga,
@@ -15,15 +15,21 @@ from .definitions import (
 )
 from .exceptions import (
     MinosAlreadyOnSagaException,
+    MinosCommandReplyFailedException,
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
     MinosMultipleWithCompensationException,
+    MinosSagaAlreadyCommittedException,
     MinosSagaEmptyStepException,
     MinosSagaException,
+    MinosSagaExecutionAlreadyExecutedException,
     MinosSagaExecutionException,
     MinosSagaExecutionNotFoundException,
     MinosSagaExecutionStepException,
+    MinosSagaFailedCommitCallbackException,
+    MinosSagaFailedExecutionException,
     MinosSagaFailedExecutionStepException,
+    MinosSagaNotCommittedException,
     MinosSagaNotDefinedException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionException,

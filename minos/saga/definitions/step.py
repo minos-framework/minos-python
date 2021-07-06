@@ -17,6 +17,7 @@ from typing import (
     Iterable,
     NoReturn,
     Optional,
+    TypeVar,
     Union,
 )
 
@@ -36,7 +37,7 @@ from ..exceptions import (
 
 if TYPE_CHECKING:
     from minos.common import (
-        MinosModel,
+        Model,
     )
 
     from ..executions import (
@@ -46,13 +47,14 @@ if TYPE_CHECKING:
         Saga,
     )
 
+    T = TypeVar("T")
+
     CallBack = Callable[
-        [SagaContext],
-        Union[MinosModel, list[MinosModel], Coroutine[Any, Any, MinosModel], Coroutine[Any, Any, list[MinosModel]]],
+        [SagaContext], Union[Model, list[Model], Coroutine[Any, Any, Model], Coroutine[Any, Any, list[Model]]],
     ]
 
 
-def identity_fn(x: Any) -> Any:
+def identity_fn(x: T) -> T:
     """A identity function, that returns the same value without any transformation.
 
     :param x: The input value.
@@ -200,15 +202,17 @@ class SagaStep(object):
             raise MinosSagaNotDefinedException()
         return self.saga.step()
 
-    def commit(self) -> Saga:
+    def commit(self, *args, **kwargs) -> Saga:
         """Commit the current ``SagaStep`` on the ``Saga``.
 
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: A ``Saga`` instance.
         """
         self.validate()
         if self.saga is None:
             raise MinosSagaNotDefinedException()
-        return self.saga
+        return self.saga.commit(*args, **kwargs)
 
     def validate(self) -> NoReturn:
         """Performs a validation about the structure of the defined ``SagaStep``.

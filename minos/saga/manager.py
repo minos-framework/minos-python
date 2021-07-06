@@ -35,6 +35,7 @@ from .executions import (
     SagaContext,
     SagaExecution,
     SagaExecutionStorage,
+    SagaStatus,
 )
 
 logger = logging.getLogger(__name__)
@@ -88,9 +89,11 @@ class SagaManager(MinosSagaManager):
             self.storage.store(execution)
             return execution.uuid
         except MinosSagaFailedExecutionStepException as exc:
-            logger.warning(f"The {execution.uuid!r} execution failed: {exc!r}")
+            logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
             self.storage.store(execution)
             return execution.uuid
 
-        self.storage.delete(execution)
+        if execution.status == SagaStatus.Finished:
+            self.storage.delete(execution)
+
         return execution.uuid
