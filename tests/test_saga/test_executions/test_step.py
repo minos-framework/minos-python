@@ -72,6 +72,23 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, execution.status)
 
+    async def test_execute_invoke_participant_errored_reply(self):
+        step = SagaStep().invoke_participant("FooAdd", foo_fn)
+        context = SagaContext()
+        execution = SagaExecutionStep(step)
+
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(context, **self.execute_kwargs)
+        self.assertEqual(1, self.publish_mock.call_count)
+
+        self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
+
+        reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.ERROR)
+        with self.assertRaises(MinosSagaFailedExecutionStepException):
+            await execution.execute(context, reply=reply, **self.execute_kwargs)
+
+        self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
+
     async def test_execute_invoke_participant_with_on_reply(self):
         step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
         context = SagaContext()

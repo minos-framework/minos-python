@@ -107,6 +107,10 @@ class MinosSagaFailedExecutionException(MinosSagaExecutionException):
         super().__init__(message)
 
 
+class MinosSagaExecutionAlreadyExecutedException(MinosSagaExecutionException):
+    """Exception to be raised when a saga execution cannot be executed."""
+
+
 class MinosSagaExecutionStepException(MinosSagaException):
     """Base exception for saga execution step."""
 
@@ -144,3 +148,7 @@ class MinosSagaExecutorException(MinosSagaException):
 
 class MinosSagaFailedCommitCallbackException(MinosSagaFailedExecutionException):
     """Exception to be raised when a saga commit callback raises some exception"""
+
+
+class MinosCommandReplyFailedException(MinosException):
+    """Exception to be used when ``CommandStatus`` is not ``SUCCESS``"""

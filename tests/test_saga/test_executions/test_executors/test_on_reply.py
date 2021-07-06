@@ -10,12 +10,18 @@ from pathlib import (
     Path,
 )
 
+from minos.common import (
+    CommandReply,
+    CommandStatus,
+)
 from minos.saga import (
     LocalExecutor,
+    MinosCommandReplyFailedException,
     MinosSagaFailedExecutionStepException,
     OnReplyExecutor,
     SagaContext,
     SagaStepOperation,
+    identity_fn,
 )
 from tests.utils import (
     Foo,
@@ -24,15 +30,22 @@ from tests.utils import (
 
 
 class TesOnReplyExecutor(unittest.IsolatedAsyncioTestCase):
-    def test_constructor(self):
-        executor = OnReplyExecutor()
-        self.assertIsInstance(executor, LocalExecutor)
+    def setUp(self) -> None:
+        self.executor = OnReplyExecutor()
 
-    async def test_exec_raises(self):
-        executor = OnReplyExecutor()
+    def test_constructor(self):
+        self.assertIsInstance(self.executor, LocalExecutor)
+
+    async def test_exec_raises_callback(self):
         operation = SagaStepOperation("foo", lambda s: Path.cwd())
         with self.assertRaises(MinosSagaFailedExecutionStepException):
-            await executor.exec(operation, SagaContext(), reply=fake_reply(Foo("text")))
+            await self.executor.exec(operation, SagaContext(), reply=fake_reply(Foo("text")))
+
+    async def test_exec_raises_reply_status(self):
+        reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.ERROR)
+        operation = SagaStepOperation("foo", identity_fn)
+        with self.assertRaises(MinosCommandReplyFailedException):
+            await self.executor.exec(operation, SagaContext(), reply=reply)
 
 
 if __name__ == "__main__":
