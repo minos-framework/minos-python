@@ -24,3 +24,14 @@ History
 * Added Retry functionality at Broker
 * Added Locked status at Broker
 * Bugfix
+
+0.0.7 (2021-07-06)
+------------------
+
+* Added basic approach for Circuit Braker ( Broker and Publisher)
+* SQL queries refactor ( added support for psycopg method for query building )
+* Migration of shapshot to Minos Common
+* Updated Test
+* BugFix
+* Added clients for Minos Discovery Service
+* Added support for Docker and Docker-Compose
