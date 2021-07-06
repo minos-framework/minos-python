@@ -21,6 +21,7 @@ from typing import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
     MinosBroker,
     MinosModel,
     MinosRepository,
@@ -108,9 +109,16 @@ class FakeBroker(MinosBroker):
         self.topic = None
         self.saga_uuid = None
         self.reply_topic = None
+        self.status = None
 
     async def send(
-        self, items: list[MinosModel], topic: str = None, saga_uuid: str = None, reply_topic: str = None, **kwargs
+        self,
+        items: list[MinosModel],
+        topic: str = None,
+        saga_uuid: str = None,
+        reply_topic: str = None,
+        status: CommandStatus = None,
+        **kwargs
     ) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
@@ -118,6 +126,7 @@ class FakeBroker(MinosBroker):
         self.topic = topic
         self.saga_uuid = saga_uuid
         self.reply_topic = reply_topic
+        self.status = status
 
 
 class FakeRepository(MinosRepository):

@@ -23,6 +23,7 @@ from .commands import (
     CommandHandlerService,
     CommandRequest,
     CommandResponse,
+    CommandResponseException,
 )
 from .entries import (
     HandlerEntry,
