@@ -30,6 +30,7 @@ from ..definitions import (
     SagaStep,
 )
 from ..exceptions import (
+    MinosSagaExecutionAlreadyExecutedException,
     MinosSagaExecutionStepException,
     MinosSagaExecutorException,
     MinosSagaFailedCommitCallbackException,
@@ -144,6 +145,19 @@ class SagaExecution(object):
         :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
         """
+        if self.status == SagaStatus.Finished:
+            raise MinosSagaExecutionAlreadyExecutedException(
+                f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
+            )
+        if self.status == SagaStatus.Errored:
+            if reply is None or UUID(reply.saga_uuid) != self.uuid:
+                raise MinosSagaExecutionAlreadyExecutedException(
+                    f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
+                )
+
+            logger.info(f"Received with compensation reply: {reply!s}")
+            return self.context
+
         self.status = SagaStatus.Running
 
         if self.paused_step is not None:

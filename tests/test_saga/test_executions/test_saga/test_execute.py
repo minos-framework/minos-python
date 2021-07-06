@@ -16,6 +16,7 @@ from minos.common import (
     MinosConfig,
 )
 from minos.saga import (
+    MinosSagaExecutionAlreadyExecutedException,
     MinosSagaFailedCommitCallbackException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
@@ -87,6 +88,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2")), context)
         self.assertEqual(3, self.publish_mock.call_count)
+        with self.assertRaises(MinosSagaExecutionAlreadyExecutedException):
+            await execution.execute()
 
     async def test_execute_failure(self):
         saga = (
@@ -118,6 +121,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual(2, self.publish_mock.call_count)
+
+        reply = fake_reply(Foo("order2"))
+        reply.saga_uuid = str(execution.uuid)
+        await execution.execute(reply=reply)
+
+        with self.assertRaises(MinosSagaExecutionAlreadyExecutedException):
+            await execution.execute()
 
     async def test_execute_commit(self):
         saga = (
