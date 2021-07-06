@@ -367,28 +367,21 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-aiomisc = "^14.0.3"
-aiopg = "^1.2.1"
-cached-property = "^1.5.2"
-dependency-injector = "^4.32.2"
-fastavro = "^1.4.0"
-lmdb = "^1.2.1"
-orjson = "^3.5.2"
-PyYAML = "^5.4.1"
-
-[package.source]
-type = "git"
-url = "https://github.com/Clariteia/minos_microservice_common.git"
-reference = "e7250e8817b77bd84ebbc121d4282a2ff0f9e22c"
-resolved_reference = "e7250e8817b77bd84ebbc121d4282a2ff0f9e22c"
+aiomisc = ">=14.0.3,<15.0.0"
+aiopg = ">=1.2.1,<2.0.0"
+cached-property = ">=1.5.2,<2.0.0"
+dependency-injector = ">=4.32.2,<5.0.0"
+fastavro = ">=1.4.0,<2.0.0"
+lmdb = ">=1.2.1,<2.0.0"
+orjson = ">=3.5.2,<4.0.0"
+PyYAML = ">=5.4.1,<6.0.0"
 
 [[package]]
 name = "mistune"
@@ -797,7 +790,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "f73d318c8d287814ee6bbc8f62b1726d94d610f6623ad0bbe9dc0f73790c52bb"
+content-hash = "effe24c693520b57bf432bd5b0c1e2be1b1db17b9c2d86fe7a596204cf2ddcd7"
 
 [metadata.files]
 aiomisc = [
@@ -1156,7 +1149,10 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-microservice-common = []
+minos-microservice-common = [
+    {file = "minos_microservice_common-0.1.2-py3-none-any.whl", hash = "sha256:340ae2f628e7b215a3eab39543da584c6c3116a89743b32c2270139911782995"},
+    {file = "minos_microservice_common-0.1.2.tar.gz", hash = "sha256:5cb1c7fd105d0ed5ad5819f32889a2913c2fd2f49452b858b6d9d67712aeca18"},
+]
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
     {file = "mistune-0.8.4.tar.gz", hash = "sha256:59a3429db53c50b5c6bcc8a07f8848cb00d7dc8bdb431a4ab41920d201d4756e"},

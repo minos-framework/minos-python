@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { git = "https://github.com/Clariteia/minos_microservice_common.git", rev = "e7250e8817b77bd84ebbc121d4282a2ff0f9e22c" }
+minos-microservice-common = "^0.1.2"
 dependency-injector = "^4.32.2"
 
 [tool.poetry.dev-dependencies]
