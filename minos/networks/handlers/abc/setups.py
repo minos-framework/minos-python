@@ -40,5 +40,4 @@ class HandlerSetup(PostgreSqlMinosDatabase):
             '"retry" INTEGER NOT NULL DEFAULT 0,'
             '"creation_date" TIMESTAMP NOT NULL)'
         )
-
-        await self.submit_query(_CREATE_TABLE_QUERY.format(Identifier(self.TABLE_NAME)))
+        await self.submit_query(_CREATE_TABLE_QUERY.format(Identifier(self.TABLE_NAME)), lock=hash(self.TABLE_NAME))
