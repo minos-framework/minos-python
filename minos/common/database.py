@@ -10,11 +10,13 @@ from abc import (
 )
 from typing import (
     AsyncIterator,
+    ContextManager,
     NoReturn,
 )
 
 import aiopg
 from aiopg import (
+    Cursor,
     Pool,
 )
 
@@ -57,8 +59,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        pool = await self.pool
-        with await pool.cursor() as cursor:
+        with (await self.cursor()) as cursor:
             await cursor.execute(*args, **kwargs)
             async for row in cursor:
                 yield row
@@ -70,9 +71,15 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        pool = await self.pool
-        with await pool.cursor() as cursor:
+        with (await self.cursor()) as cursor:
             await cursor.execute(*args, **kwargs)
+
+    async def cursor(self) -> ContextManager[Cursor]:
+        """Get a connection cursor from the pool.
+
+        :return: A ``Cursor`` instance wrapped inside a context manager.
+        """
+        return await (await self.pool).cursor()
 
     @property
     async def pool(self) -> Pool:
