@@ -79,14 +79,20 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
             yield item.aggregate
 
     async def _get(self, aggregate_name: str, ids: list[int]) -> AsyncIterator[SnapshotEntry]:
-        found = set()
-        async for row in self.submit_query_and_iter(_SELECT_MULTIPLE_ENTRIES_QUERY, (aggregate_name, tuple(ids))):
-            found.add(row[0])
-            yield SnapshotEntry(*row)
+        ids = tuple(set(ids))
 
-        missing = set(ids) - found
-        if missing:
-            raise MinosSnapshotAggregateNotFoundException(f"Not found entries identified with {missing!r} ids.")
+        with (await self.cursor()) as cursor:
+            await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, (aggregate_name, ids))
+            if cursor.rowcount != len(ids):
+                found = set()
+                async for row in cursor:
+                    found.add(row[0])
+
+                missing = set(ids) - found
+                raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
+
+            async for row in cursor:
+                yield SnapshotEntry(*row)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
