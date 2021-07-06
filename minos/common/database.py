@@ -74,12 +74,14 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         with (await self.cursor()) as cursor:
             await cursor.execute(*args, **kwargs)
 
-    async def cursor(self) -> ContextManager[Cursor]:
+    async def cursor(self, *args, **kwargs) -> ContextManager[Cursor]:
         """Get a connection cursor from the pool.
 
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: A ``Cursor`` instance wrapped inside a context manager.
         """
-        return await (await self.pool).cursor()
+        return await (await self.pool).cursor(*args, **kwargs)
 
     @property
     async def pool(self) -> Pool:
