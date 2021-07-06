@@ -84,30 +84,28 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         parameters = (aggregate_name, ids)
 
         with (await self.cursor()) as cursor:
-            await cursor.execute("BEGIN")
+            async with cursor.begin():
 
-            await cursor.execute(_CHECK_MULTIPLE_ENTRIES_QUERY, parameters)
-            total_count, not_null_count = await cursor.fetchone()
+                await cursor.execute(_CHECK_MULTIPLE_ENTRIES_QUERY, parameters)
+                total_count, not_null_count = await cursor.fetchone()
 
-            await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters)
+                await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters)
 
-            if total_count != len(ids):
-                # noinspection PyUnresolvedReferences
-                found = {row[0] async for row in cursor}
-                missing = set(ids) - found
-                raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
+                if total_count != len(ids):
+                    # noinspection PyUnresolvedReferences
+                    found = {row[0] async for row in cursor}
+                    missing = set(ids) - found
+                    raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
 
-            if not_null_count != len(ids):
-                # noinspection PyUnresolvedReferences
-                found = {row[0] async for row in cursor}
-                missing = set(ids) - found
-                raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
+                if not_null_count != len(ids):
+                    # noinspection PyUnresolvedReferences
+                    found = {row[0] async for row in cursor if row[3]}
+                    missing = set(ids) - found
+                    raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
 
-            async for row in cursor:
-                # noinspection PyArgumentList
-                yield SnapshotEntry(*row)
-
-            await cursor.execute("COMMIT")
+                async for row in cursor:
+                    # noinspection PyArgumentList
+                    yield SnapshotEntry(*row)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
