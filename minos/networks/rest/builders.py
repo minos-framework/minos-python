@@ -8,11 +8,19 @@ from __future__ import (
     annotations,
 )
 
+import logging
+from functools import (
+    cached_property,
+)
 from inspect import (
     isawaitable,
+    isclass,
 )
 from typing import (
+    Awaitable,
     Callable,
+    NoReturn,
+    Union,
 )
 
 from aiohttp import (
@@ -20,14 +28,21 @@ from aiohttp import (
 )
 
 from minos.common import (
+    ENDPOINT,
     MinosConfig,
+    MinosException,
     MinosSetup,
+    ResponseException,
+    classname,
     import_module,
 )
 
 from .messages import (
     HttpRequest,
+    HttpResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class RestBuilder(MinosSetup):
@@ -38,60 +53,115 @@ class RestBuilder(MinosSetup):
 
     """
 
-    __slots__ = "_config", "_app"
-
-    def __init__(self, config: MinosConfig, app: web.Application = web.Application(), **kwargs):
+    def __init__(self, host: str, port: int, endpoints: list[ENDPOINT], **kwargs):
         super().__init__(**kwargs)
-        self._config = config
-        self._app = app
-        self.load_routes()
+        self._host = host
+        self._port = port
+        self._endpoints = endpoints
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
-        return cls(*args, config=config, **kwargs)
+        host = config.rest.broker.host
+        port = config.rest.broker.port
+        return cls(host=host, port=port, endpoints=config.rest.endpoints, **kwargs)
 
-    def load_routes(self):
+    @property
+    def host(self) -> str:
+        """Get the rest host.
+
+        :return: A ``str`` object.
+        """
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """Get the rest port.
+
+        :return: An integer value.
+        """
+        return self._port
+
+    def get_app(self) -> web.Application:
+        """Return rest application instance.
+
+        :return: A `web.Application` instance.
+        """
+        return self._app
+
+    @cached_property
+    def _app(self) -> web.Application:
+        app = web.Application()
+        self._mount_routes(app)
+        return app
+
+    def _mount_routes(self, app: web.Application):
         """Load routes from config file."""
-        for item in self._config.rest.endpoints:
-            callable_f = self.get_action(item.controller, item.action)
-            self._app.router.add_route(item.method, item.route, callable_f)
+        for item in self._endpoints:
+            self._mount_one_route(item, app)
 
         # Load default routes
-        self._mount_system_health()
+        self._mount_system_health(app)
+
+    def _mount_one_route(self, item: ENDPOINT, app: web.Application) -> NoReturn:
+        action = self.get_action(item.controller, item.action)
+        handler = self.get_callback(action)
+        app.router.add_route(item.method, item.route, handler)
 
     @staticmethod
-    def get_action(controller: str, action: str) -> Callable:
+    def get_action(
+        controller: str, action: str
+    ) -> Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]:
         """Load controller class and action method.
         :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
         :param action: Config instance. Example: "get_order"
         :return: A class method callable instance.
         """
-        object_class = import_module(controller)
-        instance_class = object_class()
-        class_method = getattr(instance_class, action)
+        controller = import_module(controller)
+        if isclass(controller):
+            controller = controller()
+        action_fn = getattr(controller, action)
+        return action_fn
+
+    @staticmethod
+    def get_callback(
+        fn: Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]
+    ) -> Callable[[web.Request], Awaitable[web.Response]]:
+        """Get the handler function to be used by ``aiohttp``.
+
+        :param fn: The action function.
+        :return: A wrapper function of the passed one that is able to be used by ``aiohttp``.
+        """
 
         async def _fn(request: web.Request) -> web.Response:
+            logger.info(f"Dispatching {classname(fn)!r} from {request.remote!r}...")
             request = HttpRequest(request)
-            response = class_method(request)
-            if isawaitable(response):
-                response = await response
+
+            try:
+                response = fn(request)
+                if isawaitable(response):
+                    response = await response
+            except ResponseException as exc:
+                logger.info(f"Raised a user exception: {exc!s}")
+                raise web.HTTPBadRequest(text=str(exc))
+            except MinosException as exc:
+                logger.warning(f"Raised a 'minos' exception: {exc!r}")
+                raise web.HTTPInternalServerError()
+            except Exception as exc:
+                logger.exception(f"Raised an exception: {exc!r}.")
+                raise web.HTTPInternalServerError()
+
             return web.json_response(await response.raw_content())
 
         return _fn
 
-    def get_app(self):
-        """Return rest application instance.
-        :return: A `web.Application` instance.
-        """
-        return self._app
-
-    def _mount_system_health(self):
+    def _mount_system_health(self, app: web.Application):
         """Mount System Health Route."""
-        self._app.router.add_get("/system/health", self._system_health_handler)
+        app.router.add_get("/system/health", self._system_health_handler)
 
     @staticmethod
-    async def _system_health_handler(request):
+    async def _system_health_handler(request: web.Request) -> web.Response:
         """System Health Route Handler.
         :return: A `web.json_response` response.
         """
+        logger.info(f"Dispatching 'health' from {request.remote!r}...")
         return web.json_response({"host": request.host}, status=200)

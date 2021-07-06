@@ -8,28 +8,34 @@ Minos framework can not be copied and/or distributed without the express permiss
 from collections import (
     namedtuple,
 )
+from datetime import (
+    datetime,
+)
 from pathlib import (
     Path,
 )
 from typing import (
+    AsyncIterator,
     NoReturn,
 )
 
 from minos.common import (
-    Aggregate,
     CommandReply,
+    CommandStatus,
     MinosBroker,
     MinosModel,
+    MinosRepository,
     MinosSagaManager,
+    RepositoryEntry,
 )
 
 BASE_PATH = Path(__file__).parent
 
 
-class NaiveAggregate(Aggregate):
-    """Naive aggregate class to be used for testing purposes."""
+class FakeModel(MinosModel):
+    """For testing purposes"""
 
-    test: int
+    text: str
 
 
 Message = namedtuple("Message", ["topic", "partition", "value"])
@@ -103,9 +109,16 @@ class FakeBroker(MinosBroker):
         self.topic = None
         self.saga_uuid = None
         self.reply_topic = None
+        self.status = None
 
     async def send(
-        self, items: list[MinosModel], topic: str = None, saga_uuid: str = None, reply_topic: str = None, **kwargs
+        self,
+        items: list[MinosModel],
+        topic: str = None,
+        saga_uuid: str = None,
+        reply_topic: str = None,
+        status: CommandStatus = None,
+        **kwargs
     ) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
@@ -113,3 +126,29 @@ class FakeBroker(MinosBroker):
         self.topic = topic
         self.saga_uuid = saga_uuid
         self.reply_topic = reply_topic
+        self.status = status
+
+
+class FakeRepository(MinosRepository):
+    """For testing purposes."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.id_counter = 0
+        self.items = list()
+
+    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
+        """For testing purposes."""
+        self.id_counter += 1
+        self.items.append(entry)
+        entry.id = self.id_counter
+        entry.version += 1
+        entry.aggregate_id = 9999
+        entry.created_at = datetime.now()
+
+        return entry
+
+    async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
+        """For testing purposes."""
+        for item in self.items:
+            yield item

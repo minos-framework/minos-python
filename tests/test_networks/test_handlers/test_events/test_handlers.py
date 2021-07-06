@@ -1,23 +1,25 @@
-import asyncio
-import datetime
 import unittest
-
-import aiopg
+from datetime import (
+    datetime,
+)
+from unittest.mock import (
+    AsyncMock,
+    call,
+)
 
 from minos.common import (
     Event,
-    MinosConfigException,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     EventHandler,
-    MinosNetworkException,
+    HandlerEntry,
 )
 from tests.utils import (
     BASE_PATH,
-    NaiveAggregate,
+    FakeModel,
 )
 
 
@@ -27,155 +29,37 @@ class TestEventHandler(PostgresAsyncTestCase):
     def test_from_config(self):
         dispatcher = EventHandler.from_config(config=self.config)
         self.assertIsInstance(dispatcher, EventHandler)
-
-    def test_from_config_raises(self):
-        with self.assertRaises(MinosConfigException):
-            EventHandler.from_config()
-
-    async def test_if_queue_table_exists(self):
-        async with EventHandler.from_config(config=self.config):
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "SELECT 1 "
-                        "FROM information_schema.tables "
-                        "WHERE table_schema = 'public' AND table_name = 'event_queue';"
-                    )
-                    ret = []
-                    async for row in cur:
-                        ret.append(row)
-
-            assert ret == [(1,)]
-
-    async def test_get_action(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = Event(topic="TestEventQueueAdd", model=model.classname, items=[])
-        handler = EventHandler.from_config(config=self.config)
-
-        cls = handler.get_action(topic="TicketAdded")
-        result = await cls(topic="TicketAdded", event=event_instance)
-
-        assert result == "request_added"
-
-    async def test_non_implemented_action(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = Event(topic="NotExisting", model=model.classname, items=[])
-        handler = EventHandler.from_config(config=self.config)
-
-        with self.assertRaises(MinosNetworkException) as context:
-            cls = handler.get_action(topic=event_instance.topic)
-            await cls(topic=event_instance.topic, event=event_instance)
-
-        self.assertTrue(
-            "topic NotExisting have no controller/action configured, please review th configuration file"
-            in str(context.exception)
+        self.assertEqual(
+            {
+                "TicketAdded": {"action": "ticket_added", "controller": "tests.services.CqrsTestService.CqrsService"},
+                "TicketDeleted": {
+                    "action": "ticket_deleted",
+                    "controller": "tests.services.CqrsTestService.CqrsService",
+                },
+            },
+            dispatcher._handlers,
         )
+        self.assertEqual(self.config.events.queue.records, dispatcher._records)
+        self.assertEqual(self.config.events.queue.retry, dispatcher._retry)
+        self.assertEqual(self.config.events.queue.host, dispatcher.host)
+        self.assertEqual(self.config.events.queue.port, dispatcher.port)
+        self.assertEqual(self.config.events.queue.database, dispatcher.database)
+        self.assertEqual(self.config.events.queue.user, dispatcher.user)
+        self.assertEqual(self.config.events.queue.password, dispatcher.password)
 
-    async def test_event_dispatch(self):
-        async with EventHandler.from_config(config=self.config) as handler:
-            model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-            event_instance = Event(topic="TicketAdded", model=model.classname, items=[])
-            bin_data = event_instance.avro_bytes
-            Event.from_avro_bytes(bin_data)
+    def test_entry_model_cls(self):
+        self.assertEqual(Event, EventHandler.ENTRY_MODEL_CLS)
 
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
-                        "VALUES (%s, %s, %s, %s) "
-                        "RETURNING id;",
-                        (event_instance.topic, 0, bin_data, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-
-            assert queue_id[0] > 0
-
-            # Must get the record, call on_reply function and delete the record from DB
-            await handler.dispatch()
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue WHERE id=%d" % (queue_id))
-                    records = await cur.fetchone()
-
-            assert records[0] == 0
-
-    async def test_event_dispatch_wrong_event(self):
-        async with EventHandler.from_config(config=self.config) as handler:
-            bin_data = bytes(b"Test")
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
-                        "VALUES (%s, %s, %s, %s) "
-                        "RETURNING id;",
-                        ("TicketAdded", 0, bin_data, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-            assert queue_id[0] > 0
-
-            # Must get the record, call on_reply function and delete the record from DB
-            await handler.dispatch()
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue WHERE id=%d" % (queue_id))
-                    records = await cur.fetchone()
-
-            assert records[0] == 1
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT * FROM event_queue WHERE id=%d" % (queue_id))
-                    pending_row = await cur.fetchone()
-
-            # Retry attempts
-            assert pending_row[4] == 1
-
-    async def test_concurrency_dispatcher(self):
-        # Correct instance
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = Event(topic="TicketAdded", model=model.classname, items=[])
-        bin_data = instance.avro_bytes
-
-        # Wrong instance
-        bin_data_wrong = bytes(b"Test")
+    async def test_dispatch_one(self):
+        mock = AsyncMock()
+        topic = "TicketAdded"
+        event = Event(topic, [FakeModel("foo")])
+        entry = HandlerEntry(1, topic, mock, 0, event, 1, datetime.now())
 
         async with EventHandler.from_config(config=self.config) as handler:
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    for x in range(0, 25):
-                        await cur.execute(
-                            "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data, datetime.datetime.now(),),
-                        )
-                        await cur.execute(
-                            "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data_wrong, datetime.datetime.now(),),
-                        )
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue")
-                    records = await cur.fetchone()
-
-            assert records[0] == 50
-
-            await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
-
-            async with aiopg.connect(**self.events_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM event_queue")
-                    records = await cur.fetchone()
-
-            assert records[0] == 25
+            await handler.dispatch_one(entry)
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(topic, event), mock.call_args)
 
 
 if __name__ == "__main__":

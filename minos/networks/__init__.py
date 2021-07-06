@@ -8,16 +8,22 @@ Minos framework can not be copied and/or distributed without the express permiss
 __version__ = "0.0.6"
 
 from .brokers import (
+    Broker,
+    BrokerSetup,
     CommandBroker,
     CommandReplyBroker,
     EventBroker,
     Producer,
     ProducerService,
 )
+from .discovery import (
+    DiscoveryConnector,
+    MinosDiscoveryClient,
+)
 from .exceptions import (
+    MinosActionNotFoundException,
+    MinosDiscoveryConnectorException,
     MinosNetworkException,
-    MinosPreviousVersionSnapshotException,
-    MinosSnapshotException,
 )
 from .handlers import (
     CommandConsumer,
@@ -30,22 +36,23 @@ from .handlers import (
     CommandReplyHandlerService,
     CommandRequest,
     CommandResponse,
+    CommandResponseException,
     Consumer,
     EventConsumer,
     EventConsumerService,
     EventHandler,
     EventHandlerService,
     Handler,
+    HandlerEntry,
     HandlerSetup,
 )
 from .rest import (
     HttpRequest,
     HttpResponse,
+    HttpResponseException,
     RestBuilder,
     RestService,
 )
 from .snapshots import (
-    SnapshotBuilder,
-    SnapshotEntry,
     SnapshotService,
 )

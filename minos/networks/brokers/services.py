@@ -12,6 +12,9 @@ from __future__ import (
 from aiomisc.service.periodic import (
     PeriodicService,
 )
+from cached_property import (
+    cached_property,
+)
 
 from .producers import (
     Producer,
@@ -23,7 +26,7 @@ class ProducerService(PeriodicService):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = Producer.from_config(**kwargs)
+        self._init_kwargs = kwargs
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -48,3 +51,11 @@ class ProducerService(PeriodicService):
         """
         await super().stop(err)
         await self.dispatcher.destroy()
+
+    @cached_property
+    def dispatcher(self) -> Producer:
+        """Get the service dispatcher.
+
+        :return: A ``Producer`` instance.
+        """
+        return Producer.from_config(**self._init_kwargs)

@@ -9,6 +9,11 @@ from typing import (
     NoReturn,
 )
 
+from psycopg2.sql import (
+    SQL,
+    Identifier,
+)
+
 from minos.common import (
     PostgreSqlMinosDatabase,
 )
@@ -26,12 +31,13 @@ class HandlerSetup(PostgreSqlMinosDatabase):
         await self._create_event_queue_table()
 
     async def _create_event_queue_table(self) -> NoReturn:
-        await self.submit_query(
-            'CREATE TABLE IF NOT EXISTS "%s" ('
+        _CREATE_TABLE_QUERY = SQL(
+            "CREATE TABLE IF NOT EXISTS {} ("
             '"id" BIGSERIAL NOT NULL PRIMARY KEY, '
             '"topic" VARCHAR(255) NOT NULL, '
             '"partition_id" INTEGER,'
             '"binary_data" BYTEA NOT NULL, '
             '"retry" INTEGER NOT NULL DEFAULT 0,'
-            '"creation_date" TIMESTAMP NOT NULL);' % (self.TABLE_NAME)
+            '"creation_date" TIMESTAMP NOT NULL)'
         )
+        await self.submit_query(_CREATE_TABLE_QUERY.format(Identifier(self.TABLE_NAME)), lock=hash(self.TABLE_NAME))

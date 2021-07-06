@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Optional,
 )
@@ -22,6 +23,8 @@ from minos.common import (
 from .abc import (
     Broker,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class EventBroker(Broker):
@@ -43,4 +46,5 @@ class EventBroker(Broker):
         if topic is None:
             topic = self.topic
         event = Event(topic, items)
-        return await self._send_bytes(event.topic, event.avro_bytes)
+        logger.info(f"Sending '{event!s}'...")
+        return await self.send_bytes(event.topic, event.avro_bytes)

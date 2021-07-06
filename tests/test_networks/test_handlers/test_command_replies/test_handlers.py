@@ -1,24 +1,23 @@
-import asyncio
-import datetime
 import unittest
-
-import aiopg
+from datetime import (
+    datetime,
+)
 
 from minos.common import (
     CommandReply,
-    MinosConfigException,
+    CommandStatus,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     CommandReplyHandler,
-    MinosNetworkException,
+    HandlerEntry,
 )
 from tests.utils import (
     BASE_PATH,
+    FakeModel,
     FakeSagaManager,
-    NaiveAggregate,
 )
 
 
@@ -26,170 +25,42 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = CommandReplyHandler.from_config(config=self.config)
+        saga_manager = FakeSagaManager()
+        dispatcher = CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager)
         self.assertIsInstance(dispatcher, CommandReplyHandler)
-
-    def test_from_config_raises(self):
-        with self.assertRaises(MinosConfigException):
-            CommandReplyHandler.from_config()
-
-    async def test_if_queue_table_exists(self):
-        async with CommandReplyHandler.from_config(config=self.config):
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "SELECT 1 "
-                        "FROM information_schema.tables "
-                        "WHERE table_schema = 'public' AND table_name = 'command_reply_queue';"
-                    )
-                    ret = []
-                    async for row in cur:
-                        ret.append(row)
-
-            assert ret == [(1,)]
-
-    async def test_get_action(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        event_instance = CommandReply(
-            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
+        self.assertEqual(
+            {
+                "AddOrderReply": {"action": "add_order", "controller": "tests.services.SagaTestService.SagaService"},
+                "DeleteOrderReply": {
+                    "action": "delete_order",
+                    "controller": "tests.services.SagaTestService.SagaService",
+                },
+            },
+            dispatcher._handlers,
         )
-        handler = CommandReplyHandler.from_config(config=self.config)
+        self.assertEqual(self.config.saga.queue.records, dispatcher._records)
+        self.assertEqual(self.config.saga.queue.retry, dispatcher._retry)
+        self.assertEqual(self.config.saga.queue.host, dispatcher.host)
+        self.assertEqual(self.config.saga.queue.port, dispatcher.port)
+        self.assertEqual(self.config.saga.queue.database, dispatcher.database)
+        self.assertEqual(self.config.saga.queue.user, dispatcher.user)
+        self.assertEqual(self.config.saga.queue.password, dispatcher.password)
+        self.assertEqual(saga_manager, dispatcher.saga_manager)
 
-        cls = handler.get_action(topic=event_instance.topic)
-        result = await cls(topic=event_instance.topic, command=event_instance)
+    def test_entry_model_cls(self):
+        self.assertEqual(CommandReply, CommandReplyHandler.ENTRY_MODEL_CLS)
 
-        assert result == "add_order_saga"
-
-    async def test_non_implemented_action(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = CommandReply(
-            topic="NotExisting", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
-        )
-        handler = CommandReplyHandler.from_config(config=self.config)
-
-        with self.assertRaises(MinosNetworkException) as context:
-            cls = handler.get_action(topic=instance.topic)
-            await cls(topic=instance.topic, command=instance)
-
-        self.assertTrue(
-            "topic NotExisting have no controller/action configured, please review th configuration file"
-            in str(context.exception)
-        )
-
-    async def test_event_dispatch(self):
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = CommandReply(
-            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
-        )
-        bin_data = instance.avro_bytes
+    async def test_dispatch(self):
         saga_manager = FakeSagaManager()
 
-        async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
-                        "VALUES (%s, %s, %s, %s) "
-                        "RETURNING id;",
-                        (instance.topic, 0, bin_data, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-
-            assert queue_id[0] > 0
-
-            # Must get the record, call on_reply function and delete the record from DB
-            await handler.dispatch()
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
-                    records = await cur.fetchone()
-
-            assert records[0] == 0
-
-            self.assertEqual(None, saga_manager.name)
-            self.assertEqual(instance, saga_manager.reply)
-
-    async def test_command_reply_dispatch_wrong_event(self):
-        async with CommandReplyHandler.from_config(config=self.config) as handler:
-            bin_data = bytes(b"Test")
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
-                        "VALUES (%s, %s, %s, %s) "
-                        "RETURNING id;",
-                        ("AddOrder", 0, bin_data, datetime.datetime.now(),),
-                    )
-
-                    queue_id = await cur.fetchone()
-
-            assert queue_id[0] > 0
-
-            # Must get the record, call on_reply function and delete the record from DB
-            await handler.dispatch()
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_reply_queue WHERE id=%d" % (queue_id))
-                    records = await cur.fetchone()
-
-            assert records[0] == 1
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT * FROM command_reply_queue WHERE id=%d" % (queue_id))
-                    pending_row = await cur.fetchone()
-
-            # Retry attempts
-            assert pending_row[4] == 1
-
-    async def test_concurrency_dispatcher(self):
-        # Correct instance
-        model = NaiveAggregate(test_id=1, test=2, id=1, version=1)
-        instance = CommandReply(
-            topic="AddOrderReply", model=model.classname, items=[], saga_uuid="43434jhij", reply_on="mkk2334",
-        )
-        bin_data = instance.avro_bytes
-        saga_manager = FakeSagaManager()
-
-        # Wrong instance
-        bin_data_wrong = bytes(b"Test")
+        command = CommandReply("TicketAdded", [FakeModel("foo")], saga_uuid="43434jhij", status=CommandStatus.SUCCESS)
+        entry = HandlerEntry(1, "TicketAdded", None, 0, command, 1, datetime.now())
 
         async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    for x in range(0, 25):
-                        await cur.execute(
-                            "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data, datetime.datetime.now(),),
-                        )
-                        await cur.execute(
-                            "INSERT INTO command_reply_queue (topic, partition_id, binary_data, creation_date) "
-                            "VALUES (%s, %s, %s, %s) "
-                            "RETURNING id;",
-                            (instance.topic, 0, bin_data_wrong, datetime.datetime.now(),),
-                        )
+            await handler.dispatch_one(entry)
 
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_reply_queue")
-                    records = await cur.fetchone()
-
-            assert records[0] == 50
-
-            await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
-
-            async with aiopg.connect(**self.saga_queue_db) as connect:
-                async with connect.cursor() as cur:
-                    await cur.execute("SELECT COUNT(*) FROM command_reply_queue")
-                    records = await cur.fetchone()
-
-            assert records[0] == 25
+        self.assertEqual(None, saga_manager.name)
+        self.assertEqual(command, saga_manager.reply)
 
 
 if __name__ == "__main__":

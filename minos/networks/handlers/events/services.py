@@ -14,6 +14,9 @@ from aiomisc.service.periodic import (
     PeriodicService,
     Service,
 )
+from cached_property import (
+    cached_property,
+)
 
 from .consumers import (
     EventConsumer,
@@ -25,10 +28,6 @@ from .handlers import (
 
 class EventConsumerService(Service):
     """Minos QueueDispatcherService class."""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.dispatcher = EventConsumer.from_config(**kwargs)
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -46,13 +45,21 @@ class EventConsumerService(Service):
         """
         await self.dispatcher.destroy()
 
+    @cached_property
+    def dispatcher(self) -> EventConsumer:
+        """Get the service dispatcher.
+
+        :return: A ``EventConsumer`` instance.
+        """
+        return EventConsumer.from_config()
+
 
 class EventHandlerService(PeriodicService):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = EventHandler.from_config(**kwargs)
+        self._init_kwargs = kwargs
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -77,3 +84,11 @@ class EventHandlerService(PeriodicService):
         """
         await super().stop(err)
         await self.dispatcher.destroy()
+
+    @cached_property
+    def dispatcher(self) -> EventHandler:
+        """Get the service dispatcher.
+
+        :return: A ``EventHandler`` instance.
+        """
+        return EventHandler.from_config(**self._init_kwargs)

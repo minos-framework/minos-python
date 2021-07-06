@@ -9,9 +9,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 from aiomisc.service.periodic import (
     PeriodicService,
 )
+from cached_property import (
+    cached_property,
+)
 
-from .builders import (
-    SnapshotBuilder,
+from minos.common import (
+    PostgreSqlSnapshotBuilder,
 )
 
 
@@ -20,7 +23,7 @@ class SnapshotService(PeriodicService):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = SnapshotBuilder.from_config(**kwargs)
+        self._init_kwargs = kwargs
 
     async def start(self) -> None:
         """Start the service execution.
@@ -45,3 +48,11 @@ class SnapshotService(PeriodicService):
         """
         await super().stop(err)
         await self.dispatcher.destroy()
+
+    @cached_property
+    def dispatcher(self) -> PostgreSqlSnapshotBuilder:
+        """Get the service dispatcher.
+
+        :return: A ``PostgreSqlSnapshotBuilder`` instance.
+        """
+        return PostgreSqlSnapshotBuilder.from_config(**self._init_kwargs)
