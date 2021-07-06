@@ -20,8 +20,8 @@ from minos.common import (
     Field,
     FieldsDiff,
     MinosConfigException,
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
@@ -84,10 +84,10 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_get_raises(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                with self.assertRaises(MinosRepositoryDeletedAggregateException):
+                with self.assertRaises(MinosSnapshotDeletedAggregateException):
                     # noinspection PyStatementEffect
                     [v async for v in snapshot.get("tests.aggregate_classes.Car", [1])]
-                with self.assertRaises(MinosRepositoryAggregateNotFoundException):
+                with self.assertRaises(MinosSnapshotAggregateNotFoundException):
                     # noinspection PyStatementEffect
                     [v async for v in snapshot.get("tests.aggregate_classes.Car", [4])]
 
@@ -109,7 +109,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             if exp.data is None:
-                with self.assertRaises(MinosRepositoryDeletedAggregateException):
+                with self.assertRaises(MinosSnapshotDeletedAggregateException):
                     # noinspection PyStatementEffect
                     obs.aggregate
             else:

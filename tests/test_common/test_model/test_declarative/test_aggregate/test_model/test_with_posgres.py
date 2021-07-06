@@ -14,7 +14,7 @@ from dependency_injector import (
 )
 
 from minos.common import (
-    MinosRepositoryDeletedAggregateException,
+    MinosSnapshotDeletedAggregateException,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
 )
@@ -63,7 +63,7 @@ class TestAggregateWithPostgres(PostgresAsyncTestCase):
         self.assertEqual(car, await Car.get_one(car.id))
 
         await car.delete()
-        with self.assertRaises(MinosRepositoryDeletedAggregateException):
+        with self.assertRaises(MinosSnapshotDeletedAggregateException):
             await Car.get_one(car.id)
 
         car = await Car.create(doors=3, color="blue")
@@ -71,7 +71,7 @@ class TestAggregateWithPostgres(PostgresAsyncTestCase):
         self.assertEqual(Car(3, "red", id=2, version=2), await Car.get_one(car.id))
 
         await car.delete()
-        with self.assertRaises(MinosRepositoryDeletedAggregateException):
+        with self.assertRaises(MinosSnapshotDeletedAggregateException):
             await Car.get_one(car.id)
 
 

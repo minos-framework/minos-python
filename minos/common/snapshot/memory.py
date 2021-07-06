@@ -15,8 +15,8 @@ from typing import (
 )
 
 from ..exceptions import (
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
 )
 from ..repository import (
     MinosRepository,
@@ -58,11 +58,11 @@ class InMemorySnapshot(MinosSnapshot):
         # noinspection PyTypeChecker
         entries = [v async for v in _repository.select(aggregate_name=aggregate_name, aggregate_id=id)]
         if not len(entries):
-            raise MinosRepositoryAggregateNotFoundException(f"Not found any entries for the {id!r} id.")
+            raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {id!r} id.")
 
         entries.sort(key=attrgetter("version"))
         if entries[-1].action == RepositoryAction.DELETE:
-            raise MinosRepositoryDeletedAggregateException(f"The {id!r} id points to an already deleted aggregate.")
+            raise MinosSnapshotDeletedAggregateException(f"The {id!r} id points to an already deleted aggregate.")
 
         cls = entries[0].aggregate_cls
         instance: Aggregate = cls.from_diff(entries[0].aggregate_diff, _repository=_repository, **kwargs)

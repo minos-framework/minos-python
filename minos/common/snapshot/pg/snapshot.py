@@ -19,7 +19,7 @@ from ...configuration import (
     MinosConfig,
 )
 from ...exceptions import (
-    MinosRepositoryAggregateNotFoundException,
+    MinosSnapshotAggregateNotFoundException,
 )
 from ..abc import (
     MinosSnapshot,
@@ -86,7 +86,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
         missing = set(ids) - found
         if missing:
-            raise MinosRepositoryAggregateNotFoundException(f"Not found entries identified with {missing!r} ids.")
+            raise MinosSnapshotAggregateNotFoundException(f"Not found entries identified with {missing!r} ids.")
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
