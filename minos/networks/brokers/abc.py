@@ -30,7 +30,12 @@ class BrokerSetup(PostgreSqlMinosDatabase):
         await self._create_broker_table()
 
     async def _create_broker_table(self) -> NoReturn:
-        await self.submit_query(_CREATE_TABLE_QUERY)
+        with (await self.cursor()) as cursor:
+            await cursor.execute("select pg_advisory_lock(%s)", (hash("producer_queue"),))
+            try:
+                await cursor.execute(_CREATE_TABLE_QUERY)
+            finally:
+                await cursor.execute("select pg_advisory_unlock(%s)", (hash("producer_queue"),))
 
 
 class Broker(MinosBroker, BrokerSetup, ABC):

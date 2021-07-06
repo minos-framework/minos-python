@@ -41,4 +41,9 @@ class HandlerSetup(PostgreSqlMinosDatabase):
             '"creation_date" TIMESTAMP NOT NULL)'
         )
 
-        await self.submit_query(_CREATE_TABLE_QUERY.format(Identifier(self.TABLE_NAME)))
+        with (await self.cursor()) as cursor:
+            await cursor.execute("select pg_advisory_lock(%s)", (hash(self.TABLE_NAME),))
+            try:
+                await cursor.execute(_CREATE_TABLE_QUERY.format(Identifier(self.TABLE_NAME)))
+            finally:
+                await cursor.execute("select pg_advisory_unlock(%s)", (hash(self.TABLE_NAME),))
