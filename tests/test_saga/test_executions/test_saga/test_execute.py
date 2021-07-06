@@ -10,12 +10,9 @@ from unittest.mock import (
     MagicMock,
 )
 
-from dependency_injector import (
-    containers,
-    providers,
-)
-
 from minos.common import (
+    CommandReply,
+    CommandStatus,
     MinosConfig,
 )
 from minos.saga import (
@@ -53,19 +50,6 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.publish_mock = MagicMock(side_effect=self.broker.send_one)
         self.broker.send_one = self.publish_mock
 
-        self.container = containers.DynamicContainer()
-        self.container.config = providers.Object(self.config)
-        self.container.command_broker = providers.Object(self.broker)
-
-        from minos import (
-            saga,
-        )
-
-        self.container.wire(modules=[saga])
-
-    def tearDown(self) -> None:
-        self.container.unwire()
-
     async def test_execute(self):
         saga = (
             Saga("OrdersAdd")
@@ -84,19 +68,25 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute()
+            await execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute(reply=reply)
+            await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order2"))
-        context = await execution.execute(reply=reply)
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(reply=reply, broker=self.broker)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.SUCCESS)
+        context = await execution.execute(reply=reply, broker=self.broker)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2")), context)
+        self.assertEqual(3, self.publish_mock.call_count)
 
     async def test_execute_failure(self):
         saga = (
@@ -147,19 +137,25 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute()
+            await execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute(reply=reply)
+            await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order2"))
-        context = await execution.execute(reply=reply)
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(reply=reply, broker=self.broker)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.SUCCESS)
+        context = await execution.execute(reply=reply, broker=self.broker)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2"), status="Finished!"), context)
+        self.assertEqual(3, self.publish_mock.call_count)
 
     async def test_execute_commit_raises(self):
         saga = (
@@ -179,20 +175,25 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         execution = SagaExecution.from_saga(saga)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute()
+            await execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order1"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute(reply=reply)
+            await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order2"))
+        with self.assertRaises(MinosSagaPausedExecutionStepException):
+            await execution.execute(reply=reply, broker=self.broker)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.SUCCESS)
         with self.assertRaises(MinosSagaFailedCommitCallbackException):
             await execution.execute(reply=reply, broker=self.broker)
 
         self.assertEqual(SagaStatus.Errored, execution.status)
-        self.assertEqual(3, self.publish_mock.call_count)
+        self.assertEqual(5, self.publish_mock.call_count)
 
     async def test_rollback(self):
         saga = (

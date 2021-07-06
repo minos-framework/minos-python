@@ -14,11 +14,6 @@ from uuid import (
     UUID,
 )
 
-from dependency_injector import (
-    containers,
-    providers,
-)
-
 from minos.common import (
     MinosConfig,
 )
@@ -64,19 +59,6 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
         self.publish_mock = MagicMock(side_effect=self.broker.send_one)
         self.broker.send_one = self.publish_mock
-
-        self.container = containers.DynamicContainer()
-        self.container.config = providers.Object(self.config)
-        self.container.command_broker = providers.Object(self.broker)
-
-        from minos import (
-            saga,
-        )
-
-        self.container.wire(modules=[saga])
-
-    def tearDown(self) -> None:
-        self.container.unwire()
 
     def test_from_raw(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
@@ -179,7 +161,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(self.saga)
             with self.assertRaises(MinosSagaPausedExecutionStepException):
-                await expected.execute()
+                await expected.execute(broker=self.broker)
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)
@@ -249,11 +231,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(self.saga)
             with self.assertRaises(MinosSagaPausedExecutionStepException):
-                await expected.execute()
+                await expected.execute(broker=self.broker)
 
             reply = fake_reply(Foo("hola"))
             with self.assertRaises(MinosSagaPausedExecutionStepException):
-                await expected.execute(reply=reply)
+                await expected.execute(reply=reply, broker=self.broker)
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)

@@ -13,6 +13,7 @@ from shutil import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
     MinosConfig,
 )
 from minos.saga import (
@@ -53,10 +54,12 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         uuid = await manager.run("AddOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        await manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], str(uuid)), broker=self.broker)
+        reply = CommandReply("AddOrderReply", [Foo("foo")], str(uuid), status=CommandStatus.SUCCESS)
+        await manager.run(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        await manager.run(reply=CommandReply("AddOrderReply", [Foo("foo")], str(uuid)), broker=self.broker)
+        reply = CommandReply("AddOrderReply", [Foo("foo")], str(uuid), status=CommandStatus.SUCCESS)
+        await manager.run(reply=reply, broker=self.broker)
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             manager.storage.load(uuid)
 
@@ -73,10 +76,12 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         uuid = await manager.run("DeleteOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        await manager.run(reply=CommandReply("DeleteOrderReply", [Foo("foo")], str(uuid)), broker=self.broker)
+        reply = CommandReply("DeleteOrderReply", [Foo("foo")], str(uuid), status=CommandStatus.SUCCESS)
+        await manager.run(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, manager.storage.load(uuid).status)
 
-        await manager.run(reply=CommandReply("DeleteOrderReply", [Foo("foo")], str(uuid)), broker=self.broker)
+        reply = CommandReply("DeleteOrderReply", [Foo("foo")], str(uuid), status=CommandStatus.SUCCESS)
+        await manager.run(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Errored, manager.storage.load(uuid).status)
 
 

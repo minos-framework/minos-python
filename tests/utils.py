@@ -14,6 +14,7 @@ from typing import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
     MinosBroker,
     MinosModel,
 )
@@ -56,7 +57,7 @@ def fake_reply(data: MinosModel) -> CommandReply:
     :param data: Data to be set as response on the command reply.
     :return: A Command reply instance.
     """
-    return CommandReply("FooCreated", [data], "saga_id")
+    return CommandReply("FooCreated", [data], "saga_id", status=CommandStatus.SUCCESS)
 
 
 class NaiveBroker(MinosBroker):
