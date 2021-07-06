@@ -12,6 +12,7 @@ from typing import (
     AsyncIterator,
     ContextManager,
     NoReturn,
+    Optional,
 )
 
 import aiopg
@@ -64,15 +65,23 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
             async for row in cursor:
                 yield row
 
-    async def submit_query(self, *args, **kwargs) -> NoReturn:
+    async def submit_query(self, *args, lock: Optional[int] = None, **kwargs) -> NoReturn:
         """Submit a SQL query.
 
         :param args: Additional positional arguments.
+        :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
+            lock.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
         with (await self.cursor()) as cursor:
-            await cursor.execute(*args, **kwargs)
+            if lock is not None:
+                await cursor.execute("select pg_advisory_lock(%s)", (lock,))
+            try:
+                await cursor.execute(*args, **kwargs)
+            finally:
+                if lock is not None:
+                    await cursor.execute("select pg_advisory_unlock(%s)", (lock,))
 
     async def cursor(self, *args, **kwargs) -> ContextManager[Cursor]:
         """Get a connection cursor from the pool.
