@@ -20,6 +20,7 @@ from ...configuration import (
 )
 from ...exceptions import (
     MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
 )
 from ..abc import (
     MinosSnapshot,
@@ -80,17 +81,24 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
     async def _get(self, aggregate_name: str, ids: list[int]) -> AsyncIterator[SnapshotEntry]:
         ids = tuple(set(ids))
+        parameters = (aggregate_name, ids)
 
-        with (await self.cursor()) as cursor:
-            await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, (aggregate_name, ids))
-            if cursor.rowcount != len(ids):
-                # noinspection PyUnresolvedReferences
-                missing = set(ids) - {row[0] async for row in cursor}
-                raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
+        total_count, not_null_count = await self.submit_query_and_fetchone(_CHECK_MULTIPLE_ENTRIES_QUERY, parameters)
 
-            async for row in cursor:
-                # noinspection PyArgumentList
-                yield SnapshotEntry(*row)
+        if total_count != len(ids):
+            # noinspection PyUnresolvedReferences
+            found = {row[0] async for row in self.submit_query_and_iter(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters)}
+            missing = set(ids) - found
+            raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
+
+        if not_null_count != len(ids):
+            # noinspection PyUnresolvedReferences
+            found = {row[0] async for row in self.submit_query_and_iter(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters)}
+            missing = set(ids) - found
+            raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
+
+        async for row in self.submit_query_and_iter(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters):
+            yield SnapshotEntry(*row)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
@@ -111,6 +119,12 @@ FROM snapshot;
 
 _SELECT_MULTIPLE_ENTRIES_QUERY = """
 SELECT aggregate_id, aggregate_name, version, data, created_at, updated_at
+FROM snapshot
+WHERE aggregate_name = %s AND aggregate_id IN %s;
+""".strip()
+
+_CHECK_MULTIPLE_ENTRIES_QUERY = """
+SELECT COUNT(*) as total_count, COUNT(data) as not_null_count
 FROM snapshot
 WHERE aggregate_name = %s AND aggregate_id IN %s;
 """.strip()
