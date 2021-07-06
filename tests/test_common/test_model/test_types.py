@@ -18,7 +18,7 @@ from minos.common import (
     Enum,
     Field,
     Fixed,
-    MinosModelException,
+    MinosReqAttributeException,
     MissingSentinel,
     ModelRef,
     ModelType,
@@ -173,7 +173,7 @@ class TestModelType(unittest.TestCase):
 
     def test_call_declarative_model_raises(self):
         model_type = ModelType.build("tests.model_classes.Foo", {"bar": str})
-        with self.assertRaises(MinosModelException):
+        with self.assertRaises(MinosReqAttributeException):
             model_type(bar="test")
 
     def test_call_dto_model(self):

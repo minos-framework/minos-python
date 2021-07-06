@@ -45,6 +45,7 @@ from ..types import (
 )
 from .utils import (
     _is_model_cls,
+    _is_type,
 )
 
 if TYPE_CHECKING:
@@ -97,29 +98,30 @@ class AvroSchemaEncoder:
         return ans
 
     def _build_single_schema(self, type_field: Type) -> Any:
-        if type_field is type(None):  # noqa: E721
-            return self._build_none_schema(type_field)
+        if _is_type(type_field):
+            if type_field is type(None):  # noqa: E721
+                return self._build_none_schema(type_field)
 
-        if type_field in PYTHON_IMMUTABLE_TYPES:
-            return self._build_simple_schema(type_field)
+            if issubclass(type_field, PYTHON_IMMUTABLE_TYPES):
+                return self._build_simple_schema(type_field)
 
-        if type_field is date:
-            return DATE_TYPE
+            if issubclass(type_field, datetime):
+                return DATETIME_TYPE
 
-        if type_field is time:
-            return TIME_TYPE
+            if issubclass(type_field, date):
+                return DATE_TYPE
 
-        if type_field is datetime:
-            return DATETIME_TYPE
+            if issubclass(type_field, time):
+                return TIME_TYPE
 
-        if type_field is UUID:
-            return UUID_TYPE
+            if issubclass(type_field, UUID):
+                return UUID_TYPE
 
-        if isinstance(type_field, ModelType):
-            return self._build_model_type_schema(type_field)
+            if isinstance(type_field, ModelType):
+                return self._build_model_type_schema(type_field)
 
-        if _is_model_cls(type_field):
-            return self._build_model_schema(type_field)
+            if _is_model_cls(type_field):
+                return self._build_model_schema(type_field)
 
         return self._build_composed_schema(type_field)
 
@@ -132,19 +134,19 @@ class AvroSchemaEncoder:
 
     @staticmethod
     def _build_simple_schema(type_field: Type) -> Any:
-        if type_field is int:
-            return INT
-
-        if type_field is bool:
+        if issubclass(type_field, bool):
             return BOOLEAN
 
-        if type_field is float:
+        if issubclass(type_field, int):
+            return INT
+
+        if issubclass(type_field, float):
             return DOUBLE
 
-        if type_field is str:
+        if issubclass(type_field, str):
             return STRING
 
-        if type_field is bytes:
+        if issubclass(type_field, bytes):
             return BYTES
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover

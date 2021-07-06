@@ -15,7 +15,7 @@ def _is_model_cls(type_field: Type) -> bool:
         Model,
     )
 
-    return issubclass(type(type_field), type(type)) and issubclass(type_field, Model)
+    return issubclass(type_field, Model)
 
 
 def _is_aggregate_cls(type_field: Type) -> bool:
@@ -23,4 +23,8 @@ def _is_aggregate_cls(type_field: Type) -> bool:
         Aggregate,
     )
 
-    return issubclass(type(type_field), type(type)) and issubclass(type_field, Aggregate)
+    return issubclass(type_field, Aggregate)
+
+
+def _is_type(type_field) -> bool:
+    return issubclass(type(type_field), type(type))
