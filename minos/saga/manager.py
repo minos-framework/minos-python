@@ -88,7 +88,7 @@ class SagaManager(MinosSagaManager):
             self.storage.store(execution)
             return execution.uuid
         except MinosSagaFailedExecutionStepException as exc:
-            logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc!s}")
+            logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
             self.storage.store(execution)
             return execution.uuid
 
