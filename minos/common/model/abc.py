@@ -41,13 +41,15 @@ from ..protocol import (
     MinosAvroProtocol,
 )
 from .fields import (
-    AvroDataDecoder,
-    AvroSchemaDecoder,
-    AvroSchemaEncoder,
     Field,
 )
 from .types import (
     ModelType,
+)
+from .utils import (
+    AvroDataDecoder,
+    AvroSchemaDecoder,
+    AvroSchemaEncoder,
 )
 
 logger = logging.getLogger(__name__)

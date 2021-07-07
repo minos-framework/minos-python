@@ -21,27 +21,20 @@ from typing import (
     TypeVar,
 )
 
-from ...exceptions import (
+from ..exceptions import (
     MinosAttributeValidationException,
     MinosParseAttributeException,
 )
-from ..types import (
+from .types import (
     MissingSentinel,
 )
-from .avro_data_decoder import (
+from .utils import (
     AvroDataDecoder,
-)
-from .avro_data_encoder import (
     AvroDataEncoder,
-)
-from .avro_schema_decoder import (
     AvroSchemaDecoder,
-)
-from .avro_schema_encoder import (
     AvroSchemaEncoder,
-)
-from .type_hint_builder import (
     TypeHintBuilder,
+    TypeHintComparator,
 )
 
 logger = logging.getLogger(__name__)
@@ -166,10 +159,6 @@ class Field:
         return cls(schema["name"], type_val, value)
 
     def __eq__(self, other: Field) -> bool:
-        from .type_hint_comparator import (
-            TypeHintComparator,
-        )
-
         return (
             type(self) == type(other)
             and self.name == other.name

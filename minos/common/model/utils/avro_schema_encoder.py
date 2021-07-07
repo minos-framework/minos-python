@@ -42,14 +42,12 @@ from ..types import (
     UUID_TYPE,
     ModelRef,
     ModelType,
-)
-from .utils import (
-    _is_model_cls,
-    _is_type,
+    is_model_subclass,
+    is_type_subclass,
 )
 
 if TYPE_CHECKING:
-    from .fields import Field  # pragma: no cover
+    from ..fields import Field  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +96,7 @@ class AvroSchemaEncoder:
         return ans
 
     def _build_single_schema(self, type_field: Type) -> Any:
-        if _is_type(type_field):
+        if is_type_subclass(type_field):
             if type_field is type(None):  # noqa: E721
                 return self._build_none_schema(type_field)
 
@@ -120,7 +118,7 @@ class AvroSchemaEncoder:
             if isinstance(type_field, ModelType):
                 return self._build_model_type_schema(type_field)
 
-            if _is_model_cls(type_field):
+            if is_model_subclass(type_field):
                 return self._build_model_schema(type_field)
 
         return self._build_composed_schema(type_field)
