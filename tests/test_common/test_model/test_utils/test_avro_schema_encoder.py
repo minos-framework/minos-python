@@ -47,52 +47,52 @@ class TestAvroSchemaEncoder(unittest.TestCase):
         observed = AvroSchemaEncoder("class", ModelType.build("User", {"username": str}, "path.to")).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_int(self):
+    def test_int(self):
         observed = AvroSchemaEncoder("test", int).build()
         expected = {"name": "test", "type": "int"}
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_bool(self):
+    def test_bool(self):
         expected = {"name": "test", "type": "boolean"}
         observed = AvroSchemaEncoder("test", bool).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_float(self):
+    def test_float(self):
         expected = {"name": "test", "type": "double"}
         observed = AvroSchemaEncoder("test", float).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_string(self):
+    def test_string(self):
         expected = {"name": "test", "type": "string"}
         observed = AvroSchemaEncoder("test", str).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_bytes(self):
+    def test_bytes(self):
         expected = {"name": "test", "type": "bytes"}
         observed = AvroSchemaEncoder("test", bytes).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_date(self):
+    def test_date(self):
         expected = {"name": "test", "type": {"type": "int", "logicalType": "date"}}
         observed = AvroSchemaEncoder("test", date).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_time(self):
+    def test_time(self):
         expected = {"name": "test", "type": {"type": "int", "logicalType": "time-micros"}}
         observed = AvroSchemaEncoder("test", time).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_datetime(self):
+    def test_datetime(self):
         expected = {"name": "test", "type": {"type": "long", "logicalType": "timestamp-micros"}}
         observed = AvroSchemaEncoder("test", datetime).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_dict(self):
+    def test_dict(self):
         expected = {"name": "test", "type": {"type": "map", "values": "int"}}
         observed = AvroSchemaEncoder("test", dict[str, int]).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_model_ref(self):
+    def test_model_ref(self):
         expected = {
             "name": "test",
             "type": [
@@ -115,7 +115,7 @@ class TestAvroSchemaEncoder(unittest.TestCase):
         observed = AvroSchemaEncoder("test", Optional[ModelRef[Owner]]).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_list_model(self):
+    def test_list_model(self):
         expected = {
             "name": "test",
             "type": {
@@ -134,7 +134,7 @@ class TestAvroSchemaEncoder(unittest.TestCase):
         observed = AvroSchemaEncoder("test", list[Optional[User]]).build()
         self.assertEqual(expected, observed)
 
-    def test_avro_schema_uuid(self):
+    def test_uuid(self):
         expected = {"name": "test", "type": {"type": "string", "logicalType": "uuid"}}
         observed = AvroSchemaEncoder("test", UUID).build()
         self.assertEqual(expected, observed)
