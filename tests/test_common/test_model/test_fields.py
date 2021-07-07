@@ -26,13 +26,10 @@ from uuid import (
 
 from minos.common import (
     AvroDataDecoder,
+    AvroSchemaEncoder,
     Field,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
-    ModelRef,
-)
-from tests.aggregate_classes import (
-    Owner,
 )
 from tests.model_classes import (
     User,
@@ -80,96 +77,20 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         field.value = 4
         self.assertEqual(4, field.value)
 
-    def test_avro_schema_int(self):
+    def test_avro_schema(self):
         field = Field("test", int, 1)
-        expected = {"name": "test", "type": "int"}
-        self.assertEqual(expected, field.avro_schema)
 
-    def test_avro_schema_bool(self):
-        field = Field("test", bool, True)
-        expected = {"name": "test", "type": "boolean"}
-        self.assertEqual(expected, field.avro_schema)
+        with patch(
+            "minos.common.AvroSchemaEncoder.from_field", side_effect=AvroSchemaEncoder.from_field
+        ) as mock_from_field:
+            with patch("minos.common.AvroSchemaEncoder.build", return_value=56) as mock_build:
+                self.assertEqual(56, field.avro_schema)
 
-    def test_avro_schema_float(self):
-        field = Field("test", float, 3.4)
-        expected = {"name": "test", "type": "double"}
-        self.assertEqual(expected, field.avro_schema)
+                self.assertEqual(1, mock_build.call_count)
+                self.assertEqual(call(), mock_build.call_args)
 
-    def test_avro_schema_string(self):
-        field = Field("test", str, "foo")
-        expected = {"name": "test", "type": "string"}
-        self.assertEqual(expected, field.avro_schema)
-
-    def test_avro_schema_bytes(self):
-        field = Field("test", bytes, bytes("foo", "utf-8"))
-        expected = {"name": "test", "type": "bytes"}
-        self.assertEqual(expected, field.avro_schema)
-
-    def test_avro_schema_date(self):
-        field = Field("test", date, date(2021, 1, 21))
-        expected = {"name": "test", "type": {"type": "int", "logicalType": "date"}}
-        self.assertEqual(expected, field.avro_schema)
-
-    def test_avro_schema_time(self):
-        field = Field("test", time, time(20, 32, 12))
-        expected = {"name": "test", "type": {"type": "int", "logicalType": "time-micros"}}
-        self.assertEqual(expected, field.avro_schema)
-
-    def test_avro_schema_datetime(self):
-        field = Field("test", datetime, datetime.now())
-        expected = {"name": "test", "type": {"type": "long", "logicalType": "timestamp-micros"}}
-        self.assertEqual(expected, field.avro_schema)
-
-    def test_avro_schema_dict(self):
-        field = Field("test", dict[str, int], {"foo": 1, "bar": 2})
-        expected = {"name": "test", "type": {"type": "map", "values": "int"}}
-        self.assertEqual(expected, field.avro_schema)
-
-    def test_avro_schema_model_ref(self):
-        field = Field("test", Optional[ModelRef[Owner]], 1)
-        expected = {
-            "name": "test",
-            "type": [
-                {
-                    "fields": [
-                        {"name": "id", "type": "int"},
-                        {"name": "version", "type": "int"},
-                        {"name": "name", "type": "string"},
-                        {"name": "surname", "type": "string"},
-                        {"name": "age", "type": ["int", "null"]},
-                    ],
-                    "name": "Owner",
-                    "namespace": "tests.aggregate_classes.test",
-                    "type": "record",
-                },
-                "int",
-                "null",
-            ],
-        }
-        self.assertEqual(expected, field.avro_schema)
-
-    def test_avro_schema_list_model(self):
-        field = Field("test", list[Optional[User]], [User(123), User(456)])
-        expected = {
-            "name": "test",
-            "type": {
-                "items": [
-                    {
-                        "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
-                        "name": "User",
-                        "namespace": "tests.model_classes.test",
-                        "type": "record",
-                    },
-                    "null",
-                ],
-                "type": "array",
-            },
-        }
-        self.assertEqual(expected, field.avro_schema)
-
-    def test_avro_schema_uuid(self):
-        field = Field("test", UUID, uuid4())
-        self.assertEqual({"name": "test", "type": {"type": "string", "logicalType": "uuid"}}, field.avro_schema)
+            self.assertEqual(1, mock_from_field.call_count)
+            self.assertEqual(call(field), mock_from_field.call_args)
 
     def test_avro_data_float(self):
         field = Field("test", float, 3.14159265359)
