@@ -62,6 +62,15 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosTypeAttributeException):
             AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build(3)
 
+    def test_any(self):
+        decoder = AvroDataDecoder("test", Any)
+        self.assertEqual(3, decoder.build(3))
+
+    def test_any_raises(self):
+        decoder = AvroDataDecoder("test", Any)
+        with self.assertRaises(MinosTypeAttributeException):
+            decoder.build({"one", "two"})
+
     def test_none(self):
         decoder = AvroDataDecoder("test", type(None))
         observed = decoder.build(None)
@@ -219,6 +228,10 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         observed = decoder.build(value)
         self.assertEqual(value, observed)
 
+    def test_list_any(self):
+        decoder = AvroDataDecoder("test", list[Any])
+        self.assertEqual([1, "hola", True], decoder.build([1, "hola", True]))
+
     def test_dict(self):
         decoder = AvroDataDecoder("test", dict[str, bool])
         value = {"foo": True, "bar": False}
@@ -298,11 +311,6 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         decoder = AvroDataDecoder("test", Optional[int])
         observed = decoder.build(None)
         self.assertIsNone(observed)
-
-    def test_any(self):
-        decoder = AvroDataDecoder("test", Any)
-        observed = decoder.build(3)
-        self.assertEqual(3, observed)
 
 
 if __name__ == "__main__":
