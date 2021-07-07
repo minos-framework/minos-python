@@ -6,22 +6,12 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from datetime import (
-    date,
-    datetime,
-    time,
-)
 from typing import (
     Optional,
-    Union,
 )
 from unittest.mock import (
     call,
     patch,
-)
-from uuid import (
-    UUID,
-    uuid4,
 )
 
 from minos.common import (
@@ -30,7 +20,6 @@ from minos.common import (
     AvroSchemaEncoder,
     Field,
     MinosAttributeValidationException,
-    MinosMalformedAttributeException,
 )
 
 
@@ -172,83 +161,14 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         field = Field("test", Optional[int], 1, parser=lambda x: x * 10, validator=lambda x: x > 0)
         self.assertEqual(repr(field), str(field))
 
-    def test_from_avro_int(self):
-        obtained = Field.from_avro({"name": "id", "type": "int"}, 1234)
-        desired = Field("id", int, 1234)
-        self.assertEqual(desired, obtained)
+    def test_from_avro(self):
+        with patch("minos.common.AvroSchemaDecoder.build", return_value=int) as mock:
+            observed = Field.from_avro({"name": "id", "type": "int"}, 1234)
+            expected = Field("id", int, 1234)
+            self.assertEqual(expected, observed)
 
-    def test_from_avro_bool(self):
-        obtained = Field.from_avro({"name": "id", "type": "boolean"}, True)
-        desired = Field("id", bool, True)
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_float(self):
-        obtained = Field.from_avro({"name": "id", "type": "float"}, 3.4)
-        desired = Field("id", float, 3.4)
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_bytes(self):
-        obtained = Field.from_avro({"name": "id", "type": "bytes"}, b"Test")
-        desired = Field("id", bytes, b"Test")
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_date(self):
-        value = date(2021, 1, 21)
-        obtained = Field.from_avro({"name": "id", "type": "int", "logicalType": "date"}, value)
-        desired = Field("id", date, value)
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_time(self):
-        value = time(20, 45, 21)
-        obtained = Field.from_avro({"name": "id", "type": "int", "logicalType": "time-micros"}, value)
-        desired = Field("id", time, value)
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_datetime(self):
-        value = datetime(2021, 3, 12, 21, 32, 21)
-        obtained = Field.from_avro({"name": "id", "type": "long", "logicalType": "timestamp-micros"}, value)
-        desired = Field("id", datetime, value)
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_uuid(self):
-        uuid = uuid4()
-        obtained = Field.from_avro({"name": "id", "type": "string", "logicalType": "uuid"}, uuid)
-        desired = Field("id", UUID, uuid)
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_plain_array(self):
-        obtained = Field.from_avro({"name": "example", "type": "array", "items": "string"}, ["a", "b", "c"])
-        desired = Field("example", list[str], ["a", "b", "c"])
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_plain_map(self):
-        obtained = Field.from_avro({"name": "example", "type": "map", "values": "int"}, {"a": 1, "b": 2})
-        desired = Field("example", dict[str, int], {"a": 1, "b": 2})
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_nested_arrays(self):
-        obtained = Field.from_avro(
-            {"name": "example", "type": "array", "items": {"type": {"type": "array", "items": "string"}}},
-            [["a", "b", "c"]],
-        )
-        desired = Field("example", list[list[str]], [["a", "b", "c"]])
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_none(self):
-        obtained = Field.from_avro({"name": "example", "type": "null"}, None)
-        desired = Field("example", type(None), None)
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_union(self):
-        obtained = Field.from_avro({"name": "example", "type": "array", "items": ["int", "string"]}, [1, "a"])
-        desired = Field("example", list[Union[int, str]], [1, "a"])
-        self.assertEqual(desired, obtained)
-
-    def test_from_avro_raises(self):
-        with self.assertRaises(MinosMalformedAttributeException):
-            Field.from_avro({"name": "id", "type": "foo"}, None)
-        with self.assertRaises(MinosMalformedAttributeException):
-            Field.from_avro({"name": "id", "type": "string", "logicalType": "foo"}, None)
+            self.assertEqual(1, mock.call_count)
+            self.assertEqual(call(), mock.call_args)
 
 
 if __name__ == "__main__":
