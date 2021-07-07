@@ -25,14 +25,8 @@ from .dynamic import (
     FieldsDiff,
 )
 from .fields import (
-    AvroDataDecoder,
-    AvroDataEncoder,
-    AvroSchemaDecoder,
-    AvroSchemaEncoder,
     Field,
     ModelField,
-    TypeHintBuilder,
-    TypeHintComparator,
 )
 from .types import (
     Decimal,
@@ -41,4 +35,12 @@ from .types import (
     MissingSentinel,
     ModelRef,
     ModelType,
+)
+from .utils import (
+    AvroDataDecoder,
+    AvroDataEncoder,
+    AvroSchemaDecoder,
+    AvroSchemaEncoder,
+    TypeHintBuilder,
+    TypeHintComparator,
 )

@@ -49,7 +49,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from .fields import Field  # pragma: no cover
+    from ..fields import Field  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
