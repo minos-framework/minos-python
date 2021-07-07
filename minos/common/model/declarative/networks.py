@@ -26,7 +26,7 @@ class Command(DeclarativeModel):
     """Base Command class."""
 
     topic: str
-    items: Any
+    data: Any
     saga_uuid: str
     reply_topic: str
 
@@ -35,7 +35,7 @@ class CommandReply(DeclarativeModel):
     """Base Command class."""
 
     topic: str
-    items: Any
+    data: Any
     saga_uuid: str
     status: CommandStatus
 
@@ -52,4 +52,4 @@ class Event(DeclarativeModel):
     """Base Event class."""
 
     topic: str
-    items: Any
+    data: Any
