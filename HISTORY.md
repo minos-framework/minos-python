@@ -97,3 +97,13 @@ History
 
 * Resolved float problem with avro
 * Bugfixes
+
+0.1.2 (2021-07-06)
+--------------------
+
+* Added Exceptions Traitment
+* Bugfixes
+* Creates CommandStatus for SAGA Reply
+* Improved queries for Aggregate ( per id query )
+* Added methods for Snapshot ( added check for duplicates )
+

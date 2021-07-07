@@ -34,8 +34,8 @@ class PostgreSqlRepository(MinosRepository, PostgreSqlMinosDatabase):
         await self._create_events_table()
 
     async def _create_events_table(self):
-        await self.submit_query(_CREATE_ACTION_ENUM_QUERY)
-        await self.submit_query(_CREATE_TABLE_QUERY)
+        await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock=hash("aggregate_event"))
+        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("aggregate_event"))
 
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         params = {

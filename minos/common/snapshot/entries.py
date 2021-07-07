@@ -21,8 +21,8 @@ from typing import (
     Union,
 )
 
-from .. import (
-    MinosRepositoryDeletedAggregateException,
+from ..exceptions import (
+    MinosSnapshotDeletedAggregateException,
 )
 from ..importlib import (
     import_module,
@@ -80,7 +80,7 @@ class SnapshotEntry:
         :return: A ``Aggregate`` instance.
         """
         if self.data is None:
-            raise MinosRepositoryDeletedAggregateException(
+            raise MinosSnapshotDeletedAggregateException(
                 f"The {self.aggregate_id!r} id points to an already deleted aggregate."
             )
         cls = self.aggregate_cls

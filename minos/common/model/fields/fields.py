@@ -187,7 +187,7 @@ class Field:
         yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
 
     def __repr__(self):
-        return f"{self.name}={self.value}"
+        return f"{self.name}={self.value!s}"
 
 
 ModelField = Field

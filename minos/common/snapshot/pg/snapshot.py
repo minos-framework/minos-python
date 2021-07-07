@@ -19,7 +19,8 @@ from ...configuration import (
     MinosConfig,
 )
 from ...exceptions import (
-    MinosRepositoryAggregateNotFoundException,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
 )
 from ..abc import (
     MinosSnapshot,
@@ -79,14 +80,32 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
             yield item.aggregate
 
     async def _get(self, aggregate_name: str, ids: list[int]) -> AsyncIterator[SnapshotEntry]:
-        found = set()
-        async for row in self.submit_query_and_iter(_SELECT_MULTIPLE_ENTRIES_QUERY, (aggregate_name, tuple(ids))):
-            found.add(row[0])
-            yield SnapshotEntry(*row)
+        ids = tuple(set(ids))
+        parameters = (aggregate_name, ids)
 
-        missing = set(ids) - found
-        if missing:
-            raise MinosRepositoryAggregateNotFoundException(f"Not found entries identified with {missing!r} ids.")
+        with (await self.cursor()) as cursor:
+            async with cursor.begin():
+
+                await cursor.execute(_CHECK_MULTIPLE_ENTRIES_QUERY, parameters)
+                total_count, not_null_count = await cursor.fetchone()
+
+                await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters)
+
+                if total_count != len(ids):
+                    # noinspection PyUnresolvedReferences
+                    found = {row[0] async for row in cursor}
+                    missing = set(ids) - found
+                    raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
+
+                if not_null_count != len(ids):
+                    # noinspection PyUnresolvedReferences
+                    found = {row[0] async for row in cursor if row[3]}
+                    missing = set(ids) - found
+                    raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
+
+                async for row in cursor:
+                    # noinspection PyArgumentList
+                    yield SnapshotEntry(*row)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
@@ -107,6 +126,12 @@ FROM snapshot;
 
 _SELECT_MULTIPLE_ENTRIES_QUERY = """
 SELECT aggregate_id, aggregate_name, version, data, created_at, updated_at
+FROM snapshot
+WHERE aggregate_name = %s AND aggregate_id IN %s;
+""".strip()
+
+_CHECK_MULTIPLE_ENTRIES_QUERY = """
+SELECT COUNT(*) as total_count, COUNT(data) as not_null_count
 FROM snapshot
 WHERE aggregate_name = %s AND aggregate_id IN %s;
 """.strip()

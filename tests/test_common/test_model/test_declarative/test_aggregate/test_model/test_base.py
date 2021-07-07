@@ -10,10 +10,10 @@ import unittest
 from minos.common import (
     InMemoryRepository,
     InMemorySnapshot,
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
     MinosRepositoryManuallySetAggregateIdException,
     MinosRepositoryManuallySetAggregateVersionException,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
 )
 from tests.aggregate_classes import (
     Car,
@@ -68,7 +68,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
     async def test_get_one_raises(self):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
-            with self.assertRaises(MinosRepositoryAggregateNotFoundException):
+            with self.assertRaises(MinosSnapshotAggregateNotFoundException):
                 await Car.get_one(0, _broker=broker, _repository=repository, _snapshot=snapshot)
 
     async def test_update(self):
@@ -115,7 +115,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             car.color = "red"
             car.doors = 5
 
-            with self.assertRaises(MinosRepositoryAggregateNotFoundException):
+            with self.assertRaises(MinosSnapshotAggregateNotFoundException):
                 await car.refresh()
 
             await car.save()
@@ -154,7 +154,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
         async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
             car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
             await car.delete()
-            with self.assertRaises(MinosRepositoryDeletedAggregateException):
+            with self.assertRaises(MinosSnapshotDeletedAggregateException):
                 await Car.get_one(car.id, _broker=broker, _repository=repository, _snapshot=snapshot)
 
 

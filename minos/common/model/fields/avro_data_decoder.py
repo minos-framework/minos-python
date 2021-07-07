@@ -45,6 +45,7 @@ from ..types import (
 from .utils import (
     _is_aggregate_cls,
     _is_model_cls,
+    _is_type,
 )
 
 if TYPE_CHECKING:
@@ -104,29 +105,30 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
-        if type_field is type(None):  # noqa: E721
-            return self._cast_none_value(type_field, data)
+        if _is_type(type_field):
+            if type_field is type(None):  # noqa: E721
+                return self._cast_none_value(type_field, data)
 
-        if type_field in PYTHON_IMMUTABLE_TYPES:
-            return self._cast_simple_value(type_field, data)
+            if issubclass(type_field, PYTHON_IMMUTABLE_TYPES):
+                return self._cast_simple_value(type_field, data)
 
-        if type_field is date:
-            return self._cast_date(data)
+            if issubclass(type_field, datetime):
+                return self._cast_datetime(data)
 
-        if type_field is time:
-            return self._cast_time(data)
+            if issubclass(type_field, date):
+                return self._cast_date(data)
 
-        if type_field is datetime:
-            return self._cast_datetime(data)
+            if issubclass(type_field, time):
+                return self._cast_time(data)
 
-        if type_field is UUID:
-            return self._cast_uuid(data)
+            if issubclass(type_field, UUID):
+                return self._cast_uuid(data)
 
-        if isinstance(type_field, ModelType):
-            return self._cast_model_type(type_field, data)
+            if isinstance(type_field, ModelType):
+                return self._cast_model_type(type_field, data)
 
-        if _is_model_cls(type_field):
-            return self._cast_model(type_field, data)
+            if _is_model_cls(type_field):
+                return self._cast_model(type_field, data)
 
         return self._cast_composed_value(type_field, data)
 
@@ -143,28 +145,28 @@ class AvroDataDecoder:
         if data is MissingSentinel:
             raise MinosReqAttributeException(f"{self._name!r} field is missing.")
 
-        if type_field is int:
-            return self._cast_int(data)
-
-        if type_field is float:
-            return self._cast_float(data)
-
-        if type_field is bool:
+        if issubclass(type_field, bool):
             return self._cast_bool(data)
 
-        if type_field is str:
+        if issubclass(type_field, int):
+            return self._cast_int(type_field, data)
+
+        if issubclass(type_field, float):
+            return self._cast_float(data)
+
+        if issubclass(type_field, str):
             return self._cast_string(data)
 
-        if type_field is bytes:
+        if issubclass(type_field, bytes):
             return self._cast_bytes(data)
 
         raise MinosTypeAttributeException(self._name, type_field, data)  # pragma: no cover
 
-    def _cast_int(self, data: Any) -> int:
+    def _cast_int(self, type_field, data: Any) -> int:
         try:
-            return int(data)
+            return type_field(data)
         except (ValueError, TypeError):
-            raise MinosTypeAttributeException(self._name, int, data)
+            raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_float(self, data: Any) -> float:
         try:
@@ -284,7 +286,7 @@ class AvroDataDecoder:
 
     def _convert_model_ref(self, data: Any, type_field: Type) -> Any:
         inner_type = get_args(type_field)[0]
-        if not _is_aggregate_cls(inner_type):
+        if not (_is_type(inner_type) and _is_aggregate_cls(inner_type)):
             raise MinosMalformedAttributeException(
                 f"'ModelRef[T]' T type must be a descendant of 'Aggregate'. Obtained: {inner_type!r}"
             )

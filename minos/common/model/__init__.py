@@ -13,6 +13,7 @@ from .declarative import (
     AggregateDiff,
     Command,
     CommandReply,
+    CommandStatus,
     DeclarativeModel,
     Event,
     MinosModel,

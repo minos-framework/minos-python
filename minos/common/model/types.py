@@ -25,7 +25,6 @@ from typing import (
 
 from ..exceptions import (
     MinosImportException,
-    MinosModelException,
 )
 from ..importlib import (
     import_module,
@@ -150,12 +149,7 @@ class ModelType(type):
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
 
     def __call__(cls, *args, **kwargs) -> Model:
-        model_cls = cls.model_cls
-
-        if hasattr(model_cls, "model_type") and cls != model_cls.model_type:
-            raise MinosModelException(f"The typed dict fields do not match with the {model_cls!r} fields")
-
-        return model_cls.from_model_type(cls, kwargs)
+        return cls.model_cls.from_model_type(cls, kwargs)
 
     @property
     def model_cls(cls) -> Type[Model]:
