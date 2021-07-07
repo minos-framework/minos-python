@@ -85,10 +85,10 @@ class CommandHandler(Handler):
     def get_callback(
         fn: Callable[[CommandRequest], Union[CommandRequest, Awaitable[CommandRequest]]]
     ) -> Callable[[Command], Awaitable[Tuple[list[Model], CommandStatus]]]:
-        """TODO
+        """Get the handler function to be used by the Command Handler.
 
-        :param fn: TODO
-        :return: TODO
+        :param fn: The action function.
+        :return: A wrapper function around the given one that is compatible with the Command Handler API.
         """
 
         async def _fn(command: Command) -> Tuple[list[Model], CommandStatus]:
