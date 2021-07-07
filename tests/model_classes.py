@@ -136,21 +136,17 @@ class CustomerDict(User):
     friends: dict[str, str]
 
 
-class CustomerFailList(User):
+class CustomerFailList(MinosModel):
     """
     Test a Model Class with a List wrong formatted
     """
 
-    name: Optional[str]
-    surname: Optional[str]
-    listes_failed: Optional[list]
+    friends: list
 
 
-class CustomerFailDict(User):
+class CustomerFailDict(MinosModel):
     """
     Test a Model Class with a Dictionary wrong formatted
     """
 
-    name: Optional[str]
-    surname: Optional[str]
     friends: dict

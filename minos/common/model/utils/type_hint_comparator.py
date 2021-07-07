@@ -21,10 +21,8 @@ from typing import (
 
 from ..types import (
     ModelRef,
-)
-from .utils import (
-    _is_model_cls,
-    _is_type,
+    is_model_subclass,
+    is_type_subclass,
 )
 
 logger = logging.getLogger(__name__)
@@ -55,10 +53,10 @@ class TypeHintComparator(Generic[T, K]):
         if get_origin(second) is ModelRef:
             second = Union[(*get_args(second), int)]
 
-        if _is_type(first) and _is_model_cls(first):
+        if is_type_subclass(first) and is_model_subclass(first):
             first = first.model_type
 
-        if _is_type(second) and _is_model_cls(second):
+        if is_type_subclass(second) and is_model_subclass(second):
             second = second.model_type
 
         if first == second:

@@ -167,11 +167,11 @@ class TestMinosModel(unittest.TestCase):
 
     def test_model_fail_list_class_attribute(self):
         with self.assertRaises(MinosMalformedAttributeException):
-            CustomerFailList(123)
+            CustomerFailList(["foo", "bar"])
 
     def test_model_fail_dict_class_attribute(self):
         with self.assertRaises(MinosMalformedAttributeException):
-            CustomerFailDict(123)
+            CustomerFailDict({"foo": "bar"})
 
     def test_empty_required_value(self):
         with self.assertRaises(MinosReqAttributeException):

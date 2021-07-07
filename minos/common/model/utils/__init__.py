@@ -17,10 +17,6 @@ from .avro_schema_decoder import (
 from .avro_schema_encoder import (
     AvroSchemaEncoder,
 )
-from .fields import (
-    Field,
-    ModelField,
-)
 from .type_hint_builder import (
     TypeHintBuilder,
 )
