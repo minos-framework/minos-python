@@ -14,7 +14,7 @@ from minos.common import (
 )
 
 
-class TestAvroSchemaDecoder(unittest.TestCase):
+class TestAvroSchemaEncoder(unittest.TestCase):
     def test_model_type(self):
         expected = {
             "name": "class",

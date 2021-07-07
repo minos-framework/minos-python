@@ -49,7 +49,9 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from ..fields import Field  # pragma: no cover
+    from ..fields import (
+        Field,
+    )
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -103,9 +105,16 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
+        if type_field is type(None):  # noqa: E721
+            return self._cast_none_value(type_field, data)
+
+        if data is None:
+            raise MinosReqAttributeException(f"{self._name!r} field is '{None!r}'.")
+
+        if data is MissingSentinel:
+            raise MinosReqAttributeException(f"{self._name!r} field is missing.")
+
         if _is_type(type_field):
-            if type_field is type(None):  # noqa: E721
-                return self._cast_none_value(type_field, data)
 
             if issubclass(type_field, PYTHON_IMMUTABLE_TYPES):
                 return self._cast_simple_value(type_field, data)
@@ -137,12 +146,6 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_simple_value(self, type_field: Type, data: Any) -> Any:
-        if data is None:
-            raise MinosReqAttributeException(f"{self._name!r} field is '{None!r}'.")
-
-        if data is MissingSentinel:
-            raise MinosReqAttributeException(f"{self._name!r} field is missing.")
-
         if issubclass(type_field, bool):
             return self._cast_bool(data)
 
@@ -242,12 +245,6 @@ class AvroDataDecoder:
         origin_type = get_origin(type_field)
         if origin_type is None:
             raise MinosMalformedAttributeException(f"{self._name!r} field is malformed. Type: '{type_field}'.")
-
-        if data is None:
-            raise MinosReqAttributeException(f"{self._name!r} field is 'None'.")
-
-        if data is MissingSentinel:
-            raise MinosReqAttributeException(f"{self._name!r} field is missing.")
 
         if origin_type is list:
             return self._convert_list(data, type_field)

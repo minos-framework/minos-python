@@ -15,18 +15,20 @@ from typing import (
     Optional,
     Union,
 )
+from unittest.mock import (
+    call,
+    patch,
+)
 from uuid import (
     UUID,
     uuid4,
 )
 
 from minos.common import (
+    AvroDataDecoder,
     Field,
-    InMemorySnapshot,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
-    MinosReqAttributeException,
-    MinosTypeAttributeException,
     ModelRef,
 )
 from tests.aggregate_classes import (
@@ -34,10 +36,6 @@ from tests.aggregate_classes import (
 )
 from tests.model_classes import (
     User,
-)
-from tests.utils import (
-    FakeBroker,
-    FakeRepository,
 )
 
 
@@ -50,111 +48,37 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         field = Field("test", int, 3)
         self.assertEqual(int, field.type)
 
-    def test_value_int(self):
+    def test_value_setter(self):
         field = Field("test", int, 3)
+        with patch(
+            "minos.common.AvroDataDecoder.from_field", side_effect=AvroDataDecoder.from_field
+        ) as mock_from_field:
+            with patch("minos.common.AvroDataDecoder.build", return_value=56) as mock_build:
+                field.value = 3
+
+                self.assertEqual(1, mock_build.call_count)
+                self.assertEqual(call(3), mock_build.call_args)
+
+            self.assertEqual(1, mock_from_field.call_count)
+            self.assertEqual(call(field), mock_from_field.call_args)
+
+        self.assertEqual(56, field.value)
+
+    def test_value(self):
+        with patch("minos.common.AvroDataDecoder.build", return_value=56) as mock:
+            field = Field("test", int, 3)
+            self.assertEqual(1, mock.call_count)
+            self.assertEqual(call(3), mock.call_args)
+
+        self.assertEqual(56, field.value)
+
+    def test_value_setter_update(self):
+        field = Field("test", Optional[int], 3)
         self.assertEqual(3, field.value)
-
-    def test_value_float(self):
-        field = Field("test", float, 3.14)
-        self.assertEqual(3.14, field.value)
-
-    def test_value_bytes(self):
-        field = Field("test", bytes, bytes("foo", "utf-8"))
-        self.assertEqual(bytes("foo", "utf-8"), field.value)
-
-    def test_value_date(self):
-        value = date(2021, 1, 21)
-        field = Field("test", date, value)
-        self.assertEqual(value, field.value)
-
-    def test_value_date_int(self):
-        field = Field("test", date, 18648)
-        self.assertEqual(date(2021, 1, 21), field.value)
-
-    def test_value_date_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", date, "2342342")
-
-    def test_value_time(self):
-        value = time(20, 45, 21)
-        field = Field("test", time, value)
-        self.assertEqual(value, field.value)
-
-    def test_value_time_int(self):
-        field = Field("test", time, 74721000000)
-        self.assertEqual(time(20, 45, 21), field.value)
-
-    def test_value_time_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", time, "2342342")
-
-    def test_value_datetime(self):
-        value = datetime.now()
-        field = Field("test", datetime, value)
-        self.assertEqual(value, field.value)
-
-    def test_value_datetime_int(self):
-        field = Field("test", datetime, 1615584741000000)
-        self.assertEqual(datetime(2021, 3, 12, 21, 32, 21), field.value)
-
-    def test_value_datetime_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", datetime, "2342342")
-
-    def test_value_float_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", float, [3])
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", float, "foo")
-
-    def test_value_bytes_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", bytes, 3)
-
-    def test_value_list_int(self):
-        field = Field("test", list[int], [1, 2, 3])
-        self.assertEqual([1, 2, 3], field.value)
-
-    def test_value_list_str(self):
-        field = Field("test", list[str], ["foo", "bar", "foobar"])
-        self.assertEqual(["foo", "bar", "foobar"], field.value)
-
-    def test_value_list_model(self):
-        field = Field("test", list[User], [User(123), User(456)])
-        self.assertEqual([User(123), User(456)], field.value)
-
-    async def test_value_list_model_ref(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
-            field = Field(
-                "test",
-                list[ModelRef[Owner]],
-                [1, 2, Owner("Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)],
-            )
-            self.assertEqual(
-                [1, 2, Owner("Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)],
-                field.value,
-            )
-
-    def test_value_uuid(self):
-        value = uuid4()
-        field = Field("test", UUID, value)
-        self.assertEqual(value, field.value)
-
-    def test_value_uuid_str(self):
-        value = uuid4()
-        field = Field("test", UUID, str(value))
-        self.assertEqual(value, field.value)
-
-    def test_value_uuid_bytes(self):
-        value = uuid4()
-        field = Field("test", UUID, value.bytes)
-        self.assertEqual(value, field.value)
-
-    def test_value_uuid_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", UUID, "foo")
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", UUID, bytes())
+        field.value = None
+        self.assertEqual(None, field.value)
+        field.value = 4
+        self.assertEqual(4, field.value)
 
     def test_avro_schema_int(self):
         field = Field("test", int, 1)
@@ -282,127 +206,12 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         field = Field("test", UUID, value)
         self.assertEqual(str(value), field.avro_data)
 
-    def test_value_list_optional(self):
-        field = Field("test", list[Optional[int]], [1, None, 3, 4])
-        self.assertEqual([1, None, 3, 4], field.value)
-
-    def test_value_list_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", list[int], 3)
-
-    def test_value_dict(self):
-        field = Field("test", dict[str, bool], {"foo": True, "bar": False})
-        self.assertEqual({"foo": True, "bar": False}, field.value)
-
-    def test_value_dict_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", dict[str, int], 3)
-
-    def test_dict_keys_raises(self):
-        with self.assertRaises(MinosMalformedAttributeException):
-            Field("test", dict[int, int], {1: 2, 3: 4})
-
-    def test_value_model(self):
-        user = User(1234)
-        field = Field("test", User, user)
-        self.assertEqual(user, field.value)
-
-    async def test_value_model_ref_value(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
-            user = Owner("Foo", "Bar", _broker=broker, _repository=repository, _snapshot=snapshot)
-            field = Field("test", ModelRef[Owner], user)
-            self.assertEqual(user, field.value)
-
-    def test_value_model_ref_reference(self):
-        field = Field("test", ModelRef[Owner], 1234)
-        self.assertEqual(1234, field.value)
-
-    def test_value_model_raises(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", User, "foo")
-
-    def test_value_model_ref_raises(self):
-        with self.assertRaises(MinosMalformedAttributeException):
-            Field("test", ModelRef[User], User(1234))
-
-    def test_value_model_optional(self):
-        field = Field("test", Optional[User], None)
-        self.assertIsNone(field.value)
-
-        user = User(1234)
-        field.value = user
-        self.assertEqual(user, field.value)
-
-    def test_value_unsupported(self):
-        with self.assertRaises(MinosTypeAttributeException):
-            Field("test", set[int], {3})
-
-    def test_value_setter(self):
-        field = Field("test", int, 3)
-        field.value = 3
-        self.assertEqual(3, field.value)
-
-    def test_value_setter_raises(self):
-        field = Field("test", int, 3)
-        with self.assertRaises(MinosReqAttributeException):
-            field.value = None
-
-    def test_value_setter_list_raises_required(self):
-        with self.assertRaises(MinosReqAttributeException):
-            Field("test", list[int])
-
-    def test_value_setter_union_raises_required(self):
-        with self.assertRaises(MinosReqAttributeException):
-            Field("test", Union[int, str])
-
-    def test_value_setter_dict(self):
-        field = Field("test", dict[str, bool], {})
-        field.value = {"foo": True, "bar": False}
-        self.assertEqual({"foo": True, "bar": False}, field.value)
-
-    def test_value_setter_dict_raises(self):
-        field = Field("test", dict[str, bool], {})
-        with self.assertRaises(MinosTypeAttributeException):
-            field.value = "foo"
-        with self.assertRaises(MinosTypeAttributeException):
-            field.value = {"foo": 1, "bar": 2}
-        with self.assertRaises(MinosTypeAttributeException):
-            field.value = {1: True, 2: False}
-
-    def test_empty_value_raises(self):
-        with self.assertRaises(MinosReqAttributeException):
-            Field("id", int)
-
-    def test_union_type(self):
-        with self.assertRaises(MinosReqAttributeException):
-            Field("test", Union[int, list[int]], None)
-
     def test_optional_type(self):
         field = Field("test", Optional[int])
         self.assertEqual(Optional[int], field.type)
 
-    def test_empty_optional_value(self):
-        field = Field("test", Optional[int])
-        self.assertEqual(None, field.value)
-
     def test_empty_field_equality(self):
         self.assertEqual(Field("test", Optional[int], None), Field("test", Optional[int]))
-
-    def test_value_setter_optional_int(self):
-        field = Field("test", Optional[int], 3)
-        self.assertEqual(3, field.value)
-        field.value = None
-        self.assertEqual(None, field.value)
-        field.value = 4
-        self.assertEqual(4, field.value)
-
-    def test_value_setter_optional_list(self):
-        field = Field("test", Optional[list[int]], [1, 2, 3])
-        self.assertEqual([1, 2, 3], field.value)
-        field.value = None
-        self.assertEqual(None, field.value)
-        field.value = [4]
-        self.assertEqual([4], field.value)
 
     def test_parser(self):
         field = Field("test", str, "foo", str.title)
