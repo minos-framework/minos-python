@@ -26,13 +26,11 @@ from uuid import (
 
 from minos.common import (
     AvroDataDecoder,
+    AvroDataEncoder,
     AvroSchemaEncoder,
     Field,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
-)
-from tests.model_classes import (
-    User,
 )
 
 
@@ -92,40 +90,20 @@ class TestField(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(1, mock_from_field.call_count)
             self.assertEqual(call(field), mock_from_field.call_args)
 
-    def test_avro_data_float(self):
-        field = Field("test", float, 3.14159265359)
-        self.assertEqual(3.14159265359, field.avro_data)
+    def test_avro_data(self):
+        field = Field("test", int, 1)
 
-    def test_avro_data_list_model(self):
-        field = Field("test", list[Optional[User]], [User(123), User(456)])
-        expected = [{"id": 123, "username": None}, {"id": 456, "username": None}]
-        self.assertEqual(expected, field.avro_data)
+        with patch(
+            "minos.common.AvroDataEncoder.from_field", side_effect=AvroDataEncoder.from_field
+        ) as mock_from_field:
+            with patch("minos.common.AvroDataEncoder.build", return_value=56) as mock_build:
+                self.assertEqual(56, field.avro_data)
 
-    def test_avro_data_dict(self):
-        field = Field("test", dict[str, int], {"foo": 1, "bar": 2})
-        self.assertEqual({"bar": 2, "foo": 1}, field.avro_data)
+                self.assertEqual(1, mock_build.call_count)
+                self.assertEqual(call(), mock_build.call_args)
 
-    def test_avro_data_bytes(self):
-        field = Field("test", bytes, bytes("foo", "utf-8"))
-        self.assertEqual(b"foo", field.avro_data)
-
-    def test_avro_data_date(self):
-        field = Field("test", date, date(2021, 1, 21))
-        self.assertEqual(18648, field.avro_data)
-
-    def test_avro_data_time(self):
-        field = Field("test", time, time(20, 45, 21))
-        self.assertEqual(74721000000, field.avro_data)
-
-    def test_avro_data_datetime(self):
-        value = datetime(2021, 3, 12, 21, 32, 21)
-        field = Field("test", datetime, value)
-        self.assertEqual(1615584741000000, field.avro_data)
-
-    def test_avro_data_uuid(self):
-        value = uuid4()
-        field = Field("test", UUID, value)
-        self.assertEqual(str(value), field.avro_data)
+            self.assertEqual(1, mock_from_field.call_count)
+            self.assertEqual(call(field), mock_from_field.call_args)
 
     def test_optional_type(self):
         field = Field("test", Optional[int])
