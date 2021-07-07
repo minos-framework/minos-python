@@ -50,11 +50,11 @@ class TypeHintBuilder(Generic[T]):
             return Union[type_hints]
 
         if isinstance(value, list):
-            b1 = None if base is None else get_args(base)[0]
+            b1 = None if (base is None or len(get_args(base)) != 1) else get_args(base)[0]
             return list[self._build_from_iterable(value, b1)]
 
         if isinstance(value, dict):
-            b1, b2 = (None, None) if base is None else get_args(base)
+            b1, b2 = (None, None) if (base is None or len(get_args(base)) != 2) else get_args(base)
             return dict[self._build_from_iterable(value.keys(), b1), self._build_from_iterable(value.values(), b2)]
 
         if hasattr(value, "model_type"):

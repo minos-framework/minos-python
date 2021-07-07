@@ -42,6 +42,9 @@ from ..types import (
     ModelRef,
     ModelType,
 )
+from .type_hint_builder import (
+    TypeHintBuilder,
+)
 from .utils import (
     _is_aggregate_cls,
     _is_model_cls,
@@ -81,7 +84,7 @@ class AvroDataDecoder:
 
     def _cast_value(self, type_field: Type, data: Any) -> Any:
         if type_field is Any:
-            type_field = type(data)
+            type_field = TypeHintBuilder(data).build()
         origin = get_origin(type_field)
         if origin is not Union:
             return self._cast_single_value(type_field, data)
