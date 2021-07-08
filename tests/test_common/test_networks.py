@@ -22,12 +22,7 @@ class TestMinosBroker(unittest.IsolatedAsyncioTestCase):
     async def test_send(self):
         await self.broker.send([Foo("red"), Foo("red")])
         self.assertEqual(1, self.broker.call_count)
-        self.assertEqual({"items": [Foo("red"), Foo("red")]}, self.broker.call_kwargs)
-
-    async def test_send_one(self):
-        await self.broker.send_one(Foo("red"))
-        self.assertEqual(1, self.broker.call_count)
-        self.assertEqual({"items": [Foo("red")]}, self.broker.call_kwargs)
+        self.assertEqual({"data": [Foo("red"), Foo("red")]}, self.broker.call_kwargs)
 
 
 if __name__ == "__main__":
