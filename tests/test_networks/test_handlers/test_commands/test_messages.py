@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     Command,
@@ -22,13 +25,14 @@ from tests.utils import (
 class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.models = [FakeModel("foo"), FakeModel("bar")]
-        self.command = Command("FooCreated", self.models, "12345678", "AddOrderReply")
+        self.saga = uuid4()
+        self.command = Command("FooCreated", self.models, self.saga, "AddOrderReply")
 
     def test_repr(self):
         request = CommandRequest(self.command)
         expected = (
-            "CommandRequest(Command(topic=FooCreated, items=[FakeModel(text=foo), FakeModel(text=bar)], "
-            "saga_uuid=12345678, reply_topic=AddOrderReply))"
+            "CommandRequest(Command(topic=FooCreated, data=[FakeModel(text=foo), FakeModel(text=bar)], "
+            f"saga={self.saga!s}, reply_topic=AddOrderReply))"
         )
         self.assertEqual(expected, repr(request))
 
@@ -36,7 +40,7 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(CommandRequest(self.command), CommandRequest(self.command))
 
     def test_eq_false(self):
-        another = CommandRequest(Command("FooUpdated", self.models, "12345678", "AddOrderReply"))
+        another = CommandRequest(Command("FooUpdated", self.models, self.saga, "AddOrderReply"))
         self.assertNotEqual(CommandRequest(self.command), another)
 
     def test_command(self):
@@ -48,7 +52,7 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.models, await request.content())
 
     async def test_content_single(self):
-        request = CommandRequest(Command("FooCreated", [self.models[0]], "12345678", "AddOrderReply"))
+        request = CommandRequest(Command("FooCreated", self.models[0], self.saga, "AddOrderReply"))
         self.assertEqual(self.models[0], await request.content())
 
 

@@ -5,6 +5,9 @@ from datetime import (
 from unittest.mock import (
     AsyncMock,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     Command,
@@ -55,9 +58,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         super().setUp()
         self.broker = FakeBroker()
         self.handler = CommandHandler.from_config(config=self.config, broker=self.broker)
-        self.command = Command(
-            topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij", reply_topic="UpdateTicket"
-        )
+        self.command = Command("AddOrder", FakeModel("foo"), uuid4(), "UpdateTicket")
 
     def test_from_config(self):
         broker = FakeBroker()
@@ -101,7 +102,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(1, self.broker.call_count)
         self.assertEqual(["add_order"], self.broker.items)
         self.assertEqual("UpdateTicket", self.broker.topic)
-        self.assertEqual("43434jhij", self.broker.saga_uuid)
+        self.assertEqual(self.command.saga, self.broker.saga_uuid)
         self.assertEqual(None, self.broker.reply_topic)
         self.assertEqual(CommandStatus.SUCCESS, self.broker.status)
 

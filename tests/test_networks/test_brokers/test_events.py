@@ -21,7 +21,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeModel,
+    FAKE_AGGREGATE_DIFF,
 )
 
 
@@ -34,19 +34,18 @@ class TestEventBroker(PostgresAsyncTestCase):
     def test_action(self):
         self.assertEqual("event", EventBroker.ACTION)
 
-    async def test_send_one(self):
+    async def test_send(self):
         mock = AsyncMock(return_value=56)
-
         async with EventBroker.from_config(config=self.config) as broker:
             broker.send_bytes = mock
-            identifier = await broker.send_one(FakeModel("foo"), topic="fake")
+            identifier = await broker.send(FAKE_AGGREGATE_DIFF, topic="fake")
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(Event(topic="fake", items=[FakeModel("foo")]), Event.from_avro_bytes(args[1]))
+        self.assertEqual(Event("fake", FAKE_AGGREGATE_DIFF), Event.from_avro_bytes(args[1]))
 
 
 if __name__ == "__main__":

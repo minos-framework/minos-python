@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.1.2"
+minos-microservice-common = { git = "https://github.com/Clariteia/minos_microservice_common.git", rev="cf25e6733faa9ff24d89784b0d638acec84337f4" }
 aiokafka = "^0.7.0"
 aiomisc = "^14.0.3"
 aiopg = "^1.2.1"

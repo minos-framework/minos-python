@@ -9,6 +9,9 @@ import unittest
 from unittest.mock import (
     AsyncMock,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     Command,
@@ -35,24 +38,20 @@ class TestCommandBroker(PostgresAsyncTestCase):
     def test_action(self):
         self.assertEqual("command", CommandBroker.ACTION)
 
-    async def test_send_one(self):
+    async def test_send(self):
         mock = AsyncMock(return_value=56)
+        saga = uuid4()
 
         async with CommandBroker.from_config(config=self.config) as broker:
             broker.send_bytes = mock
-            identifier = await broker.send_one(
-                FakeModel("foo"), saga_uuid="9347839473kfslf", topic="fake", reply_topic="ekaf"
-            )
+            identifier = await broker.send(FakeModel("foo"), "fake", saga, "ekaf")
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(
-            Command(topic="fake", items=[FakeModel("foo")], saga_uuid="9347839473kfslf", reply_topic="ekaf"),
-            Command.from_avro_bytes(args[1]),
-        )
+        self.assertEqual(Command("fake", FakeModel("foo"), saga, "ekaf"), Command.from_avro_bytes(args[1]))
 
 
 if __name__ == "__main__":

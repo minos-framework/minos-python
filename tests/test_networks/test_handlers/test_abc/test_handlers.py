@@ -15,6 +15,9 @@ from collections import (
 from typing import (
     NoReturn,
 )
+from uuid import (
+    uuid4,
+)
 
 import aiopg
 
@@ -36,6 +39,7 @@ from tests.services.CommandTestService import (
 )
 from tests.utils import (
     BASE_PATH,
+    FAKE_AGGREGATE_DIFF,
 )
 
 
@@ -83,11 +87,8 @@ class TestHandler(PostgresAsyncTestCase):
         from minos.common import (
             Event,
         )
-        from tests.utils import (
-            FakeModel,
-        )
 
-        instance = Event(topic="AddOrder", items=[FakeModel("foo")])
+        instance = Event("AddOrder", FAKE_AGGREGATE_DIFF)
 
         async with self.handler:
             queue_id = await self._insert_one(instance)
@@ -102,7 +103,7 @@ class TestHandler(PostgresAsyncTestCase):
         )
 
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = Event(topic="DeleteOrder", items=[])
+        instance_2 = Event("DeleteOrder", FAKE_AGGREGATE_DIFF)
 
         async with self.handler:
             queue_id_1 = await self._insert_one(instance_1)
@@ -119,9 +120,9 @@ class TestHandler(PostgresAsyncTestCase):
             FakeModel,
         )
 
-        instance = Command(
-            topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij", reply_topic="UpdateTicket",
-        )
+        saga = uuid4()
+
+        instance = Command("AddOrder", [FakeModel("foo")], saga, "UpdateTicket")
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         async with self.handler:

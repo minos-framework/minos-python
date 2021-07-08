@@ -19,7 +19,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeModel,
+    FAKE_AGGREGATE_DIFF,
 )
 
 
@@ -53,7 +53,7 @@ class TestEventHandler(PostgresAsyncTestCase):
     async def test_dispatch_one(self):
         mock = AsyncMock()
         topic = "TicketAdded"
-        event = Event(topic, [FakeModel("foo")])
+        event = Event(topic, FAKE_AGGREGATE_DIFF)
         entry = HandlerEntry(1, topic, mock, 0, event, 1, datetime.now())
 
         async with EventHandler.from_config(config=self.config) as handler:

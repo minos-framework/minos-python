@@ -20,8 +20,11 @@ from typing import (
 )
 
 from minos.common import (
+    AggregateDiff,
     CommandReply,
     CommandStatus,
+    Field,
+    FieldsDiff,
     MinosBroker,
     MinosModel,
     MinosRepository,
@@ -30,6 +33,8 @@ from minos.common import (
 )
 
 BASE_PATH = Path(__file__).parent
+
+FAKE_AGGREGATE_DIFF = AggregateDiff(1, "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
 
 
 class FakeModel(MinosModel):
