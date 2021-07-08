@@ -41,12 +41,10 @@ from ..types import (
     ModelRef,
     ModelType,
     NoneType,
+    TypeHintBuilder,
     is_aggregate_subclass,
     is_model_subclass,
     is_type_subclass,
-)
-from .type_hint_builder import (
-    TypeHintBuilder,
 )
 
 if TYPE_CHECKING:
