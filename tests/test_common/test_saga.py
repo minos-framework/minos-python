@@ -11,6 +11,9 @@ from unittest.mock import (
     MagicMock,
     call,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     CommandReply,
@@ -42,7 +45,7 @@ class TestMinosSagaManager(unittest.IsolatedAsyncioTestCase):
         mock = MagicMock(side_effect=manager._load_and_run)
         manager._load_and_run = mock
 
-        reply = CommandReply("hello", [Foo("blue")], "saga_id8972348237", CommandStatus.SUCCESS)
+        reply = CommandReply("hello", [Foo("blue")], uuid4(), CommandStatus.SUCCESS)
 
         await manager.run(reply=reply, foo="bar")
 
