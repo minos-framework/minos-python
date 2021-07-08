@@ -56,12 +56,8 @@ class OnReplyExecutor(LocalExecutor):
         if operation is None:
             return context
 
-        value = reply.items
-        if len(value) == 1:
-            value = value[0]
-
         try:
-            response = await self.exec_operation(operation, value)
+            response = await self.exec_operation(operation, reply.data)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)
 

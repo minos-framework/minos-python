@@ -150,7 +150,7 @@ class SagaExecution(object):
                 f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
             )
         if self.status == SagaStatus.Errored:
-            if reply is None or UUID(reply.saga_uuid) != self.uuid:
+            if reply is None or reply.saga != self.uuid:
                 raise MinosSagaExecutionAlreadyExecutedException(
                     f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
                 )
