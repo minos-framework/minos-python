@@ -25,7 +25,6 @@ from minos.common import (
     Aggregate,
     CommandReply,
     MinosBroker,
-    MinosModel,
     MinosRepository,
     MinosSagaManager,
     MinosSnapshot,
@@ -64,10 +63,10 @@ class FakeBroker(MinosBroker):
         self.call_count = 0
         self.calls_kwargs = list()
 
-    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
+    async def send(self, data: Any, **kwargs) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
-        self.calls_kwargs.append({"items": items} | kwargs)
+        self.calls_kwargs.append({"data": data} | kwargs)
 
     @property
     def call_kwargs(self) -> Optional[dict[str, Any]]:

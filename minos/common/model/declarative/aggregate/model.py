@@ -176,7 +176,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
         instance.id, instance.version = entry.aggregate_id, entry.version
         diff.id, diff.version = entry.aggregate_id, entry.version
 
-        await instance._broker.send_one(diff, topic=f"{type(instance).__name__}Created")
+        await instance._broker.send(diff, topic=f"{type(instance).__name__}Created")
 
         return instance
 
@@ -205,7 +205,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
         self.id = entry.aggregate_id
         self.version = entry.version
 
-        await self._broker.send_one(diff, topic=f"{type(self).__name__}Updated")
+        await self._broker.send(diff, topic=f"{type(self).__name__}Updated")
 
         return self
 
@@ -258,7 +258,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
         """
         diff = AggregateDiff.from_deleted_aggregate(self)
         await self._repository.delete(diff)
-        await self._broker.send_one(diff, topic=f"{type(self).__name__}Deleted")
+        await self._broker.send(diff, topic=f"{type(self).__name__}Deleted")
 
     def diff(self, another: Aggregate) -> AggregateDiff:
         """Compute the difference with another aggregate.
