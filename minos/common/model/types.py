@@ -10,8 +10,6 @@ from __future__ import (
 )
 
 import dataclasses
-import datetime
-import uuid
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -37,13 +35,11 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 
+NoneType = type(None)
+
 
 class MissingSentinel(Generic[T]):
-    """
-    Class to detect when a field is not initialized
-    """
-
-    pass
+    """Class to detect when a field is not initialized."""
 
 
 @dataclasses.dataclass
@@ -233,62 +229,6 @@ class ModelType(type):
 
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
-
-
-BOOLEAN = "boolean"
-NULL = "null"
-INT = "int"
-FLOAT = "float"
-LONG = "long"
-DOUBLE = "double"
-BYTES = "bytes"
-STRING = "string"
-ARRAY = "array"
-ENUM = "enum"
-MAP = "map"
-FIXED = "fixed"
-DATE = "date"
-TIME_MILLIS = "time-millis"
-TIMESTAMP_MILLIS = "timestamp-millis"
-TIME_MICROS = "time-micros"
-TIMESTAMP_MICROS = "timestamp-micros"
-UUID = "uuid"
-DECIMAL = "decimal"
-
-DATE_TYPE = {"type": INT, "logicalType": DATE}
-TIME_TYPE = {"type": INT, "logicalType": TIME_MICROS}
-DATETIME_TYPE = {"type": LONG, "logicalType": TIMESTAMP_MICROS}
-UUID_TYPE = {"type": STRING, "logicalType": UUID}
-
-PYTHON_TYPE_TO_AVRO = {
-    bool: BOOLEAN,
-    type(None): NULL,
-    int: LONG,
-    float: DOUBLE,
-    bytes: BYTES,
-    str: STRING,
-    list: ARRAY,
-    tuple: ARRAY,
-    dict: MAP,
-    Fixed: {"type": FIXED},
-    Enum: {"type": ENUM},
-    datetime.date: DATE_TYPE,
-    datetime.time: TIME_TYPE,
-    datetime.datetime: DATETIME_TYPE,
-    uuid.uuid4: UUID_TYPE,
-}
-
-PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
-PYTHON_IMMUTABLE_TYPES_STR = (STRING, INT, BOOLEAN, FLOAT, DOUBLE, BYTES)
-PYTHON_LIST_TYPES = (list, tuple)
-PYTHON_ARRAY_TYPES = (dict,)
-PYTHON_NULL_TYPE = type(None)
-CUSTOM_TYPES = (
-    "Fixed",
-    "Enum",
-    "Decimal",
-    "ModelRef",
-)
 
 
 def is_model_subclass(type_field: Any) -> bool:

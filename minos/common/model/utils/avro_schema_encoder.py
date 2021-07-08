@@ -29,21 +29,25 @@ from uuid import (
 )
 
 from ..types import (
-    BOOLEAN,
-    BYTES,
-    DATE_TYPE,
-    DATETIME_TYPE,
-    DOUBLE,
-    INT,
-    NULL,
-    PYTHON_IMMUTABLE_TYPES,
-    STRING,
-    TIME_TYPE,
-    UUID_TYPE,
     ModelRef,
     ModelType,
+    NoneType,
     is_model_subclass,
     is_type_subclass,
+)
+from .constants import (
+    AVRO_ARRAY,
+    AVRO_BOOLEAN,
+    AVRO_BYTES,
+    AVRO_DATE,
+    AVRO_DOUBLE,
+    AVRO_INT,
+    AVRO_MAP,
+    AVRO_NULL,
+    AVRO_STRING,
+    AVRO_TIME,
+    AVRO_TIMESTAMP,
+    AVRO_UUID,
 )
 
 if TYPE_CHECKING:
@@ -97,23 +101,35 @@ class AvroSchemaEncoder:
 
     def _build_single_schema(self, type_field: Type) -> Any:
         if is_type_subclass(type_field):
-            if type_field is type(None):  # noqa: E721
-                return self._build_none_schema(type_field)
+            if type_field is NoneType:
+                return AVRO_NULL
 
-            if issubclass(type_field, PYTHON_IMMUTABLE_TYPES):
-                return self._build_simple_schema(type_field)
+            if issubclass(type_field, bool):
+                return AVRO_BOOLEAN
+
+            if issubclass(type_field, int):
+                return AVRO_INT
+
+            if issubclass(type_field, float):
+                return AVRO_DOUBLE
+
+            if issubclass(type_field, str):
+                return AVRO_STRING
+
+            if issubclass(type_field, bytes):
+                return AVRO_BYTES
 
             if issubclass(type_field, datetime):
-                return DATETIME_TYPE
+                return AVRO_TIMESTAMP
 
             if issubclass(type_field, date):
-                return DATE_TYPE
+                return AVRO_DATE
 
             if issubclass(type_field, time):
-                return TIME_TYPE
+                return AVRO_TIME
 
             if issubclass(type_field, UUID):
-                return UUID_TYPE
+                return AVRO_UUID
 
             if isinstance(type_field, ModelType):
                 return self._build_model_type_schema(type_field)
@@ -122,32 +138,6 @@ class AvroSchemaEncoder:
                 return self._build_model_schema(type_field)
 
         return self._build_composed_schema(type_field)
-
-    @staticmethod
-    def _build_none_schema(type_field: Type) -> Any:
-        if type_field is type(None):  # noqa: E721
-            return NULL
-
-        raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
-
-    @staticmethod
-    def _build_simple_schema(type_field: Type) -> Any:
-        if issubclass(type_field, bool):
-            return BOOLEAN
-
-        if issubclass(type_field, int):
-            return INT
-
-        if issubclass(type_field, float):
-            return DOUBLE
-
-        if issubclass(type_field, str):
-            return STRING
-
-        if issubclass(type_field, bytes):
-            return BYTES
-
-        raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
     def _build_model_type_schema(self, type_field: ModelType) -> Any:
         namespace = type_field.namespace
@@ -185,10 +175,10 @@ class AvroSchemaEncoder:
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
     def _build_list_schema(self, type_field: Type) -> dict[str, Any]:
-        return {"type": "array", "items": self._build_schema(get_args(type_field)[0])}
+        return {"type": AVRO_ARRAY, "items": self._build_schema(get_args(type_field)[0])}
 
     def _build_dict_schema(self, type_field: Type) -> dict[str, Any]:
-        return {"type": "map", "values": self._build_schema(get_args(type_field)[1])}
+        return {"type": AVRO_MAP, "values": self._build_schema(get_args(type_field)[1])}
 
     def _build_model_ref_schema(self, type_field: Type) -> Union[bool, Any]:
         return self._build_schema(Union[get_args(type_field)[0], int])

@@ -30,20 +30,24 @@ from ...exceptions import (
     MinosMalformedAttributeException,
 )
 from ..types import (
-    ARRAY,
-    BOOLEAN,
-    BYTES,
-    DATE_TYPE,
-    DATETIME_TYPE,
-    DOUBLE,
-    FLOAT,
-    INT,
-    MAP,
-    NULL,
-    STRING,
-    TIME_TYPE,
-    UUID_TYPE,
     ModelType,
+    NoneType,
+)
+from .constants import (
+    AVRO_ARRAY,
+    AVRO_BOOLEAN,
+    AVRO_BYTES,
+    AVRO_DATE,
+    AVRO_DOUBLE,
+    AVRO_FLOAT,
+    AVRO_INT,
+    AVRO_MAP,
+    AVRO_NULL,
+    AVRO_RECORD,
+    AVRO_STRING,
+    AVRO_TIME,
+    AVRO_TIMESTAMP,
+    AVRO_UUID,
 )
 
 logger = logging.getLogger(__name__)
@@ -80,24 +84,24 @@ class AvroSchemaDecoder:
     def _build_type_from_dict(self, schema: dict) -> Type[T]:
         if "logicalType" in schema:
             return self._build_logical_type(schema["logicalType"])
-        elif schema["type"] == ARRAY:
+        elif schema["type"] == AVRO_ARRAY:
             return self._build_list_type(schema["items"])
-        elif schema["type"] == MAP:
+        elif schema["type"] == AVRO_MAP:
             return self._build_dict_type(schema["values"])
-        elif schema["type"] == "record":
+        elif schema["type"] == AVRO_RECORD:
             return self._build_record_type(schema["name"], schema.get("namespace", None), schema["fields"])
         else:
             return self._build_type(schema["type"])
 
     @staticmethod
     def _build_logical_type(type_field: str) -> Type[T]:
-        if type_field == DATE_TYPE["logicalType"]:
+        if type_field == AVRO_DATE["logicalType"]:
             return date
-        if type_field == TIME_TYPE["logicalType"]:
+        if type_field == AVRO_TIME["logicalType"]:
             return time
-        if type_field == DATETIME_TYPE["logicalType"]:
+        if type_field == AVRO_TIMESTAMP["logicalType"]:
             return datetime
-        if type_field == UUID_TYPE["logicalType"]:
+        if type_field == AVRO_UUID["logicalType"]:
             return UUID
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_field!r}")
 
@@ -125,19 +129,19 @@ class AvroSchemaDecoder:
 
     @staticmethod
     def _build_simple_type(type_field: str) -> Type[T]:
-        if type_field == NULL:
-            return type(None)
-        if type_field == INT:
+        if type_field == AVRO_NULL:
+            return NoneType
+        if type_field == AVRO_INT:
             return int
-        if type_field == BOOLEAN:
+        if type_field == AVRO_BOOLEAN:
             return bool
-        if type_field == FLOAT:
+        if type_field == AVRO_FLOAT:
             return float
-        if type_field == DOUBLE:
+        if type_field == AVRO_DOUBLE:
             return float
-        if type_field == STRING:
+        if type_field == AVRO_STRING:
             return str
-        if type_field == BYTES:
+        if type_field == AVRO_BYTES:
             return bytes
 
         raise MinosMalformedAttributeException(f"Given field type is not supported: {type_field!r}")

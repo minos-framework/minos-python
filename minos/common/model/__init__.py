@@ -35,6 +35,7 @@ from .types import (
     MissingSentinel,
     ModelRef,
     ModelType,
+    NoneType,
 )
 from .utils import (
     AvroDataDecoder,
