@@ -100,6 +100,7 @@ from .model import (
     ModelField,
     ModelRef,
     ModelType,
+    NoneType,
     TypeHintBuilder,
     TypeHintComparator,
 )

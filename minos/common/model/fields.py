@@ -25,14 +25,14 @@ from ..exceptions import (
     MinosAttributeValidationException,
     MinosParseAttributeException,
 )
-from .types import (
-    MissingSentinel,
-)
-from .utils import (
+from .serializers import (
     AvroDataDecoder,
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
+)
+from .types import (
+    MissingSentinel,
     TypeHintBuilder,
     TypeHintComparator,
 )

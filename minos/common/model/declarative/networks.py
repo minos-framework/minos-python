@@ -13,6 +13,9 @@ from __future__ import (
 from enum import (
     IntEnum,
 )
+from uuid import (
+    UUID,
+)
 
 from ..abc import (
     Model,
@@ -27,7 +30,7 @@ class Command(DeclarativeModel):
 
     topic: str
     items: list[Model]
-    saga_uuid: str
+    saga: UUID
     reply_topic: str
 
 
@@ -36,7 +39,7 @@ class CommandReply(DeclarativeModel):
 
     topic: str
     items: list[Model]
-    saga_uuid: str
+    saga: UUID
     status: CommandStatus
 
 
