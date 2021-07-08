@@ -41,10 +41,12 @@ from ..protocol import (
     MinosAvroProtocol,
 )
 from .fields import (
+    Field,
+)
+from .serializers import (
     AvroDataDecoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
-    Field,
 )
 from .types import (
     ModelType,
