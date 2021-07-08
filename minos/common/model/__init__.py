@@ -28,6 +28,12 @@ from .fields import (
     Field,
     ModelField,
 )
+from .serializers import (
+    AvroDataDecoder,
+    AvroDataEncoder,
+    AvroSchemaDecoder,
+    AvroSchemaEncoder,
+)
 from .types import (
     Decimal,
     Enum,
@@ -38,10 +44,4 @@ from .types import (
     NoneType,
     TypeHintBuilder,
     TypeHintComparator,
-)
-from .utils import (
-    AvroDataDecoder,
-    AvroDataEncoder,
-    AvroSchemaDecoder,
-    AvroSchemaEncoder,
 )
