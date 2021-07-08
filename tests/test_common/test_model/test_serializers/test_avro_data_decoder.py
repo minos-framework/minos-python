@@ -13,6 +13,7 @@ from datetime import (
     time,
 )
 from typing import (
+    Any,
     Optional,
     Union,
 )
@@ -60,6 +61,15 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
     def test_model_type_raises(self):
         with self.assertRaises(MinosTypeAttributeException):
             AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build(3)
+
+    def test_any(self):
+        decoder = AvroDataDecoder("test", Any)
+        self.assertEqual(3, decoder.build(3))
+
+    def test_any_raises(self):
+        decoder = AvroDataDecoder("test", Any)
+        with self.assertRaises(MinosTypeAttributeException):
+            decoder.build({"one", "two"})
 
     def test_none(self):
         decoder = AvroDataDecoder("test", type(None))
@@ -217,6 +227,10 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         value = [1, None, 3, 4]
         observed = decoder.build(value)
         self.assertEqual(value, observed)
+
+    def test_list_any(self):
+        decoder = AvroDataDecoder("test", list[Any])
+        self.assertEqual([1, "hola", True], decoder.build([1, "hola", True]))
 
     def test_dict(self):
         decoder = AvroDataDecoder("test", dict[str, bool])
