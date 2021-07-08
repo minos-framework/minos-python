@@ -116,7 +116,7 @@ class ModelType(type):
         return any(condition(other) for condition in conditions)
 
     def _equal_with_model_type(cls, other: ModelType) -> bool:
-        from ..utils import (
+        from .comparators import (
             TypeHintComparator,
         )
 

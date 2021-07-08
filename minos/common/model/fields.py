@@ -27,14 +27,14 @@ from ..exceptions import (
 )
 from .types import (
     MissingSentinel,
+    TypeHintBuilder,
+    TypeHintComparator,
 )
 from .utils import (
     AvroDataDecoder,
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
-    TypeHintBuilder,
-    TypeHintComparator,
 )
 
 logger = logging.getLogger(__name__)

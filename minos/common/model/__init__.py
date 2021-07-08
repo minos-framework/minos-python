@@ -36,12 +36,12 @@ from .types import (
     ModelRef,
     ModelType,
     NoneType,
+    TypeHintBuilder,
+    TypeHintComparator,
 )
 from .utils import (
     AvroDataDecoder,
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
-    TypeHintBuilder,
-    TypeHintComparator,
 )
