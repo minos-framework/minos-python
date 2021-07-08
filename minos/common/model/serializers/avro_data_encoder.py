@@ -28,9 +28,6 @@ from uuid import (
 from ...exceptions import (
     MinosMalformedAttributeException,
 )
-from ..types import (
-    PYTHON_IMMUTABLE_TYPES,
-)
 
 if TYPE_CHECKING:
     from ..fields import Field  # pragma: no cover
@@ -65,7 +62,7 @@ class AvroDataEncoder:
         if value is None:
             return None
 
-        if isinstance(value, PYTHON_IMMUTABLE_TYPES):
+        if isinstance(value, (str, int, bool, float, bytes)):
             return value
 
         if isinstance(value, datetime):

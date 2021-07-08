@@ -37,16 +37,14 @@ from ...exceptions import (
     MinosTypeAttributeException,
 )
 from ..types import (
-    PYTHON_IMMUTABLE_TYPES,
     MissingSentinel,
     ModelRef,
     ModelType,
+    NoneType,
+    TypeHintBuilder,
     is_aggregate_subclass,
     is_model_subclass,
     is_type_subclass,
-)
-from .type_hint_builder import (
-    TypeHintBuilder,
 )
 
 if TYPE_CHECKING:
@@ -98,7 +96,7 @@ class AvroDataDecoder:
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
-        if type_field is not type(None):  # noqa: E721
+        if type_field is not NoneType:
             if data is None:
                 raise MinosReqAttributeException(f"{self._name!r} field is {None!r}.")
 
@@ -108,7 +106,7 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
-        if type_field is type(None):  # noqa: E721
+        if type_field is NoneType:
             return self._cast_none_value(type_field, data)
 
         if data is None:
@@ -118,9 +116,20 @@ class AvroDataDecoder:
             raise MinosReqAttributeException(f"{self._name!r} field is missing.")
 
         if is_type_subclass(type_field):
+            if issubclass(type_field, bool):
+                return self._cast_bool(data)
 
-            if issubclass(type_field, PYTHON_IMMUTABLE_TYPES):
-                return self._cast_simple_value(type_field, data)
+            if issubclass(type_field, int):
+                return self._cast_int(type_field, data)
+
+            if issubclass(type_field, float):
+                return self._cast_float(data)
+
+            if issubclass(type_field, str):
+                return self._cast_string(data)
+
+            if issubclass(type_field, bytes):
+                return self._cast_bytes(data)
 
             if issubclass(type_field, datetime):
                 return self._cast_datetime(data)
@@ -147,24 +156,6 @@ class AvroDataDecoder:
             return None
 
         raise MinosTypeAttributeException(self._name, type_field, data)
-
-    def _cast_simple_value(self, type_field: Type, data: Any) -> Any:
-        if issubclass(type_field, bool):
-            return self._cast_bool(data)
-
-        if issubclass(type_field, int):
-            return self._cast_int(type_field, data)
-
-        if issubclass(type_field, float):
-            return self._cast_float(data)
-
-        if issubclass(type_field, str):
-            return self._cast_string(data)
-
-        if issubclass(type_field, bytes):
-            return self._cast_bytes(data)
-
-        raise MinosTypeAttributeException(self._name, type_field, data)  # pragma: no cover
 
     def _cast_int(self, type_field, data: Any) -> int:
         try:

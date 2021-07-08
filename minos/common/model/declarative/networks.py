@@ -16,6 +16,9 @@ from enum import (
 from typing import (
     Any,
 )
+from uuid import (
+    UUID,
+)
 
 from .abc import (
     DeclarativeModel,
@@ -27,7 +30,7 @@ class Command(DeclarativeModel):
 
     topic: str
     data: Any
-    saga_uuid: str
+    saga: UUID
     reply_topic: str
 
 
@@ -36,7 +39,7 @@ class CommandReply(DeclarativeModel):
 
     topic: str
     data: Any
-    saga_uuid: str
+    saga: UUID
     status: CommandStatus
 
 

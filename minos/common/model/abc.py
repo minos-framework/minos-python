@@ -43,13 +43,13 @@ from ..protocol import (
 from .fields import (
     Field,
 )
-from .types import (
-    ModelType,
-)
-from .utils import (
+from .serializers import (
     AvroDataDecoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
+)
+from .types import (
+    ModelType,
 )
 
 logger = logging.getLogger(__name__)

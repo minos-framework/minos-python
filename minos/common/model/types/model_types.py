@@ -9,13 +9,9 @@ from __future__ import (
     annotations,
 )
 
-import dataclasses
-import datetime
-import uuid
 from typing import (
     TYPE_CHECKING,
     Any,
-    Generic,
     Iterable,
     Optional,
     Type,
@@ -23,95 +19,19 @@ from typing import (
     Union,
 )
 
-from ..exceptions import (
+from ...exceptions import (
     MinosImportException,
 )
-from ..importlib import (
+from ...importlib import (
     import_module,
 )
 
 if TYPE_CHECKING:
-    from .abc import (
+    from ..abc import (
         Model,
     )
 
 T = TypeVar("T")
-
-
-class MissingSentinel(Generic[T]):
-    """
-    Class to detect when a field is not initialized
-    """
-
-    pass
-
-
-@dataclasses.dataclass
-class Fixed(Generic[T]):
-    """
-    Represents an Avro Fixed type
-    size (int): Specifying the number of bytes per value
-    """
-
-    size: int
-    default: Any = dataclasses.field(default=MissingSentinel)
-    namespace: Optional[str] = None
-    aliases: Optional[list[Any]] = None
-    _dataclasses_custom_type: str = "Fixed"
-
-    def __repr__(self) -> str:
-        return f"Fixed(size={self.size})"
-
-
-@dataclasses.dataclass
-class Enum(Generic[T]):
-    """
-    Represents an Avro Enum type
-    symbols (typing.List): Specifying the possible values for the enum
-    """
-
-    symbols: list[Any]
-    default: Any = dataclasses.field(default=MissingSentinel)
-    namespace: Optional[str] = None
-    aliases: Optional[list[Any]] = None
-    docs: Optional[str] = None
-    _dataclasses_custom_type: str = "Enum"
-
-    def __repr__(self) -> str:
-        return f"Enum(symbols={self.symbols})"
-
-
-@dataclasses.dataclass
-class Decimal(Generic[T]):
-    """
-    Represents an Avro Decimal type
-    precision (int): Specifying the number precision
-    scale(int): Specifying the number scale. Default 0
-    """
-
-    precision: int
-    scale: int = 0
-    default: Any = dataclasses.field(default=MissingSentinel)
-    _dataclasses_custom_type: str = "Decimal"
-
-    # Decimal serializes to bytes, which doesn't support namespace
-    aliases: Optional[list[Any]] = None
-
-    def __repr__(self) -> str:
-        return f"Decimal(precision={self.precision}, scale={self.scale})"
-
-
-@dataclasses.dataclass
-class ModelRef(Generic[T]):
-    """Represents an Avro Model Reference type."""
-
-    default: Any = dataclasses.field(default=MissingSentinel)
-    namespace: Optional[str] = None
-    aliases: Optional[list[Any]] = None
-    _dataclasses_custom_type: str = "ModelRef"
-
-    def __repr__(self) -> str:
-        return "ModelRef()"
 
 
 class ModelType(type):
@@ -161,7 +81,7 @@ class ModelType(type):
             # noinspection PyTypeChecker
             return import_module(cls.classname)
         except MinosImportException:
-            from .dynamic import (
+            from ..dynamic import (
                 DataTransferObject,
             )
 
@@ -196,7 +116,7 @@ class ModelType(type):
         return any(condition(other) for condition in conditions)
 
     def _equal_with_model_type(cls, other: ModelType) -> bool:
-        from .utils import (
+        from .comparators import (
             TypeHintComparator,
         )
 
@@ -218,7 +138,7 @@ class ModelType(type):
 
     @staticmethod
     def _equal_with_bucket_model(other: Any) -> bool:
-        from .dynamic import (
+        from ..dynamic import (
             BucketModel,
         )
 
@@ -233,82 +153,3 @@ class ModelType(type):
 
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
-
-
-BOOLEAN = "boolean"
-NULL = "null"
-INT = "int"
-FLOAT = "float"
-LONG = "long"
-DOUBLE = "double"
-BYTES = "bytes"
-STRING = "string"
-ARRAY = "array"
-ENUM = "enum"
-MAP = "map"
-FIXED = "fixed"
-DATE = "date"
-TIME_MILLIS = "time-millis"
-TIMESTAMP_MILLIS = "timestamp-millis"
-TIME_MICROS = "time-micros"
-TIMESTAMP_MICROS = "timestamp-micros"
-UUID = "uuid"
-DECIMAL = "decimal"
-
-DATE_TYPE = {"type": INT, "logicalType": DATE}
-TIME_TYPE = {"type": INT, "logicalType": TIME_MICROS}
-DATETIME_TYPE = {"type": LONG, "logicalType": TIMESTAMP_MICROS}
-UUID_TYPE = {"type": STRING, "logicalType": UUID}
-
-PYTHON_TYPE_TO_AVRO = {
-    bool: BOOLEAN,
-    type(None): NULL,
-    int: LONG,
-    float: DOUBLE,
-    bytes: BYTES,
-    str: STRING,
-    list: ARRAY,
-    tuple: ARRAY,
-    dict: MAP,
-    Fixed: {"type": FIXED},
-    Enum: {"type": ENUM},
-    datetime.date: DATE_TYPE,
-    datetime.time: TIME_TYPE,
-    datetime.datetime: DATETIME_TYPE,
-    uuid.uuid4: UUID_TYPE,
-}
-
-PYTHON_IMMUTABLE_TYPES = (str, int, bool, float, bytes)
-PYTHON_IMMUTABLE_TYPES_STR = (STRING, INT, BOOLEAN, FLOAT, DOUBLE, BYTES)
-PYTHON_LIST_TYPES = (list, tuple)
-PYTHON_ARRAY_TYPES = (dict,)
-PYTHON_NULL_TYPE = type(None)
-CUSTOM_TYPES = (
-    "Fixed",
-    "Enum",
-    "Decimal",
-    "ModelRef",
-)
-
-
-def is_model_subclass(type_field: Any) -> bool:
-    """Check if the given type field is subclass of ``Model``."""
-    from .abc import (
-        Model,
-    )
-
-    return issubclass(type_field, Model)
-
-
-def is_aggregate_subclass(type_field: Any) -> bool:
-    """Check if the given type field is subclass of ``Aggregate``."""
-    from .declarative import (
-        Aggregate,
-    )
-
-    return issubclass(type_field, Aggregate)
-
-
-def is_type_subclass(type_field: Any) -> bool:
-    """Check if the given type field is subclass of ``type``."""
-    return issubclass(type(type_field), type(type))
