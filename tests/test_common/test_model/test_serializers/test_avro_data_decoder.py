@@ -40,6 +40,9 @@ from tests.aggregate_classes import (
 from tests.model_classes import (
     User,
 )
+from tests.subaggregate_classes import (
+    CartItem,
+)
 from tests.utils import (
     FakeBroker,
     FakeRepository,
@@ -208,6 +211,13 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         decoder = AvroDataDecoder("test", list[ModelRef[Owner]])
         async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
             value = [uuid4(), Owner("Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)]
+            observed = decoder.build(value)
+            self.assertEqual(value, observed)
+
+    async def test_list_model_subaggregate_ref(self):
+        decoder = AvroDataDecoder("test", list[ModelRef[CartItem]])
+        async with FakeBroker():
+            value = [uuid4(), CartItem("Foo", 56)]
             observed = decoder.build(value)
             self.assertEqual(value, observed)
 

@@ -19,6 +19,9 @@ from .networks import (
     CommandStatus,
     Event,
 )
+from .subaggregate import (
+    SubAggregate,
+)
 from .value_object import (
     ValueObject,
 )
