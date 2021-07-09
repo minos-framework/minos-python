@@ -37,9 +37,9 @@ class CommandBroker(Broker):
 
     # noinspection PyMethodOverriding
     async def send(self, data: Any, topic: str, saga: str, reply_topic: str, **kwargs) -> int:
-        """Send a list of ``Aggregate`` instances.
+        """Send a ``Command``.
 
-        :param data: A list of aggregates.
+        :param data: The data to be send.
         :param topic: Topic in which the message will be published.
         :param saga: Saga identifier.
         :param reply_topic: Topic name in which the reply will be published.

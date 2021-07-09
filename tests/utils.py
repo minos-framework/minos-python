@@ -151,7 +151,7 @@ class FakeRepository(MinosRepository):
         self.items.append(entry)
         entry.id = self.id_counter
         entry.version += 1
-        entry.aggregate_id = 9999
+        entry.aggregate_uuid = 9999
         entry.created_at = datetime.now()
 
         return entry

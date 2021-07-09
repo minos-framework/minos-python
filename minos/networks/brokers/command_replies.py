@@ -41,9 +41,9 @@ class CommandReplyBroker(Broker):
 
     # noinspection PyMethodOverriding
     async def send(self, data: Any, topic: str, saga: UUID, status: CommandStatus, **kwargs) -> int:
-        """Send a list of ``Aggregate`` instances.
+        """Send a ``CommandReply``.
 
-        :param data: A list of aggregates.
+        :param data: The data to be send.
         :param topic: Topic in which the message will be published.
         :param saga: Saga identifier.
         :param status: Command status.
