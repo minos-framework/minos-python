@@ -81,6 +81,7 @@ from .meta import (
 )
 from .model import (
     Aggregate,
+    SubAggregate,
     AggregateDiff,
     AvroDataDecoder,
     AvroDataEncoder,

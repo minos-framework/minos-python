@@ -13,6 +13,9 @@ from .aggregate import (
     Aggregate,
     AggregateDiff,
 )
+from .subaggregate import  (
+    SubAggregate,
+)
 from .networks import (
     Command,
     CommandReply,

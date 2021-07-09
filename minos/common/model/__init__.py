@@ -10,6 +10,7 @@ from .abc import (
 )
 from .declarative import (
     Aggregate,
+    SubAggregate,
     AggregateDiff,
     Command,
     CommandReply,
