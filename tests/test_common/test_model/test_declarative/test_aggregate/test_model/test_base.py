@@ -13,7 +13,7 @@ from uuid import (
 from minos.common import (
     InMemoryRepository,
     InMemorySnapshot,
-    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
@@ -38,7 +38,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
     async def test_create_raises(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
-            with self.assertRaises(MinosRepositoryManuallySetAggregateIdException):
+            with self.assertRaises(MinosRepositoryManuallySetAggregateIdentifierException):
                 await Car.create(uuid=uuid4(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
                 await Car.create(version=1, doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
@@ -135,7 +135,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
     async def test_save_raises(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
-            with self.assertRaises(MinosRepositoryManuallySetAggregateIdException):
+            with self.assertRaises(MinosRepositoryManuallySetAggregateIdentifierException):
                 await Car(3, "blue", uuid=uuid4(), _broker=b, _repository=r, _snapshot=s).save()
             with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
                 await Car(3, "blue", version=1, _broker=b, _repository=r, _snapshot=s).save()

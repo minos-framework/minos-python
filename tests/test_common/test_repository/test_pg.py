@@ -195,7 +195,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             observed = [v async for v in repository.select(id_ge=5)]
             self._assert_equal_entries(expected, observed)
 
-    async def test_select_aggregate_id(self):
+    async def test_select_aggregate_uuid(self):
         async with (await self._build_repository()) as repository:
             expected = [
                 RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.CREATE),

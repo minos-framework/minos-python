@@ -111,7 +111,7 @@ class TestInMemoryRepository(unittest.IsolatedAsyncioTestCase):
         ]
         self.assertEqual(expected, [v async for v in repository.select(id_ge=5)])
 
-    async def test_select_aggregate_id(self):
+    async def test_select_aggregate_uuid(self):
         repository = await self._build_repository()
         expected = [
             RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8"), 3, RepositoryAction.CREATE),

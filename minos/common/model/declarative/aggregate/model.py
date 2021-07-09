@@ -30,7 +30,7 @@ from ....constants import (
 )
 from ....exceptions import (
     MinosBrokerNotProvidedException,
-    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
@@ -163,7 +163,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :return: A new ``Aggregate`` instance.
         """
         if "uuid" in kwargs:
-            raise MinosRepositoryManuallySetAggregateIdException(
+            raise MinosRepositoryManuallySetAggregateIdentifierException(
                 f"The identifier must be computed internally on the repository. Obtained: {kwargs['uuid']}"
             )
 
@@ -225,7 +225,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
                     f"The version must be computed internally on the repository. Obtained: {self.version}"
                 )
             else:
-                raise MinosRepositoryManuallySetAggregateIdException(
+                raise MinosRepositoryManuallySetAggregateIdentifierException(
                     f"The uuid must be computed internally on the repository. Obtained: {self.uuid}"
                 )
 
