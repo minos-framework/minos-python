@@ -19,6 +19,7 @@ from typing import (
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from minos.common import (
@@ -47,7 +48,7 @@ class FakeRepository(MinosRepository):
         self.id_counter += 1
         entry.id = self.id_counter
         entry.version += 1
-        entry.aggregate_uuid = 9999
+        entry.aggregate_uuid = uuid4()
         entry.created_at = datetime.now()
         return entry
 
