@@ -18,6 +18,9 @@ from typing import (
     AsyncIterator,
     NoReturn,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     AggregateDiff,
@@ -34,7 +37,7 @@ from minos.common import (
 
 BASE_PATH = Path(__file__).parent
 
-FAKE_AGGREGATE_DIFF = AggregateDiff(1, "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
+FAKE_AGGREGATE_DIFF = AggregateDiff(uuid4(), "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
 
 
 class FakeModel(MinosModel):
