@@ -37,12 +37,14 @@ from .exceptions import (
     MinosBrokerNotProvidedException,
     MinosConfigException,
     MinosException,
+    MinosImmutableClassException,
     MinosImportException,
     MinosMalformedAttributeException,
     MinosMessageException,
     MinosModelAttributeException,
     MinosModelException,
     MinosParseAttributeException,
+    MinosPreviousVersionSnapshotException,
     MinosProtocolException,
     MinosRepositoryException,
     MinosRepositoryManuallySetAggregateIdentifierException,
@@ -106,6 +108,7 @@ from .model import (
     NoneType,
     TypeHintBuilder,
     TypeHintComparator,
+    ValueObject,
 )
 from .networks import (
     MinosBroker,

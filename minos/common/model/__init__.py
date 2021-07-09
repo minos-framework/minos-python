@@ -17,6 +17,7 @@ from .declarative import (
     DeclarativeModel,
     Event,
     MinosModel,
+    ValueObject,
 )
 from .dynamic import (
     BucketModel,

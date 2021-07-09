@@ -2,7 +2,7 @@ from unittest import (
     TestCase,
 )
 
-from minos.common.exceptions import (
+from minos.common import (
     MinosImmutableClassException,
 )
 from tests.value_objects import (

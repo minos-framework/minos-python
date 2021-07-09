@@ -11,15 +11,13 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     InMemoryRepository,
     InMemorySnapshot,
     MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
-)
-from minos.common.model.declarative.aggregate.model import (
-    NULL_UUID,
 )
 from tests.aggregate_classes import (
     Car,

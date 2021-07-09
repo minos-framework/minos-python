@@ -1,4 +1,4 @@
-from minos.common.model.declarative import (
+from minos.common import (
     ValueObject,
 )
 
