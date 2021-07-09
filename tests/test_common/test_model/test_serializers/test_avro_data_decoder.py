@@ -34,16 +34,12 @@ from minos.common import (
     ModelRef,
     ModelType,
 )
-from tests.aggregate_classes import (
-    Owner,
-)
+from tests.aggregate_classes import Owner
 from tests.subaggregate_classes import (
     Cart,
     CartItem,
 )
-from tests.model_classes import (
-    User,
-)
+from tests.model_classes import User
 from tests.utils import (
     FakeBroker,
     FakeRepository,

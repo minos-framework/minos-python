@@ -5,9 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
 from datetime import (
@@ -27,9 +25,7 @@ from typing import (
     get_args,
     get_origin,
 )
-from uuid import (
-    UUID,
-)
+from uuid import UUID
 
 from ...exceptions import (
     MinosMalformedAttributeException,
@@ -49,9 +45,7 @@ from ..types import (
 )
 
 if TYPE_CHECKING:
-    from ..fields import (
-        Field,
-    )
+    from ..fields import Field
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -276,7 +270,9 @@ class AvroDataDecoder:
 
     def _convert_model_ref(self, data: Any, type_field: Type) -> Any:
         inner_type = get_args(type_field)[0]
-        if not (is_type_subclass(inner_type) and (is_aggregate_subclass(inner_type) or is_subaggregate_subclass(inner_type))):
+        if not (
+            is_type_subclass(inner_type) and (is_aggregate_subclass(inner_type) or is_subaggregate_subclass(inner_type))
+        ):
             raise MinosMalformedAttributeException(
                 f"'ModelRef[T]' T type must be a descendant of 'Aggregate'. Obtained: {inner_type!r}"
             )

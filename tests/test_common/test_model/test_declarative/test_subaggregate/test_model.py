@@ -6,27 +6,17 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from uuid import (
-    uuid4,
-)
+from uuid import uuid4
 
 from minos.common import (
     InMemoryRepository,
     InMemorySnapshot,
     SubAggregate,
 )
-from minos.common.model.declarative.aggregate.model import (
-    NULL_UUID,
-)
-from tests.aggregate_classes import (
-    Car,
-)
-from tests.utils import (
-    FakeBroker,
-)
-from uuid import (
-    UUID,
-)
+from minos.common.model.declarative.aggregate.model import NULL_UUID
+from tests.aggregate_classes import Car
+from tests.utils import FakeBroker
+from uuid import UUID
 
 
 class Product(SubAggregate):

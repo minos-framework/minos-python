@@ -13,15 +13,11 @@ from .aggregate import (
     Aggregate,
     AggregateDiff,
 )
-from .subaggregate import  (
-    SubAggregate,
-)
+from .subaggregate import SubAggregate
 from .networks import (
     Command,
     CommandReply,
     CommandStatus,
     Event,
 )
-from .value_object import (
-    ValueObject,
-)
+from .value_object import ValueObject
