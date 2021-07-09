@@ -46,6 +46,15 @@ def is_aggregate_subclass(type_field: Any) -> bool:
     return issubclass(type_field, Aggregate)
 
 
+def is_subaggregate_subclass(type_field: Any) -> bool:
+    """Check if the given type field is subclass of ``SubAggregate``."""
+    from ..declarative import (
+        SubAggregate,
+    )
+
+    return issubclass(type_field, SubAggregate)
+
+
 def is_type_subclass(type_field: Any) -> bool:
     """Check if the given type field is subclass of ``type``."""
     return issubclass(type(type_field), type(type))

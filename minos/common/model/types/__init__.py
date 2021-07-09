@@ -11,6 +11,7 @@ from .builders import (
 from .comparators import (
     TypeHintComparator,
     is_aggregate_subclass,
+    is_subaggregate_subclass,
     is_model_subclass,
     is_type_subclass,
 )
