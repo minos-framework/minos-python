@@ -41,7 +41,6 @@ from tests.model_classes import (
     User,
 )
 from tests.subaggregate_classes import (
-    Cart,
     CartItem,
 )
 from tests.utils import (
