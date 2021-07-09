@@ -5,7 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import logging
 from typing import (
@@ -17,28 +19,38 @@ from typing import (
     get_args,
     get_origin,
 )
-from uuid import UUID
+from uuid import (
+    UUID,
+)
 
-from .data_types import ModelRef
+from .data_types import (
+    ModelRef,
+)
 
 
 def is_model_subclass(type_field: Any) -> bool:
     """Check if the given type field is subclass of ``Model``."""
-    from ..abc import Model
+    from ..abc import (
+        Model,
+    )
 
     return issubclass(type_field, Model)
 
 
 def is_aggregate_subclass(type_field: Any) -> bool:
     """Check if the given type field is subclass of ``Aggregate``."""
-    from ..declarative import Aggregate
+    from ..declarative import (
+        Aggregate,
+    )
 
     return issubclass(type_field, Aggregate)
 
 
 def is_subaggregate_subclass(type_field: Any) -> bool:
     """Check if the given type field is subclass of ``SubAggregate``."""
-    from ..declarative import SubAggregate
+    from ..declarative import (
+        SubAggregate,
+    )
 
     return issubclass(type_field, SubAggregate)
 

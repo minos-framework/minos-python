@@ -5,10 +5,11 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from .abc import Model
+from .abc import (
+    Model,
+)
 from .declarative import (
     Aggregate,
-    SubAggregate,
     AggregateDiff,
     Command,
     CommandReply,
@@ -16,6 +17,7 @@ from .declarative import (
     DeclarativeModel,
     Event,
     MinosModel,
+    SubAggregate,
     ValueObject,
 )
 from .dynamic import (
