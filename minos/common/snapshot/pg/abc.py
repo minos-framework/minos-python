@@ -24,13 +24,13 @@ class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
 
 _CREATE_TABLE_QUERY = """
 CREATE TABLE IF NOT EXISTS snapshot (
-    aggregate_id BIGINT NOT NULL,
+    aggregate_uuid UUID NOT NULL,
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
     data BYTEA,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (aggregate_id, aggregate_name)
+    PRIMARY KEY (aggregate_uuid, aggregate_name)
 );
 """.strip()
 

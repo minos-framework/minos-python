@@ -10,8 +10,12 @@ import unittest
 from typing import (
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from minos.common import (
+    NULL_UUID,
     Field,
     FieldsDiff,
     ModelRef,
@@ -58,7 +62,7 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
 
     def test_from_difference_with_ignore(self):
         expected = FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "red")})
-        observed = FieldsDiff.from_difference(self.car_two, self.car_one, ignore=["id", "version"])
+        observed = FieldsDiff.from_difference(self.car_two, self.car_one, ignore=["uuid", "version"])
         self.assertEqual(expected, observed)
 
     def test_with_difference_not_hashable(self):
@@ -72,7 +76,7 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
     def test_from_model(self):
         expected = FieldsDiff(
             {
-                "id": Field("id", int, 1),
+                "uuid": Field("uuid", UUID, NULL_UUID),
                 "version": Field("version", int, 2),
                 "doors": Field("doors", int, 5),
                 "color": Field("color", str, "red"),
@@ -90,14 +94,14 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
                 "owner": Field("owner", Optional[list[ModelRef[Owner]]], None),
             }
         )
-        observed = FieldsDiff.from_model(self.car_two, ignore=["id", "version"])
+        observed = FieldsDiff.from_model(self.car_two, ignore=["uuid", "version"])
         self.assertEqual(expected, observed)
 
     def test_simplify(self):
         expected = FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")})
 
-        first = FieldsDiff.from_difference(self.car_two, self.car_one, ignore=["id", "version"])
-        second = FieldsDiff.from_difference(self.car_three, self.car_two, ignore=["id", "version"])
+        first = FieldsDiff.from_difference(self.car_two, self.car_one, ignore=["uuid", "version"])
+        second = FieldsDiff.from_difference(self.car_three, self.car_two, ignore=["uuid", "version"])
         observed = FieldsDiff.simplify(first, second)
 
         self.assertEqual(expected, observed)

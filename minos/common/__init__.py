@@ -24,6 +24,9 @@ from .configuration import (
     MinosConfig,
     MinosConfigAbstract,
 )
+from .constants import (
+    NULL_UUID,
+)
 from .database import (
     PostgreSqlMinosDatabase,
 )
@@ -42,7 +45,7 @@ from .exceptions import (
     MinosParseAttributeException,
     MinosProtocolException,
     MinosRepositoryException,
-    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,

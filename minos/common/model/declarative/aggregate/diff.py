@@ -16,6 +16,9 @@ from operator import (
 from typing import (
     TYPE_CHECKING,
 )
+from uuid import (
+    UUID,
+)
 
 from ...dynamic import (
     FieldsDiff,
@@ -35,7 +38,7 @@ logger = logging.getLogger(__name__)
 class AggregateDiff(DeclarativeModel):
     """Aggregate Difference class."""
 
-    id: int
+    uuid: UUID
     name: str
     version: int
     fields_diff: FieldsDiff
@@ -50,16 +53,17 @@ class AggregateDiff(DeclarativeModel):
         """
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
 
-        if a.id != b.id:
+        if a.uuid != b.uuid:
             raise ValueError(
-                f"To compute aggregate differences, both arguments must have same id. Obtained: {a.id!r} vs {b.id!r}"
+                f"To compute aggregate differences, both arguments must have same identifier. "
+                f"Obtained: {a.uuid!r} vs {b.uuid!r}"
             )
 
         old, new = sorted([a, b], key=attrgetter("version"))
 
-        fields_diff = FieldsDiff.from_difference(a, b, ignore=["id", "version"])
+        fields_diff = FieldsDiff.from_difference(a, b, ignore=["uuid", "version"])
 
-        return cls(new.id, new.classname, new.version, fields_diff)
+        return cls(new.uuid, new.classname, new.version, fields_diff)
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate) -> AggregateDiff:
@@ -69,8 +73,8 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
 
-        fields_diff = FieldsDiff.from_model(aggregate, ignore=["id", "version"])
-        return cls(aggregate.id, aggregate.classname, aggregate.version, fields_diff)
+        fields_diff = FieldsDiff.from_model(aggregate, ignore=["uuid", "version"])
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, fields_diff)
 
     @classmethod
     def from_deleted_aggregate(cls, aggregate: Aggregate) -> AggregateDiff:
@@ -79,7 +83,7 @@ class AggregateDiff(DeclarativeModel):
         :param aggregate: An ``Aggregate`` instance.
         :return: An ``AggregateDiff`` instance.
         """
-        return cls(aggregate.id, aggregate.classname, aggregate.version, FieldsDiff.empty())
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, FieldsDiff.empty())
 
     @classmethod
     def simplify(cls, *args: AggregateDiff) -> AggregateDiff:
@@ -95,4 +99,4 @@ class AggregateDiff(DeclarativeModel):
             # noinspection PyUnresolvedReferences
             current |= another.fields
 
-        return cls(args[-1].id, args[-1].name, args[-1].version, FieldsDiff(current))
+        return cls(args[-1].uuid, args[-1].name, args[-1].version, FieldsDiff(current))

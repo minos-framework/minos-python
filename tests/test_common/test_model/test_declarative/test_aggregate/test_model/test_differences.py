@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     AggregateDiff,
@@ -24,14 +27,17 @@ from tests.utils import (
 
 class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
-        async with FakeBroker() as broker, FakeRepository() as repository, FakeSnapshot() as snapshot:
-            self.initial = Car(3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
-            self.final = Car(5, "yellow", id=1, version=3, _broker=broker, _repository=repository, _snapshot=snapshot)
-            self.another = Car(3, "blue", id=3, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
+        self.uuid = uuid4()
+        self.uuid_another = uuid4()
+
+        async with FakeBroker() as b, FakeRepository() as r, FakeSnapshot() as s:
+            self.initial = Car(3, "blue", uuid=self.uuid, version=1, _broker=b, _repository=r, _snapshot=s)
+            self.final = Car(5, "yellow", uuid=self.uuid, version=3, _broker=b, _repository=r, _snapshot=s)
+            self.another = Car(3, "blue", uuid=self.uuid_another, version=1, _broker=b, _repository=r, _snapshot=s)
 
     def test_diff(self):
         expected = AggregateDiff(
-            id=1,
+            uuid=self.uuid,
             name=Car.classname,
             version=3,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
@@ -41,7 +47,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
 
     def test_apply_diff(self):
         diff = AggregateDiff(
-            id=1,
+            uuid=self.uuid,
             name=Car.classname,
             version=3,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
@@ -51,7 +57,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
 
     def test_apply_diff_raises(self):
         diff = AggregateDiff(
-            id=2,
+            uuid=self.uuid_another,
             name=Car.classname,
             version=3,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),

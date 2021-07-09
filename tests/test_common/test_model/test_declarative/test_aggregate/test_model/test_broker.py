@@ -29,13 +29,13 @@ from tests.utils import (
 
 class TestAggregate(unittest.IsolatedAsyncioTestCase):
     async def test_create(self):
-        async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
-            await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
+        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
+            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
             self.assertEqual(
                 [
                     {
                         "data": AggregateDiff(
-                            id=1,
+                            uuid=car.uuid,
                             name=Car.classname,
                             version=1,
                             fields_diff=FieldsDiff(
@@ -49,20 +49,20 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                         "topic": "CarCreated",
                     }
                 ],
-                broker.calls_kwargs,
+                b.calls_kwargs,
             )
 
     async def test_update(self):
-        async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
-            car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
-            broker.reset_mock()
+        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
+            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+            b.reset_mock()
 
             await car.update(color="red")
             self.assertEqual(
                 [
                     {
                         "data": AggregateDiff(
-                            id=1,
+                            uuid=car.uuid,
                             name=Car.classname,
                             version=1,
                             fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
@@ -70,23 +70,23 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                         "topic": "CarUpdated",
                     }
                 ],
-                broker.calls_kwargs,
+                b.calls_kwargs,
             )
 
     async def test_delete(self):
-        async with FakeBroker() as broker, InMemoryRepository() as repository, InMemorySnapshot() as snapshot:
-            car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
-            broker.reset_mock()
+        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
+            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+            b.reset_mock()
 
             await car.delete()
             self.assertEqual(
                 [
                     {
-                        "data": AggregateDiff(id=1, name=Car.classname, version=1, fields_diff=FieldsDiff.empty()),
+                        "data": AggregateDiff(car.uuid, name=Car.classname, version=1, fields_diff=FieldsDiff.empty()),
                         "topic": "CarDeleted",
                     }
                 ],
-                broker.calls_kwargs,
+                b.calls_kwargs,
             )
 
 

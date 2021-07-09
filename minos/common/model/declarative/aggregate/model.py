@@ -17,14 +17,20 @@ from typing import (
     Optional,
     TypeVar,
 )
+from uuid import (
+    UUID,
+)
 
 from dependency_injector.wiring import (
     Provide,
 )
 
+from ....constants import (
+    NULL_UUID,
+)
 from ....exceptions import (
     MinosBrokerNotProvidedException,
-    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
@@ -52,18 +58,17 @@ logger = logging.getLogger(__name__)
 class Aggregate(DeclarativeModel, Generic[T]):
     """Base aggregate class."""
 
-    id: int
+    uuid: UUID
     version: int
 
     _broker: MinosBroker = Provide["event_broker"]
     _repository: MinosRepository = Provide["repository"]
     _snapshot: MinosSnapshot = Provide["snapshot"]
 
-    # noinspection PyShadowingBuiltins
     def __init__(
         self,
         *args,
-        id: int = 0,
+        uuid: UUID = NULL_UUID,
         version: int = 0,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
@@ -71,7 +76,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
         **kwargs,
     ):
 
-        super().__init__(id, version, *args, **kwargs)
+        super().__init__(uuid, version, *args, **kwargs)
 
         if _broker is not None:
             self._broker = _broker
@@ -90,14 +95,14 @@ class Aggregate(DeclarativeModel, Generic[T]):
     @classmethod
     async def get(
         cls,
-        ids: list[int],
+        uuids: list[UUID],
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
     ) -> AsyncIterator[T]:
         """Get a sequence of aggregates based on a list of identifiers.
 
-        :param ids: list of identifiers.
+        :param uuids: list of identifiers.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
@@ -120,31 +125,30 @@ class Aggregate(DeclarativeModel, Generic[T]):
                 raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
         # noinspection PyTypeChecker
-        iterable = _snapshot.get(cls.classname, ids, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
+        iterable = _snapshot.get(cls.classname, uuids, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
 
         # noinspection PyTypeChecker
         async for aggregate in iterable:
             yield aggregate
 
-    # noinspection PyShadowingBuiltins
     @classmethod
     async def get_one(
         cls,
-        id: int,
+        uuids: UUID,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
     ) -> T:
         """Get one aggregate based on an identifier.
 
-        :param id: aggregate identifier.
+        :param uuids: Identifier of the aggregate.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
-        return await cls.get([id], _broker=_broker, _repository=_repository, _snapshot=_snapshot).__anext__()
+        return await cls.get([uuids], _broker=_broker, _repository=_repository, _snapshot=_snapshot).__anext__()
 
     @classmethod
     async def create(
@@ -158,9 +162,9 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        if "id" in kwargs:
-            raise MinosRepositoryManuallySetAggregateIdException(
-                f"The id must be computed internally on the repository. Obtained: {kwargs['id']}"
+        if "uuid" in kwargs:
+            raise MinosRepositoryManuallySetAggregateIdentifierException(
+                f"The identifier must be computed internally on the repository. Obtained: {kwargs['uuid']}"
             )
 
         if "version" in kwargs:
@@ -173,8 +177,8 @@ class Aggregate(DeclarativeModel, Generic[T]):
         diff = AggregateDiff.from_aggregate(instance)
         entry = await instance._repository.create(diff)
 
-        instance.id, instance.version = entry.aggregate_id, entry.version
-        diff.id, diff.version = entry.aggregate_id, entry.version
+        instance.uuid, instance.version = entry.aggregate_uuid, entry.version
+        diff.uuid, diff.version = entry.aggregate_uuid, entry.version
 
         await instance._broker.send(diff, topic=f"{type(instance).__name__}Created")
 
@@ -197,12 +201,12 @@ class Aggregate(DeclarativeModel, Generic[T]):
             setattr(self, key, value)
 
         previous = await self.get_one(
-            self.id, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
+            self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
         diff = AggregateDiff.from_difference(self, previous)
         entry = await self._repository.update(diff)
 
-        self.id = entry.aggregate_id
+        self.uuid = entry.aggregate_uuid
         self.version = entry.version
 
         await self._broker.send(diff, topic=f"{type(self).__name__}Updated")
@@ -214,20 +218,20 @@ class Aggregate(DeclarativeModel, Generic[T]):
 
         If didn't exist previously creates a new one, otherwise updates the existing one.
         """
-        is_creation = self.id == 0
+        is_creation = self.uuid == NULL_UUID
         if is_creation != (self.version == 0):
             if is_creation:
                 raise MinosRepositoryManuallySetAggregateVersionException(
                     f"The version must be computed internally on the repository. Obtained: {self.version}"
                 )
             else:
-                raise MinosRepositoryManuallySetAggregateIdException(
-                    f"The id must be computed internally on the repository. Obtained: {self.id}"
+                raise MinosRepositoryManuallySetAggregateIdentifierException(
+                    f"The uuid must be computed internally on the repository. Obtained: {self.uuid}"
                 )
 
         if is_creation:
             new = await self.create(
-                **{k: field.value for k, field in self.fields.items() if k not in ("id", "version")},
+                **{k: field.value for k, field in self.fields.items() if k not in ("uuid", "version")},
                 _broker=self._broker,
                 _repository=self._repository,
                 _snapshot=self._snapshot,
@@ -235,7 +239,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
             self._fields |= new.fields
         else:
             await self.update(
-                **{k: field.value for k, field in self.fields.items() if k not in ("id", "version")},
+                **{k: field.value for k, field in self.fields.items() if k not in ("uuid", "version")},
                 _broker=self._broker,
                 _repository=self._repository,
                 _snapshot=self._snapshot,
@@ -247,7 +251,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :return: This method does not return anything.
         """
         new = await type(self).get_one(
-            self.id, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
+            self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
         self._fields |= new.fields
 
@@ -263,7 +267,7 @@ class Aggregate(DeclarativeModel, Generic[T]):
     def diff(self, another: Aggregate) -> AggregateDiff:
         """Compute the difference with another aggregate.
 
-        Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``id`` value.
+        Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``uuid`` value.
 
         :param another: Another ``Aggregate`` instance.
         :return: An ``FieldsDiff`` instance.
@@ -276,9 +280,10 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :param difference: The ``FieldsDiff`` containing the values to be set.
         :return: This method does not return anything.
         """
-        if self.id != difference.id:
+        if self.uuid != difference.uuid:
             raise ValueError(
-                f"To apply the difference, it must have same id. Expected: {self.id!r} Obtained: {difference.id!r}"
+                f"To apply the difference, it must have same uuid. "
+                f"Expected: {self.uuid!r} Obtained: {difference.uuid!r}"
             )
         logger.debug(f"Applying {difference!r} to {self!r}...")
         for field in difference.fields_diff:
@@ -294,4 +299,4 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        return cls(*args, id=difference.id, version=difference.version, **difference.fields_diff, **kwargs)
+        return cls(*args, uuid=difference.uuid, version=difference.version, **difference.fields_diff, **kwargs)

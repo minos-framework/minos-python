@@ -76,7 +76,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         expected = [
             {
                 "fields": [
-                    {"name": "id", "type": "int"},
+                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                     {"name": "version", "type": "int"},
                     {"name": "doors", "type": "int"},
                     {"name": "color", "type": "string"},
@@ -87,7 +87,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                                 "items": [
                                     {
                                         "fields": [
-                                            {"name": "id", "type": "int"},
+                                            {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                                             {"name": "version", "type": "int"},
                                             {"name": "name", "type": "string"},
                                             {"name": "surname", "type": "string"},
@@ -113,19 +113,19 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, Car.avro_schema)
 
     async def test_avro_data_model_ref(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
+        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot() as s:
             owners = [
-                Owner("Hello", "Good Bye", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot),
-                Owner("Foo", "Bar", id=2, version=1, _broker=broker, _repository=repository, _snapshot=snapshot),
+                Owner("Hello", "Good Bye", uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s),
+                Owner("Foo", "Bar", uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s),
             ]
-            car = Car(5, "blue", owners, id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
+            car = Car(5, "blue", owners, uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s)
             expected = {
                 "color": "blue",
                 "doors": 5,
-                "id": 1,
+                "uuid": str(car.uuid),
                 "owner": [
-                    {"age": None, "id": 1, "name": "Hello", "surname": "Good Bye", "version": 1},
-                    {"age": None, "id": 2, "name": "Foo", "surname": "Bar", "version": 1},
+                    {"age": None, "uuid": str(owners[0].uuid), "name": "Hello", "surname": "Good Bye", "version": 1},
+                    {"age": None, "uuid": str(owners[1].uuid), "name": "Foo", "surname": "Bar", "version": 1},
                 ],
                 "version": 1,
             }

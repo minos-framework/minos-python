@@ -10,6 +10,9 @@ import unittest
 from datetime import (
     datetime,
 )
+from uuid import (
+    uuid4,
+)
 
 from dependency_injector import (
     containers,
@@ -48,6 +51,11 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
+
+        self.uuid_1 = uuid4()
+        self.uuid_2 = uuid4()
+        self.uuid_3 = uuid4()
+
         self.container = containers.DynamicContainer()
         self.container.event_broker = providers.Singleton(FakeBroker)
         self.container.repository = providers.Singleton(FakeRepository)
@@ -76,9 +84,9 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_get(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.get("tests.aggregate_classes.Car", [2, 3])]
+                observed = [v async for v in snapshot.get("tests.aggregate_classes.Car", [self.uuid_2, self.uuid_3])]
 
-        expected = [Car(3, "blue", id=2, version=2), Car(3, "blue", id=3, version=1)]
+        expected = [Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)]
         self.assertEqual(expected, observed)
 
     async def test_get_raises(self):
@@ -86,10 +94,10 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 with self.assertRaises(MinosSnapshotDeletedAggregateException):
                     # noinspection PyStatementEffect
-                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [1])]
+                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [self.uuid_1])]
                 with self.assertRaises(MinosSnapshotAggregateNotFoundException):
                     # noinspection PyStatementEffect
-                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [4])]
+                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [uuid4()])]
 
     async def test_select(self):
         await self._populate()
@@ -100,8 +108,8 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(Car(3, "blue", id=2, version=2)),
-            SnapshotEntry.from_aggregate(Car(3, "blue", id=3, version=1)),
+            SnapshotEntry.from_aggregate(Car(3, "blue", uuid=self.uuid_2, version=2)),
+            SnapshotEntry.from_aggregate(Car(3, "blue", uuid=self.uuid_3, version=1)),
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 
@@ -122,13 +130,13 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:
-            await repository.create(RepositoryEntry(1, aggregate_name, 1, diff.avro_bytes))
-            await repository.update(RepositoryEntry(1, aggregate_name, 2, diff.avro_bytes))
-            await repository.create(RepositoryEntry(2, aggregate_name, 1, diff.avro_bytes))
-            await repository.update(RepositoryEntry(1, aggregate_name, 3, diff.avro_bytes))
-            await repository.delete(RepositoryEntry(1, aggregate_name, 4))
-            await repository.update(RepositoryEntry(2, aggregate_name, 2, diff.avro_bytes))
-            await repository.create(RepositoryEntry(3, aggregate_name, 1, diff.avro_bytes))
+            await repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
+            await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
+            await repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
+            await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
+            await repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
+            await repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+            await repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
             async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
                 await dispatcher.dispatch()
             return repository

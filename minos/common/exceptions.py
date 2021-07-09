@@ -66,7 +66,7 @@ class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
 
-class MinosRepositoryManuallySetAggregateIdException(MinosRepositoryException):
+class MinosRepositoryManuallySetAggregateIdentifierException(MinosRepositoryException):
     """Exception to be raised when some aggregate is trying to be created with a manually set id."""
 
 

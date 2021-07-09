@@ -53,26 +53,29 @@ class TestAggregateWithPostgres(PostgresAsyncTestCase):
 
     async def test_update(self):
         car = await Car.create(doors=3, color="blue")
+        uuid = car.uuid
 
         await car.update(color="red")
-        self.assertEqual(Car(3, "red", id=1, version=2), car)
-        self.assertEqual(car, await Car.get_one(car.id))
+        self.assertEqual(Car(3, "red", uuid=uuid, version=2), car)
+        self.assertEqual(car, await Car.get_one(car.uuid))
 
         await car.update(doors=5)
-        self.assertEqual(Car(5, "red", id=1, version=3), car)
-        self.assertEqual(car, await Car.get_one(car.id))
+        self.assertEqual(Car(5, "red", uuid=uuid, version=3), car)
+        self.assertEqual(car, await Car.get_one(car.uuid))
 
         await car.delete()
         with self.assertRaises(MinosSnapshotDeletedAggregateException):
-            await Car.get_one(car.id)
+            await Car.get_one(car.uuid)
 
         car = await Car.create(doors=3, color="blue")
+        uuid = car.uuid
+
         await car.update(color="red")
-        self.assertEqual(Car(3, "red", id=2, version=2), await Car.get_one(car.id))
+        self.assertEqual(Car(3, "red", uuid=uuid, version=2), await Car.get_one(car.uuid))
 
         await car.delete()
         with self.assertRaises(MinosSnapshotDeletedAggregateException):
-            await Car.get_one(car.id)
+            await Car.get_one(car.uuid)
 
 
 if __name__ == "__main__":
