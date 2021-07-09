@@ -1,0 +1,35 @@
+on: push
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        container: python:3.9-buster
+
+        steps:
+            -   name: Check out repository code
+                uses: actions/checkout@v2
+
+            -   name: Install Poetry
+                uses: snok/install-poetry@v1.1.4
+
+            -   name: Install dependencies
+                run: make install
+
+            -   name: Lint package
+                run: make lint
+
+            -   name: Test package with coverage
+                run: make coverage
+
+            -   name: Publish coverage
+                uses: codecov/codecov-action@v1.3.1
+                with:
+                    token: ${{ secrets.CODECOV_TOKEN }}
+                    files: ./coverage.xml
+                    fail_ci_if_error: true
+
+            -   name: Generate documentation
+                run: make docs
+
+            -   name: Generate build
+                run: make dist
