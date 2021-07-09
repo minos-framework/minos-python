@@ -10,7 +10,6 @@ from .abc import (
 )
 from .declarative import (
     Aggregate,
-    SubAggregate,
     AggregateDiff,
     Command,
     CommandReply,
@@ -18,6 +17,7 @@ from .declarative import (
     DeclarativeModel,
     Event,
     MinosModel,
+    SubAggregate,
     ValueObject,
 )
 from .dynamic import (

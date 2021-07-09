@@ -17,6 +17,7 @@ from typing import (
 from uuid import (
     UUID,
 )
+
 from ....constants import (
     NULL_UUID,
 )
@@ -35,11 +36,7 @@ class SubAggregate(DeclarativeModel, Generic[T]):
     version: int
 
     def __init__(
-        self,
-        *args,
-        uuid: UUID = NULL_UUID,
-        version: int = 0,
-        **kwargs,
+        self, *args, uuid: UUID = NULL_UUID, version: int = 0, **kwargs,
     ):
 
         super().__init__(uuid, version, *args, **kwargs)

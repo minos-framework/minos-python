@@ -37,12 +37,12 @@ from minos.common import (
 from tests.aggregate_classes import (
     Owner,
 )
+from tests.model_classes import (
+    User,
+)
 from tests.subaggregate_classes import (
     Cart,
     CartItem,
-)
-from tests.model_classes import (
-    User,
 )
 from tests.utils import (
     FakeBroker,

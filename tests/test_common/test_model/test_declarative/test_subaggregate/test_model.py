@@ -7,6 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 from uuid import (
+    UUID,
     uuid4,
 )
 
@@ -23,9 +24,6 @@ from tests.aggregate_classes import (
 )
 from tests.utils import (
     FakeBroker,
-)
-from uuid import (
-    UUID,
 )
 
 
