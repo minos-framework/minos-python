@@ -9,6 +9,9 @@ import unittest
 from datetime import (
     datetime,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     AggregateDiff,
@@ -23,7 +26,7 @@ from tests.aggregate_classes import (
 )
 
 
-class TestMinosRepositoryAction(unittest.TestCase):
+class TestRepositoryAction(unittest.TestCase):
     def test_value_of(self):
         self.assertEqual(RepositoryAction.CREATE, RepositoryAction.value_of("create"))
         self.assertEqual(RepositoryAction.UPDATE, RepositoryAction.value_of("update"))
@@ -34,10 +37,13 @@ class TestMinosRepositoryAction(unittest.TestCase):
             RepositoryAction.value_of("foo")
 
 
-class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
+class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.uuid = uuid4()
+
     def test_constructor(self):
-        entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
-        self.assertEqual(1234, entry.aggregate_id)
+        entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
+        self.assertEqual(self.uuid, entry.aggregate_uuid)
         self.assertEqual("example.Car", entry.aggregate_name)
         self.assertEqual(0, entry.version)
         self.assertEqual(bytes("car", "utf-8"), entry.data)
@@ -47,7 +53,7 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
     def test_constructor_extended(self):
         entry = RepositoryEntry(
-            aggregate_id=1234,
+            aggregate_uuid=self.uuid,
             aggregate_name="example.Car",
             version=0,
             data=bytes("car", "utf-8"),
@@ -55,7 +61,7 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             action=RepositoryAction.CREATE,
             created_at=datetime(2020, 10, 13, 8, 45, 32),
         )
-        self.assertEqual(1234, entry.aggregate_id)
+        self.assertEqual(self.uuid, entry.aggregate_uuid)
         self.assertEqual("example.Car", entry.aggregate_name)
         self.assertEqual(0, entry.version)
         self.assertEqual(bytes("car", "utf-8"), entry.data)
@@ -65,10 +71,10 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
     async def test_from_aggregate_diff(self):
         fields_diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
-        aggregate_diff = AggregateDiff(id=1, name=Car.classname, version=1, fields_diff=fields_diff)
+        aggregate_diff = AggregateDiff(uuid=self.uuid, name=Car.classname, version=1, fields_diff=fields_diff)
 
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
-        self.assertEqual(1, entry.aggregate_id)
+        self.assertEqual(self.uuid, entry.aggregate_uuid)
         self.assertEqual("tests.aggregate_classes.Car", entry.aggregate_name)
         self.assertEqual(1, entry.version)
         self.assertEqual(fields_diff, FieldsDiff.from_avro_bytes(entry.data))
@@ -77,29 +83,29 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(None, entry.created_at)
 
     def test_id_set(self):
-        entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.id)
         entry.id = 5678
         self.assertEqual(5678, entry.id)
 
     def test_id_action(self):
-        entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.action)
         entry.action = RepositoryAction.CREATE
         self.assertEqual(RepositoryAction.CREATE, entry.action)
 
     def test_equals(self):
-        a = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
-        b = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        a = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
+        b = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(a, b)
 
     def test_hash(self):
-        entry = RepositoryEntry(1234, "example.Car", 0, bytes("car", "utf-8"))
+        entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertIsInstance(hash(entry), int)
 
     def test_repr(self):
         entry = RepositoryEntry(
-            aggregate_id=1234,
+            aggregate_uuid=self.uuid,
             aggregate_name="example.Car",
             version=0,
             data=bytes("car", "utf-8"),
@@ -108,8 +114,9 @@ class TestMinosRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             created_at=datetime(2020, 10, 13, 8, 45, 32),
         )
         expected = (
-            "RepositoryEntry(aggregate_id=1234, aggregate_name='example.Car', version=0, data=b'car', id=5678, "
-            "action=<RepositoryAction.CREATE: 'create'>, created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
+            f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name='example.Car', version=0, data=b'car', "
+            "id=5678, action=<RepositoryAction.CREATE: 'create'>, "
+            "created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
         )
         self.assertEqual(expected, repr(entry))
 

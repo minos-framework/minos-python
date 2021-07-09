@@ -120,18 +120,20 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_id, aggregate_name, version, data, created_at, updated_at
-FROM snapshot;
+SELECT aggregate_uuid, aggregate_name, version, data, created_at, updated_at
+FROM snapshot
+ORDER BY updated_at;
 """.strip()
 
 _SELECT_MULTIPLE_ENTRIES_QUERY = """
-SELECT aggregate_id, aggregate_name, version, data, created_at, updated_at
+SELECT aggregate_uuid, aggregate_name, version, data, created_at, updated_at
 FROM snapshot
-WHERE aggregate_name = %s AND aggregate_id IN %s;
+WHERE aggregate_name = %s AND aggregate_uuid IN %s
+ORDER BY updated_at;
 """.strip()
 
 _CHECK_MULTIPLE_ENTRIES_QUERY = """
 SELECT COUNT(*) as total_count, COUNT(data) as not_null_count
 FROM snapshot
-WHERE aggregate_name = %s AND aggregate_id IN %s;
+WHERE aggregate_name = %s AND aggregate_uuid IN %s;
 """.strip()

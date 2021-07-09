@@ -66,7 +66,7 @@ class TestCommandReply(unittest.TestCase):
 
 class TestEvent(unittest.TestCase):
     def setUp(self) -> None:
-        self.data = AggregateDiff(1, "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
+        self.data = AggregateDiff(uuid4(), "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
         self.topic = "FooCreated"
 
     def test_constructor(self):

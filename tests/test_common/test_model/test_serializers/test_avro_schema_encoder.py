@@ -98,7 +98,7 @@ class TestAvroSchemaEncoder(unittest.TestCase):
             "type": [
                 {
                     "fields": [
-                        {"name": "id", "type": "int"},
+                        {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                         {"name": "version", "type": "int"},
                         {"name": "name", "type": "string"},
                         {"name": "surname", "type": "string"},

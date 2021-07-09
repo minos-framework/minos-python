@@ -16,7 +16,14 @@ from typing import (
     AsyncIterator,
     Optional,
 )
+from uuid import (
+    UUID,
+    uuid4,
+)
 
+from ..constants import (
+    NULL_UUID,
+)
 from .abc import (
     MinosRepository,
 )
@@ -39,9 +46,9 @@ class InMemoryRepository(MinosRepository):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        if entry.aggregate_id == 0:
-            entry.aggregate_id = self._generate_next_aggregate_id(entry.aggregate_name)
-        entry.version = self._get_next_version_id(entry.aggregate_name, entry.aggregate_id)
+        if entry.aggregate_uuid == NULL_UUID:
+            entry.aggregate_uuid = uuid4()
+        entry.version = self._get_next_version_id(entry.aggregate_name, entry.aggregate_uuid)
         entry.id = self._generate_next_id()
         self._storage.append(entry)
         return entry
@@ -49,32 +56,22 @@ class InMemoryRepository(MinosRepository):
     def _generate_next_id(self) -> int:
         return next(self._id_generator) + 1
 
-    def _generate_next_aggregate_id(self, aggregate_name: str) -> int:
-        """Generate a new unique id for the given aggregate name.
-
-        :param aggregate_name: The name of the aggregate.
-        :return: A positive-integer value.
-        """
-        iterable = iter(self._storage)
-        iterable = filter(lambda entry: entry.aggregate_name == aggregate_name, iterable)
-        return len(list(iterable)) + 1
-
-    def _get_next_version_id(self, aggregate_name: str, aggregate_id: int) -> int:
+    def _get_next_version_id(self, aggregate_name: str, aggregate_uuid: UUID) -> int:
         """Generate a new version number for the given aggregate name and identifier.
 
         :param aggregate_name: The name of the aggregate.
-        :param aggregate_id: The identifier of the aggregate.
+        :param aggregate_uuid: The identifier of the aggregate.
         :return: A positive-integer value.
         """
         iterable = iter(self._storage)
         iterable = filter(
-            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_id == aggregate_id, iterable,
+            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_uuid == aggregate_uuid, iterable,
         )
         return len(list(iterable)) + 1
 
     async def _select(
         self,
-        aggregate_id: Optional[int] = None,
+        aggregate_uuid: Optional[int] = None,
         aggregate_name: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
@@ -92,7 +89,7 @@ class InMemoryRepository(MinosRepository):
 
         # noinspection DuplicatedCode
         def _fn_filter(entry: RepositoryEntry) -> bool:
-            if aggregate_id is not None and aggregate_id != entry.aggregate_id:
+            if aggregate_uuid is not None and aggregate_uuid != entry.aggregate_uuid:
                 return False
             if aggregate_name is not None and aggregate_name != entry.aggregate_name:
                 return False

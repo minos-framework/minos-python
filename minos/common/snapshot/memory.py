@@ -13,6 +13,9 @@ from typing import (
     TYPE_CHECKING,
     AsyncIterator,
 )
+from uuid import (
+    UUID,
+)
 
 from ..exceptions import (
     MinosSnapshotAggregateNotFoundException,
@@ -35,34 +38,34 @@ if TYPE_CHECKING:
 class InMemorySnapshot(MinosSnapshot):
     """In Memory Snapshot class."""
 
-    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
+    async def get(self, aggregate_name: str, uuids: list[UUID], **kwargs) -> AsyncIterator[Aggregate]:
         """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param ids: List of identifiers to be retrieved.
+        :param uuids: List of identifiers to be retrieved.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
-        iterable = map(lambda aggregate_id: self._get_one(aggregate_name, aggregate_id, **kwargs), ids)
+        iterable = map(lambda uuid: self._get_one(aggregate_name, uuid, **kwargs), uuids)
 
         for item in iterable:
             yield await item
 
     # noinspection PyShadowingBuiltins
     @staticmethod
-    async def _get_one(aggregate_name: str, id: int, _repository: MinosRepository, **kwargs) -> Aggregate:
+    async def _get_one(aggregate_name: str, uuid: UUID, _repository: MinosRepository, **kwargs) -> Aggregate:
         from operator import (
             attrgetter,
         )
 
         # noinspection PyTypeChecker
-        entries = [v async for v in _repository.select(aggregate_name=aggregate_name, aggregate_id=id)]
+        entries = [v async for v in _repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)]
         if not len(entries):
-            raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {id!r} id.")
+            raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
 
         entries.sort(key=attrgetter("version"))
         if entries[-1].action == RepositoryAction.DELETE:
-            raise MinosSnapshotDeletedAggregateException(f"The {id!r} id points to an already deleted aggregate.")
+            raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
 
         cls = entries[0].aggregate_cls
         instance: Aggregate = cls.from_diff(entries[0].aggregate_diff, _repository=_repository, **kwargs)

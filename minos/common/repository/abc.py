@@ -20,6 +20,9 @@ from typing import (
     Optional,
     Union,
 )
+from uuid import (
+    UUID,
+)
 
 from ..configuration import (
     MinosConfig,
@@ -92,7 +95,7 @@ class MinosRepository(ABC, MinosSetup):
     # noinspection PyShadowingBuiltins
     async def select(
         self,
-        aggregate_id: Optional[int] = None,
+        aggregate_uuid: Optional[UUID] = None,
         aggregate_name: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
@@ -107,7 +110,7 @@ class MinosRepository(ABC, MinosSetup):
     ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
 
-        :param aggregate_id: Aggregate identifier.
+        :param aggregate_uuid: Aggregate identifier.
         :param aggregate_name: Aggregate name.
         :param version: Aggregate version.
         :param version_lt: Aggregate version lower than the given value.
@@ -122,7 +125,7 @@ class MinosRepository(ABC, MinosSetup):
         :return: A list of entries.
         """
         generator = self._select(
-            aggregate_id=aggregate_id,
+            aggregate_uuid=aggregate_uuid,
             aggregate_name=aggregate_name,
             version=version,
             version_lt=version_lt,

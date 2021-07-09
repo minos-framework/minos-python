@@ -24,6 +24,9 @@ from .configuration import (
     MinosConfig,
     MinosConfigAbstract,
 )
+from .constants import (
+    NULL_UUID,
+)
 from .database import (
     PostgreSqlMinosDatabase,
 )
