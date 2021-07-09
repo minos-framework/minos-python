@@ -134,6 +134,12 @@ class MinosModelAttributeException(MinosException):
     pass
 
 
+class MinosImmutableClassException(MinosException):
+    """If a class is immutable, this exception will be raised"""
+
+    pass
+
+
 class MinosReqAttributeException(MinosModelAttributeException):
     """Exception to be raised when some required attributes are not provided."""
 
