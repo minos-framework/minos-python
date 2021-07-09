@@ -280,7 +280,7 @@ class AvroDataDecoder:
                 f"'ModelRef[T]' T type must be a descendant of 'Aggregate'. Obtained: {inner_type!r}"
             )
 
-        return self._cast_value(Union[inner_type, int], data)
+        return self._cast_value(Union[inner_type, UUID], data)
 
     def _convert_list_params(self, data: Iterable, type_params: Type) -> list[Any]:
         """

@@ -181,4 +181,4 @@ class AvroSchemaEncoder:
         return {"type": AVRO_MAP, "values": self._build_schema(get_args(type_field)[1])}
 
     def _build_model_ref_schema(self, type_field: Type) -> Union[bool, Any]:
-        return self._build_schema(Union[get_args(type_field)[0], int])
+        return self._build_schema(Union[get_args(type_field)[0], UUID])

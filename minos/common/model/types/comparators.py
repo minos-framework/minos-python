@@ -19,6 +19,9 @@ from typing import (
     get_args,
     get_origin,
 )
+from uuid import (
+    UUID,
+)
 
 from .data_types import (
     ModelRef,
@@ -71,10 +74,10 @@ class TypeHintComparator(Generic[T, K]):
 
     def _compare(self, first: Type[T], second: Type[K]) -> bool:
         if get_origin(first) is ModelRef:
-            first = Union[(*get_args(first), int)]
+            first = Union[(*get_args(first), UUID)]
 
         if get_origin(second) is ModelRef:
-            second = Union[(*get_args(second), int)]
+            second = Union[(*get_args(second), UUID)]
 
         if is_type_subclass(first) and is_model_subclass(first):
             first = first.model_type

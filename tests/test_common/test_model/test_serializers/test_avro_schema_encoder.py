@@ -108,7 +108,7 @@ class TestAvroSchemaEncoder(unittest.TestCase):
                     "namespace": "tests.aggregate_classes.test",
                     "type": "record",
                 },
-                "int",
+                {"type": "string", "logicalType": "uuid"},
                 "null",
             ],
         }

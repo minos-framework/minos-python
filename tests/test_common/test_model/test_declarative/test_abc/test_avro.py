@@ -97,7 +97,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                                         "namespace": "tests.aggregate_classes.owner",
                                         "type": "record",
                                     },
-                                    "int",
+                                    {"type": "string", "logicalType": "uuid"},
                                 ],
                                 "type": "array",
                             },
