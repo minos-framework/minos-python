@@ -57,8 +57,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
 
-        self.publish_mock = MagicMock(side_effect=self.broker.send_one)
-        self.broker.send_one = self.publish_mock
+        self.publish_mock = MagicMock(side_effect=self.broker.send)
+        self.broker.send = self.publish_mock
 
     def test_from_raw(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):

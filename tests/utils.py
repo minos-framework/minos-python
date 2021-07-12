@@ -9,7 +9,13 @@ from pathlib import (
     Path,
 )
 from typing import (
+    Any,
     NoReturn,
+    Optional,
+)
+from uuid import (
+    UUID,
+    uuid4,
 )
 
 from minos.common import (
@@ -51,15 +57,23 @@ def foo_fn_raises(context: SagaContext) -> MinosModel:
     raise ValueError()
 
 
-def fake_reply(data: MinosModel) -> CommandReply:
+def fake_reply(
+    data: Any = None, uuid: Optional[UUID] = None, status: CommandStatus = CommandStatus.SUCCESS
+) -> CommandReply:
     """Fake command reply generator.
 
     :param data: Data to be set as response on the command reply.
+    :param uuid: TODO
+    :param status: TODO
     :return: A Command reply instance.
     """
-    return CommandReply("FooCreated", [data], "saga_id", status=CommandStatus.SUCCESS)
+    if uuid is None:
+        uuid = uuid4()
+    return CommandReply("FooCreated", data, uuid, status=status)
 
 
 class NaiveBroker(MinosBroker):
-    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
-        pass
+    """For testing purposes."""
+
+    async def send(self, data: Any, **kwargs) -> NoReturn:
+        """For testing purposes."""

@@ -11,7 +11,6 @@ from pathlib import (
 )
 
 from minos.common import (
-    CommandReply,
     CommandStatus,
 )
 from minos.saga import (
@@ -42,7 +41,7 @@ class TesOnReplyExecutor(unittest.IsolatedAsyncioTestCase):
             await self.executor.exec(operation, SagaContext(), reply=fake_reply(Foo("text")))
 
     async def test_exec_raises_reply_status(self):
-        reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.ERROR)
+        reply = fake_reply(status=CommandStatus.ERROR)
         operation = SagaStepOperation("foo", identity_fn)
         with self.assertRaises(MinosCommandReplyFailedException):
             await self.executor.exec(operation, SagaContext(), reply=reply)

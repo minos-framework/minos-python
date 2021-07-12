@@ -40,3 +40,8 @@ History
 * Completed the Compensation process
 * Added Reply Command to Saga process
 
+0.0.7 (2021-07-12)
+------------------
+
+* Added update to common
+* Bugfixes

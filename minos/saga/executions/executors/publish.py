@@ -10,6 +10,7 @@ from __future__ import (
 )
 
 from typing import (
+    Any,
     NoReturn,
 )
 from uuid import (
@@ -22,7 +23,6 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosBroker,
-    MinosModel,
 )
 
 from ... import (
@@ -75,11 +75,8 @@ class PublishExecutor(LocalExecutor):
             raise MinosSagaFailedExecutionStepException(exc.exception)
         return context
 
-    async def _publish(self, operation: SagaStepOperation, request: MinosModel) -> NoReturn:
-        await self.exec_function(
-            self.broker.send_one,
-            topic=operation.name,
-            item=request,
-            saga_uuid=str(self.execution_uuid),
-            reply_topic=self.definition_name,
-        )
+    async def _publish(self, operation: SagaStepOperation, data: Any) -> NoReturn:
+        topic = operation.name
+        saga = self.execution_uuid
+        reply_topic = self.definition_name
+        await self.exec_function(self.broker.send, topic=topic, data=data, saga=saga, reply_topic=reply_topic)
