@@ -9,11 +9,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 from minos.common import (
     Aggregate,
-    SubAggregate,
+    AggregateRef,
 )
 
 
-class CartItem(SubAggregate):
+class CartItem(AggregateRef):
     """Aggregate ``Owner`` class for testing purposes."""
 
     name: str

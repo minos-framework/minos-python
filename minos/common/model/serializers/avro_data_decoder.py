@@ -43,8 +43,8 @@ from ..types import (
     NoneType,
     TypeHintBuilder,
     is_aggregate_subclass,
+    is_aggregateref_subclass,
     is_model_subclass,
-    is_subaggregate_subclass,
     is_type_subclass,
 )
 
@@ -277,7 +277,7 @@ class AvroDataDecoder:
     def _convert_model_ref(self, data: Any, type_field: Type) -> Any:
         inner_type = get_args(type_field)[0]
         if not (
-            is_type_subclass(inner_type) and (is_aggregate_subclass(inner_type) or is_subaggregate_subclass(inner_type))
+            is_type_subclass(inner_type) and (is_aggregate_subclass(inner_type) or is_aggregateref_subclass(inner_type))
         ):
             raise MinosMalformedAttributeException(
                 f"'ModelRef[T]' T type must be a descendant of 'Aggregate'. Obtained: {inner_type!r}"

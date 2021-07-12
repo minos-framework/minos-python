@@ -11,13 +11,13 @@ from .abc import (
 from .declarative import (
     Aggregate,
     AggregateDiff,
+    AggregateRef,
     Command,
     CommandReply,
     CommandStatus,
     DeclarativeModel,
     Event,
     MinosModel,
-    SubAggregate,
     ValueObject,
 )
 from .dynamic import (

@@ -11,11 +11,11 @@ from uuid import (
 )
 
 from minos.common import (
-    SubAggregate,
+    AggregateRef,
 )
 
 
-class Product(SubAggregate):
+class Product(AggregateRef):
     """For testing purposes."""
 
     title: str
