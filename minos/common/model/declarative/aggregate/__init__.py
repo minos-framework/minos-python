@@ -8,6 +8,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .diff import (
     AggregateDiff,
 )
-from .model import (
+from .root import (
     Aggregate,
+)
+from .sub import (
+    SubAggregate,
 )

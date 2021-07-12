@@ -217,7 +217,7 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
     async def test_list_model_subaggregate_ref(self):
         decoder = AvroDataDecoder("test", list[ModelRef[CartItem]])
         async with FakeBroker():
-            value = [uuid4(), CartItem("Foo", 56)]
+            value = [uuid4(), CartItem(uuid4(), 3, "Foo", 56)]
             observed = decoder.build(value)
             self.assertEqual(value, observed)
 
