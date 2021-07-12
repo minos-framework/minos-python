@@ -41,3 +41,8 @@ History
 
 * Add new version support for minos-common
 * BugFix
+
+0.0.9 (2021-07-12)
+------------------
+
+* BugFix
