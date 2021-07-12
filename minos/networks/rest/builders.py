@@ -20,6 +20,7 @@ from typing import (
     Awaitable,
     Callable,
     NoReturn,
+    Optional,
     Union,
 )
 
@@ -32,6 +33,7 @@ from minos.common import (
     MinosConfig,
     MinosException,
     MinosSetup,
+    Response,
     ResponseException,
     classname,
     import_module,
@@ -110,7 +112,7 @@ class RestBuilder(MinosSetup):
     @staticmethod
     def get_action(
         controller: str, action: str
-    ) -> Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]:
+    ) -> Callable[[HttpRequest], Union[Optional[HttpResponse], Awaitable[Optional[HttpResponse]]]]:
         """Load controller class and action method.
         :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
         :param action: Config instance. Example: "get_order"
@@ -124,7 +126,7 @@ class RestBuilder(MinosSetup):
 
     @staticmethod
     def get_callback(
-        fn: Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]
+        fn: Callable[[HttpRequest], Union[Optional[HttpResponse], Awaitable[Optional[HttpResponse]]]]
     ) -> Callable[[web.Request], Awaitable[web.Response]]:
         """Get the handler function to be used by the ``aiohttp`` Controller.
 
@@ -140,6 +142,11 @@ class RestBuilder(MinosSetup):
                 response = fn(request)
                 if isawaitable(response):
                     response = await response
+                if isinstance(response, Response):
+                    response = await response.raw_content()
+                if response is None:
+                    return web.json_response()
+                return web.json_response(response)
             except ResponseException as exc:
                 logger.info(f"Raised a user exception: {exc!s}")
                 raise web.HTTPBadRequest(text=str(exc))
@@ -149,8 +156,6 @@ class RestBuilder(MinosSetup):
             except Exception as exc:
                 logger.exception(f"Raised an exception: {exc!r}.")
                 raise web.HTTPInternalServerError()
-
-            return web.json_response(await response.raw_content())
 
         return _fn
 

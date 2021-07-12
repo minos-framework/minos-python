@@ -5,6 +5,9 @@ from datetime import (
 from unittest.mock import (
     AsyncMock,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     Command,
@@ -36,6 +39,10 @@ class _Cls:
         return CommandResponse(await request.content())
 
     @staticmethod
+    async def _fn_none(request: Request):
+        return
+
+    @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
         raise CommandResponseException("")
 
@@ -55,9 +62,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         super().setUp()
         self.broker = FakeBroker()
         self.handler = CommandHandler.from_config(config=self.config, broker=self.broker)
-        self.command = Command(
-            topic="AddOrder", items=[FakeModel("foo")], saga_uuid="43434jhij", reply_topic="UpdateTicket"
-        )
+        self.command = Command("AddOrder", FakeModel("foo"), uuid4(), "UpdateTicket")
 
     def test_from_config(self):
         broker = FakeBroker()
@@ -99,9 +104,9 @@ class TestCommandHandler(PostgresAsyncTestCase):
             await self.handler.dispatch_one(entry)
 
         self.assertEqual(1, self.broker.call_count)
-        self.assertEqual(["add_order"], self.broker.items)
+        self.assertEqual("add_order", self.broker.items)
         self.assertEqual("UpdateTicket", self.broker.topic)
-        self.assertEqual("43434jhij", self.broker.saga_uuid)
+        self.assertEqual(self.command.saga, self.broker.saga)
         self.assertEqual(None, self.broker.reply_topic)
         self.assertEqual(CommandStatus.SUCCESS, self.broker.status)
 
@@ -112,19 +117,23 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     async def test_get_callback(self):
         fn = self.handler.get_callback(_Cls._fn)
-        self.assertEqual(([FakeModel("foo")], CommandStatus.SUCCESS), await fn(self.command))
+        self.assertEqual((FakeModel("foo"), CommandStatus.SUCCESS), await fn(self.command))
+
+    async def test_get_callback_none(self):
+        fn = self.handler.get_callback(_Cls._fn_none)
+        self.assertEqual((None, CommandStatus.SUCCESS), await fn(self.command))
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
-        self.assertEqual(([], CommandStatus.ERROR), await fn(self.command))
+        self.assertEqual((None, CommandStatus.ERROR), await fn(self.command))
 
     async def test_get_callback_raises_minos(self):
         fn = self.handler.get_callback(_Cls._fn_raises_minos)
-        self.assertEqual(([], CommandStatus.SYSTEM_ERROR), await fn(self.command))
+        self.assertEqual((None, CommandStatus.SYSTEM_ERROR), await fn(self.command))
 
     async def test_get_callback_raises_exception(self):
         fn = self.handler.get_callback(_Cls._fn_raises_exception)
-        self.assertEqual(([], CommandStatus.SYSTEM_ERROR), await fn(self.command))
+        self.assertEqual((None, CommandStatus.SYSTEM_ERROR), await fn(self.command))
 
 
 if __name__ == "__main__":

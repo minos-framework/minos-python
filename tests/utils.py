@@ -18,10 +18,16 @@ from typing import (
     AsyncIterator,
     NoReturn,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
+    AggregateDiff,
     CommandReply,
     CommandStatus,
+    Field,
+    FieldsDiff,
     MinosBroker,
     MinosModel,
     MinosRepository,
@@ -30,6 +36,8 @@ from minos.common import (
 )
 
 BASE_PATH = Path(__file__).parent
+
+FAKE_AGGREGATE_DIFF = AggregateDiff(uuid4(), "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
 
 
 class FakeModel(MinosModel):
@@ -107,7 +115,7 @@ class FakeBroker(MinosBroker):
         self.call_count = 0
         self.items = None
         self.topic = None
-        self.saga_uuid = None
+        self.saga = None
         self.reply_topic = None
         self.status = None
 
@@ -115,7 +123,7 @@ class FakeBroker(MinosBroker):
         self,
         items: list[MinosModel],
         topic: str = None,
-        saga_uuid: str = None,
+        saga: str = None,
         reply_topic: str = None,
         status: CommandStatus = None,
         **kwargs
@@ -124,7 +132,7 @@ class FakeBroker(MinosBroker):
         self.call_count += 1
         self.items = items
         self.topic = topic
-        self.saga_uuid = saga_uuid
+        self.saga = saga
         self.reply_topic = reply_topic
         self.status = status
 
@@ -143,7 +151,7 @@ class FakeRepository(MinosRepository):
         self.items.append(entry)
         entry.id = self.id_counter
         entry.version += 1
-        entry.aggregate_id = 9999
+        entry.aggregate_uuid = 9999
         entry.created_at = datetime.now()
 
         return entry
