@@ -15,6 +15,9 @@ from typing import (
     Optional,
     Type,
 )
+from uuid import (
+    UUID,
+)
 
 from dependency_injector.wiring import (
     Provide,
@@ -66,28 +69,28 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotBuilder:
         return cls(*args, **config.snapshot._asdict(), **kwargs)
 
-    async def are_synced(self, aggregate_name: str, aggregate_ids: list[int]) -> bool:
+    async def are_synced(self, aggregate_name: str, aggregate_uuids: list[UUID]) -> bool:
         """Check if the snapshot has the latest version of a list of aggregates.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be checked.
-        :param aggregate_ids: List of aggregate identifiers to be checked.
+        :param aggregate_uuids: List of aggregate identifiers to be checked.
 
         :return: ``True`` if has the latest version for all the identifiers or ``False`` otherwise.
         """
-        for aggregate_id in aggregate_ids:
-            if not await self.is_synced(aggregate_name, aggregate_id):
+        for aggregate_uuid in aggregate_uuids:
+            if not await self.is_synced(aggregate_name, aggregate_uuid):
                 return False
         return True
 
-    async def is_synced(self, aggregate_name: str, aggregate_id: int) -> bool:
+    async def is_synced(self, aggregate_name: str, aggregate_uuid: UUID) -> bool:
         """Check if the snapshot has the latest version of an ``Aggregate`` instance.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be checked.
-        :param aggregate_id: Identifier of the ``Aggregate`` instance to be checked.
+        :param aggregate_uuid: Identifier of the ``Aggregate`` instance to be checked.
         :return: ``True`` if has the latest version for the identifier or ``False`` otherwise.
         """
         query = self._repository.select(
-            id_ge=await self._load_offset(), aggregate_name=aggregate_name, aggregate_id=aggregate_id
+            id_ge=await self._load_offset(), aggregate_name=aggregate_name, aggregate_uuid=aggregate_uuid
         )
         async for _ in query:
             return False
@@ -138,7 +141,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
     async def _submit_delete(self, entry: RepositoryEntry) -> NoReturn:
         params = {
-            "aggregate_id": entry.aggregate_id,
+            "aggregate_uuid": entry.aggregate_uuid,
             "aggregate_name": entry.aggregate_name,
             "version": entry.version,
             "data": None,
@@ -155,7 +158,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
-            previous = await self._select_one_aggregate(diff.id, diff.name)
+            previous = await self._select_one_aggregate(diff.uuid, diff.name)
         except Exception:
             # noinspection PyTypeChecker
             aggregate_cls: Type[Aggregate] = import_module(diff.name)
@@ -167,13 +170,13 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         previous.apply_diff(diff)
         return previous
 
-    async def _select_one_aggregate(self, aggregate_id: int, aggregate_name: str) -> Aggregate:
-        snapshot_entry = await self._select_one(aggregate_id, aggregate_name)
+    async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str) -> Aggregate:
+        snapshot_entry = await self._select_one(aggregate_uuid, aggregate_name)
         return snapshot_entry.aggregate
 
-    async def _select_one(self, aggregate_id: int, aggregate_name: str) -> SnapshotEntry:
-        raw = await self.submit_query_and_fetchone(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_id, aggregate_name))
-        return SnapshotEntry(aggregate_id, aggregate_name, *raw)
+    async def _select_one(self, aggregate_uuid: UUID, aggregate_name: str) -> SnapshotEntry:
+        raw = await self.submit_query_and_fetchone(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_uuid, aggregate_name))
+        return SnapshotEntry(aggregate_uuid, aggregate_name, *raw)
 
     async def _submit_instance(self, aggregate: Aggregate) -> SnapshotEntry:
         snapshot_entry = SnapshotEntry.from_aggregate(aggregate)
@@ -182,7 +185,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
     async def _submit_update_or_create(self, entry: SnapshotEntry) -> SnapshotEntry:
         params = {
-            "aggregate_id": entry.aggregate_id,
+            "aggregate_uuid": entry.aggregate_uuid,
             "aggregate_name": entry.aggregate_name,
             "version": entry.version,
             "data": entry.data,
@@ -197,20 +200,20 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
 SELECT version, data, created_at, updated_at
 FROM snapshot
-WHERE aggregate_id = %s and aggregate_name = %s;
+WHERE aggregate_uuid = %s and aggregate_name = %s;
 """.strip()
 
 _INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """
-INSERT INTO snapshot (aggregate_id, aggregate_name, version, data, created_at, updated_at)
+INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, data, created_at, updated_at)
 VALUES (
-    %(aggregate_id)s,
+    %(aggregate_uuid)s,
     %(aggregate_name)s,
     %(version)s,
     %(data)s,
     default,
     default
 )
-ON CONFLICT (aggregate_id, aggregate_name)
+ON CONFLICT (aggregate_uuid, aggregate_name)
 DO
    UPDATE SET version = %(version)s, data = %(data)s, updated_at = NOW()
 RETURNING created_at, updated_at;

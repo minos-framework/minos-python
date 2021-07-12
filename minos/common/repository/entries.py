@@ -22,6 +22,9 @@ from typing import (
     Type,
     Union,
 )
+from uuid import (
+    UUID,
+)
 
 from ..exceptions import (
     MinosRepositoryUnknownActionException,
@@ -58,12 +61,12 @@ class RepositoryAction(Enum):
 class RepositoryEntry:
     """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
 
-    __slots__ = "aggregate_id", "aggregate_name", "version", "data", "id", "action", "created_at"
+    __slots__ = "aggregate_uuid", "aggregate_name", "version", "data", "id", "action", "created_at"
 
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
-        aggregate_id: int,
+        aggregate_uuid: UUID,
         aggregate_name: str,
         version: int,
         data: Union[bytes, memoryview] = bytes(),
@@ -76,7 +79,7 @@ class RepositoryEntry:
         if action is not None and isinstance(action, str):
             action = RepositoryAction.value_of(action)
 
-        self.aggregate_id = aggregate_id
+        self.aggregate_uuid = aggregate_uuid
         self.aggregate_name = aggregate_name
         self.version = version
         self.data = data
@@ -94,7 +97,7 @@ class RepositoryEntry:
         """
         # noinspection PyTypeChecker
         return cls(
-            aggregate_diff.id, aggregate_diff.name, aggregate_diff.version, aggregate_diff.fields_diff.avro_bytes
+            aggregate_diff.uuid, aggregate_diff.name, aggregate_diff.version, aggregate_diff.fields_diff.avro_bytes
         )
 
     @property
@@ -118,7 +121,7 @@ class RepositoryEntry:
         )
 
         return AggregateDiff(
-            self.aggregate_id, self.aggregate_name, self.version, FieldsDiff.from_avro_bytes(self.data)
+            self.aggregate_uuid, self.aggregate_name, self.version, FieldsDiff.from_avro_bytes(self.data)
         )
 
     def __eq__(self, other: "RepositoryEntry") -> bool:
@@ -129,7 +132,7 @@ class RepositoryEntry:
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.aggregate_id,
+            self.aggregate_uuid,
             self.aggregate_name,
             self.version,
             self.data,
@@ -141,7 +144,7 @@ class RepositoryEntry:
     def __repr__(self):
         return (
             f"{type(self).__name__}("
-            f"aggregate_id={repr(self.aggregate_id)}, aggregate_name={repr(self.aggregate_name)}, "
-            f"version={repr(self.version)}, data={repr(self.data)}, "
-            f"id={repr(self.id)}, action={repr(self.action)}, created_at={repr(self.created_at)})"
+            f"aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
+            f"version={self.version!r}, data={self.data!r}, "
+            f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r})"
         )

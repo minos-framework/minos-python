@@ -37,19 +37,21 @@ from ...exceptions import (
     MinosTypeAttributeException,
 )
 from ..types import (
-    PYTHON_IMMUTABLE_TYPES,
     MissingSentinel,
     ModelRef,
     ModelType,
-)
-from .utils import (
-    _is_aggregate_cls,
-    _is_model_cls,
-    _is_type,
+    NoneType,
+    TypeHintBuilder,
+    is_aggregate_subclass,
+    is_aggregateref_subclass,
+    is_model_subclass,
+    is_type_subclass,
 )
 
 if TYPE_CHECKING:
-    from .fields import Field  # pragma: no cover
+    from ..fields import (
+        Field,
+    )
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -80,6 +82,8 @@ class AvroDataDecoder:
         return self._cast_value(self._type, data)
 
     def _cast_value(self, type_field: Type, data: Any) -> Any:
+        if type_field is Any:
+            type_field = TypeHintBuilder(data).build()
         origin = get_origin(type_field)
         if origin is not Union:
             return self._cast_single_value(type_field, data)
@@ -93,7 +97,7 @@ class AvroDataDecoder:
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
-        if type_field is not type(None):  # noqa: E721
+        if type_field is not NoneType:
             if data is None:
                 raise MinosReqAttributeException(f"{self._name!r} field is {None!r}.")
 
@@ -103,12 +107,30 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
-        if _is_type(type_field):
-            if type_field is type(None):  # noqa: E721
-                return self._cast_none_value(type_field, data)
+        if type_field is NoneType:
+            return self._cast_none_value(type_field, data)
 
-            if issubclass(type_field, PYTHON_IMMUTABLE_TYPES):
-                return self._cast_simple_value(type_field, data)
+        if data is None:
+            raise MinosReqAttributeException(f"{self._name!r} field is '{None!r}'.")
+
+        if data is MissingSentinel:
+            raise MinosReqAttributeException(f"{self._name!r} field is missing.")
+
+        if is_type_subclass(type_field):
+            if issubclass(type_field, bool):
+                return self._cast_bool(data)
+
+            if issubclass(type_field, int):
+                return self._cast_int(type_field, data)
+
+            if issubclass(type_field, float):
+                return self._cast_float(data)
+
+            if issubclass(type_field, str):
+                return self._cast_string(data)
+
+            if issubclass(type_field, bytes):
+                return self._cast_bytes(data)
 
             if issubclass(type_field, datetime):
                 return self._cast_datetime(data)
@@ -125,7 +147,7 @@ class AvroDataDecoder:
             if isinstance(type_field, ModelType):
                 return self._cast_model_type(type_field, data)
 
-            if _is_model_cls(type_field):
+            if is_model_subclass(type_field):
                 return self._cast_model(type_field, data)
 
         return self._cast_composed_value(type_field, data)
@@ -135,30 +157,6 @@ class AvroDataDecoder:
             return None
 
         raise MinosTypeAttributeException(self._name, type_field, data)
-
-    def _cast_simple_value(self, type_field: Type, data: Any) -> Any:
-        if data is None:
-            raise MinosReqAttributeException(f"{self._name!r} field is '{None!r}'.")
-
-        if data is MissingSentinel:
-            raise MinosReqAttributeException(f"{self._name!r} field is missing.")
-
-        if issubclass(type_field, bool):
-            return self._cast_bool(data)
-
-        if issubclass(type_field, int):
-            return self._cast_int(type_field, data)
-
-        if issubclass(type_field, float):
-            return self._cast_float(data)
-
-        if issubclass(type_field, str):
-            return self._cast_string(data)
-
-        if issubclass(type_field, bytes):
-            return self._cast_bytes(data)
-
-        raise MinosTypeAttributeException(self._name, type_field, data)  # pragma: no cover
 
     def _cast_int(self, type_field, data: Any) -> int:
         try:
@@ -243,12 +241,6 @@ class AvroDataDecoder:
         if origin_type is None:
             raise MinosMalformedAttributeException(f"{self._name!r} field is malformed. Type: '{type_field}'.")
 
-        if data is None:
-            raise MinosReqAttributeException(f"{self._name!r} field is 'None'.")
-
-        if data is MissingSentinel:
-            raise MinosReqAttributeException(f"{self._name!r} field is missing.")
-
         if origin_type is list:
             return self._convert_list(data, type_field)
 
@@ -284,12 +276,14 @@ class AvroDataDecoder:
 
     def _convert_model_ref(self, data: Any, type_field: Type) -> Any:
         inner_type = get_args(type_field)[0]
-        if not (_is_type(inner_type) and _is_aggregate_cls(inner_type)):
+        if not (
+            is_type_subclass(inner_type) and (is_aggregate_subclass(inner_type) or is_aggregateref_subclass(inner_type))
+        ):
             raise MinosMalformedAttributeException(
                 f"'ModelRef[T]' T type must be a descendant of 'Aggregate'. Obtained: {inner_type!r}"
             )
 
-        return self._cast_value(Union[inner_type, int], data)
+        return self._cast_value(Union[inner_type, UUID], data)
 
     def _convert_list_params(self, data: Iterable, type_params: Type) -> list[Any]:
         """

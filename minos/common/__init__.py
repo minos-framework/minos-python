@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 from .configuration import (
     BROKER,
@@ -24,6 +24,9 @@ from .configuration import (
     MinosConfig,
     MinosConfigAbstract,
 )
+from .constants import (
+    NULL_UUID,
+)
 from .database import (
     PostgreSqlMinosDatabase,
 )
@@ -34,15 +37,17 @@ from .exceptions import (
     MinosBrokerNotProvidedException,
     MinosConfigException,
     MinosException,
+    MinosImmutableClassException,
     MinosImportException,
     MinosMalformedAttributeException,
     MinosMessageException,
     MinosModelAttributeException,
     MinosModelException,
     MinosParseAttributeException,
+    MinosPreviousVersionSnapshotException,
     MinosProtocolException,
     MinosRepositoryException,
-    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
@@ -77,6 +82,7 @@ from .meta import (
 from .model import (
     Aggregate,
     AggregateDiff,
+    AggregateRef,
     AvroDataDecoder,
     AvroDataEncoder,
     AvroSchemaDecoder,
@@ -100,8 +106,10 @@ from .model import (
     ModelField,
     ModelRef,
     ModelType,
+    NoneType,
     TypeHintBuilder,
     TypeHintComparator,
+    ValueObject,
 )
 from .networks import (
     MinosBroker,

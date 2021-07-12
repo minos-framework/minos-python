@@ -19,13 +19,13 @@ from typing import (
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from minos.common import (
     Aggregate,
     CommandReply,
     MinosBroker,
-    MinosModel,
     MinosRepository,
     MinosSagaManager,
     MinosSnapshot,
@@ -48,7 +48,7 @@ class FakeRepository(MinosRepository):
         self.id_counter += 1
         entry.id = self.id_counter
         entry.version += 1
-        entry.aggregate_id = 9999
+        entry.aggregate_uuid = uuid4()
         entry.created_at = datetime.now()
         return entry
 
@@ -64,10 +64,10 @@ class FakeBroker(MinosBroker):
         self.call_count = 0
         self.calls_kwargs = list()
 
-    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
+    async def send(self, data: Any, **kwargs) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
-        self.calls_kwargs.append({"items": items} | kwargs)
+        self.calls_kwargs.append({"data": data} | kwargs)
 
     @property
     def call_kwargs(self) -> Optional[dict[str, Any]]:

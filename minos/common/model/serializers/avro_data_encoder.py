@@ -28,12 +28,9 @@ from uuid import (
 from ...exceptions import (
     MinosMalformedAttributeException,
 )
-from ..types import (
-    PYTHON_IMMUTABLE_TYPES,
-)
 
 if TYPE_CHECKING:
-    from .fields import Field  # pragma: no cover
+    from ..fields import Field  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -65,7 +62,7 @@ class AvroDataEncoder:
         if value is None:
             return None
 
-        if isinstance(value, PYTHON_IMMUTABLE_TYPES):
+        if isinstance(value, (str, int, bool, float, bytes)):
             return value
 
         if isinstance(value, datetime):

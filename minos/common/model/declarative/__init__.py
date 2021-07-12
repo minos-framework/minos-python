@@ -12,10 +12,14 @@ from .abc import (
 from .aggregate import (
     Aggregate,
     AggregateDiff,
+    AggregateRef,
 )
 from .networks import (
     Command,
     CommandReply,
     CommandStatus,
     Event,
+)
+from .value_object import (
+    ValueObject,
 )

@@ -20,6 +20,9 @@ from typing import (
     Type,
     Union,
 )
+from uuid import (
+    UUID,
+)
 
 from ..exceptions import (
     MinosSnapshotDeletedAggregateException,
@@ -40,12 +43,12 @@ class SnapshotEntry:
     Is the python object representation of a row in the ``snapshot`` storage system.
     """
 
-    __slots__ = "aggregate_id", "aggregate_name", "version", "data", "created_at", "updated_at"
+    __slots__ = "aggregate_uuid", "aggregate_name", "version", "data", "created_at", "updated_at"
 
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
-        aggregate_id: int,
+        aggregate_uuid: UUID,
         aggregate_name: str,
         version: int,
         data: Union[bytes, memoryview, None] = None,
@@ -55,7 +58,7 @@ class SnapshotEntry:
         if isinstance(data, memoryview):
             data = data.tobytes()
 
-        self.aggregate_id = aggregate_id
+        self.aggregate_uuid = aggregate_uuid
         self.aggregate_name = aggregate_name
         self.version = version
         self.data = data
@@ -71,7 +74,7 @@ class SnapshotEntry:
         :return: A new ``MinosSnapshotEntry`` instance.
         """
         # noinspection PyTypeChecker
-        return cls(aggregate.id, aggregate.classname, aggregate.version, aggregate.avro_bytes)
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, aggregate.avro_bytes)
 
     @property
     def aggregate(self) -> Aggregate:
@@ -81,10 +84,10 @@ class SnapshotEntry:
         """
         if self.data is None:
             raise MinosSnapshotDeletedAggregateException(
-                f"The {self.aggregate_id!r} id points to an already deleted aggregate."
+                f"The {self.aggregate_uuid!r} id points to an already deleted aggregate."
             )
         cls = self.aggregate_cls
-        instance = cls.from_avro_bytes(self.data, id=self.aggregate_id, version=self.version)
+        instance = cls.from_avro_bytes(self.data, id=self.aggregate_uuid, version=self.version)
         return instance
 
     @property
@@ -109,7 +112,7 @@ class SnapshotEntry:
     def __repr__(self):
         name = type(self).__name__
         return (
-            f"{name}(aggregate_id={repr(self.aggregate_id)}, aggregate_name={repr(self.aggregate_name)}, "
-            f"version={repr(self.version)}, data={repr(self.data)}, "
-            f"created_at={repr(self.created_at)}, updated_at={repr(self.updated_at)})"
+            f"{name}(aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
+            f"version={self.version!r}, data={self.data!r}, "
+            f"created_at={self.created_at!r}, updated_at={self.updated_at!r})"
         )

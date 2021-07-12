@@ -11,6 +11,7 @@ from __future__ import (
 
 import logging
 from typing import (
+    Any,
     Generic,
     Type,
     TypeVar,
@@ -18,14 +19,46 @@ from typing import (
     get_args,
     get_origin,
 )
+from uuid import (
+    UUID,
+)
 
-from ..types import (
+from .data_types import (
     ModelRef,
 )
-from .utils import (
-    _is_model_cls,
-    _is_type,
-)
+
+
+def is_model_subclass(type_field: Any) -> bool:
+    """Check if the given type field is subclass of ``Model``."""
+    from ..abc import (
+        Model,
+    )
+
+    return issubclass(type_field, Model)
+
+
+def is_aggregate_subclass(type_field: Any) -> bool:
+    """Check if the given type field is subclass of ``Aggregate``."""
+    from ..declarative import (
+        Aggregate,
+    )
+
+    return issubclass(type_field, Aggregate)
+
+
+def is_aggregateref_subclass(type_field: Any) -> bool:
+    """Check if the given type field is subclass of ``SubAggregate``."""
+    from ..declarative import (
+        AggregateRef,
+    )
+
+    return issubclass(type_field, AggregateRef)
+
+
+def is_type_subclass(type_field: Any) -> bool:
+    """Check if the given type field is subclass of ``type``."""
+    return issubclass(type(type_field), type(type))
+
 
 logger = logging.getLogger(__name__)
 
@@ -50,15 +83,15 @@ class TypeHintComparator(Generic[T, K]):
 
     def _compare(self, first: Type[T], second: Type[K]) -> bool:
         if get_origin(first) is ModelRef:
-            first = Union[(*get_args(first), int)]
+            first = Union[(*get_args(first), UUID)]
 
         if get_origin(second) is ModelRef:
-            second = Union[(*get_args(second), int)]
+            second = Union[(*get_args(second), UUID)]
 
-        if _is_type(first) and _is_model_cls(first):
+        if is_type_subclass(first) and is_model_subclass(first):
             first = first.model_type
 
-        if _is_type(second) and _is_model_cls(second):
+        if is_type_subclass(second) and is_model_subclass(second):
             second = second.model_type
 
         if first == second:
