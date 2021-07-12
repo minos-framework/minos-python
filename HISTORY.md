@@ -35,3 +35,9 @@ History
 * BugFix
 * Added clients for Minos Discovery Service
 * Added support for Docker and Docker-Compose
+
+0.0.8 (2021-07-12)
+------------------
+
+* Add new version support for minos-common
+* BugFix
