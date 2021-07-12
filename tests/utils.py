@@ -115,7 +115,7 @@ class FakeBroker(MinosBroker):
         self.call_count = 0
         self.items = None
         self.topic = None
-        self.saga_uuid = None
+        self.saga = None
         self.reply_topic = None
         self.status = None
 
@@ -123,7 +123,7 @@ class FakeBroker(MinosBroker):
         self,
         items: list[MinosModel],
         topic: str = None,
-        saga_uuid: str = None,
+        saga: str = None,
         reply_topic: str = None,
         status: CommandStatus = None,
         **kwargs
@@ -132,7 +132,7 @@ class FakeBroker(MinosBroker):
         self.call_count += 1
         self.items = items
         self.topic = topic
-        self.saga_uuid = saga_uuid
+        self.saga = saga
         self.reply_topic = reply_topic
         self.status = status
 

@@ -80,7 +80,7 @@ class CommandHandler(Handler):
         fn = self.get_callback(entry.callback)
         items, status = await fn(command)
 
-        await self.broker.send(items, topic=command.reply_topic, saga_uuid=command.saga, status=status)
+        await self.broker.send(items, topic=command.reply_topic, saga=command.saga, status=status)
 
     @staticmethod
     def get_callback(
