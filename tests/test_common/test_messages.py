@@ -28,32 +28,40 @@ class TestRequest(unittest.IsolatedAsyncioTestCase):
 
 class TestResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.items = [Foo("blue"), Foo("red")]
+        self.data = [Foo("blue"), Foo("red")]
 
     async def test_content(self):
-        response = Response(self.items)
-        self.assertEqual(self.items, await response.content())
+        response = Response(self.data)
+        self.assertEqual(self.data, await response.content())
 
     async def test_content_single(self):
-        response = Response(self.items[0])
-        self.assertEqual([self.items[0]], await response.content())
+        response = Response(self.data[0])
+        self.assertEqual(self.data[0], await response.content())
+
+    async def test_content_simple(self):
+        response = Response(1234)
+        self.assertEqual(1234, await response.content())
 
     async def test_raw_content(self):
-        response = Response(self.items)
-        self.assertEqual([item.avro_data for item in self.items], await response.raw_content())
+        response = Response(self.data)
+        self.assertEqual([item.avro_data for item in self.data], await response.raw_content())
 
     async def test_raw_content_single(self):
-        response = Response(self.items[0])
-        self.assertEqual([self.items[0].avro_data], await response.raw_content())
+        response = Response(self.data[0])
+        self.assertEqual(self.data[0].avro_data, await response.raw_content())
+
+    async def test_raw_content_simple(self):
+        response = Response(1234)
+        self.assertEqual(1234, await response.raw_content())
 
     async def test_eq_true(self):
-        self.assertEqual(Response(self.items), Response(self.items))
+        self.assertEqual(Response(self.data), Response(self.data))
 
     async def test_eq_false(self):
-        self.assertNotEqual(Response(self.items[0]), Response(self.items[1]))
+        self.assertNotEqual(Response(self.data[0]), Response(self.data[1]))
 
     async def test_repr(self):
-        response = Response(self.items)
+        response = Response(self.data)
         self.assertEqual("Response([Foo(text=blue), Foo(text=red)])", repr(response))
 
 

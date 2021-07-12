@@ -21,7 +21,7 @@ from .exceptions import (
     MinosException,
 )
 from .model import (
-    Model,
+    AvroDataEncoder,
 )
 
 
@@ -49,12 +49,10 @@ class Request(ABC):
 class Response:
     """Response definition."""
 
-    __slots__ = "_items"
+    __slots__ = "_data"
 
-    def __init__(self, items: Any):
-        if not isinstance(items, list):
-            items = [items]
-        self._items = items
+    def __init__(self, data: Any):
+        self._data = data
 
     # noinspection PyUnusedLocal
     async def content(self, **kwargs) -> Any:
@@ -63,7 +61,7 @@ class Response:
         :param kwargs: Additional named arguments.
         :return: A list of items.
         """
-        return self._items
+        return self._data
 
     # noinspection PyUnusedLocal
     async def raw_content(self, **kwargs) -> Any:
@@ -72,13 +70,13 @@ class Response:
         :param kwargs: Additional named arguments.
         :return: A list of raw items.
         """
-        return [item if not isinstance(item, Model) else item.avro_data for item in self._items]
+        return AvroDataEncoder(self._data).build()
 
     def __eq__(self, other: Response) -> bool:
-        return type(self) == type(other) and self._items == other._items
+        return type(self) == type(other) and self._data == other._data
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._items!r})"
+        return f"{type(self).__name__}({self._data!r})"
 
 
 class ResponseException(MinosException):
