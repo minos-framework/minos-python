@@ -10,12 +10,9 @@ from __future__ import (
 )
 
 import logging
-from typing import (
-    Optional,
-)
 
 from minos.common import (
-    Aggregate,
+    AggregateDiff,
     Event,
     MinosConfig,
 )
@@ -36,15 +33,14 @@ class EventBroker(Broker):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventBroker:
         return cls(*args, **config.events.queue._asdict(), **kwargs)
 
-    async def send(self, items: list[Aggregate], topic: Optional[str] = None, **kwargs) -> int:
-        """Send a list of ``Aggregate`` instances.
+    # noinspection PyMethodOverriding
+    async def send(self, data: AggregateDiff, topic: str, **kwargs) -> int:
+        """Send an ``Event``.
 
-        :param items: A list of aggregates.
+        :param data: The data to be send.
         :param topic: Topic in which the message will be published.
         :return: This method does not return anything.
         """
-        if topic is None:
-            topic = self.topic
-        event = Event(topic, items)
+        event = Event(topic, data)
         logger.info(f"Sending '{event!s}'...")
         return await self.send_bytes(event.topic, event.avro_bytes)
