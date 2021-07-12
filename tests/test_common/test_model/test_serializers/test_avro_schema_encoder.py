@@ -13,6 +13,7 @@ from datetime import (
     time,
 )
 from typing import (
+    Any,
     Optional,
 )
 from uuid import (
@@ -137,6 +138,11 @@ class TestAvroSchemaEncoder(unittest.TestCase):
     def test_uuid(self):
         expected = {"name": "test", "type": {"type": "string", "logicalType": "uuid"}}
         observed = AvroSchemaEncoder("test", UUID).build()
+        self.assertEqual(expected, observed)
+
+    def test_any(self):
+        expected = {"name": "test", "type": "null"}
+        observed = AvroSchemaEncoder("test", Any).build()
         self.assertEqual(expected, observed)
 
 

@@ -100,8 +100,12 @@ class AvroSchemaEncoder:
         return ans
 
     def _build_single_schema(self, type_field: Type) -> Any:
+        if type_field is Any:
+            # FIXME: This is a design decision that must be revisited in the future.
+            return AVRO_NULL
+
         if is_type_subclass(type_field):
-            if type_field is NoneType:
+            if issubclass(type_field, NoneType):
                 return AVRO_NULL
 
             if issubclass(type_field, bool):
