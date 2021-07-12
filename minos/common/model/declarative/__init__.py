@@ -12,7 +12,7 @@ from .abc import (
 from .aggregate import (
     Aggregate,
     AggregateDiff,
-    SubAggregate,
+    AggregateRef,
 )
 from .networks import (
     Command,

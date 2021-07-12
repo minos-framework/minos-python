@@ -21,7 +21,7 @@ from ..abc import (
 logger = logging.getLogger(__name__)
 
 
-class SubAggregate(DeclarativeModel):
+class AggregateRef(DeclarativeModel):
     """Sub Aggregate class."""
 
     uuid: UUID

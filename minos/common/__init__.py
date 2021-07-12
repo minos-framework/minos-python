@@ -82,6 +82,7 @@ from .meta import (
 from .model import (
     Aggregate,
     AggregateDiff,
+    AggregateRef,
     AvroDataDecoder,
     AvroDataEncoder,
     AvroSchemaDecoder,
@@ -106,7 +107,6 @@ from .model import (
     ModelRef,
     ModelType,
     NoneType,
-    SubAggregate,
     TypeHintBuilder,
     TypeHintComparator,
     ValueObject,

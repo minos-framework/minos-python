@@ -28,7 +28,7 @@ from ..abc import (
 )
 
 if TYPE_CHECKING:
-    from .root import (
+    from .model import (
         Aggregate,
     )
 
