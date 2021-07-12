@@ -13,7 +13,6 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    CommandReply,
     CommandStatus,
     MinosConfig,
 )
@@ -42,8 +41,8 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         self.broker = NaiveBroker()
         self.execute_kwargs = {"definition_name": "FoodAdd", "execution_uuid": uuid.uuid4(), "broker": self.broker}
 
-        self.publish_mock = MagicMock(side_effect=self.broker.send_one)
-        self.broker.send_one = self.publish_mock
+        self.publish_mock = MagicMock(side_effect=self.broker.send)
+        self.broker.send = self.publish_mock
 
     async def test_execute_invoke_participant(self):
         step = SagaStep().invoke_participant("FooAdd", foo_fn)
@@ -56,7 +55,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
 
-        reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.SUCCESS)
+        reply = fake_reply(status=CommandStatus.SUCCESS)
         await execution.execute(context, reply=reply, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
@@ -83,7 +82,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
 
-        reply = CommandReply("FooCreated", [], "saga_id", status=CommandStatus.ERROR)
+        reply = fake_reply(status=CommandStatus.ERROR)
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 

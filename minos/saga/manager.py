@@ -79,7 +79,7 @@ class SagaManager(MinosSagaManager):
         return await self._run(execution, **kwargs)
 
     async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
-        execution = self.storage.load(reply.saga_uuid)
+        execution = self.storage.load(reply.saga)
         return await self._run(execution, reply=reply, **kwargs)
 
     async def _run(self, execution: SagaExecution, **kwargs) -> UUID:
