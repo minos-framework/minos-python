@@ -24,9 +24,9 @@ from tests.utils import (
 
 class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.models = [FakeModel("foo"), FakeModel("bar")]
+        self.data = [FakeModel("foo"), FakeModel("bar")]
         self.saga = uuid4()
-        self.command = Command("FooCreated", self.models, self.saga, "AddOrderReply")
+        self.command = Command("FooCreated", self.data, self.saga, "AddOrderReply")
 
     def test_repr(self):
         request = CommandRequest(self.command)
@@ -40,7 +40,7 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(CommandRequest(self.command), CommandRequest(self.command))
 
     def test_eq_false(self):
-        another = CommandRequest(Command("FooUpdated", self.models, self.saga, "AddOrderReply"))
+        another = CommandRequest(Command("FooUpdated", self.data, self.saga, "AddOrderReply"))
         self.assertNotEqual(CommandRequest(self.command), another)
 
     def test_command(self):
@@ -49,24 +49,25 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
 
     async def test_content(self):
         request = CommandRequest(self.command)
-        self.assertEqual(self.models, await request.content())
+        self.assertEqual(self.data, await request.content())
 
     async def test_content_single(self):
-        request = CommandRequest(Command("FooCreated", self.models[0], self.saga, "AddOrderReply"))
-        self.assertEqual(self.models[0], await request.content())
+        request = CommandRequest(Command("FooCreated", self.data[0], self.saga, "AddOrderReply"))
+        self.assertEqual(self.data[0], await request.content())
+
+    async def test_content_simple(self):
+        request = CommandRequest(Command("FooCreated", 1234, self.saga, "AddOrderReply"))
+        self.assertEqual(1234, await request.content())
 
 
 class TestCommandResponse(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        self.models = [FakeModel("foo"), FakeModel("bar")]
-
     async def test_content(self):
-        response = CommandResponse(self.models)
-        self.assertEqual(self.models, await response.content())
+        response = CommandResponse([FakeModel("foo"), FakeModel("bar")])
+        self.assertEqual([FakeModel("foo"), FakeModel("bar")], await response.content())
 
     async def test_content_single(self):
-        response = CommandResponse(self.models[0])
-        self.assertEqual([self.models[0]], await response.content())
+        response = CommandResponse(FakeModel("foo"))
+        self.assertEqual(FakeModel("foo"), await response.content())
 
 
 if __name__ == "__main__":

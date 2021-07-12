@@ -100,7 +100,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
             await self.handler.dispatch_one(entry)
 
         self.assertEqual(1, self.broker.call_count)
-        self.assertEqual(["add_order"], self.broker.items)
+        self.assertEqual("add_order", self.broker.items)
         self.assertEqual("UpdateTicket", self.broker.topic)
         self.assertEqual(self.command.saga, self.broker.saga_uuid)
         self.assertEqual(None, self.broker.reply_topic)
@@ -113,7 +113,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     async def test_get_callback(self):
         fn = self.handler.get_callback(_Cls._fn)
-        self.assertEqual(([FakeModel("foo")], CommandStatus.SUCCESS), await fn(self.command))
+        self.assertEqual((FakeModel("foo"), CommandStatus.SUCCESS), await fn(self.command))
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)

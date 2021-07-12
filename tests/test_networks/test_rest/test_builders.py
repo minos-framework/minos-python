@@ -81,7 +81,7 @@ class TestRestBuilder(PostgresAsyncTestCase):
         handler = self.dispatcher.get_callback(_Cls._fn)
         response = await handler(MockedRequest({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
-        self.assertEqual('[{"foo": "bar"}]', response.text)
+        self.assertEqual('{"foo": "bar"}', response.text)
         self.assertEqual("application/json", response.content_type)
 
     async def test_get_callback_raises_response(self):
@@ -107,7 +107,7 @@ class TestRestBuilder(PostgresAsyncTestCase):
         observed_response = observed(HttpRequest(MockedRequest({"foo": "bar"})))
         response = await observed_response
         self.assertIsInstance(response, HttpResponse)
-        self.assertEqual([Content(foo="bar")], await response.content())
+        self.assertEqual(Content(foo="bar"), await response.content())
 
 
 if __name__ == "__main__":
