@@ -144,6 +144,8 @@ class RestBuilder(MinosSetup):
                     response = await response
                 if isinstance(response, Response):
                     response = await response.raw_content()
+                if response is None:
+                    return web.json_response()
                 return web.json_response(response)
             except ResponseException as exc:
                 logger.info(f"Raised a user exception: {exc!s}")

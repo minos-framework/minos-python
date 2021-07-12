@@ -39,6 +39,10 @@ class _Cls:
         return CommandResponse(await request.content())
 
     @staticmethod
+    async def _fn_none(request: Request):
+        return
+
+    @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
         raise CommandResponseException("")
 
@@ -114,6 +118,10 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_get_callback(self):
         fn = self.handler.get_callback(_Cls._fn)
         self.assertEqual((FakeModel("foo"), CommandStatus.SUCCESS), await fn(self.command))
+
+    async def test_get_callback_none(self):
+        fn = self.handler.get_callback(_Cls._fn_none)
+        self.assertEqual((None, CommandStatus.SUCCESS), await fn(self.command))
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
