@@ -107,3 +107,11 @@ History
 * Improved queries for Aggregate ( per id query )
 * Added methods for Snapshot ( added check for duplicates )
 
+0.1.3 (2021-07-12)
+--------------------
+
+* AggregateRef Model
+* ValueObjects Model
+* Bugfixes
+* Removed ID to UUID for models
+* Events use AggregateDIff
