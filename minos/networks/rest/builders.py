@@ -126,10 +126,10 @@ class RestBuilder(MinosSetup):
     def get_callback(
         fn: Callable[[HttpRequest], Union[HttpResponse, Awaitable[HttpResponse]]]
     ) -> Callable[[web.Request], Awaitable[web.Response]]:
-        """Get the handler function to be used by ``aiohttp``.
+        """Get the handler function to be used by the ``aiohttp`` Controller.
 
         :param fn: The action function.
-        :return: A wrapper function of the passed one that is able to be used by ``aiohttp``.
+        :return: A wrapper function around the given one that is compatible with the ``aiohttp`` Controller.
         """
 
         async def _fn(request: web.Request) -> web.Response:
