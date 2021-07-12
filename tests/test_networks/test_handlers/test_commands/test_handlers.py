@@ -117,15 +117,15 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
-        self.assertEqual(([], CommandStatus.ERROR), await fn(self.command))
+        self.assertEqual((None, CommandStatus.ERROR), await fn(self.command))
 
     async def test_get_callback_raises_minos(self):
         fn = self.handler.get_callback(_Cls._fn_raises_minos)
-        self.assertEqual(([], CommandStatus.SYSTEM_ERROR), await fn(self.command))
+        self.assertEqual((None, CommandStatus.SYSTEM_ERROR), await fn(self.command))
 
     async def test_get_callback_raises_exception(self):
         fn = self.handler.get_callback(_Cls._fn_raises_exception)
-        self.assertEqual(([], CommandStatus.SYSTEM_ERROR), await fn(self.command))
+        self.assertEqual((None, CommandStatus.SYSTEM_ERROR), await fn(self.command))
 
 
 if __name__ == "__main__":
