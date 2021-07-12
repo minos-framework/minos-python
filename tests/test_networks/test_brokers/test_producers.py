@@ -1,5 +1,8 @@
 import asyncio
 import unittest
+from uuid import (
+    uuid4,
+)
 
 import aiopg
 
@@ -18,6 +21,7 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
+    FAKE_AGGREGATE_DIFF,
     FakeModel,
 )
 
@@ -35,24 +39,21 @@ class TestProducer(PostgresAsyncTestCase):
 
     async def test_concurrency_dispatcher(self):
         model = FakeModel("foo")
+        saga = uuid4()
 
-        command_broker = CommandBroker.from_config(
-            "CommandBroker-Delete", config=self.config, saga_uuid="9347839473kfslf", reply_topic="TestDeleteReply"
-        )
-        command_reply_broker = CommandReplyBroker.from_config(
-            "TestDeleteReply", config=self.config, saga_uuid="9347839473kfslf", status=CommandStatus.SUCCESS
-        )
-        event_broker = EventBroker.from_config("EventBroker-Delete", config=self.config)
+        command_broker = CommandBroker.from_config(config=self.config)
+        command_reply_broker = CommandReplyBroker.from_config(config=self.config)
+        event_broker = EventBroker.from_config(config=self.config)
 
         for x in range(0, 20):
             async with command_reply_broker:
-                await command_reply_broker.send_one(model)
+                await command_reply_broker.send(model, "TestDeleteReply", saga, CommandStatus.SUCCESS)
 
             async with command_broker:
-                await command_broker.send_one(model)
+                await command_broker.send(model, "CommandBroker-Delete", saga, "TestDeleteReply")
 
             async with event_broker:
-                await event_broker.send_one(model)
+                await event_broker.send(FAKE_AGGREGATE_DIFF, topic="EventBroker-Delete")
 
         async with aiopg.connect(**self.events_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -73,11 +74,9 @@ class TestProducer(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_commands_was_deleted(self):
-        model = FakeModel("foo")
-
-        async with EventBroker.from_config("TestDeleteReply", config=self.config) as broker:
-            queue_id_1 = await broker.send_one(model)
-            queue_id_2 = await broker.send_one(model)
+        async with EventBroker.from_config(config=self.config) as broker:
+            queue_id_1 = await broker.send(FAKE_AGGREGATE_DIFF, "TestDeleteReply")
+            queue_id_2 = await broker.send(FAKE_AGGREGATE_DIFF, "TestDeleteReply")
 
         await Producer.from_config(config=self.config).dispatch()
 
@@ -92,12 +91,11 @@ class TestProducer(PostgresAsyncTestCase):
 
     async def test_if_commands_retry_was_incremented(self):
         model = FakeModel("foo")
+        saga = uuid4()
 
-        async with CommandReplyBroker.from_config(
-            "TestDeleteOrder", config=self.config, saga_uuid="9347839473kfslf", status=CommandStatus.SUCCESS
-        ) as broker:
-            queue_id_1 = await broker.send_one(model)
-            queue_id_2 = await broker.send_one(model)
+        async with CommandReplyBroker.from_config(config=self.config) as broker:
+            queue_id_1 = await broker.send(model, "TestDeleteOrder", saga, CommandStatus.SUCCESS)
+            queue_id_2 = await broker.send(model, "TestDeleteOrder", saga, CommandStatus.SUCCESS)
 
         config = MinosConfig(
             path=BASE_PATH / "wrong_test_config.yml",

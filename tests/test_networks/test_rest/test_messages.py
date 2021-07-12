@@ -161,7 +161,7 @@ class TestHttpResponse(unittest.IsolatedAsyncioTestCase):
 
     async def test_content_single(self):
         response = HttpResponse(self.models[0])
-        self.assertEqual([self.models[0].avro_data], await response.raw_content())
+        self.assertEqual(self.models[0].avro_data, await response.raw_content())
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ from typing import (
     Awaitable,
     Callable,
     NoReturn,
+    Optional,
     Tuple,
     Union,
 )
@@ -31,7 +32,7 @@ from minos.common import (
     MinosBroker,
     MinosConfig,
     MinosException,
-    Model,
+    Response,
     ResponseException,
 )
 
@@ -79,33 +80,35 @@ class CommandHandler(Handler):
         fn = self.get_callback(entry.callback)
         items, status = await fn(command)
 
-        await self.broker.send(items, topic=command.reply_topic, saga_uuid=command.saga_uuid, status=status)
+        await self.broker.send(items, topic=command.reply_topic, saga=command.saga, status=status)
 
     @staticmethod
     def get_callback(
-        fn: Callable[[CommandRequest], Union[CommandRequest, Awaitable[CommandRequest]]]
-    ) -> Callable[[Command], Awaitable[Tuple[list[Model], CommandStatus]]]:
-        """TODO
+        fn: Callable[[CommandRequest], Union[Optional[CommandRequest], Awaitable[Optional[CommandRequest]]]]
+    ) -> Callable[[Command], Awaitable[Tuple[Any, CommandStatus]]]:
+        """Get the handler function to be used by the Command Handler.
 
-        :param fn: TODO
-        :return: TODO
+        :param fn: The action function.
+        :return: A wrapper function around the given one that is compatible with the Command Handler API.
         """
 
-        async def _fn(command: Command) -> Tuple[list[Model], CommandStatus]:
+        async def _fn(command: Command) -> Tuple[Any, CommandStatus]:
             try:
                 request = CommandRequest(command)
                 response = fn(request)
                 if isawaitable(response):
                     response = await response
-                return await response.content(), CommandStatus.SUCCESS
+                if isinstance(response, Response):
+                    response = await response.content()
+                return response, CommandStatus.SUCCESS
             except ResponseException as exc:
                 logger.info(f"Raised a user exception: {exc!s}")
-                return [], CommandStatus.ERROR
+                return None, CommandStatus.ERROR
             except MinosException as exc:
                 logger.warning(f"Raised a 'minos' exception: {exc!r}")
-                return [], CommandStatus.SYSTEM_ERROR
+                return None, CommandStatus.SYSTEM_ERROR
             except Exception as exc:
                 logger.exception(f"Raised an exception: {exc!r}.")
-                return [], CommandStatus.SYSTEM_ERROR
+                return None, CommandStatus.SYSTEM_ERROR
 
         return _fn

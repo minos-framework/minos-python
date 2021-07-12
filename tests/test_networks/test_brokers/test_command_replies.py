@@ -9,6 +9,9 @@ import unittest
 from unittest.mock import (
     AsyncMock,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     CommandReply,
@@ -36,14 +39,12 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
     def test_action(self):
         self.assertEqual("commandReply", CommandReplyBroker.ACTION)
 
-    async def test_send_one(self):
+    async def test_send(self):
         mock = AsyncMock(return_value=56)
-
+        saga = uuid4()
         async with CommandReplyBroker.from_config(config=self.config) as broker:
             broker.send_bytes = mock
-            identifier = await broker.send_one(
-                FakeModel("foo"), saga_uuid="9347839473kfslf", topic="fake", status=CommandStatus.SUCCESS
-            )
+            identifier = await broker.send(FakeModel("foo"), saga=saga, topic="fake", status=CommandStatus.SUCCESS)
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
@@ -51,7 +52,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fakeReply", args[0])
 
-        expected = CommandReply("fakeReply", [FakeModel("foo")], "9347839473kfslf", CommandStatus.SUCCESS)
+        expected = CommandReply("fakeReply", FakeModel("foo"), saga, CommandStatus.SUCCESS)
         observed = CommandReply.from_avro_bytes(args[1])
         self.assertEqual(expected, observed)
 

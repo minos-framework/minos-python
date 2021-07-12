@@ -10,7 +10,6 @@ from abc import (
 )
 from typing import (
     NoReturn,
-    Optional,
 )
 
 from psycopg2.sql import (
@@ -37,10 +36,6 @@ class Broker(MinosBroker, BrokerSetup, ABC):
     """Minos Broker Class."""
 
     ACTION: str
-
-    def __init__(self, topic: Optional[str] = None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.topic = topic
 
     async def send_bytes(self, topic: str, raw: bytes) -> int:
         """Send a sequence of bytes to the given topic.

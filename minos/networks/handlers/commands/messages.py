@@ -41,9 +41,7 @@ class CommandRequest(Request):
         :param kwargs: Additional named arguments.
         :return: The command content.
         """
-        data = self.command.items
-        if len(data) == 1:
-            return data[0]
+        data = self.command.data
         return data
 
 
