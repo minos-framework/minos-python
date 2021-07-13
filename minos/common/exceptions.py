@@ -58,6 +58,10 @@ class MinosBrokerException(MinosException):
     """Base broker exception"""
 
 
+class MinosCQRSException(MinosException):
+    """Base CQRS exception"""
+
+
 class MinosBrokerNotProvidedException(MinosBrokerException):
     """Exception to be raised when a broker is needed but none is set."""
 
@@ -88,6 +92,10 @@ class MinosSnapshotException(MinosException):
 
 class MinosSnapshotNotProvidedException(MinosSnapshotException):
     """Exception to be raised when a snapshot is needed but none is set."""
+
+
+class MinosSagaManagerNotProvidedException(MinosCQRSException):
+    """Exception to be raised when a SAGA Manager is not provided."""
 
 
 class MinosPreviousVersionSnapshotException(MinosSnapshotException):

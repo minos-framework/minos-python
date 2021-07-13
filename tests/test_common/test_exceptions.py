@@ -13,6 +13,7 @@ from minos.common import (
     MinosBrokerException,
     MinosBrokerNotProvidedException,
     MinosConfigException,
+    MinosCQRSException,
     MinosException,
     MinosMalformedAttributeException,
     MinosModelAttributeException,
@@ -24,6 +25,7 @@ from minos.common import (
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSagaManagerNotProvidedException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
     MinosSnapshotException,
@@ -124,6 +126,12 @@ class TestExceptions(unittest.TestCase):
         exception = MinosAttributeValidationException("foo", 34)
         message = "MinosAttributeValidationException(message=\"34 value does not pass the 'foo' field validation.\")"
         self.assertEqual(message, repr(exception))
+
+    def test_cqrs_manager(self):
+        self.assertTrue(issubclass(MinosCQRSException, MinosException))
+
+    def test_saga_manager(self):
+        self.assertTrue(issubclass(MinosSagaManagerNotProvidedException, MinosCQRSException))
 
 
 if __name__ == "__main__":
