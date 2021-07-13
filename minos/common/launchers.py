@@ -198,6 +198,17 @@ class EntrypointLauncher(MinosSetup):
             modules += [saga]  # pragma: no cover
         except ImportError:
             pass
+
+        try:
+            # noinspection PyUnresolvedReferences
+            from minos import (
+                cqrs,
+            )
+
+            modules += [cqrs]  # pragma: no cover
+        except ImportError:
+            pass
+
         return modules
 
     async def _destroy(self) -> NoReturn:
