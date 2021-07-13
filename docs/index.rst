@@ -1,4 +1,4 @@
-Welcome to Minos Microservice QRS's documentation!
+Welcome to Minos Microservice CQRS's documentation!
 ======================================
 
 .. toctree::
