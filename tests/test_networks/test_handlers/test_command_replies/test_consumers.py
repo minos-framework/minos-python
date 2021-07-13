@@ -22,9 +22,10 @@ class TestCommandReplyConsumer(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
+        expected_topics = ["AddOrderReply", "DeleteOrderReply", "TicketAddedReply", "TicketDeletedReply"]
         consumer = CommandReplyConsumer.from_config(config=self.config)
         self.assertIsInstance(consumer, CommandReplyConsumer)
-        self.assertEqual(["AddOrderReply", "DeleteOrderReply"], consumer.topics)
+        self.assertEqual(expected_topics, consumer.topics)
         self.assertEqual(self.config.saga.broker, consumer._broker)
         self.assertEqual(self.config.saga.queue.host, consumer.host)
         self.assertEqual(self.config.saga.queue.port, consumer.port)
