@@ -6,6 +6,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 from abc import (
     ABC,
 )
+from typing import (
+    Optional,
+)
 
 from dependency_injector.wiring import (
     Provide,
@@ -22,6 +25,14 @@ class Service(ABC):
 
     config: MinosConfig = Provide["config"]
     saga_manager: MinosSagaManager = Provide["saga_manager"]
+
+    def __init__(
+        self, *args, config: Optional[MinosConfig] = None, saga_manager: Optional[MinosSagaManager] = None, **kwargs,
+    ):
+        if config is not None:
+            self.config = config
+        if saga_manager is not None:
+            self.saga_manager = saga_manager
 
 
 class CommandService(Service):
