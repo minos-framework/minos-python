@@ -66,9 +66,16 @@ def identity_fn(x: T) -> T:
 class SagaStepOperation(object):
     """Saga Step Operation class."""
 
-    def __init__(self, name: str, callback: Callable):
+    def __init__(self, name: str, callback: Callable, parameters: Optional[SagaContext] = None):
+        if parameters is None:
+            from ..executions import (
+                SagaContext,
+            )
+
+            parameters = SagaContext()
         self.name = name
         self.callback = callback
+        self.parameters = parameters
 
     @property
     def raw(self) -> dict[str, Any]:
@@ -77,7 +84,11 @@ class SagaStepOperation(object):
         :return: A ``dict`` instance.
         """
         # noinspection PyTypeChecker
-        return {"name": self.name, "callback": classname(self.callback)}
+        return {
+            "name": self.name,
+            "callback": classname(self.callback),
+            "parameters": None if len(self.parameters.fields) == 0 else self.parameters.avro_str,
+        }
 
     @classmethod
     def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaStepOperation]], **kwargs) -> Optional[SagaStepOperation]:
@@ -96,6 +107,13 @@ class SagaStepOperation(object):
         current = raw | kwargs
         if isinstance(current["callback"], str):
             current["callback"] = import_module(current["callback"])
+
+        from ..executions import (
+            SagaContext,
+        )
+
+        if "parameters" in current and current["parameters"] is not None:
+            current["parameters"] = SagaContext.from_avro_str(current["parameters"])
         return cls(**current)
 
     def __eq__(self, other: SagaStep) -> bool:
@@ -142,7 +160,7 @@ class SagaStep(object):
 
         return cls(**current)
 
-    def invoke_participant(self, name: Union[str, list], callback: CallBack) -> SagaStep:
+    def invoke_participant(self, name: Union[str, list], callback: CallBack, **kwargs) -> SagaStep:
         """Invoke a new participant method.
 
         :param name: The name of the new participant instruction.
@@ -152,11 +170,15 @@ class SagaStep(object):
         if self.invoke_participant_operation is not None:
             raise MinosMultipleInvokeParticipantException()
 
-        self.invoke_participant_operation = SagaStepOperation(name, callback)
+        from ..executions import (
+            SagaContext,
+        )
+
+        self.invoke_participant_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
 
         return self
 
-    def with_compensation(self, name: str, callback: CallBack) -> SagaStep:
+    def with_compensation(self, name: str, callback: CallBack, **kwargs) -> SagaStep:
         """With compensation method.
 
         :param name: The name of the with compensation instruction.
@@ -166,11 +188,15 @@ class SagaStep(object):
         if self.with_compensation_operation is not None:
             raise MinosMultipleWithCompensationException()
 
-        self.with_compensation_operation = SagaStepOperation(name, callback)
+        from ..executions import (
+            SagaContext,
+        )
+
+        self.with_compensation_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
 
         return self
 
-    def on_reply(self, name: str, callback: Callable = identity_fn) -> SagaStep:
+    def on_reply(self, name: str, callback: Callable = identity_fn, **kwargs) -> SagaStep:
         """On reply method.
 
         :param name: The name of the variable in which the reply will be stored on the context.
@@ -180,7 +206,11 @@ class SagaStep(object):
         if self.on_reply_operation is not None:
             raise MinosMultipleOnReplyException()
 
-        self.on_reply_operation = SagaStepOperation(name, callback)
+        from ..executions import (
+            SagaContext,
+        )
+
+        self.on_reply_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
 
         return self
 

@@ -69,7 +69,7 @@ class PublishExecutor(LocalExecutor):
             return context
 
         try:
-            request = await self.exec_operation(operation, context)
+            request = await self.exec_operation(operation, context, **operation.parameters)
             await self._publish(operation, request)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)

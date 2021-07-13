@@ -57,7 +57,7 @@ class OnReplyExecutor(LocalExecutor):
             return context
 
         try:
-            response = await self.exec_operation(operation, reply.data)
+            response = await self.exec_operation(operation, reply.data, **operation.parameters)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)
 
