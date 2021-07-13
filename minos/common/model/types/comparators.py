@@ -26,6 +26,9 @@ from uuid import (
 from .data_types import (
     ModelRef,
 )
+from .model_types import (
+    ModelType,
+)
 
 
 def is_model_subclass(type_field: Any) -> bool:
@@ -37,27 +40,18 @@ def is_model_subclass(type_field: Any) -> bool:
     return issubclass(type_field, Model)
 
 
-def is_aggregate_subclass(type_field: Any) -> bool:
-    """Check if the given type field is subclass of ``Aggregate``."""
-    from ..declarative import (
-        Aggregate,
-    )
-
-    return issubclass(type_field, Aggregate)
-
-
-def is_aggregateref_subclass(type_field: Any) -> bool:
-    """Check if the given type field is subclass of ``SubAggregate``."""
-    from ..declarative import (
-        AggregateRef,
-    )
-
-    return issubclass(type_field, AggregateRef)
-
-
 def is_type_subclass(type_field: Any) -> bool:
     """Check if the given type field is subclass of ``type``."""
     return issubclass(type(type_field), type(type))
+
+
+def is_aggregate_type(type_field: Any) -> bool:
+    """Check if the given type is follows the ``Aggregate`` protocol."""
+    return (
+        is_type_subclass(type_field)
+        and (is_model_subclass(type_field) or isinstance(type_field, ModelType))
+        and {"uuid": UUID, "version": int}.items() <= type_field.type_hints.items()
+    )
 
 
 logger = logging.getLogger(__name__)

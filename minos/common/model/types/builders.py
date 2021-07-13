@@ -25,7 +25,7 @@ from uuid import (
 )
 
 from .comparators import (
-    is_aggregateref_subclass,
+    is_aggregate_type,
     is_type_subclass,
 )
 from .data_types import (
@@ -45,9 +45,8 @@ def build_union(options: tuple[Type[T], ...]) -> Type[T]:
     """
     if (
         len(options) == 2
-        and is_type_subclass(options[0])
+        and is_aggregate_type(options[0])
         and is_type_subclass(options[1])
-        and is_aggregateref_subclass(options[0])
         and issubclass(options[1], UUID)
     ):
         return ModelRef[options[0]]
