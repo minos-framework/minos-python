@@ -2,6 +2,6 @@
 Usage
 =====
 
-To use Minos Microservice QRS in a project::
+To use Minos Microservice CQRS in a project::
 
     import minos_microservice_cqrs

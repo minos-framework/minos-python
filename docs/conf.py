@@ -54,7 +54,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = 'Minos Microservice QRS'
+project = 'Minos Microservice CQRS'
 copyright = "2021, Clariteia"
 author = "Clariteia Devs"
 
@@ -147,7 +147,7 @@ latex_elements = {
 # [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'minos.tex',
-     'Minos Microservice QRS Documentation',
+     'Minos Microservice CQRS Documentation',
      'Clariteia Devs', 'manual'),
 ]
 
@@ -158,7 +158,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'minos',
-     'Minos Microservice QRS Documentation',
+     'Minos Microservice CQRS Documentation',
      [author], 1)
 ]
 
@@ -170,7 +170,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'minos',
-     'Minos Microservice QRS Documentation',
+     'Minos Microservice CQRS Documentation',
      author,
      'minos',
      'One line description of project.',
