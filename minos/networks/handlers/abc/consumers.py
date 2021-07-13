@@ -55,6 +55,14 @@ class Consumer(HandlerSetup):
         await self._consumer.start()
 
     @property
+    def topics(self) -> list[str]:
+        """Topics getter.
+
+        :return: A list of string values.
+        """
+        return self._topics
+
+    @property
     def _consumer(self) -> AIOKafkaConsumer:
         if self.__consumer is None:  # pragma: no cover
             self.__consumer = AIOKafkaConsumer(

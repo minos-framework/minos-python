@@ -22,15 +22,15 @@ class TestEventConsumer(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = EventConsumer.from_config(config=self.config)
-        self.assertIsInstance(dispatcher, EventConsumer)
-        self.assertEqual(["TicketAdded", "TicketDeleted"], dispatcher._topics)
-        self.assertEqual(self.config.events.broker, dispatcher._broker)
-        self.assertEqual(self.config.events.queue.host, dispatcher.host)
-        self.assertEqual(self.config.events.queue.port, dispatcher.port)
-        self.assertEqual(self.config.events.queue.database, dispatcher.database)
-        self.assertEqual(self.config.events.queue.user, dispatcher.user)
-        self.assertEqual(self.config.events.queue.password, dispatcher.password)
+        consumer = EventConsumer.from_config(config=self.config)
+        self.assertIsInstance(consumer, EventConsumer)
+        self.assertEqual(["TicketAdded", "TicketDeleted"], consumer.topics)
+        self.assertEqual(self.config.events.broker, consumer._broker)
+        self.assertEqual(self.config.events.queue.host, consumer.host)
+        self.assertEqual(self.config.events.queue.port, consumer.port)
+        self.assertEqual(self.config.events.queue.database, consumer.database)
+        self.assertEqual(self.config.events.queue.user, consumer.user)
+        self.assertEqual(self.config.events.queue.password, consumer.password)
 
     def test_table_name(self):
         self.assertEqual("event_queue", EventConsumer.TABLE_NAME)
