@@ -5,9 +5,32 @@ jobs:
         runs-on: ubuntu-latest
         container: python:3.9-buster
 
+        services:
+            postgres:
+                image: postgres
+                env:
+                    POSTGRES_USER: minos
+                    POSTGRES_PASSWORD: min0s
+                ports:
+                    - 5432:5432
+                options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+        env:
+            MINOS_COMMANDS_QUEUE_HOST: postgres
+            MINOS_EVENTS_QUEUE_HOST: postgres
+            MINOS_REPOSITORY_HOST: postgres
+            MINOS_SNAPSHOT_HOST: postgres
+            MINOS_SAGA_QUEUE_HOST: postgres
+
         steps:
             -   name: Check out repository code
                 uses: actions/checkout@v2
+
+            -   name: Create database
+                run: |
+                    apt-get update
+                    apt-get install --yes postgresql-client
+                    PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_db OWNER minos;"
 
             -   name: Install Poetry
                 uses: snok/install-poetry@v1.1.4
