@@ -7,5 +7,5 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 __author__ = """Clariteia Devs"""
-__email__ = 'devs@clariteia.com'
-__version__ = '0.0.1'
+__email__ = "devs@clariteia.com"
+__version__ = "0.0.1"
