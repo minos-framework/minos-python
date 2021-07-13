@@ -8,10 +8,6 @@ from __future__ import (
     annotations,
 )
 
-from itertools import (
-    chain,
-)
-
 from minos.common import (
     MinosConfig,
 )
@@ -28,6 +24,5 @@ class CommandReplyConsumer(Consumer):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyConsumer:
-        iterable = chain(config.saga.items, config.events.items)
-        topics = [f"{item.name}Reply" for item in iterable]
+        topics = [f"{config.service.name}QueryReply"] + [f"{item.name}Reply" for item in config.saga.items]
         return cls(topics=topics, broker=config.saga.broker, **config.saga.queue._asdict(), **kwargs)
