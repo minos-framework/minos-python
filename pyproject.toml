@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "minos_microservice_qrs"
+name = "minos_microservice_cqrs"
 version = "0.0.1"
-description = "Minos Microservice QRS package"
+description = "Minos Microservice CQRS package"
 readme = "README.md"
-repository = "https://github.com/clariteia/minos_microservice_qrs"
+repository = "https://github.com/clariteia/minos_microservice_cqrs"
 homepage = "https://clariteia.com"
 authors = ["Clariteia Devs <devs@clariteia.com>"]
 license = "MIT"

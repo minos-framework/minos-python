@@ -1,7 +1,7 @@
-# Minos Microservice QRS
+# Minos Microservice CQRS
 
-[![codecov](https://codecov.io/gh/Clariteia/minos_microservice_qrs/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_qrs)
-![Tests](https://github.com/Clariteia/minos_microservice_qrs/actions/workflows/python-tests.yml/badge.svg)
+[![codecov](https://codecov.io/gh/Clariteia/minos_microservice_cqrs/branch/main/graph/badge.svg)](https://codecov.io/gh/Clariteia/minos_microservice_cqrs)
+![Tests](https://github.com/Clariteia/minos_microservice_cqrs/actions/workflows/python-tests.yml/badge.svg)
 
 Minos is a framework which helps you create [reactive](https://www.reactivemanifesto.org/) microservices in Python.
 Internally, it leverages Event Sourcing, CQRS and a message driven architecture to fulfil the commitments of an
@@ -9,7 +9,7 @@ asynchronous environment.
 
 ## Documentation
 
-The official documentation as well as the API you can find it under https://clariteia.github.io/minos_microservice_qrs/. 
+The official documentation as well as the API you can find it under https://clariteia.github.io/minos_microservice_cqrs/.
 Please, submit any issue regarding documentation as well!
 
 ## Set up a development environment
