@@ -7,6 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from .builders import (
     TypeHintBuilder,
+    build_union,
 )
 from .comparators import (
     TypeHintComparator,
