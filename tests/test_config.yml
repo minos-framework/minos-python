@@ -1,0 +1,102 @@
+service:
+    name: Order
+rest:
+    host: localhost
+    port: 8900
+    endpoints:
+        - name: AddOrder
+          route: /order
+          method: POST
+          controller: minos.services.OrderService
+          action: add_order
+repository:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+snapshot:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+events:
+    broker: localhost
+    port: 9092
+    items:
+        - name: TicketAdded
+          controller: minos.services.CQRSService
+          action: ticket_added
+        - name: TicketDeleted
+          controller: minos.services.CQRSService
+          action: ticket_deleted
+        - name: OrderAdded
+          controller: minos.services.CQRSService
+          action: order_added
+    queue:
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 10
+        retry: 2
+commands:
+    broker: localhost
+    port: 9092
+    items:
+        - name: AddOrder
+          controller: minos.services.OrderService
+          action: add_order
+        - name: DeleteOrder
+          controller: minos.services.OrderService
+          action: delete_order
+        - name: UpdateOrder
+          controller: minos.services.OrderService
+          action: update_order
+        - name: GetOrder
+          controller: minos.service.OrderService
+          action: get_order
+    queue:
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 10
+        retry: 2
+saga:
+    broker: localhost
+    port: 8900
+    storage:
+        path: "./order.lmdb"
+    items:
+        - name: AddOrder
+          controller: tests.services.SagaTestService.SagaService
+          action: add_order
+        - name: DeleteOrder
+          controller: tests.services.SagaTestService.SagaService
+          action: delete_order
+    queue:
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 10
+        retry: 2
+
+discovery:
+    host: discovery-service
+    port: 8080
+    endpoints:
+        subscribe:
+            path: subscribe
+            method: POST
+        unsubscribe:
+            path: unsubscribe?name=
+            method: POST
+        discover:
+            path: discover?name=
+            method: GET
