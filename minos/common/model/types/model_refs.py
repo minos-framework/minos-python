@@ -28,16 +28,16 @@ from uuid import (
     UUID,
 )
 
+if TYPE_CHECKING:
+    from ..abc import (
+        Model,
+    )
+
 T = TypeVar("T")
 
 
 class ModelRef(Generic[T]):
     """Model Reference."""
-
-if TYPE_CHECKING:
-    from ..abc import (
-        Model,
-    )
 
 
 class ModelRefExtractor:
