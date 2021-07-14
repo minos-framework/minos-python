@@ -90,14 +90,6 @@ class MinosSnapshotNotProvidedException(MinosSnapshotException):
     """Exception to be raised when a snapshot is needed but none is set."""
 
 
-class MinosSagaManagerException(MinosException):
-    """Base Saga Manager exception"""
-
-
-class MinosSagaManagerNotProvidedException(MinosSagaManagerException):
-    """Exception to be raised when a SAGA Manager is not provided."""
-
-
 class MinosPreviousVersionSnapshotException(MinosSnapshotException):
     """Exception to be raised when current version is newer than the one to be processed."""
 
@@ -116,6 +108,14 @@ class MinosSnapshotAggregateNotFoundException(MinosSnapshotException):
 
 class MinosSnapshotDeletedAggregateException(MinosSnapshotException):
     """Exception to be raised when some aggregate is already deleted from the repository."""
+
+
+class MinosSagaManagerException(MinosException):
+    """Base Saga Manager exception"""
+
+
+class MinosSagaManagerNotProvidedException(MinosSagaManagerException):
+    """Exception to be raised when a SAGA Manager is not provided."""
 
 
 class MinosModelException(MinosException):
