@@ -25,6 +25,7 @@ from .data_types import (
 from .model_refs import (
     ModelRef,
     ModelRefExtractor,
+    ModelRefInjector,
 )
 from .model_types import (
     ModelType,
