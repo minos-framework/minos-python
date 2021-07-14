@@ -10,10 +10,12 @@ from collections import (
 )
 from typing import (
     Any,
+    Generic,
     Iterable,
     NoReturn,
     Optional,
     Type,
+    TypeVar,
     get_args,
     get_origin,
 )
@@ -21,12 +23,11 @@ from uuid import (
     UUID,
 )
 
-from .builders import (
-    TypeHintBuilder,
-)
-from .data_types import (
-    ModelRef,
-)
+T = TypeVar("T")
+
+
+class ModelRef(Generic[T]):
+    """Represents an Avro Model Reference type."""
 
 
 class ModelRefExtractor:
@@ -34,6 +35,10 @@ class ModelRefExtractor:
 
     def __init__(self, value: Any, kind: Optional[Type] = None):
         if kind is None:
+            from .builders import (
+                TypeHintBuilder,
+            )
+
             kind = TypeHintBuilder(value).build()
         self.value = value
         self.kind = kind

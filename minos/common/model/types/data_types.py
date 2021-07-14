@@ -77,16 +77,3 @@ class Decimal(Generic[T]):
 
     def __repr__(self) -> str:
         return f"Decimal(precision={self.precision}, scale={self.scale})"
-
-
-@dataclass
-class ModelRef(Generic[T]):
-    """Represents an Avro Model Reference type."""
-
-    default: Any = field(default=MissingSentinel)
-    namespace: Optional[str] = None
-    aliases: Optional[list[Any]] = None
-    _dataclasses_custom_type: str = "ModelRef"
-
-    def __repr__(self) -> str:
-        return "ModelRef()"

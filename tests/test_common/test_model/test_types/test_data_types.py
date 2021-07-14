@@ -16,7 +16,6 @@ from minos.common import (
     Enum,
     Fixed,
     MissingSentinel,
-    ModelRef,
 )
 
 
@@ -106,16 +105,6 @@ class TestDecimal(unittest.TestCase):
     def test_repr(self):
         decimal = Decimal(6)
         self.assertEqual("Decimal(precision=6, scale=0)", repr(decimal))
-
-
-class TestModelRef(unittest.TestCase):
-    def test_subclass(self):
-        # noinspection PyTypeHints
-        self.assertTrue(issubclass(ModelRef, Generic))
-
-    def test_repr(self):
-        ref = ModelRef()
-        self.assertEqual("ModelRef()", repr(ref))
 
 
 if __name__ == "__main__":
