@@ -84,11 +84,13 @@ class SagaStepOperation(object):
         :return: A ``dict`` instance.
         """
         # noinspection PyTypeChecker
-        return {
+        raw = {
             "name": self.name,
             "callback": classname(self.callback),
-            "parameters": None if len(self.parameters.fields) == 0 else self.parameters.avro_str,
         }
+        if len(self.parameters.fields):
+            raw["parameters"] = self.parameters.avro_str
+        return raw
 
     @classmethod
     def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaStepOperation]], **kwargs) -> Optional[SagaStepOperation]:
