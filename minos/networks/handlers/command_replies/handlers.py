@@ -53,6 +53,7 @@ class CommandReplyHandler(Handler):
         handlers = {
             f"{item.name}Reply": {"controller": item.controller, "action": item.action} for item in config.saga.items
         }
+        handlers[f"{config.service.name}QueryReply"] = next(iter(handlers.values()))
         return cls(*args, handlers=handlers, **config.saga.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
