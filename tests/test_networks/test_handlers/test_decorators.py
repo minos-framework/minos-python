@@ -9,6 +9,17 @@ import unittest
 from minos.networks import (
     Subscribe,
 )
+from minos.common import (
+    AggregateDiff,
+    Field,
+    FieldsDiff,
+    Event,
+)
+from uuid import (
+    uuid4,
+)
+
+FAKE_AGGREGATE_DIFF = AggregateDiff(uuid4(), "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
 
 
 class TestDecorators(unittest.IsolatedAsyncioTestCase):
@@ -26,8 +37,10 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
     async def test_event(self):
         def mock_func(*args, **kwargs):
             return 1
+
+        instance = Event("AddOrder", FAKE_AGGREGATE_DIFF)
         result = Subscribe(mock_func)
-        result = await result()
+        result = await result(instance)
         self.assertEqual(result, 1)
 
 

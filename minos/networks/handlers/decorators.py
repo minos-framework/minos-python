@@ -11,7 +11,6 @@ from minos.common import (
     Event
 )
 from typing import (
-    NoReturn,
     Callable,
 )
 from inspect import (
