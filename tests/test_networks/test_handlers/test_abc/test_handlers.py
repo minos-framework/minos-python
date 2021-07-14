@@ -68,11 +68,16 @@ class TestHandler(PostgresAsyncTestCase):
         handlers = {
             item.name: {"controller": item.controller, "action": item.action} for item in self.config.commands.items
         }
+        handlers["empty"] = None
         self.handler = _FakeHandler(handlers=handlers, **self.config.commands.queue._asdict())
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
         self.assertEqual(CommandService.add_order, action.__func__)
+
+    async def test_get_action_none(self):
+        action = self.handler.get_action(topic="empty")
+        self.assertIsNone(None, action)
 
     async def test_get_action_raises(self):
         with self.assertRaises(MinosActionNotFoundException) as context:

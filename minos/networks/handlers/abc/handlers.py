@@ -23,6 +23,7 @@ from typing import (
     Any,
     Callable,
     NoReturn,
+    Optional,
     Type,
 )
 
@@ -59,11 +60,19 @@ class Handler(HandlerSetup):
 
     ENTRY_MODEL_CLS: Type[MinosModel]
 
-    def __init__(self, records: int, handlers: dict[str, dict[str, Any]], retry: int, **kwargs: Any):
+    def __init__(self, records: int, handlers: dict[str, Optional[dict[str, Any]]], retry: int, **kwargs: Any):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
         self._retry = retry
+
+    @property
+    def handlers(self) -> dict[str, Optional[dict[str, Any]]]:
+        """Handlers getter.
+
+        :return: A dictionary in which the keys are topics and the values are the handler.
+        """
+        return self._handlers
 
     async def dispatch(self) -> NoReturn:
         """Event Queue Checker and dispatcher.
@@ -129,7 +138,7 @@ class Handler(HandlerSetup):
         entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
         return entry
 
-    def get_action(self, topic: str) -> Callable:
+    def get_action(self, topic: str) -> Optional[Callable]:
         """Get Event instance to call.
 
         Gets the instance of the class and method to call.
@@ -146,12 +155,15 @@ class Handler(HandlerSetup):
                 f"topic {topic} have no controller/action configured, " f"please review th configuration file"
             )
 
-        event = self._handlers[topic]
+        handler = self._handlers[topic]
 
-        controller = import_module(event["controller"])
+        if handler is None:
+            return
+
+        controller = import_module(handler["controller"])
         if isclass(controller):
             controller = controller()
-        action = getattr(controller, event["action"])
+        action = getattr(controller, handler["action"])
 
         logger.debug(f"Loaded {action!r} action!")
         return action

@@ -66,31 +66,29 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     def test_from_config(self):
         broker = FakeBroker()
-        dispatcher = CommandHandler.from_config(config=self.config, broker=broker)
-        self.assertIsInstance(dispatcher, CommandHandler)
-        self.assertEqual(
-            {
-                "AddOrder": {"action": "add_order", "controller": "tests.services.CommandTestService.CommandService"},
-                "DeleteOrder": {
-                    "action": "delete_order",
-                    "controller": "tests.services.CommandTestService.CommandService",
-                },
-                "GetOrder": {"action": "get_order", "controller": "tests.service.CommandTestService.CommandService"},
-                "UpdateOrder": {
-                    "action": "update_order",
-                    "controller": "tests.services.CommandTestService.CommandService",
-                },
+        handler = CommandHandler.from_config(config=self.config, broker=broker)
+        self.assertIsInstance(handler, CommandHandler)
+        handlers = {
+            "AddOrder": {"action": "add_order", "controller": "tests.services.CommandTestService.CommandService"},
+            "DeleteOrder": {
+                "action": "delete_order",
+                "controller": "tests.services.CommandTestService.CommandService",
             },
-            dispatcher._handlers,
-        )
-        self.assertEqual(self.config.commands.queue.records, dispatcher._records)
-        self.assertEqual(self.config.commands.queue.retry, dispatcher._retry)
-        self.assertEqual(self.config.commands.queue.host, dispatcher.host)
-        self.assertEqual(self.config.commands.queue.port, dispatcher.port)
-        self.assertEqual(self.config.commands.queue.database, dispatcher.database)
-        self.assertEqual(self.config.commands.queue.user, dispatcher.user)
-        self.assertEqual(self.config.commands.queue.password, dispatcher.password)
-        self.assertEqual(broker, dispatcher.broker)
+            "GetOrder": {"action": "get_order", "controller": "tests.service.CommandTestService.CommandService"},
+            "UpdateOrder": {
+                "action": "update_order",
+                "controller": "tests.services.CommandTestService.CommandService",
+            },
+        }
+        self.assertEqual(handlers, handler.handlers)
+        self.assertEqual(self.config.commands.queue.records, handler._records)
+        self.assertEqual(self.config.commands.queue.retry, handler._retry)
+        self.assertEqual(self.config.commands.queue.host, handler.host)
+        self.assertEqual(self.config.commands.queue.port, handler.port)
+        self.assertEqual(self.config.commands.queue.database, handler.database)
+        self.assertEqual(self.config.commands.queue.user, handler.user)
+        self.assertEqual(self.config.commands.queue.password, handler.password)
+        self.assertEqual(broker, handler.broker)
 
     def test_entry_model_cls(self):
         self.assertEqual(Command, CommandHandler.ENTRY_MODEL_CLS)

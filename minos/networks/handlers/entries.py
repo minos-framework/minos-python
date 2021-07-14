@@ -13,6 +13,7 @@ from datetime import (
 )
 from typing import (
     Callable,
+    Optional,
 )
 
 from minos.common import (
@@ -24,7 +25,7 @@ HandlerEntry = namedtuple(
     {
         "id": int,
         "topic": str,
-        "callback": Callable,
+        "callback": Optional[Callable],
         "partition_id": int,
         "data": MinosModel,
         "retry": int,

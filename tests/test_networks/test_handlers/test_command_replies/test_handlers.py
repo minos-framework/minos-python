@@ -29,26 +29,18 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
     def test_from_config(self):
         saga_manager = FakeSagaManager()
-        dispatcher = CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager)
-        self.assertIsInstance(dispatcher, CommandReplyHandler)
-        self.assertEqual(
-            {
-                "AddOrderReply": {"action": "add_order", "controller": "tests.services.SagaTestService.SagaService"},
-                "DeleteOrderReply": {
-                    "action": "delete_order",
-                    "controller": "tests.services.SagaTestService.SagaService",
-                },
-            },
-            dispatcher._handlers,
-        )
-        self.assertEqual(self.config.saga.queue.records, dispatcher._records)
-        self.assertEqual(self.config.saga.queue.retry, dispatcher._retry)
-        self.assertEqual(self.config.saga.queue.host, dispatcher.host)
-        self.assertEqual(self.config.saga.queue.port, dispatcher.port)
-        self.assertEqual(self.config.saga.queue.database, dispatcher.database)
-        self.assertEqual(self.config.saga.queue.user, dispatcher.user)
-        self.assertEqual(self.config.saga.queue.password, dispatcher.password)
-        self.assertEqual(saga_manager, dispatcher.saga_manager)
+        handler = CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager)
+        self.assertIsInstance(handler, CommandReplyHandler)
+        handlers = {"AddOrderReply": None, "DeleteOrderReply": None, "OrderQueryReply": None}
+        self.assertEqual(handlers, handler.handlers)
+        self.assertEqual(self.config.saga.queue.records, handler._records)
+        self.assertEqual(self.config.saga.queue.retry, handler._retry)
+        self.assertEqual(self.config.saga.queue.host, handler.host)
+        self.assertEqual(self.config.saga.queue.port, handler.port)
+        self.assertEqual(self.config.saga.queue.database, handler.database)
+        self.assertEqual(self.config.saga.queue.user, handler.user)
+        self.assertEqual(self.config.saga.queue.password, handler.password)
+        self.assertEqual(saga_manager, handler.saga_manager)
 
     def test_entry_model_cls(self):
         self.assertEqual(CommandReply, CommandReplyHandler.ENTRY_MODEL_CLS)
