@@ -34,3 +34,6 @@ from .events import (
     EventHandler,
     EventHandlerService,
 )
+from .decorators import (
+    Subscribe,
+)
