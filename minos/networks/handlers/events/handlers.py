@@ -9,6 +9,9 @@ from __future__ import (
 )
 
 import logging
+from inspect import (
+    isawaitable,
+)
 from typing import (
     NoReturn,
 )
@@ -23,9 +26,6 @@ from ..abc import (
 )
 from ..entries import (
     HandlerEntry,
-)
-from inspect import (
-    isawaitable,
 )
 
 logger = logging.getLogger(__name__)
