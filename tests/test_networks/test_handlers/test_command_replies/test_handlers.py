@@ -32,14 +32,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         dispatcher = CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager)
         self.assertIsInstance(dispatcher, CommandReplyHandler)
         self.assertEqual(
-            {
-                "AddOrderReply": {"action": "add_order", "controller": "tests.services.SagaTestService.SagaService"},
-                "DeleteOrderReply": {
-                    "action": "delete_order",
-                    "controller": "tests.services.SagaTestService.SagaService",
-                },
-            },
-            dispatcher._handlers,
+            {"AddOrderReply": None, "DeleteOrderReply": None, "OrderQueryReply": None}, dispatcher._handlers,
         )
         self.assertEqual(self.config.saga.queue.records, dispatcher._records)
         self.assertEqual(self.config.saga.queue.retry, dispatcher._retry)
