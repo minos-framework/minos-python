@@ -28,7 +28,7 @@ from .comparators import (
     is_aggregate_type,
     is_type_subclass,
 )
-from .data_types import (
+from .model_refs import (
     ModelRef,
 )
 

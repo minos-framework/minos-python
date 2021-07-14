@@ -105,6 +105,7 @@ from .model import (
     Model,
     ModelField,
     ModelRef,
+    ModelRefExtractor,
     ModelType,
     NoneType,
     TypeHintBuilder,

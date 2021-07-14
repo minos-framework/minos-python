@@ -42,6 +42,7 @@ from .types import (
     Fixed,
     MissingSentinel,
     ModelRef,
+    ModelRefExtractor,
     ModelType,
     NoneType,
     TypeHintBuilder,
