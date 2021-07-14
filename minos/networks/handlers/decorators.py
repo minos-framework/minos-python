@@ -6,10 +6,16 @@
 # permission of Clariteia SL.
 
 import functools
+from inspect import (
+    isawaitable,
+)
+from typing import (
+    Callable,
+)
 
-from minos.common import Event
-from typing import Callable
-from inspect import isawaitable
+from minos.common import (
+    Event,
+)
 
 
 class Subscribe(object):

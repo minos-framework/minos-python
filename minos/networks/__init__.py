@@ -54,4 +54,6 @@ from .rest import (
     RestBuilder,
     RestService,
 )
-from .snapshots import SnapshotService
+from .snapshots import (
+    SnapshotService,
+)
