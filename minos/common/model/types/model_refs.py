@@ -27,11 +27,11 @@ T = TypeVar("T")
 
 
 class ModelRef(Generic[T]):
-    """Represents an Avro Model Reference type."""
+    """Model Reference."""
 
 
 class ModelRefExtractor:
-    """TODO"""
+    """Model Reference Extractor class."""
 
     def __init__(self, value: Any, kind: Optional[Type] = None):
         if kind is None:
@@ -44,9 +44,9 @@ class ModelRefExtractor:
         self.kind = kind
 
     def build(self) -> dict[str, set[UUID]]:
-        """TODO
+        """Run the model reference extractor.
 
-        :return: TODO
+        :return: A dictionary in which the keys are the class names and the values are the identifiers.
         """
         ans = defaultdict(set)
         self._build(self.value, self.kind, ans)
