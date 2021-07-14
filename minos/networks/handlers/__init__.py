@@ -25,6 +25,9 @@ from .commands import (
     CommandResponse,
     CommandResponseException,
 )
+from .decorators import (
+    Subscribe,
+)
 from .entries import (
     HandlerEntry,
 )
@@ -33,7 +36,4 @@ from .events import (
     EventConsumerService,
     EventHandler,
     EventHandlerService,
-)
-from .decorators import (
-    Subscribe,
 )
