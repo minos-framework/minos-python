@@ -52,6 +52,8 @@ from .exceptions import (
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSagaManagerException,
+    MinosSagaManagerNotProvidedException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
     MinosSnapshotException,
