@@ -35,7 +35,6 @@ from .serializers import (
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
-    ReferenceExtractor,
 )
 from .types import (
     Decimal,
@@ -43,6 +42,7 @@ from .types import (
     Fixed,
     MissingSentinel,
     ModelRef,
+    ModelRefExtractor,
     ModelType,
     NoneType,
     TypeHintBuilder,

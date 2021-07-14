@@ -17,6 +17,3 @@ from .avro_schema_decoder import (
 from .avro_schema_encoder import (
     AvroSchemaEncoder,
 )
-from .reference_extractor import (
-    ReferenceExtractor,
-)

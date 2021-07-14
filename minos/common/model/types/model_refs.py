@@ -21,13 +21,15 @@ from uuid import (
     UUID,
 )
 
-from ..types import (
-    ModelRef,
+from .builders import (
     TypeHintBuilder,
+)
+from .data_types import (
+    ModelRef,
 )
 
 
-class ReferenceExtractor:
+class ModelRefExtractor:
     """TODO"""
 
     def __init__(self, value: Any, kind: Optional[Type] = None):

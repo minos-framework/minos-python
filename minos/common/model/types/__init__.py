@@ -23,6 +23,9 @@ from .data_types import (
     ModelRef,
     NoneType,
 )
+from .model_refs import (
+    ModelRefExtractor,
+)
 from .model_types import (
     ModelType,
 )
