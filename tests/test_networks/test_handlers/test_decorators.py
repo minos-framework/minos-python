@@ -43,6 +43,14 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         result = await result()
         self.assertEqual(result, 1)
 
+    async def test_async(self):
+        async def mock_func(*args, **kwargs):
+            return 1
+
+        result = Subscribe(mock_func)
+        result = await result()
+        self.assertEqual(result, 1)
+
     async def test_event(self):
         instance = Event("AddOrder", FAKE_AGGREGATE_DIFF)
         result = Subscribe(HandleEvent)
