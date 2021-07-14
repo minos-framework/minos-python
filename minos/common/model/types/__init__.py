@@ -7,11 +7,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from .builders import (
     TypeHintBuilder,
+    build_union,
 )
 from .comparators import (
     TypeHintComparator,
-    is_aggregate_subclass,
-    is_aggregateref_subclass,
+    is_aggregate_type,
     is_model_subclass,
     is_type_subclass,
 )

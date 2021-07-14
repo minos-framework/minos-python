@@ -32,6 +32,7 @@ from ...exceptions import (
 from ..types import (
     ModelType,
     NoneType,
+    build_union,
 )
 from .constants import (
     AVRO_ARRAY,
@@ -79,7 +80,7 @@ class AvroSchemaDecoder:
 
     def _build_type_from_list(self, schema: list[Any]) -> Type[T]:
         options = tuple(self._build_type(entry) for entry in schema)
-        return Union[options]
+        return build_union(options)
 
     def _build_type_from_dict(self, schema: dict) -> Type[T]:
         if "logicalType" in schema:
