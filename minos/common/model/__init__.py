@@ -43,6 +43,7 @@ from .types import (
     MissingSentinel,
     ModelRef,
     ModelRefExtractor,
+    ModelRefInjector,
     ModelType,
     NoneType,
     TypeHintBuilder,

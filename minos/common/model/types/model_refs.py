@@ -5,10 +5,15 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from collections import (
     defaultdict,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
     Iterable,
     NoReturn,
@@ -27,6 +32,11 @@ from .builders import (
 from .data_types import (
     ModelRef,
 )
+
+if TYPE_CHECKING:
+    from ..abc import (
+        Model,
+    )
 
 
 class ModelRefExtractor:
@@ -71,3 +81,40 @@ class ModelRefExtractor:
     def _build_iterable(self, value: Iterable, kind: Type, ans: dict[str, set[UUID]]) -> NoReturn:
         for sub_value in value:
             self._build(sub_value, kind, ans)
+
+
+class ModelRefInjector:
+    """TODO"""
+
+    def __init__(self, value: Any, mapper: dict[UUID, Model]):
+        self.value = value
+        self.mapper = mapper
+
+    def build(self) -> Any:
+        """TODO
+
+        :return: TODO
+        """
+        return self._build(self.value)
+
+    def _build(self, value: Any) -> NoReturn:
+        from ..abc import (
+            Model,
+        )
+
+        if isinstance(value, (tuple, list, set)):
+            return type(value)(self._build(v) for v in value)
+
+        elif isinstance(value, dict):
+            return type(value)((self._build(k), self._build(v)) for k, v in value.items())
+
+        elif isinstance(value, Model):
+            for field in value.fields.values():
+                field.value = self._build(field.value)
+            return value
+
+        elif isinstance(value, UUID) and value in self.mapper:
+            return self.mapper[value]
+
+        else:
+            return value
