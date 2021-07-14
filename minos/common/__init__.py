@@ -107,6 +107,7 @@ from .model import (
     ModelRef,
     ModelType,
     NoneType,
+    ReferenceExtractor,
     TypeHintBuilder,
     TypeHintComparator,
     ValueObject,

@@ -35,6 +35,7 @@ from .serializers import (
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
+    ReferenceExtractor,
 )
 from .types import (
     Decimal,
