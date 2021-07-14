@@ -12,8 +12,10 @@ from typing import (
     Any,
     Iterable,
     NoReturn,
+    Optional,
     Type,
     get_args,
+    get_origin,
 )
 from uuid import (
     UUID,
@@ -21,13 +23,16 @@ from uuid import (
 
 from ..types import (
     ModelRef,
+    TypeHintBuilder,
 )
 
 
 class ReferenceExtractor:
     """TODO"""
 
-    def __init__(self, value: Any, kind: Type):
+    def __init__(self, value: Any, kind: Optional[Type] = None):
+        if kind is None:
+            kind = TypeHintBuilder(value).build()
         self.value = value
         self.kind = kind
 
@@ -41,15 +46,23 @@ class ReferenceExtractor:
         return ans
 
     def _build(self, value: Any, kind: Type, ans: dict[str, set[UUID]]) -> NoReturn:
+        from ..abc import (
+            Model,
+        )
+
         if isinstance(value, (tuple, list, set)):
             self._build_iterable(value, get_args(kind)[0], ans)
 
         elif isinstance(value, dict):
             self._build_iterable(value.keys(), get_args(kind)[0], ans)
-            self._build_iterable(value.values(), get_args(kind)[0], ans)
+            self._build_iterable(value.values(), get_args(kind)[1], ans)
 
-        elif kind is ModelRef and isinstance(value, UUID):
-            cls = get_args(ModelRef)[0]
+        elif isinstance(value, Model):
+            for field in value.fields.values():
+                self._build(field.value, field.type, ans)
+
+        elif get_origin(kind) is ModelRef and isinstance(value, UUID):
+            cls = get_args(kind)[0]
             name = cls.__name__
             ans[name].add(value)
 
