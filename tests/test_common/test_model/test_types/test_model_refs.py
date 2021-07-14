@@ -17,7 +17,11 @@ from uuid import (
 from minos.common import (
     ModelRef,
     ModelRefExtractor,
+    ModelRefInjector,
     ModelType,
+)
+from tests.model_classes import (
+    Foo,
 )
 
 
@@ -64,6 +68,51 @@ class TestModelRefExtractor(unittest.TestCase):
         value = mt_foo(uuid=uuid4(), version=1, another=uuid4())
         expected = ModelRefExtractor(value, mt_foo).build()
         observed = ModelRefExtractor(value).build()
+        self.assertEqual(expected, observed)
+
+
+class TestModelRefInjector(unittest.TestCase):
+    def test_simple(self):
+        uuid = uuid4()
+        model = Foo("test")
+        mapper = {uuid: model}
+
+        expected = model
+        observed = ModelRefInjector(uuid, mapper).build()
+
+        self.assertEqual(expected, observed)
+
+    def test_list(self):
+        uuid = uuid4()
+        model = Foo("test")
+        mapper = {uuid: model}
+
+        expected = [model, model, model]
+        observed = ModelRefInjector([uuid, uuid, uuid], mapper).build()
+
+        self.assertEqual(expected, observed)
+
+    def test_dict(self):
+        uuid = uuid4()
+        model = Foo("test")
+        mapper = {uuid: model}
+
+        expected = {model: model}
+        observed = ModelRefInjector({uuid: uuid}, mapper).build()
+
+        self.assertEqual(expected, observed)
+
+    def test_model(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
+        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[mt_bar]})
+
+        model = mt_bar(uuid=uuid4(), version=1)
+        mapper = {model.uuid: model}
+        value = mt_foo(uuid=uuid4(), version=1, another=model.uuid)
+
+        expected = mt_foo(uuid=value.uuid, version=1, another=model)
+        observed = ModelRefInjector(value, mapper).build()
+
         self.assertEqual(expected, observed)
 
 
