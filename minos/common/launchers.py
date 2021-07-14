@@ -75,7 +75,7 @@ class EntrypointLauncher(MinosSetup):
         interval: float = 0.1,
         log_level: Union[int, str] = logging.INFO,
         log_format: Union[str, LogFormat] = "color",
-        log_date_format: Union[str, DateFormat] = "%Y-%m-%d %H:%M:%S,uuu",
+        log_date_format: Union[str, DateFormat] = DateFormat["color"],
         *args,
         **kwargs
     ):
