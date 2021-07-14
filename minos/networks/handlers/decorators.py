@@ -34,6 +34,7 @@ class Subscribe(object):
             return await call
         return call
 
+
 """
 def subscribe(func: Callable):
     async def wrapper(self, *args, **kwargs) -> NoReturn:
