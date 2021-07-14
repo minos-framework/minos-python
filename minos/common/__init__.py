@@ -132,9 +132,6 @@ from .repository import (
 from .saga import (
     MinosSagaManager,
 )
-from .services import (
-    Service,
-)
 from .setup import (
     MinosSetup,
 )
