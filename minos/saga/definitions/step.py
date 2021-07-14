@@ -26,6 +26,9 @@ from minos.common import (
     import_module,
 )
 
+from ..context import (
+    SagaContext,
+)
 from ..exceptions import (
     MinosMultipleInvokeParticipantException,
     MinosMultipleOnReplyException,
@@ -40,9 +43,6 @@ if TYPE_CHECKING:
         Model,
     )
 
-    from ..executions import (
-        SagaContext,
-    )
     from .saga import (
         Saga,
     )
@@ -68,10 +68,6 @@ class SagaStepOperation(object):
 
     def __init__(self, name: str, callback: Callable, parameters: Optional[SagaContext] = None):
         if parameters is None:
-            from ..executions import (
-                SagaContext,
-            )
-
             parameters = SagaContext()
         self.name = name
         self.callback = callback
@@ -109,10 +105,6 @@ class SagaStepOperation(object):
         current = raw | kwargs
         if isinstance(current["callback"], str):
             current["callback"] = import_module(current["callback"])
-
-        from ..executions import (
-            SagaContext,
-        )
 
         if "parameters" in current and current["parameters"] is not None:
             current["parameters"] = SagaContext.from_avro_str(current["parameters"])
@@ -172,10 +164,6 @@ class SagaStep(object):
         if self.invoke_participant_operation is not None:
             raise MinosMultipleInvokeParticipantException()
 
-        from ..executions import (
-            SagaContext,
-        )
-
         self.invoke_participant_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
 
         return self
@@ -190,10 +178,6 @@ class SagaStep(object):
         if self.with_compensation_operation is not None:
             raise MinosMultipleWithCompensationException()
 
-        from ..executions import (
-            SagaContext,
-        )
-
         self.with_compensation_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
 
         return self
@@ -207,10 +191,6 @@ class SagaStep(object):
         """
         if self.on_reply_operation is not None:
             raise MinosMultipleOnReplyException()
-
-        from ..executions import (
-            SagaContext,
-        )
 
         self.on_reply_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
 

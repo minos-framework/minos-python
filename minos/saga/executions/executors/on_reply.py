@@ -14,6 +14,9 @@ from minos.common import (
     CommandStatus,
 )
 
+from ...context import (
+    SagaContext,
+)
 from ...definitions import (
     SagaStepOperation,
 )
@@ -22,9 +25,6 @@ from ...exceptions import (
     MinosSagaExecutorException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
-)
-from ..context import (
-    SagaContext,
 )
 from .local import (
     LocalExecutor,

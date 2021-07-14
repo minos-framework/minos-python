@@ -28,14 +28,14 @@ from minos.common import (
 from ... import (
     MinosSagaFailedExecutionStepException,
 )
+from ...context import (
+    SagaContext,
+)
 from ...definitions import (
     SagaStepOperation,
 )
 from ...exceptions import (
     MinosSagaExecutorException,
-)
-from ..context import (
-    SagaContext,
 )
 from .local import (
     LocalExecutor,

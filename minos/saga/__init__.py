@@ -6,7 +6,9 @@
 # permission of Clariteia SL.
 
 __version__ = "0.0.7"
-
+from .context import (
+    SagaContext,
+)
 from .definitions import (
     Saga,
     SagaStep,
@@ -41,7 +43,6 @@ from .executions import (
     LocalExecutor,
     OnReplyExecutor,
     PublishExecutor,
-    SagaContext,
     SagaExecution,
     SagaExecutionStep,
     SagaExecutionStorage,
