@@ -27,25 +27,23 @@ class TestEventHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = EventHandler.from_config(config=self.config)
-        self.assertIsInstance(dispatcher, EventHandler)
-        self.assertEqual(
-            {
-                "TicketAdded": {"action": "ticket_added", "controller": "tests.services.CqrsTestService.CqrsService"},
-                "TicketDeleted": {
-                    "action": "ticket_deleted",
-                    "controller": "tests.services.CqrsTestService.CqrsService",
-                },
+        handler = EventHandler.from_config(config=self.config)
+        self.assertIsInstance(handler, EventHandler)
+        handlers = {
+            "TicketAdded": {"action": "ticket_added", "controller": "tests.services.CqrsTestService.CqrsService"},
+            "TicketDeleted": {
+                "action": "ticket_deleted",
+                "controller": "tests.services.CqrsTestService.CqrsService",
             },
-            dispatcher._handlers,
-        )
-        self.assertEqual(self.config.events.queue.records, dispatcher._records)
-        self.assertEqual(self.config.events.queue.retry, dispatcher._retry)
-        self.assertEqual(self.config.events.queue.host, dispatcher.host)
-        self.assertEqual(self.config.events.queue.port, dispatcher.port)
-        self.assertEqual(self.config.events.queue.database, dispatcher.database)
-        self.assertEqual(self.config.events.queue.user, dispatcher.user)
-        self.assertEqual(self.config.events.queue.password, dispatcher.password)
+        }
+        self.assertEqual(handlers, handler.handlers)
+        self.assertEqual(self.config.events.queue.records, handler._records)
+        self.assertEqual(self.config.events.queue.retry, handler._retry)
+        self.assertEqual(self.config.events.queue.host, handler.host)
+        self.assertEqual(self.config.events.queue.port, handler.port)
+        self.assertEqual(self.config.events.queue.database, handler.database)
+        self.assertEqual(self.config.events.queue.user, handler.user)
+        self.assertEqual(self.config.events.queue.password, handler.password)
 
     def test_entry_model_cls(self):
         self.assertEqual(Event, EventHandler.ENTRY_MODEL_CLS)
