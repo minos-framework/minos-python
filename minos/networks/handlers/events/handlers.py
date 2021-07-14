@@ -24,6 +24,9 @@ from ..abc import (
 from ..entries import (
     HandlerEntry,
 )
+from inspect import (
+    isawaitable,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,4 +49,6 @@ class EventHandler(Handler):
         :return: This method does not return anything.
         """
         logger.info(f"Dispatching '{entry.data!s}'...")
-        await entry.callback(entry.topic, entry.data)
+        call = entry.callback(entry.data)
+        if isawaitable(call):
+            await call
