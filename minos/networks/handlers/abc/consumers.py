@@ -4,9 +4,7 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
 from typing import (
@@ -15,21 +13,15 @@ from typing import (
     Optional,
 )
 
-from aiokafka import (
-    AIOKafkaConsumer,
-)
+from aiokafka import AIOKafkaConsumer
 from psycopg2.sql import (
     SQL,
     Identifier,
 )
 
-from minos.common import (
-    BROKER,
-)
+from minos.common import BROKER
 
-from .setups import (
-    HandlerSetup,
-)
+from .setups import HandlerSetup
 
 logger = logging.getLogger(__name__)
 

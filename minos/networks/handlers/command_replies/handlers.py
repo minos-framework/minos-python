@@ -4,9 +4,7 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
 from typing import (
@@ -14,9 +12,7 @@ from typing import (
     NoReturn,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-)
+from dependency_injector.wiring import Provide
 
 from minos.common import (
     CommandReply,
@@ -24,12 +20,8 @@ from minos.common import (
     MinosSagaManager,
 )
 
-from ..abc import (
-    Handler,
-)
-from ..entries import (
-    HandlerEntry,
-)
+from ..abc import Handler
+from ..entries import HandlerEntry
 
 logger = logging.getLogger(__name__)
 

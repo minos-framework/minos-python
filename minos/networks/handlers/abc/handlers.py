@@ -5,20 +5,12 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
-from abc import (
-    abstractmethod,
-)
-from datetime import (
-    datetime,
-)
-from inspect import (
-    isclass,
-)
+from abc import abstractmethod
+from datetime import datetime
+from inspect import isclass
 from typing import (
     Any,
     Callable,
@@ -37,15 +29,9 @@ from minos.common import (
     import_module,
 )
 
-from ...exceptions import (
-    MinosActionNotFoundException,
-)
-from ..entries import (
-    HandlerEntry,
-)
-from .setups import (
-    HandlerSetup,
-)
+from ...exceptions import MinosActionNotFoundException
+from ..entries import HandlerEntry
+from .setups import HandlerSetup
 
 logger = logging.getLogger(__name__)
 

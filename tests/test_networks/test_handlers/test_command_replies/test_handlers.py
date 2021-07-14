@@ -1,18 +1,12 @@
 import unittest
-from datetime import (
-    datetime,
-)
-from uuid import (
-    uuid4,
-)
+from datetime import datetime
+from uuid import uuid4
 
 from minos.common import (
     CommandReply,
     CommandStatus,
 )
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     CommandReplyHandler,
     HandlerEntry,
