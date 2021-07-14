@@ -11,6 +11,7 @@ jobs:
                 env:
                     POSTGRES_USER: minos
                     POSTGRES_PASSWORD: min0s
+                    POSTGRES_DB: order_db
                 ports:
                     - 5432:5432
                 options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -39,12 +40,6 @@ jobs:
         steps:
             -   name: Check out repository code
                 uses: actions/checkout@v2
-
-            -   name: Create database
-                run: |
-                    apt-get update
-                    apt-get install --yes postgresql-client
-                    PGPASSWORD=min0s psql -U minos -h postgres -tc "CREATE DATABASE order_db OWNER minos;"
 
             -   name: Install Poetry
                 uses: snok/install-poetry@v1.1.4
