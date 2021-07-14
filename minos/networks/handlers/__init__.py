@@ -25,15 +25,11 @@ from .commands import (
     CommandResponse,
     CommandResponseException,
 )
-from .entries import (
-    HandlerEntry,
-)
+from .entries import HandlerEntry
 from .events import (
     EventConsumer,
     EventConsumerService,
     EventHandler,
     EventHandlerService,
 )
-from .decorators import (
-    Subscribe,
-)
+from .decorators import Subscribe
