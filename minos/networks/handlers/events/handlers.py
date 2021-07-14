@@ -4,29 +4,19 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
-from typing import (
-    NoReturn,
-)
+from typing import NoReturn
 
 from minos.common import (
     Event,
     MinosConfig,
 )
 
-from ..abc import (
-    Handler,
-)
-from ..entries import (
-    HandlerEntry,
-)
-from inspect import (
-    isawaitable,
-)
+from ..abc import Handler
+from ..entries import HandlerEntry
+from inspect import isawaitable
 
 logger = logging.getLogger(__name__)
 
