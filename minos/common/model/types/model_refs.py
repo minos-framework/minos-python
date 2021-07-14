@@ -15,10 +15,12 @@ from collections import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Generic,
     Iterable,
     NoReturn,
     Optional,
     Type,
+    TypeVar,
     get_args,
     get_origin,
 )
@@ -26,12 +28,11 @@ from uuid import (
     UUID,
 )
 
-from .builders import (
-    TypeHintBuilder,
-)
-from .data_types import (
-    ModelRef,
-)
+T = TypeVar("T")
+
+
+class ModelRef(Generic[T]):
+    """Model Reference."""
 
 if TYPE_CHECKING:
     from ..abc import (
@@ -40,18 +41,22 @@ if TYPE_CHECKING:
 
 
 class ModelRefExtractor:
-    """TODO"""
+    """Model Reference Extractor class."""
 
     def __init__(self, value: Any, kind: Optional[Type] = None):
         if kind is None:
+            from .builders import (
+                TypeHintBuilder,
+            )
+
             kind = TypeHintBuilder(value).build()
         self.value = value
         self.kind = kind
 
     def build(self) -> dict[str, set[UUID]]:
-        """TODO
+        """Run the model reference extractor.
 
-        :return: TODO
+        :return: A dictionary in which the keys are the class names and the values are the identifiers.
         """
         ans = defaultdict(set)
         self._build(self.value, self.kind, ans)

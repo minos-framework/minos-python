@@ -20,10 +20,10 @@ from .data_types import (
     Enum,
     Fixed,
     MissingSentinel,
-    ModelRef,
     NoneType,
 )
 from .model_refs import (
+    ModelRef,
     ModelRefExtractor,
     ModelRefInjector,
 )

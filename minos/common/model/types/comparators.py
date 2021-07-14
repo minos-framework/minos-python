@@ -23,7 +23,7 @@ from uuid import (
     UUID,
 )
 
-from .data_types import (
+from .model_refs import (
     ModelRef,
 )
 from .model_types import (
