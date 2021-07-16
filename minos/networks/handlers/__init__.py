@@ -25,12 +25,8 @@ from .commands import (
     CommandResponse,
     CommandResponseException,
 )
-from .decorators import (
-    Enroute,
-)
-from .entries import (
-    HandlerEntry,
-)
+from .decorators import Enroute
+from .entries import HandlerEntry
 from .events import (
     EventConsumer,
     EventConsumerService,
