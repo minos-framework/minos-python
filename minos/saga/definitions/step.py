@@ -149,45 +149,54 @@ class SagaStep(object):
 
         return cls(**current)
 
-    def invoke_participant(self, name: Union[str, list], callback: PublishCallBack, **kwargs) -> SagaStep:
+    def invoke_participant(
+        self, name: Union[str, list], callback: PublishCallBack, parameters: Optional[SagaContext] = None
+    ) -> SagaStep:
         """Invoke a new participant method.
 
         :param name: The name of the new participant instruction.
         :param callback: The callback function used for the request contents preparation.
+        :param parameters: TODO
         :return: A ``self`` reference.
         """
         if self.invoke_participant_operation is not None:
             raise MinosMultipleInvokeParticipantException()
 
-        self.invoke_participant_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
+        self.invoke_participant_operation = SagaStepOperation(name, callback, parameters)
 
         return self
 
-    def with_compensation(self, name: str, callback: PublishCallBack, **kwargs) -> SagaStep:
+    def with_compensation(
+        self, name: str, callback: PublishCallBack, parameters: Optional[SagaContext] = None
+    ) -> SagaStep:
         """With compensation method.
 
         :param name: The name of the with compensation instruction.
         :param callback: The callback function used for the request contents preparation.
+        :param parameters: TODO
         :return: A ``self`` reference.
         """
         if self.with_compensation_operation is not None:
             raise MinosMultipleWithCompensationException()
 
-        self.with_compensation_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
+        self.with_compensation_operation = SagaStepOperation(name, callback, parameters)
 
         return self
 
-    def on_reply(self, name: str, callback: ReplyCallBack = identity_fn, **kwargs) -> SagaStep:
+    def on_reply(
+        self, name: str, callback: ReplyCallBack = identity_fn, parameters: Optional[SagaContext] = None
+    ) -> SagaStep:
         """On reply method.
 
         :param name: The name of the variable in which the reply will be stored on the context.
         :param callback: The callback function used to handle the invoke participant response.
+        :param parameters: TODO
         :return: A ``self`` reference.
         """
         if self.on_reply_operation is not None:
             raise MinosMultipleOnReplyException()
 
-        self.on_reply_operation = SagaStepOperation(name, callback, SagaContext(**kwargs))
+        self.on_reply_operation = SagaStepOperation(name, callback, parameters)
 
         return self
 
