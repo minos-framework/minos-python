@@ -25,6 +25,9 @@ from .commands import (
     CommandResponse,
     CommandResponseException,
 )
+from .decorators import (
+    Subscribe,
+)
 from .entries import (
     HandlerEntry,
 )

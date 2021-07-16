@@ -45,6 +45,7 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
+    Subscribe,
 )
 from .rest import (
     HttpRequest,
