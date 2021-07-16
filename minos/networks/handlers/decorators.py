@@ -8,6 +8,7 @@
 
 class BrokerCommandEnroute:
     """Broker Command Enroute class"""
+
     _topics: list[str]
 
     def __init__(self, *args, **kwargs):
@@ -19,6 +20,7 @@ class BrokerCommandEnroute:
 
 class BrokerQueryEnroute:
     """Broker Query Enroute class"""
+
     _topics: list[str]
 
     def __init__(self, *args, **kwargs):
@@ -30,6 +32,7 @@ class BrokerQueryEnroute:
 
 class BrokerEventEnroute:
     """Broker Event Enroute class"""
+
     _topics: list[str]
 
     def __init__(self, *args, **kwargs):
@@ -41,6 +44,7 @@ class BrokerEventEnroute:
 
 class BrokerEnroute:
     """Broker Enroute class"""
+
     command = BrokerCommandEnroute
     query = BrokerQueryEnroute
     event = BrokerEventEnroute
@@ -48,6 +52,7 @@ class BrokerEnroute:
 
 class RestCommandEnroute:
     """Rest Command Enroute class"""
+
     _topics: list[str]
 
     def __init__(self, *args, **kwargs):
@@ -59,6 +64,7 @@ class RestCommandEnroute:
 
 class RestQueryEnroute:
     """Rest Query Enroute class"""
+
     _url: str
     _method: str
 
@@ -72,11 +78,13 @@ class RestQueryEnroute:
 
 class RestEnroute:
     """Rest Enroute class"""
+
     command = RestCommandEnroute
     query = RestQueryEnroute
 
 
 class Enroute:
     """Enroute decorator main class"""
+
     broker = BrokerEnroute
     rest = RestEnroute
