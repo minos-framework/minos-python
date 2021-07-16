@@ -12,17 +12,11 @@ from __future__ import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Iterable,
     NoReturn,
     Optional,
     TypeVar,
     Union,
-)
-
-from minos.common import (
-    classname,
-    import_module,
 )
 
 from ..context import (
@@ -35,6 +29,9 @@ from ..exceptions import (
     MinosSagaEmptyStepException,
     MinosSagaNotDefinedException,
     MinosUndefinedInvokeParticipantException,
+)
+from .operations import (
+    SagaStepOperation,
 )
 from .types import (
     PublishCallBack,
@@ -56,66 +53,6 @@ def identity_fn(x: T) -> T:
     :return: This function return the input value without any transformation.
     """
     return x
-
-
-class SagaStepOperation(object):
-    """Saga Step Operation class."""
-
-    def __init__(self, name: str, callback: Callable, parameters: Optional[SagaContext] = None):
-        self.name = name
-        self.callback = callback
-        self.parameters = parameters
-
-    @property
-    def raw(self) -> dict[str, Any]:
-        """Generate a rew representation of the instance.
-
-        :return: A ``dict`` instance.
-        """
-        # noinspection PyTypeChecker
-        raw = {
-            "name": self.name,
-            "callback": classname(self.callback),
-        }
-        if self.parameterized:
-            raw["parameters"] = self.parameters.avro_str
-        return raw
-
-    @property
-    def parameterized(self) -> bool:
-        """TODO"""
-        return self.parameters is not None
-
-    @classmethod
-    def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaStepOperation]], **kwargs) -> Optional[SagaStepOperation]:
-        """Build a new instance from a raw representation.
-
-        :param raw: A raw representation.
-        :param kwargs: Additional named arguments.
-        :return: A ``SagaStepOperation`` instance if the ``raw`` argument is not ``None``, ``None`` otherwise.
-        """
-        if raw is None:
-            return None
-
-        if isinstance(raw, cls):
-            return raw
-
-        current = raw | kwargs
-        if isinstance(current["callback"], str):
-            current["callback"] = import_module(current["callback"])
-
-        if "parameters" in current:
-            current["parameters"] = SagaContext.from_avro_str(current["parameters"])
-        return cls(**current)
-
-    def __eq__(self, other: SagaStep) -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
-
-    def __iter__(self) -> Iterable:
-        yield from (
-            self.name,
-            self.callback,
-        )
 
 
 class SagaStep(object):
