@@ -7,7 +7,8 @@ from abc import (
     ABC,
 )
 from typing import (
-    Callable, Optional,
+    Callable,
+    Optional,
 )
 
 from dependency_injector.wiring import (
@@ -19,6 +20,7 @@ from minos.common import (
     MinosConfig,
     MinosSagaManager,
 )
+
 from .handlers import (
     _build_event_saga,
 )
