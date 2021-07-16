@@ -20,4 +20,4 @@ from ..context import (
 
 PublishCallBack = Callable[[SagaContext, ...], Union[Any, Awaitable[Any]]]
 ReplyCallBack = Callable[[Any, ...], Union[Any, Awaitable[Any]]]
-CommitCallback = Callable[[SagaContext], Union[None, SagaContext, Awaitable[SagaContext]]]
+CommitCallback = Callable[[SagaContext, ...], Union[None, SagaContext, Awaitable[SagaContext]]]
