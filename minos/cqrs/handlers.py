@@ -5,9 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from uuid import (
-    UUID,
-)
+from uuid import UUID
 
 from minos.common import (
     AggregateDiff,
@@ -30,15 +28,14 @@ def _build_event_saga(diff, controller, action) -> Saga:
 
     for name, uuids in missing.items():
         saga = (
-            saga
-            .step()
+            saga.step()
             .invoke_participant(f"Get{name}s", _invoke_callback, SagaContext(uuids=list(uuids)))
             .on_reply(f"{name}s")
         )
 
     saga = saga.commit(
         _build_commit_callback,
-        parameters=SagaContext(diff=diff, controller=classname(type(controller)), action=action.__name__)
+        parameters=SagaContext(diff=diff, controller=classname(type(controller)), action=action.__name__),
     )
 
     return saga
