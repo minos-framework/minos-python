@@ -30,18 +30,18 @@ from tests.utils import (
 
 class TestSagaStepOperation(unittest.TestCase):
     def test_raw(self):
-        step = SagaStepOperation("CreateFoo", foo_fn)
+        step = SagaStepOperation(foo_fn, "CreateFoo")
         expected = {"callback": "tests.utils.foo_fn", "name": "CreateFoo"}
         self.assertEqual(expected, step.raw)
 
     def test_from_raw(self):
         raw = {"callback": "tests.utils.foo_fn", "name": "CreateFoo"}
 
-        expected = SagaStepOperation("CreateFoo", foo_fn)
+        expected = SagaStepOperation(foo_fn, "CreateFoo")
         self.assertEqual(expected, SagaStepOperation.from_raw(raw))
 
     def test_from_raw_already(self):
-        expected = SagaStepOperation("CreateFoo", foo_fn)
+        expected = SagaStepOperation(foo_fn, "CreateFoo")
         observed = SagaStepOperation.from_raw(expected)
         self.assertEqual(expected, observed)
 

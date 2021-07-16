@@ -30,9 +30,9 @@ from ..context import (
 class SagaStepOperation(object):
     """Saga Step Operation class."""
 
-    def __init__(self, name: str, callback: Callable, parameters: Optional[SagaContext] = None):
-        self.name = name
+    def __init__(self, callback: Callable, name: Optional[str] = None, parameters: Optional[SagaContext] = None):
         self.callback = callback
+        self.name = name
         self.parameters = parameters
 
     @property
@@ -42,12 +42,14 @@ class SagaStepOperation(object):
         :return: A ``dict`` instance.
         """
         # noinspection PyTypeChecker
-        raw = {
-            "name": self.name,
-            "callback": classname(self.callback),
-        }
+        raw = {"callback": classname(self.callback)}
+
+        if self.name is not None:
+            raw["name"] = self.name
+
         if self.parameterized:
             raw["parameters"] = self.parameters.avro_str
+
         return raw
 
     @property
@@ -84,4 +86,5 @@ class SagaStepOperation(object):
         yield from (
             self.name,
             self.callback,
+            self.parameters,
         )

@@ -41,7 +41,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.broker, self.executor.broker)
 
     async def test_exec(self):
-        operation = SagaStepOperation("AddBar", foo_fn)
+        operation = SagaStepOperation(foo_fn, "AddBar")
         context = SagaContext()
 
         mock = MagicMock(side_effect=self.broker.send)
@@ -53,7 +53,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_raises(self):
-        operation = SagaStepOperation("AddBar", foo_fn)
+        operation = SagaStepOperation(foo_fn, "AddBar")
         context = SagaContext()
 
         async def _fn(*args, **kwargs):

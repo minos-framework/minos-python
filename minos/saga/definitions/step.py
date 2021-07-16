@@ -102,7 +102,7 @@ class SagaStep(object):
         if self.invoke_participant_operation is not None:
             raise MinosMultipleInvokeParticipantException()
 
-        self.invoke_participant_operation = SagaStepOperation(name, callback, parameters)
+        self.invoke_participant_operation = SagaStepOperation(callback, name, parameters)
 
         return self
 
@@ -119,7 +119,7 @@ class SagaStep(object):
         if self.with_compensation_operation is not None:
             raise MinosMultipleWithCompensationException()
 
-        self.with_compensation_operation = SagaStepOperation(name, callback, parameters)
+        self.with_compensation_operation = SagaStepOperation(callback, name, parameters)
 
         return self
 
@@ -136,7 +136,7 @@ class SagaStep(object):
         if self.on_reply_operation is not None:
             raise MinosMultipleOnReplyException()
 
-        self.on_reply_operation = SagaStepOperation(name, callback, parameters)
+        self.on_reply_operation = SagaStepOperation(callback, name, parameters)
 
         return self
 
