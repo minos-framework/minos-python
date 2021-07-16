@@ -31,7 +31,7 @@ from .setup import (
 class MinosSagaManager(ABC, MinosSetup):
     """Base class for saga manager implementations."""
 
-    async def run(self, reply: Optional[CommandReply] = None, **kwargs) -> UUID:
+    async def run(self, *args, reply: Optional[CommandReply] = None, **kwargs) -> UUID:
         """Perform a run of a ``Saga``.
 
         The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
@@ -42,14 +42,14 @@ class MinosSagaManager(ABC, MinosSetup):
         """
 
         if reply is not None:
-            return await self._load_and_run(reply, **kwargs)
+            return await self._load_and_run(*args, reply, **kwargs)
 
-        return await self._run_new(**kwargs)
+        return await self._run_new(*args, **kwargs)
 
     @abstractmethod
-    async def _run_new(self, **kwargs) -> UUID:
+    async def _run_new(self, *args, **kwargs) -> UUID:
         raise NotImplementedError
 
     @abstractmethod
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
+    async def _load_and_run(self, *args, reply: CommandReply, **kwargs) -> UUID:
         raise NotImplementedError
