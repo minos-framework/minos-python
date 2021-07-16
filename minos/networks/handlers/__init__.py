@@ -26,7 +26,7 @@ from .commands import (
     CommandResponseException,
 )
 from .decorators import (
-    Subscribe,
+    Enroute,
 )
 from .entries import (
     HandlerEntry,

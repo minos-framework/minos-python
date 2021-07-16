@@ -5,48 +5,78 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-import functools
-from inspect import (
-    isawaitable,
-)
-from typing import (
-    Callable,
-)
 
-from minos.common import (
-    Event,
-)
+class BrokerCommandEnroute:
+    """Broker Command Enroute class"""
+    _topics: list[str]
 
+    def __init__(self, *args, **kwargs):
+        self._topics = kwargs["topics"]
 
-class Subscribe(object):
-    """Event Handler class."""
-
-    def __init__(self, func: Callable):
-        functools.update_wrapper(self, func)
-        self.func = func
-
-    async def __call__(self, *args, **kwargs):
-        if len(args) > 0 and isinstance(args[0], Event):
-            return await self.func._handle(args[0].data, self.func)
-
-        call = self.func(self.func, *args, **kwargs)
-
-        if isawaitable(call):
-            return await call
-        return call
+    def __call__(self, fn, *args, **kwargs):
+        return fn
 
 
-"""
-def subscribe(func: Callable):
-    async def wrapper(self, *args, **kwargs) -> NoReturn:
-        if len(args) > 0 and isinstance(args[0], Event):
-            return await self._handle(args[0].data, func)
+class BrokerQueryEnroute:
+    """Broker Query Enroute class"""
+    _topics: list[str]
 
-        call = func(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        self._topics = kwargs["topics"]
 
-        if isawaitable(call):
-            return await call
-        return call
+    def __call__(self, fn, *args, **kwargs):
+        return fn
 
-    return wrapper
-"""
+
+class BrokerEventEnroute:
+    """Broker Event Enroute class"""
+    _topics: list[str]
+
+    def __init__(self, *args, **kwargs):
+        self._topics = kwargs["topics"]
+
+    def __call__(self, fn, *args, **kwargs):
+        return fn
+
+
+class BrokerEnroute:
+    """Broker Enroute class"""
+    command = BrokerCommandEnroute
+    query = BrokerQueryEnroute
+    event = BrokerEventEnroute
+
+
+class RestCommandEnroute:
+    """Rest Command Enroute class"""
+    _topics: list[str]
+
+    def __init__(self, *args, **kwargs):
+        self._topics = kwargs["topics"]
+
+    def __call__(self, fn, *args, **kwargs):
+        return fn
+
+
+class RestQueryEnroute:
+    """Rest Query Enroute class"""
+    _url: str
+    _method: str
+
+    def __init__(self, *args, **kwargs):
+        self._url = kwargs["url"]
+        self._method = kwargs["method"]
+
+    def __call__(self, fn, *args, **kwargs):
+        return fn
+
+
+class RestEnroute:
+    """Rest Enroute class"""
+    command = RestCommandEnroute
+    query = RestQueryEnroute
+
+
+class Enroute:
+    """Enroute decorator main class"""
+    broker = BrokerEnroute
+    rest = RestEnroute
