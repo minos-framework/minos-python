@@ -170,7 +170,7 @@ class SagaExecution(object):
             execution_step = SagaExecutionStep(step)
             await self._execute_one(execution_step, *args, **kwargs)
 
-        await self._execute_commit_callback(*args, **kwargs)
+        await self._execute_commit(*args, **kwargs)
         self.status = SagaStatus.Finished
         return self.context
 
@@ -189,13 +189,15 @@ class SagaExecution(object):
             self.status = SagaStatus.Paused
             raise exc
 
-    async def _execute_commit_callback(self, *args, **kwargs) -> NoReturn:
+    async def _execute_commit(self, *args, **kwargs) -> NoReturn:
         try:
             executor = LocalExecutor()
-            parameters = self.definition.commit_parameters
-            if parameters is None:
+            operation = self.definition.commit_operation
+            if operation.parameterized:
+                parameters = operation.parameters
+            else:
                 parameters = dict()
-            new_context = await executor.exec_function(self.definition.commit_callback, self.context, **parameters)
+            new_context = await executor.exec_function(operation.callback, self.context, **parameters)
             if new_context is not None:
                 self.context = new_context
         except MinosSagaExecutorException as exc:

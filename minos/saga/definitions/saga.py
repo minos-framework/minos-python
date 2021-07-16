@@ -17,17 +17,15 @@ from typing import (
     Union,
 )
 
-from minos.common import (
-    classname,
-    import_module,
-)
-
-from .. import (
+from ..context import (
     SagaContext,
 )
 from ..exceptions import (
     MinosAlreadyOnSagaException,
     MinosSagaAlreadyCommittedException,
+)
+from .operations import (
+    SagaOperation,
 )
 from .step import (
     SagaStep,
@@ -45,19 +43,14 @@ class Saga(object):
     """
 
     def __init__(
-        self,
-        name: str,
-        steps: list[SagaStep] = None,
-        commit_callback: Optional[CommitCallback] = None,
-        commit_parameters: Optional[SagaContext] = None,
+        self, name: str, steps: list[SagaStep] = None, commit_operation: Optional[SagaOperation] = None,
     ):
         if steps is None:
             steps = list()
 
         self.name = name
         self.steps = steps
-        self.commit_callback = commit_callback
-        self.commit_parameters = commit_parameters
+        self.commit_operation = commit_operation
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
@@ -72,16 +65,13 @@ class Saga(object):
 
         current = raw | kwargs
 
-        commit_callback = current.pop("commit_callback", None)
-        if commit_callback is not None:
-            commit_callback = import_module(commit_callback)
+        commit_operation = current.pop("commit", None)
+        if commit_operation is not None:
+            commit_operation = SagaOperation.from_raw(commit_operation)
 
         steps = [SagaStep.from_raw(step) for step in current.pop("steps")]
 
-        if "commit_parameters" in current:
-            current["commit_parameters"] = SagaContext.from_avro_str(current["commit_parameters"])
-
-        instance = cls(steps=steps, commit_callback=commit_callback, **current)
+        instance = cls(steps=steps, commit_operation=commit_operation, **current)
 
         return instance
 
@@ -114,10 +104,8 @@ class Saga(object):
         ans = {
             "name": self.name,
             "steps": [step.raw for step in self.steps],
-            "commit_callback": None if self.commit_callback is None else classname(self.commit_callback),
+            "commit": None if self.commit_operation is None else self.commit_operation.raw,
         }
-        if self.commit_parameters is not None:
-            ans["commit_parameters"] = self.commit_parameters.avro_str
         return ans
 
     def __eq__(self, other: SagaStep) -> bool:
@@ -127,7 +115,7 @@ class Saga(object):
         yield from (
             self.name,
             self.steps,
-            self.commit_callback,
+            self.commit_operation,
         )
 
     # noinspection PyUnusedLocal
@@ -144,8 +132,7 @@ class Saga(object):
         if callback is None:
             callback = identity_fn
 
-        self.commit_callback = callback
-        self.commit_parameters = parameters
+        self.commit_operation = SagaOperation(callback, parameters=parameters)
         return self
 
     @property
@@ -154,4 +141,4 @@ class Saga(object):
 
         :return: A boolean value.
         """
-        return self.commit_callback is not None
+        return self.commit_operation is not None
