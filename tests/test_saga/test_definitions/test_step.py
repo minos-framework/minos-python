@@ -21,29 +21,10 @@ from minos.saga import (
     MinosUndefinedInvokeParticipantException,
     Saga,
     SagaStep,
-    SagaStepOperation,
 )
 from tests.utils import (
     foo_fn,
 )
-
-
-class TestSagaStepOperation(unittest.TestCase):
-    def test_raw(self):
-        step = SagaStepOperation(foo_fn, "CreateFoo")
-        expected = {"callback": "tests.utils.foo_fn", "name": "CreateFoo"}
-        self.assertEqual(expected, step.raw)
-
-    def test_from_raw(self):
-        raw = {"callback": "tests.utils.foo_fn", "name": "CreateFoo"}
-
-        expected = SagaStepOperation(foo_fn, "CreateFoo")
-        self.assertEqual(expected, SagaStepOperation.from_raw(raw))
-
-    def test_from_raw_already(self):
-        expected = SagaStepOperation(foo_fn, "CreateFoo")
-        observed = SagaStepOperation.from_raw(expected)
-        self.assertEqual(expected, observed)
 
 
 class TestSagaStep(unittest.TestCase):
@@ -116,7 +97,7 @@ class TestSagaStep(unittest.TestCase):
         expected = {
             "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "FoodAdd"},
             "with_compensation": {"callback": "tests.utils.foo_fn", "name": "FooDelete"},
-            "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo"},
+            "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
         }
         self.assertEqual(expected, step.raw)
 
@@ -124,7 +105,7 @@ class TestSagaStep(unittest.TestCase):
         raw = {
             "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "FoodAdd"},
             "with_compensation": {"callback": "tests.utils.foo_fn", "name": "FooDelete"},
-            "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo"},
+            "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
         }
 
         expected = (

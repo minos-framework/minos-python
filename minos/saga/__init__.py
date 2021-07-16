@@ -11,8 +11,8 @@ from .context import (
 )
 from .definitions import (
     Saga,
+    SagaOperation,
     SagaStep,
-    SagaStepOperation,
     identity_fn,
 )
 from .exceptions import (

@@ -12,7 +12,7 @@ from typing import (
 )
 
 from ...definitions import (
-    SagaStepOperation,
+    SagaOperation,
 )
 from ...exceptions import (
     MinosSagaExecutorException,
@@ -25,7 +25,7 @@ class LocalExecutor:
     def __init__(self, *args, **kwargs):
         pass
 
-    async def exec_operation(self, operation: SagaStepOperation, *args, **kwargs) -> Any:
+    async def exec_operation(self, operation: SagaOperation, *args, **kwargs) -> Any:
         """Execute the given operation locally.
 
         :param operation: The operation to be executed.

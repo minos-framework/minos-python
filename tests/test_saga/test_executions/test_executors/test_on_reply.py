@@ -19,7 +19,7 @@ from minos.saga import (
     MinosSagaFailedExecutionStepException,
     OnReplyExecutor,
     SagaContext,
-    SagaStepOperation,
+    SagaOperation,
     identity_fn,
 )
 from tests.utils import (
@@ -36,13 +36,13 @@ class TesOnReplyExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(self.executor, LocalExecutor)
 
     async def test_exec_raises_callback(self):
-        operation = SagaStepOperation(lambda s: Path.cwd(), "foo")
+        operation = SagaOperation(lambda s: Path.cwd(), "foo")
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await self.executor.exec(operation, SagaContext(), reply=fake_reply(Foo("text")))
 
     async def test_exec_raises_reply_status(self):
         reply = fake_reply(status=CommandStatus.ERROR)
-        operation = SagaStepOperation(identity_fn, "foo")
+        operation = SagaOperation(identity_fn, "foo")
         with self.assertRaises(MinosCommandReplyFailedException):
             await self.executor.exec(operation, SagaContext(), reply=reply)
 

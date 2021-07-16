@@ -14,6 +14,7 @@ from typing import (
     Callable,
     Iterable,
     Optional,
+    TypeVar,
     Union,
 )
 
@@ -26,8 +27,19 @@ from ..context import (
     SagaContext,
 )
 
+T = TypeVar("T")
 
-class SagaStepOperation(object):
+
+def identity_fn(x: T) -> T:
+    """A identity function, that returns the same value without any transformation.
+
+    :param x: The input value.
+    :return: This function return the input value without any transformation.
+    """
+    return x
+
+
+class SagaOperation(object):
     """Saga Step Operation class."""
 
     def __init__(self, callback: Callable, name: Optional[str] = None, parameters: Optional[SagaContext] = None):
@@ -58,7 +70,7 @@ class SagaStepOperation(object):
         return self.parameters is not None
 
     @classmethod
-    def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaStepOperation]], **kwargs) -> Optional[SagaStepOperation]:
+    def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaOperation]], **kwargs) -> Optional[SagaOperation]:
         """Build a new instance from a raw representation.
 
         :param raw: A raw representation.
@@ -79,7 +91,7 @@ class SagaStepOperation(object):
             current["parameters"] = SagaContext.from_avro_str(current["parameters"])
         return cls(**current)
 
-    def __eq__(self, other: SagaStepOperation) -> bool:
+    def __eq__(self, other: SagaOperation) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __iter__(self) -> Iterable:

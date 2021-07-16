@@ -140,7 +140,7 @@ class TestSaga(unittest.TestCase):
         )
         expected = {
             "name": "CreateShipment",
-            "commit_callback": "minos.saga.definitions.step.identity_fn",
+            "commit_callback": "minos.saga.definitions.operations.identity_fn",
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateOrder"},
@@ -164,7 +164,7 @@ class TestSaga(unittest.TestCase):
     def test_from_raw(self):
         raw = {
             "name": "CreateShipment",
-            "commit_callback": "minos.saga.definitions.step.identity_fn",
+            "commit_callback": "minos.saga.definitions.operations.identity_fn",
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateOrder"},

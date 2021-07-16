@@ -15,7 +15,6 @@ from typing import (
     Iterable,
     NoReturn,
     Optional,
-    TypeVar,
     Union,
 )
 
@@ -31,7 +30,8 @@ from ..exceptions import (
     MinosUndefinedInvokeParticipantException,
 )
 from .operations import (
-    SagaStepOperation,
+    SagaOperation,
+    identity_fn,
 )
 from .types import (
     PublishCallBack,
@@ -43,17 +43,6 @@ if TYPE_CHECKING:
         Saga,
     )
 
-    T = TypeVar("T")
-
-
-def identity_fn(x: T) -> T:
-    """A identity function, that returns the same value without any transformation.
-
-    :param x: The input value.
-    :return: This function return the input value without any transformation.
-    """
-    return x
-
 
 class SagaStep(object):
     """Saga step class."""
@@ -61,9 +50,9 @@ class SagaStep(object):
     def __init__(
         self,
         saga: Optional[Saga] = None,
-        invoke_participant: Optional[SagaStepOperation] = None,
-        with_compensation: Optional[SagaStepOperation] = None,
-        on_reply: Optional[SagaStepOperation] = None,
+        invoke_participant: Optional[SagaOperation] = None,
+        with_compensation: Optional[SagaOperation] = None,
+        on_reply: Optional[SagaOperation] = None,
     ):
         self.saga = saga
         self.invoke_participant_operation = invoke_participant
@@ -83,9 +72,9 @@ class SagaStep(object):
 
         current = raw | kwargs
 
-        current["invoke_participant"] = SagaStepOperation.from_raw(current["invoke_participant"])
-        current["with_compensation"] = SagaStepOperation.from_raw(current["with_compensation"])
-        current["on_reply"] = SagaStepOperation.from_raw(current["on_reply"])
+        current["invoke_participant"] = SagaOperation.from_raw(current["invoke_participant"])
+        current["with_compensation"] = SagaOperation.from_raw(current["with_compensation"])
+        current["on_reply"] = SagaOperation.from_raw(current["on_reply"])
 
         return cls(**current)
 
@@ -102,7 +91,7 @@ class SagaStep(object):
         if self.invoke_participant_operation is not None:
             raise MinosMultipleInvokeParticipantException()
 
-        self.invoke_participant_operation = SagaStepOperation(callback, name, parameters)
+        self.invoke_participant_operation = SagaOperation(callback, name, parameters)
 
         return self
 
@@ -119,7 +108,7 @@ class SagaStep(object):
         if self.with_compensation_operation is not None:
             raise MinosMultipleWithCompensationException()
 
-        self.with_compensation_operation = SagaStepOperation(callback, name, parameters)
+        self.with_compensation_operation = SagaOperation(callback, name, parameters)
 
         return self
 
@@ -136,7 +125,7 @@ class SagaStep(object):
         if self.on_reply_operation is not None:
             raise MinosMultipleOnReplyException()
 
-        self.on_reply_operation = SagaStepOperation(callback, name, parameters)
+        self.on_reply_operation = SagaOperation(callback, name, parameters)
 
         return self
 
