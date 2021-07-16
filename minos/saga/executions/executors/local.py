@@ -35,7 +35,7 @@ class LocalExecutor:
         """
 
         if operation.parameterized:
-            kwargs = {operation.parameters | kwargs}
+            kwargs = {**operation.parameters, **kwargs}
 
         return await self.exec_function(operation.callback, *args, **kwargs)
 
