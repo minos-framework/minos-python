@@ -7,7 +7,7 @@ from abc import (
     ABC,
 )
 from typing import (
-    Callable, Optional,
+    Optional,
 )
 
 from dependency_injector.wiring import (
@@ -15,12 +15,8 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    AggregateDiff,
     MinosConfig,
     MinosSagaManager,
-)
-from .handlers import (
-    _build_event_saga,
 )
 
 
@@ -37,15 +33,3 @@ class Service(ABC):
             self.config = config
         if saga_manager is not None:
             self.saga_manager = saga_manager
-
-
-class CommandService(Service):
-    """Command Service class"""
-
-
-class QueryService(Service):
-    """Query Service class"""
-
-    async def _handle_event(self, diff: AggregateDiff, fn: Callable):
-        definition = _build_event_saga(diff, self, fn)
-        return await self.saga_manager.run(definition=definition)
