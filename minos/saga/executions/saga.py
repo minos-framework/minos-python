@@ -192,7 +192,9 @@ class SagaExecution(object):
     async def _execute_commit_callback(self, *args, **kwargs) -> NoReturn:
         try:
             executor = LocalExecutor()
-            self.context = await executor.exec_function(self.definition.commit_callback, self.context)
+            new_context = await executor.exec_function(self.definition.commit_callback, self.context)
+            if new_context is not None:
+                self.context = new_context
         except MinosSagaExecutorException as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored

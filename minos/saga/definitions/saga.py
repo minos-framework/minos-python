@@ -11,9 +11,7 @@ from __future__ import (
 )
 
 from typing import (
-    TYPE_CHECKING,
     Any,
-    Callable,
     Iterable,
     Optional,
     Union,
@@ -32,13 +30,9 @@ from .step import (
     SagaStep,
     identity_fn,
 )
-
-if TYPE_CHECKING:
-    from ..executions import (
-        SagaContext,
-    )
-
-    CommitCallback = Callable[[SagaContext], SagaContext]
+from .types import (
+    CommitCallback,
+)
 
 
 class Saga(object):

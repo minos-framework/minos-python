@@ -13,7 +13,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Coroutine,
     Iterable,
     NoReturn,
     Optional,
@@ -37,21 +36,17 @@ from ..exceptions import (
     MinosSagaNotDefinedException,
     MinosUndefinedInvokeParticipantException,
 )
+from .types import (
+    PublishCallBack,
+    ReplyCallBack,
+)
 
 if TYPE_CHECKING:
-    from minos.common import (
-        Model,
-    )
-
     from .saga import (
         Saga,
     )
 
     T = TypeVar("T")
-
-    CallBack = Callable[
-        [SagaContext], Union[Model, list[Model], Coroutine[Any, Any, Model], Coroutine[Any, Any, list[Model]]],
-    ]
 
 
 def identity_fn(x: T) -> T:
@@ -154,7 +149,7 @@ class SagaStep(object):
 
         return cls(**current)
 
-    def invoke_participant(self, name: Union[str, list], callback: CallBack, **kwargs) -> SagaStep:
+    def invoke_participant(self, name: Union[str, list], callback: PublishCallBack, **kwargs) -> SagaStep:
         """Invoke a new participant method.
 
         :param name: The name of the new participant instruction.
@@ -168,7 +163,7 @@ class SagaStep(object):
 
         return self
 
-    def with_compensation(self, name: str, callback: CallBack, **kwargs) -> SagaStep:
+    def with_compensation(self, name: str, callback: PublishCallBack, **kwargs) -> SagaStep:
         """With compensation method.
 
         :param name: The name of the with compensation instruction.
@@ -182,7 +177,7 @@ class SagaStep(object):
 
         return self
 
-    def on_reply(self, name: str, callback: Callable = identity_fn, **kwargs) -> SagaStep:
+    def on_reply(self, name: str, callback: ReplyCallBack = identity_fn, **kwargs) -> SagaStep:
         """On reply method.
 
         :param name: The name of the variable in which the reply will be stored on the context.
