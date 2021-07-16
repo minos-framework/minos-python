@@ -7,7 +7,7 @@ from abc import (
     ABC,
 )
 from typing import (
-    Optional,
+    Callable, Optional,
 )
 
 from dependency_injector.wiring import (
@@ -15,8 +15,12 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
+    AggregateDiff,
     MinosConfig,
     MinosSagaManager,
+)
+from .handlers import (
+    _build_event_saga_execution,
 )
 
 
@@ -41,3 +45,8 @@ class CommandService(Service):
 
 class QueryService(Service):
     """Query Service class"""
+
+    async def _handle_event(self, diff: AggregateDiff, fn: Callable):
+        execution = _build_event_saga_execution(diff, self, fn)
+        # noinspection PyProtectedMember,PyUnresolvedReferences
+        return await self.saga_manager._run(execution)
