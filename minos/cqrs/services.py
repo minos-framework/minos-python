@@ -20,7 +20,7 @@ from minos.common import (
     MinosSagaManager,
 )
 from .handlers import (
-    _build_event_saga_execution,
+    _build_event_saga,
 )
 
 
@@ -47,6 +47,5 @@ class QueryService(Service):
     """Query Service class"""
 
     async def _handle_event(self, diff: AggregateDiff, fn: Callable):
-        execution = _build_event_saga_execution(diff, self, fn)
-        # noinspection PyProtectedMember,PyUnresolvedReferences
-        return await self.saga_manager._run(execution)
+        definition = _build_event_saga(diff, self, fn)
+        return await self.saga_manager.run(definition=definition)

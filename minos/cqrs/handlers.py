@@ -21,17 +21,10 @@ from minos.common import (
 from minos.saga import (
     Saga,
     SagaContext,
-    SagaExecution,
 )
 
 
-def _build_event_saga_execution(diff, controller, action):
-    definition = _build_saga(diff, controller, action)
-    execution = SagaExecution.from_saga(definition)
-    return execution
-
-
-def _build_saga(diff, controller, action) -> Saga:
+def _build_event_saga(diff, controller, action) -> Saga:
     missing = _get_missing(diff)
     saga = Saga("ordersQuery")
 
