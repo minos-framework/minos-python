@@ -68,8 +68,13 @@ class PublishExecutor(LocalExecutor):
         if operation is None:
             return context
 
+        if operation.parameterized:
+            parameters = operation.parameters
+        else:
+            parameters = dict()
+
         try:
-            request = await self.exec_operation(operation, context, **operation.parameters)
+            request = await self.exec_operation(operation, context, **parameters)
             await self._publish(operation, request)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)

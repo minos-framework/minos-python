@@ -62,8 +62,6 @@ class SagaStepOperation(object):
     """Saga Step Operation class."""
 
     def __init__(self, name: str, callback: Callable, parameters: Optional[SagaContext] = None):
-        if parameters is None:
-            parameters = SagaContext()
         self.name = name
         self.callback = callback
         self.parameters = parameters
@@ -79,9 +77,14 @@ class SagaStepOperation(object):
             "name": self.name,
             "callback": classname(self.callback),
         }
-        if len(self.parameters.fields):
+        if self.parameterized:
             raw["parameters"] = self.parameters.avro_str
         return raw
+
+    @property
+    def parameterized(self) -> bool:
+        """TODO"""
+        return self.parameters is not None
 
     @classmethod
     def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaStepOperation]], **kwargs) -> Optional[SagaStepOperation]:
@@ -101,7 +104,7 @@ class SagaStepOperation(object):
         if isinstance(current["callback"], str):
             current["callback"] = import_module(current["callback"])
 
-        if "parameters" in current and current["parameters"] is not None:
+        if "parameters" in current:
             current["parameters"] = SagaContext.from_avro_str(current["parameters"])
         return cls(**current)
 
