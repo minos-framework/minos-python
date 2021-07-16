@@ -24,6 +24,8 @@ from minos.common import (
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSagaManagerException,
+    MinosSagaManagerNotProvidedException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
     MinosSnapshotException,
@@ -124,6 +126,12 @@ class TestExceptions(unittest.TestCase):
         exception = MinosAttributeValidationException("foo", 34)
         message = "MinosAttributeValidationException(message=\"34 value does not pass the 'foo' field validation.\")"
         self.assertEqual(message, repr(exception))
+
+    def test_saga_manager(self):
+        self.assertTrue(issubclass(MinosSagaManagerException, MinosException))
+
+    def test_saga_manager_not_provided(self):
+        self.assertTrue(issubclass(MinosSagaManagerNotProvidedException, MinosSagaManagerException))
 
 
 if __name__ == "__main__":
