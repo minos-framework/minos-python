@@ -34,6 +34,9 @@ class LocalExecutor:
         :return: The execution response.
         """
 
+        if operation.parameterized:
+            kwargs = {operation.parameters | kwargs}
+
         return await self.exec_function(operation.callback, *args, **kwargs)
 
     @staticmethod

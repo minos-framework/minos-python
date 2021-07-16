@@ -56,13 +56,8 @@ class OnReplyExecutor(LocalExecutor):
         if operation is None:
             return context
 
-        if operation.parameterized:
-            parameters = operation.parameters
-        else:
-            parameters = dict()
-
         try:
-            response = await self.exec_operation(operation, reply.data, **parameters)
+            response = await self.exec_operation(operation, reply.data)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)
 

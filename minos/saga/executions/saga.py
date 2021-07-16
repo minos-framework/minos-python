@@ -190,20 +190,17 @@ class SagaExecution(object):
             raise exc
 
     async def _execute_commit(self, *args, **kwargs) -> NoReturn:
+        executor = LocalExecutor(*args, **kwargs)
+
         try:
-            executor = LocalExecutor()
-            operation = self.definition.commit_operation
-            if operation.parameterized:
-                parameters = operation.parameters
-            else:
-                parameters = dict()
-            new_context = await executor.exec_function(operation.callback, self.context, **parameters)
-            if new_context is not None:
-                self.context = new_context
+            new_context = await executor.exec_operation(self.definition.commit_operation, self.context)
         except MinosSagaExecutorException as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
             raise MinosSagaFailedCommitCallbackException(exc.exception)
+
+        if new_context is not None:
+            self.context = new_context
 
     async def rollback(self, *args, **kwargs) -> NoReturn:
         """Revert the invoke participant operation with a with compensation operation.
