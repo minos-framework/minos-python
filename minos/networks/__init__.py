@@ -38,6 +38,7 @@ from .handlers import (
     CommandResponse,
     CommandResponseException,
     Consumer,
+    Enroute,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -45,7 +46,6 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
-    Enroute,
 )
 from .rest import (
     HttpRequest,
@@ -54,4 +54,6 @@ from .rest import (
     RestBuilder,
     RestService,
 )
-from .snapshots import SnapshotService
+from .snapshots import (
+    SnapshotService,
+)
