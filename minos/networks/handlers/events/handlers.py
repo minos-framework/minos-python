@@ -9,6 +9,9 @@ from __future__ import (
 )
 
 import logging
+from inspect import (
+    isawaitable,
+)
 from typing import (
     NoReturn,
 )
@@ -46,4 +49,6 @@ class EventHandler(Handler):
         :return: This method does not return anything.
         """
         logger.info(f"Dispatching '{entry.data!s}'...")
-        await entry.callback(entry.topic, entry.data)
+        call = entry.callback(entry.data)
+        if isawaitable(call):
+            await call
