@@ -12,7 +12,6 @@ from itertools import (
     chain,
 )
 from typing import (
-    Any,
     NoReturn,
     Optional,
 )
@@ -35,12 +34,11 @@ from ..entries import (
 class DynamicHandler(MinosSetup):
     """TODO"""
 
-    __slots__ = "_topics", "_broker", "__consumer"
+    __slots__ = ("_broker",)
 
-    def __init__(self, broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
+    def __init__(self, broker: Optional[BROKER] = None, **kwargs):
         super().__init__(**kwargs)
         self._broker = broker
-        self.__consumer = consumer
 
     async def _setup(self) -> NoReturn:
         ...
