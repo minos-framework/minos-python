@@ -382,7 +382,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.1.4"
+version = "0.1.5"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
@@ -814,7 +814,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "9f641ddde8ca58420d8e45e7cd564cebd43145ec72c7afce2df2b30f84a293bc"
+content-hash = "cf28a6d8409a04fa19f704763d8c91e8ef61b91f57daeb1c9e152776b522ea9f"
 
 [metadata.files]
 aiomisc = [
@@ -1173,8 +1173,8 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 minos-microservice-common = [
-    {file = "minos_microservice_common-0.1.4-py3-none-any.whl", hash = "sha256:0834b49898813b43032e730a8a999e18d88ef02617efb93943c9694367610ea1"},
-    {file = "minos_microservice_common-0.1.4.tar.gz", hash = "sha256:b2d19fa50ed7d9db99f1ba69d6a7e8a9e2d476e9f7682fa629cffcf2b1f5d0f3"},
+    {file = "minos_microservice_common-0.1.5-py3-none-any.whl", hash = "sha256:d2828d7f7143e56a0977197537a3edc91293520caff2ec0ee300aed501b11967"},
+    {file = "minos_microservice_common-0.1.5.tar.gz", hash = "sha256:396f0eda129b238f548d58f65ec7df5ba0cf366cb74ab38fdd5952d075731495"},
 ]
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},

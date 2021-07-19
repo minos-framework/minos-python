@@ -25,6 +25,8 @@ from dependency_injector.wiring import (
 from minos.common import (
     CommandReply,
     MinosConfig,
+    MinosHandler,
+    MinosHandlerNotProvidedException,
     MinosSagaManager,
     import_module,
 )
@@ -62,15 +64,25 @@ class SagaManager(MinosSagaManager):
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    handler = Provide["handler"]
+    handler: MinosHandler = Provide["handler"]
 
-    def __init__(self, storage: SagaExecutionStorage, definitions: dict[str, Saga], handler=None, *args, **kwargs):
+    def __init__(
+        self,
+        storage: SagaExecutionStorage,
+        definitions: dict[str, Saga],
+        handler: Optional[MinosHandler] = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.storage = storage
         self.definitions = definitions
 
         if handler is not None:
             self.handler = handler
+
+        if self.handler is None or isinstance(self.handler, Provide):
+            raise MinosHandlerNotProvidedException("A handler instance is required.")
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:

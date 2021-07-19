@@ -22,6 +22,7 @@ from minos.common import (
     CommandReply,
     CommandStatus,
     MinosBroker,
+    MinosHandler,
     MinosModel,
 )
 from minos.saga import (
@@ -76,4 +77,14 @@ class NaiveBroker(MinosBroker):
     """For testing purposes."""
 
     async def send(self, data: Any, **kwargs) -> NoReturn:
+        """For testing purposes."""
+
+
+class FakeHandler(MinosHandler):
+    """For testing purposes."""
+
+    async def get_one(self, *args, **kwargs) -> Any:
+        """For testing purposes."""
+
+    async def get_many(self, *args, **kwargs) -> list[Any]:
         """For testing purposes."""
