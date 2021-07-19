@@ -36,6 +36,7 @@ from .exceptions import (
     MinosBrokerException,
     MinosBrokerNotProvidedException,
     MinosConfigException,
+    MinosConfigNotProvidedException,
     MinosException,
     MinosImmutableClassException,
     MinosImportException,

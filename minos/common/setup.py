@@ -23,7 +23,7 @@ from .configuration import (
     MinosConfig,
 )
 from .exceptions import (
-    MinosConfigException,
+    MinosConfigNotProvidedException,
 )
 
 T = TypeVar("T")
@@ -50,7 +50,7 @@ class MinosSetup(Generic[T]):
         if config is None:
             config = cls._config
             if isinstance(config, Provide):
-                raise MinosConfigException("The config object must be setup.")
+                raise MinosConfigNotProvidedException("The config object must be provided.")
         return cls._from_config(*args, config=config, **kwargs)
 
     @classmethod
