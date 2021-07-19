@@ -38,11 +38,11 @@ if TYPE_CHECKING:
 class InMemorySnapshot(MinosSnapshot):
     """In Memory Snapshot class."""
 
-    async def get(self, aggregate_name: str, uuids: list[UUID], **kwargs) -> AsyncIterator[Aggregate]:
+    async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
         """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param uuids: List of identifiers to be retrieved.
+        :param uuids: Set of identifiers to be retrieved.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """

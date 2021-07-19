@@ -69,7 +69,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotBuilder:
         return cls(*args, **config.snapshot._asdict(), **kwargs)
 
-    async def are_synced(self, aggregate_name: str, aggregate_uuids: list[UUID]) -> bool:
+    async def are_synced(self, aggregate_name: str, aggregate_uuids: set[UUID]) -> bool:
         """Check if the snapshot has the latest version of a list of aggregates.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be checked.

@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from asyncio import (
+    gather,
+)
 from uuid import (
     uuid4,
 )
@@ -46,13 +49,15 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
     async def test_get(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
-            originals = [
-                await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s),
-                await Car.create(doors=3, color="red", _broker=b, _repository=r, _snapshot=s),
-                await Car.create(doors=5, color="blue", _broker=b, _repository=r, _snapshot=s),
-            ]
-            iterable = Car.get([o.uuid for o in originals], _broker=b, _repository=r, _snapshot=s)
-            recovered = [v async for v in iterable]
+            originals = set(
+                await gather(
+                    Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s),
+                    Car.create(doors=3, color="red", _broker=b, _repository=r, _snapshot=s),
+                    Car.create(doors=5, color="blue", _broker=b, _repository=r, _snapshot=s),
+                )
+            )
+            iterable = Car.get({o.uuid for o in originals}, _broker=b, _repository=r, _snapshot=s)
+            recovered = {v async for v in iterable}
 
             self.assertEqual(originals, recovered)
 
