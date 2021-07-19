@@ -74,6 +74,7 @@ class BrokerEventEnroute:
 
 class BrokerEnroute:
     """Broker Enroute class"""
+
     command = BrokerCommandEnroute
     query = BrokerQueryEnroute
     event = BrokerEventEnroute
@@ -125,12 +126,14 @@ class RestQueryEnroute:
 
 class RestEnroute:
     """Rest Enroute class"""
+
     command = RestCommandEnroute
     query = RestQueryEnroute
 
 
 class Enroute:
     """Enroute decorator main class"""
+
     broker = BrokerEnroute
     rest = RestEnroute
 
@@ -138,6 +141,7 @@ class Enroute:
 def find_decorators(target):
     import ast
     import inspect
+
     res = {}
 
     def visit_FunctionDef(node):
@@ -145,5 +149,5 @@ def find_decorators(target):
 
     V = ast.NodeVisitor()
     V.visit_FunctionDef = visit_FunctionDef
-    V.visit(compile(inspect.getsource(target), '?', 'exec', ast.PyCF_ONLY_AST))
+    V.visit(compile(inspect.getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
     return res
