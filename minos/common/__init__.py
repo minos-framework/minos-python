@@ -37,6 +37,8 @@ from .exceptions import (
     MinosBrokerNotProvidedException,
     MinosConfigException,
     MinosException,
+    MinosHandlerException,
+    MinosHandlerNotProvidedException,
     MinosImmutableClassException,
     MinosImportException,
     MinosMalformedAttributeException,
@@ -117,6 +119,7 @@ from .model import (
 )
 from .networks import (
     MinosBroker,
+    MinosHandler,
 )
 from .protocol import (
     MinosAvroDatabaseProtocol,
