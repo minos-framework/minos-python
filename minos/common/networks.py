@@ -35,3 +35,25 @@ class MinosBroker(ABC, MinosSetup):
         :return: This method does not return anything.
         """
         raise NotImplementedError
+
+
+class MinosHandler(ABC, MinosSetup):
+    """TODO"""
+
+    @abstractmethod
+    async def get_one(self, *args, **kwargs) -> Any:
+        """TODO
+
+        :param args: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+
+    @abstractmethod
+    async def get_many(self, *args, **kwargs) -> list[Any]:
+        """TODO
+
+        :param args: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
