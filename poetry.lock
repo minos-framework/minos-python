@@ -160,7 +160,7 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "charset-normalizer"
-version = "2.0.2"
+version = "2.0.3"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
 category = "dev"
 optional = false
@@ -245,7 +245,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "fastavro"
-version = "1.4.2"
+version = "1.4.3"
 description = "Fast read/write of AVRO files"
 category = "main"
 optional = false
@@ -382,26 +382,21 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.1.3"
+version = "0.1.4"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = true
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-aiomisc = "^14.0.3"
-aiopg = "^1.2.1"
-cached-property = "^1.5.2"
-dependency-injector = "^4.32.2"
-fastavro = "^1.4.0"
-lmdb = "^1.2.1"
-orjson = "^3.5.2"
-PyYAML = "^5.4.1"
-
-[package.source]
-type = "directory"
-url = "../minos_microservice_common"
+aiomisc = ">=14.0.3,<15.0.0"
+aiopg = ">=1.2.1,<2.0.0"
+cached-property = ">=1.5.2,<2.0.0"
+dependency-injector = ">=4.32.2,<5.0.0"
+fastavro = ">=1.4.0,<2.0.0"
+lmdb = ">=1.2.1,<2.0.0"
+orjson = ">=3.5.2,<4.0.0"
+PyYAML = ">=5.4.1,<6.0.0"
 
 [[package]]
 name = "mistune"
@@ -440,11 +435,11 @@ pyparsing = ">=2.0.2"
 
 [[package]]
 name = "pathspec"
-version = "0.8.1"
+version = "0.9.0"
 description = "Utility library for gitignore style pattern matching of file paths."
 category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [[package]]
 name = "pbr"
@@ -819,7 +814,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ffdcf57218caea41c4c4ad205f0f31c598867e4ea9360231d565cad8401dbf6a"
+content-hash = "9f641ddde8ca58420d8e45e7cd564cebd43145ec72c7afce2df2b30f84a293bc"
 
 [metadata.files]
 aiomisc = [
@@ -917,8 +912,8 @@ cfgv = [
     {file = "cfgv-3.3.0.tar.gz", hash = "sha256:9e600479b3b99e8af981ecdfc80a0296104ee610cab48a5ae4ffd0b668650eb1"},
 ]
 charset-normalizer = [
-    {file = "charset-normalizer-2.0.2.tar.gz", hash = "sha256:951567c2f7433a70ab63f1be67e5ee05d3925d9423306ecb71a3b272757bcc95"},
-    {file = "charset_normalizer-2.0.2-py3-none-any.whl", hash = "sha256:3c502a35807c9df35697b0f44b1d65008f83071ff29c69677c7c22573bc5a45a"},
+    {file = "charset-normalizer-2.0.3.tar.gz", hash = "sha256:c46c3ace2d744cfbdebceaa3c19ae691f53ae621b39fd7570f59d14fb7f2fd12"},
+    {file = "charset_normalizer-2.0.3-py3-none-any.whl", hash = "sha256:88fce3fa5b1a84fdcb3f603d889f723d1dd89b26059d0123ca435570e848d5e1"},
 ]
 click = [
     {file = "click-8.0.1-py3-none-any.whl", hash = "sha256:fba402a4a47334742d782209a7c79bc448911afe1149d07bdabdf480b3e2f4b6"},
@@ -1059,19 +1054,23 @@ docutils = [
     {file = "docutils-0.16.tar.gz", hash = "sha256:c2de3a60e9e7d07be26b7f2b00ca0309c207e06c100f9cc2a94931fc75a478fc"},
 ]
 fastavro = [
-    {file = "fastavro-1.4.2-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:6d9bde5d374da2f4f4ce67acc7d5a2e22a7d50f73a77ad60408819fa2b178462"},
-    {file = "fastavro-1.4.2-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:10caace4785a7917ef9eb5d4721b9e8a060e208973225b6c379f9e757a981d16"},
-    {file = "fastavro-1.4.2-cp36-cp36m-win_amd64.whl", hash = "sha256:8d37a0b83db0c0e00874cf78f927ddfadef12d54e7f42877d33c92431812f850"},
-    {file = "fastavro-1.4.2-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:982f01dc8438e75df7ee5e1b2f9dd430b8eefc6c14fd3344d95351d0cf32e99c"},
-    {file = "fastavro-1.4.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f6bff1ecf1b0129d77ebcf76cebe4d16ae56a85f1ff1ef7040989b3500576805"},
-    {file = "fastavro-1.4.2-cp37-cp37m-win_amd64.whl", hash = "sha256:b3644e058d0229aece00ca84ba7c59a7992a3828bd64abfd2ae90e1b1387dba5"},
-    {file = "fastavro-1.4.2-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:bb73d874b9db7056473d4fcd1bd91c90ca8f3e828c13dfc3ca62771f86874b5b"},
-    {file = "fastavro-1.4.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7e5e5c0325c773721d40f069736bf7de018c89e8ce295df7155b4f401b78dcc0"},
-    {file = "fastavro-1.4.2-cp38-cp38-win_amd64.whl", hash = "sha256:cdcae144dfd3e9edfcd514ccff50648a826a3dcccb1427e19bcaf103a84024ea"},
-    {file = "fastavro-1.4.2-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:70dc160d0390a9a4a035d25525d884e0c2ddee5d0a1e0cb278f4357bed65c832"},
-    {file = "fastavro-1.4.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:070cb4050df5a71f4892ce58826bb5773c4dd276209a0213c48d06b771355c6c"},
-    {file = "fastavro-1.4.2-cp39-cp39-win_amd64.whl", hash = "sha256:ce316ef3ce250e1b2e36cd38ca66dcf2a3f8da8a47fb15e9af674514fa23d8a7"},
-    {file = "fastavro-1.4.2.tar.gz", hash = "sha256:41a15918344723748ca2f3f3887d72d22aaeed4578420d054170aaf9f9c0ec9f"},
+    {file = "fastavro-1.4.3-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:b14dc6ad73e052558312fbd4837ed7ccf8ae24c959242200498ce781af01e053"},
+    {file = "fastavro-1.4.3-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:853c468c090168614993c45b1dc799fd5874581dcbb7826af784e7db7bc0109c"},
+    {file = "fastavro-1.4.3-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:62724c6a3117c30afee5c2155167228b32cbc82a09f923f87cf913e20bcb782f"},
+    {file = "fastavro-1.4.3-cp36-cp36m-win_amd64.whl", hash = "sha256:069414a730091fe71d5ee02d5a23f17aa453057c585e6da11b6ab6a5e3333f48"},
+    {file = "fastavro-1.4.3-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:9915de901f4c90985363968780fa7fa6c153878e06decca3fed0ed16d50625bc"},
+    {file = "fastavro-1.4.3-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:50f5e039e0bd0601ee791d8c5fd3ba7f5cf62e1969d7f9503eb30000a56baece"},
+    {file = "fastavro-1.4.3-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a0c52a1ca807b18eed32511d1fc78ce6a0191743a4b3c941150abc621a5ace7b"},
+    {file = "fastavro-1.4.3-cp37-cp37m-win_amd64.whl", hash = "sha256:18645ec353986f6e81834c0f7868af4b031dd59fb0a7eb6bd206cab23383c6cf"},
+    {file = "fastavro-1.4.3-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:e5dcf73833db68b94ca8902d1acdc21fde4c19e77a84748b1921170da080a356"},
+    {file = "fastavro-1.4.3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f8587c520223f396680da89a0bae0d746f1e28672ae5b0caec309ee095b46b47"},
+    {file = "fastavro-1.4.3-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:87042d0db94c3ed08d4a8a5d05589e717bb6284fb74da4a06e9e58c9e92647e0"},
+    {file = "fastavro-1.4.3-cp38-cp38-win_amd64.whl", hash = "sha256:43a749cc1102d60aed36a1dab561321741929b5e045af6d8a55fe3bcc07e0547"},
+    {file = "fastavro-1.4.3-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:2997cb6089890b21e6ae46b3ef66aa0a4bae007ac1de4f4c2b13394800f4907e"},
+    {file = "fastavro-1.4.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a1be75642747e2dd707a0f581d3512d8046d825f4390cec57db803c3943ceba9"},
+    {file = "fastavro-1.4.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3dc6ae436557c59df0a5f9b15c5c5dae09ce900223a2d7697403b6e54a9a84d4"},
+    {file = "fastavro-1.4.3-cp39-cp39-win_amd64.whl", hash = "sha256:b41c5644eefd3616dccee1eafba50e548f759664014d5547617e35b6c013508b"},
+    {file = "fastavro-1.4.3.tar.gz", hash = "sha256:e9125c5f08e20094b296b8984ac1be9bc6668917152ac2fe044376dacb03012f"},
 ]
 filelock = [
     {file = "filelock-3.0.12-py3-none-any.whl", hash = "sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836"},
@@ -1173,7 +1172,10 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-microservice-common = []
+minos-microservice-common = [
+    {file = "minos_microservice_common-0.1.4-py3-none-any.whl", hash = "sha256:0834b49898813b43032e730a8a999e18d88ef02617efb93943c9694367610ea1"},
+    {file = "minos_microservice_common-0.1.4.tar.gz", hash = "sha256:b2d19fa50ed7d9db99f1ba69d6a7e8a9e2d476e9f7682fa629cffcf2b1f5d0f3"},
+]
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
     {file = "mistune-0.8.4.tar.gz", hash = "sha256:59a3429db53c50b5c6bcc8a07f8848cb00d7dc8bdb431a4ab41920d201d4756e"},
@@ -1202,8 +1204,8 @@ packaging = [
     {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
 ]
 pathspec = [
-    {file = "pathspec-0.8.1-py2.py3-none-any.whl", hash = "sha256:aa0cb481c4041bf52ffa7b0d8fa6cd3e88a2ca4879c533c9153882ee2556790d"},
-    {file = "pathspec-0.8.1.tar.gz", hash = "sha256:86379d6b86d75816baba717e64b1a3a3469deb93bb76d613c9ce79edc5cb68fd"},
+    {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
+    {file = "pathspec-0.9.0.tar.gz", hash = "sha256:e564499435a2673d586f6b2130bb5b95f04a3ba06f81b8f895b651a3c76aabb1"},
 ]
 pbr = [
     {file = "pbr-5.6.0-py2.py3-none-any.whl", hash = "sha256:c68c661ac5cc81058ac94247278eeda6d2e6aecb3e227b0387c30d277e7ef8d4"},
