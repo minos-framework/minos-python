@@ -74,7 +74,7 @@ class RestQueryEnroute:
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
-            result = [self]
+            result = [{"url": self.url, "method": self.method} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
             except Exception:  # pragma: no cover
@@ -105,13 +105,13 @@ class FindDecorators:
     """Search decorators in specified class"""
 
     @classmethod
-    def find_inside_class(cls, classname) -> list:
+    def find_in_class(cls, classname) -> dict:
         fns = cls.find_decorators(classname)
-        result = []
+        result = {}
         for name, decorated in fns.items():
             if not decorated:
                 continue
-            result = getattr(classname, name)(analyze_mode=True)
+            result[name] = getattr(classname, name)(analyze_mode=True)
 
         return result
 

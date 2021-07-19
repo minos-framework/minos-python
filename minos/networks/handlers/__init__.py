@@ -28,6 +28,11 @@ from .commands import (
 from .decorators import (
     FindDecorators,
     enroute,
+    BrokerCommandEnroute,
+    BrokerQueryEnroute,
+    BrokerEventEnroute,
+    RestCommandEnroute,
+    RestQueryEnroute,
 )
 from .entries import (
     HandlerEntry,

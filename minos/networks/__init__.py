@@ -47,6 +47,11 @@ from .handlers import (
     HandlerEntry,
     HandlerSetup,
     enroute,
+    BrokerCommandEnroute,
+    BrokerQueryEnroute,
+    BrokerEventEnroute,
+    RestCommandEnroute,
+    RestQueryEnroute,
 )
 from .rest import (
     HttpRequest,
