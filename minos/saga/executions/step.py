@@ -21,6 +21,9 @@ from minos.common import (
     CommandReply,
 )
 
+from ..context import (
+    SagaContext,
+)
 from ..definitions import (
     SagaStep,
 )
@@ -29,9 +32,6 @@ from ..exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionStepException,
-)
-from .context import (
-    SagaContext,
 )
 from .executors import (
     OnReplyExecutor,

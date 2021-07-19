@@ -25,6 +25,9 @@ from minos.common import (
     CommandReply,
 )
 
+from ..context import (
+    SagaContext,
+)
 from ..definitions import (
     Saga,
     SagaStep,
@@ -38,9 +41,6 @@ from ..exceptions import (
     MinosSagaNotCommittedException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionException,
-)
-from .context import (
-    SagaContext,
 )
 from .executors import (
     LocalExecutor,
@@ -170,7 +170,7 @@ class SagaExecution(object):
             execution_step = SagaExecutionStep(step)
             await self._execute_one(execution_step, *args, **kwargs)
 
-        await self._execute_commit_callback(*args, **kwargs)
+        await self._execute_commit(*args, **kwargs)
         self.status = SagaStatus.Finished
         return self.context
 
@@ -189,14 +189,18 @@ class SagaExecution(object):
             self.status = SagaStatus.Paused
             raise exc
 
-    async def _execute_commit_callback(self, *args, **kwargs) -> NoReturn:
+    async def _execute_commit(self, *args, **kwargs) -> NoReturn:
+        executor = LocalExecutor(*args, **kwargs)
+
         try:
-            executor = LocalExecutor()
-            self.context = await executor.exec_function(self.definition.commit_callback, self.context)
+            new_context = await executor.exec_operation(self.definition.commit_operation, self.context)
         except MinosSagaExecutorException as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
             raise MinosSagaFailedCommitCallbackException(exc.exception)
+
+        if new_context is not None:
+            self.context = new_context
 
     async def rollback(self, *args, **kwargs) -> NoReturn:
         """Revert the invoke participant operation with a with compensation operation.

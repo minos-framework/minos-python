@@ -9,13 +9,44 @@ import unittest
 
 from minos.saga import (
     LocalExecutor,
+    SagaContext,
+    SagaOperation,
 )
 
 
-class TestLocalExecutor(unittest.TestCase):
+class TestLocalExecutor(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.executor = LocalExecutor()
+
     def test_constructor(self):
-        executor = LocalExecutor()
-        self.assertIsInstance(executor, LocalExecutor)
+        self.assertIsInstance(self.executor, LocalExecutor)
+
+    async def test_exec_operation(self):
+        def _fn(c):
+            return c["foo"]
+
+        context = SagaContext(foo="bar")
+        operation = SagaOperation(_fn)
+        observed = await self.executor.exec_operation(operation, context)
+        self.assertEqual("bar", observed)
+
+    async def test_exec_operation_with_parameters(self):
+        def _fn(c, one):
+            return one
+
+        context = SagaContext(foo="bar")
+        operation = SagaOperation(_fn, parameters=SagaContext(one=1))
+        observed = await self.executor.exec_operation(operation, context)
+        self.assertEqual(1, observed)
+
+    async def test_exec_operation_async(self):
+        async def _fn(c):
+            return c["foo"]
+
+        context = SagaContext(foo="bar")
+        operation = SagaOperation(_fn)
+        observed = await self.executor.exec_operation(operation, context)
+        self.assertEqual("bar", observed)
 
 
 if __name__ == "__main__":

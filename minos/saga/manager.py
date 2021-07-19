@@ -24,6 +24,9 @@ from minos.common import (
     import_module,
 )
 
+from .context import (
+    SagaContext,
+)
 from .definitions import (
     Saga,
 )
@@ -32,7 +35,6 @@ from .exceptions import (
     MinosSagaPausedExecutionStepException,
 )
 from .executions import (
-    SagaContext,
     SagaExecution,
     SagaExecutionStorage,
     SagaStatus,
