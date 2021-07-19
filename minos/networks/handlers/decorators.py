@@ -21,7 +21,7 @@ class BrokerCommandEnroute:
             result = [{"topics": self.topics} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:  # pragma: no cover
+            except Exception:  # pragma: no cover
                 pass
             return result
 
@@ -43,7 +43,7 @@ class BrokerQueryEnroute:
             result = [{"topics": self.topics} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:  # pragma: no cover
+            except Exception:  # pragma: no cover
                 pass
             return result
 
@@ -65,7 +65,7 @@ class BrokerEventEnroute:
             result = [{"topics": self.topics} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:  # pragma: no cover
+            except Exception:  # pragma: no cover
                 pass
             return result
 
@@ -95,7 +95,7 @@ class RestCommandEnroute:
             result = [{"topics": self.topics} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:  # pragma: no cover
+            except Exception:  # pragma: no cover
                 pass
             return result
 
@@ -117,7 +117,7 @@ class RestQueryEnroute:
             result = [self]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:  # pragma: no cover
+            except Exception:  # pragma: no cover
                 pass
             return result
 
