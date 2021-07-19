@@ -15,6 +15,8 @@ from minos.common import (
     CommandReply,
     CommandStatus,
     MinosConfig,
+    MinosHandlerNotProvidedException,
+    MinosSagaManager,
 )
 from minos.saga import (
     MinosSagaExecutionNotFoundException,
@@ -45,6 +47,11 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
 
     def test_constructor(self):
         self.assertIsInstance(self.manager.storage, SagaExecutionStorage)
+        self.assertIsInstance(self.manager, MinosSagaManager)
+
+    def test_constructor_without_handler(self):
+        with self.assertRaises(MinosHandlerNotProvidedException):
+            SagaManager.from_config(handler=None, config=self.config)
 
     async def test_context_manager(self):
         async with self.manager as saga_manager:
