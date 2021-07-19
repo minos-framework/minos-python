@@ -27,7 +27,7 @@ from .commands import (
 )
 from .decorators import (
     enroute,
-    find_decorators,
+    FindDecorators,
 )
 from .entries import (
     HandlerEntry,

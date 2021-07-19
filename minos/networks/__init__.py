@@ -46,7 +46,7 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
-    find_decorators,
+    FindDecorators,
 )
 from .rest import (
     HttpRequest,

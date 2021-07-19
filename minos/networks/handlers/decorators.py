@@ -5,71 +5,44 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
+class BaseDecorator:
+    def __call__(self, fn):
+        def wrapper(*args, analyze_mode: bool = False, **kwargs):
+            if not analyze_mode:
+                return fn(*args, **kwargs)
 
-class BrokerCommandEnroute:
+            result = [{"topics": self.topics} | {"kind": type(self)}]
+            try:
+                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
+            except Exception:  # pragma: no cover
+                pass
+            return result
+
+        return wrapper
+
+
+class BrokerCommandEnroute(BaseDecorator):
     """Broker Command Enroute class"""
 
     def __init__(self, topics: list[str], **kwargs):
         self.kwargs = kwargs
         self.topics = topics
 
-    def __call__(self, fn):
-        def wrapper(*args, analyze_mode: bool = False, **kwargs):
-            if not analyze_mode:
-                return fn(*args, **kwargs)
 
-            result = [{"topics": self.topics} | {"kind": type(self)}]
-            try:
-                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except Exception:  # pragma: no cover
-                pass
-            return result
-
-        return wrapper
-
-
-class BrokerQueryEnroute:
+class BrokerQueryEnroute(BaseDecorator):
     """Broker Query Enroute class"""
 
     def __init__(self, topics: list[str], **kwargs):
         self.kwargs = kwargs
         self.topics = topics
 
-    def __call__(self, fn):
-        def wrapper(*args, analyze_mode: bool = False, **kwargs):
-            if not analyze_mode:
-                return fn(*args, **kwargs)
 
-            result = [{"topics": self.topics} | {"kind": type(self)}]
-            try:
-                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except Exception:  # pragma: no cover
-                pass
-            return result
-
-        return wrapper
-
-
-class BrokerEventEnroute:
+class BrokerEventEnroute(BaseDecorator):
     """Broker Event Enroute class"""
 
     def __init__(self, topics: list[str], **kwargs):
         self.kwargs = kwargs
         self.topics = topics
-
-    def __call__(self, fn):
-        def wrapper(*args, analyze_mode: bool = False, **kwargs):
-            if not analyze_mode:
-                return fn(*args, **kwargs)
-
-            result = [{"topics": self.topics} | {"kind": type(self)}]
-            try:
-                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except Exception:  # pragma: no cover
-                pass
-            return result
-
-        return wrapper
 
 
 class BrokerEnroute:
@@ -80,26 +53,12 @@ class BrokerEnroute:
     event = BrokerEventEnroute
 
 
-class RestCommandEnroute:
+class RestCommandEnroute(BaseDecorator):
     """Rest Command Enroute class"""
 
     def __init__(self, topics: list[str], **kwargs):
         self.kwargs = kwargs
         self.topics = topics
-
-    def __call__(self, fn):
-        def wrapper(*args, analyze_mode: bool = False, **kwargs):
-            if not analyze_mode:
-                return fn(*args, **kwargs)
-
-            result = [{"topics": self.topics} | {"kind": type(self)}]
-            try:
-                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except Exception:  # pragma: no cover
-                pass
-            return result
-
-        return wrapper
 
 
 class RestQueryEnroute:
@@ -141,16 +100,30 @@ class Enroute:
 enroute = Enroute
 
 
-def find_decorators(target):
-    import ast
-    import inspect
+class FindDecorators:
+    """Search decorators in specified class"""
+    @classmethod
+    def find_inside_class(cls, classname) -> list:
+        fns = cls.find_decorators(classname)
+        result = []
+        for name, decorated in fns.items():
+            if not decorated:
+                continue
+            result = getattr(classname, name)(analyze_mode=True)
 
-    res = {}
+        return result
 
-    def visit_FunctionDef(node):
-        res[node.name] = bool(node.decorator_list)
+    @staticmethod
+    def find_decorators(target):
+        import ast
+        import inspect
 
-    V = ast.NodeVisitor()
-    V.visit_FunctionDef = visit_FunctionDef
-    V.visit(compile(inspect.getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
-    return res
+        res = {}
+
+        def visit_FunctionDef(node):
+            res[node.name] = bool(node.decorator_list)
+
+        V = ast.NodeVisitor()
+        V.visit_FunctionDef = visit_FunctionDef
+        V.visit(compile(inspect.getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
+        return res

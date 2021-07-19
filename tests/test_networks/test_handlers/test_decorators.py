@@ -9,7 +9,7 @@ import unittest
 
 from minos.networks import (
     enroute,
-    find_decorators,
+    FindDecorators,
 )
 
 
@@ -70,12 +70,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_rest_query_decorator(self):
-        fns = find_decorators(RestQueryExample)
-        result = []
-        for name, decorated in fns.items():
-            if not decorated:
-                continue
-            result = getattr(RestQueryExample, name)(analyze_mode=True)
+        result = FindDecorators.find_inside_class(RestQueryExample)
 
         self.assertEqual("GET", result[0].method)
         self.assertEqual("tickets/", result[0].url)
@@ -87,12 +82,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_rest_command_decorator(self):
-        fns = find_decorators(RestCommandExample)
-        result = []
-        for name, decorated in fns.items():
-            if not decorated:
-                continue
-            result = getattr(RestCommandExample, name)(analyze_mode=True)
+        result = FindDecorators.find_inside_class(RestCommandExample)
 
         self.assertEqual(["RestCommand"], result[0]["topics"])
 
@@ -103,12 +93,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_broker_query_decorator(self):
-        fns = find_decorators(BrokerQueryExample)
-        result = []
-        for name, decorated in fns.items():
-            if not decorated:
-                continue
-            result = getattr(BrokerQueryExample, name)(analyze_mode=True)
+        result = FindDecorators.find_inside_class(BrokerQueryExample)
 
         self.assertEqual(["BrokerQuery"], result[0]["topics"])
 
@@ -119,12 +104,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_broker_command_decorator(self):
-        fns = find_decorators(BrokerCommandExample)
-        result = []
-        for name, decorated in fns.items():
-            if not decorated:
-                continue
-            result = getattr(BrokerCommandExample, name)(analyze_mode=True)
+        result = FindDecorators.find_inside_class(BrokerCommandExample)
 
         self.assertEqual(["BrokerCommand"], result[0]["topics"])
 
@@ -135,12 +115,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_broker_event_decorator(self):
-        fns = find_decorators(BrokerEventExample)
-        result = []
-        for name, decorated in fns.items():
-            if not decorated:
-                continue
-            result = getattr(BrokerEventExample, name)(analyze_mode=True)
+        result = FindDecorators.find_inside_class(BrokerEventExample)
 
         self.assertEqual(["BrokerEvent"], result[0]["topics"])
 
