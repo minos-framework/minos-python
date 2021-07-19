@@ -38,7 +38,6 @@ from .handlers import (
     CommandResponse,
     CommandResponseException,
     Consumer,
-    enroute,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -46,6 +45,7 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
+    enroute,
     find_decorators,
 )
 from .rest import (
@@ -55,4 +55,6 @@ from .rest import (
     RestBuilder,
     RestService,
 )
-from .snapshots import SnapshotService
+from .snapshots import (
+    SnapshotService,
+)
