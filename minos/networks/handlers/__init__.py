@@ -26,8 +26,8 @@ from .commands import (
     CommandResponseException,
 )
 from .decorators import (
-    enroute,
     FindDecorators,
+    enroute,
 )
 from .entries import (
     HandlerEntry,
