@@ -18,7 +18,7 @@ class BrokerCommandEnroute:
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
-            result = [self.kwargs | {"kind": type(self)}]
+            result = [{"topics": self.topics} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
             except:  # pragma: no cover
@@ -32,6 +32,7 @@ class BrokerQueryEnroute:
     """Broker Query Enroute class"""
 
     def __init__(self, topics: list[str], **kwargs):
+        self.kwargs = kwargs
         self.topics = topics
 
     def __call__(self, fn):
@@ -39,7 +40,7 @@ class BrokerQueryEnroute:
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
-            result = [self.topics | {"kind": type(self)}]
+            result = [{"topics": self.topics} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
             except:  # pragma: no cover
@@ -61,7 +62,7 @@ class BrokerEventEnroute:
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
-            result = [self.kwargs | {"kind": type(self)}]
+            result = [{"topics": self.topics} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
             except:  # pragma: no cover
@@ -90,7 +91,7 @@ class RestCommandEnroute:
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
-            result = [self.kwargs | {"kind": type(self)}]
+            result = [{"topics": self.topics} | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
             except:  # pragma: no cover
