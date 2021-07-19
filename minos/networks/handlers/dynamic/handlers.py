@@ -48,29 +48,39 @@ class DynamicHandler(MinosSetup):
     async def _destroy(self) -> NoReturn:
         ...
 
-    async def get_one(self, topics: list[str]) -> HandlerEntry:
-        """TODO
-
-        :return: TODO
-        """
-        return (await self.get_many(topics, max_records=1))[0]
-
-    async def get_many(self, topics: list[str], max_records: Optional[int]) -> list[HandlerEntry]:
+    async def get_one(self, topics: list[str], timeout: float = 0) -> HandlerEntry:
         """TODO
 
         :param topics: TODO
+        :param timeout: TODO
+        :return: TODO
+        """
+        entries = await self.get_many(topics, timeout=timeout, max_records=1)
+        if not len(entries):
+            raise ValueError()  # TODO: raise meaningful exception.
+        return entries[0]
+
+    async def get_many(
+        self, topics: list[str], timeout: float = 0, max_records: Optional[int] = None
+    ) -> list[HandlerEntry]:
+        """TODO
+
+        :param topics: TODO
+        :param timeout: TODO
         :param max_records: TODO
         :return: TODO
         """
-        result = await self._get_many(topics, max_records)
+        result = await self._get_many(topics, timeout, max_records)
         return [self._build_entry(message) for message in chain(*result.values())]
 
-    async def _get_many(self, topics: list[str], max_records: Optional[int] = None) -> dict[str, tuple]:
+    async def _get_many(
+        self, topics: list[str], timeout: float = 0, max_records: Optional[int] = None
+    ) -> dict[str, tuple]:
         consumer = AIOKafkaConsumer(*topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}")
 
         try:
             await consumer.start()
-            return await consumer.getmany(max_records=max_records)
+            return await consumer.getmany(timeout_ms=int(timeout * 1000), max_records=max_records)
         finally:
             await consumer.stop()
 
