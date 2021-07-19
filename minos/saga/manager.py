@@ -17,6 +17,10 @@ from uuid import (
     UUID,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+)
+
 from minos.common import (
     CommandReply,
     MinosConfig,
@@ -101,6 +105,29 @@ class SagaManager(MinosSagaManager):
             logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
             self.storage.store(execution)
             return execution.uuid
+
+        if execution.status == SagaStatus.Finished:
+            self.storage.delete(execution)
+
+        return execution.uuid
+
+
+class SynchronousSagaManager(SagaManager):
+    """TODO"""
+
+    handler = Provide["handler"]
+
+    async def _run(self, execution: SagaExecution, **kwargs) -> UUID:
+        while execution.status in (SagaStatus.Created, SagaStatus.Paused):
+            try:
+                await execution.execute(**kwargs)
+            except MinosSagaPausedExecutionStepException:
+                entry = await self.handler.get_one([f"{execution.definition_name}Reply"], timeout=10)
+                kwargs["reply"] = entry.data
+                self.storage.store(execution)
+            except MinosSagaFailedExecutionStepException as exc:
+                logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
+                self.storage.store(execution)
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
