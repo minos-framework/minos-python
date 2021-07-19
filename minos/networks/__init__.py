@@ -42,11 +42,11 @@ from .handlers import (
     EventConsumerService,
     EventHandler,
     EventHandlerService,
+    FindDecorators,
     Handler,
     HandlerEntry,
     HandlerSetup,
     enroute,
-    FindDecorators,
 )
 from .rest import (
     HttpRequest,
@@ -55,4 +55,6 @@ from .rest import (
     RestBuilder,
     RestService,
 )
-from .snapshots import SnapshotService
+from .snapshots import (
+    SnapshotService,
+)
