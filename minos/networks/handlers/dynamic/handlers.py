@@ -5,6 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from datetime import (
     datetime,
 )
@@ -12,7 +16,6 @@ from itertools import (
     chain,
 )
 from typing import (
-    NoReturn,
     Optional,
 )
 
@@ -22,6 +25,7 @@ from aiokafka import (
 
 from minos.common import (
     BROKER,
+    MinosConfig,
     MinosSetup,
     Model,
 )
@@ -40,11 +44,9 @@ class DynamicHandler(MinosSetup):
         super().__init__(**kwargs)
         self._broker = broker
 
-    async def _setup(self) -> NoReturn:
-        ...
-
-    async def _destroy(self) -> NoReturn:
-        ...
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
+        return cls(broker=config.saga.broker, **kwargs)
 
     async def get_one(self, topics: list[str], timeout: float = 0) -> HandlerEntry:
         """TODO
@@ -69,7 +71,7 @@ class DynamicHandler(MinosSetup):
         :return: TODO
         """
         result = await self._get_many(topics, timeout, max_records)
-        return [self._build_entry(message) for message in chain(*result.values())]
+        return [await self._build_entry(self._build_tuple(message)) for message in chain(*result.values())]
 
     async def _get_many(
         self, topics: list[str], timeout: float = 0, max_records: Optional[int] = None
@@ -81,6 +83,10 @@ class DynamicHandler(MinosSetup):
             return await consumer.getmany(timeout_ms=int(timeout * 1000), max_records=max_records)
         finally:
             await consumer.stop()
+
+    @staticmethod
+    def _build_tuple(record):
+        return 0, record.topic, record.partition, record.value, 0, datetime.now()
 
     @staticmethod
     async def _build_entry(row: tuple[int, str, int, bytes, datetime]) -> HandlerEntry:
