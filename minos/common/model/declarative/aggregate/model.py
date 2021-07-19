@@ -95,14 +95,14 @@ class Aggregate(DeclarativeModel, Generic[T]):
     @classmethod
     async def get(
         cls,
-        uuids: list[UUID],
+        uuids: set[UUID],
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
     ) -> AsyncIterator[T]:
         """Get a sequence of aggregates based on a list of identifiers.
 
-        :param uuids: list of identifiers.
+        :param uuids: set of identifiers.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
@@ -134,21 +134,21 @@ class Aggregate(DeclarativeModel, Generic[T]):
     @classmethod
     async def get_one(
         cls,
-        uuids: UUID,
+        uuid: UUID,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
     ) -> T:
         """Get one aggregate based on an identifier.
 
-        :param uuids: Identifier of the aggregate.
+        :param uuid: Identifier of the aggregate.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
-        return await cls.get([uuids], _broker=_broker, _repository=_repository, _snapshot=_snapshot).__anext__()
+        return await cls.get({uuid}, _broker=_broker, _repository=_repository, _snapshot=_snapshot).__anext__()
 
     @classmethod
     async def create(

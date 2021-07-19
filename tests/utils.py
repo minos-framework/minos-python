@@ -123,5 +123,5 @@ class FakeLoop:
 class FakeSnapshot(MinosSnapshot):
     """For testing purposes."""
 
-    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
+    async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""

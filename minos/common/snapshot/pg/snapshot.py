@@ -9,10 +9,14 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
     NoReturn,
+)
+from uuid import (
+    UUID,
 )
 
 from ...configuration import (
@@ -41,6 +45,8 @@ if TYPE_CHECKING:
         Aggregate,
     )
 
+logger = logging.getLogger(__name__)
+
 
 class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
     """Minos Snapshot Reader class."""
@@ -64,24 +70,29 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         await super()._destroy()
         await self.builder.destroy()
 
-    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
+    async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
         """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param ids: List of identifiers to be retrieved.
+        :param uuids: Set of identifiers to be retrieved.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
         # noinspection PyShadowingBuiltins
-        if not await self.builder.are_synced(aggregate_name, ids):
+        if not await self.builder.are_synced(aggregate_name, uuids):
             await self.builder.dispatch()
 
-        async for item in self._get(aggregate_name, ids):
+        async for item in self._get(aggregate_name, uuids):
             yield item.aggregate
 
-    async def _get(self, aggregate_name: str, ids: list[int]) -> AsyncIterator[SnapshotEntry]:
-        ids = tuple(set(ids))
-        parameters = (aggregate_name, ids)
+    async def _get(self, aggregate_name: str, uuids: set[UUID]) -> AsyncIterator[SnapshotEntry]:
+        uniques = set(uuids)
+        if len(uniques) != len(uuids):
+            seen = set()
+            duplicated = {x for x in uuids if x in seen or seen.add(x)}
+            logger.warning(f"Duplicated identifiers will be ignored: {duplicated!r}")
+
+        parameters = (aggregate_name, tuple(uniques))
 
         with (await self.cursor()) as cursor:
             async with cursor.begin():
@@ -91,16 +102,16 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
                 await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters)
 
-                if total_count != len(ids):
+                if total_count != len(uniques):
                     # noinspection PyUnresolvedReferences
                     found = {row[0] async for row in cursor}
-                    missing = set(ids) - found
+                    missing = uniques - found
                     raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
 
-                if not_null_count != len(ids):
+                if not_null_count != len(uniques):
                     # noinspection PyUnresolvedReferences
                     found = {row[0] async for row in cursor if row[3]}
-                    missing = set(ids) - found
+                    missing = uniques - found
                     raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
 
                 async for row in cursor:
