@@ -89,6 +89,15 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
         self.assertEqual(expected, observed)
 
+    async def test_get_with_duplicates(self):
+        uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
+        async with await self._populate() as repository:
+            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+                observed = {v async for v in snapshot.get("tests.aggregate_classes.Car", uuids)}
+
+        expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
+        self.assertEqual(expected, observed)
+
     async def test_get_raises(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
