@@ -43,10 +43,10 @@ from .handlers import (
     EventConsumerService,
     EventHandler,
     EventHandlerService,
-    find_decorators,
     Handler,
     HandlerEntry,
     HandlerSetup,
+    find_decorators,
 )
 from .rest import (
     HttpRequest,

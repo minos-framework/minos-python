@@ -16,7 +16,6 @@ enroute = Enroute
 
 
 class RestQueryExample:
-
     @enroute.rest.query(url="tickets/", method="GET")
     def get_tickets(self):
         return "tickets"
@@ -26,7 +25,6 @@ class RestQueryExample:
 
 
 class RestCommandExample:
-
     @enroute.rest.command(topics=["RestCommand"])
     def get_tickets(self):
         return "tickets"
@@ -36,7 +34,6 @@ class RestCommandExample:
 
 
 class BrokerQueryExample:
-
     @enroute.broker.query(topics=["BrokerQuery"])
     def get_tickets(self):
         return "tickets"
@@ -46,7 +43,6 @@ class BrokerQueryExample:
 
 
 class BrokerCommandExample:
-
     @enroute.broker.command(topics=["BrokerCommand"])
     def get_tickets(self):
         return "tickets"
@@ -56,7 +52,6 @@ class BrokerCommandExample:
 
 
 class BrokerEventExample:
-
     @enroute.broker.event(topics=["BrokerEvent"])
     def get_tickets(self):
         return "tickets"
