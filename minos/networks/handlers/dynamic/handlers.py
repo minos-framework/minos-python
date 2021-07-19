@@ -16,6 +16,7 @@ from itertools import (
     chain,
 )
 from typing import (
+    Any,
     Optional,
 )
 
@@ -70,8 +71,14 @@ class DynamicHandler(MinosSetup):
         :param max_records: TODO
         :return: TODO
         """
+
+        async def _fn(message: Any) -> HandlerEntry:
+            message = self._build_tuple(message)
+            await self._build_entry(message)
+
         result = await self._get_many(topics, timeout, max_records)
-        return [await self._build_entry(self._build_tuple(message)) for message in chain(*result.values())]
+
+        return [await _fn(message) for message in chain(*result.values())]
 
     async def _get_many(
         self, topics: list[str], timeout: float = 0, max_records: Optional[int] = None
@@ -85,11 +92,11 @@ class DynamicHandler(MinosSetup):
             await consumer.stop()
 
     @staticmethod
-    def _build_tuple(record):
+    def _build_tuple(record: Any) -> tuple[int, str, int, bytes, int, datetime]:
         return 0, record.topic, record.partition, record.value, 0, datetime.now()
 
     @staticmethod
-    async def _build_entry(row: tuple[int, str, int, bytes, datetime]) -> HandlerEntry:
+    async def _build_entry(row: tuple[int, str, int, bytes, int, datetime]) -> HandlerEntry:
         # TODO: Refactor this method.
 
         id = row[0]
