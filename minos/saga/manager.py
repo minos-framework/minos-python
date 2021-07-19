@@ -75,8 +75,15 @@ class SagaManager(MinosSagaManager):
         definitions = _build_definitions(config.saga.items)
         return cls(*args, storage=storage, definitions=definitions, **kwargs)
 
-    async def _run_new(self, name: str, context: Optional[SagaContext] = None, **kwargs) -> UUID:
-        definition = self.definitions.get(name)
+    async def _run_new(
+        self,
+        name: Optional[str] = None,
+        context: Optional[SagaContext] = None,
+        definition: Optional[Saga] = None,
+        **kwargs,
+    ) -> UUID:
+        if definition is None:
+            definition = self.definitions.get(name)
         execution = SagaExecution.from_saga(definition, context=context)
         return await self._run(execution, **kwargs)
 
