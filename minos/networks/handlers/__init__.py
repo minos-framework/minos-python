@@ -29,9 +29,7 @@ from .decorators import (
     enroute,
     find_decorators,
 )
-from .entries import (
-    HandlerEntry,
-)
+from .entries import HandlerEntry
 from .events import (
     EventConsumer,
     EventConsumerService,
