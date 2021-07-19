@@ -54,6 +54,10 @@ class MinosConfigException(MinosException):
     """Base config exception."""
 
 
+class MinosConfigNotProvidedException(MinosConfigException):
+    """Exception to be raised when a config is needed but none is set."""
+
+
 class MinosBrokerException(MinosException):
     """Base broker exception"""
 

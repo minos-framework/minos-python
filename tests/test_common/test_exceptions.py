@@ -13,6 +13,7 @@ from minos.common import (
     MinosBrokerException,
     MinosBrokerNotProvidedException,
     MinosConfigException,
+    MinosConfigNotProvidedException,
     MinosException,
     MinosHandlerException,
     MinosHandlerNotProvidedException,
@@ -50,6 +51,9 @@ class TestExceptions(unittest.TestCase):
 
     def test_config(self):
         self.assertTrue(issubclass(MinosConfigException, MinosException))
+
+    def test_config_not_set(self):
+        self.assertTrue(issubclass(MinosConfigNotProvidedException, MinosException))
 
     def test_broker(self):
         self.assertTrue(issubclass(MinosBrokerException, MinosException))
