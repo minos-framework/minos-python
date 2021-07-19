@@ -38,22 +38,24 @@ class MinosBroker(ABC, MinosSetup):
 
 
 class MinosHandler(ABC, MinosSetup):
-    """TODO"""
+    """Base Handler class."""
 
     @abstractmethod
     async def get_one(self, *args, **kwargs) -> Any:
-        """TODO
+        """Get one entry.
 
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The entry to be retrieved.
         """
+        raise NotImplementedError
 
     @abstractmethod
     async def get_many(self, *args, **kwargs) -> list[Any]:
-        """TODO
+        """Get a list of entries.
 
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The list of entries to be retrieved.
         """
+        raise NotImplementedError

@@ -117,6 +117,7 @@ from .model import (
 )
 from .networks import (
     MinosBroker,
+    MinosHandler,
 )
 from .protocol import (
     MinosAvroDatabaseProtocol,
