@@ -64,7 +64,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                         "data": AggregateDiff(
                             uuid=car.uuid,
                             name=Car.classname,
-                            version=1,
+                            version=2,
                             fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
                         ),
                         "topic": "CarUpdated",
@@ -82,7 +82,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(
                 [
                     {
-                        "data": AggregateDiff(car.uuid, name=Car.classname, version=1, fields_diff=FieldsDiff.empty()),
+                        "data": AggregateDiff(car.uuid, name=Car.classname, version=2, fields_diff=FieldsDiff.empty()),
                         "topic": "CarDeleted",
                     }
                 ],
