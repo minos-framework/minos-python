@@ -206,8 +206,8 @@ class Aggregate(DeclarativeModel, Generic[T]):
         diff = AggregateDiff.from_difference(self, previous)
         entry = await self._repository.update(diff)
 
-        self.uuid = entry.aggregate_uuid
-        self.version = entry.version
+        self.uuid, self.version = entry.aggregate_uuid, entry.version
+        diff.uuid, diff.version = entry.aggregate_uuid, entry.version
 
         await self._broker.send(diff, topic=f"{type(self).__name__}Updated")
 
@@ -261,7 +261,11 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :return: This method does not return anything.
         """
         diff = AggregateDiff.from_deleted_aggregate(self)
-        await self._repository.delete(diff)
+        entry = await self._repository.delete(diff)
+
+        self.uuid, self.version = entry.aggregate_uuid, entry.version
+        diff.uuid, diff.version = entry.aggregate_uuid, entry.version
+
         await self._broker.send(diff, topic=f"{type(self).__name__}Deleted")
 
     def diff(self, another: Aggregate) -> AggregateDiff:

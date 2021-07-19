@@ -110,6 +110,14 @@ class MinosSnapshotDeletedAggregateException(MinosSnapshotException):
     """Exception to be raised when some aggregate is already deleted from the repository."""
 
 
+class MinosSagaManagerException(MinosException):
+    """Base Saga Manager exception"""
+
+
+class MinosSagaManagerNotProvidedException(MinosSagaManagerException):
+    """Exception to be raised when a SAGA Manager is not provided."""
+
+
 class MinosModelException(MinosException):
     """Exception to be raised when some mandatory condition is not satisfied by a model."""
 

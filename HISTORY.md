@@ -61,10 +61,6 @@ History
 0.0.14 (2021-05-20)
 --------------------
 
-* Added Dependency Injections Containers
-* Modified .gitignore
-* Moved Borker Class from static method impl to instance by init
-
 0.0.15 (2021-05-26)
 --------------------
 
@@ -115,3 +111,8 @@ History
 * Bugfixes
 * Removed ID to UUID for models
 * Events use AggregateDIff
+
+0.1.4 (2021-07-19)
+--------------------
+
+* Bugfixes

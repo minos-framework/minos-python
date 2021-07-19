@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 from .configuration import (
     BROKER,
@@ -52,6 +52,8 @@ from .exceptions import (
     MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSagaManagerException,
+    MinosSagaManagerNotProvidedException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
     MinosSnapshotException,
@@ -105,6 +107,8 @@ from .model import (
     Model,
     ModelField,
     ModelRef,
+    ModelRefExtractor,
+    ModelRefInjector,
     ModelType,
     NoneType,
     TypeHintBuilder,
@@ -130,9 +134,6 @@ from .repository import (
 )
 from .saga import (
     MinosSagaManager,
-)
-from .services import (
-    Service,
 )
 from .setup import (
     MinosSetup,

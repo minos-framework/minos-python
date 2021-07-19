@@ -30,6 +30,9 @@ from aiomisc.log import (
     LogFormat,
     basic_config,
 )
+from aiomisc.log.enum import (
+    DateFormat,
+)
 from aiomisc.utils import (
     create_default_event_loop,
 )
@@ -72,6 +75,7 @@ class EntrypointLauncher(MinosSetup):
         interval: float = 0.1,
         log_level: Union[int, str] = logging.INFO,
         log_format: Union[str, LogFormat] = "color",
+        log_date_format: Union[str, DateFormat] = DateFormat["color"],
         *args,
         **kwargs
     ):
@@ -81,6 +85,7 @@ class EntrypointLauncher(MinosSetup):
 
         self._log_level = log_level
         self._log_format = log_format
+        self._log_date_format = log_date_format
 
         self._raw_injections = injections
         self._raw_services = services
@@ -100,7 +105,7 @@ class EntrypointLauncher(MinosSetup):
         """
 
         basic_config(
-            level=self._log_level, log_format=self._log_format, buffered=False,
+            level=self._log_level, log_format=self._log_format, buffered=False, date_format=self._log_date_format,
         )
 
         logger.info("Starting microservice...")
@@ -198,6 +203,17 @@ class EntrypointLauncher(MinosSetup):
             modules += [saga]  # pragma: no cover
         except ImportError:
             pass
+
+        try:
+            # noinspection PyUnresolvedReferences
+            from minos import (
+                cqrs,
+            )
+
+            modules += [cqrs]  # pragma: no cover
+        except ImportError:
+            pass
+
         return modules
 
     async def _destroy(self) -> NoReturn:

@@ -37,7 +37,7 @@ class TestMinosSagaManager(unittest.IsolatedAsyncioTestCase):
         await manager.run(name="hello", foo="bar")
 
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call("hello", foo="bar"), mock.call_args)
+        self.assertEqual(call(name="hello", foo="bar"), mock.call_args)
 
     async def test_reload_and_run(self):
         manager = FakeSagaManager()
@@ -51,12 +51,6 @@ class TestMinosSagaManager(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(reply, foo="bar"), mock.call_args)
-
-    async def test_run_raises(self):
-
-        manager = FakeSagaManager()
-        with self.assertRaises(ValueError):
-            await manager.run()
 
 
 if __name__ == "__main__":
