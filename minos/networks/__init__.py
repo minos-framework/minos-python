@@ -38,7 +38,6 @@ from .handlers import (
     CommandResponse,
     CommandResponseException,
     Consumer,
-    enroute,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -46,6 +45,7 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
+    enroute,
     FindDecorators,
 )
 from .rest import (
