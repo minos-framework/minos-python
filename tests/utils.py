@@ -26,6 +26,7 @@ from minos.common import (
     Aggregate,
     CommandReply,
     MinosBroker,
+    MinosHandler,
     MinosRepository,
     MinosSagaManager,
     MinosSnapshot,
@@ -81,6 +82,16 @@ class FakeBroker(MinosBroker):
         self.calls_kwargs = list()
 
 
+class FakeHandler(MinosHandler):
+    """For testing purposes."""
+
+    async def get_one(self, *args, **kwargs) -> Any:
+        """For testing purposes."""
+
+    async def get_many(self, *args, **kwargs) -> list[Any]:
+        """For testing purposes."""
+
+
 class FakeSagaManager(MinosSagaManager):
     """For testing purposes."""
 
@@ -123,5 +134,5 @@ class FakeLoop:
 class FakeSnapshot(MinosSnapshot):
     """For testing purposes."""
 
-    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
+    async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""

@@ -84,9 +84,18 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_get(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.get("tests.aggregate_classes.Car", [self.uuid_2, self.uuid_3])]
+                observed = {v async for v in snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3})}
 
-        expected = [Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)]
+        expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
+        self.assertEqual(expected, observed)
+
+    async def test_get_with_duplicates(self):
+        uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
+        async with await self._populate() as repository:
+            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+                observed = {v async for v in snapshot.get("tests.aggregate_classes.Car", uuids)}
+
+        expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
         self.assertEqual(expected, observed)
 
     async def test_get_raises(self):
@@ -94,10 +103,10 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 with self.assertRaises(MinosSnapshotDeletedAggregateException):
                     # noinspection PyStatementEffect
-                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [self.uuid_1])]
+                    {v async for v in snapshot.get("tests.aggregate_classes.Car", {self.uuid_1})}
                 with self.assertRaises(MinosSnapshotAggregateNotFoundException):
                     # noinspection PyStatementEffect
-                    [v async for v in snapshot.get("tests.aggregate_classes.Car", [uuid4()])]
+                    {v async for v in snapshot.get("tests.aggregate_classes.Car", {uuid4()})}
 
     async def test_select(self):
         await self._populate()

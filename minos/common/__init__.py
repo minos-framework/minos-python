@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 from .configuration import (
     BROKER,
@@ -36,7 +36,10 @@ from .exceptions import (
     MinosBrokerException,
     MinosBrokerNotProvidedException,
     MinosConfigException,
+    MinosConfigNotProvidedException,
     MinosException,
+    MinosHandlerException,
+    MinosHandlerNotProvidedException,
     MinosImmutableClassException,
     MinosImportException,
     MinosMalformedAttributeException,
@@ -117,6 +120,7 @@ from .model import (
 )
 from .networks import (
     MinosBroker,
+    MinosHandler,
 )
 from .protocol import (
     MinosAvroDatabaseProtocol,

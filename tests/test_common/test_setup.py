@@ -12,7 +12,7 @@ from typing import (
 )
 
 from minos.common import (
-    MinosConfigException,
+    MinosConfigNotProvidedException,
     MinosSetup,
 )
 
@@ -44,7 +44,7 @@ class TestMinosSetup(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, instance.calls)
 
     def test_from_config_raises(self):
-        with self.assertRaises(MinosConfigException):
+        with self.assertRaises(MinosConfigNotProvidedException):
             _MinosSetupMock.from_config()
 
 

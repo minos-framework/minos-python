@@ -17,6 +17,9 @@ from typing import (
     TYPE_CHECKING,
     AsyncIterator,
 )
+from uuid import (
+    UUID,
+)
 
 from ..setup import (
     MinosSetup,
@@ -32,11 +35,11 @@ class MinosSnapshot(ABC, MinosSetup):
     """Base Snapshot class."""
 
     @abstractmethod
-    async def get(self, aggregate_name: str, ids: list[int], **kwargs) -> AsyncIterator[Aggregate]:
+    async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
         """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param ids: List of identifiers to be retrieved.
+        :param uuids: Set of identifiers to be retrieved.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
