@@ -23,6 +23,7 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosBroker,
+    MinosBrokerNotProvidedException,
 )
 
 from ... import (
@@ -60,12 +61,16 @@ class PublishExecutor(LocalExecutor):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        if broker is not None:
-            self.broker = broker
 
         self.definition_name = definition_name
         self.execution_uuid = execution_uuid
         self.asynchronous = asynchronous
+
+        if broker is not None:
+            self.broker = broker
+
+        if self.broker is None or isinstance(self.broker, Provide):
+            raise MinosBrokerNotProvidedException("A broker instance is required.")
 
     async def exec(self, operation: SagaOperation, context: SagaContext) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
@@ -93,9 +98,9 @@ class PublishExecutor(LocalExecutor):
 
     @property
     def reply_topic(self) -> str:
-        """TODO
+        """Reply topic getter.
 
-        :return: TODO
+        :return: An string value.
         """
         if self.asynchronous:
             return self.definition_name
