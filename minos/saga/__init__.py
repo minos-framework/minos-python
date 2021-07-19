@@ -51,5 +51,4 @@ from .executions import (
 )
 from .manager import (
     SagaManager,
-    SynchronousSagaManager,
 )

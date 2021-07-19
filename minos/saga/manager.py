@@ -11,6 +11,7 @@ from __future__ import (
 
 import logging
 from typing import (
+    NoReturn,
     Optional,
 )
 from uuid import (
@@ -61,10 +62,15 @@ class SagaManager(MinosSagaManager):
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    def __init__(self, storage: SagaExecutionStorage, definitions: dict[str, Saga], *args, **kwargs):
+    handler = Provide["handler"]
+
+    def __init__(self, storage: SagaExecutionStorage, definitions: dict[str, Saga], handler=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.storage = storage
         self.definitions = definitions
+
+        if handler is not None:
+            self.handler = handler
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
@@ -95,41 +101,35 @@ class SagaManager(MinosSagaManager):
         execution = self.storage.load(reply.saga)
         return await self._run(execution, reply=reply, **kwargs)
 
-    async def _run(self, execution: SagaExecution, **kwargs) -> UUID:
+    async def _run(self, execution: SagaExecution, asynchronous: bool = True, **kwargs) -> UUID:
+        try:
+            if asynchronous:
+                await self._run_asynchronously(execution, asynchronous=asynchronous, **kwargs)
+            else:
+                await self._run_synchronously(execution, asynchronous=asynchronous, **kwargs)
+        except MinosSagaFailedExecutionStepException as exc:
+            logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
+            self.storage.store(execution)
+
+        if execution.status == SagaStatus.Finished:
+            self.storage.delete(execution)
+
+        return execution.uuid
+
+    async def _run_synchronously(self, execution: SagaExecution, timeout: float = 10, **kwargs) -> NoReturn:
+        while execution.status in (SagaStatus.Created, SagaStatus.Paused):
+            try:
+                await execution.execute(**kwargs)
+            except MinosSagaPausedExecutionStepException:
+                entry = await self.handler.get_one(
+                    [f"{execution.uuid!s}_{execution.definition_name}Reply"], timeout=timeout
+                )
+                kwargs["reply"] = entry.data
+                self.storage.store(execution)
+
+    async def _run_asynchronously(self, execution: SagaExecution, **kwargs) -> NoReturn:
         try:
             await execution.execute(**kwargs)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
             return execution.uuid
-        except MinosSagaFailedExecutionStepException as exc:
-            logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
-            self.storage.store(execution)
-            return execution.uuid
-
-        if execution.status == SagaStatus.Finished:
-            self.storage.delete(execution)
-
-        return execution.uuid
-
-
-class SynchronousSagaManager(SagaManager):
-    """TODO"""
-
-    handler = Provide["handler"]
-
-    async def _run(self, execution: SagaExecution, **kwargs) -> UUID:
-        while execution.status in (SagaStatus.Created, SagaStatus.Paused):
-            try:
-                await execution.execute(**kwargs)
-            except MinosSagaPausedExecutionStepException:
-                entry = await self.handler.get_one([f"{execution.definition_name}Reply"], timeout=10)
-                kwargs["reply"] = entry.data
-                self.storage.store(execution)
-            except MinosSagaFailedExecutionStepException as exc:
-                logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
-                self.storage.store(execution)
-
-        if execution.status == SagaStatus.Finished:
-            self.storage.delete(execution)
-
-        return execution.uuid
