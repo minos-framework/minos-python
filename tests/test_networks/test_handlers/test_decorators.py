@@ -81,6 +81,12 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         result = wrapper()
         self.assertEqual("test", result)
 
+    async def test_rest_dont_have_event(self):
+        with self.assertRaises(Exception) as context:
+            enroute.rest.event(topics=["CreateTicket"])
+
+        self.assertTrue("type object \'RestEnroute\' has no attribute \'event\'" in str(context.exception))
+
     async def test_rest_command_decorator(self):
         result = FindDecorators.find_inside_class(RestCommandExample)
 
