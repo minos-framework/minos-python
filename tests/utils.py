@@ -26,6 +26,7 @@ from minos.common import (
     Aggregate,
     CommandReply,
     MinosBroker,
+    MinosHandler,
     MinosRepository,
     MinosSagaManager,
     MinosSnapshot,
@@ -79,6 +80,16 @@ class FakeBroker(MinosBroker):
     def reset_mock(self):
         self.call_count = 0
         self.calls_kwargs = list()
+
+
+class FakeHandler(MinosHandler):
+    """For testing purposes."""
+
+    async def get_one(self, *args, **kwargs) -> Any:
+        """For testing purposes."""
+
+    async def get_many(self, *args, **kwargs) -> list[Any]:
+        """For testing purposes."""
 
 
 class FakeSagaManager(MinosSagaManager):

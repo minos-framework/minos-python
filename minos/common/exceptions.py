@@ -62,6 +62,14 @@ class MinosBrokerNotProvidedException(MinosBrokerException):
     """Exception to be raised when a broker is needed but none is set."""
 
 
+class MinosHandlerException(MinosException):
+    """Base handler exception"""
+
+
+class MinosHandlerNotProvidedException(MinosHandlerException):
+    """Exception to be raised when a handler is needed but none is set."""
+
+
 class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
