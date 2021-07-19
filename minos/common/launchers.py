@@ -13,6 +13,9 @@ import logging
 from asyncio import (
     AbstractEventLoop,
 )
+from enum import (
+    Enum,
+)
 from typing import (
     NoReturn,
     Type,
@@ -80,6 +83,10 @@ class EntrypointLauncher(MinosSetup):
         **kwargs
     ):
         super().__init__(*args, **kwargs)
+
+        if isinstance(log_date_format, Enum):
+            log_date_format = log_date_format.value
+
         self.config = config
         self.interval = interval
 
