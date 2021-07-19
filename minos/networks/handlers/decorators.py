@@ -5,6 +5,7 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
+
 class BaseDecorator:
     def __call__(self, fn):
         def wrapper(*args, analyze_mode: bool = False, **kwargs):
@@ -102,6 +103,7 @@ enroute = Enroute
 
 class FindDecorators:
     """Search decorators in specified class"""
+
     @classmethod
     def find_inside_class(cls, classname) -> list:
         fns = cls.find_decorators(classname)
