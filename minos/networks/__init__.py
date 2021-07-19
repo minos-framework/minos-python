@@ -42,11 +42,11 @@ from .handlers import (
     EventConsumerService,
     EventHandler,
     EventHandlerService,
+    FindDecorators,
     Handler,
     HandlerEntry,
     HandlerSetup,
     enroute,
-    FindDecorators,
 )
 from .rest import (
     HttpRequest,
