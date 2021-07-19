@@ -9,8 +9,9 @@
 class BrokerCommandEnroute:
     """Broker Command Enroute class"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, topics: list[str], **kwargs):
         self.kwargs = kwargs
+        self.topics = topics
 
     def __call__(self, fn):
         def wrapper(*args, analyze_mode: bool = False, **kwargs):
@@ -20,7 +21,7 @@ class BrokerCommandEnroute:
             result = [self.kwargs | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:
+            except:  # pragma: no cover
                 pass
             return result
 
@@ -30,18 +31,18 @@ class BrokerCommandEnroute:
 class BrokerQueryEnroute:
     """Broker Query Enroute class"""
 
-    def __init__(self, *args, **kwargs):
-        self.kwargs = kwargs
+    def __init__(self, topics: list[str], **kwargs):
+        self.topics = topics
 
     def __call__(self, fn):
         def wrapper(*args, analyze_mode: bool = False, **kwargs):
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
-            result = [self.kwargs | {"kind": type(self)}]
+            result = [self.topics | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:
+            except:  # pragma: no cover
                 pass
             return result
 
@@ -51,8 +52,9 @@ class BrokerQueryEnroute:
 class BrokerEventEnroute:
     """Broker Event Enroute class"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, topics: list[str], **kwargs):
         self.kwargs = kwargs
+        self.topics = topics
 
     def __call__(self, fn):
         def wrapper(*args, analyze_mode: bool = False, **kwargs):
@@ -62,7 +64,7 @@ class BrokerEventEnroute:
             result = [self.kwargs | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:
+            except:  # pragma: no cover
                 pass
             return result
 
@@ -79,8 +81,9 @@ class BrokerEnroute:
 class RestCommandEnroute:
     """Rest Command Enroute class"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, topics: list[str], **kwargs):
         self.kwargs = kwargs
+        self.topics = topics
 
     def __call__(self, fn):
         def wrapper(*args, analyze_mode: bool = False, **kwargs):
@@ -90,7 +93,7 @@ class RestCommandEnroute:
             result = [self.kwargs | {"kind": type(self)}]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:
+            except:  # pragma: no cover
                 pass
             return result
 
@@ -112,7 +115,7 @@ class RestQueryEnroute:
             result = [self]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except:
+            except:  # pragma: no cover
                 pass
             return result
 
@@ -132,7 +135,8 @@ class Enroute:
 
 
 def find_decorators(target):
-    import ast, inspect
+    import ast
+    import inspect
     res = {}
 
     def visit_FunctionDef(node):
