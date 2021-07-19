@@ -26,13 +26,13 @@ from .commands import (
     CommandResponseException,
 )
 from .decorators import (
-    FindDecorators,
-    enroute,
     BrokerCommandEnroute,
-    BrokerQueryEnroute,
     BrokerEventEnroute,
+    BrokerQueryEnroute,
+    FindDecorators,
     RestCommandEnroute,
     RestQueryEnroute,
+    enroute,
 )
 from .entries import (
     HandlerEntry,

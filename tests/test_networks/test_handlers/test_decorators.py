@@ -8,13 +8,13 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.networks import (
-    FindDecorators,
-    enroute,
     BrokerCommandEnroute,
-    BrokerQueryEnroute,
     BrokerEventEnroute,
+    BrokerQueryEnroute,
+    FindDecorators,
     RestCommandEnroute,
     RestQueryEnroute,
+    enroute,
 )
 
 
@@ -110,7 +110,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(Exception) as context:
             enroute.rest.event(topics=["CreateTicket"])
 
-        self.assertTrue("type object \'RestEnroute\' has no attribute \'event\'" in str(context.exception))
+        self.assertTrue("type object 'RestEnroute' has no attribute 'event'" in str(context.exception))
 
     async def test_rest_command_decorator(self):
         result = FindDecorators.find_in_class(RestCommandExample)
