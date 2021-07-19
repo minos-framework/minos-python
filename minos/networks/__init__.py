@@ -38,6 +38,7 @@ from .handlers import (
     CommandResponse,
     CommandResponseException,
     Consumer,
+    DynamicHandler,
     EventConsumer,
     EventConsumerService,
     EventHandler,
