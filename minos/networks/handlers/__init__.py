@@ -26,7 +26,7 @@ from .commands import (
     CommandResponseException,
 )
 from .decorators import (
-    Enroute,
+    enroute,
     find_decorators,
 )
 from .entries import (

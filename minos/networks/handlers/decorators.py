@@ -138,6 +138,9 @@ class Enroute:
     rest = RestEnroute
 
 
+enroute = Enroute
+
+
 def find_decorators(target):
     import ast
     import inspect

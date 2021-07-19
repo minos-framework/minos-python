@@ -8,11 +8,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.networks import (
-    Enroute,
+    enroute,
     find_decorators,
 )
-
-enroute = Enroute
 
 
 class RestQueryExample:
