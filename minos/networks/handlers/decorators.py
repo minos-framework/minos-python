@@ -9,42 +9,68 @@
 class BrokerCommandEnroute:
     """Broker Command Enroute class"""
 
-    _topics: list[str]
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def __init__(self, *args, **kwargs):
-        self._topics = kwargs["topics"]
+    def __call__(self, fn):
+        def wrapper(*args, analyze_mode: bool = False, **kwargs):
+            if not analyze_mode:
+                return fn(*args, **kwargs)
 
-    def __call__(self, fn, *args, **kwargs):
-        return fn
+            result = [self.kwargs | {"kind": type(self)}]
+            try:
+                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
+            except:
+                pass
+            return result
+
+        return wrapper
 
 
 class BrokerQueryEnroute:
     """Broker Query Enroute class"""
 
-    _topics: list[str]
-
     def __init__(self, *args, **kwargs):
-        self._topics = kwargs["topics"]
+        self.kwargs = kwargs
 
-    def __call__(self, fn, *args, **kwargs):
-        return fn
+    def __call__(self, fn):
+        def wrapper(*args, analyze_mode: bool = False, **kwargs):
+            if not analyze_mode:
+                return fn(*args, **kwargs)
+
+            result = [self.kwargs | {"kind": type(self)}]
+            try:
+                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
+            except:
+                pass
+            return result
+
+        return wrapper
 
 
 class BrokerEventEnroute:
     """Broker Event Enroute class"""
 
-    _topics: list[str]
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def __init__(self, *args, **kwargs):
-        self._topics = kwargs["topics"]
+    def __call__(self, fn):
+        def wrapper(*args, analyze_mode: bool = False, **kwargs):
+            if not analyze_mode:
+                return fn(*args, **kwargs)
 
-    def __call__(self, fn, *args, **kwargs):
-        return fn
+            result = [self.kwargs | {"kind": type(self)}]
+            try:
+                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
+            except:
+                pass
+            return result
+
+        return wrapper
 
 
 class BrokerEnroute:
     """Broker Enroute class"""
-
     command = BrokerCommandEnroute
     query = BrokerQueryEnroute
     event = BrokerEventEnroute
@@ -53,38 +79,66 @@ class BrokerEnroute:
 class RestCommandEnroute:
     """Rest Command Enroute class"""
 
-    _topics: list[str]
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
-    def __init__(self, *args, **kwargs):
-        self._topics = kwargs["topics"]
+    def __call__(self, fn):
+        def wrapper(*args, analyze_mode: bool = False, **kwargs):
+            if not analyze_mode:
+                return fn(*args, **kwargs)
 
-    def __call__(self, fn, *args, **kwargs):
-        return fn
+            result = [self.kwargs | {"kind": type(self)}]
+            try:
+                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
+            except:
+                pass
+            return result
+
+        return wrapper
 
 
 class RestQueryEnroute:
     """Rest Query Enroute class"""
 
-    _url: str
-    _method: str
+    def __init__(self, url: str, method: str):
+        self.url = url
+        self.method = method
 
-    def __init__(self, *args, **kwargs):
-        self._url = kwargs["url"]
-        self._method = kwargs["method"]
+    def __call__(self, fn):
+        def wrapper(*args, analyze_mode: bool = False, **kwargs):
+            if not analyze_mode:
+                return fn(*args, **kwargs)
 
-    def __call__(self, fn, *args, **kwargs):
-        return fn
+            result = [self]
+            try:
+                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
+            except:
+                pass
+            return result
+
+        return wrapper
 
 
 class RestEnroute:
     """Rest Enroute class"""
-
     command = RestCommandEnroute
     query = RestQueryEnroute
 
 
 class Enroute:
     """Enroute decorator main class"""
-
     broker = BrokerEnroute
     rest = RestEnroute
+
+
+def find_decorators(target):
+    import ast, inspect
+    res = {}
+
+    def visit_FunctionDef(node):
+        res[node.name] = bool(node.decorator_list)
+
+    V = ast.NodeVisitor()
+    V.visit_FunctionDef = visit_FunctionDef
+    V.visit(compile(inspect.getsource(target), '?', 'exec', ast.PyCF_ONLY_AST))
+    return res

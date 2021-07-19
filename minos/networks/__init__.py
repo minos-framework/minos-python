@@ -43,6 +43,7 @@ from .handlers import (
     EventConsumerService,
     EventHandler,
     EventHandlerService,
+    find_decorators,
     Handler,
     HandlerEntry,
     HandlerSetup,
