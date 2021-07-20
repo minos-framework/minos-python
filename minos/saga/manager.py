@@ -38,7 +38,7 @@ from .definitions import (
     Saga,
 )
 from .exceptions import (
-    MinosSagaFailedExecutionStepException,
+    MinosSagaFailedExecutionException,
     MinosSagaPausedExecutionStepException,
 )
 from .executions import (
@@ -119,8 +119,11 @@ class SagaManager(MinosSagaManager):
                 await self._run_asynchronously(execution, asynchronous=asynchronous, **kwargs)
             else:
                 await self._run_synchronously(execution, asynchronous=asynchronous, **kwargs)
-        except MinosSagaFailedExecutionStepException as exc:
-            logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
+        except MinosSagaFailedExecutionException as exc:
+            logger.warning(
+                f"The execution identified by {execution.uuid!s} failed "
+                f"on the {len(execution.executed_steps) + 1!r} step: {exc.exception!r}"
+            )
             self.storage.store(execution)
 
         if execution.status == SagaStatus.Finished:
@@ -133,7 +136,11 @@ class SagaManager(MinosSagaManager):
             try:
                 await execution.execute(**kwargs)
             except MinosSagaPausedExecutionStepException:
-                entry = await self.handler.get_one(f"{execution.uuid!s}_{execution.definition_name}Reply", **kwargs)
+                try:
+                    entry = await self.handler.get_one(f"{execution.uuid!s}_{execution.definition_name}Reply", **kwargs)
+                except Exception as exc:
+                    execution.status = SagaStatus.Errored
+                    raise MinosSagaFailedExecutionException(exc)
                 kwargs["reply"] = entry.data
                 self.storage.store(execution)
 
