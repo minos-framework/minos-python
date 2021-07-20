@@ -26,4 +26,4 @@ class QueryService(Service):
 
     async def _handle_event(self, diff: AggregateDiff, fn: Callable):
         definition = _build_event_saga(diff, self, fn)
-        return await self.saga_manager.run(definition=definition, asynchronous=False)
+        return await self.saga_manager.run(definition=definition, asynchronous=False, raise_on_error=True)
