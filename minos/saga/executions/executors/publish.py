@@ -104,4 +104,4 @@ class PublishExecutor(LocalExecutor):
         """
         if self.asynchronous:
             return self.definition_name
-        return f"{self.execution_uuid!s}_{self.definition_name}"
+        return str(self.execution_uuid)

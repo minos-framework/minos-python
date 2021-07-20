@@ -138,7 +138,7 @@ class SagaManager(MinosSagaManager):
                 await execution.execute(**kwargs)
             except MinosSagaPausedExecutionStepException:
                 try:
-                    entry = await self.handler.get_one(f"{execution.uuid!s}_{execution.definition_name}Reply", **kwargs)
+                    entry = await self.handler.get_one(f"{execution.uuid!s}Reply", **kwargs)
                 except Exception as exc:
                     execution.status = SagaStatus.Errored
                     raise MinosSagaFailedExecutionException(exc)

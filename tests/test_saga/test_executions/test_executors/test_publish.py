@@ -55,7 +55,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         executor = PublishExecutor(
             definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker, asynchronous=False
         )
-        self.assertEqual(f"{self.executor.execution_uuid}_{self.executor.definition_name}", executor.reply_topic)
+        self.assertEqual(str(self.executor.execution_uuid), executor.reply_topic)
 
     async def test_exec(self):
         operation = SagaOperation(foo_fn, "AddBar")
