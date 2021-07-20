@@ -29,7 +29,6 @@ from .decorators import (
     BrokerCommandEnroute,
     BrokerEventEnroute,
     BrokerQueryEnroute,
-    EnrouteData,
     EnrouteDecoratorAnalyzer,
     RestCommandEnroute,
     RestQueryEnroute,

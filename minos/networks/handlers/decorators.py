@@ -57,8 +57,9 @@ class BrokerEnroute:
 class RestCommandEnroute(BaseDecorator):
     """Rest Command Enroute class"""
 
-    def __init__(self, topics: list[str]):
-        self.topics = topics
+    def __init__(self, url: str, method: str):
+        self.url = url
+        self.method = method
 
 
 class RestQueryEnroute(BaseDecorator):
@@ -88,6 +89,9 @@ enroute = Enroute
 
 class EnrouteDecoratorAnalyzer:
     """Search decorators in specified class"""
+
+    def __init__(self, classname):
+        self.result = self.find_in_class(classname)
 
     @classmethod
     @cache
@@ -119,13 +123,6 @@ class EnrouteDecoratorAnalyzer:
         v.visit(compile(inspect.getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
         return res
 
-
-class EnrouteData(EnrouteDecoratorAnalyzer):
-    """Returns values according to type."""
-
-    def __init__(self, classname):
-        self.result = self.find_in_class(classname)
-
     def _get_items(self, expected_types: list):
         items = {}
         for key in self.result:
@@ -148,8 +145,8 @@ class EnrouteData(EnrouteDecoratorAnalyzer):
 
     def command(self):
         """Returns command values."""
-        return self._get_items([RestCommandEnroute, BrokerCommandEnroute])
+        return self._get_items([BrokerCommandEnroute, BrokerQueryEnroute])
 
     def event(self):
         """Returns event values."""
-        return self._get_items([BrokerEventEnroute])
+        return self._get_items([BrokerEventEnroute, RestCommandEnroute])
