@@ -113,7 +113,9 @@ class SagaManager(MinosSagaManager):
         execution = self.storage.load(reply.saga)
         return await self._run(execution, reply=reply, **kwargs)
 
-    async def _run(self, execution: SagaExecution, asynchronous: bool = True, **kwargs) -> UUID:
+    async def _run(
+        self, execution: SagaExecution, asynchronous: bool = True, raises_on_error: bool = False, **kwargs
+    ) -> UUID:
         try:
             if asynchronous:
                 await self._run_asynchronously(execution, asynchronous=asynchronous, **kwargs)
@@ -125,6 +127,8 @@ class SagaManager(MinosSagaManager):
                 f"on the {len(execution.executed_steps) + 1!r} step: {exc.exception!r}"
             )
             self.storage.store(execution)
+            if raises_on_error:
+                raise exc
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
