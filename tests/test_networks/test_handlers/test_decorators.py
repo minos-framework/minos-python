@@ -10,13 +10,11 @@ import unittest
 from minos.networks import (
     EnrouteDecoratorAnalyzer,
     enroute,
-
 )
-
 from minos.networks.handlers import (
     BrokerCommandEnroute,
-    BrokerQueryEnroute,
     BrokerEventEnroute,
+    BrokerQueryEnroute,
     RestCommandEnroute,
     RestQueryEnroute,
 )
@@ -114,7 +112,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(Exception) as context:
             enroute.rest.event(topics=["CreateTicket"])
 
-        self.assertTrue("type object \'RestEnroute\' has no attribute \'event\'" in str(context.exception))
+        self.assertTrue("type object 'RestEnroute' has no attribute 'event'" in str(context.exception))
 
     async def test_rest_command_decorator(self):
         result = EnrouteDecoratorAnalyzer.find_in_class(RestCommandExample)
@@ -167,4 +165,3 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
