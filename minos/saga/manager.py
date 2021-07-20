@@ -122,13 +122,11 @@ class SagaManager(MinosSagaManager):
             else:
                 await self._run_synchronously(execution, asynchronous=asynchronous, **kwargs)
         except MinosSagaFailedExecutionException as exc:
-            logger.warning(
-                f"The execution identified by {execution.uuid!s} failed "
-                f"on the {len(execution.executed_steps) + 1!r} step: {exc.exception!r}"
-            )
             self.storage.store(execution)
             if raise_on_error:
                 raise exc
+            else:
+                logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
