@@ -128,13 +128,12 @@ class SagaManager(MinosSagaManager):
 
         return execution.uuid
 
-    async def _run_synchronously(self, execution: SagaExecution, timeout: float = 10, **kwargs) -> NoReturn:
-        topic = f"{execution.uuid!s}_{execution.definition_name}Reply"
+    async def _run_synchronously(self, execution: SagaExecution, **kwargs) -> NoReturn:
         while execution.status in (SagaStatus.Created, SagaStatus.Paused):
             try:
                 await execution.execute(**kwargs)
             except MinosSagaPausedExecutionStepException:
-                entry = await self.handler.get_one(topic, timeout=timeout)
+                entry = await self.handler.get_one(f"{execution.uuid!s}_{execution.definition_name}Reply", **kwargs)
                 kwargs["reply"] = entry.data
                 self.storage.store(execution)
 
