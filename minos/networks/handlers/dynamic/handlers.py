@@ -32,6 +32,9 @@ from minos.common import (
     Model,
 )
 
+from ...exceptions import (
+    MinosHandlerNotEnoughEntriesFoundException,
+)
 from ..entries import (
     HandlerEntry,
 )
@@ -57,19 +60,16 @@ class DynamicHandler(MinosHandler):
         :param timeout: Maximum time in seconds to wait for messages.
         :return: A ``HandlerEntry`` instance.
         """
-        entries = await self.get_many(topics, timeout=timeout, max_records=1)
-        if not len(entries):
-            raise ValueError()  # TODO: raise meaningful exception.
-        return entries[0]
+        return (await self.get_many(topics, timeout=timeout, count=1))[0]
 
     async def get_many(
-        self, topics: Union[str, list[str]], timeout: float = 0, max_records: Optional[int] = None
+        self, topics: Union[str, list[str]], timeout: float = 0, count: Optional[int] = None
     ) -> list[HandlerEntry]:
         """Get multiple handler entries from the given topics.
 
         :param topics: The list of topics to be watched.
         :param timeout: Maximum time in seconds to wait for messages.
-        :param max_records: Maximum number of records to be collected.
+        :param count: Number of entries to be collected.
         :return: A list of ``HandlerEntry`` instances.
         """
 
@@ -77,12 +77,18 @@ class DynamicHandler(MinosHandler):
             message = self._build_tuple(message)
             await self._build_entry(message)
 
-        result = await self._get_many(topics, timeout, max_records)
+        entries = await self._get_many(topics, timeout, count)
+        entries = [await _fn(message) for message in chain(*entries.values())]
 
-        return [await _fn(message) for message in chain(*result.values())]
+        if count is not None and len(entries) != count:
+            raise MinosHandlerNotEnoughEntriesFoundException(
+                f"{count} entries are expected, but {len(entries)} have been found."
+            )
+
+        return entries
 
     async def _get_many(
-        self, topics: Union[str, list[str]], timeout: float = 0, max_records: Optional[int] = None
+        self, topics: Union[str, list[str]], timeout: float = 0, count: Optional[int] = None
     ) -> dict[str, tuple]:
         if isinstance(topics, str):
             topics = [topics]
@@ -91,7 +97,7 @@ class DynamicHandler(MinosHandler):
 
         try:
             await consumer.start()
-            return await consumer.getmany(timeout_ms=int(timeout * 1000), max_records=max_records)
+            return await consumer.getmany(timeout_ms=int(timeout * 1000), max_records=count)
         finally:
             await consumer.stop()
 

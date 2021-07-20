@@ -23,6 +23,8 @@ from .discovery import (
 from .exceptions import (
     MinosActionNotFoundException,
     MinosDiscoveryConnectorException,
+    MinosHandlerException,
+    MinosHandlerNotEnoughEntriesFoundException,
     MinosNetworkException,
 )
 from .handlers import (
