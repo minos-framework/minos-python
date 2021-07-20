@@ -4,7 +4,9 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from functools import cache
+from functools import (
+    cache,
+)
 
 
 class BaseDecorator:
@@ -151,4 +153,3 @@ class EnrouteData(EnrouteDecoratorAnalyzer):
     def event(self):
         """Returns event values."""
         return self._get_items([BrokerEventEnroute])
-
