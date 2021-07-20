@@ -28,7 +28,7 @@ from aiokafka import (
 from minos.common import (
     BROKER,
     MinosConfig,
-    MinosSetup,
+    MinosHandler,
     Model,
 )
 
@@ -37,8 +37,8 @@ from ..entries import (
 )
 
 
-class DynamicHandler(MinosSetup):
-    """TODO"""
+class DynamicHandler(MinosHandler):
+    """Dynamic Handler class.`"""
 
     __slots__ = ("_broker",)
 
@@ -51,11 +51,11 @@ class DynamicHandler(MinosSetup):
         return cls(broker=config.saga.broker, **kwargs)
 
     async def get_one(self, topics: Union[str, list[str]], timeout: float = 0) -> HandlerEntry:
-        """TODO
+        """Get one handler entry from the given topics.
 
-        :param topics: TODO
-        :param timeout: TODO
-        :return: TODO
+        :param topics: The list of topics to be watched.
+        :param timeout: Maximum time in seconds to wait for messages.
+        :return: A ``HandlerEntry`` instance.
         """
         entries = await self.get_many(topics, timeout=timeout, max_records=1)
         if not len(entries):
@@ -65,12 +65,12 @@ class DynamicHandler(MinosSetup):
     async def get_many(
         self, topics: Union[str, list[str]], timeout: float = 0, max_records: Optional[int] = None
     ) -> list[HandlerEntry]:
-        """TODO
+        """Get multiple handler entries from the given topics.
 
-        :param topics: TODO
-        :param timeout: TODO
-        :param max_records: TODO
-        :return: TODO
+        :param topics: The list of topics to be watched.
+        :param timeout: Maximum time in seconds to wait for messages.
+        :param max_records: Maximum number of records to be collected.
+        :return: A list of ``HandlerEntry`` instances.
         """
 
         async def _fn(message: Any) -> HandlerEntry:
