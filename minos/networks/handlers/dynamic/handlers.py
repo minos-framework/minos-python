@@ -46,11 +46,27 @@ logger = logging.getLogger(__name__)
 class DynamicHandler(MinosHandler):
     """Dynamic Handler class.`"""
 
-    __slots__ = ("_broker",)
+    __slots__ = "_broker"
 
     def __init__(self, broker: Optional[BROKER] = None, **kwargs):
         super().__init__(**kwargs)
         self._broker = broker
+
+    @property
+    def broker_host(self) -> str:
+        """Broker host getter.
+
+        :return: A string value.
+        """
+        return self._broker.host
+
+    @property
+    def broker_port(self) -> int:
+        """Broker port getter.
+
+        :return: An integer value.
+        """
+        return self._broker.port
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
@@ -96,7 +112,7 @@ class DynamicHandler(MinosHandler):
         if isinstance(topics, str):
             topics = [topics]
 
-        consumer = AIOKafkaConsumer(*topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}")
+        consumer = AIOKafkaConsumer(*topics, bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
 
         try:
             await consumer.start()
