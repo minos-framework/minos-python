@@ -18,6 +18,7 @@ from itertools import (
 from typing import (
     Any,
     Optional,
+    Union,
 )
 
 from aiokafka import (
@@ -49,7 +50,7 @@ class DynamicHandler(MinosSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
         return cls(broker=config.saga.broker, **kwargs)
 
-    async def get_one(self, topics: list[str], timeout: float = 0) -> HandlerEntry:
+    async def get_one(self, topics: Union[str, list[str]], timeout: float = 0) -> HandlerEntry:
         """TODO
 
         :param topics: TODO
@@ -62,7 +63,7 @@ class DynamicHandler(MinosSetup):
         return entries[0]
 
     async def get_many(
-        self, topics: list[str], timeout: float = 0, max_records: Optional[int] = None
+        self, topics: Union[str, list[str]], timeout: float = 0, max_records: Optional[int] = None
     ) -> list[HandlerEntry]:
         """TODO
 
@@ -81,8 +82,11 @@ class DynamicHandler(MinosSetup):
         return [await _fn(message) for message in chain(*result.values())]
 
     async def _get_many(
-        self, topics: list[str], timeout: float = 0, max_records: Optional[int] = None
+        self, topics: Union[str, list[str]], timeout: float = 0, max_records: Optional[int] = None
     ) -> dict[str, tuple]:
+        if isinstance(topics, str):
+            topics = [topics]
+
         consumer = AIOKafkaConsumer(*topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}")
 
         try:
