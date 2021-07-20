@@ -24,7 +24,7 @@ from minos.common.testing import (
 from minos.networks import (
     DynamicHandler,
     HandlerEntry,
-    MinosHandlerNotEnoughEntriesFoundException,
+    MinosHandlerNotFoundEnoughEntriesException,
 )
 from tests.utils import (
     BASE_PATH,
@@ -86,7 +86,7 @@ class TestDynamicHandler(PostgresAsyncTestCase):
                 "foo": [Message("foo", 0, FakeModel("test1").avro_bytes)],
                 "bar": [Message("bar", 0, FakeModel("test4").avro_bytes)],
             }
-            with self.assertRaises(MinosHandlerNotEnoughEntriesFoundException):
+            with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
                 await self.handler.get_many("foo", count=3)
 
     def _assert_equal_entries(self, expected, observed):

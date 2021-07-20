@@ -34,7 +34,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    MinosHandlerNotEnoughEntriesFoundException,
+    MinosHandlerNotFoundEnoughEntriesException,
 )
 from ..entries import (
     HandlerEntry,
@@ -82,7 +82,7 @@ class DynamicHandler(MinosHandler):
         return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
 
     async def get_many(
-        self, topics: Union[str, list[str]], timeout: float = 3, count: Optional[int] = None, **kwargs,
+        self, topics: Union[str, list[str]], timeout: float = 1, count: Optional[int] = None, **kwargs,
     ) -> list[HandlerEntry]:
         """Get multiple handler entries from the given topics.
 
@@ -100,7 +100,7 @@ class DynamicHandler(MinosHandler):
         entries = [await _fn(message) for message in chain(*raw.values())]
 
         if count is not None and len(entries) != count:
-            raise MinosHandlerNotEnoughEntriesFoundException(
+            raise MinosHandlerNotFoundEnoughEntriesException(
                 f"{topics!r} expect {count!r} entries, but {len(entries)!r} have been found."
             )
 

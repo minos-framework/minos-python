@@ -26,5 +26,5 @@ class MinosActionNotFoundException(MinosHandlerException):
     """Exception to be raised when an action cannot be found,"""
 
 
-class MinosHandlerNotEnoughEntriesFoundException(MinosHandlerException):
+class MinosHandlerNotFoundEnoughEntriesException(MinosHandlerException):
     """Exception to be raised when not enough entries have been found by a handler."""

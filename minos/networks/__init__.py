@@ -24,7 +24,7 @@ from .exceptions import (
     MinosActionNotFoundException,
     MinosDiscoveryConnectorException,
     MinosHandlerException,
-    MinosHandlerNotEnoughEntriesFoundException,
+    MinosHandlerNotFoundEnoughEntriesException,
     MinosNetworkException,
 )
 from .handlers import (
