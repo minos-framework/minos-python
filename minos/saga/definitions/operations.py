@@ -66,7 +66,10 @@ class SagaOperation(object):
 
     @property
     def parameterized(self) -> bool:
-        """TODO"""
+        """parameterized getter.
+
+        :return: ``True`` if parameters are provided or ``False`` otherwise.
+        """
         return self.parameters is not None
 
     @classmethod

@@ -61,13 +61,8 @@ def foo_fn_raises(context: SagaContext) -> MinosModel:
 def fake_reply(
     data: Any = None, uuid: Optional[UUID] = None, status: CommandStatus = CommandStatus.SUCCESS
 ) -> CommandReply:
-    """Fake command reply generator.
+    """For testing purposes."""
 
-    :param data: Data to be set as response on the command reply.
-    :param uuid: TODO
-    :param status: TODO
-    :return: A Command reply instance.
-    """
     if uuid is None:
         uuid = uuid4()
     return CommandReply("FooCreated", data, uuid, status=status)
