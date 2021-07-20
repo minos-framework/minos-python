@@ -82,7 +82,7 @@ class DynamicHandler(MinosHandler):
         return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
 
     async def get_many(
-        self, topics: Union[str, list[str]], timeout: float = 10, count: Optional[int] = None, **kwargs,
+        self, topics: Union[str, list[str]], timeout: float = 3, count: Optional[int] = None, **kwargs,
     ) -> list[HandlerEntry]:
         """Get multiple handler entries from the given topics.
 
@@ -101,7 +101,7 @@ class DynamicHandler(MinosHandler):
 
         if count is not None and len(entries) != count:
             raise MinosHandlerNotEnoughEntriesFoundException(
-                f"{count} entries are expected, but {len(entries)} have been found."
+                f"{topics} expect {count} entries, but {len(entries)} have been found."
             )
 
         logger.info(f"Obtained {[v.data for v in entries]} entries...")
