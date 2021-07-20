@@ -107,7 +107,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
         with self.assertRaises(MinosSagaFailedExecutionException):
-            await self.manager.run("AddOrder", broker=self.broker, asynchronous=False, raises_on_error=True)
+            await self.manager.run("AddOrder", broker=self.broker, asynchronous=False, raise_on_error=True)
 
     async def test_run_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")
