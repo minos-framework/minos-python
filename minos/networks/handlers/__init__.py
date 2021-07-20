@@ -29,13 +29,15 @@ from .decorators import (
     BrokerCommandEnroute,
     BrokerEventEnroute,
     BrokerQueryEnroute,
-    EnrouteDecoratorAnalyzer,
     EnrouteData,
+    EnrouteDecoratorAnalyzer,
     RestCommandEnroute,
     RestQueryEnroute,
     enroute,
 )
-from .entries import HandlerEntry
+from .entries import (
+    HandlerEntry,
+)
 from .events import (
     EventConsumer,
     EventConsumerService,

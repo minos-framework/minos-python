@@ -38,8 +38,8 @@ from .handlers import (
     CommandResponse,
     CommandResponseException,
     Consumer,
-    EnrouteDecoratorAnalyzer,
     EnrouteData,
+    EnrouteDecoratorAnalyzer,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -56,4 +56,6 @@ from .rest import (
     RestBuilder,
     RestService,
 )
-from .snapshots import SnapshotService
+from .snapshots import (
+    SnapshotService,
+)

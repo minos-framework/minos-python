@@ -8,8 +8,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.networks import (
-    EnrouteDecoratorAnalyzer,
     EnrouteData,
+    EnrouteDecoratorAnalyzer,
     enroute,
 )
 from minos.networks.handlers import (
