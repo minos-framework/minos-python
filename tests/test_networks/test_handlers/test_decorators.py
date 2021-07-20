@@ -9,6 +9,7 @@ import unittest
 
 from minos.networks import (
     EnrouteDecoratorAnalyzer,
+    EnrouteData,
     enroute,
 )
 from minos.networks.handlers import (
@@ -98,9 +99,11 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
     async def test_rest_query_decorator(self):
         result = EnrouteDecoratorAnalyzer.find_in_class(RestQueryExample)
 
-        self.assertEqual("GET", result["get_tickets"][0].method)
-        self.assertEqual("tickets/", result["get_tickets"][0].url)
-        self.assertEqual(RestQueryEnroute, type(result["get_tickets"][0]))
+        obj = result[next(iter(result))][0]
+
+        self.assertEqual("GET", obj.method)
+        self.assertEqual("tickets/", obj.url)
+        self.assertEqual(RestQueryEnroute, type(obj))
 
     async def test_rest_command(self):
         func = enroute.rest.command(topics=["CreateTicket"])
@@ -117,8 +120,10 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
     async def test_rest_command_decorator(self):
         result = EnrouteDecoratorAnalyzer.find_in_class(RestCommandExample)
 
-        self.assertEqual(["RestCommand"], result["get_tickets"][0].topics)
-        self.assertEqual(RestCommandEnroute, type(result["get_tickets"][0]))
+        obj = result[next(iter(result))][0]
+
+        self.assertEqual(["RestCommand"], obj.topics)
+        self.assertEqual(RestCommandEnroute, type(obj))
 
     async def test_broker_query(self):
         func = enroute.broker.query(topics=["CreateTicket"])
@@ -129,8 +134,10 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
     async def test_broker_query_decorator(self):
         result = EnrouteDecoratorAnalyzer.find_in_class(BrokerQueryExample)
 
-        self.assertEqual(["BrokerQuery"], result["get_tickets"][0].topics)
-        self.assertEqual(BrokerQueryEnroute, type(result["get_tickets"][0]))
+        obj = result[next(iter(result))][0]
+
+        self.assertEqual(["BrokerQuery"], obj.topics)
+        self.assertEqual(BrokerQueryEnroute, type(obj))
 
     async def test_broker_command(self):
         func = enroute.broker.command(topics=["CreateTicket"])
@@ -141,8 +148,10 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
     async def test_broker_command_decorator(self):
         result = EnrouteDecoratorAnalyzer.find_in_class(BrokerCommandExample)
 
-        self.assertEqual(["BrokerCommand"], result["get_tickets"][0].topics)
-        self.assertEqual(BrokerCommandEnroute, type(result["get_tickets"][0]))
+        obj = result[next(iter(result))][0]
+
+        self.assertEqual(["BrokerCommand"], obj.topics)
+        self.assertEqual(BrokerCommandEnroute, type(obj))
 
     async def test_broker_event(self):
         func = enroute.broker.event(topics=["CreateTicket"])
@@ -153,14 +162,45 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
     async def test_broker_event_decorator(self):
         result = EnrouteDecoratorAnalyzer.find_in_class(BrokerEventExample)
 
-        self.assertEqual(["BrokerEvent"], result["get_tickets"][0].topics)
-        self.assertEqual(BrokerEventEnroute, type(result["get_tickets"][0]))
+        obj = result[next(iter(result))][0]
+
+        self.assertEqual(["BrokerEvent"], obj.topics)
+        self.assertEqual(BrokerEventEnroute, type(obj))
 
     async def test_multiple_decorators(self):
         result = EnrouteDecoratorAnalyzer.find_in_class(MultipleDecoratorsExample)
 
-        self.assertEqual(3, len(result["get_tickets"]))
-        self.assertEqual(5, len(result["get_orders"]))
+        res_iter = iter(result)
+
+        self.assertEqual(3, len(result[next(res_iter)]))
+        self.assertEqual(5, len(result[next(res_iter)]))
+
+    async def test_get_only_rest_decorators(self):
+        e = EnrouteData(MultipleDecoratorsExample)
+        result = e.rest()
+
+        res_iter = iter(result)
+
+        self.assertEqual(1, len(result[next(res_iter)]))
+        self.assertEqual(1, len(result[next(res_iter)]))
+
+    async def test_get_only_command_decorators(self):
+        e = EnrouteData(MultipleDecoratorsExample)
+        result = e.command()
+
+        res_iter = iter(result)
+
+        self.assertEqual(1, len(result[next(res_iter)]))
+        self.assertEqual(2, len(result[next(res_iter)]))
+
+    async def test_get_only_event_decorators(self):
+        e = EnrouteData(MultipleDecoratorsExample)
+        result = e.event()
+
+        res_iter = iter(result)
+
+        self.assertEqual(1, len(result[next(res_iter)]))
+        self.assertEqual(1, len(result[next(res_iter)]))
 
 
 if __name__ == "__main__":

@@ -39,6 +39,7 @@ from .handlers import (
     CommandResponseException,
     Consumer,
     EnrouteDecoratorAnalyzer,
+    EnrouteData,
     EventConsumer,
     EventConsumerService,
     EventHandler,
