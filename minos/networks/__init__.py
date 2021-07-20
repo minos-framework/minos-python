@@ -26,9 +26,6 @@ from .exceptions import (
     MinosNetworkException,
 )
 from .handlers import (
-    BrokerCommandEnroute,
-    BrokerEventEnroute,
-    BrokerQueryEnroute,
     CommandConsumer,
     CommandConsumerService,
     CommandHandler,
@@ -45,12 +42,10 @@ from .handlers import (
     EventConsumerService,
     EventHandler,
     EventHandlerService,
-    FindDecorators,
+    EnrouteDecoratorAnalyzer,
     Handler,
     HandlerEntry,
     HandlerSetup,
-    RestCommandEnroute,
-    RestQueryEnroute,
     enroute,
 )
 from .rest import (

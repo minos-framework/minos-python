@@ -29,7 +29,7 @@ from .decorators import (
     BrokerCommandEnroute,
     BrokerEventEnroute,
     BrokerQueryEnroute,
-    FindDecorators,
+    EnrouteDecoratorAnalyzer,
     RestCommandEnroute,
     RestQueryEnroute,
     enroute,
