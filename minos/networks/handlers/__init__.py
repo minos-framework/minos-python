@@ -34,7 +34,9 @@ from .decorators import (
     RestQueryEnroute,
     enroute,
 )
-from .entries import HandlerEntry
+from .entries import (
+    HandlerEntry,
+)
 from .events import (
     EventConsumer,
     EventConsumerService,
