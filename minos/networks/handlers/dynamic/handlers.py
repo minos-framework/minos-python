@@ -101,7 +101,7 @@ class DynamicHandler(MinosHandler):
 
         if count is not None and len(entries) != count:
             raise MinosHandlerNotEnoughEntriesFoundException(
-                f"{topics} expect {count} entries, but {len(entries)} have been found."
+                f"{topics!r} expect {count!r} entries, but {len(entries)!r} have been found."
             )
 
         logger.info(f"Obtained {[v.data for v in entries]} entries...")
