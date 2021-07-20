@@ -151,4 +151,3 @@ class EnrouteData(EnrouteDecoratorAnalyzer):
     def event(self):
         """Returns event values."""
         return self._get_items([BrokerEventEnroute])
-
