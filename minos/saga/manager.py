@@ -125,8 +125,7 @@ class SagaManager(MinosSagaManager):
             self.storage.store(execution)
             if raise_on_error:
                 raise exc
-            else:
-                logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
+            logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
