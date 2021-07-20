@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from datetime import (
     datetime,
 )
@@ -39,6 +40,8 @@ from ..entries import (
     HandlerEntry,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class DynamicHandler(MinosHandler):
     """Dynamic Handler class.`"""
@@ -53,17 +56,17 @@ class DynamicHandler(MinosHandler):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
         return cls(broker=config.saga.broker, **kwargs)
 
-    async def get_one(self, topics: Union[str, list[str]], timeout: float = 0) -> HandlerEntry:
+    async def get_one(self, *args, **kwargs) -> HandlerEntry:
         """Get one handler entry from the given topics.
 
-        :param topics: The list of topics to be watched.
-        :param timeout: Maximum time in seconds to wait for messages.
+        :param args: Additional positional parameters to be passed to get_many.
+        :param kwargs: Additional named parameters to be passed to get_many.
         :return: A ``HandlerEntry`` instance.
         """
-        return (await self.get_many(topics, timeout=timeout, count=1))[0]
+        return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
 
     async def get_many(
-        self, topics: Union[str, list[str]], timeout: float = 0, count: Optional[int] = None
+        self, topics: Union[str, list[str]], timeout: float = 10, count: Optional[int] = None, **kwargs,
     ) -> list[HandlerEntry]:
         """Get multiple handler entries from the given topics.
 
@@ -75,21 +78,21 @@ class DynamicHandler(MinosHandler):
 
         async def _fn(message: Any) -> HandlerEntry:
             message = self._build_tuple(message)
-            await self._build_entry(message)
+            return await self._build_entry(message)
 
-        entries = await self._get_many(topics, timeout, count)
-        entries = [await _fn(message) for message in chain(*entries.values())]
+        raw = await self._get_many(topics, timeout, count)
+        entries = [await _fn(message) for message in chain(*raw.values())]
 
         if count is not None and len(entries) != count:
             raise MinosHandlerNotEnoughEntriesFoundException(
                 f"{count} entries are expected, but {len(entries)} have been found."
             )
 
+        logger.info(f"Obtained {[v.data for v in entries]} entries...")
+
         return entries
 
-    async def _get_many(
-        self, topics: Union[str, list[str]], timeout: float = 0, count: Optional[int] = None
-    ) -> dict[str, tuple]:
+    async def _get_many(self, topics: Union[str, list[str]], timeout: float, count: Optional[int]) -> dict[str, tuple]:
         if isinstance(topics, str):
             topics = [topics]
 
