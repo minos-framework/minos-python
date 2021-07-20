@@ -7,8 +7,18 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
+from collections import (
+    namedtuple,
+)
 from shutil import (
     rmtree,
+)
+from unittest.mock import (
+    AsyncMock,
+    patch,
+)
+from uuid import (
+    UUID,
 )
 
 from minos.common import (
@@ -57,7 +67,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         async with self.manager as saga_manager:
             self.assertIsInstance(saga_manager, SagaManager)
 
-    async def test_run_ok(self):
+    async def test_run(self):
         uuid = await self.manager.run("AddOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, self.manager.storage.load(uuid).status)
 
@@ -70,13 +80,29 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             self.manager.storage.load(uuid)
 
+    async def test_run_not_asynchronous(self):
+        Message = namedtuple("Message", ["data"])
+        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
+        with patch("uuid.uuid4", return_value=expected_uuid):
+            self.handler.get_one = AsyncMock(
+                side_effect=[
+                    Message(CommandReply("AddOrderReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
+                    Message(CommandReply("AddOrderReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
+                ]
+            )
+
+            observed_uuid = await self.manager.run("AddOrder", broker=self.broker, asynchronous=False)
+            self.assertEqual(expected_uuid, observed_uuid)
+            with self.assertRaises(MinosSagaExecutionNotFoundException):
+                self.manager.storage.load(observed_uuid)
+
     async def test_run_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")
 
         uuid = await self.manager.run("AddOrder", broker=self.broker, context=context)
         self.assertEqual(context, self.manager.storage.load(uuid).context)
 
-    async def test_run_err(self):
+    async def test_run_with_error(self):
         uuid = await self.manager.run("DeleteOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, self.manager.storage.load(uuid).status)
 
