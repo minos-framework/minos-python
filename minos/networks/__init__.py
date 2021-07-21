@@ -41,6 +41,7 @@ from .handlers import (
     CommandResponseException,
     Consumer,
     DynamicHandler,
+    EnrouteDecoratorAnalyzer,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -48,6 +49,7 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
+    enroute,
 )
 from .rest import (
     HttpRequest,
