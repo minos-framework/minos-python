@@ -5,27 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
 from asyncio import (
     TimeoutError,
     wait_for,
 )
-from datetime import (
-    datetime,
-)
+from datetime import datetime
 from typing import (
     Any,
     Optional,
     Union,
 )
 
-from aiokafka import (
-    AIOKafkaConsumer,
-)
+from aiokafka import AIOKafkaConsumer
 
 from minos.common import (
     BROKER,
@@ -34,12 +28,8 @@ from minos.common import (
     Model,
 )
 
-from ...exceptions import (
-    MinosHandlerNotFoundEnoughEntriesException,
-)
-from ..entries import (
-    HandlerEntry,
-)
+from ...exceptions import MinosHandlerNotFoundEnoughEntriesException
+from ..entries import HandlerEntry
 
 logger = logging.getLogger(__name__)
 
