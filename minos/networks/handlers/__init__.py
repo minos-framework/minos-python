@@ -25,6 +25,9 @@ from .commands import (
     CommandResponse,
     CommandResponseException,
 )
+from .dynamic import (
+    DynamicHandler,
+)
 from .entries import (
     HandlerEntry,
 )

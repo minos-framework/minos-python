@@ -23,6 +23,8 @@ from .discovery import (
 from .exceptions import (
     MinosActionNotFoundException,
     MinosDiscoveryConnectorException,
+    MinosHandlerException,
+    MinosHandlerNotFoundEnoughEntriesException,
     MinosNetworkException,
 )
 from .handlers import (
@@ -38,6 +40,7 @@ from .handlers import (
     CommandResponse,
     CommandResponseException,
     Consumer,
+    DynamicHandler,
     EventConsumer,
     EventConsumerService,
     EventHandler,

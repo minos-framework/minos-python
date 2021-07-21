@@ -70,7 +70,7 @@ commands:
         retry: 1
 saga:
     broker: localhost
-    port: 8900
+    port: 9092
     storage:
         path: "./order.lmdb"
     items:
