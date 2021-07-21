@@ -52,7 +52,8 @@ class TestDynamicHandler(PostgresAsyncTestCase):
     async def test_get_one(self):
         with patch("aiokafka.AIOKafkaConsumer.getone") as mock:
             mock.side_effect = [
-                Message("foo", 0, FakeModel("test").avro_bytes), Message("foo", 0, FakeModel("test").avro_bytes)
+                Message("foo", 0, FakeModel("test").avro_bytes),
+                Message("foo", 0, FakeModel("test").avro_bytes),
             ]
             expected = (await self.handler.get_many("foo", count=1))[0]
             observed = await self.handler.get_one("foo")

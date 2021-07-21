@@ -42,6 +42,7 @@ from .handlers import (
     Consumer,
     DynamicHandler,
     DynamicReplyHandler,
+    EnrouteDecoratorAnalyzer,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -49,6 +50,7 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
+    enroute,
     ReplyHandlerPool,
 )
 from .rest import (
