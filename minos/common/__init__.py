@@ -122,6 +122,9 @@ from .networks import (
     MinosBroker,
     MinosHandler,
 )
+from .pools import (
+    MinosPool,
+)
 from .protocol import (
     MinosAvroDatabaseProtocol,
     MinosAvroMessageProtocol,
