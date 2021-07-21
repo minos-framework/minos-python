@@ -5,20 +5,30 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import logging
-from uuid import uuid4
+from uuid import (
+    uuid4,
+)
 
-from kafka import KafkaAdminClient
-from kafka.admin import NewTopic
+from kafka import (
+    KafkaAdminClient,
+)
+from kafka.admin import (
+    NewTopic,
+)
 
 from minos.common import (
     MinosConfig,
     MinosPool,
 )
 
-from .handlers import DynamicReplyHandler
+from .handlers import (
+    DynamicReplyHandler,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -50,8 +50,8 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
-    enroute,
     ReplyHandlerPool,
+    enroute,
 )
 from .rest import (
     HttpRequest,
@@ -60,4 +60,6 @@ from .rest import (
     RestBuilder,
     RestService,
 )
-from .snapshots import SnapshotService
+from .snapshots import (
+    SnapshotService,
+)

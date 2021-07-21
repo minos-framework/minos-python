@@ -39,7 +39,9 @@ from .dynamic import (
     DynamicReplyHandler,
     ReplyHandlerPool,
 )
-from .entries import HandlerEntry
+from .entries import (
+    HandlerEntry,
+)
 from .events import (
     EventConsumer,
     EventConsumerService,
