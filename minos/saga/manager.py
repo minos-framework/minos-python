@@ -11,6 +11,7 @@ from __future__ import (
 
 import logging
 from typing import (
+    Any,
     NoReturn,
     Optional,
 )
@@ -27,6 +28,7 @@ from minos.common import (
     MinosConfig,
     MinosHandler,
     MinosHandlerNotProvidedException,
+    MinosPool,
     MinosSagaManager,
     import_module,
 )
@@ -64,13 +66,13 @@ class SagaManager(MinosSagaManager):
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    handler: MinosHandler = Provide["handler"]
+    reply_pool: MinosPool[MinosHandler] = Provide["reply_pool"]
 
     def __init__(
         self,
         storage: SagaExecutionStorage,
         definitions: dict[str, Saga],
-        handler: Optional[MinosHandler] = None,
+        reply_pool: Optional[MinosPool[MinosHandler]] = None,
         *args,
         **kwargs,
     ):
@@ -78,11 +80,8 @@ class SagaManager(MinosSagaManager):
         self.storage = storage
         self.definitions = definitions
 
-        if handler is not None:
-            self.handler = handler
-
-        if self.handler is None or isinstance(self.handler, Provide):
-            raise MinosHandlerNotProvidedException("A handler instance is required.")
+        if reply_pool is not None:
+            self.reply_pool = reply_pool
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
@@ -132,22 +131,36 @@ class SagaManager(MinosSagaManager):
 
         return execution.uuid
 
-    async def _run_synchronously(self, execution: SagaExecution, **kwargs) -> NoReturn:
-        while execution.status in (SagaStatus.Created, SagaStatus.Paused):
-            try:
-                await execution.execute(**kwargs)
-            except MinosSagaPausedExecutionStepException:
+    async def _run_synchronously(
+        self, execution: SagaExecution, reply: Optional[CommandReply] = None, **kwargs
+    ) -> NoReturn:
+        if self.reply_pool is None or isinstance(self.reply_pool, Provide):
+            raise MinosHandlerNotProvidedException("A handler instance is required.")
+
+        # noinspection PyUnresolvedReferences
+        async with self.reply_pool.acquire() as handler:
+            while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                 try:
-                    entry = await self.handler.get_one(f"{execution.uuid!s}Reply", **kwargs)
-                except Exception as exc:
-                    execution.status = SagaStatus.Errored
-                    raise MinosSagaFailedExecutionException(exc)
-                kwargs["reply"] = entry.data
+                    await execution.execute(reply=reply, reply_topic=handler.topic, **kwargs)
+                except MinosSagaPausedExecutionStepException:
+                    reply = await self._get_reply(handler, execution, **kwargs)
                 self.storage.store(execution)
+
+    @staticmethod
+    async def _get_reply(handler: MinosHandler, execution: SagaExecution, **kwargs) -> CommandReply:
+        reply = None
+        while reply is None or reply.saga != execution.uuid:
+            try:
+                entry = await handler.get_one(**kwargs)
+            except Exception as exc:
+                execution.status = SagaStatus.Errored
+                raise MinosSagaFailedExecutionException(exc)
+            reply = entry.data
+        return reply
 
     async def _run_asynchronously(self, execution: SagaExecution, **kwargs) -> NoReturn:
         try:
-            await execution.execute(**kwargs)
+            await execution.execute(**kwargs, reply_topic=execution.definition_name)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
             return execution.uuid

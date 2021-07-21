@@ -52,19 +52,12 @@ class PublishExecutor(LocalExecutor):
     broker: MinosBroker = Provide["command_broker"]
 
     def __init__(
-        self,
-        *args,
-        definition_name: str,
-        execution_uuid: UUID,
-        broker: MinosBroker = None,
-        asynchronous: bool = True,
-        **kwargs,
+        self, *args, execution_uuid: UUID, reply_topic: str, broker: MinosBroker = None, **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        self.definition_name = definition_name
         self.execution_uuid = execution_uuid
-        self.asynchronous = asynchronous
+        self.reply_topic = reply_topic
 
         if broker is not None:
             self.broker = broker
@@ -95,13 +88,3 @@ class PublishExecutor(LocalExecutor):
         saga = self.execution_uuid
         reply_topic = self.reply_topic
         await self.exec_function(fn, topic=topic, data=data, saga=saga, reply_topic=reply_topic)
-
-    @property
-    def reply_topic(self) -> str:
-        """Reply topic getter.
-
-        :return: An string value.
-        """
-        if self.asynchronous:
-            return self.definition_name
-        return str(self.execution_uuid)
