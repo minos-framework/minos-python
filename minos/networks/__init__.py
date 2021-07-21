@@ -41,6 +41,7 @@ from .handlers import (
     CommandResponseException,
     Consumer,
     DynamicHandler,
+    DynamicReplyHandler,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -48,6 +49,7 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
+    ReplyHandlerPool,
 )
 from .rest import (
     HttpRequest,

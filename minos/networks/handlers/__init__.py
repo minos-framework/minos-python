@@ -27,6 +27,8 @@ from .commands import (
 )
 from .dynamic import (
     DynamicHandler,
+    DynamicReplyHandler,
+    ReplyHandlerPool,
 )
 from .entries import (
     HandlerEntry,
