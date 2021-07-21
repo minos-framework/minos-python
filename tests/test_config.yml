@@ -45,6 +45,8 @@ commands:
         port: 5432
         records: 10
         retry: 2
+queries:
+    service: minos.services.OrderQueryService
 saga:
     broker: localhost
     port: 8900

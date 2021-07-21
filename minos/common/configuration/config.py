@@ -36,6 +36,7 @@ STORAGE = collections.namedtuple("Storage", "path")
 
 EVENTS = collections.namedtuple("Events", "broker service queue")
 COMMANDS = collections.namedtuple("Commands", "broker service queue")
+QUERIES = collections.namedtuple("Queries", "service")
 SAGA = collections.namedtuple("Saga", "items queue storage broker")
 REST = collections.namedtuple("Rest", "broker endpoints")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
@@ -272,6 +273,14 @@ class MinosConfig(MinosConfigAbstract):
         queue = self._commands_queue
         service = self._get("commands.service")
         return COMMANDS(broker=broker, service=service, queue=queue)
+
+    @property
+    def queries(self) -> QUERIES:
+        """Get the queries config.
+
+        :return: A ``QUERIES`` NamedTuple instance.
+        """
+        return QUERIES(service=self._get("queries.service"))
 
     @property
     def saga(self) -> SAGA:
