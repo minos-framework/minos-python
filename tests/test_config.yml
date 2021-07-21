@@ -24,16 +24,7 @@ snapshot:
 events:
     broker: localhost
     port: 9092
-    items:
-        - name: TicketAdded
-          controller: minos.services.CQRSService
-          action: ticket_added
-        - name: TicketDeleted
-          controller: minos.services.CQRSService
-          action: ticket_deleted
-        - name: OrderAdded
-          controller: minos.services.CQRSService
-          action: order_added
+    service: minos.services.CQRSService
     queue:
         database: order_db
         user: minos
@@ -45,19 +36,7 @@ events:
 commands:
     broker: localhost
     port: 9092
-    items:
-        - name: AddOrder
-          controller: minos.services.OrderService
-          action: add_order
-        - name: DeleteOrder
-          controller: minos.services.OrderService
-          action: delete_order
-        - name: UpdateOrder
-          controller: minos.services.OrderService
-          action: update_order
-        - name: GetOrder
-          controller: minos.service.OrderService
-          action: get_order
+    service: minos.services.OrderService
     queue:
         database: order_db
         user: minos
@@ -66,6 +45,8 @@ commands:
         port: 5432
         records: 10
         retry: 2
+queries:
+    service: minos.services.OrderQueryService
 saga:
     broker: localhost
     port: 8900

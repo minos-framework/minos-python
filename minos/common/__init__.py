@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 from .configuration import (
     BROKER,
@@ -121,6 +121,9 @@ from .model import (
 from .networks import (
     MinosBroker,
     MinosHandler,
+)
+from .pools import (
+    MinosPool,
 )
 from .protocol import (
     MinosAvroDatabaseProtocol,

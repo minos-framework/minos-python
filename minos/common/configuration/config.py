@@ -34,8 +34,9 @@ SERVICE = collections.namedtuple("Service", "name injections services")
 CONTROLLER = collections.namedtuple("Controller", "name controller action")
 STORAGE = collections.namedtuple("Storage", "path")
 
-EVENTS = collections.namedtuple("Events", "broker items queue")
-COMMANDS = collections.namedtuple("Commands", "broker items queue")
+EVENTS = collections.namedtuple("Events", "broker service queue")
+COMMANDS = collections.namedtuple("Commands", "broker service queue")
+QUERIES = collections.namedtuple("Queries", "service")
 SAGA = collections.namedtuple("Saga", "items queue storage broker")
 REST = collections.namedtuple("Rest", "broker endpoints")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
@@ -50,8 +51,10 @@ _ENVIRONMENT_MAPPER = {
     "commands.queue.database": "MINOS_COMMANDS_QUEUE_DATABASE",
     "commands.queue.user": "MINOS_COMMANDS_QUEUE_USER",
     "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
+    "commands.service": "MINOS_COMMANDS_SERVICE",
     "commands.broker": "MINOS_COMMANDS_BROKER",
     "commands.port": "MINOS_COMMANDS_PORT",
+    "queries.service": "MINOS_QUERIES_SERVICE",
     "saga.broker": "MINOS_SAGA_BROKER",
     "saga.port": "MINOS_SAGA_PORT",
     "saga.queue.host": "MINOS_SAGA_QUEUE_HOST",
@@ -64,6 +67,7 @@ _ENVIRONMENT_MAPPER = {
     "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
     "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
     "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
+    "events.service": "MINOS_EVENTS_SERVICE",
     "events.broker": "MINOS_EVENTS_BROKER",
     "events.port": "MINOS_EVENTS_PORT",
     "repository.host": "MINOS_REPOSITORY_HOST",
@@ -92,8 +96,10 @@ _PARAMETERIZED_MAPPER = {
     "commands.queue.database": "commands_queue_database",
     "commands.queue.user": "commands_queue_user",
     "commands.queue.password": "commands_queue_password",
+    "commands.service": "commands_service",
     "commands.broker": "commands_broker",
     "commands.port": "commands_port",
+    "queries.service": "queries_service",
     "saga.broker": "saga_broker",
     "saga.port": "saga_port",
     "saga.queue.host": "saga_queue_host",
@@ -106,6 +112,7 @@ _PARAMETERIZED_MAPPER = {
     "events.queue.database": "events_queue_database",
     "events.queue.user": "events_queue_user",
     "events.queue.password": "events_queue_password",
+    "events.service": "events_service",
     "events.broker": "events_broker",
     "events.port": "events_port",
     "repository.host": "repository_host",
@@ -259,8 +266,8 @@ class MinosConfig(MinosConfigAbstract):
         """
         broker = self._events_broker
         queue = self._events_queue
-        events = self._events_items
-        return EVENTS(broker=broker, items=events, queue=queue)
+        service = self._get("events.service")
+        return EVENTS(broker=broker, service=service, queue=queue)
 
     @property
     def _events_broker(self) -> BROKER:
@@ -279,16 +286,6 @@ class MinosConfig(MinosConfigAbstract):
         )
 
     @property
-    def _events_items(self) -> list[CONTROLLER]:
-        info = self._get("events.items")
-        events = [self._events_items_entry(event) for event in info]
-        return events
-
-    @staticmethod
-    def _events_items_entry(event: dict[str, Any]) -> CONTROLLER:
-        return CONTROLLER(name=event["name"], controller=event["controller"], action=event["action"])
-
-    @property
     def commands(self) -> COMMANDS:
         """Get the commands config.
 
@@ -296,8 +293,16 @@ class MinosConfig(MinosConfigAbstract):
         """
         broker = self._commands_broker
         queue = self._commands_queue
-        commands = self._commands_items
-        return COMMANDS(broker=broker, items=commands, queue=queue)
+        service = self._get("commands.service")
+        return COMMANDS(broker=broker, service=service, queue=queue)
+
+    @property
+    def queries(self) -> QUERIES:
+        """Get the queries config.
+
+        :return: A ``QUERIES`` NamedTuple instance.
+        """
+        return QUERIES(service=self._get("queries.service"))
 
     @property
     def saga(self) -> SAGA:
@@ -328,16 +333,6 @@ class MinosConfig(MinosConfigAbstract):
             retry=int(self._get("commands.queue.retry")),
         )
         return queue
-
-    @property
-    def _commands_items(self) -> list[CONTROLLER]:
-        info = self._get("commands.items")
-        commands = [self._commands_items_entry(command) for command in info]
-        return commands
-
-    @staticmethod
-    def _commands_items_entry(command: dict[str, Any]) -> CONTROLLER:
-        return CONTROLLER(name=command["name"], controller=command["controller"], action=command["action"])
 
     @property
     def _saga_storage(self) -> STORAGE:

@@ -42,6 +42,21 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual("bar", broker.host)
         self.assertEqual(333, broker.port)
 
+    def test_queries_service(self):
+        config = MinosConfig(path=self.config_file_path, queries_service="test")
+        query = config.queries
+        self.assertEqual("test", query.service)
+
+    def test_commands_service(self):
+        config = MinosConfig(path=self.config_file_path, commands_service="test")
+        commands = config.commands
+        self.assertEqual("test", commands.service)
+
+    def test_events_service(self):
+        config = MinosConfig(path=self.config_file_path, events_service="test")
+        events = config.events
+        self.assertEqual("test", events.service)
+
     def test_config_discovery(self):
         config = MinosConfig(
             path=self.config_file_path,

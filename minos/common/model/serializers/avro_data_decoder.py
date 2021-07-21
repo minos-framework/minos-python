@@ -220,20 +220,19 @@ class AvroDataDecoder:
                 pass
         raise MinosTypeAttributeException(self._name, UUID, data)
 
+    def _cast_model(self, type_field: Type, data: Any) -> Any:
+        # noinspection PyUnresolvedReferences
+        return self._cast_model_type(type_field.model_type, data)
+
     def _cast_model_type(self, type_field: ModelType, data: Any) -> Any:
         if isinstance(data, dict):
-            data = {k: self._cast_value(v, data[k]) for k, v in type_field.type_hints.items()}
+            data = {k: self._cast_value(v, data.get(k, None)) for k, v in type_field.type_hints.items()}
             return type_field(**data)
 
         if hasattr(data, "model_type") and type_field == data.model_type:
             return data
 
         raise MinosTypeAttributeException(self._name, type_field, data)
-
-    def _cast_model(self, type_field: Type, data: Any) -> Any:
-        if not isinstance(data, type_field):
-            raise MinosTypeAttributeException(self._name, type_field, data)
-        return data
 
     def _cast_composed_value(self, type_field: Type, data: Any) -> Any:
         origin_type = get_origin(type_field)
