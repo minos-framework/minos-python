@@ -18,5 +18,13 @@ class MinosDiscoveryConnectorException(MinosNetworkException):
     """Exception to be raised when there is a failure while communicating with the discovery."""
 
 
-class MinosActionNotFoundException(MinosNetworkException):
+class MinosHandlerException(MinosNetworkException):
+    """Base handler exception."""
+
+
+class MinosActionNotFoundException(MinosHandlerException):
     """Exception to be raised when an action cannot be found,"""
+
+
+class MinosHandlerNotFoundEnoughEntriesException(MinosHandlerException):
+    """Exception to be raised when not enough entries have been found by a handler."""

@@ -34,6 +34,9 @@ from .decorators import (
     RestQueryEnroute,
     enroute,
 )
+from .dynamic import (
+    DynamicHandler,
+)
 from .entries import (
     HandlerEntry,
 )
