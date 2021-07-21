@@ -51,7 +51,9 @@ class TestDynamicHandler(PostgresAsyncTestCase):
 
     async def test_get_one(self):
         with patch("aiokafka.AIOKafkaConsumer.getone") as mock:
-            mock.side_effect = [Message("foo", 0, FakeModel("test").avro_bytes)]
+            mock.side_effect = [
+                Message("foo", 0, FakeModel("test").avro_bytes), Message("foo", 0, FakeModel("test").avro_bytes)
+            ]
             expected = (await self.handler.get_many("foo", count=1))[0]
             observed = await self.handler.get_one("foo")
             self._assert_equal_entries(expected, observed)
@@ -70,7 +72,7 @@ class TestDynamicHandler(PostgresAsyncTestCase):
                 Message("bar", 0, FakeModel("test3").avro_bytes),
                 Message("bar", 0, FakeModel("test4").avro_bytes),
             ]
-            observed = await self.handler.get_many("foo")
+            observed = await self.handler.get_many("foo", count=4)
 
         self.assertEqual(len(expected), len(observed))
         for e, o in zip(expected, observed):
