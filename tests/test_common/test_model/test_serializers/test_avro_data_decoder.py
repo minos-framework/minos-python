@@ -268,6 +268,12 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         observed = decoder.build(value)
         self.assertEqual(value, observed)
 
+    def test_model_from_dict(self):
+        decoder = AvroDataDecoder("test", User)
+        value = User(1234)
+        observed = decoder.build({"id": 1234})
+        self.assertEqual(value, observed)
+
     async def test_model_ref_value(self):
         decoder = AvroDataDecoder("test", ModelRef[Owner])
         async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
