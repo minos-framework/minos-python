@@ -5,7 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
+import asyncio
 import unittest
 from datetime import (
     datetime,
@@ -50,8 +50,8 @@ class TestDynamicHandler(PostgresAsyncTestCase):
         self.assertEqual(self.config.commands.broker.port, self.handler.broker_port)
 
     async def test_get_one(self):
-        with patch("aiokafka.AIOKafkaConsumer.getmany") as mock:
-            mock.return_value = {"foo": [Message("foo", 0, FakeModel("test").avro_bytes)]}
+        with patch("aiokafka.AIOKafkaConsumer.getone") as mock:
+            mock.side_effect = [Message("foo", 0, FakeModel("test").avro_bytes)]
             expected = (await self.handler.get_many("foo", count=1))[0]
             observed = await self.handler.get_one("foo")
             self._assert_equal_entries(expected, observed)
@@ -63,17 +63,13 @@ class TestDynamicHandler(PostgresAsyncTestCase):
             HandlerEntry(0, "bar", None, 0, FakeModel("test3"), 0, datetime.now()),
             HandlerEntry(0, "bar", None, 0, FakeModel("test4"), 0, datetime.now()),
         ]
-        with patch("aiokafka.AIOKafkaConsumer.getmany") as mock:
-            mock.return_value = {
-                "foo": [
-                    Message("foo", 0, FakeModel("test1").avro_bytes),
-                    Message("foo", 0, FakeModel("test2").avro_bytes),
-                ],
-                "bar": [
-                    Message("bar", 0, FakeModel("test3").avro_bytes),
-                    Message("bar", 0, FakeModel("test4").avro_bytes),
-                ],
-            }
+        with patch("aiokafka.AIOKafkaConsumer.getone") as mock:
+            mock.side_effect = [
+                Message("foo", 0, FakeModel("test1").avro_bytes),
+                Message("foo", 0, FakeModel("test2").avro_bytes),
+                Message("bar", 0, FakeModel("test3").avro_bytes),
+                Message("bar", 0, FakeModel("test4").avro_bytes),
+            ]
             observed = await self.handler.get_many("foo")
 
         self.assertEqual(len(expected), len(observed))
@@ -81,11 +77,8 @@ class TestDynamicHandler(PostgresAsyncTestCase):
             self._assert_equal_entries(e, o)
 
     async def test_get_many_raises(self):
-        with patch("aiokafka.AIOKafkaConsumer.getmany") as mock:
-            mock.return_value = {
-                "foo": [Message("foo", 0, FakeModel("test1").avro_bytes)],
-                "bar": [Message("bar", 0, FakeModel("test4").avro_bytes)],
-            }
+        with patch("aiokafka.AIOKafkaConsumer.getone") as mock:
+            mock.side_effect = asyncio.TimeoutError()
             with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
                 await self.handler.get_many("foo", count=3)
 
