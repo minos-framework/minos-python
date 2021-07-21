@@ -10,11 +10,12 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    TimeoutError,
+    wait_for,
+)
 from datetime import (
     datetime,
-)
-from itertools import (
-    chain,
 )
 from typing import (
     Any,
@@ -82,7 +83,7 @@ class DynamicHandler(MinosHandler):
         return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
 
     async def get_many(
-        self, topics: Union[str, list[str]], timeout: float = 1, count: Optional[int] = None, **kwargs,
+        self, topics: Union[str, list[str]], timeout: float = 60, count: Optional[int] = None, **kwargs,
     ) -> list[HandlerEntry]:
         """Get multiple handler entries from the given topics.
 
@@ -96,29 +97,34 @@ class DynamicHandler(MinosHandler):
             message = self._build_tuple(message)
             return await self._build_entry(message)
 
-        raw = await self._get_many(topics, timeout, count)
-        entries = [await _fn(message) for message in chain(*raw.values())]
-
-        if count is not None and len(entries) != count:
+        try:
+            raw = await wait_for(self._get_many(topics, count), timeout=timeout)
+        except TimeoutError:
             raise MinosHandlerNotFoundEnoughEntriesException(
-                f"{topics!r} expect {count!r} entries, but {len(entries)!r} have been found."
+                f"Timeout exceeded while trying to fetch {count!r} entries from {topics!r}."
             )
+
+        entries = [await _fn(message) for message in raw]
 
         logger.info(f"Obtained {[v.data for v in entries]} entries...")
 
         return entries
 
-    async def _get_many(self, topics: Union[str, list[str]], timeout: float, count: Optional[int]) -> dict[str, tuple]:
+    async def _get_many(self, topics: Union[str, list[str]], count: Optional[int]) -> list[Any]:
         if isinstance(topics, str):
             topics = [topics]
 
         consumer = AIOKafkaConsumer(*topics, bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
 
+        raw = list()
         try:
             await consumer.start()
-            return await consumer.getmany(timeout_ms=int(timeout * 1000), max_records=count)
+            while len(raw) < count:
+                raw.append(await consumer.getone())
         finally:
             await consumer.stop()
+
+        return raw
 
     @staticmethod
     def _build_tuple(record: Any) -> tuple[int, str, int, bytes, int, datetime]:
