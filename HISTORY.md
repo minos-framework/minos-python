@@ -121,3 +121,9 @@ History
 --------------------
 
 * Bugfixes
+
+0.1.6 (2021-07-21)
+--------------------
+
+* Bugfixes
+* Added Pool for Kafka
