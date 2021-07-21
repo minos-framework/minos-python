@@ -23,6 +23,7 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosBroker,
+    MinosBrokerNotProvidedException,
 )
 
 from ... import (
@@ -50,13 +51,26 @@ class PublishExecutor(LocalExecutor):
 
     broker: MinosBroker = Provide["command_broker"]
 
-    def __init__(self, *args, definition_name: str, execution_uuid: UUID, broker: MinosBroker = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        definition_name: str,
+        execution_uuid: UUID,
+        broker: MinosBroker = None,
+        asynchronous: bool = True,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
-        if broker is not None:
-            self.broker = broker
 
         self.definition_name = definition_name
         self.execution_uuid = execution_uuid
+        self.asynchronous = asynchronous
+
+        if broker is not None:
+            self.broker = broker
+
+        if self.broker is None or isinstance(self.broker, Provide):
+            raise MinosBrokerNotProvidedException("A broker instance is required.")
 
     async def exec(self, operation: SagaOperation, context: SagaContext) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
@@ -76,7 +90,18 @@ class PublishExecutor(LocalExecutor):
         return context
 
     async def _publish(self, operation: SagaOperation, data: Any) -> NoReturn:
+        fn = self.broker.send
         topic = operation.name
         saga = self.execution_uuid
-        reply_topic = self.definition_name
-        await self.exec_function(self.broker.send, topic=topic, data=data, saga=saga, reply_topic=reply_topic)
+        reply_topic = self.reply_topic
+        await self.exec_function(fn, topic=topic, data=data, saga=saga, reply_topic=reply_topic)
+
+    @property
+    def reply_topic(self) -> str:
+        """Reply topic getter.
+
+        :return: An string value.
+        """
+        if self.asynchronous:
+            return self.definition_name
+        return str(self.execution_uuid)

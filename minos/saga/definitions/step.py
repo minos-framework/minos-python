@@ -85,7 +85,7 @@ class SagaStep(object):
 
         :param name: The name of the new participant instruction.
         :param callback: The callback function used for the request contents preparation.
-        :param parameters: TODO
+        :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
         if self.invoke_participant_operation is not None:
@@ -102,7 +102,7 @@ class SagaStep(object):
 
         :param name: The name of the with compensation instruction.
         :param callback: The callback function used for the request contents preparation.
-        :param parameters: TODO
+        :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
         if self.with_compensation_operation is not None:
@@ -119,7 +119,7 @@ class SagaStep(object):
 
         :param name: The name of the variable in which the reply will be stored on the context.
         :param callback: The callback function used to handle the invoke participant response.
-        :param parameters: TODO
+        :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
         if self.on_reply_operation is not None:

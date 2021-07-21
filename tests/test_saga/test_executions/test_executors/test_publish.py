@@ -14,6 +14,9 @@ from uuid import (
     uuid4,
 )
 
+from minos.common import (
+    MinosBrokerNotProvidedException,
+)
 from minos.saga import (
     LocalExecutor,
     MinosSagaFailedExecutionStepException,
@@ -39,6 +42,20 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("AddFoo", self.executor.definition_name)
         self.assertEqual(self.uuid, self.executor.execution_uuid)
         self.assertEqual(self.broker, self.executor.broker)
+        self.assertTrue(self.executor.asynchronous)
+
+    def test_constructor_without_broker(self):
+        with self.assertRaises(MinosBrokerNotProvidedException):
+            PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid)
+
+    def test_reply_topic(self):
+        self.assertEqual(self.executor.definition_name, self.executor.reply_topic)
+
+    def test_reply_topic_synchronous(self):
+        executor = PublishExecutor(
+            definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker, asynchronous=False
+        )
+        self.assertEqual(str(self.executor.execution_uuid), executor.reply_topic)
 
     async def test_exec(self):
         operation = SagaOperation(foo_fn, "AddBar")
@@ -49,7 +66,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         await self.executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
-        args = call(data=Foo("hello"), topic="AddBar", saga=self.uuid, reply_topic="AddFoo")
+        args = call(data=Foo("hello"), topic="AddBar", saga=self.uuid, reply_topic=self.executor.reply_topic)
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_raises(self):

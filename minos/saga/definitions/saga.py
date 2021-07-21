@@ -123,7 +123,7 @@ class Saga(object):
         """Commit the instance to be ready for execution.
 
         :param callback: Optional function to be called at the end of execution.
-        :param parameters: TODO
+        :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``Saga`` instance.
         """
         if self.committed:
