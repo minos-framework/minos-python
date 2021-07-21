@@ -24,16 +24,7 @@ snapshot:
 events:
     broker: localhost
     port: 9092
-    items:
-        - name: TicketAdded
-          controller: minos.services.CQRSService
-          action: ticket_added
-        - name: TicketDeleted
-          controller: minos.services.CQRSService
-          action: ticket_deleted
-        - name: OrderAdded
-          controller: minos.services.CQRSService
-          action: order_added
+    service: minos.services.CQRSService
     queue:
         database: order_db
         user: minos

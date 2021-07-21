@@ -58,6 +58,10 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", broker.host)
         self.assertEqual(9092, broker.port)
 
+    def test_config_events_service(self):
+        events = self.config.events
+        self.assertEqual("minos.services.CQRSService", events.service)
+
     def test_config_events_queue_database(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         events = config.events
@@ -69,6 +73,10 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(5432, queue.port)
         self.assertEqual(10, queue.records)
         self.assertEqual(2, queue.retry)
+
+    def test_config_commands_service(self):
+        commands = self.config.commands
+        self.assertEqual("minos.services.OrderService", commands.service)
 
     def test_config_commands_queue_database(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
