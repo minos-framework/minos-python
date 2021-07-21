@@ -5,18 +5,14 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
 from asyncio import (
     TimeoutError,
     wait_for,
 )
-from datetime import (
-    datetime,
-)
+from datetime import datetime
 from typing import (
     Any,
     NoReturn,
@@ -24,9 +20,7 @@ from typing import (
     Union,
 )
 
-from aiokafka import (
-    AIOKafkaConsumer,
-)
+from aiokafka import AIOKafkaConsumer
 
 from minos.common import (
     BROKER,
@@ -35,12 +29,8 @@ from minos.common import (
     Model,
 )
 
-from ...exceptions import (
-    MinosHandlerNotFoundEnoughEntriesException,
-)
-from ..entries import (
-    HandlerEntry,
-)
+from ...exceptions import MinosHandlerNotFoundEnoughEntriesException
+from ..entries import HandlerEntry
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +146,7 @@ class DynamicReplyHandler(MinosHandler):
 
         self.topic = topic
 
-        topic = (topic if topic.endswith("Reply") else f"{topic}Reply")
+        topic = topic if topic.endswith("Reply") else f"{topic}Reply"
         self.consumer = AIOKafkaConsumer(topic, bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
 
     @property
