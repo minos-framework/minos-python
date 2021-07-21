@@ -46,6 +46,11 @@ DISCOVERY_ENDPOINTS = collections.namedtuple("DiscoveryEndpoints", "subscribe un
 DISCOVERY = collections.namedtuple("Discovery", "host port endpoints")
 
 _ENVIRONMENT_MAPPER = {
+    "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
+    "commands.queue.port": "MINOS_COMMANDS_QUEUE_PORT",
+    "commands.queue.database": "MINOS_COMMANDS_QUEUE_DATABASE",
+    "commands.queue.user": "MINOS_COMMANDS_QUEUE_USER",
+    "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
     "commands.service": "MINOS_COMMANDS_QUEUE_PASSWORD",
     "commands.broker": "MINOS_COMMANDS_BROKER",
     "commands.port": "MINOS_COMMANDS_PORT",
@@ -56,6 +61,11 @@ _ENVIRONMENT_MAPPER = {
     "saga.queue.database": "MINOS_SAGA_QUEUE_DATABASE",
     "saga.queue.user": "MINOS_SAGA_QUEUE_USER",
     "saga.queue.password": "MINOS_SAGA_QUEUE_PASSWORD",
+    "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
+    "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
+    "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
+    "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
+    "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
     "events.service": "MINOS_EVENTS_QUEUE_PASSWORD",
     "events.broker": "MINOS_EVENTS_BROKER",
     "events.port": "MINOS_EVENTS_PORT",
@@ -80,6 +90,11 @@ _ENVIRONMENT_MAPPER = {
 }
 
 _PARAMETERIZED_MAPPER = {
+    "commands.queue.host": "commands_queue_host",
+    "commands.queue.port": "commands_queue_port",
+    "commands.queue.database": "commands_queue_database",
+    "commands.queue.user": "commands_queue_user",
+    "commands.queue.password": "commands_queue_password",
     "commands.service": "commands_queue_password",
     "commands.broker": "commands_broker",
     "commands.port": "commands_port",
@@ -90,6 +105,11 @@ _PARAMETERIZED_MAPPER = {
     "saga.queue.database": "saga_queue_database",
     "saga.queue.user": "saga_queue_user",
     "saga.queue.password": "saga_queue_password",
+    "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
+    "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
+    "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
+    "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
+    "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
     "events.service": "events_queue_password",
     "events.broker": "events_broker",
     "events.port": "events_port",
