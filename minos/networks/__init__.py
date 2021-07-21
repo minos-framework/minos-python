@@ -50,8 +50,8 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
-    enroute,
     ReplyHandlerPool,
+    enroute,
 )
 from .rest import (
     HttpRequest,
