@@ -83,7 +83,7 @@ class DynamicHandler(MinosHandler):
         return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
 
     async def get_many(
-        self, topics: Union[str, list[str]], count: int, timeout: float = 60, **kwargs,
+        self, topics: Union[str, list[str]], count: int, timeout: float = 3, **kwargs,
     ) -> list[HandlerEntry]:
         """Get multiple handler entries from the given topics.
 
