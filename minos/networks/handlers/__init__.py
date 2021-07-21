@@ -25,8 +25,12 @@ from .commands import (
     CommandResponse,
     CommandResponseException,
 )
-from .dynamic import DynamicHandler
-from .entries import HandlerEntry
+from .dynamic import (
+    DynamicHandler,
+)
+from .entries import (
+    HandlerEntry,
+)
 from .events import (
     EventConsumer,
     EventConsumerService,

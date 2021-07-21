@@ -11,10 +11,16 @@ from datetime import (
     datetime,
     timedelta,
 )
-from unittest.mock import patch
+from unittest.mock import (
+    patch,
+)
 
-from minos.common import MinosHandler
-from minos.common.testing import PostgresAsyncTestCase
+from minos.common import (
+    MinosHandler,
+)
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     DynamicHandler,
     HandlerEntry,
