@@ -145,7 +145,7 @@ class EnrouteDecoratorAnalyzer:
 
     def rest(self) -> dict[Callable, list[Type[BaseDecorator]]]:
         """Returns rest values."""
-        return self._get_items([RestQueryEnroute])
+        return self._get_items([RestCommandEnroute, RestQueryEnroute])
 
     def command(self) -> dict[Callable, list[Type[BaseDecorator]]]:
         """Returns command values."""
@@ -153,4 +153,4 @@ class EnrouteDecoratorAnalyzer:
 
     def event(self) -> dict[Callable, list[Type[BaseDecorator]]]:
         """Returns event values."""
-        return self._get_items([BrokerEventEnroute, RestCommandEnroute])
+        return self._get_items([BrokerEventEnroute])
