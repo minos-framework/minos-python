@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-
+import importlib
 from minos.networks import (
     EnrouteDecoratorAnalyzer,
     enroute,
@@ -204,6 +204,18 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, len(result[next(res_iter)]))
         self.assertEqual(2, len(result[next(res_iter)]))
 
+    async def test_external_class(self):
+        p, m = 'tests.services.DecoratedService.DecoratedService'.rsplit('.', 1)
+        mod = importlib.import_module(p)
+        met = getattr(mod, m)
+
+        e = EnrouteDecoratorAnalyzer(met)
+        result = e.event()
+
+        res_iter = iter(result)
+
+        self.assertEqual(1, len(result[next(res_iter)]))
+        self.assertEqual(1, len(result[next(res_iter)]))
 
 if __name__ == "__main__":
     unittest.main()

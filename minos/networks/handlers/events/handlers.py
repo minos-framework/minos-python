@@ -7,7 +7,7 @@
 from __future__ import (
     annotations,
 )
-
+from importlib import import_module
 import logging
 from inspect import (
     isawaitable,
@@ -42,7 +42,11 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        decorators = EnrouteDecoratorAnalyzer(config.events.service).event()
+        p, m = config.commands.service.rsplit('.', 1)
+        mod = import_module(p)
+        met = getattr(mod, m)
+
+        decorators = EnrouteDecoratorAnalyzer(met).event()
 
         handlers = {}
         for key, value in decorators.items():

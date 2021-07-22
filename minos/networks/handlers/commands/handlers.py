@@ -7,7 +7,7 @@
 from __future__ import (
     annotations,
 )
-
+from importlib import import_module
 import logging
 from inspect import (
     isawaitable,
@@ -68,7 +68,11 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        decorators = EnrouteDecoratorAnalyzer(config.commands.service).event()
+        p, m = config.commands.service.rsplit('.', 1)
+        mod = import_module(p)
+        met = getattr(mod, m)
+
+        decorators = EnrouteDecoratorAnalyzer(met).command()
 
         handlers = {}
         for key, value in decorators.items():
