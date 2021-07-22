@@ -40,9 +40,7 @@ SAGA = collections.namedtuple("Saga", "items queue storage broker")
 REST = collections.namedtuple("Rest", "broker")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
-DISCOVERY_ENDPOINT = collections.namedtuple("DiscoveryEndpoint", "path method")
-DISCOVERY_ENDPOINTS = collections.namedtuple("DiscoveryEndpoints", "subscribe unsubscribe discover")
-DISCOVERY = collections.namedtuple("Discovery", "host port endpoints")
+DISCOVERY = collections.namedtuple("Discovery", "host port")
 
 _ENVIRONMENT_MAPPER = {
     "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
@@ -81,12 +79,6 @@ _ENVIRONMENT_MAPPER = {
     "snapshot.password": "MINOS_SNAPSHOT_PASSWORD",
     "discovery.host": "MINOS_DISCOVERY_HOST",
     "discovery.port": "MINOS_DISCOVERY_PORT",
-    "discovery.endpoints.subscribe.path": "MINOS_DISCOVERY_ENDPOINTS_SUBSCRIBE_PATH",
-    "discovery.endpoints.subscribe.method": "MINOS_DISCOVERY_ENDPOINTS_SUBSCRIBE_METHOD",
-    "discovery.endpoints.unsubscribe.path": "MINOS_DISCOVERY_ENDPOINTS_UNSUBSCRIBE_PATH",
-    "discovery.endpoints.unsubscribe.method": "MINOS_DISCOVERY_ENDPOINTS_UNSUBSCRIBE_METHOD",
-    "discovery.endpoints.discover.path": "MINOS_DISCOVERY_ENDPOINTS_DISCOVER_PATH",
-    "discovery.endpoints.discover.method": "MINOS_DISCOVERY_ENDPOINTS_DISCOVER_METHOD",
 }
 
 _PARAMETERIZED_MAPPER = {
@@ -126,12 +118,6 @@ _PARAMETERIZED_MAPPER = {
     "snapshot.password": "snapshot_password",
     "discovery.host": "minos_discovery_host",
     "discovery.port": "minos_discovery_port",
-    "discovery.endpoints.subscribe.path": "minos_discovery_endpoints_subscribe_path",
-    "discovery.endpoints.subscribe.method": "minos_discovery_endpoints_subscribe_method",
-    "discovery.endpoints.unsubscribe.path": "minos_discovery_endpoints_unsubscribe_path",
-    "discovery.endpoints.unsubscribe.method": "minos_discovery_endpoints_unsubscribe_method",
-    "discovery.endpoints.discover.path": "minos_discovery_endpoints_discover_path",
-    "discovery.endpoints.discover.method": "minos_discovery_endpoints_discover_method",
 }
 
 
@@ -387,37 +373,4 @@ class MinosConfig(MinosConfigAbstract):
         """
         host = self._get("discovery.host")
         port = self._get("discovery.port")
-        endpoints = self._discovery_endpoints
-        return DISCOVERY(host=host, port=port, endpoints=endpoints)
-
-    @property
-    def _discovery_endpoints(self) -> DISCOVERY_ENDPOINTS:
-        subscribe = self._discovery_subscribe
-        unsubscribe = self._discovery_unsubscribe
-        discover = self._discovery_discover
-
-        return DISCOVERY_ENDPOINTS(subscribe=subscribe, unsubscribe=unsubscribe, discover=discover)
-
-    @property
-    def _discovery_subscribe(self) -> DISCOVERY_ENDPOINT:
-        endpoint = DISCOVERY_ENDPOINT(
-            path=self._get("discovery.endpoints.subscribe.path"),
-            method=self._get("discovery.endpoints.subscribe.method"),
-        )
-        return endpoint
-
-    @property
-    def _discovery_unsubscribe(self) -> DISCOVERY_ENDPOINT:
-        endpoint = DISCOVERY_ENDPOINT(
-            path=self._get("discovery.endpoints.unsubscribe.path"),
-            method=self._get("discovery.endpoints.unsubscribe.method"),
-        )
-        return endpoint
-
-    @property
-    def _discovery_discover(self) -> DISCOVERY_ENDPOINT:
-        endpoint = DISCOVERY_ENDPOINT(
-            path=self._get("discovery.endpoints.discover.path"),
-            method=self._get("discovery.endpoints.discover.method"),
-        )
-        return endpoint
+        return DISCOVERY(host=host, port=port)

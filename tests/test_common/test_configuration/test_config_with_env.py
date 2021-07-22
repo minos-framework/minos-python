@@ -64,26 +64,7 @@ class TestMinosConfigWithEnvironment(unittest.TestCase):
 
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_HOST": "some-host"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_PORT": "333"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_SUBSCRIBE_PATH": "subscribe-test"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_SUBSCRIBE_METHOD": "TEST-METHOD"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_UNSUBSCRIBE_PATH": "unsubscribe-test"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_UNSUBSCRIBE_METHOD": "TEST-METHOD"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_DISCOVER_PATH": "discover-test"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_DISCOVER_METHOD": "TEST-METHOD"})
     def test_config_discovery(self):
         discovery = self.config.discovery
         self.assertEqual("some-host", discovery.host)
         self.assertEqual("333", discovery.port)
-
-        endpoints = discovery.endpoints
-        subscribe = endpoints.subscribe
-        self.assertEqual("subscribe-test", subscribe.path)
-        self.assertEqual("TEST-METHOD", subscribe.method)
-
-        unsubscribe = endpoints.unsubscribe
-        self.assertEqual("unsubscribe-test", unsubscribe.path)
-        self.assertEqual("TEST-METHOD", unsubscribe.method)
-
-        discover = endpoints.discover
-        self.assertEqual("discover-test", discover.path)
-        self.assertEqual("TEST-METHOD", discover.method)

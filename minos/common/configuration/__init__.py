@@ -10,6 +10,7 @@ from .config import (
     BROKER,
     COMMANDS,
     CONTROLLER,
+    DISCOVERY,
     EVENTS,
     QUEUE,
     REPOSITORY,

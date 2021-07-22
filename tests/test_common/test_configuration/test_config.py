@@ -130,21 +130,8 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_discovery(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         discovery = config.discovery
-        self.assertEqual("discovery-service", discovery.host)
+        self.assertEqual("localhost", discovery.host)
         self.assertEqual(8080, discovery.port)
-
-        endpoints = discovery.endpoints
-        subscribe = endpoints.subscribe
-        self.assertEqual("subscribe", subscribe.path)
-        self.assertEqual("POST", subscribe.method)
-
-        unsubscribe = endpoints.unsubscribe
-        self.assertEqual("unsubscribe?name=", unsubscribe.path)
-        self.assertEqual("POST", unsubscribe.method)
-
-        discover = endpoints.discover
-        self.assertEqual("discover?name=", discover.path)
-        self.assertEqual("GET", discover.method)
 
 
 if __name__ == "__main__":
