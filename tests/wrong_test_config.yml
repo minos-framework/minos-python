@@ -27,13 +27,7 @@ events:
     database:
         path: ./tests/local_db.lmdb
         name: database_events_test
-    items:
-        - name: TicketAdded
-          controller: tests.services.CqrsTestService.CqrsService
-          action: ticket_added
-        - name: TicketDeleted
-          controller: tests.services.CqrsTestService.CqrsService
-          action: ticket_deleted
+    service: tests.services.CqrsTestService.CqrsService
     queue:
         database: order_db
         user: minos
@@ -45,19 +39,7 @@ events:
 commands:
     broker: localhost
     port: 4092
-    items:
-        - name: AddOrder
-          controller: minos.services.OrderService
-          action: add_order
-        - name: DeleteOrder
-          controller: minos.services.OrderService
-          action: delete_order
-        - name: UpdateOrder
-          controller: minos.services.OrderService
-          action: update_order
-        - name: GetOrder
-          controller: minos.service.OrderService
-          action: get_order
+    service: tests.services.CommandTestService.CommandService
     queue:
         database: order_db
         user: minos
@@ -66,3 +48,5 @@ commands:
         port: 5432
         records: 10
         retry: 2
+queries:
+    service: tests.services.CqrsTestService.CqrsService
