@@ -156,8 +156,8 @@ class DynamicReplyHandler(MinosHandler):
 
         self.topic = topic
 
-        topic = topic if topic.endswith("Reply") else f"{topic}Reply"
-        self.consumer = AIOKafkaConsumer(topic, bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
+        self._real_topic = topic if topic.endswith("Reply") else f"{topic}Reply"
+        self.consumer = AIOKafkaConsumer(self._real_topic, bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
 
     @property
     def broker_host(self) -> str:
@@ -210,7 +210,7 @@ class DynamicReplyHandler(MinosHandler):
             raw = await wait_for(self._get_many(count), timeout=timeout)
         except TimeoutError:
             raise MinosHandlerNotFoundEnoughEntriesException(
-                f"Timeout exceeded while trying to fetch {count!r} entries from {await self.consumer.topics()!r}."
+                f"Timeout exceeded while trying to fetch {count!r} entries from {self._real_topic!r}."
             )
 
         entries = [await _fn(message) for message in raw]
