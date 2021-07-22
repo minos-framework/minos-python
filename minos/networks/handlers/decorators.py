@@ -127,30 +127,23 @@ class EnrouteDecoratorAnalyzer:
         v.visit(compile(inspect.getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
         return res
 
-    def _get_items(self, expected_types: list[Type[BaseDecorator]]) -> dict[Callable, list[Type[BaseDecorator]]]:
-        items = {}
-        for key in self.result:
-            match = False
-            decorators = []
-            for obj in self.result[key]:
-                if type(obj) in expected_types:
-                    match = True
-                    decorators.append(obj)
-
-            if match:
-                items[key] = []
-                items[key].extend([*decorators])
+    def _get_items(self, expected_types: set[Type[BaseDecorator]]) -> dict[Callable, set[BaseDecorator]]:
+        items = dict()
+        for fn, decorators in self.result.items():
+            decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
+            if len(decorators):
+                items[fn] = decorators
 
         return items
 
-    def rest(self) -> dict[Callable, list[Type[BaseDecorator]]]:
+    def rest(self) -> dict[Callable, set[BaseDecorator]]:
         """Returns rest values."""
-        return self._get_items([RestCommandEnroute, RestQueryEnroute])
+        return self._get_items({RestCommandEnroute, RestQueryEnroute})
 
-    def command(self) -> dict[Callable, list[Type[BaseDecorator]]]:
+    def command(self) -> dict[Callable, set[BaseDecorator]]:
         """Returns command values."""
-        return self._get_items([BrokerCommandEnroute, BrokerQueryEnroute])
+        return self._get_items({BrokerCommandEnroute, BrokerQueryEnroute})
 
-    def event(self) -> dict[Callable, list[Type[BaseDecorator]]]:
+    def event(self) -> dict[Callable, set[BaseDecorator]]:
         """Returns event values."""
-        return self._get_items([BrokerEventEnroute])
+        return self._get_items({BrokerEventEnroute})
