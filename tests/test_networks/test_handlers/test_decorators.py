@@ -76,7 +76,7 @@ class MultipleDecoratorsExample:
 
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topics=["TicketBrokerEvent"])
-    def get_tickets(self):
+    async def get_tickets(self):
         """For testing purposes."""
         return "tickets"
 

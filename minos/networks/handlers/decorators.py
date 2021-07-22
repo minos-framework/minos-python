@@ -8,7 +8,6 @@ from __future__ import (
     annotations,
 )
 
-import ast
 from abc import (
     abstractmethod,
 )
@@ -20,12 +19,13 @@ from functools import (
     cached_property,
 )
 from inspect import (
-    getsource,
+    getmembers,
+    iscoroutinefunction,
+    isfunction,
 )
 from typing import (
     Callable,
     Iterable,
-    NoReturn,
     Type,
 )
 
@@ -36,23 +36,23 @@ class BaseDecorator:
     KIND: EnrouteKind
 
     def __call__(self, fn: Callable):
-        def _wrapper(*args, analyze_mode: bool = False, **kwargs):
-            if not analyze_mode:
+        if iscoroutinefunction(fn):
+
+            async def _wrapper(*args, **kwargs):
+                return await fn(*args, **kwargs)
+
+        else:
+
+            def _wrapper(*args, **kwargs):
                 return fn(*args, **kwargs)
 
-            decorators = {self}
-            try:
-                decorators |= fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except TypeError:  # pragma: no cover
-                pass
-
-            kinds = set(decorator.KIND for decorator in decorators)
-            if len(kinds) > 1:
-                raise EnrouteKindError(f"There are multiple kinds but only one is allowed: {kinds}")
-
-            return decorators
+        _wrapper.__decorators__ = {self} | getattr(fn, "__decorators__", set())
+        kinds = set(decorator.KIND for decorator in _wrapper.__decorators__)
+        if len(kinds) > 1:
+            raise EnrouteKindError(f"There are multiple kinds but only one is allowed: {kinds}")
 
         _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
+
         return _wrapper
 
     def __repr__(self):
@@ -220,27 +220,9 @@ class EnrouteDecoratorAnalyzer:
 
         :return: TODO
         """
-        fns = self._find_decorators(self.classname)
         result = dict()
-        for name, decorated in fns.items():
-            if not decorated:
+        for _, fn in getmembers(self.classname, predicate=isfunction):
+            if not hasattr(fn, "__decorators__"):
                 continue
-            fn = getattr(self.classname, name)
-            result[fn] = fn(analyze_mode=True)
-
+            result[fn] = fn.__decorators__
         return result
-
-    @staticmethod
-    def _find_decorators(target: Type) -> dict[str, bool]:
-        """Search decorators in a given class
-        Original source: https://stackoverflow.com/a/9580006/3921457
-        """
-        res = dict()
-
-        def _fn(node: ast.FunctionDef) -> NoReturn:
-            res[node.name] = bool(node.decorator_list)
-
-        v = ast.NodeVisitor()
-        v.visit_FunctionDef = _fn
-        v.visit(compile(getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
-        return res
