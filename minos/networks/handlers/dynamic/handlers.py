@@ -148,7 +148,7 @@ class DynamicHandler(MinosHandler):
 
 
 class DynamicReplyHandler(MinosHandler):
-    """TODO"""
+    """Dynamic Reply Handler class."""
 
     def __init__(self, topic, broker: Optional[BROKER] = None, **kwargs):
         super().__init__(**kwargs)

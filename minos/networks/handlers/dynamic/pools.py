@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReplyHandlerPool(MinosPool):
-    """TODO"""
+    """Reply Handler Pool class."""
 
     def __init__(self, config: MinosConfig, client: KafkaAdminClient, *args, **kwargs):
         super().__init__(*args, **kwargs)
