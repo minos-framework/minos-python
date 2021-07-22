@@ -156,7 +156,7 @@ class DynamicReplyHandler(MinosHandler):
 
         self.topic = topic
 
-        topic = (topic if topic.endswith("Reply") else f"{topic}Reply")
+        topic = topic if topic.endswith("Reply") else f"{topic}Reply"
         self.consumer = AIOKafkaConsumer(topic, bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
 
     @property
