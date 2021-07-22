@@ -68,20 +68,12 @@ class TestCommandHandler(PostgresAsyncTestCase):
         broker = FakeBroker()
         handler = CommandHandler.from_config(config=self.config, broker=broker)
         self.assertIsInstance(handler, CommandHandler)
-        handlers = {
-            "AddOrder": {"action": "add_order", "controller": "tests.services.CommandTestService.CommandService"},
-            "DeleteOrder": {
-                "action": "delete_order",
-                "controller": "tests.services.CommandTestService.CommandService",
-            },
-            "GetOrder": {"action": "get_order", "controller": "tests.service.CommandTestService.CommandService"},
-            "UpdateOrder": {
-                "action": "update_order",
-                "controller": "tests.services.CommandTestService.CommandService",
-            },
-        }
-        self.assertEqual(handlers, handler.handlers)
-        self.assertEqual(self.config.commands.queue.records, handler._records)
+
+        self.assertIn('GetOrder', handler.handlers)
+        self.assertIn('AddOrder', handler.handlers)
+        self.assertIn('DeleteOrder', handler.handlers)
+        self.assertIn('UpdateOrder', handler.handlers)
+
         self.assertEqual(self.config.commands.queue.retry, handler._retry)
         self.assertEqual(self.config.commands.queue.host, handler.host)
         self.assertEqual(self.config.commands.queue.port, handler.port)

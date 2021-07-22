@@ -29,11 +29,10 @@ class TestEventHandler(PostgresAsyncTestCase):
     def test_from_config(self):
         handler = EventHandler.from_config(config=self.config)
         self.assertIsInstance(handler, EventHandler)
-        handlers = {
-            "TicketAdded": {"action": "ticket_added", "controller": "tests.services.CqrsTestService.CqrsService"},
-            "TicketDeleted": {"action": "ticket_deleted", "controller": "tests.services.CqrsTestService.CqrsService"},
-        }
-        self.assertEqual(handlers, handler.handlers)
+
+        self.assertIn('TicketAdded', handler.handlers)
+        self.assertIn('TicketDeleted', handler.handlers)
+
         self.assertEqual(self.config.events.queue.records, handler._records)
         self.assertEqual(self.config.events.queue.retry, handler._retry)
         self.assertEqual(self.config.events.queue.host, handler.host)

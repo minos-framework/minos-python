@@ -42,7 +42,7 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        p, m = config.commands.service.rsplit('.', 1)
+        p, m = config.events.service.rsplit('.', 1)
         mod = import_module(p)
         met = getattr(mod, m)
 

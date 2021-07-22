@@ -184,8 +184,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
         res_iter = iter(result)
 
-        self.assertEqual(1, len(result[next(res_iter)]))
-        self.assertEqual(1, len(result[next(res_iter)]))
+        self.assertEqual(2, len(result[next(res_iter)]))
+        self.assertEqual(2, len(result[next(res_iter)]))
 
     async def test_get_only_command_decorators(self):
         e = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
@@ -201,8 +201,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
         res_iter = iter(result)
 
-        self.assertEqual(2, len(result[next(res_iter)]))
-        self.assertEqual(2, len(result[next(res_iter)]))
+        self.assertEqual(1, len(result[next(res_iter)]))
+        self.assertEqual(1, len(result[next(res_iter)]))
 
     async def test_external_class(self):
         p, m = 'tests.services.DecoratedService.DecoratedService'.rsplit('.', 1)
@@ -214,7 +214,6 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
         res_iter = iter(result)
 
-        self.assertEqual(1, len(result[next(res_iter)]))
         self.assertEqual(1, len(result[next(res_iter)]))
 
 if __name__ == "__main__":
