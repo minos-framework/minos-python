@@ -106,14 +106,15 @@ class MinosStorageLmdb(MinosStorage):
             return self._tables[table]
 
     @classmethod
-    def build(cls, path: Union[str, Path], max_db: int = 10, **kwargs) -> MinosStorageLmdb:
+    def build(cls, path: Union[str, Path], max_db: int = 10, map_size: int = int(1e9), **kwargs) -> MinosStorageLmdb:
         """Build a new instance.
 
         :param path: Path in which the database is stored.
         :param max_db: Maximum number of available databases.
+        :param map_size: Maximum number of entries to be stored on the database. Default set to 1GB
         :param kwargs: Additional named arguments.
         :return: A ``MinosStorageLmdb`` instance.
         """
 
-        env: lmdb.Environment = lmdb.open(str(path), max_dbs=max_db)
+        env: lmdb.Environment = lmdb.open(str(path), max_dbs=max_db, map_size=map_size)
         return cls(env, **kwargs)
