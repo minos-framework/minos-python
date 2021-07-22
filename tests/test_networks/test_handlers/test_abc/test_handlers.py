@@ -38,9 +38,6 @@ from minos.networks import (
 from minos.networks.handlers import (
     HandlerEntry,
 )
-from tests.services.CommandTestService import (
-    CommandService,
-)
 from tests.utils import (
     BASE_PATH,
     FAKE_AGGREGATE_DIFF,
