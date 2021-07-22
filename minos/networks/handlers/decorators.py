@@ -9,6 +9,9 @@ from __future__ import (
 )
 
 import ast
+from abc import (
+    abstractmethod,
+)
 from enum import (
     Enum,
     auto,
@@ -21,6 +24,7 @@ from inspect import (
 )
 from typing import (
     Callable,
+    Iterable,
     Type,
 )
 
@@ -35,9 +39,9 @@ class BaseDecorator:
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
-            result = [self]
+            result = {self}
             try:
-                result += fn(*args, analyze_mode=analyze_mode, **kwargs)
+                result |= fn(*args, analyze_mode=analyze_mode, **kwargs)
             except TypeError:  # pragma: no cover
                 pass
 
@@ -49,6 +53,20 @@ class BaseDecorator:
 
         _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
         return _wrapper
+
+    def __repr__(self):
+        args = ", ".join(map(repr, self))
+        return f"{type(self).__name__}({args})"
+
+    def __eq__(self, other: BaseDecorator) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    @abstractmethod
+    def __iter__(self) -> Iterable:
+        raise NotImplementedError
 
 
 class EnrouteKind(Enum):
@@ -68,8 +86,13 @@ class BrokerCommandEnroute(BaseDecorator):
 
     KIND = EnrouteKind.Command
 
-    def __init__(self, topics: list[str]):
-        self.topics = topics
+    def __init__(self, topics: Iterable[str]):
+        if isinstance(topics, str):
+            topics = (topics,)
+        self.topics = tuple(topics)
+
+    def __iter__(self) -> Iterable:
+        yield from (self.topics,)
 
 
 class BrokerQueryEnroute(BaseDecorator):
@@ -77,8 +100,13 @@ class BrokerQueryEnroute(BaseDecorator):
 
     KIND = EnrouteKind.Query
 
-    def __init__(self, topics: list[str]):
-        self.topics = topics
+    def __init__(self, topics: Iterable[str]):
+        if isinstance(topics, str):
+            topics = (topics,)
+        self.topics = tuple(topics)
+
+    def __iter__(self) -> Iterable:
+        yield from (self.topics,)
 
 
 class BrokerEventEnroute(BaseDecorator):
@@ -86,8 +114,13 @@ class BrokerEventEnroute(BaseDecorator):
 
     KIND = EnrouteKind.Event
 
-    def __init__(self, topics: list[str]):
-        self.topics = topics
+    def __init__(self, topics: Iterable[str]):
+        if isinstance(topics, str):
+            topics = (topics,)
+        self.topics = tuple(topics)
+
+    def __iter__(self) -> Iterable:
+        yield from (self.topics,)
 
 
 class BrokerEnroute:
@@ -107,6 +140,12 @@ class RestCommandEnroute(BaseDecorator):
         self.url = url
         self.method = method
 
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.url,
+            self.method,
+        )
+
 
 class RestQueryEnroute(BaseDecorator):
     """Rest Query Enroute class"""
@@ -116,6 +155,12 @@ class RestQueryEnroute(BaseDecorator):
     def __init__(self, url: str, method: str):
         self.url = url
         self.method = method
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.url,
+            self.method,
+        )
 
 
 class RestEnroute:
@@ -161,7 +206,7 @@ class EnrouteDecoratorAnalyzer:
                 items[fn] = decorators
         return items
 
-    def get_all(self) -> dict[Callable, list[BaseDecorator]]:
+    def get_all(self) -> dict[Callable, set[BaseDecorator]]:
         """TODO
 
         :return:TODO
@@ -169,7 +214,7 @@ class EnrouteDecoratorAnalyzer:
         return self._result
 
     @cached_property
-    def _result(self) -> dict[Callable, list[BaseDecorator]]:
+    def _result(self) -> dict[Callable, set[BaseDecorator]]:
         """TODO
 
         :return: TODO

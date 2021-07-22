@@ -21,48 +21,48 @@ from minos.networks.handlers import (
 
 
 class RestQueryExample:
+    """For testing purposes."""
+
     @enroute.rest.query(url="tickets/", method="GET")
     def get_tickets(self):
+        """For testing purposes."""
         return "tickets"
-
-    def bar(self):
-        return "bar"
 
 
 class RestCommandExample:
+    """For testing purposes."""
+
     @enroute.rest.command(url="orders/", method="GET")
     def get_tickets(self):
+        """For testing purposes."""
         return "orders"
-
-    def bar(self):
-        return "bar"
 
 
 class BrokerQueryExample:
+    """For testing purposes."""
+
     @enroute.broker.query(topics=["BrokerQuery"])
     def get_tickets(self):
+        """For testing purposes."""
         return "tickets"
-
-    def bar(self):
-        return "bar"
 
 
 class BrokerCommandExample:
+    """For testing purposes."""
+
     @enroute.broker.command(topics=["BrokerCommand"])
     def get_tickets(self):
+        """For testing purposes."""
         return "tickets"
-
-    def bar(self):
-        return "bar"
 
 
 class BrokerEventExample:
+    """For testing purposes."""
+
     @enroute.broker.event(topics=["BrokerEvent"])
     def get_tickets(self):
+        """For testing purposes."""
         return "tickets"
-
-    def bar(self):
-        return "bar"
 
 
 class MultipleDecoratorsExample:
@@ -85,12 +85,14 @@ class MultipleDecoratorsExample:
         """For testing purposes."""
         return "orders"
 
+    # noinspection PyMethodMayBeStatic
     def bar(self):
         """For testing purposes."""
         return "bar"
 
 
 def decorated_func():
+    """For testing purposes."""
     return "test"
 
 
@@ -103,23 +105,19 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
     async def test_rest_query_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(RestQueryExample)
-        result = analyzer.get_all()
 
-        obj = result[RestQueryExample.get_tickets][0]
+        observed = analyzer.get_all()
+        expected = {RestQueryExample.get_tickets: {RestQueryEnroute("tickets/", "GET")}}
 
-        self.assertEqual("GET", obj.method)
-        self.assertEqual("tickets/", obj.url)
-        self.assertEqual(RestQueryEnroute, type(obj))
+        self.assertEqual(expected, observed)
 
     async def test_rest_command(self):
         analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
-        result = analyzer.get_all()
 
-        obj = result[RestCommandExample.get_tickets][0]
+        observed = analyzer.get_all()
+        expected = {RestCommandExample.get_tickets: {RestCommandEnroute("orders/", "GET")}}
 
-        self.assertEqual("GET", obj.method)
-        self.assertEqual("orders/", obj.url)
-        self.assertEqual(RestCommandEnroute, type(obj))
+        self.assertEqual(expected, observed)
 
     async def test_rest_dont_have_event(self):
         with self.assertRaises(Exception) as context:
@@ -129,13 +127,11 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
     async def test_rest_command_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
-        result = analyzer.get_all()
 
-        obj = result[RestCommandExample.get_tickets][0]
+        observed = analyzer.get_all()
+        expected = {RestCommandExample.get_tickets: {RestCommandEnroute("orders/", "GET")}}
 
-        self.assertEqual("GET", obj.method)
-        self.assertEqual("orders/", obj.url)
-        self.assertEqual(RestCommandEnroute, type(obj))
+        self.assertEqual(expected, observed)
 
     async def test_broker_query(self):
         func = enroute.broker.query(topics=["CreateTicket"])
@@ -145,12 +141,11 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
     async def test_broker_query_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerQueryExample)
-        result = analyzer.get_all()
 
-        obj = result[BrokerQueryExample.get_tickets][0]
+        observed = analyzer.get_all()
+        expected = {BrokerQueryExample.get_tickets: {BrokerQueryEnroute("BrokerQuery")}}
 
-        self.assertEqual(["BrokerQuery"], obj.topics)
-        self.assertEqual(BrokerQueryEnroute, type(obj))
+        self.assertEqual(expected, observed)
 
     async def test_broker_command(self):
         func = enroute.broker.command(topics=["CreateTicket"])
@@ -160,12 +155,11 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
     async def test_broker_command_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerCommandExample)
-        result = analyzer.get_all()
 
-        obj = result[BrokerCommandExample.get_tickets][0]
+        observed = analyzer.get_all()
+        expected = {BrokerCommandExample.get_tickets: {BrokerCommandEnroute("BrokerCommand")}}
 
-        self.assertEqual(["BrokerCommand"], obj.topics)
-        self.assertEqual(BrokerCommandEnroute, type(obj))
+        self.assertEqual(expected, observed)
 
     async def test_broker_event(self):
         func = enroute.broker.event(topics=["CreateTicket"])
@@ -175,43 +169,58 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
     async def test_broker_event_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerEventExample)
-        result = analyzer.get_all()
+        observed = analyzer.get_all()
 
-        obj = result[BrokerEventExample.get_tickets][0]
-
-        self.assertEqual(["BrokerEvent"], obj.topics)
-        self.assertEqual(BrokerEventEnroute, type(obj))
+        expected = {BrokerEventExample.get_tickets: {BrokerEventEnroute(["BrokerEvent"])}}
+        self.assertEqual(expected, observed)
 
     async def test_multiple_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
-        result = analyzer.get_all()
 
-        self.assertEqual(3, len(result))
-        self.assertEqual(2, len(result[MultipleDecoratorsExample.create_ticket]))
-        self.assertEqual(2, len(result[MultipleDecoratorsExample.get_tickets]))
-        self.assertEqual(1, len(result[MultipleDecoratorsExample.ticket_added]))
+        observed = analyzer.get_all()
+        expected = {
+            MultipleDecoratorsExample.get_tickets: {
+                BrokerQueryEnroute(("TicketBrokerEvent",)),
+                RestQueryEnroute("tickets/", "GET"),
+            },
+            MultipleDecoratorsExample.create_ticket: {
+                BrokerCommandEnroute(("CreateTicket", "AddTicket")),
+                RestCommandEnroute("orders/", "GET"),
+            },
+            MultipleDecoratorsExample.ticket_added: {BrokerEventEnroute("TicketAdded")},
+        }
+
+        self.assertEqual(expected, observed)
 
     async def test_get_only_rest_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
-        result = analyzer.rest()
 
-        self.assertEqual(2, len(result))
-        self.assertEqual(1, len(result[MultipleDecoratorsExample.create_ticket]))
-        self.assertEqual(1, len(result[MultipleDecoratorsExample.get_tickets]))
+        observed = analyzer.rest()
+        expected = {
+            MultipleDecoratorsExample.get_tickets: {RestQueryEnroute("tickets/", "GET")},
+            MultipleDecoratorsExample.create_ticket: {RestCommandEnroute("orders/", "GET")},
+        }
+
+        self.assertEqual(expected, observed)
 
     async def test_get_only_command_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
-        result = analyzer.command()
-        self.assertEqual(2, len(result))
-        self.assertEqual(1, len(result[MultipleDecoratorsExample.create_ticket]))
-        self.assertEqual(1, len(result[MultipleDecoratorsExample.get_tickets]))
+
+        observed = analyzer.command()
+        expected = {
+            MultipleDecoratorsExample.get_tickets: {BrokerQueryEnroute("TicketBrokerEvent")},
+            MultipleDecoratorsExample.create_ticket: {BrokerCommandEnroute(("CreateTicket", "AddTicket"))},
+        }
+
+        self.assertEqual(expected, observed)
 
     async def test_get_only_event_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
-        result = analyzer.event()
 
-        self.assertEqual(1, len(result))
-        self.assertEqual(1, len(result[MultipleDecoratorsExample.ticket_added]))
+        observed = analyzer.event()
+        expected = {MultipleDecoratorsExample.ticket_added: {BrokerEventEnroute("TicketAdded")}}
+
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
