@@ -4,6 +4,14 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
+from __future__ import (
+    annotations,
+)
+
+from enum import (
+    Enum,
+    auto,
+)
 from functools import (
     cached_property,
 )
@@ -14,24 +22,47 @@ from typing import (
 
 
 class BaseDecorator:
+    """TODO"""
+
+    KIND: EnrouteKind
+
     def __call__(self, fn):
-        def wrapper(*args, analyze_mode: bool = False, **kwargs):
+        def _wrapper(*args, analyze_mode: bool = False, **kwargs):
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
             result = [self]
             try:
                 result += fn(*args, analyze_mode=analyze_mode, **kwargs)
-            except Exception:  # pragma: no cover
+            except TypeError:  # pragma: no cover
                 pass
+
+            kinds = set(decorator.KIND for decorator in result)
+            if len(kinds) > 1:
+                raise EnrouteKindError(f"There are multiple kinds but only one is allowed: {kinds}")
+
             return result
 
-        wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
-        return wrapper
+        _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
+        return _wrapper
+
+
+class EnrouteKind(Enum):
+    """TODO"""
+
+    Command = auto()
+    Event = auto()
+    Query = auto()
+
+
+class EnrouteKindError(Exception):
+    """TODO"""
 
 
 class BrokerCommandEnroute(BaseDecorator):
     """Broker Command Enroute class"""
+
+    KIND = EnrouteKind.Command
 
     def __init__(self, topics: list[str]):
         self.topics = topics
@@ -40,12 +71,16 @@ class BrokerCommandEnroute(BaseDecorator):
 class BrokerQueryEnroute(BaseDecorator):
     """Broker Query Enroute class"""
 
+    KIND = EnrouteKind.Query
+
     def __init__(self, topics: list[str]):
         self.topics = topics
 
 
 class BrokerEventEnroute(BaseDecorator):
     """Broker Event Enroute class"""
+
+    KIND = EnrouteKind.Event
 
     def __init__(self, topics: list[str]):
         self.topics = topics
@@ -62,6 +97,8 @@ class BrokerEnroute:
 class RestCommandEnroute(BaseDecorator):
     """Rest Command Enroute class"""
 
+    KIND = EnrouteKind.Command
+
     def __init__(self, url: str, method: str):
         self.url = url
         self.method = method
@@ -69,6 +106,8 @@ class RestCommandEnroute(BaseDecorator):
 
 class RestQueryEnroute(BaseDecorator):
     """Rest Query Enroute class"""
+
+    KIND = EnrouteKind.Query
 
     def __init__(self, url: str, method: str):
         self.url = url

@@ -66,21 +66,27 @@ class BrokerEventExample:
 
 
 class MultipleDecoratorsExample:
-    @enroute.rest.query(url="tickets/", method="GET")
+    """For testing purposes."""
+
     @enroute.rest.command(url="orders/", method="GET")
-    @enroute.broker.event(topics=["TicketBrokerEvent"])
+    @enroute.broker.command(topics=["CreateTicket", "AddTicket"])
+    def create_ticket(self):
+        """For testing purposes."""
+        return "orders"
+
+    @enroute.rest.query(url="tickets/", method="GET")
+    @enroute.broker.query(topics=["TicketBrokerEvent"])
     def get_tickets(self):
+        """For testing purposes."""
         return "tickets"
 
-    @enroute.rest.query(url="orders/", method="POST")
-    @enroute.rest.command(url="orders/", method="GET")
-    @enroute.broker.query(topics=["OrderBrokerQuery"])
-    @enroute.broker.command(topics=["OrderBrokerCommand", "OrderBrokerCommand2"])
-    @enroute.broker.event(topics=["OrderBrokerEvent"])
-    def get_orders(self):
+    @enroute.broker.event(topics=["TicketAdded"])
+    def ticket_added(self):
+        """For testing purposes."""
         return "orders"
 
     def bar(self):
+        """For testing purposes."""
         return "bar"
 
 
@@ -180,28 +186,32 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
         result = analyzer.get_all()
 
-        self.assertEqual(3, len(result[MultipleDecoratorsExample.get_tickets]))
-        self.assertEqual(5, len(result[MultipleDecoratorsExample.get_orders]))
+        self.assertEqual(3, len(result))
+        self.assertEqual(2, len(result[MultipleDecoratorsExample.create_ticket]))
+        self.assertEqual(2, len(result[MultipleDecoratorsExample.get_tickets]))
+        self.assertEqual(1, len(result[MultipleDecoratorsExample.ticket_added]))
 
     async def test_get_only_rest_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
         result = analyzer.rest()
 
-        self.assertEqual(2, len(result[MultipleDecoratorsExample.get_tickets]))
-        self.assertEqual(2, len(result[MultipleDecoratorsExample.get_orders]))
+        self.assertEqual(2, len(result))
+        self.assertEqual(1, len(result[MultipleDecoratorsExample.create_ticket]))
+        self.assertEqual(1, len(result[MultipleDecoratorsExample.get_tickets]))
 
     async def test_get_only_command_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
         result = analyzer.command()
-
-        self.assertEqual(2, len(result[MultipleDecoratorsExample.get_orders]))
+        self.assertEqual(2, len(result))
+        self.assertEqual(1, len(result[MultipleDecoratorsExample.create_ticket]))
+        self.assertEqual(1, len(result[MultipleDecoratorsExample.get_tickets]))
 
     async def test_get_only_event_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
         result = analyzer.event()
 
-        self.assertEqual(1, len(result[MultipleDecoratorsExample.get_tickets]))
-        self.assertEqual(1, len(result[MultipleDecoratorsExample.get_orders]))
+        self.assertEqual(1, len(result))
+        self.assertEqual(1, len(result[MultipleDecoratorsExample.ticket_added]))
 
 
 if __name__ == "__main__":
