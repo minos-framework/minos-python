@@ -3,12 +3,7 @@ service:
 rest:
     host: localhost
     port: 8900
-    endpoints:
-        - name: AddOrder
-          route: /order
-          method: POST
-          controller: minos.services.OrderService
-          action: add_order
+    endpoints: []
 repository:
     database: order_db
     user: minos
