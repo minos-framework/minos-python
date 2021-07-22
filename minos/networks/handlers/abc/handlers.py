@@ -16,9 +16,6 @@ from abc import (
 from datetime import (
     datetime,
 )
-from inspect import (
-    isclass,
-)
 from typing import (
     Any,
     Callable,
@@ -34,7 +31,6 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosModel,
-    import_module,
 )
 
 from ...exceptions import (
