@@ -91,7 +91,7 @@ class MultipleDecoratorsExample:
         return "bar"
 
 
-def decorated_func():
+def _fn():
     """For testing purposes."""
     return "test"
 
@@ -99,7 +99,7 @@ def decorated_func():
 class TestDecorators(unittest.IsolatedAsyncioTestCase):
     async def test_rest_query_base(self):
         func = enroute.rest.query(url="tickets/", method="GET")
-        wrapper = func(decorated_func)
+        wrapper = func(_fn)
         result = wrapper()
         self.assertEqual("test", result)
 
@@ -135,7 +135,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
     async def test_broker_query(self):
         func = enroute.broker.query(topics=["CreateTicket"])
-        wrapper = func(decorated_func)
+        wrapper = func(_fn)
         result = wrapper()
         self.assertEqual("test", result)
 
@@ -149,7 +149,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
     async def test_broker_command(self):
         func = enroute.broker.command(topics=["CreateTicket"])
-        wrapper = func(decorated_func)
+        wrapper = func(_fn)
         result = wrapper()
         self.assertEqual("test", result)
 
@@ -163,7 +163,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
     async def test_broker_event(self):
         func = enroute.broker.event(topics=["CreateTicket"])
-        wrapper = func(decorated_func)
+        wrapper = func(_fn)
         result = wrapper()
         self.assertEqual("test", result)
 

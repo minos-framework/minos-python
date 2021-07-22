@@ -25,6 +25,7 @@ from inspect import (
 from typing import (
     Callable,
     Iterable,
+    NoReturn,
     Type,
 )
 
@@ -34,22 +35,22 @@ class BaseDecorator:
 
     KIND: EnrouteKind
 
-    def __call__(self, fn):
+    def __call__(self, fn: Callable):
         def _wrapper(*args, analyze_mode: bool = False, **kwargs):
             if not analyze_mode:
                 return fn(*args, **kwargs)
 
-            result = {self}
+            decorators = {self}
             try:
-                result |= fn(*args, analyze_mode=analyze_mode, **kwargs)
+                decorators |= fn(*args, analyze_mode=analyze_mode, **kwargs)
             except TypeError:  # pragma: no cover
                 pass
 
-            kinds = set(decorator.KIND for decorator in result)
+            kinds = set(decorator.KIND for decorator in decorators)
             if len(kinds) > 1:
                 raise EnrouteKindError(f"There are multiple kinds but only one is allowed: {kinds}")
 
-            return result
+            return decorators
 
         _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
         return _wrapper
@@ -236,7 +237,7 @@ class EnrouteDecoratorAnalyzer:
         """
         res = dict()
 
-        def _fn(node):
+        def _fn(node: ast.FunctionDef) -> NoReturn:
             res[node.name] = bool(node.decorator_list)
 
         v = ast.NodeVisitor()
