@@ -7,6 +7,10 @@
 from functools import (
     cache,
 )
+from typing import (
+    Callable,
+    Type,
+)
 
 
 class BaseDecorator:
@@ -90,12 +94,12 @@ enroute = Enroute
 class EnrouteDecoratorAnalyzer:
     """Search decorators in specified class"""
 
-    def __init__(self, classname):
+    def __init__(self, classname: Type):
         self.result = self.find_in_class(classname)
 
     @classmethod
     @cache
-    def find_in_class(cls, classname) -> dict:
+    def find_in_class(cls, classname: Type) -> dict[Callable, list[Type[BaseDecorator]]]:
         fns = cls._find_decorators(classname)
         result = {}
         for name, decorated in fns.items():
@@ -106,7 +110,7 @@ class EnrouteDecoratorAnalyzer:
         return result
 
     @staticmethod
-    def _find_decorators(target):
+    def _find_decorators(target: Type) -> dict[str, bool]:
         """Search decorators in a given class
         Original source: https://stackoverflow.com/a/9580006/3921457
         """
@@ -123,7 +127,7 @@ class EnrouteDecoratorAnalyzer:
         v.visit(compile(inspect.getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
         return res
 
-    def _get_items(self, expected_types: list):
+    def _get_items(self, expected_types: list[Type[BaseDecorator]]) -> dict[Callable, list[Type[BaseDecorator]]]:
         items = {}
         for key in self.result:
             match = False
@@ -139,14 +143,14 @@ class EnrouteDecoratorAnalyzer:
 
         return items
 
-    def rest(self):
+    def rest(self) -> dict[Callable, list[Type[BaseDecorator]]]:
         """Returns rest values."""
         return self._get_items([RestQueryEnroute])
 
-    def command(self):
+    def command(self) -> dict[Callable, list[Type[BaseDecorator]]]:
         """Returns command values."""
         return self._get_items([BrokerCommandEnroute, BrokerQueryEnroute])
 
-    def event(self):
+    def event(self) -> dict[Callable, list[Type[BaseDecorator]]]:
         """Returns event values."""
         return self._get_items([BrokerEventEnroute, RestCommandEnroute])
