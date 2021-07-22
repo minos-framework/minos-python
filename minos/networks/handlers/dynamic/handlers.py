@@ -176,7 +176,7 @@ class DynamicReplyHandler(MinosHandler):
         return self._broker.port
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicReplyHandler:
         return cls(broker=config.commands.broker, **kwargs)
 
     async def _setup(self) -> NoReturn:
