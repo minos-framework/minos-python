@@ -27,6 +27,9 @@ from ..abc import (
 from ..entries import (
     HandlerEntry,
 )
+from ..decorators import (
+    EnrouteDecoratorAnalyzer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +42,14 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.events.items}
+        decorators = EnrouteDecoratorAnalyzer(config.events.service).event()
+
+        handlers = {}
+        for key, value in decorators.items():
+            for v in decorators[key]:
+                for topic in v.topics:
+                    handlers[topic] = key
+
         return cls(handlers=handlers, **config.events.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:

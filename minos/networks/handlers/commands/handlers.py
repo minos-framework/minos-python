@@ -45,6 +45,9 @@ from ..entries import (
 from .messages import (
     CommandRequest,
 )
+from ..decorators import (
+    EnrouteDecoratorAnalyzer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +68,14 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
+        decorators = EnrouteDecoratorAnalyzer(config.commands.service).event()
+
+        handlers = {}
+        for key, value in decorators.items():
+            for v in decorators[key]:
+                for topic in v.topics:
+                    handlers[topic] = key
+
         return cls(handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
