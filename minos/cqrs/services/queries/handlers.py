@@ -26,7 +26,7 @@ from minos.saga import (
 
 def _build_event_saga(diff, controller, action) -> Saga:
     missing = _get_missing(diff)
-    saga = Saga("ordersQuery")
+    saga = Saga("")
 
     for name, uuids in missing.items():
         saga = (
