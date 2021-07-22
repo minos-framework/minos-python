@@ -99,7 +99,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(RestQueryExample)
         result = analyzer.get_all()
 
-        obj = result[next(iter(result))][0]
+        obj = result[RestQueryExample.get_tickets][0]
 
         self.assertEqual("GET", obj.method)
         self.assertEqual("tickets/", obj.url)
@@ -109,7 +109,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
         result = analyzer.get_all()
 
-        obj = result[next(iter(result))][0]
+        obj = result[RestCommandExample.get_tickets][0]
 
         self.assertEqual("GET", obj.method)
         self.assertEqual("orders/", obj.url)
@@ -125,7 +125,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
         result = analyzer.get_all()
 
-        obj = result[next(iter(result))][0]
+        obj = result[RestCommandExample.get_tickets][0]
 
         self.assertEqual("GET", obj.method)
         self.assertEqual("orders/", obj.url)
@@ -141,7 +141,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(BrokerQueryExample)
         result = analyzer.get_all()
 
-        obj = result[next(iter(result))][0]
+        obj = result[BrokerQueryExample.get_tickets][0]
 
         self.assertEqual(["BrokerQuery"], obj.topics)
         self.assertEqual(BrokerQueryEnroute, type(obj))
@@ -156,7 +156,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(BrokerCommandExample)
         result = analyzer.get_all()
 
-        obj = result[next(iter(result))][0]
+        obj = result[BrokerCommandExample.get_tickets][0]
 
         self.assertEqual(["BrokerCommand"], obj.topics)
         self.assertEqual(BrokerCommandEnroute, type(obj))
@@ -171,7 +171,7 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(BrokerEventExample)
         result = analyzer.get_all()
 
-        obj = result[next(iter(result))][0]
+        obj = result[BrokerEventExample.get_tickets][0]
 
         self.assertEqual(["BrokerEvent"], obj.topics)
         self.assertEqual(BrokerEventEnroute, type(obj))
@@ -180,36 +180,28 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
         result = analyzer.get_all()
 
-        res_iter = iter(result)
-
-        self.assertEqual(3, len(result[next(res_iter)]))
-        self.assertEqual(5, len(result[next(res_iter)]))
+        self.assertEqual(3, len(result[MultipleDecoratorsExample.get_tickets]))
+        self.assertEqual(5, len(result[MultipleDecoratorsExample.get_orders]))
 
     async def test_get_only_rest_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
         result = analyzer.rest()
 
-        res_iter = iter(result)
-
-        self.assertEqual(2, len(result[next(res_iter)]))
-        self.assertEqual(2, len(result[next(res_iter)]))
+        self.assertEqual(2, len(result[MultipleDecoratorsExample.get_tickets]))
+        self.assertEqual(2, len(result[MultipleDecoratorsExample.get_orders]))
 
     async def test_get_only_command_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
         result = analyzer.command()
 
-        res_iter = iter(result)
-
-        self.assertEqual(2, len(result[next(res_iter)]))
+        self.assertEqual(2, len(result[MultipleDecoratorsExample.get_orders]))
 
     async def test_get_only_event_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
         result = analyzer.event()
 
-        res_iter = iter(result)
-
-        self.assertEqual(1, len(result[next(res_iter)]))
-        self.assertEqual(1, len(result[next(res_iter)]))
+        self.assertEqual(1, len(result[MultipleDecoratorsExample.get_tickets]))
+        self.assertEqual(1, len(result[MultipleDecoratorsExample.get_orders]))
 
 
 if __name__ == "__main__":
