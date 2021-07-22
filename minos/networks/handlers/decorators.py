@@ -5,7 +5,7 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 from functools import (
-    cache,
+    cached_property,
 )
 from typing import (
     Callable,
@@ -95,17 +95,21 @@ class EnrouteDecoratorAnalyzer:
     """Search decorators in specified class"""
 
     def __init__(self, classname: Type):
-        self.result = self.find_in_class(classname)
+        self.classname = classname
 
-    @classmethod
-    @cache
-    def find_in_class(cls, classname: Type) -> dict[Callable, list[Type[BaseDecorator]]]:
-        fns = cls._find_decorators(classname)
-        result = {}
+    @cached_property
+    def result(self) -> dict[Callable, list[BaseDecorator]]:
+        """TODO
+
+        :return: TODO
+        """
+        fns = self._find_decorators(self.classname)
+        result = dict()
         for name, decorated in fns.items():
             if not decorated:
                 continue
-            result[getattr(classname, name)] = getattr(classname, name)(analyze_mode=True)
+            fn = getattr(self.classname, name)
+            result[fn] = fn(analyze_mode=True)
 
         return result
 
