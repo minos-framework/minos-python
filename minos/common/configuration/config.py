@@ -29,7 +29,6 @@ from ..exceptions import (
 
 BROKER = collections.namedtuple("Broker", "host port")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
-ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
 SERVICE = collections.namedtuple("Service", "name injections services")
 CONTROLLER = collections.namedtuple("Controller", "name controller action")
 STORAGE = collections.namedtuple("Storage", "path")
@@ -38,7 +37,7 @@ EVENTS = collections.namedtuple("Events", "broker service queue")
 COMMANDS = collections.namedtuple("Commands", "broker service queue")
 QUERIES = collections.namedtuple("Queries", "service")
 SAGA = collections.namedtuple("Saga", "items queue storage broker")
-REST = collections.namedtuple("Rest", "broker endpoints")
+REST = collections.namedtuple("Rest", "broker")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
 DISCOVERY_ENDPOINT = collections.namedtuple("DiscoveryEndpoint", "path method")
@@ -234,29 +233,12 @@ class MinosConfig(MinosConfigAbstract):
         :return: A ``REST`` NamedTuple instance.
         """
         broker = self._rest_broker
-        endpoints = self._rest_endpoints
-        return REST(broker=broker, endpoints=endpoints)
+        return REST(broker=broker)
 
     @property
     def _rest_broker(self):
         broker = BROKER(host=self._get("rest.host"), port=int(self._get("rest.port")))
         return broker
-
-    @property
-    def _rest_endpoints(self) -> list[ENDPOINT]:
-        info = self._get("rest.endpoints")
-        endpoints = [self._rest_endpoints_entry(endpoint) for endpoint in info]
-        return endpoints
-
-    @staticmethod
-    def _rest_endpoints_entry(endpoint: dict[str, Any]) -> ENDPOINT:
-        return ENDPOINT(
-            name=endpoint["name"],
-            route=endpoint["route"],
-            method=endpoint["method"].upper(),
-            controller=endpoint["controller"],
-            action=endpoint["action"],
-        )
 
     @property
     def events(self) -> EVENTS:
