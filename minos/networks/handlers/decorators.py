@@ -26,6 +26,7 @@ class BaseDecorator:
                 pass
             return result
 
+        wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
         return wrapper
 
 
