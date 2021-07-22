@@ -141,7 +141,7 @@ class EnrouteDecoratorAnalyzer:
 
     def rest(self):
         """Returns rest values."""
-        return self._get_items([RestQueryEnroute])
+        return self._get_items([RestQueryEnroute, RestCommandEnroute])
 
     def command(self):
         """Returns command values."""
@@ -149,4 +149,4 @@ class EnrouteDecoratorAnalyzer:
 
     def event(self):
         """Returns event values."""
-        return self._get_items([BrokerEventEnroute, RestCommandEnroute])
+        return self._get_items([BrokerEventEnroute])
