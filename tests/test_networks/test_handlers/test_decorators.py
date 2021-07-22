@@ -96,7 +96,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_rest_query_decorator(self):
-        result = EnrouteDecoratorAnalyzer(RestQueryExample).result
+        analyzer = EnrouteDecoratorAnalyzer(RestQueryExample)
+        result = analyzer.get_all()
 
         obj = result[next(iter(result))][0]
 
@@ -105,7 +106,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(RestQueryEnroute, type(obj))
 
     async def test_rest_command(self):
-        result = EnrouteDecoratorAnalyzer(RestCommandExample).result
+        analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
+        result = analyzer.get_all()
 
         obj = result[next(iter(result))][0]
 
@@ -120,7 +122,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertTrue("type object 'RestEnroute' has no attribute 'event'" in str(context.exception))
 
     async def test_rest_command_decorator(self):
-        result = EnrouteDecoratorAnalyzer(RestCommandExample).result
+        analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
+        result = analyzer.get_all()
 
         obj = result[next(iter(result))][0]
 
@@ -135,7 +138,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_broker_query_decorator(self):
-        result = EnrouteDecoratorAnalyzer(BrokerQueryExample).result
+        analyzer = EnrouteDecoratorAnalyzer(BrokerQueryExample)
+        result = analyzer.get_all()
 
         obj = result[next(iter(result))][0]
 
@@ -149,7 +153,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_broker_command_decorator(self):
-        result = EnrouteDecoratorAnalyzer(BrokerCommandExample).result
+        analyzer = EnrouteDecoratorAnalyzer(BrokerCommandExample)
+        result = analyzer.get_all()
 
         obj = result[next(iter(result))][0]
 
@@ -163,7 +168,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("test", result)
 
     async def test_broker_event_decorator(self):
-        result = EnrouteDecoratorAnalyzer(BrokerEventExample).result
+        analyzer = EnrouteDecoratorAnalyzer(BrokerEventExample)
+        result = analyzer.get_all()
 
         obj = result[next(iter(result))][0]
 
@@ -171,7 +177,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(BrokerEventEnroute, type(obj))
 
     async def test_multiple_decorators(self):
-        result = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample).result
+        analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
+        result = analyzer.get_all()
 
         res_iter = iter(result)
 
@@ -179,8 +186,8 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(5, len(result[next(res_iter)]))
 
     async def test_get_only_rest_decorators(self):
-        e = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
-        result = e.rest()
+        analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
+        result = analyzer.rest()
 
         res_iter = iter(result)
 
@@ -188,16 +195,16 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, len(result[next(res_iter)]))
 
     async def test_get_only_command_decorators(self):
-        e = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
-        result = e.command()
+        analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
+        result = analyzer.command()
 
         res_iter = iter(result)
 
         self.assertEqual(2, len(result[next(res_iter)]))
 
     async def test_get_only_event_decorators(self):
-        e = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
-        result = e.event()
+        analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
+        result = analyzer.event()
 
         res_iter = iter(result)
 

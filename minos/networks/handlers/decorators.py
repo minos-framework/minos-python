@@ -97,8 +97,15 @@ class EnrouteDecoratorAnalyzer:
     def __init__(self, classname: Type):
         self.classname = classname
 
+    def get_all(self) -> dict[Callable, list[BaseDecorator]]:
+        """TODO
+
+        :return:TODO
+        """
+        return self._result
+
     @cached_property
-    def result(self) -> dict[Callable, list[BaseDecorator]]:
+    def _result(self) -> dict[Callable, list[BaseDecorator]]:
         """TODO
 
         :return: TODO
@@ -133,7 +140,7 @@ class EnrouteDecoratorAnalyzer:
 
     def _get_items(self, expected_types: set[Type[BaseDecorator]]) -> dict[Callable, set[BaseDecorator]]:
         items = dict()
-        for fn, decorators in self.result.items():
+        for fn, decorators in self._result.items():
             decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
             if len(decorators):
                 items[fn] = decorators
