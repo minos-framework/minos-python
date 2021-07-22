@@ -11,7 +11,6 @@ from __future__ import (
 )
 
 import logging
-import socket
 from typing import (
     NoReturn,
 )
@@ -21,6 +20,9 @@ from minos.common import (
     MinosSetup,
 )
 
+from ..utils import (
+    get_ip_address,
+)
 from .clients import (
     MinosDiscoveryClient,
 )
@@ -45,7 +47,7 @@ class DiscoveryConnector(MinosSetup):
         client = MinosDiscoveryClient(host=config.discovery.host, port=config.discovery.port)
         port = config.rest.broker.port
         name = config.service.name
-        host = socket.gethostbyname(socket.getfqdn())
+        host = get_ip_address()
         return cls(client=client, name=name, host=host, port=port, *args, **kwargs)
 
     async def _setup(self) -> NoReturn:
