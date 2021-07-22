@@ -4,14 +4,10 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 from importlib import import_module
 import logging
-from inspect import (
-    isawaitable,
-)
+from inspect import isawaitable
 from typing import (
     Any,
     Awaitable,
@@ -22,9 +18,7 @@ from typing import (
     Union,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-)
+from dependency_injector.wiring import Provide
 
 from minos.common import (
     Command,
@@ -36,18 +30,10 @@ from minos.common import (
     ResponseException,
 )
 
-from ..abc import (
-    Handler,
-)
-from ..entries import (
-    HandlerEntry,
-)
-from .messages import (
-    CommandRequest,
-)
-from ..decorators import (
-    EnrouteDecoratorAnalyzer,
-)
+from ..abc import Handler
+from ..entries import HandlerEntry
+from .messages import CommandRequest
+from ..decorators import EnrouteDecoratorAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +54,7 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        p, m = config.commands.service.rsplit('.', 1)
+        p, m = config.commands.service.rsplit(".", 1)
         mod = import_module(p)
         met = getattr(mod, m)
 

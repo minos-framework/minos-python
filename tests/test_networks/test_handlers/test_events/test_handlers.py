@@ -1,18 +1,12 @@
 import unittest
-from datetime import (
-    datetime,
-)
+from datetime import datetime
 from unittest.mock import (
     AsyncMock,
     call,
 )
 
-from minos.common import (
-    Event,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common import Event
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     EventHandler,
     HandlerEntry,
@@ -30,8 +24,8 @@ class TestEventHandler(PostgresAsyncTestCase):
         handler = EventHandler.from_config(config=self.config)
         self.assertIsInstance(handler, EventHandler)
 
-        self.assertIn('TicketAdded', handler.handlers)
-        self.assertIn('TicketDeleted', handler.handlers)
+        self.assertIn("TicketAdded", handler.handlers)
+        self.assertIn("TicketDeleted", handler.handlers)
 
         self.assertEqual(self.config.events.queue.records, handler._records)
         self.assertEqual(self.config.events.queue.retry, handler._retry)

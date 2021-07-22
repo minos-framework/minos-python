@@ -7,15 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
-from minos.networks import (
-    CommandConsumer,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from minos.common.testing import PostgresAsyncTestCase
+from minos.networks import CommandConsumer
+from tests.utils import BASE_PATH
 
 
 class TestCommandConsumer(PostgresAsyncTestCase):
@@ -24,7 +18,7 @@ class TestCommandConsumer(PostgresAsyncTestCase):
     def test_from_config(self):
         consumer = CommandConsumer.from_config(config=self.config)
         self.assertIsInstance(consumer, CommandConsumer)
-        self.assertEqual(['GetOrder', 'AddOrder', 'DeleteOrder', 'UpdateOrder'], consumer.topics)
+        self.assertEqual(["GetOrder", "AddOrder", "DeleteOrder", "UpdateOrder"], consumer.topics)
         self.assertEqual(self.config.commands.broker, consumer._broker)
         self.assertEqual(self.config.commands.queue.host, consumer.host)
         self.assertEqual(self.config.commands.queue.port, consumer.port)

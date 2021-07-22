@@ -6,38 +6,22 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from asyncio import (
-    gather,
-)
-from collections import (
-    namedtuple,
-)
-from typing import (
-    NoReturn,
-)
-from uuid import (
-    uuid4,
-)
+from asyncio import gather
+from collections import namedtuple
+from typing import NoReturn
+from uuid import uuid4
 
 import aiopg
 
-from minos.common import (
-    DataTransferObject,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common import DataTransferObject
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     Handler,
     MinosActionNotFoundException,
     EnrouteDecoratorAnalyzer,
 )
-from minos.networks.handlers import (
-    HandlerEntry,
-)
-from tests.services.CommandTestService import (
-    CommandService,
-)
+from minos.networks.handlers import HandlerEntry
+from tests.services.CommandTestService import CommandService
 from tests.utils import (
     BASE_PATH,
     FAKE_AGGREGATE_DIFF,
@@ -66,7 +50,7 @@ class TestHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def handlers(self):
-        p, m = self.config.commands.service.rsplit('.', 1)
+        p, m = self.config.commands.service.rsplit(".", 1)
         mod = import_module(p)
         met = getattr(mod, m)
 
@@ -88,7 +72,7 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual('wrapper', action.__name__)
+        self.assertEqual("wrapper", action.__name__)
 
     async def test_get_action_none(self):
         action = self.handler.get_action(topic="empty")
@@ -104,9 +88,7 @@ class TestHandler(PostgresAsyncTestCase):
         )
 
     async def test_dispatch(self):
-        from minos.common import (
-            Event,
-        )
+        from minos.common import Event
 
         instance = Event("AddOrder", FAKE_AGGREGATE_DIFF)
 
@@ -118,9 +100,7 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(1, self.handler.call_count)
 
     async def test_dispatch_wrong(self):
-        from minos.common import (
-            Event,
-        )
+        from minos.common import Event
 
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
         instance_2 = Event("DeleteOrder", FAKE_AGGREGATE_DIFF)
@@ -133,12 +113,8 @@ class TestHandler(PostgresAsyncTestCase):
             self.assertFalse(await self._is_processed(queue_id_2))
 
     async def test_dispatch_concurrent(self):
-        from minos.common import (
-            Command,
-        )
-        from tests.utils import (
-            FakeModel,
-        )
+        from minos.common import Command
+        from tests.utils import FakeModel
 
         saga = uuid4()
 

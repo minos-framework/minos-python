@@ -3,7 +3,8 @@ from minos.common import (
     Response,
 )
 from minos.networks import (
-    HttpResponse, enroute,
+    HttpResponse,
+    enroute,
 )
 
 

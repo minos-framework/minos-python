@@ -1,6 +1,4 @@
-from minos.common import (
-    Event,
-)
+from minos.common import Event
 
 from minos.networks import enroute
 

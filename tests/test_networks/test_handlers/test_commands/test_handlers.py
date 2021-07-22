@@ -1,13 +1,7 @@
 import unittest
-from datetime import (
-    datetime,
-)
-from unittest.mock import (
-    AsyncMock,
-)
-from uuid import (
-    uuid4,
-)
+from datetime import datetime
+from unittest.mock import AsyncMock
+from uuid import uuid4
 
 from minos.common import (
     Command,
@@ -15,9 +9,7 @@ from minos.common import (
     Request,
     Response,
 )
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     CommandHandler,
     CommandRequest,
@@ -69,10 +61,10 @@ class TestCommandHandler(PostgresAsyncTestCase):
         handler = CommandHandler.from_config(config=self.config, broker=broker)
         self.assertIsInstance(handler, CommandHandler)
 
-        self.assertIn('GetOrder', handler.handlers)
-        self.assertIn('AddOrder', handler.handlers)
-        self.assertIn('DeleteOrder', handler.handlers)
-        self.assertIn('UpdateOrder', handler.handlers)
+        self.assertIn("GetOrder", handler.handlers)
+        self.assertIn("AddOrder", handler.handlers)
+        self.assertIn("DeleteOrder", handler.handlers)
+        self.assertIn("UpdateOrder", handler.handlers)
 
         self.assertEqual(self.config.commands.queue.retry, handler._retry)
         self.assertEqual(self.config.commands.queue.host, handler.host)

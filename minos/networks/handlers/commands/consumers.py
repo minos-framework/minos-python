@@ -4,21 +4,13 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
-from minos.common import (
-    MinosConfig,
-)
+from minos.common import MinosConfig
 
-from ..abc import (
-    Consumer,
-)
+from ..abc import Consumer
 
-from ..decorators import (
-    EnrouteDecoratorAnalyzer,
-)
+from ..decorators import EnrouteDecoratorAnalyzer
 
 from importlib import import_module
 
@@ -30,7 +22,7 @@ class CommandConsumer(Consumer):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandConsumer:
-        p, m = config.commands.service.rsplit('.', 1)
+        p, m = config.commands.service.rsplit(".", 1)
         mod = import_module(p)
         met = getattr(mod, m)
 
