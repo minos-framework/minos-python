@@ -30,8 +30,8 @@ class TestEventHandler(PostgresAsyncTestCase):
         handler = EventHandler.from_config(config=self.config)
         self.assertIsInstance(handler, EventHandler)
 
-        self.assertIn('TicketAdded', handler.handlers)
-        self.assertIn('TicketDeleted', handler.handlers)
+        self.assertIn("TicketAdded", handler.handlers)
+        self.assertIn("TicketDeleted", handler.handlers)
 
         self.assertEqual(self.config.events.queue.records, handler._records)
         self.assertEqual(self.config.events.queue.retry, handler._retry)

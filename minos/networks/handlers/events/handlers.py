@@ -7,8 +7,11 @@
 from __future__ import (
     annotations,
 )
-from importlib import import_module
+
 import logging
+from importlib import (
+    import_module,
+)
 from inspect import (
     isawaitable,
 )
@@ -24,11 +27,11 @@ from minos.common import (
 from ..abc import (
     Handler,
 )
-from ..entries import (
-    HandlerEntry,
-)
 from ..decorators import (
     EnrouteDecoratorAnalyzer,
+)
+from ..entries import (
+    HandlerEntry,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,7 +45,7 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        p, m = config.events.service.rsplit('.', 1)
+        p, m = config.events.service.rsplit(".", 1)
         mod = import_module(p)
         met = getattr(mod, m)
 

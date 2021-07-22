@@ -1,8 +1,9 @@
 from minos.common import (
     Event,
 )
-
-from minos.networks import enroute
+from minos.networks import (
+    enroute,
+)
 
 
 class CqrsService(object):

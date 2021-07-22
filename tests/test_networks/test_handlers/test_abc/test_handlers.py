@@ -12,6 +12,9 @@ from asyncio import (
 from collections import (
     namedtuple,
 )
+from importlib import (
+    import_module,
+)
 from typing import (
     NoReturn,
 )
@@ -28,9 +31,9 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    EnrouteDecoratorAnalyzer,
     Handler,
     MinosActionNotFoundException,
-    EnrouteDecoratorAnalyzer,
 )
 from minos.networks.handlers import (
     HandlerEntry,
@@ -42,7 +45,6 @@ from tests.utils import (
     BASE_PATH,
     FAKE_AGGREGATE_DIFF,
 )
-from importlib import import_module
 
 
 class _FakeHandler(Handler):
@@ -66,7 +68,7 @@ class TestHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def handlers(self):
-        p, m = self.config.commands.service.rsplit('.', 1)
+        p, m = self.config.commands.service.rsplit(".", 1)
         mod = import_module(p)
         met = getattr(mod, m)
 
@@ -88,7 +90,7 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual('wrapper', action.__name__)
+        self.assertEqual("wrapper", action.__name__)
 
     async def test_get_action_none(self):
         action = self.handler.get_action(topic="empty")
