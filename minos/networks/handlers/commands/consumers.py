@@ -4,15 +4,24 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
-from minos.common import MinosConfig
+from importlib import (
+    import_module,
+)
 
-from ..abc import Consumer
+from minos.common import (
+    MinosConfig,
+)
 
-from ..decorators import EnrouteDecoratorAnalyzer
-
-from importlib import import_module
+from ..abc import (
+    Consumer,
+)
+from ..decorators import (
+    EnrouteDecoratorAnalyzer,
+)
 
 
 class CommandConsumer(Consumer):

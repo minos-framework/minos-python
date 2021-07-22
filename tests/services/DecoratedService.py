@@ -1,4 +1,6 @@
-from minos.networks import enroute
+from minos.networks import (
+    enroute,
+)
 
 
 class DecoratedService(object):

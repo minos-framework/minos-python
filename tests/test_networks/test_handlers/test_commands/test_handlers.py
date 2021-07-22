@@ -1,7 +1,13 @@
 import unittest
-from datetime import datetime
-from unittest.mock import AsyncMock
-from uuid import uuid4
+from datetime import (
+    datetime,
+)
+from unittest.mock import (
+    AsyncMock,
+)
+from uuid import (
+    uuid4,
+)
 
 from minos.common import (
     Command,
@@ -9,7 +15,9 @@ from minos.common import (
     Request,
     Response,
 )
-from minos.common.testing import PostgresAsyncTestCase
+from minos.common.testing import (
+    PostgresAsyncTestCase,
+)
 from minos.networks import (
     CommandHandler,
     CommandRequest,
