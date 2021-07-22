@@ -8,12 +8,16 @@ from __future__ import (
     annotations,
 )
 
+import ast
 from enum import (
     Enum,
     auto,
 )
 from functools import (
     cached_property,
+)
+from inspect import (
+    getsource,
 )
 from typing import (
     Callable,
@@ -185,15 +189,12 @@ class EnrouteDecoratorAnalyzer:
         """Search decorators in a given class
         Original source: https://stackoverflow.com/a/9580006/3921457
         """
-        import ast
-        import inspect
+        res = dict()
 
-        res = {}
-
-        def visit_function_def(node):
+        def _fn(node):
             res[node.name] = bool(node.decorator_list)
 
         v = ast.NodeVisitor()
-        v.visit_FunctionDef = visit_function_def
-        v.visit(compile(inspect.getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
+        v.visit_FunctionDef = _fn
+        v.visit(compile(getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
         return res
