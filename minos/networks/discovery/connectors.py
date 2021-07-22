@@ -21,7 +21,7 @@ from minos.common import (
 )
 
 from ..utils import (
-    get_ip_address,
+    get_host_ip,
 )
 from .clients import (
     MinosDiscoveryClient,
@@ -47,7 +47,7 @@ class DiscoveryConnector(MinosSetup):
         client = MinosDiscoveryClient(host=config.discovery.host, port=config.discovery.port)
         port = config.rest.broker.port
         name = config.service.name
-        host = get_ip_address()
+        host = get_host_ip()
         return cls(client=client, name=name, host=host, port=port, *args, **kwargs)
 
     async def _setup(self) -> NoReturn:

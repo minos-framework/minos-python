@@ -10,7 +10,7 @@ from minos.common import (
 from minos.networks import (
     DiscoveryConnector,
     MinosDiscoveryClient,
-    get_ip_address,
+    get_host_ip,
 )
 from tests.utils import (
     BASE_PATH,
@@ -22,7 +22,7 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self) -> None:
         self.config = MinosConfig(self.CONFIG_FILE_PATH)
-        self.ip = get_ip_address()
+        self.ip = get_host_ip()
         self.discovery = DiscoveryConnector.from_config(config=self.config)
 
     def test_client(self):
