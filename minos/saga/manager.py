@@ -11,7 +11,6 @@ from __future__ import (
 
 import logging
 from typing import (
-    Any,
     NoReturn,
     Optional,
 )
@@ -83,6 +82,9 @@ class SagaManager(MinosSagaManager):
         if reply_pool is not None:
             self.reply_pool = reply_pool
 
+        if self.reply_pool is None or isinstance(self.reply_pool, Provide):
+            raise MinosHandlerNotProvidedException("A handler pool instance is required.")
+
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
         """Build an instance from config.
@@ -134,8 +136,6 @@ class SagaManager(MinosSagaManager):
     async def _run_synchronously(
         self, execution: SagaExecution, reply: Optional[CommandReply] = None, **kwargs
     ) -> NoReturn:
-        if self.reply_pool is None or isinstance(self.reply_pool, Provide):
-            raise MinosHandlerNotProvidedException("A handler instance is required.")
 
         # noinspection PyUnresolvedReferences
         async with self.reply_pool.acquire() as handler:
@@ -160,7 +160,7 @@ class SagaManager(MinosSagaManager):
 
     async def _run_asynchronously(self, execution: SagaExecution, **kwargs) -> NoReturn:
         try:
-            await execution.execute(**kwargs, reply_topic=execution.definition_name)
+            await execution.execute(**kwargs)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
             return execution.uuid

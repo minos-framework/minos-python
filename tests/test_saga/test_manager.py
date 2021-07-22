@@ -39,6 +39,7 @@ from minos.saga import (
 from tests.utils import (
     BASE_PATH,
     FakeHandler,
+    FakePool,
     Foo,
     NaiveBroker,
 )
@@ -50,8 +51,9 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config = MinosConfig(BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
-        self.handler = FakeHandler()
-        self.manager = SagaManager.from_config(handler=self.handler, config=self.config)
+        self.handler = FakeHandler("AddOrder")
+        self.pool = FakePool(self.handler)
+        self.manager = SagaManager.from_config(reply_pool=self.pool, config=self.config)
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)

@@ -137,10 +137,13 @@ class SagaExecution(object):
 
         return cls(definition, uuid4(), context, *args, **kwargs)
 
-    async def execute(self, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
+    async def execute(
+        self, reply: Optional[CommandReply] = None, reply_topic: Optional[str] = None, *args, **kwargs
+    ) -> SagaContext:
         """Execute the ``Saga`` definition.
 
         :param reply: An optional ``CommandReply`` to be consumed by the immediately next executed step.
+        :param reply_topic: The topic in which to receive the future replies.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
@@ -159,16 +162,17 @@ class SagaExecution(object):
             return self.context
 
         self.status = SagaStatus.Running
-
+        if reply_topic is None:
+            reply_topic = self.definition_name
         if self.paused_step is not None:
             try:
-                await self._execute_one(self.paused_step, reply=reply, *args, **kwargs)
+                await self._execute_one(self.paused_step, reply=reply, reply_topic=reply_topic, *args, **kwargs)
             finally:
                 self.paused_step = None
 
         for step in self._pending_steps:
             execution_step = SagaExecutionStep(step)
-            await self._execute_one(execution_step, *args, **kwargs)
+            await self._execute_one(execution_step, reply_topic=reply_topic, *args, **kwargs)
 
         await self._execute_commit(*args, **kwargs)
         self.status = SagaStatus.Finished
@@ -176,9 +180,7 @@ class SagaExecution(object):
 
     async def _execute_one(self, execution_step: SagaExecutionStep, *args, **kwargs) -> NoReturn:
         try:
-            self.context = await execution_step.execute(
-                self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
-            )
+            self.context = await execution_step.execute(self.context, execution_uuid=self.uuid, *args, **kwargs)
             self._add_executed(execution_step)
         except MinosSagaFailedExecutionStepException as exc:
             await self.rollback(*args, **kwargs)
@@ -202,9 +204,10 @@ class SagaExecution(object):
         if new_context is not None:
             self.context = new_context
 
-    async def rollback(self, *args, **kwargs) -> NoReturn:
+    async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> NoReturn:
         """Revert the invoke participant operation with a with compensation operation.
 
+        :param reply_topic: The topic in which to receive the future replies.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: The updated execution context.
@@ -213,11 +216,14 @@ class SagaExecution(object):
         if self.already_rollback:
             raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
 
+        if reply_topic is None:
+            reply_topic = self.definition_name
+
         raised_exception = False
         for execution_step in reversed(self.executed_steps):
             try:
                 self.context = await execution_step.rollback(
-                    self.context, definition_name=self.definition_name, execution_uuid=self.uuid, *args, **kwargs
+                    self.context, reply_topic=reply_topic, execution_uuid=self.uuid, *args, **kwargs
                 )
             except MinosSagaExecutionStepException as exc:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
