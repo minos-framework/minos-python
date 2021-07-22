@@ -115,13 +115,13 @@ class SagaManager(MinosSagaManager):
         return await self._run(execution, reply=reply, **kwargs)
 
     async def _run(
-        self, execution: SagaExecution, asynchronous: bool = True, raise_on_error: bool = False, **kwargs
+        self, execution: SagaExecution, pause_on_disk: bool = True, raise_on_error: bool = False, **kwargs
     ) -> UUID:
         try:
-            if asynchronous:
-                await self._run_asynchronously(execution, asynchronous=asynchronous, **kwargs)
+            if pause_on_disk:
+                await self._run_pause_on_disk(execution, **kwargs)
             else:
-                await self._run_synchronously(execution, asynchronous=asynchronous, **kwargs)
+                await self._run_pause_on_memory(execution, **kwargs)
         except MinosSagaFailedExecutionException as exc:
             self.storage.store(execution)
             if raise_on_error:
@@ -133,7 +133,14 @@ class SagaManager(MinosSagaManager):
 
         return execution.uuid
 
-    async def _run_synchronously(
+    async def _run_pause_on_disk(self, execution: SagaExecution, **kwargs) -> NoReturn:
+        try:
+            await execution.execute(**kwargs)
+        except MinosSagaPausedExecutionStepException:
+            self.storage.store(execution)
+            return execution.uuid
+
+    async def _run_pause_on_memory(
         self, execution: SagaExecution, reply: Optional[CommandReply] = None, **kwargs
     ) -> NoReturn:
 
@@ -157,10 +164,3 @@ class SagaManager(MinosSagaManager):
                 raise MinosSagaFailedExecutionException(exc)
             reply = entry.data
         return reply
-
-    async def _run_asynchronously(self, execution: SagaExecution, **kwargs) -> NoReturn:
-        try:
-            await execution.execute(**kwargs)
-        except MinosSagaPausedExecutionStepException:
-            self.storage.store(execution)
-            return execution.uuid

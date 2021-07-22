@@ -70,7 +70,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         async with self.manager as saga_manager:
             self.assertIsInstance(saga_manager, SagaManager)
 
-    async def test_run(self):
+    async def test_run_pause_on_disk(self):
         uuid = await self.manager.run("AddOrder", broker=self.broker)
         self.assertEqual(SagaStatus.Paused, self.manager.storage.load(uuid).status)
 
@@ -83,7 +83,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             self.manager.storage.load(uuid)
 
-    async def test_run_not_asynchronous(self):
+    async def test_run_pause_on_memory(self):
         Message = namedtuple("Message", ["data"])
         expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
         with patch("uuid.uuid4", return_value=expected_uuid):
@@ -94,22 +94,22 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
                 ]
             )
 
-            observed_uuid = await self.manager.run("AddOrder", broker=self.broker, asynchronous=False)
+            observed_uuid = await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=False)
             self.assertEqual(expected_uuid, observed_uuid)
             with self.assertRaises(MinosSagaExecutionNotFoundException):
                 self.manager.storage.load(observed_uuid)
 
-    async def test_run_not_asynchronous_with_error(self):
+    async def test_run_pause_on_memory_with_error(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
-        uuid = await self.manager.run("AddOrder", broker=self.broker, asynchronous=False)
+        uuid = await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=False)
         self.assertEqual(SagaStatus.Errored, self.manager.storage.load(uuid).status)
 
-    async def test_run_not_asynchronous_with_error_raises(self):
+    async def test_run_pause_on_memory_with_error_raises(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
         with self.assertRaises(MinosSagaFailedExecutionException):
-            await self.manager.run("AddOrder", broker=self.broker, asynchronous=False, raise_on_error=True)
+            await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=False, raise_on_error=True)
 
     async def test_run_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")
