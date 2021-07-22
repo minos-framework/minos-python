@@ -97,6 +97,26 @@ class EnrouteDecoratorAnalyzer:
     def __init__(self, classname: Type):
         self.classname = classname
 
+    def rest(self) -> dict[Callable, set[BaseDecorator]]:
+        """Returns rest values."""
+        return self._get_items({RestCommandEnroute, RestQueryEnroute})
+
+    def command(self) -> dict[Callable, set[BaseDecorator]]:
+        """Returns command values."""
+        return self._get_items({BrokerCommandEnroute, BrokerQueryEnroute})
+
+    def event(self) -> dict[Callable, set[BaseDecorator]]:
+        """Returns event values."""
+        return self._get_items({BrokerEventEnroute})
+
+    def _get_items(self, expected_types: set[Type[BaseDecorator]]) -> dict[Callable, set[BaseDecorator]]:
+        items = dict()
+        for fn, decorators in self._result.items():
+            decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
+            if len(decorators):
+                items[fn] = decorators
+        return items
+
     def get_all(self) -> dict[Callable, list[BaseDecorator]]:
         """TODO
 
@@ -137,24 +157,3 @@ class EnrouteDecoratorAnalyzer:
         v.visit_FunctionDef = visit_function_def
         v.visit(compile(inspect.getsource(target), "?", "exec", ast.PyCF_ONLY_AST))
         return res
-
-    def _get_items(self, expected_types: set[Type[BaseDecorator]]) -> dict[Callable, set[BaseDecorator]]:
-        items = dict()
-        for fn, decorators in self._result.items():
-            decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
-            if len(decorators):
-                items[fn] = decorators
-
-        return items
-
-    def rest(self) -> dict[Callable, set[BaseDecorator]]:
-        """Returns rest values."""
-        return self._get_items({RestCommandEnroute, RestQueryEnroute})
-
-    def command(self) -> dict[Callable, set[BaseDecorator]]:
-        """Returns command values."""
-        return self._get_items({BrokerCommandEnroute, BrokerQueryEnroute})
-
-    def event(self) -> dict[Callable, set[BaseDecorator]]:
-        """Returns event values."""
-        return self._get_items({BrokerEventEnroute})
