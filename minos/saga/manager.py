@@ -119,9 +119,9 @@ class SagaManager(MinosSagaManager):
     ) -> UUID:
         try:
             if pause_on_disk:
-                await self._run_pause_on_disk(execution, **kwargs)
+                await self._run_with_pause_on_disk(execution, **kwargs)
             else:
-                await self._run_pause_on_memory(execution, **kwargs)
+                await self._run_with_pause_on_memory(execution, **kwargs)
         except MinosSagaFailedExecutionException as exc:
             self.storage.store(execution)
             if raise_on_error:
@@ -133,14 +133,14 @@ class SagaManager(MinosSagaManager):
 
         return execution.uuid
 
-    async def _run_pause_on_disk(self, execution: SagaExecution, **kwargs) -> NoReturn:
+    async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> NoReturn:
         try:
             await execution.execute(**kwargs)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
             return execution.uuid
 
-    async def _run_pause_on_memory(
+    async def _run_with_pause_on_memory(
         self, execution: SagaExecution, reply: Optional[CommandReply] = None, **kwargs
     ) -> NoReturn:
 
