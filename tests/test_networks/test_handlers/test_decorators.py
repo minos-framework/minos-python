@@ -64,17 +64,39 @@ class FakeDecorated:
         return "bar"
 
 
-def _fn():
+# noinspection PyUnusedLocal
+def _fn(request: Request) -> Response:
     """For testing purposes."""
-    return "test"
+    return Response("test")
 
 
-async def _async_fn():
+async def _async_fn(request: Request) -> Response:
     """For testing purposes."""
-    return "test"
+    return Response(await request.content())
+
+
+class _FakeRequest(Request):
+    """For testing purposes"""
+
+    def __init__(self, content):
+        super().__init__()
+        self._content = content
+
+    async def content(self, **kwargs):
+        """For testing purposes"""
+        return self._content
+
+    def __eq__(self, other) -> bool:
+        return self._content == other._content
+
+    def __repr__(self) -> str:
+        return str()
 
 
 class TestEnroute(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.request = _FakeRequest("test")
+
     def test_repr(self):
         decorator = enroute.rest.command(url="tickets/", method="GET")
         self.assertEqual("RestCommandEnrouteDecorator('tickets/', 'GET')", repr(decorator))
@@ -82,12 +104,12 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_rest_command(self):
         decorator = enroute.rest.command(url="tickets/", method="GET")
         wrapper = decorator(_fn)
-        self.assertEqual("test", wrapper())
+        self.assertEqual(Response("test"), wrapper(self.request))
 
     async def test_rest_command_async(self):
         decorator = enroute.rest.command(url="tickets/", method="GET")
         wrapper = decorator(_async_fn)
-        self.assertEqual("test", await wrapper())
+        self.assertEqual(Response("test"), await wrapper(self.request))
 
     def test_rest_command_decorators(self):
         decorator = enroute.rest.command(url="tickets/", method="GET")
@@ -97,12 +119,12 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_rest_query(self):
         decorator = enroute.rest.query(url="tickets/", method="GET")
         wrapper = decorator(_fn)
-        self.assertEqual("test", wrapper())
+        self.assertEqual(Response("test"), wrapper(self.request))
 
     async def test_rest_query_async(self):
         decorator = enroute.rest.query(url="tickets/", method="GET")
         wrapper = decorator(_async_fn)
-        self.assertEqual("test", await wrapper())
+        self.assertEqual(Response("test"), await wrapper(self.request))
 
     def test_rest_query_decorators(self):
         decorator = enroute.rest.query(url="tickets/", method="GET")
@@ -116,12 +138,12 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_broker_command(self):
         decorator = enroute.broker.command(topics=["CreateTicket"])
         wrapper = decorator(_fn)
-        self.assertEqual("test", wrapper())
+        self.assertEqual(Response("test"), wrapper(self.request))
 
     async def test_broker_command_async(self):
         decorator = enroute.broker.command(topics=["CreateTicket"])
         wrapper = decorator(_async_fn)
-        self.assertEqual("test", await wrapper())
+        self.assertEqual(Response("test"), await wrapper(self.request))
 
     def test_broker_command_decorators(self):
         decorator = enroute.broker.command(topics=["CreateTicket"])
@@ -131,12 +153,12 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_broker_query(self):
         decorator = enroute.broker.query(topics=["CreateTicket"])
         wrapper = decorator(_fn)
-        self.assertEqual("test", wrapper())
+        self.assertEqual(Response("test"), wrapper(self.request))
 
     async def test_broker_query_async(self):
         decorator = enroute.broker.query(topics=["CreateTicket"])
         wrapper = decorator(_async_fn)
-        self.assertEqual("test", await wrapper())
+        self.assertEqual(Response("test"), await wrapper(self.request))
 
     def test_broker_query_decorators(self):
         decorator = enroute.broker.query(topics=["CreateTicket"])
@@ -146,12 +168,12 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_broker_event(self):
         decorator = enroute.broker.event(topics=["CreateTicket"])
         wrapper = decorator(_fn)
-        self.assertEqual("test", wrapper())
+        self.assertEqual(Response("test"), wrapper(self.request))
 
     async def test_broker_event_async(self):
         decorator = enroute.broker.event(topics=["CreateTicket"])
         wrapper = decorator(_async_fn)
-        self.assertEqual("test", await wrapper())
+        self.assertEqual(Response("test"), await wrapper(self.request))
 
     def test_broker_event_decorators(self):
         decorator = enroute.broker.event(topics=["CreateTicket"])

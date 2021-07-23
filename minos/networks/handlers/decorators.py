@@ -21,20 +21,26 @@ from inspect import (
     isfunction,
 )
 from typing import (
+    Awaitable,
     Callable,
     Final,
     Iterable,
+    Optional,
     Type,
     Union,
 )
 
 from minos.common import (
+    Request,
+    Response,
     import_module,
 )
 
 from ..exceptions import (
     MinosMultipleEnrouteDecoratorKindsException,
 )
+
+Adapter = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
 class EnrouteDecorator:
@@ -43,16 +49,16 @@ class EnrouteDecorator:
     # noinspection PyFinal
     KIND: Final[EnrouteDecoratorKind]
 
-    def __call__(self, fn: Callable):
+    def __call__(self, fn: Adapter) -> Adapter:
         if iscoroutinefunction(fn):
 
-            async def _wrapper(*args, **kwargs):
-                return await fn(*args, **kwargs)
+            async def _wrapper(request: Request) -> Optional[Response]:
+                return await fn(request)
 
         else:
 
-            def _wrapper(*args, **kwargs):
-                return fn(*args, **kwargs)
+            def _wrapper(request: Request) -> Optional[Response]:
+                return fn(request)
 
         _wrapper.__decorators__ = {self} | getattr(fn, "__decorators__", set())
         kinds = set(decorator.KIND for decorator in _wrapper.__decorators__)
