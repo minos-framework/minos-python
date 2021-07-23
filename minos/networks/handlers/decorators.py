@@ -37,11 +37,11 @@ from ..exceptions import (
 )
 
 
-class BaseDecorator:
-    """TODO"""
+class EnrouteDecorator:
+    """Base Decorator class."""
 
     # noinspection PyFinal
-    KIND: Final[EnrouteKind]
+    KIND: Final[EnrouteDecoratorKind]
 
     def __call__(self, fn: Callable):
         if iscoroutinefunction(fn):
@@ -69,7 +69,7 @@ class BaseDecorator:
         args = ", ".join(map(repr, self))
         return f"{type(self).__name__}({args})"
 
-    def __eq__(self, other: BaseDecorator) -> bool:
+    def __eq__(self, other: EnrouteDecorator) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:
@@ -80,18 +80,18 @@ class BaseDecorator:
         raise NotImplementedError
 
 
-class EnrouteKind(Enum):
-    """TODO"""
+class EnrouteDecoratorKind(Enum):
+    """Enroute Kind enumerate."""
 
     Command = auto()
     Event = auto()
     Query = auto()
 
 
-class BrokerCommandEnroute(BaseDecorator):
+class BrokerCommandEnrouteDecorator(EnrouteDecorator):
     """Broker Command Enroute class"""
 
-    KIND: Final[EnrouteKind] = EnrouteKind.Command
+    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Command
 
     def __init__(self, topics: Iterable[str]):
         if isinstance(topics, str):
@@ -102,10 +102,10 @@ class BrokerCommandEnroute(BaseDecorator):
         yield from (self.topics,)
 
 
-class BrokerQueryEnroute(BaseDecorator):
+class BrokerQueryEnrouteDecorator(EnrouteDecorator):
     """Broker Query Enroute class"""
 
-    KIND: Final[EnrouteKind] = EnrouteKind.Query
+    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Query
 
     def __init__(self, topics: Iterable[str]):
         if isinstance(topics, str):
@@ -116,10 +116,10 @@ class BrokerQueryEnroute(BaseDecorator):
         yield from (self.topics,)
 
 
-class BrokerEventEnroute(BaseDecorator):
+class BrokerEventEnrouteDecorator(EnrouteDecorator):
     """Broker Event Enroute class"""
 
-    KIND: Final[EnrouteKind] = EnrouteKind.Event
+    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Event
 
     def __init__(self, topics: Iterable[str]):
         if isinstance(topics, str):
@@ -133,15 +133,15 @@ class BrokerEventEnroute(BaseDecorator):
 class BrokerEnroute:
     """Broker Enroute class"""
 
-    command = BrokerCommandEnroute
-    query = BrokerQueryEnroute
-    event = BrokerEventEnroute
+    command = BrokerCommandEnrouteDecorator
+    query = BrokerQueryEnrouteDecorator
+    event = BrokerEventEnrouteDecorator
 
 
-class RestCommandEnroute(BaseDecorator):
+class RestCommandEnrouteDecorator(EnrouteDecorator):
     """Rest Command Enroute class"""
 
-    KIND: Final[EnrouteKind] = EnrouteKind.Command
+    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Command
 
     def __init__(self, url: str, method: str):
         self.url = url
@@ -154,10 +154,10 @@ class RestCommandEnroute(BaseDecorator):
         )
 
 
-class RestQueryEnroute(BaseDecorator):
+class RestQueryEnrouteDecorator(EnrouteDecorator):
     """Rest Query Enroute class"""
 
-    KIND: Final[EnrouteKind] = EnrouteKind.Query
+    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Query
 
     def __init__(self, url: str, method: str):
         self.url = url
@@ -173,8 +173,8 @@ class RestQueryEnroute(BaseDecorator):
 class RestEnroute:
     """Rest Enroute class"""
 
-    command = RestCommandEnroute
-    query = RestQueryEnroute
+    command = RestCommandEnrouteDecorator
+    query = RestQueryEnrouteDecorator
 
 
 class Enroute:
@@ -197,28 +197,28 @@ class EnrouteDecoratorAnalyzer:
         self.decorated = decorated
         self._result = None
 
-    def rest(self) -> dict[Callable, set[BaseDecorator]]:
+    def rest(self) -> dict[Callable, set[EnrouteDecorator]]:
         """Returns rest values.
 
-        :return: TODO
+        :return: A mapping with functions as keys and a sets of decorators as values.
         """
-        return self._get_items({RestCommandEnroute, RestQueryEnroute})
+        return self._get_items({RestCommandEnrouteDecorator, RestQueryEnrouteDecorator})
 
-    def command(self) -> dict[Callable, set[BaseDecorator]]:
+    def command(self) -> dict[Callable, set[EnrouteDecorator]]:
         """Returns command values.
 
-        :return: TODO
+        :return: A mapping with functions as keys and a sets of decorators as values.
         """
-        return self._get_items({BrokerCommandEnroute, BrokerQueryEnroute})
+        return self._get_items({BrokerCommandEnrouteDecorator, BrokerQueryEnrouteDecorator})
 
-    def event(self) -> dict[Callable, set[BaseDecorator]]:
+    def event(self) -> dict[Callable, set[EnrouteDecorator]]:
         """Returns event values.
 
-        :return: TODO
+        :return: A mapping with functions as keys and a sets of decorators as values.
         """
-        return self._get_items({BrokerEventEnroute})
+        return self._get_items({BrokerEventEnrouteDecorator})
 
-    def _get_items(self, expected_types: set[Type[BaseDecorator]]) -> dict[Callable, set[BaseDecorator]]:
+    def _get_items(self, expected_types: set[Type[EnrouteDecorator]]) -> dict[Callable, set[EnrouteDecorator]]:
         items = dict()
         for fn, decorators in self.get_all().items():
             decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
@@ -226,10 +226,10 @@ class EnrouteDecoratorAnalyzer:
                 items[fn] = decorators
         return items
 
-    def get_all(self) -> dict[Callable, set[BaseDecorator]]:
+    def get_all(self) -> dict[Callable, set[EnrouteDecorator]]:
         """Get all functions decorated with enroute decorators.
 
-        :return: A mapping with functions as keys and their set of decorators as values.
+        :return: A mapping with functions as keys and a sets of decorators as values.
         """
         if self._result is None:
 
