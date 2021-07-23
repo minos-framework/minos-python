@@ -10,7 +10,11 @@ from __future__ import (
 
 import logging
 from functools import (
-    cached_property, partial,
+    cached_property,
+    partial,
+)
+from importlib import (
+    import_module,
 )
 from inspect import (
     isawaitable,
@@ -35,18 +39,16 @@ from minos.common import (
     MinosSetup,
     Response,
     ResponseException,
-    classname
+    classname,
 )
 
-from importlib import (
-    import_module,
+from .. import (
+    EnrouteDecoratorAnalyzer,
 )
-
 from .messages import (
     HttpRequest,
     HttpResponse,
 )
-from .. import EnrouteDecoratorAnalyzer
 
 logger = logging.getLogger(__name__)
 
