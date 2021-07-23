@@ -17,10 +17,13 @@ from enum import (
 )
 from inspect import (
     getmembers,
+    isawaitable,
     iscoroutinefunction,
     isfunction,
+    signature,
 )
 from typing import (
+    Any,
     Awaitable,
     Callable,
     Final,
@@ -40,7 +43,10 @@ from ..exceptions import (
     MinosMultipleEnrouteDecoratorKindsException,
 )
 
-Adapter = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
+Adapter = Union[
+    Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]],
+    Callable[[Any, Request], Union[Optional[Response], Awaitable[Optional[Response]]]],
+]
 
 
 class EnrouteDecorator:
@@ -50,24 +56,49 @@ class EnrouteDecorator:
     KIND: Final[EnrouteDecoratorKind]
 
     def __call__(self, fn: Adapter) -> Adapter:
-        if iscoroutinefunction(fn):
+        sig = signature(fn)
 
-            async def _wrapper(request: Request) -> Optional[Response]:
-                return await fn(request)
+        if len(sig.parameters) == 2:
+            if iscoroutinefunction(fn):
+
+                async def _wrapper(this: Any, request: Request) -> Optional[Response]:
+
+                    if not getattr(_wrapper, "__applied_pre_fn__"):
+                        pre_fn = getattr(this, self.KIND.pref_fn_name, None)
+                        if pre_fn is not None:
+                            request = pre_fn(request)
+                            if isawaitable(request):
+                                request = await request
+                            if hasattr(fn, "__applied_pre_fn__"):
+                                fn.__applied_pre_fn__ = True
+
+                    return await fn(this, request)
+
+            else:
+
+                def _wrapper(this: Any, request: Request) -> Optional[Response]:
+                    return fn(this, request)
 
         else:
+            if iscoroutinefunction(fn):
 
-            def _wrapper(request: Request) -> Optional[Response]:
-                return fn(request)
+                async def _wrapper(request: Request) -> Optional[Response]:
+                    return await fn(request)
 
-        _wrapper.__decorators__ = {self} | getattr(fn, "__decorators__", set())
+            else:
+
+                def _wrapper(request: Request) -> Optional[Response]:
+                    return fn(request)
+
+        _wrapper.__applied_pre_fn__ = False
+
+        _wrapper.__decorators__ = getattr(fn, "__decorators__", set())
+        _wrapper.__decorators__.add(self)
         kinds = set(decorator.KIND for decorator in _wrapper.__decorators__)
         if len(kinds) > 1:
             raise MinosMultipleEnrouteDecoratorKindsException(
                 f"There are multiple kinds but only one is allowed: {kinds}"
             )
-
-        _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
 
         return _wrapper
 
@@ -90,8 +121,21 @@ class EnrouteDecoratorKind(Enum):
     """Enroute Kind enumerate."""
 
     Command = auto()
-    Event = auto()
     Query = auto()
+    Event = auto()
+
+    @property
+    def pref_fn_name(self) -> str:
+        """TODO
+
+        :return:TODO
+        """
+        mapping = {
+            self.Command: "_pre_command_handle",
+            self.Query: "_pre_query_handle",
+            self.Event: "_pre_event_handle",
+        }
+        return mapping[self]
 
 
 class BrokerCommandEnrouteDecorator(EnrouteDecorator):
