@@ -5,15 +5,9 @@ from aiohttp.test_utils import (
     unittest_run_loop,
 )
 
-from minos.common import (
-    MinosConfig,
-)
-from minos.networks import (
-    RestService,
-)
-from tests.utils import (
-    BASE_PATH,
-)
+from minos.common import MinosConfig
+from minos.networks import RestService
+from tests.utils import BASE_PATH
 
 
 class TestRestService(AioHTTPTestCase):

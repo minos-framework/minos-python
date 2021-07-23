@@ -4,17 +4,11 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
-from importlib import (
-    import_module,
-)
-from inspect import (
-    isawaitable,
-)
+from importlib import import_module
+from inspect import isawaitable
 from typing import (
     Any,
     Awaitable,
@@ -25,9 +19,7 @@ from typing import (
     Union,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-)
+from dependency_injector.wiring import Provide
 
 from minos.common import (
     Command,
@@ -39,18 +31,10 @@ from minos.common import (
     ResponseException,
 )
 
-from ..abc import (
-    Handler,
-)
-from ..decorators import (
-    EnrouteDecoratorAnalyzer,
-)
-from ..entries import (
-    HandlerEntry,
-)
-from .messages import (
-    CommandRequest,
-)
+from ..abc import Handler
+from ..decorators import EnrouteDecoratorAnalyzer
+from ..entries import HandlerEntry
+from .messages import CommandRequest
 
 logger = logging.getLogger(__name__)
 

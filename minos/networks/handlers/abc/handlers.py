@@ -5,17 +5,11 @@
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
 
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
-from abc import (
-    abstractmethod,
-)
-from datetime import (
-    datetime,
-)
+from abc import abstractmethod
+from datetime import datetime
 from typing import (
     Any,
     Callable,
@@ -29,19 +23,11 @@ from psycopg2.sql import (
     Identifier,
 )
 
-from minos.common import (
-    MinosModel,
-)
+from minos.common import MinosModel
 
-from ...exceptions import (
-    MinosActionNotFoundException,
-)
-from ..entries import (
-    HandlerEntry,
-)
-from .setups import (
-    HandlerSetup,
-)
+from ...exceptions import MinosActionNotFoundException
+from ..entries import HandlerEntry
+from .setups import HandlerSetup
 
 logger = logging.getLogger(__name__)
 

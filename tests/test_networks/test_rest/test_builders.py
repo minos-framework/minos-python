@@ -1,24 +1,18 @@
 import unittest
 
-from aiohttp import (
-    web,
-)
+from aiohttp import web
 from aiohttp.web_exceptions import (
     HTTPBadRequest,
     HTTPInternalServerError,
 )
-from yarl import (
-    URL,
-)
+from yarl import URL
 
 from minos.common import (
     ModelType,
     Request,
     Response,
 )
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     HttpRequest,
     HttpResponse,
@@ -26,9 +20,7 @@ from minos.networks import (
     MinosActionNotFoundException,
     RestBuilder,
 )
-from tests.utils import (
-    BASE_PATH,
-)
+from tests.utils import BASE_PATH
 
 
 class _Cls:

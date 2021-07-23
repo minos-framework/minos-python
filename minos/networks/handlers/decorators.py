@@ -4,9 +4,7 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from functools import (
-    cache,
-)
+from functools import cache
 
 
 class BaseDecorator:

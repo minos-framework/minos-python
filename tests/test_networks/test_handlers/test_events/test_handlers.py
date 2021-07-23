@@ -1,18 +1,12 @@
 import unittest
-from datetime import (
-    datetime,
-)
+from datetime import datetime
 from unittest.mock import (
     AsyncMock,
     call,
 )
 
-from minos.common import (
-    Event,
-)
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
+from minos.common import Event
+from minos.common.testing import PostgresAsyncTestCase
 from minos.networks import (
     EventHandler,
     HandlerEntry,

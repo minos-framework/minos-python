@@ -3,9 +3,7 @@ from minos.common import (
     Request,
     Response,
 )
-from minos.networks import (
-    enroute,
-)
+from minos.networks import enroute
 
 
 class CqrsService(object):
