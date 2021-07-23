@@ -4,12 +4,17 @@
 #
 # Minos framework can not be copied and/or distributed without the express
 # permission of Clariteia SL.
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import logging
 from functools import (
     cached_property,
     partial,
+)
+from importlib import (
+    import_module,
 )
 from inspect import (
     isawaitable,
@@ -23,17 +28,27 @@ from typing import (
     Union,
 )
 
-from aiohttp import web
+from aiohttp import (
+    web,
+)
 
-from minos.common import ENDPOINT, MinosConfig, MinosException, MinosSetup, Response, ResponseException, classname
+from minos.common import (
+    ENDPOINT,
+    MinosConfig,
+    MinosException,
+    MinosSetup,
+    Response,
+    ResponseException,
+    classname,
+)
 
-from importlib import import_module
-
+from .. import (
+    EnrouteDecoratorAnalyzer,
+)
 from .messages import (
     HttpRequest,
     HttpResponse,
 )
-from .. import EnrouteDecoratorAnalyzer
 
 logger = logging.getLogger(__name__)
 
