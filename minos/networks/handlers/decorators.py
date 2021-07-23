@@ -15,9 +15,6 @@ from enum import (
     Enum,
     auto,
 )
-from functools import (
-    cached_property,
-)
 from inspect import (
     getmembers,
     iscoroutinefunction,
@@ -25,15 +22,21 @@ from inspect import (
 )
 from typing import (
     Callable,
+    Final,
     Iterable,
     Type,
+)
+
+from ..exceptions import (
+    MinosMultipleEnrouteDecoratorKindsException,
 )
 
 
 class BaseDecorator:
     """TODO"""
 
-    KIND: EnrouteKind
+    # noinspection PyFinal
+    KIND: Final[EnrouteKind]
 
     def __call__(self, fn: Callable):
         if iscoroutinefunction(fn):
@@ -49,7 +52,9 @@ class BaseDecorator:
         _wrapper.__decorators__ = {self} | getattr(fn, "__decorators__", set())
         kinds = set(decorator.KIND for decorator in _wrapper.__decorators__)
         if len(kinds) > 1:
-            raise EnrouteKindError(f"There are multiple kinds but only one is allowed: {kinds}")
+            raise MinosMultipleEnrouteDecoratorKindsException(
+                f"There are multiple kinds but only one is allowed: {kinds}"
+            )
 
         _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
 
@@ -78,14 +83,10 @@ class EnrouteKind(Enum):
     Query = auto()
 
 
-class EnrouteKindError(Exception):
-    """TODO"""
-
-
 class BrokerCommandEnroute(BaseDecorator):
     """Broker Command Enroute class"""
 
-    KIND = EnrouteKind.Command
+    KIND: Final[EnrouteKind] = EnrouteKind.Command
 
     def __init__(self, topics: Iterable[str]):
         if isinstance(topics, str):
@@ -99,7 +100,7 @@ class BrokerCommandEnroute(BaseDecorator):
 class BrokerQueryEnroute(BaseDecorator):
     """Broker Query Enroute class"""
 
-    KIND = EnrouteKind.Query
+    KIND: Final[EnrouteKind] = EnrouteKind.Query
 
     def __init__(self, topics: Iterable[str]):
         if isinstance(topics, str):
@@ -113,7 +114,7 @@ class BrokerQueryEnroute(BaseDecorator):
 class BrokerEventEnroute(BaseDecorator):
     """Broker Event Enroute class"""
 
-    KIND = EnrouteKind.Event
+    KIND: Final[EnrouteKind] = EnrouteKind.Event
 
     def __init__(self, topics: Iterable[str]):
         if isinstance(topics, str):
@@ -135,7 +136,7 @@ class BrokerEnroute:
 class RestCommandEnroute(BaseDecorator):
     """Rest Command Enroute class"""
 
-    KIND = EnrouteKind.Command
+    KIND: Final[EnrouteKind] = EnrouteKind.Command
 
     def __init__(self, url: str, method: str):
         self.url = url
@@ -151,7 +152,7 @@ class RestCommandEnroute(BaseDecorator):
 class RestQueryEnroute(BaseDecorator):
     """Rest Query Enroute class"""
 
-    KIND = EnrouteKind.Query
+    KIND: Final[EnrouteKind] = EnrouteKind.Query
 
     def __init__(self, url: str, method: str):
         self.url = url
@@ -186,6 +187,7 @@ class EnrouteDecoratorAnalyzer:
 
     def __init__(self, classname: Type):
         self.classname = classname
+        self._result = None
 
     def rest(self) -> dict[Callable, set[BaseDecorator]]:
         """Returns rest values."""
@@ -201,7 +203,7 @@ class EnrouteDecoratorAnalyzer:
 
     def _get_items(self, expected_types: set[Type[BaseDecorator]]) -> dict[Callable, set[BaseDecorator]]:
         items = dict()
-        for fn, decorators in self._result.items():
+        for fn, decorators in self.get_all().items():
             decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
             if len(decorators):
                 items[fn] = decorators
@@ -212,17 +214,13 @@ class EnrouteDecoratorAnalyzer:
 
         :return:TODO
         """
+        if self._result is None:
+
+            result = dict()
+            for _, fn in getmembers(self.classname, predicate=isfunction):
+                if not hasattr(fn, "__decorators__"):
+                    continue
+                result[fn] = fn.__decorators__
+            return result
+
         return self._result
-
-    @cached_property
-    def _result(self) -> dict[Callable, set[BaseDecorator]]:
-        """TODO
-
-        :return: TODO
-        """
-        result = dict()
-        for _, fn in getmembers(self.classname, predicate=isfunction):
-            if not hasattr(fn, "__decorators__"):
-                continue
-            result[fn] = fn.__decorators__
-        return result

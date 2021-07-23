@@ -9,6 +9,7 @@ import unittest
 
 from minos.networks import (
     EnrouteDecoratorAnalyzer,
+    MinosMultipleEnrouteDecoratorKindsException,
     enroute,
 )
 from minos.networks.handlers import (
@@ -96,13 +97,99 @@ def _fn():
     return "test"
 
 
-class TestDecorators(unittest.IsolatedAsyncioTestCase):
-    async def test_rest_query_base(self):
-        func = enroute.rest.query(url="tickets/", method="GET")
-        wrapper = func(_fn)
-        result = wrapper()
-        self.assertEqual("test", result)
+async def _async_fn():
+    """For testing purposes."""
+    return "test"
 
+
+class TestEnroute(unittest.IsolatedAsyncioTestCase):
+    def test_rest_command(self):
+        decorator = enroute.rest.command(url="tickets/", method="GET")
+        wrapper = decorator(_fn)
+        self.assertEqual("test", wrapper())
+
+    async def test_rest_command_async(self):
+        decorator = enroute.rest.command(url="tickets/", method="GET")
+        wrapper = decorator(_async_fn)
+        self.assertEqual("test", await wrapper())
+
+    def test_rest_command_decorators(self):
+        decorator = enroute.rest.command(url="tickets/", method="GET")
+        wrapper = decorator(_fn)
+        self.assertEqual({RestCommandEnroute("tickets/", "GET")}, wrapper.__decorators__)
+
+    def test_rest_query(self):
+        decorator = enroute.rest.query(url="tickets/", method="GET")
+        wrapper = decorator(_fn)
+        self.assertEqual("test", wrapper())
+
+    async def test_rest_query_async(self):
+        decorator = enroute.rest.query(url="tickets/", method="GET")
+        wrapper = decorator(_async_fn)
+        self.assertEqual("test", await wrapper())
+
+    def test_rest_query_decorators(self):
+        decorator = enroute.rest.query(url="tickets/", method="GET")
+        wrapper = decorator(_fn)
+        self.assertEqual({RestQueryEnroute("tickets/", "GET")}, wrapper.__decorators__)
+
+    def test_rest_event_raises(self):
+        with self.assertRaises(AttributeError):
+            enroute.rest.event(topics=["CreateTicket"])
+
+    def test_broker_command(self):
+        decorator = enroute.broker.command(topics=["CreateTicket"])
+        wrapper = decorator(_fn)
+        self.assertEqual("test", wrapper())
+
+    async def test_broker_command_async(self):
+        decorator = enroute.broker.command(topics=["CreateTicket"])
+        wrapper = decorator(_async_fn)
+        self.assertEqual("test", await wrapper())
+
+    def test_broker_command_decorators(self):
+        decorator = enroute.broker.command(topics=["CreateTicket"])
+        wrapper = decorator(_fn)
+        self.assertEqual({BrokerCommandEnroute("CreateTicket")}, wrapper.__decorators__)
+
+    def test_broker_query(self):
+        decorator = enroute.broker.query(topics=["CreateTicket"])
+        wrapper = decorator(_fn)
+        self.assertEqual("test", wrapper())
+
+    async def test_broker_query_async(self):
+        decorator = enroute.broker.query(topics=["CreateTicket"])
+        wrapper = decorator(_async_fn)
+        self.assertEqual("test", await wrapper())
+
+    def test_broker_query_decorators(self):
+        decorator = enroute.broker.query(topics=["CreateTicket"])
+        wrapper = decorator(_async_fn)
+        self.assertEqual({BrokerQueryEnroute("CreateTicket")}, wrapper.__decorators__)
+
+    def test_broker_event(self):
+        decorator = enroute.broker.event(topics=["CreateTicket"])
+        wrapper = decorator(_fn)
+        self.assertEqual("test", wrapper())
+
+    async def test_broker_event_async(self):
+        decorator = enroute.broker.event(topics=["CreateTicket"])
+        wrapper = decorator(_async_fn)
+        self.assertEqual("test", await wrapper())
+
+    def test_broker_event_decorators(self):
+        decorator = enroute.broker.event(topics=["CreateTicket"])
+        wrapper = decorator(_fn)
+        self.assertEqual({BrokerEventEnroute("CreateTicket")}, wrapper.__decorators__)
+
+    def test_multiple_decorator_kind_raises(self):
+        event_decorator = enroute.broker.event(topics=["CreateTicket"])
+        command_decorator = enroute.broker.command(topics=["CreateTicket"])
+        with self.assertRaises(MinosMultipleEnrouteDecoratorKindsException):
+            event_decorator(command_decorator(_fn))
+
+
+class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
     async def test_rest_query_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(RestQueryExample)
 
@@ -119,12 +206,6 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_rest_dont_have_event(self):
-        with self.assertRaises(Exception) as context:
-            enroute.rest.event(topics=["CreateTicket"])
-
-        self.assertTrue("type object 'RestEnroute' has no attribute 'event'" in str(context.exception))
-
     async def test_rest_command_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
 
@@ -132,12 +213,6 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         expected = {RestCommandExample.get_tickets: {RestCommandEnroute("orders/", "GET")}}
 
         self.assertEqual(expected, observed)
-
-    async def test_broker_query(self):
-        func = enroute.broker.query(topics=["CreateTicket"])
-        wrapper = func(_fn)
-        result = wrapper()
-        self.assertEqual("test", result)
 
     async def test_broker_query_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerQueryExample)
@@ -147,12 +222,6 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_broker_command(self):
-        func = enroute.broker.command(topics=["CreateTicket"])
-        wrapper = func(_fn)
-        result = wrapper()
-        self.assertEqual("test", result)
-
     async def test_broker_command_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerCommandExample)
 
@@ -160,12 +229,6 @@ class TestDecorators(unittest.IsolatedAsyncioTestCase):
         expected = {BrokerCommandExample.get_tickets: {BrokerCommandEnroute("BrokerCommand")}}
 
         self.assertEqual(expected, observed)
-
-    async def test_broker_event(self):
-        func = enroute.broker.event(topics=["CreateTicket"])
-        wrapper = func(_fn)
-        result = wrapper()
-        self.assertEqual("test", result)
 
     async def test_broker_event_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerEventExample)

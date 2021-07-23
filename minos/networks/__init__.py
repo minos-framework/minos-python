@@ -25,6 +25,7 @@ from .exceptions import (
     MinosDiscoveryConnectorException,
     MinosHandlerException,
     MinosHandlerNotFoundEnoughEntriesException,
+    MinosMultipleEnrouteDecoratorKindsException,
     MinosNetworkException,
 )
 from .handlers import (
