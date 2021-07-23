@@ -63,15 +63,5 @@ saga:
         retry: 2
 
 discovery:
-    host: discovery-service
+    host: localhost
     port: 8080
-    endpoints:
-        subscribe:
-            path: subscribe
-            method: POST
-        unsubscribe:
-            path: unsubscribe?name=
-            method: POST
-        discover:
-            path: discover?name=
-            method: GET

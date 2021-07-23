@@ -58,30 +58,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual("test", events.service)
 
     def test_config_discovery(self):
-        config = MinosConfig(
-            path=self.config_file_path,
-            minos_discovery_host="some-host",
-            minos_discovery_port=333,
-            minos_discovery_endpoints_subscribe_path="subscribe-test",
-            minos_discovery_endpoints_subscribe_method="TEST-METHOD",
-            minos_discovery_endpoints_unsubscribe_path="unsubscribe-test",
-            minos_discovery_endpoints_unsubscribe_method="TEST-METHOD",
-            minos_discovery_endpoints_discover_path="discover-test",
-            minos_discovery_endpoints_discover_method="TEST-METHOD",
-        )
+        config = MinosConfig(path=self.config_file_path, minos_discovery_host="some-host", minos_discovery_port=333,)
         discovery = config.discovery
         self.assertEqual("some-host", discovery.host)
         self.assertEqual(333, discovery.port)
-
-        endpoints = discovery.endpoints
-        subscribe = endpoints.subscribe
-        self.assertEqual("subscribe-test", subscribe.path)
-        self.assertEqual("TEST-METHOD", subscribe.method)
-
-        unsubscribe = endpoints.unsubscribe
-        self.assertEqual("unsubscribe-test", unsubscribe.path)
-        self.assertEqual("TEST-METHOD", unsubscribe.method)
-
-        discover = endpoints.discover
-        self.assertEqual("discover-test", discover.path)
-        self.assertEqual("TEST-METHOD", discover.method)

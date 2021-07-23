@@ -12,6 +12,7 @@ from .configuration import (
     BROKER,
     COMMANDS,
     CONTROLLER,
+    DISCOVERY,
     EVENTS,
     QUEUE,
     REPOSITORY,
