@@ -13,8 +13,8 @@ from minos.common import (
     classname,
 )
 from minos.networks import (
+    EnrouteAnalyzer,
     EnrouteBuilder,
-    EnrouteDecoratorAnalyzer,
     MinosMultipleEnrouteDecoratorKindsException,
     enroute,
 )
@@ -168,11 +168,11 @@ class TestEnrouteDecoratorImplementations(unittest.IsolatedAsyncioTestCase):
 
 class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
     def test_decorated_str(self):
-        analyzer = EnrouteDecoratorAnalyzer(classname(FakeDecorated))
+        analyzer = EnrouteAnalyzer(classname(FakeDecorated))
         self.assertEqual(FakeDecorated, analyzer.decorated)
 
     def test_multiple_decorators(self):
-        analyzer = EnrouteDecoratorAnalyzer(FakeDecorated)
+        analyzer = EnrouteAnalyzer(FakeDecorated)
 
         observed = analyzer.get_all()
         expected = {
@@ -190,7 +190,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_get_only_rest_decorators(self):
-        analyzer = EnrouteDecoratorAnalyzer(FakeDecorated)
+        analyzer = EnrouteAnalyzer(FakeDecorated)
 
         observed = analyzer.get_rest_command_query()
         expected = {
@@ -201,7 +201,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_get_only_command_decorators(self):
-        analyzer = EnrouteDecoratorAnalyzer(FakeDecorated)
+        analyzer = EnrouteAnalyzer(FakeDecorated)
 
         observed = analyzer.get_broker_command_query()
         expected = {
@@ -212,7 +212,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_get_only_event_decorators(self):
-        analyzer = EnrouteDecoratorAnalyzer(FakeDecorated)
+        analyzer = EnrouteAnalyzer(FakeDecorated)
 
         observed = analyzer.get_broker_event()
         expected = {"ticket_added": {BrokerEventEnrouteDecorator("TicketAdded")}}
