@@ -196,21 +196,21 @@ class EnrouteDecoratorAnalyzer:
 
         self.decorated = decorated
 
-    def rest(self) -> dict[Callable, set[EnrouteDecorator]]:
+    def get_rest_command_query(self) -> dict[Callable, set[EnrouteDecorator]]:
         """Returns rest values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
         return self._get_items({RestCommandEnrouteDecorator, RestQueryEnrouteDecorator})
 
-    def command(self) -> dict[Callable, set[EnrouteDecorator]]:
+    def get_broker_command_query(self) -> dict[Callable, set[EnrouteDecorator]]:
         """Returns command values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
         return self._get_items({BrokerCommandEnrouteDecorator, BrokerQueryEnrouteDecorator})
 
-    def event(self) -> dict[Callable, set[EnrouteDecorator]]:
+    def get_broker_event(self) -> dict[Callable, set[EnrouteDecorator]]:
         """Returns event values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.

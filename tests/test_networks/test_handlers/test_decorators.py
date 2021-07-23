@@ -265,7 +265,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
     def test_get_only_rest_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
 
-        observed = analyzer.rest()
+        observed = analyzer.get_rest_command_query()
         expected = {
             MultipleDecoratorsExample.get_tickets: {RestQueryEnrouteDecorator("tickets/", "GET")},
             MultipleDecoratorsExample.create_ticket: {RestCommandEnrouteDecorator("orders/", "GET")},
@@ -276,7 +276,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
     def test_get_only_command_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
 
-        observed = analyzer.command()
+        observed = analyzer.get_broker_command_query()
         expected = {
             MultipleDecoratorsExample.get_tickets: {BrokerQueryEnrouteDecorator("TicketBrokerEvent")},
             MultipleDecoratorsExample.create_ticket: {BrokerCommandEnrouteDecorator(("CreateTicket", "AddTicket"))},
@@ -287,7 +287,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
     def test_get_only_event_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
 
-        observed = analyzer.event()
+        observed = analyzer.get_broker_event()
         expected = {MultipleDecoratorsExample.ticket_added: {BrokerEventEnrouteDecorator("TicketAdded")}}
 
         self.assertEqual(expected, observed)
