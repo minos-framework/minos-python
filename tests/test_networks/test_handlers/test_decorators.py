@@ -13,6 +13,7 @@ from minos.common import (
     classname,
 )
 from minos.networks import (
+    EnrouteBuilder,
     EnrouteDecoratorAnalyzer,
     MinosMultipleEnrouteDecoratorKindsException,
     enroute,
@@ -112,6 +113,13 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         response = await instance.get_tickets(_FakeRequest("test"))
         self.assertEqual(Response("test"), response)
 
+    async def test_method_query_call_2(self):
+        builder = EnrouteBuilder(FakeDecorated)
+        fn = builder.get_broker_event()[0][0]
+
+        response = await fn(_FakeRequest("test"))
+        self.assertEqual(Response("test"), response)
+
     async def test_static_method_event_call(self):
         instance = FakeDecorated()
         response = await instance.ticket_added(_FakeRequest("test"))
@@ -167,15 +175,15 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_all()
         expected = {
-            FakeDecorated.get_tickets: {
+            "get_tickets": {
                 BrokerQueryEnrouteDecorator(("GetTickets",)),
                 RestQueryEnrouteDecorator("tickets/", "GET"),
             },
-            FakeDecorated.create_ticket: {
+            "create_ticket": {
                 BrokerCommandEnrouteDecorator(("CreateTicket", "AddTicket")),
                 RestCommandEnrouteDecorator("orders/", "GET"),
             },
-            FakeDecorated.ticket_added: {BrokerEventEnrouteDecorator("TicketAdded")},
+            "ticket_added": {BrokerEventEnrouteDecorator("TicketAdded")},
         }
 
         self.assertEqual(expected, observed)
@@ -185,8 +193,8 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_rest_command_query()
         expected = {
-            FakeDecorated.get_tickets: {RestQueryEnrouteDecorator("tickets/", "GET")},
-            FakeDecorated.create_ticket: {RestCommandEnrouteDecorator("orders/", "GET")},
+            "get_tickets": {RestQueryEnrouteDecorator("tickets/", "GET")},
+            "create_ticket": {RestCommandEnrouteDecorator("orders/", "GET")},
         }
 
         self.assertEqual(expected, observed)
@@ -196,8 +204,8 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_broker_command_query()
         expected = {
-            FakeDecorated.get_tickets: {BrokerQueryEnrouteDecorator("GetTickets")},
-            FakeDecorated.create_ticket: {BrokerCommandEnrouteDecorator(("CreateTicket", "AddTicket"))},
+            "get_tickets": {BrokerQueryEnrouteDecorator("GetTickets")},
+            "create_ticket": {BrokerCommandEnrouteDecorator(("CreateTicket", "AddTicket"))},
         }
 
         self.assertEqual(expected, observed)
@@ -206,7 +214,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
         analyzer = EnrouteDecoratorAnalyzer(FakeDecorated)
 
         observed = analyzer.get_broker_event()
-        expected = {FakeDecorated.ticket_added: {BrokerEventEnrouteDecorator("TicketAdded")}}
+        expected = {"ticket_added": {BrokerEventEnrouteDecorator("TicketAdded")}}
 
         self.assertEqual(expected, observed)
 

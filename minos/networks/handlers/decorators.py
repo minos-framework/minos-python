@@ -67,6 +67,7 @@ class EnrouteDecorator:
             raise MinosMultipleEnrouteDecoratorKindsException(
                 f"There are multiple kinds but only one is allowed: {kinds}"
             )
+        _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
 
         return _wrapper
 
@@ -214,28 +215,28 @@ class EnrouteDecoratorAnalyzer:
 
         self.decorated = decorated
 
-    def get_rest_command_query(self) -> dict[Callable, set[EnrouteDecorator]]:
+    def get_rest_command_query(self) -> dict[str, set[EnrouteDecorator]]:
         """Returns rest values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
         return self._get_items({RestCommandEnrouteDecorator, RestQueryEnrouteDecorator})
 
-    def get_broker_command_query(self) -> dict[Callable, set[EnrouteDecorator]]:
+    def get_broker_command_query(self) -> dict[str, set[EnrouteDecorator]]:
         """Returns command values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
         return self._get_items({BrokerCommandEnrouteDecorator, BrokerQueryEnrouteDecorator})
 
-    def get_broker_event(self) -> dict[Callable, set[EnrouteDecorator]]:
+    def get_broker_event(self) -> dict[str, set[EnrouteDecorator]]:
         """Returns event values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
         return self._get_items({BrokerEventEnrouteDecorator})
 
-    def _get_items(self, expected_types: set[Type[EnrouteDecorator]]) -> dict[Callable, set[EnrouteDecorator]]:
+    def _get_items(self, expected_types: set[Type[EnrouteDecorator]]) -> dict[str, set[EnrouteDecorator]]:
         items = dict()
         for fn, decorators in self.get_all().items():
             decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
@@ -243,14 +244,88 @@ class EnrouteDecoratorAnalyzer:
                 items[fn] = decorators
         return items
 
-    def get_all(self) -> dict[Callable, set[EnrouteDecorator]]:
+    def get_all(self) -> dict[str, set[EnrouteDecorator]]:
         """Get all functions decorated with enroute decorators.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
         result = dict()
-        for _, fn in getmembers(self.decorated, predicate=isfunction):
+        for name, fn in getmembers(self.decorated, predicate=isfunction):
             if not hasattr(fn, "__decorators__"):
                 continue
-            result[fn] = fn.__decorators__
+            result[name] = fn.__decorators__
         return result
+
+
+class EnrouteBuilder:
+    """TODO"""
+
+    def __init__(self, decorated: Union[str, Type]):
+        if isinstance(decorated, str):
+            decorated = import_module(decorated)
+
+        self.analyzer = EnrouteDecoratorAnalyzer(decorated)
+        self.instance = decorated()
+
+    def get_rest_command_query(self) -> list[(Callable, EnrouteDecorator)]:
+        """TODO
+
+        :return: TODO
+        """
+        mapping = self.analyzer.get_rest_command_query()
+
+        ans = list()
+        for name, decorators in mapping.items():
+            fn = getattr(self.instance, name)
+            for decorator in decorators:
+                pre_fn = getattr(self.instance, decorator.KIND.pref_fn_name, None)
+                if pre_fn is not None:
+
+                    async def fn(request):
+                        request = await pre_fn(request)
+                        return await fn(request)
+
+                ans.append((fn, decorator))
+        return ans
+
+    def get_broker_command_query(self) -> list[(Callable, EnrouteDecorator)]:
+        """TODO
+
+        :return: TODO
+        """
+        mapping = self.analyzer.get_broker_command_query()
+        ans = list()
+        for name, decorators in mapping.items():
+            fn = getattr(self.instance, name)
+            for decorator in decorators:
+                pre_fn = getattr(self.instance, decorator.KIND.pref_fn_name, None)
+                if pre_fn is not None:
+
+                    async def fn(request):
+                        request = await pre_fn(request)
+                        return await fn(request)
+
+                ans.append((fn, decorator))
+        return ans
+
+    def get_broker_event(self) -> list[(Callable, EnrouteDecorator)]:
+        """TODO
+
+        :return: TODO
+        """
+        mapping = self.analyzer.get_broker_event()
+        ans = list()
+        for name, decorators in mapping.items():
+            fn = getattr(self.instance, name)
+            for decorator in decorators:
+                pre_fn = getattr(self.instance, decorator.KIND.pref_fn_name, None)
+                if pre_fn is not None:
+
+                    async def _fn(request):
+                        request = await pre_fn(request)
+                        return await fn(request)
+
+                else:
+                    _fn = fn
+                ans.append((_fn, decorator))
+        return ans
