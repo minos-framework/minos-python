@@ -195,7 +195,6 @@ class EnrouteDecoratorAnalyzer:
             decorated = import_module(decorated)
 
         self.decorated = decorated
-        self._result = None
 
     def rest(self) -> dict[Callable, set[EnrouteDecorator]]:
         """Returns rest values.
@@ -231,13 +230,9 @@ class EnrouteDecoratorAnalyzer:
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
-        if self._result is None:
-
-            result = dict()
-            for _, fn in getmembers(self.decorated, predicate=isfunction):
-                if not hasattr(fn, "__decorators__"):
-                    continue
-                result[fn] = fn.__decorators__
-            return result
-
-        return self._result
+        result = dict()
+        for _, fn in getmembers(self.decorated, predicate=isfunction):
+            if not hasattr(fn, "__decorators__"):
+                continue
+            result[fn] = fn.__decorators__
+        return result
