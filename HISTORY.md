@@ -51,3 +51,8 @@ History
 
 * Now Sagas can be paused also on memory in addition to on disk.
 * Improve SagaManager API.
+
+0.0.9 (2021-07-26)
+------------------
+
+* Add flag to return SagaExecution instances directly from SagaManager
