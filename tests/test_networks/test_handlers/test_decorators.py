@@ -114,6 +114,7 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(Response("test"), response)
 
     async def test_method_query_call_2(self):
+        # FIXME
         builder = EnrouteBuilder(FakeDecorated)
         fn = builder.get_broker_event()[0][0]
 

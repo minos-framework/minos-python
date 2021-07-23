@@ -17,6 +17,7 @@ from enum import (
 )
 from inspect import (
     getmembers,
+    isawaitable,
     iscoroutinefunction,
     isfunction,
 )
@@ -267,53 +268,34 @@ class EnrouteBuilder:
         self.analyzer = EnrouteDecoratorAnalyzer(decorated)
         self.instance = decorated()
 
-    def get_rest_command_query(self) -> list[(Callable, EnrouteDecorator)]:
+    def get_rest_command_query(self) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
         """TODO
 
         :return: TODO
         """
         mapping = self.analyzer.get_rest_command_query()
+        return self._build(mapping)
 
-        ans = list()
-        for name, decorators in mapping.items():
-            fn = getattr(self.instance, name)
-            for decorator in decorators:
-                pre_fn = getattr(self.instance, decorator.KIND.pref_fn_name, None)
-                if pre_fn is not None:
-
-                    async def fn(request):
-                        request = await pre_fn(request)
-                        return await fn(request)
-
-                ans.append((fn, decorator))
-        return ans
-
-    def get_broker_command_query(self) -> list[(Callable, EnrouteDecorator)]:
+    def get_broker_command_query(self) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
         """TODO
 
         :return: TODO
         """
         mapping = self.analyzer.get_broker_command_query()
-        ans = list()
-        for name, decorators in mapping.items():
-            fn = getattr(self.instance, name)
-            for decorator in decorators:
-                pre_fn = getattr(self.instance, decorator.KIND.pref_fn_name, None)
-                if pre_fn is not None:
+        return self._build(mapping)
 
-                    async def fn(request):
-                        request = await pre_fn(request)
-                        return await fn(request)
-
-                ans.append((fn, decorator))
-        return ans
-
-    def get_broker_event(self) -> list[(Callable, EnrouteDecorator)]:
+    def get_broker_event(self) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
         """TODO
 
         :return: TODO
         """
         mapping = self.analyzer.get_broker_event()
+        return self._build(mapping)
+
+    def _build(
+        self, mapping: dict[str, set[EnrouteDecorator]]
+    ) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
+
         ans = list()
         for name, decorators in mapping.items():
             fn = getattr(self.instance, name)
@@ -326,6 +308,12 @@ class EnrouteBuilder:
                         return await fn(request)
 
                 else:
-                    _fn = fn
+                    if isawaitable(fn):
+                        _fn = fn
+                    else:
+
+                        async def _fn(request):
+                            return fn(request)
+
                 ans.append((_fn, decorator))
         return ans
