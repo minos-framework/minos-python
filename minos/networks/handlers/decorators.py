@@ -25,6 +25,11 @@ from typing import (
     Final,
     Iterable,
     Type,
+    Union,
+)
+
+from minos.common import (
+    import_module,
 )
 
 from ..exceptions import (
@@ -185,20 +190,32 @@ enroute = Enroute
 class EnrouteDecoratorAnalyzer:
     """Search decorators in specified class"""
 
-    def __init__(self, classname: Type):
-        self.classname = classname
+    def __init__(self, decorated: Union[str, Type]):
+        if isinstance(decorated, str):
+            decorated = import_module(decorated)
+
+        self.decorated = decorated
         self._result = None
 
     def rest(self) -> dict[Callable, set[BaseDecorator]]:
-        """Returns rest values."""
+        """Returns rest values.
+
+        :return: TODO
+        """
         return self._get_items({RestCommandEnroute, RestQueryEnroute})
 
     def command(self) -> dict[Callable, set[BaseDecorator]]:
-        """Returns command values."""
+        """Returns command values.
+
+        :return: TODO
+        """
         return self._get_items({BrokerCommandEnroute, BrokerQueryEnroute})
 
     def event(self) -> dict[Callable, set[BaseDecorator]]:
-        """Returns event values."""
+        """Returns event values.
+
+        :return: TODO
+        """
         return self._get_items({BrokerEventEnroute})
 
     def _get_items(self, expected_types: set[Type[BaseDecorator]]) -> dict[Callable, set[BaseDecorator]]:
@@ -210,14 +227,14 @@ class EnrouteDecoratorAnalyzer:
         return items
 
     def get_all(self) -> dict[Callable, set[BaseDecorator]]:
-        """TODO
+        """Get all functions decorated with enroute decorators.
 
-        :return:TODO
+        :return: A mapping with functions as keys and their set of decorators as values.
         """
         if self._result is None:
 
             result = dict()
-            for _, fn in getmembers(self.classname, predicate=isfunction):
+            for _, fn in getmembers(self.decorated, predicate=isfunction):
                 if not hasattr(fn, "__decorators__"):
                     continue
                 result[fn] = fn.__decorators__

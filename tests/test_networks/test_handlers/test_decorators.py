@@ -7,6 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 
+from minos.common import (
+    classname,
+)
 from minos.networks import (
     EnrouteDecoratorAnalyzer,
     MinosMultipleEnrouteDecoratorKindsException,
@@ -190,7 +193,11 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
 
 
 class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
-    async def test_rest_query_decorator(self):
+    def test_decorated_str(self):
+        analyzer = EnrouteDecoratorAnalyzer(classname(MultipleDecoratorsExample))
+        self.assertEqual(MultipleDecoratorsExample, analyzer.decorated)
+
+    def test_rest_query_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(RestQueryExample)
 
         observed = analyzer.get_all()
@@ -198,7 +205,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_rest_command(self):
+    def test_rest_command(self):
         analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
 
         observed = analyzer.get_all()
@@ -206,7 +213,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_rest_command_decorator(self):
+    def test_rest_command_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(RestCommandExample)
 
         observed = analyzer.get_all()
@@ -214,7 +221,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_broker_query_decorator(self):
+    def test_broker_query_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerQueryExample)
 
         observed = analyzer.get_all()
@@ -222,7 +229,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_broker_command_decorator(self):
+    def test_broker_command_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerCommandExample)
 
         observed = analyzer.get_all()
@@ -230,14 +237,14 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_broker_event_decorator(self):
+    def test_broker_event_decorator(self):
         analyzer = EnrouteDecoratorAnalyzer(BrokerEventExample)
         observed = analyzer.get_all()
 
         expected = {BrokerEventExample.get_tickets: {BrokerEventEnroute(["BrokerEvent"])}}
         self.assertEqual(expected, observed)
 
-    async def test_multiple_decorators(self):
+    def test_multiple_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
 
         observed = analyzer.get_all()
@@ -255,7 +262,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_get_only_rest_decorators(self):
+    def test_get_only_rest_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
 
         observed = analyzer.rest()
@@ -266,7 +273,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_get_only_command_decorators(self):
+    def test_get_only_command_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
 
         observed = analyzer.command()
@@ -277,7 +284,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_get_only_event_decorators(self):
+    def test_get_only_event_decorators(self):
         analyzer = EnrouteDecoratorAnalyzer(MultipleDecoratorsExample)
 
         observed = analyzer.event()
