@@ -45,7 +45,7 @@ class FakeDecorated:
         return Response(await request.content())
 
     @enroute.rest.query(url="tickets/", method="GET")
-    @enroute.broker.query(topics=["TicketBrokerEvent"])
+    @enroute.broker.query(topics=["GetTickets"])
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
         return Response(await request.content())
@@ -173,7 +173,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
         observed = analyzer.get_all()
         expected = {
             FakeDecorated.get_tickets: {
-                BrokerQueryEnrouteDecorator(("TicketBrokerEvent",)),
+                BrokerQueryEnrouteDecorator(("GetTickets",)),
                 RestQueryEnrouteDecorator("tickets/", "GET"),
             },
             FakeDecorated.create_ticket: {
@@ -201,7 +201,7 @@ class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_broker_command_query()
         expected = {
-            FakeDecorated.get_tickets: {BrokerQueryEnrouteDecorator("TicketBrokerEvent")},
+            FakeDecorated.get_tickets: {BrokerQueryEnrouteDecorator("GetTickets")},
             FakeDecorated.create_ticket: {BrokerCommandEnrouteDecorator(("CreateTicket", "AddTicket"))},
         }
 
