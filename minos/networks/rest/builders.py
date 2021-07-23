@@ -18,7 +18,6 @@ from importlib import (
 )
 from inspect import (
     isawaitable,
-    isclass,
 )
 from typing import (
     Awaitable,
@@ -33,7 +32,6 @@ from aiohttp import (
 )
 
 from minos.common import (
-    ENDPOINT,
     MinosConfig,
     MinosException,
     MinosSetup,

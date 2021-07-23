@@ -12,7 +12,6 @@ from yarl import (
 )
 
 from minos.common import (
-    ModelType,
     Request,
     Response,
 )
@@ -20,7 +19,6 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    HttpRequest,
     HttpResponse,
     HttpResponseException,
     MinosActionNotFoundException,
