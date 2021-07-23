@@ -1,5 +1,7 @@
 from minos.common import (
     Event,
+    Request,
+    Response,
 )
 from minos.networks import (
     enroute,
@@ -7,6 +9,10 @@ from minos.networks import (
 
 
 class CqrsService(object):
+    @enroute.rest.query(url="/ticket", method="POST")
+    def add_ticket(self, request: Request) -> Response:
+        return Response("ticket_added")
+
     @enroute.broker.event(topics=["TicketAdded"])
     def ticket_added(self, topic: str, event: Event):
         return "request_added"

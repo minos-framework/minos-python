@@ -9,6 +9,10 @@ from minos.networks import (
 
 
 class CommandService(object):
+    @enroute.rest.command(url="/order", method="GET")
+    def get_order(self, request: Request) -> Response:
+        return Response("get_order")
+
     @enroute.broker.command(topics=["GetOrder"])
     def get_order(self, request: Request) -> Response:
         return CommandResponse("get_order")
