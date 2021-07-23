@@ -29,13 +29,16 @@ from minos.networks.handlers import (
 class FakeDecorated:
     """For testing purposes."""
 
-    def _handle_command(self, request: Request) -> Request:
+    # noinspection PyMethodMayBeStatic
+    def _pre_command_handle(self, request: Request) -> Request:
         return request
 
-    def _handle_query(self, request: Request) -> Request:
+    # noinspection PyMethodMayBeStatic
+    def _pre_query_handle(self, request: Request) -> Request:
         return request
 
-    def _handle_event(self, request: Request) -> Request:
+    # noinspection PyMethodMayBeStatic
+    def _pre_event_handle(self, request: Request) -> Request:
         return request
 
     @enroute.rest.command(url="orders/", method="GET")
