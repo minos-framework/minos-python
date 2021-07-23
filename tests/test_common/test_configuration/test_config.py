@@ -42,9 +42,6 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", broker.host)
         self.assertEqual(8900, broker.port)
 
-        endpoints = rest.endpoints
-        self.assertEqual("AddOrder", endpoints[0].name)
-
     def test_config_saga_broker(self):
         saga = self.config.saga
 

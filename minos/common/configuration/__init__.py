@@ -10,7 +10,6 @@ from .config import (
     BROKER,
     COMMANDS,
     CONTROLLER,
-    ENDPOINT,
     EVENTS,
     QUEUE,
     REPOSITORY,
