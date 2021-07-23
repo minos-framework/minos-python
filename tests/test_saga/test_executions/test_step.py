@@ -39,7 +39,12 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
-        self.execute_kwargs = {"definition_name": "FoodAdd", "execution_uuid": uuid.uuid4(), "broker": self.broker}
+        self.execute_kwargs = {
+            "definition_name": "FoodAdd",
+            "execution_uuid": uuid.uuid4(),
+            "broker": self.broker,
+            "reply_topic": "FooAdd",
+        }
 
         self.publish_mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = self.publish_mock

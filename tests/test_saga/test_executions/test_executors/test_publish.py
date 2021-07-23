@@ -35,27 +35,17 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
         self.uuid = uuid4()
-        self.executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
+        self.executor = PublishExecutor(reply_topic="AddFoo", execution_uuid=self.uuid, broker=self.broker)
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, LocalExecutor)
-        self.assertEqual("AddFoo", self.executor.definition_name)
+        self.assertEqual("AddFoo", self.executor.reply_topic)
         self.assertEqual(self.uuid, self.executor.execution_uuid)
         self.assertEqual(self.broker, self.executor.broker)
-        self.assertTrue(self.executor.asynchronous)
 
     def test_constructor_without_broker(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
-            PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid)
-
-    def test_reply_topic(self):
-        self.assertEqual(self.executor.definition_name, self.executor.reply_topic)
-
-    def test_reply_topic_synchronous(self):
-        executor = PublishExecutor(
-            definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker, asynchronous=False
-        )
-        self.assertEqual(str(self.executor.execution_uuid), executor.reply_topic)
+            PublishExecutor(reply_topic="AddFoo", execution_uuid=self.uuid)
 
     async def test_exec(self):
         operation = SagaOperation(foo_fn, "AddBar")

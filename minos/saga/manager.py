@@ -27,6 +27,7 @@ from minos.common import (
     MinosConfig,
     MinosHandler,
     MinosHandlerNotProvidedException,
+    MinosPool,
     MinosSagaManager,
     import_module,
 )
@@ -64,13 +65,13 @@ class SagaManager(MinosSagaManager):
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    handler: MinosHandler = Provide["handler"]
+    reply_pool: MinosPool[MinosHandler] = Provide["reply_pool"]
 
     def __init__(
         self,
         storage: SagaExecutionStorage,
         definitions: dict[str, Saga],
-        handler: Optional[MinosHandler] = None,
+        reply_pool: Optional[MinosPool[MinosHandler]] = None,
         *args,
         **kwargs,
     ):
@@ -78,11 +79,11 @@ class SagaManager(MinosSagaManager):
         self.storage = storage
         self.definitions = definitions
 
-        if handler is not None:
-            self.handler = handler
+        if reply_pool is not None:
+            self.reply_pool = reply_pool
 
-        if self.handler is None or isinstance(self.handler, Provide):
-            raise MinosHandlerNotProvidedException("A handler instance is required.")
+        if self.reply_pool is None or isinstance(self.reply_pool, Provide):
+            raise MinosHandlerNotProvidedException("A handler pool instance is required.")
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
@@ -114,13 +115,13 @@ class SagaManager(MinosSagaManager):
         return await self._run(execution, reply=reply, **kwargs)
 
     async def _run(
-        self, execution: SagaExecution, asynchronous: bool = True, raise_on_error: bool = False, **kwargs
+        self, execution: SagaExecution, pause_on_disk: bool = True, raise_on_error: bool = False, **kwargs
     ) -> UUID:
         try:
-            if asynchronous:
-                await self._run_asynchronously(execution, asynchronous=asynchronous, **kwargs)
+            if pause_on_disk:
+                await self._run_with_pause_on_disk(execution, **kwargs)
             else:
-                await self._run_synchronously(execution, asynchronous=asynchronous, **kwargs)
+                await self._run_with_pause_on_memory(execution, **kwargs)
         except MinosSagaFailedExecutionException as exc:
             self.storage.store(execution)
             if raise_on_error:
@@ -132,22 +133,34 @@ class SagaManager(MinosSagaManager):
 
         return execution.uuid
 
-    async def _run_synchronously(self, execution: SagaExecution, **kwargs) -> NoReturn:
-        while execution.status in (SagaStatus.Created, SagaStatus.Paused):
-            try:
-                await execution.execute(**kwargs)
-            except MinosSagaPausedExecutionStepException:
-                try:
-                    entry = await self.handler.get_one(f"{execution.uuid!s}Reply", **kwargs)
-                except Exception as exc:
-                    execution.status = SagaStatus.Errored
-                    raise MinosSagaFailedExecutionException(exc)
-                kwargs["reply"] = entry.data
-                self.storage.store(execution)
-
-    async def _run_asynchronously(self, execution: SagaExecution, **kwargs) -> NoReturn:
+    async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> NoReturn:
         try:
             await execution.execute(**kwargs)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
             return execution.uuid
+
+    async def _run_with_pause_on_memory(
+        self, execution: SagaExecution, reply: Optional[CommandReply] = None, **kwargs
+    ) -> NoReturn:
+
+        # noinspection PyUnresolvedReferences
+        async with self.reply_pool.acquire() as handler:
+            while execution.status in (SagaStatus.Created, SagaStatus.Paused):
+                try:
+                    await execution.execute(reply=reply, reply_topic=handler.topic, **kwargs)
+                except MinosSagaPausedExecutionStepException:
+                    reply = await self._get_reply(handler, execution, **kwargs)
+                self.storage.store(execution)
+
+    @staticmethod
+    async def _get_reply(handler: MinosHandler, execution: SagaExecution, **kwargs) -> CommandReply:
+        reply = None
+        while reply is None or reply.saga != execution.uuid:
+            try:
+                entry = await handler.get_one(**kwargs)
+            except Exception as exc:
+                execution.status = SagaStatus.Errored
+                raise MinosSagaFailedExecutionException(exc)
+            reply = entry.data
+        return reply
