@@ -8,6 +8,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
+    Request,
+    Response,
     classname,
 )
 from minos.networks import (
@@ -27,22 +29,31 @@ from minos.networks.handlers import (
 class FakeDecorated:
     """For testing purposes."""
 
+    def _handle_command(self, request: Request) -> Request:
+        return request
+
+    def _handle_query(self, request: Request) -> Request:
+        return request
+
+    def _handle_event(self, request: Request) -> Request:
+        return request
+
     @enroute.rest.command(url="orders/", method="GET")
     @enroute.broker.command(topics=["CreateTicket", "AddTicket"])
-    def create_ticket(self):
+    async def create_ticket(self, request: Request) -> Response:
         """For testing purposes."""
-        return "orders"
+        return Response(await request.content())
 
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topics=["TicketBrokerEvent"])
-    async def get_tickets(self):
+    async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
-        return "tickets"
+        return Response(await request.content())
 
     @enroute.broker.event(topics=["TicketAdded"])
-    def ticket_added(self):
+    async def ticket_added(self, request: Request) -> Response:
         """For testing purposes."""
-        return "orders"
+        return Response(await request.content())
 
     # noinspection PyMethodMayBeStatic
     def bar(self):
@@ -61,6 +72,10 @@ async def _async_fn():
 
 
 class TestEnroute(unittest.IsolatedAsyncioTestCase):
+    def test_repr(self):
+        decorator = enroute.rest.command(url="tickets/", method="GET")
+        self.assertEqual("RestCommandEnrouteDecorator('tickets/', 'GET')", repr(decorator))
+
     def test_rest_command(self):
         decorator = enroute.rest.command(url="tickets/", method="GET")
         wrapper = decorator(_fn)
