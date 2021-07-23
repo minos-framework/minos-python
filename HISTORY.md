@@ -45,3 +45,9 @@ History
 
 * Added update to common
 * Bugfixes
+
+0.0.8 (2021-07-23)
+------------------
+
+* Now Sagas can be paused also on memory in addition to on disk.
+* Improve SagaManager API.
