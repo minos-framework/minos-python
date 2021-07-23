@@ -75,14 +75,14 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext().avro_str,
             "definition": {
                 "name": "OrdersAdd",
-                "commit_callback": "minos.saga.definitions.step.identity_fn",
+                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
                         "invoke_participant": {
                             "callback": "tests.callbacks.create_order_callback",
                             "name": "CreateOrder",
                         },
-                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
                         "with_compensation": {
                             "callback": "tests.callbacks.delete_order_callback",
                             "name": "DeleteOrder",
@@ -118,14 +118,14 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext().avro_str,
             "definition": {
                 "name": "OrdersAdd",
-                "commit_callback": "minos.saga.definitions.step.identity_fn",
+                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
                         "invoke_participant": {
                             "callback": "tests.callbacks.create_order_callback",
                             "name": "CreateOrder",
                         },
-                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
                         "with_compensation": {
                             "callback": "tests.callbacks.delete_order_callback",
                             "name": "DeleteOrder",
@@ -148,7 +148,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "paused_step": {
                 "definition": {
                     "invoke_participant": {"callback": "tests.callbacks.create_order_callback", "name": "CreateOrder"},
-                    "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                    "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
                     "with_compensation": {"callback": "tests.callbacks.delete_order_callback", "name": "DeleteOrder"},
                 },
                 "status": "paused-on-reply",
@@ -172,14 +172,14 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "context": SagaContext(order1=Foo("hola")).avro_str,
             "definition": {
                 "name": "OrdersAdd",
-                "commit_callback": "minos.saga.definitions.step.identity_fn",
+                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
                         "invoke_participant": {
                             "callback": "tests.callbacks.create_order_callback",
                             "name": "CreateOrder",
                         },
-                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
                         "with_compensation": {
                             "callback": "tests.callbacks.delete_order_callback",
                             "name": "DeleteOrder",
@@ -205,7 +205,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                             "callback": "tests.callbacks.create_order_callback",
                             "name": "CreateOrder",
                         },
-                        "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                        "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
                         "with_compensation": {
                             "callback": "tests.callbacks.delete_order_callback",
                             "name": "DeleteOrder",
@@ -218,7 +218,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "paused_step": {
                 "definition": {
                     "invoke_participant": {"callback": "tests.callbacks.create_order_callback", "name": "CreateOrder"},
-                    "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "order1"},
+                    "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
                     "with_compensation": {"callback": "tests.callbacks.delete_order_callback", "name": "DeleteOrder"},
                 },
                 "status": "paused-on-reply",

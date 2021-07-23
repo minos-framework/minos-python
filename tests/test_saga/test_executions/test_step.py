@@ -39,7 +39,12 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
-        self.execute_kwargs = {"definition_name": "FoodAdd", "execution_uuid": uuid.uuid4(), "broker": self.broker}
+        self.execute_kwargs = {
+            "definition_name": "FoodAdd",
+            "execution_uuid": uuid.uuid4(),
+            "broker": self.broker,
+            "reply_topic": "FooAdd",
+        }
 
         self.publish_mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = self.publish_mock
@@ -162,7 +167,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             "already_rollback": False,
             "definition": {
                 "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
-                "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo"},
+                "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
                 "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
             },
             "status": "created",
@@ -175,7 +180,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             "already_rollback": False,
             "definition": {
                 "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
-                "on_reply": {"callback": "minos.saga.definitions.step.identity_fn", "name": "foo"},
+                "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
                 "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
             },
             "status": "created",

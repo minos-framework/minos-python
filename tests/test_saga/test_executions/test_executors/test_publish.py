@@ -14,12 +14,15 @@ from uuid import (
     uuid4,
 )
 
+from minos.common import (
+    MinosBrokerNotProvidedException,
+)
 from minos.saga import (
     LocalExecutor,
     MinosSagaFailedExecutionStepException,
     PublishExecutor,
     SagaContext,
-    SagaStepOperation,
+    SagaOperation,
 )
 from tests.utils import (
     Foo,
@@ -32,16 +35,20 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
         self.uuid = uuid4()
-        self.executor = PublishExecutor(definition_name="AddFoo", execution_uuid=self.uuid, broker=self.broker)
+        self.executor = PublishExecutor(reply_topic="AddFoo", execution_uuid=self.uuid, broker=self.broker)
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, LocalExecutor)
-        self.assertEqual("AddFoo", self.executor.definition_name)
+        self.assertEqual("AddFoo", self.executor.reply_topic)
         self.assertEqual(self.uuid, self.executor.execution_uuid)
         self.assertEqual(self.broker, self.executor.broker)
 
+    def test_constructor_without_broker(self):
+        with self.assertRaises(MinosBrokerNotProvidedException):
+            PublishExecutor(reply_topic="AddFoo", execution_uuid=self.uuid)
+
     async def test_exec(self):
-        operation = SagaStepOperation("AddBar", foo_fn)
+        operation = SagaOperation(foo_fn, "AddBar")
         context = SagaContext()
 
         mock = MagicMock(side_effect=self.broker.send)
@@ -49,11 +56,11 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         await self.executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
-        args = call(data=Foo("hello"), topic="AddBar", saga=self.uuid, reply_topic="AddFoo")
+        args = call(data=Foo("hello"), topic="AddBar", saga=self.uuid, reply_topic=self.executor.reply_topic)
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_raises(self):
-        operation = SagaStepOperation("AddBar", foo_fn)
+        operation = SagaOperation(foo_fn, "AddBar")
         context = SagaContext()
 
         async def _fn(*args, **kwargs):

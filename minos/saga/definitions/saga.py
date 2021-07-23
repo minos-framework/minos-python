@@ -11,34 +11,29 @@ from __future__ import (
 )
 
 from typing import (
-    TYPE_CHECKING,
     Any,
-    Callable,
     Iterable,
     Optional,
     Union,
 )
 
-from minos.common import (
-    classname,
-    import_module,
+from ..context import (
+    SagaContext,
 )
-
 from ..exceptions import (
     MinosAlreadyOnSagaException,
     MinosSagaAlreadyCommittedException,
+)
+from .operations import (
+    SagaOperation,
 )
 from .step import (
     SagaStep,
     identity_fn,
 )
-
-if TYPE_CHECKING:
-    from ..executions import (
-        SagaContext,
-    )
-
-    CommitCallback = Callable[[SagaContext], SagaContext]
+from .types import (
+    CommitCallback,
+)
 
 
 class Saga(object):
@@ -47,13 +42,15 @@ class Saga(object):
     The purpose of this class is to define a sequence of operations among microservices.
     """
 
-    def __init__(self, name: str, steps: list[SagaStep] = None, commit_callback: Optional[CommitCallback] = None):
+    def __init__(
+        self, name: str, steps: list[SagaStep] = None, commit_operation: Optional[SagaOperation] = None,
+    ):
         if steps is None:
             steps = list()
 
         self.name = name
         self.steps = steps
-        self.commit_callback = commit_callback
+        self.commit_operation = commit_operation
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
@@ -68,13 +65,13 @@ class Saga(object):
 
         current = raw | kwargs
 
-        commit_callback = current.pop("commit_callback", None)
-        if commit_callback is not None:
-            commit_callback = import_module(commit_callback)
+        commit_operation = current.pop("commit", None)
+        if commit_operation is not None:
+            commit_operation = SagaOperation.from_raw(commit_operation)
 
         steps = [SagaStep.from_raw(step) for step in current.pop("steps")]
 
-        instance = cls(steps=steps, commit_callback=commit_callback, **current)
+        instance = cls(steps=steps, commit_operation=commit_operation, **current)
 
         return instance
 
@@ -104,11 +101,12 @@ class Saga(object):
 
         :return: A ``dict`` instance.
         """
-        return {
+        ans = {
             "name": self.name,
             "steps": [step.raw for step in self.steps],
-            "commit_callback": None if self.commit_callback is None else classname(self.commit_callback),
+            "commit": None if self.commit_operation is None else self.commit_operation.raw,
         }
+        return ans
 
     def __eq__(self, other: SagaStep) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -117,16 +115,15 @@ class Saga(object):
         yield from (
             self.name,
             self.steps,
-            self.commit_callback,
+            self.commit_operation,
         )
 
     # noinspection PyUnusedLocal
-    def commit(self, callback: Optional[CommitCallback] = None, *args, **kwargs) -> Saga:
+    def commit(self, callback: Optional[CommitCallback] = None, parameters: Optional[SagaContext] = None) -> Saga:
         """Commit the instance to be ready for execution.
 
         :param callback: Optional function to be called at the end of execution.
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
+        :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``Saga`` instance.
         """
         if self.committed:
@@ -135,7 +132,7 @@ class Saga(object):
         if callback is None:
             callback = identity_fn
 
-        self.commit_callback = callback
+        self.commit_operation = SagaOperation(callback, parameters=parameters)
         return self
 
     @property
@@ -144,4 +141,4 @@ class Saga(object):
 
         :return: A boolean value.
         """
-        return self.commit_callback is not None
+        return self.commit_operation is not None

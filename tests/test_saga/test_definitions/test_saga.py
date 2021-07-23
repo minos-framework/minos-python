@@ -17,6 +17,7 @@ from minos.saga import (
     MinosSagaException,
     Saga,
     SagaExecution,
+    SagaOperation,
     SagaStep,
     identity_fn,
 )
@@ -40,13 +41,13 @@ class TestSaga(unittest.TestCase):
         saga = Saga("AddOrder")
         observed = saga.commit()
         self.assertEqual(saga, observed)
-        self.assertEqual(identity_fn, saga.commit_callback)
+        self.assertEqual(SagaOperation(identity_fn), saga.commit_operation)
 
     def test_commit_define_callback(self):
         saga = Saga("AddOrder")
         observed = saga.commit(foo_fn)
         self.assertEqual(saga, observed)
-        self.assertEqual(foo_fn, saga.commit_callback)
+        self.assertEqual(SagaOperation(foo_fn), saga.commit_operation)
 
     def test_commit_raises(self):
         saga = Saga("AddOrder").commit()
@@ -55,7 +56,7 @@ class TestSaga(unittest.TestCase):
 
     def test_committed_true(self):
         saga = Saga("AddOrder")
-        saga.commit_callback = identity_fn
+        saga.commit_operation = SagaOperation(identity_fn)
         self.assertTrue(saga.committed)
 
     def test_committed_false(self):
@@ -140,7 +141,7 @@ class TestSaga(unittest.TestCase):
         )
         expected = {
             "name": "CreateShipment",
-            "commit_callback": "minos.saga.definitions.step.identity_fn",
+            "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateOrder"},
@@ -164,7 +165,7 @@ class TestSaga(unittest.TestCase):
     def test_from_raw(self):
         raw = {
             "name": "CreateShipment",
-            "commit_callback": "minos.saga.definitions.step.identity_fn",
+            "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateOrder"},
