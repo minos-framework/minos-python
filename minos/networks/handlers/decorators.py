@@ -17,13 +17,10 @@ from enum import (
 )
 from inspect import (
     getmembers,
-    isawaitable,
     iscoroutinefunction,
     isfunction,
-    signature,
 )
 from typing import (
-    Any,
     Awaitable,
     Callable,
     Final,
@@ -43,10 +40,7 @@ from ..exceptions import (
     MinosMultipleEnrouteDecoratorKindsException,
 )
 
-Adapter = Union[
-    Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]],
-    Callable[[Any, Request], Union[Optional[Response], Awaitable[Optional[Response]]]],
-]
+Adapter = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
 class EnrouteDecorator:
@@ -56,41 +50,15 @@ class EnrouteDecorator:
     KIND: Final[EnrouteDecoratorKind]
 
     def __call__(self, fn: Adapter) -> Adapter:
-        sig = signature(fn)
+        if iscoroutinefunction(fn):
 
-        if len(sig.parameters) == 2:
-            if iscoroutinefunction(fn):
-
-                async def _wrapper(this: Any, request: Request) -> Optional[Response]:
-
-                    if not getattr(_wrapper, "__applied_pre_fn__"):
-                        pre_fn = getattr(this, self.KIND.pref_fn_name, None)
-                        if pre_fn is not None:
-                            request = pre_fn(request)
-                            if isawaitable(request):
-                                request = await request
-                            if hasattr(fn, "__applied_pre_fn__"):
-                                fn.__applied_pre_fn__ = True
-
-                    return await fn(this, request)
-
-            else:
-
-                def _wrapper(this: Any, request: Request) -> Optional[Response]:
-                    return fn(this, request)
+            async def _wrapper(*args, **kwargs) -> Optional[Response]:
+                return await fn(*args, **kwargs)
 
         else:
-            if iscoroutinefunction(fn):
 
-                async def _wrapper(request: Request) -> Optional[Response]:
-                    return await fn(request)
-
-            else:
-
-                def _wrapper(request: Request) -> Optional[Response]:
-                    return fn(request)
-
-        _wrapper.__applied_pre_fn__ = False
+            def _wrapper(*args, **kwargs) -> Optional[Response]:
+                return fn(*args, **kwargs)
 
         _wrapper.__decorators__ = getattr(fn, "__decorators__", set())
         _wrapper.__decorators__.add(self)
