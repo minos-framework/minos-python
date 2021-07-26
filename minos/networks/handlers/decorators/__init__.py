@@ -16,10 +16,12 @@ from .builders import (
 )
 from .definitions import (
     BrokerCommandEnrouteDecorator,
+    BrokerEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     EnrouteDecorator,
     EnrouteDecoratorKind,
     RestCommandEnrouteDecorator,
+    RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )

@@ -10,6 +10,7 @@ from .abc import (
 )
 from .broker import (
     BrokerCommandEnrouteDecorator,
+    BrokerEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
 )
@@ -18,5 +19,6 @@ from .kinds import (
 )
 from .rest import (
     RestCommandEnrouteDecorator,
+    RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )

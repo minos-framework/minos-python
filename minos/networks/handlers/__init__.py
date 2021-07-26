@@ -27,11 +27,13 @@ from .commands import (
 )
 from .decorators import (
     BrokerCommandEnrouteDecorator,
+    BrokerEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     EnrouteAnalyzer,
     EnrouteBuilder,
     RestCommandEnrouteDecorator,
+    RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
     enroute,
 )
