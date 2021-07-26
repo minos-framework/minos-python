@@ -10,9 +10,9 @@ from .builders import (
     RestBuilder,
 )
 from .messages import (
-    HttpRequest,
-    HttpResponse,
-    HttpResponseException,
+    RestRequest,
+    RestResponse,
+    RestResponseException,
 )
 from .services import (
     RestService,

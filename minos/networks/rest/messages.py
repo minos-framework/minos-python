@@ -40,13 +40,13 @@ from ..messages import (
 )
 
 
-class HttpRequest(Request):
-    """Http Request class."""
+class RestRequest(Request):
+    """Rest Request class."""
 
     def __init__(self, request):
         self.raw_request = request
 
-    def __eq__(self, other: HttpRequest) -> bool:
+    def __eq__(self, other: RestRequest) -> bool:
         return type(self) == type(other) and self.raw_request == other.raw_request
 
     def __repr__(self) -> str:
@@ -124,9 +124,9 @@ class HttpRequest(Request):
         return model_type(**entry)
 
 
-class HttpResponse(Response):
-    """Http Response class."""
+class RestResponse(Response):
+    """Rest Response class."""
 
 
-class HttpResponseException(ResponseException):
-    """Http Response Exception class."""
+class RestResponseException(ResponseException):
+    """Rest Response Exception class."""

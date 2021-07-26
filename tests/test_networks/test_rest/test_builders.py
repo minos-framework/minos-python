@@ -15,12 +15,12 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    HttpResponse,
-    HttpResponseException,
     MinosActionNotFoundException,
     Request,
     Response,
     RestBuilder,
+    RestResponse,
+    RestResponseException,
 )
 from tests.utils import (
     BASE_PATH,
@@ -30,7 +30,7 @@ from tests.utils import (
 class _Cls:
     @staticmethod
     async def _fn(request: Request) -> Response:
-        return HttpResponse(await request.content())
+        return RestResponse(await request.content())
 
     @staticmethod
     async def _fn_none(request: Request):
@@ -38,7 +38,7 @@ class _Cls:
 
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
-        raise HttpResponseException("")
+        raise RestResponseException("")
 
     @staticmethod
     async def _fn_raises_minos(request: Request) -> Response:

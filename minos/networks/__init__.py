@@ -62,10 +62,10 @@ from .messages import (
     ResponseException,
 )
 from .rest import (
-    HttpRequest,
-    HttpResponse,
-    HttpResponseException,
     RestBuilder,
+    RestRequest,
+    RestResponse,
+    RestResponseException,
     RestService,
 )
 from .snapshots import (

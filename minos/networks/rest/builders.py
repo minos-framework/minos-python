@@ -45,8 +45,8 @@ from ..messages import (
     ResponseException,
 )
 from .messages import (
-    HttpRequest,
-    HttpResponse,
+    RestRequest,
+    RestResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -132,7 +132,7 @@ class RestBuilder(MinosSetup):
 
     @staticmethod
     def get_callback(
-        fn: Callable[[HttpRequest], Union[Optional[HttpResponse], Awaitable[Optional[HttpResponse]]]]
+        fn: Callable[[RestRequest], Union[Optional[RestResponse], Awaitable[Optional[RestResponse]]]]
     ) -> Callable[[web.Request], Awaitable[web.Response]]:
         """Get the handler function to be used by the ``aiohttp`` Controller.
 
@@ -142,7 +142,7 @@ class RestBuilder(MinosSetup):
 
         async def _fn(request: web.Request) -> web.Response:
             logger.info(f"Dispatching {classname(fn)!r} from {request.remote!r}...")
-            request = HttpRequest(request)
+            request = RestRequest(request)
 
             try:
                 response = fn(request)
