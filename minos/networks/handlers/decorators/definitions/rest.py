@@ -5,6 +5,9 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from abc import (
+    ABC,
+)
 from typing import (
     Final,
     Iterable,
@@ -18,33 +21,27 @@ from .kinds import (
 )
 
 
-class RestCommandEnrouteDecorator(EnrouteDecorator):
+class RestEnrouteDecorator(EnrouteDecorator, ABC):
+    """Rest Enroute class"""
+
+    def __init__(self, url: str, method: str):
+        self.url = url
+        self.method = method
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.url,
+            self.method,
+        )
+
+
+class RestCommandEnrouteDecorator(RestEnrouteDecorator):
     """Rest Command Enroute class"""
 
     KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Command
 
-    def __init__(self, url: str, method: str):
-        self.url = url
-        self.method = method
 
-    def __iter__(self) -> Iterable:
-        yield from (
-            self.url,
-            self.method,
-        )
-
-
-class RestQueryEnrouteDecorator(EnrouteDecorator):
+class RestQueryEnrouteDecorator(RestEnrouteDecorator):
     """Rest Query Enroute class"""
 
     KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Query
-
-    def __init__(self, url: str, method: str):
-        self.url = url
-        self.method = method
-
-    def __iter__(self) -> Iterable:
-        yield from (
-            self.url,
-            self.method,
-        )
