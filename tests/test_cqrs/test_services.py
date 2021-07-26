@@ -4,15 +4,19 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from unittest.mock import patch
+from unittest.mock import (
+    patch,
+)
 
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
-from minos.networks import WrappedRequest
-
 from minos.cqrs import (
-    MinosIllegalHandlingException, Service,
+    MinosIllegalHandlingException,
+    Service,
+)
+from minos.networks import (
+    WrappedRequest,
 )
 from tests.utils import (
     BASE_PATH,

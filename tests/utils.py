@@ -3,6 +3,10 @@ Copyright (C) 2021 Clariteia SL
 This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from pathlib import (
     Path,
 )
@@ -11,15 +15,19 @@ from uuid import (
 )
 
 from minos.common import (
+    Aggregate,
+    AggregateRef,
     CommandReply,
     MinosSagaManager,
+    ModelRef,
 )
-from minos.networks import Request
-
 from minos.cqrs import (
     CommandService,
     QueryService,
     Service,
+)
+from minos.networks import (
+    Request,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -63,3 +71,15 @@ class FakeRequest(Request):
 
     def __repr__(self) -> str:
         return f"FakeRequest({self._content!r})"
+
+
+class Foo(Aggregate):
+    """For testing purposes"""
+
+    bar: ModelRef[Bar]
+
+
+class Bar(AggregateRef):
+    """For testing purposes"""
+
+    name: str
