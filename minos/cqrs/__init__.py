@@ -15,3 +15,11 @@ from .services import (
     QueryService,
     Service,
 )
+from .exceptions import (
+    MinosCqrsException,
+    MinosQueryServiceException,
+    MinosIllegalHandlingException,
+)
+from .handlers import (
+    PreEventHandler,
+)
