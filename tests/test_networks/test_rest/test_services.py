@@ -30,19 +30,22 @@ class TestRestService(AioHTTPTestCase):
 
     @unittest_run_loop
     async def test_methods(self):
+
+        resp = await self.client.request("GET", "/system/health")
+        assert resp.status == 200
+        """
         url = "/order"
+
         resp = await self.client.request("GET", url)
         assert resp.status == 200
         text = await resp.text()
         assert "Order get" in text
-
+        """
+        url = "/ticket"
         resp = await self.client.request("POST", url)
         assert resp.status == 200
         text = await resp.text()
-        assert "Order added" in text
-
-        resp = await self.client.request("GET", "/system/health")
-        assert resp.status == 200
+        assert "ticket_added" in text
 
 
 if __name__ == "__main__":

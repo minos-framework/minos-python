@@ -4,18 +4,27 @@ from minos.common import (
 )
 from minos.networks import (
     CommandResponse,
+    enroute,
 )
 
 
 class CommandService(object):
-    async def get_order(self, request: Request) -> Response:
+    @enroute.rest.command(url="/order", method="GET")
+    def get_order(self, request: Request) -> Response:
+        return Response("get_order")
+
+    @enroute.broker.command(topics=["GetOrder"])
+    def get_order(self, request: Request) -> Response:
         return CommandResponse("get_order")
 
-    async def add_order(self, request: Request) -> Response:
+    @enroute.broker.command(topics=["AddOrder"])
+    def add_order(self, request: Request) -> Response:
         return CommandResponse("add_order")
 
-    async def delete_order(self, request: Request) -> Response:
+    @enroute.broker.command(topics=["DeleteOrder"])
+    def delete_order(self, request: Request) -> Response:
         return CommandResponse("delete_order")
 
-    async def update_order(self, request: Request) -> Response:
+    @enroute.broker.command(topics=["UpdateOrder"])
+    def update_order(self, request: Request) -> Response:
         return CommandResponse("update_order")

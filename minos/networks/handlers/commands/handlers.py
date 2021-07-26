@@ -9,6 +9,9 @@ from __future__ import (
 )
 
 import logging
+from importlib import (
+    import_module,
+)
 from inspect import (
     isawaitable,
 )
@@ -39,6 +42,9 @@ from minos.common import (
 from ..abc import (
     Handler,
 )
+from ..decorators import (
+    EnrouteDecoratorAnalyzer,
+)
 from ..entries import (
     HandlerEntry,
 )
@@ -65,7 +71,18 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
+        p, m = config.commands.service.rsplit(".", 1)
+        mod = import_module(p)
+        met = getattr(mod, m)
+
+        decorators = EnrouteDecoratorAnalyzer(met).command()
+
+        handlers = {}
+        for key, value in decorators.items():
+            for v in decorators[key]:
+                for topic in v.topics:
+                    handlers[topic] = key
+
         return cls(handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:

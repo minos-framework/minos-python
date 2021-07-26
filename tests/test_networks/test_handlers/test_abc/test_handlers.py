@@ -12,6 +12,9 @@ from asyncio import (
 from collections import (
     namedtuple,
 )
+from importlib import (
+    import_module,
+)
 from typing import (
     NoReturn,
 )
@@ -28,14 +31,12 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    EnrouteDecoratorAnalyzer,
     Handler,
     MinosActionNotFoundException,
 )
 from minos.networks.handlers import (
     HandlerEntry,
-)
-from tests.services.CommandTestService import (
-    CommandService,
 )
 from tests.utils import (
     BASE_PATH,
@@ -63,17 +64,30 @@ class _FakeHandler(Handler):
 class TestHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
+    def handlers(self):
+        p, m = self.config.commands.service.rsplit(".", 1)
+        mod = import_module(p)
+        met = getattr(mod, m)
+
+        decorators = EnrouteDecoratorAnalyzer(met).command()
+
+        handlers = {}
+        for key, value in decorators.items():
+            for v in decorators[key]:
+                for topic in v.topics:
+                    handlers[topic] = key
+
+        return handlers
+
     def setUp(self) -> None:
         super().setUp()
-        handlers = {
-            item.name: {"controller": item.controller, "action": item.action} for item in self.config.commands.items
-        }
+        handlers = self.handlers()
         handlers["empty"] = None
         self.handler = _FakeHandler(handlers=handlers, **self.config.commands.queue._asdict())
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual(CommandService.add_order, action.__func__)
+        self.assertEqual("wrapper", action.__name__)
 
     async def test_get_action_none(self):
         action = self.handler.get_action(topic="empty")

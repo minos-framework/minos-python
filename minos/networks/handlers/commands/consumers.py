@@ -8,12 +8,19 @@ from __future__ import (
     annotations,
 )
 
+from importlib import (
+    import_module,
+)
+
 from minos.common import (
     MinosConfig,
 )
 
 from ..abc import (
     Consumer,
+)
+from ..decorators import (
+    EnrouteDecoratorAnalyzer,
 )
 
 
@@ -24,5 +31,15 @@ class CommandConsumer(Consumer):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandConsumer:
-        topics = [item.name for item in config.commands.items]
+        p, m = config.commands.service.rsplit(".", 1)
+        mod = import_module(p)
+        met = getattr(mod, m)
+
+        decorators = EnrouteDecoratorAnalyzer(met).command()
+
+        topics = []
+        for key, value in decorators.items():
+            for v in decorators[key]:
+                topics.extend(v.topics)
+
         return cls(topics=topics, broker=config.commands.broker, **config.commands.queue._asdict(), **kwargs)

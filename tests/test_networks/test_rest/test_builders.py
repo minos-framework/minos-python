@@ -12,7 +12,6 @@ from yarl import (
 )
 
 from minos.common import (
-    ModelType,
     Request,
     Response,
 )
@@ -20,7 +19,6 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    HttpRequest,
     HttpResponse,
     HttpResponseException,
     MinosActionNotFoundException,
@@ -109,16 +107,6 @@ class TestRestBuilder(PostgresAsyncTestCase):
         handler = self.dispatcher.get_callback(_Cls._fn_raises_exception)
         with self.assertRaises(HTTPInternalServerError):
             await handler(MockedRequest({"foo": "bar"}))
-
-    async def test_get_action(self):
-        Content = ModelType.build("Content", {"foo": str})
-
-        observed = self.dispatcher.get_action(f"{__name__}._Cls", "_fn")
-
-        observed_response = observed(HttpRequest(MockedRequest({"foo": "bar"})))
-        response = await observed_response
-        self.assertIsInstance(response, HttpResponse)
-        self.assertEqual(Content(foo="bar"), await response.content())
 
 
 if __name__ == "__main__":
