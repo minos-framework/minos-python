@@ -11,10 +11,12 @@ from __future__ import (
 
 from typing import (
     Any,
+    Union,
 )
 
 from minos.common import (
     Command,
+    Event,
 )
 
 from ..messages import (
@@ -24,19 +26,19 @@ from ..messages import (
 )
 
 
-class CommandRequest(Request):
-    """Command Request class."""
+class HandlerRequest(Request):
+    """Handler Request class."""
 
-    __slots__ = "command"
+    __slots__ = "raw"
 
-    def __init__(self, command: Command):
-        self.command = command
+    def __init__(self, raw: Union[Command, Event]):
+        self.raw = raw
 
-    def __eq__(self, other: CommandRequest) -> bool:
-        return type(self) == type(other) and self.command == other.command
+    def __eq__(self, other: HandlerRequest) -> bool:
+        return type(self) == type(other) and self.raw == other.raw
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.command!r})"
+        return f"{type(self).__name__}({self.raw!r})"
 
     async def content(self, **kwargs) -> Any:
         """Request content.
@@ -44,13 +46,13 @@ class CommandRequest(Request):
         :param kwargs: Additional named arguments.
         :return: The command content.
         """
-        data = self.command.data
+        data = self.raw.data
         return data
 
 
-class CommandResponse(Response):
+class HandlerResponse(Response):
     """Command Response class."""
 
 
-class CommandResponseException(ResponseException):
+class HandlerResponseException(ResponseException):
     """Command Response Exception class."""

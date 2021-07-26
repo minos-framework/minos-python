@@ -49,7 +49,7 @@ from .events import (
     EventHandlerService,
 )
 from .messages import (
-    CommandRequest,
-    CommandResponse,
-    CommandResponseException,
+    HandlerRequest,
+    HandlerResponse,
+    HandlerResponseException,
 )

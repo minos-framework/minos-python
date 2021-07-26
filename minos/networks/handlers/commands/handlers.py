@@ -51,7 +51,7 @@ from ..entries import (
     HandlerEntry,
 )
 from ..messages import (
-    CommandRequest,
+    HandlerRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ class CommandHandler(Handler):
 
     @staticmethod
     def get_callback(
-        fn: Callable[[CommandRequest], Union[Optional[CommandRequest], Awaitable[Optional[CommandRequest]]]]
+        fn: Callable[[HandlerRequest], Union[Optional[HandlerRequest], Awaitable[Optional[HandlerRequest]]]]
     ) -> Callable[[Command], Awaitable[Tuple[Any, CommandStatus]]]:
         """Get the handler function to be used by the Command Handler.
 
@@ -108,7 +108,7 @@ class CommandHandler(Handler):
 
         async def _fn(command: Command) -> Tuple[Any, CommandStatus]:
             try:
-                request = CommandRequest(command)
+                request = HandlerRequest(command)
                 response = fn(request)
                 if isawaitable(response):
                     response = await response
