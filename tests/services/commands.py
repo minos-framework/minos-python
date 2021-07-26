@@ -1,9 +1,7 @@
-from minos.common import (
-    Request,
-    Response,
-)
 from minos.networks import (
     CommandResponse,
+    Request,
+    Response,
     enroute,
 )
 

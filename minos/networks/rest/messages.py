@@ -29,11 +29,14 @@ from minos.common import (
     MinosImportException,
     Model,
     ModelType,
+    TypeHintBuilder,
+    import_module,
+)
+
+from ..messages import (
     Request,
     Response,
     ResponseException,
-    TypeHintBuilder,
-    import_module,
 )
 
 

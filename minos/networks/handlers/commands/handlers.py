@@ -35,10 +35,12 @@ from minos.common import (
     MinosBroker,
     MinosConfig,
     MinosException,
+)
+
+from ...messages import (
     Response,
     ResponseException,
 )
-
 from ..abc import (
     Handler,
 )

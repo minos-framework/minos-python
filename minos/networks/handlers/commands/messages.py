@@ -15,6 +15,9 @@ from typing import (
 
 from minos.common import (
     Command,
+)
+
+from ...messages import (
     Request,
     Response,
     ResponseException,

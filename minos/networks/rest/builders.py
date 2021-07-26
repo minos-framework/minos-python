@@ -34,13 +34,15 @@ from minos.common import (
     MinosConfig,
     MinosException,
     MinosSetup,
-    Response,
-    ResponseException,
     classname,
 )
 
 from ..handlers import (
     EnrouteBuilder,
+)
+from ..messages import (
+    Response,
+    ResponseException,
 )
 from .messages import (
     HttpRequest,

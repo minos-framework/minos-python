@@ -12,8 +12,6 @@ from uuid import (
 from minos.common import (
     Command,
     CommandStatus,
-    Request,
-    Response,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -25,6 +23,8 @@ from minos.networks import (
     CommandResponseException,
     HandlerEntry,
     MinosActionNotFoundException,
+    Request,
+    Response,
 )
 from tests.utils import (
     BASE_PATH,
