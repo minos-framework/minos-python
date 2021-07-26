@@ -107,6 +107,12 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
         await super().asyncSetUp()
         self.handler = DynamicReplyHandler.from_config(config=self.config, topic=self.topic)
 
+    async def test_setup_destroy(self):
+        self.assertFalse(self.handler.already_setup)
+        async with self.handler:
+            self.assertTrue(self.handler.already_setup)
+        self.assertTrue(self.handler.already_destroyed)
+
     def test_base_classes(self):
         self.assertIsInstance(self.handler, MinosHandler)
 

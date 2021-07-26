@@ -33,6 +33,14 @@ class TestDynamicHandler(PostgresAsyncTestCase):
     async def test_config(self):
         self.assertEqual(self.config, self.pool.config)
 
+    async def test_setup_destroy(self):
+        self.assertFalse(self.pool.already_setup)
+        async with self.pool:
+            self.assertTrue(self.pool.already_setup)
+            async with self.pool.acquire():
+                pass
+        self.assertTrue(self.pool.already_destroyed)
+
     async def test_client(self):
         client = self.pool.client
         self.assertIsInstance(client, KafkaAdminClient)
