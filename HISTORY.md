@@ -46,3 +46,12 @@ History
 ------------------
 
 * BugFix
+
+0.0.10 (2021-07-26)
+------------------
+
+* Add `enroute` decorator.
+* Add `ReplyHandlerPool`.
+* Fix bug related with `DiscoveryConnector`.
+* Add `WrappedRequest`.
+
