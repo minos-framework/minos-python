@@ -16,6 +16,7 @@ from minos.common.testing import (
 from minos.networks import (
     EventHandler,
     HandlerEntry,
+    HandlerRequest,
 )
 from tests.utils import (
     BASE_PATH,
@@ -52,7 +53,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         async with EventHandler.from_config(config=self.config) as handler:
             await handler.dispatch_one(entry)
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(event), mock.call_args)
+        self.assertEqual(call(HandlerRequest(event)), mock.call_args)
 
 
 if __name__ == "__main__":
