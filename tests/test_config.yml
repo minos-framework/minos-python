@@ -15,30 +15,25 @@ snapshot:
     password: min0s
     host: localhost
     port: 5432
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+    records: 10
+    retry: 2
 events:
     broker: localhost
     port: 9092
     service: minos.services.CQRSService
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
 commands:
     broker: localhost
     port: 9092
     service: minos.services.OrderService
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
 queries:
     service: minos.services.OrderQueryService
 saga:
@@ -53,14 +48,6 @@ saga:
         - name: DeleteOrder
           controller: tests.services.SagaTestService.SagaService
           action: delete_order
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
 
 discovery:
     host: localhost

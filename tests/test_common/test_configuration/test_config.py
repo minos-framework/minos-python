@@ -61,8 +61,8 @@ class TestMinosConfig(unittest.TestCase):
 
     def test_config_events_queue_database(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
-        events = config.events
-        queue = events.queue
+        broker = config.broker
+        queue = broker.queue
         self.assertEqual("order_db", queue.database)
         self.assertEqual("minos", queue.user)
         self.assertEqual("min0s", queue.password)
@@ -75,18 +75,6 @@ class TestMinosConfig(unittest.TestCase):
         commands = self.config.commands
         self.assertEqual("minos.services.OrderService", commands.service)
 
-    def test_config_commands_queue_database(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
-        commands = config.commands
-        queue = commands.queue
-        self.assertEqual("order_db", queue.database)
-        self.assertEqual("minos", queue.user)
-        self.assertEqual("min0s", queue.password)
-        self.assertEqual("localhost", queue.host)
-        self.assertEqual(5432, queue.port)
-        self.assertEqual(10, queue.records)
-        self.assertEqual(2, queue.retry)
-
     def test_config_queries_service(self):
         query = self.config.queries
         self.assertEqual("minos.services.OrderQueryService", query.service)
@@ -96,18 +84,6 @@ class TestMinosConfig(unittest.TestCase):
         saga = config.saga
         storage = saga.storage
         self.assertEqual(BASE_PATH / "order.lmdb", storage.path)
-
-    def test_config_saga_queue_database(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
-        saga = config.saga
-        queue = saga.queue
-        self.assertEqual("order_db", queue.database)
-        self.assertEqual("minos", queue.user)
-        self.assertEqual("min0s", queue.password)
-        self.assertEqual("localhost", queue.host)
-        self.assertEqual(5432, queue.port)
-        self.assertEqual(10, queue.records)
-        self.assertEqual(2, queue.retry)
 
     def test_config_repository(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
