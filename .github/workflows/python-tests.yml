@@ -28,6 +28,7 @@ jobs:
                 env:
                     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
                     KAFKA_ADVERTISED_HOST_NAME: kafka
+                    KAFKA_DELETE_TOPIC_ENABLE: "true"
         env:
             MINOS_EVENTS_QUEUE_HOST: postgres
             MINOS_EVENTS_BROKER: kafka

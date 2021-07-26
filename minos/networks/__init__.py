@@ -43,6 +43,7 @@ from .handlers import (
     CommandResponseException,
     Consumer,
     DynamicHandler,
+    DynamicReplyHandler,
     EnrouteAnalyzer,
     EnrouteBuilder,
     EventConsumer,
@@ -52,6 +53,7 @@ from .handlers import (
     Handler,
     HandlerEntry,
     HandlerSetup,
+    ReplyHandlerPool,
     enroute,
 )
 from .rest import (

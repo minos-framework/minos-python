@@ -7,4 +7,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 from .handlers import (
     DynamicHandler,
+    DynamicReplyHandler,
+)
+from .pools import (
+    ReplyHandlerPool,
 )
