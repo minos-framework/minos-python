@@ -131,7 +131,7 @@ class FakeBroker(MinosBroker):
         saga: str = None,
         reply_topic: str = None,
         status: CommandStatus = None,
-        **kwargs
+        **kwargs,
     ) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
@@ -215,4 +215,4 @@ class FakeRequest(Request):
         return self._content == other._content
 
     def __repr__(self) -> str:
-        return str()
+        return f"FakeRequest({self._content!r})"
