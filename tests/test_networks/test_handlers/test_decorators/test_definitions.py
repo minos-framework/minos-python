@@ -28,6 +28,7 @@ from tests.utils import (
 )
 
 
+# noinspection PyUnusedLocal
 def _fn(request: Request) -> Response:
     """For testing purposes."""
     return Response("test")

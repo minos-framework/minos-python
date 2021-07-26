@@ -27,7 +27,7 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
 
     def test_instance_str(self):
         builder = EnrouteBuilder(classname(FakeService))
-        self.assertIsInstance(builder.instance, FakeService)
+        self.assertEqual(FakeService, builder.decorated)
 
     async def test_method_query_call_2(self):
         # FIXME

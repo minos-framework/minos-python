@@ -36,8 +36,8 @@ class EnrouteBuilder:
         if isinstance(decorated, str):
             decorated = import_module(decorated)
 
+        self.decorated = decorated
         self.analyzer = EnrouteAnalyzer(decorated)
-        self.instance = decorated()
 
     def get_rest_command_query(self) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
         """TODO
@@ -69,22 +69,28 @@ class EnrouteBuilder:
 
         ans = list()
         for name, decorators in mapping.items():
-            fn = getattr(self.instance, name)
             for decorator in decorators:
-                pre_fn = getattr(self.instance, decorator.KIND.pref_fn_name, None)
-                if pre_fn is not None:
-
-                    async def _fn(request):
-                        request = await pre_fn(request)
-                        return await fn(request)
-
-                else:
-                    if isawaitable(fn):
-                        _fn = fn
-                    else:
-
-                        async def _fn(request):
-                            return fn(request)
-
-                ans.append((_fn, decorator))
+                entry = self._build_one(decorator, name)
+                ans.append(entry)
         return ans
+
+    def _build_one(self, decorator: EnrouteDecorator, name: str) -> (Callable, EnrouteDecorator):
+        instance = self.decorated()
+        fn = getattr(instance, name)
+        pre_fn = getattr(instance, decorator.KIND.pref_fn_name, None)
+
+        if pre_fn is not None:
+
+            async def _fn(request):
+                request = await pre_fn(request)
+                return await fn(request)
+
+        else:
+            if isawaitable(fn):
+                _fn = fn
+            else:
+
+                async def _fn(request):
+                    return fn(request)
+
+        return _fn, decorator
