@@ -22,7 +22,7 @@ from tests.utils import (
 )
 
 
-class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
+class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.data = [FakeModel("foo"), FakeModel("bar")]
         self.saga = uuid4()
@@ -60,7 +60,7 @@ class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1234, await request.content())
 
 
-class TestCommandResponse(unittest.IsolatedAsyncioTestCase):
+class TestHandlerResponse(unittest.IsolatedAsyncioTestCase):
     async def test_content(self):
         response = HandlerResponse([FakeModel("foo"), FakeModel("bar")])
         self.assertEqual([FakeModel("foo"), FakeModel("bar")], await response.content())
