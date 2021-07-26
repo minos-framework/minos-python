@@ -9,9 +9,6 @@ from __future__ import (
 )
 
 import logging
-from importlib import (
-    import_module,
-)
 from inspect import (
     isawaitable,
 )
@@ -28,7 +25,7 @@ from ..abc import (
     Handler,
 )
 from ..decorators import (
-    EnrouteDecoratorAnalyzer,
+    EnrouteBuilder,
 )
 from ..entries import (
     HandlerEntry,
@@ -45,17 +42,9 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        p, m = config.events.service.rsplit(".", 1)
-        mod = import_module(p)
-        met = getattr(mod, m)
+        decorators = EnrouteBuilder(config.events.service).get_broker_event()
 
-        decorators = EnrouteDecoratorAnalyzer(met).event()
-
-        handlers = {}
-        for key, value in decorators.items():
-            for v in decorators[key]:
-                for topic in v.topics:
-                    handlers[topic] = key
+        handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
 
         return cls(handlers=handlers, **config.events.queue._asdict(), **kwargs)
 

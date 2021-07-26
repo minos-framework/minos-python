@@ -9,11 +9,11 @@ from __future__ import (
 )
 
 import logging
-from importlib import (
-    import_module,
-)
 from inspect import (
     isawaitable,
+)
+from itertools import (
+    chain,
 )
 from typing import (
     Any,
@@ -43,7 +43,7 @@ from ..abc import (
     Handler,
 )
 from ..decorators import (
-    EnrouteDecoratorAnalyzer,
+    EnrouteBuilder,
 )
 from ..entries import (
     HandlerEntry,
@@ -71,17 +71,12 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        p, m = config.commands.service.rsplit(".", 1)
-        mod = import_module(p)
-        met = getattr(mod, m)
+        command_decorators = EnrouteBuilder(config.commands.service).get_broker_command_query()
+        query_decorators = EnrouteBuilder(config.queries.service).get_broker_command_query()
 
-        decorators = EnrouteDecoratorAnalyzer(met).command()
-
-        handlers = {}
-        for key, value in decorators.items():
-            for v in decorators[key]:
-                for topic in v.topics:
-                    handlers[topic] = key
+        handlers = {
+            decorator.topic: fn for decorator, fn in chain(command_decorators.items(), query_decorators.items())
+        }
 
         return cls(handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 

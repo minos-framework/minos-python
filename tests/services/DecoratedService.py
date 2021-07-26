@@ -12,14 +12,14 @@ class DecoratedService(object):
     def get_orders(self):
         return "orders"
 
-    @enroute.broker.query(topics=["BrokerQuery"])
+    @enroute.broker.query("BrokerQuery")
     def get_payments(self):
         return "tickets"
 
-    @enroute.broker.command(topics=["BrokerCommand"])
+    @enroute.broker.command("BrokerCommand")
     def get_cart(self):
         return "tickets"
 
-    @enroute.broker.event(topics=["BrokerEvent"])
+    @enroute.broker.event("BrokerEvent")
     def get_item(self):
         return "tickets"

@@ -56,14 +56,14 @@ class Handler(HandlerSetup):
 
     ENTRY_MODEL_CLS: Type[MinosModel]
 
-    def __init__(self, records: int, handlers: dict[str, Optional[dict[str, Any]]], retry: int, **kwargs: Any):
+    def __init__(self, records: int, handlers: dict[str, Optional[Callable]], retry: int, **kwargs: Any):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
         self._retry = retry
 
     @property
-    def handlers(self) -> dict[str, Optional[dict[str, Any]]]:
+    def handlers(self) -> dict[str, Optional[Callable]]:
         """Handlers getter.
 
         :return: A dictionary in which the keys are topics and the values are the handler.

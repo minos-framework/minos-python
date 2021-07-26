@@ -13,10 +13,10 @@ class CqrsService(object):
     def add_ticket(self, request: Request) -> Response:
         return Response("ticket_added")
 
-    @enroute.broker.event(topics=["TicketAdded"])
+    @enroute.broker.event("TicketAdded")
     def ticket_added(self, topic: str, event: Event):
         return "request_added"
 
-    @enroute.broker.event(topics=["TicketDeleted"])
+    @enroute.broker.event("TicketDeleted")
     def ticket_deleted(self, topic: str, event: Event):
         return "ticket_deleted"

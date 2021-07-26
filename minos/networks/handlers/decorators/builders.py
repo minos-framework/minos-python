@@ -28,7 +28,9 @@ from .analyzers import (
     EnrouteAnalyzer,
 )
 from .definitions import (
+    BrokerEnrouteDecorator,
     EnrouteDecorator,
+    RestEnrouteDecorator,
 )
 
 
@@ -42,28 +44,31 @@ class EnrouteBuilder:
         self.decorated = decorated
         self.analyzer = EnrouteAnalyzer(decorated)
 
-    def get_rest_command_query(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
+    def get_rest_command_query(self) -> dict[RestEnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
         """Get the rest handlers for commands and queries.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         mapping = self.analyzer.get_rest_command_query()
+        # noinspection PyTypeChecker
         return self._build(mapping)
 
-    def get_broker_command_query(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
+    def get_broker_command_query(self) -> dict[BrokerEnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
         """Get the broker handlers for commands and queries.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         mapping = self.analyzer.get_broker_command_query()
+        # noinspection PyTypeChecker
         return self._build(mapping)
 
-    def get_broker_event(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
+    def get_broker_event(self) -> dict[BrokerEnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
         """Get the broker handlers for events.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         mapping = self.analyzer.get_broker_event()
+        # noinspection PyTypeChecker
         return self._build(mapping)
 
     def _build(
