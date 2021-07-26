@@ -17,7 +17,7 @@ from minos.common import (
     Command,
 )
 
-from ...messages import (
+from ..messages import (
     Request,
     Response,
     ResponseException,

@@ -50,7 +50,7 @@ from ..decorators import (
 from ..entries import (
     HandlerEntry,
 )
-from .messages import (
+from ..messages import (
     CommandRequest,
 )
 
