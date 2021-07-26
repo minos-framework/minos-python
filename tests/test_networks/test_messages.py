@@ -14,9 +14,11 @@ from abc import (
 from minos.networks import (
     Request,
     Response,
+    WrappedRequest,
 )
 from tests.utils import (
     FakeModel,
+    FakeRequest,
 )
 
 
@@ -24,6 +26,30 @@ class TestRequest(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(Request, ABC))
         self.assertEqual({"content", "__eq__", "__repr__"}, Request.__abstractmethods__)
+
+
+async def _action(content: str) -> str:
+    return f"Wrapped Request: {content}"
+
+
+class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        self.base = FakeRequest("hello")
+        self.action = _action
+        self.request = WrappedRequest(self.base, self.action)
+
+    async def test_content(self):
+        expected = "Wrapped Request: hello"
+        self.assertEqual(expected, await self.request.content())
+
+    def test_equal_true(self):
+        self.assertEqual(WrappedRequest(self.base, self.action), self.request)
+
+    def test_equal_false(self):
+        self.assertNotEqual(WrappedRequest(FakeRequest("foo"), self.action), self.request)
+
+    def test_repr(self):
+        self.assertEqual(f"WrappedRequest({self.base!r}, {self.action!r})", repr(self.request))
 
 
 class TestResponse(unittest.IsolatedAsyncioTestCase):

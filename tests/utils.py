@@ -37,6 +37,7 @@ from minos.common import (
 from minos.networks import (
     Request,
     Response,
+    WrappedRequest,
     enroute,
 )
 
@@ -131,7 +132,7 @@ class FakeBroker(MinosBroker):
         saga: str = None,
         reply_topic: str = None,
         status: CommandStatus = None,
-        **kwargs
+        **kwargs,
     ) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
@@ -170,9 +171,13 @@ class FakeRepository(MinosRepository):
 class FakeService:
     """For testing purposes."""
 
-    # noinspection PyMethodMayBeStatic
-    async def _pre_event_handle(self, request: Request) -> Request:
+    @staticmethod
+    def _pre_query_handle(request: Request) -> Request:
         return request
+
+    @staticmethod
+    async def _pre_event_handle(request: Request) -> Request:
+        return WrappedRequest(request, lambda content: f"[{content}]")
 
     # noinspection PyUnusedLocal
     @enroute.rest.command(url="orders/", method="GET")
@@ -215,4 +220,4 @@ class FakeRequest(Request):
         return self._content == other._content
 
     def __repr__(self) -> str:
-        return str()
+        return f"FakeRequest({self._content!r})"
