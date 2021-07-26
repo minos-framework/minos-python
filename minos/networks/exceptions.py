@@ -28,3 +28,15 @@ class MinosActionNotFoundException(MinosHandlerException):
 
 class MinosHandlerNotFoundEnoughEntriesException(MinosHandlerException):
     """Exception to be raised when not enough entries have been found by a handler."""
+
+
+class MinosEnrouteDecoratorException(MinosNetworkException):
+    """Base exception for enroute decorators."""
+
+
+class MinosMultipleEnrouteDecoratorKindsException(MinosEnrouteDecoratorException):
+    """Exception to be raised when multiple enroute decorator kinds are applied to the same function."""
+
+
+class MinosRedefinedEnrouteDecoratorException(MinosEnrouteDecoratorException):
+    """Exception to be raised when same enroute decorator is used by multiple handlers."""

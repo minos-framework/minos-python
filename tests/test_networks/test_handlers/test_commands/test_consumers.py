@@ -24,7 +24,7 @@ class TestCommandConsumer(PostgresAsyncTestCase):
     def test_from_config(self):
         consumer = CommandConsumer.from_config(config=self.config)
         self.assertIsInstance(consumer, CommandConsumer)
-        self.assertEqual(["AddOrder", "DeleteOrder", "UpdateOrder", "GetOrder"], consumer.topics)
+        self.assertEqual({"GetOrder", "AddOrder", "DeleteOrder", "UpdateOrder"}, consumer.topics)
         self.assertEqual(self.config.commands.broker, consumer._broker)
         self.assertEqual(self.config.commands.queue.host, consumer.host)
         self.assertEqual(self.config.commands.queue.port, consumer.port)
