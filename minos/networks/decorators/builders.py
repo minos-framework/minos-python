@@ -26,7 +26,6 @@ from ..exceptions import (
 from ..messages import (
     Request,
     Response,
-    WrappedRequest,
 )
 from .analyzers import (
     EnrouteAnalyzer,
@@ -102,9 +101,16 @@ class EnrouteBuilder:
         if pre_fn is None:
             _wrapped_fn = _awaitable_fn
         else:
+            if iscoroutinefunction(pre_fn):
 
-            async def _wrapped_fn(request: Request) -> Optional[Response]:
-                request = WrappedRequest(request, pre_fn)
-                return await _awaitable_fn(request)
+                async def _wrapped_fn(request: Request) -> Optional[Response]:
+                    request = await pre_fn(request)
+                    return await _awaitable_fn(request)
+
+            else:
+
+                async def _wrapped_fn(request: Request) -> Optional[Response]:
+                    request = pre_fn(request)
+                    return await _awaitable_fn(request)
 
         return _wrapped_fn
