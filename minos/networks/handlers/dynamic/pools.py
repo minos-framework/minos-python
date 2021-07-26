@@ -57,6 +57,10 @@ class ReplyHandlerPool(MinosPool):
         await instance.destroy()
         await self._delete_reply_topic(instance.topic)
 
+    async def _check_instance(self, instance: DynamicReplyHandler) -> bool:
+        # FIXME
+        return True
+
     async def _create_reply_topic(self, topic: str):
         name = f"{topic}Reply"
         logger.info(f"Creating {name!r} topic...")
