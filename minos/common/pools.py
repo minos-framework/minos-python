@@ -43,5 +43,5 @@ class MinosPool(MinosSetup, PoolBase, Generic[T], ABC):
     async def _destroy(self) -> NoReturn:
         await self.close()
 
-    def _check_instance(self, instance: T) -> bool:
+    async def _check_instance(self, instance: T) -> bool:
         return True
