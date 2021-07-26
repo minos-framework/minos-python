@@ -3,17 +3,7 @@ service:
 rest:
     host: localhost
     port: 8080
-    endpoints:
-        -   name: AddOrder
-            route: /order
-            method: POST
-            controller: tests.services.TestRestService.RestService
-            action: add_order
-        -   name: GetOrder
-            route: /order
-            method: GET
-            controller: tests.services.TestRestService.RestService
-            action: get_order
+    endpoints: []
 repository:
     database: order_db
     user: minos
@@ -29,13 +19,7 @@ snapshot:
 events:
     broker: localhost
     port: 9092
-    items:
-        -   name: TicketAdded
-            controller: tests.services.CqrsTestService.CqrsService
-            action: ticket_added
-        -   name: TicketDeleted
-            controller: tests.services.CqrsTestService.CqrsService
-            action: ticket_deleted
+    service: tests.services.queries.CqrsService
     queue:
         database: order_db
         user: minos
@@ -47,19 +31,7 @@ events:
 commands:
     broker: localhost
     port: 9092
-    items:
-        -   name: AddOrder
-            controller: tests.services.CommandTestService.CommandService
-            action: add_order
-        -   name: DeleteOrder
-            controller: tests.services.CommandTestService.CommandService
-            action: delete_order
-        -   name: UpdateOrder
-            controller: tests.services.CommandTestService.CommandService
-            action: update_order
-        -   name: GetOrder
-            controller: tests.service.CommandTestService.CommandService
-            action: get_order
+    service: tests.services.commands.CommandService
     queue:
         database: order_db
         user: minos
@@ -68,17 +40,19 @@ commands:
         port: 5432
         records: 10
         retry: 1
+queries:
+    service: tests.services.queries.CqrsService
 saga:
     broker: localhost
-    port: 8900
+    port: 9092
     storage:
         path: "./order.lmdb"
     items:
         -   name: AddOrder
-            controller: tests.services.SagaTestService.SagaService
+            controller: tests.services.sagas.SagaService
             action: add_order
         -   name: DeleteOrder
-            controller: tests.services.SagaTestService.SagaService
+            controller: tests.services.sagas.SagaService
             action: delete_order
     queue:
         database: order_db

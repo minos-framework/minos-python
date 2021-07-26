@@ -8,10 +8,17 @@ from __future__ import (
     annotations,
 )
 
+from itertools import (
+    chain,
+)
+
 from minos.common import (
     MinosConfig,
 )
 
+from ...decorators import (
+    EnrouteBuilder,
+)
 from ..abc import (
     Consumer,
 )
@@ -24,5 +31,9 @@ class CommandConsumer(Consumer):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandConsumer:
-        topics = [item.name for item in config.commands.items]
+        command_decorators = EnrouteBuilder(config.commands.service).get_broker_command_query()
+        query_decorators = EnrouteBuilder(config.queries.service).get_broker_command_query()
+
+        topics = {decorator.topic for decorator in chain(command_decorators.keys(), query_decorators.keys())}
+
         return cls(topics=topics, broker=config.commands.broker, **config.commands.queue._asdict(), **kwargs)

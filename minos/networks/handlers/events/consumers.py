@@ -13,6 +13,9 @@ from minos.common import (
     MinosConfig,
 )
 
+from ...decorators import (
+    EnrouteBuilder,
+)
 from ..abc import (
     Consumer,
 )
@@ -25,5 +28,8 @@ class EventConsumer(Consumer):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventConsumer:
-        topics = [item.name for item in config.events.items]
+        decorators = EnrouteBuilder(config.events.service).get_broker_event()
+
+        topics = {decorator.topic for decorator in decorators.keys()}
+
         return cls(topics=topics, broker=config.events.broker, **config.events.queue._asdict(), **kwargs)

@@ -12,19 +12,19 @@ from uuid import (
 from minos.common import (
     Command,
     CommandStatus,
-    Request,
-    Response,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     CommandHandler,
-    CommandRequest,
-    CommandResponse,
-    CommandResponseException,
     HandlerEntry,
+    HandlerRequest,
+    HandlerResponse,
+    HandlerResponseException,
     MinosActionNotFoundException,
+    Request,
+    Response,
 )
 from tests.utils import (
     BASE_PATH,
@@ -36,7 +36,7 @@ from tests.utils import (
 class _Cls:
     @staticmethod
     async def _fn(request: Request) -> Response:
-        return CommandResponse(await request.content())
+        return HandlerResponse(await request.content())
 
     @staticmethod
     async def _fn_none(request: Request):
@@ -44,7 +44,7 @@ class _Cls:
 
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
-        raise CommandResponseException("")
+        raise HandlerResponseException("")
 
     @staticmethod
     async def _fn_raises_minos(request: Request) -> Response:
@@ -66,31 +66,18 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     def test_from_config(self):
         broker = FakeBroker()
-        dispatcher = CommandHandler.from_config(config=self.config, broker=broker)
-        self.assertIsInstance(dispatcher, CommandHandler)
-        self.assertEqual(
-            {
-                "AddOrder": {"action": "add_order", "controller": "tests.services.CommandTestService.CommandService"},
-                "DeleteOrder": {
-                    "action": "delete_order",
-                    "controller": "tests.services.CommandTestService.CommandService",
-                },
-                "GetOrder": {"action": "get_order", "controller": "tests.service.CommandTestService.CommandService"},
-                "UpdateOrder": {
-                    "action": "update_order",
-                    "controller": "tests.services.CommandTestService.CommandService",
-                },
-            },
-            dispatcher._handlers,
-        )
-        self.assertEqual(self.config.commands.queue.records, dispatcher._records)
-        self.assertEqual(self.config.commands.queue.retry, dispatcher._retry)
-        self.assertEqual(self.config.commands.queue.host, dispatcher.host)
-        self.assertEqual(self.config.commands.queue.port, dispatcher.port)
-        self.assertEqual(self.config.commands.queue.database, dispatcher.database)
-        self.assertEqual(self.config.commands.queue.user, dispatcher.user)
-        self.assertEqual(self.config.commands.queue.password, dispatcher.password)
-        self.assertEqual(broker, dispatcher.broker)
+        handler = CommandHandler.from_config(config=self.config, broker=broker)
+        self.assertIsInstance(handler, CommandHandler)
+
+        self.assertEqual({"GetOrder", "AddOrder", "DeleteOrder", "UpdateOrder"}, set(handler.handlers.keys()))
+
+        self.assertEqual(self.config.commands.queue.retry, handler._retry)
+        self.assertEqual(self.config.commands.queue.host, handler.host)
+        self.assertEqual(self.config.commands.queue.port, handler.port)
+        self.assertEqual(self.config.commands.queue.database, handler.database)
+        self.assertEqual(self.config.commands.queue.user, handler.user)
+        self.assertEqual(self.config.commands.queue.password, handler.password)
+        self.assertEqual(broker, handler.broker)
 
     def test_entry_model_cls(self):
         self.assertEqual(Command, CommandHandler.ENTRY_MODEL_CLS)
@@ -112,7 +99,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
         self.assertEqual(1, mock.call_count)
         observed = mock.call_args[0][0]
-        self.assertIsInstance(observed, CommandRequest)
+        self.assertIsInstance(observed, HandlerRequest)
         self.assertEqual(FakeModel("foo"), await observed.content())
 
     async def test_get_callback(self):

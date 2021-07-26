@@ -34,6 +34,12 @@ from minos.common import (
     MinosSagaManager,
     RepositoryEntry,
 )
+from minos.networks import (
+    Request,
+    Response,
+    WrappedRequest,
+    enroute,
+)
 
 BASE_PATH = Path(__file__).parent
 
@@ -126,7 +132,7 @@ class FakeBroker(MinosBroker):
         saga: str = None,
         reply_topic: str = None,
         status: CommandStatus = None,
-        **kwargs
+        **kwargs,
     ) -> NoReturn:
         """For testing purposes."""
         self.call_count += 1
@@ -160,3 +166,58 @@ class FakeRepository(MinosRepository):
         """For testing purposes."""
         for item in self.items:
             yield item
+
+
+class FakeService:
+    """For testing purposes."""
+
+    @staticmethod
+    def _pre_query_handle(request: Request) -> Request:
+        return request
+
+    @staticmethod
+    async def _pre_event_handle(request: Request) -> Request:
+        return WrappedRequest(request, lambda content: f"[{content}]")
+
+    # noinspection PyUnusedLocal
+    @enroute.rest.command(url="orders/", method="GET")
+    @enroute.broker.command(topic="CreateTicket")
+    @enroute.broker.command(topic="AddTicket")
+    def create_ticket(self, request: Request) -> Response:
+        """For testing purposes."""
+        return Response("Create Ticket")
+
+    @enroute.rest.query(url="tickets/", method="GET")
+    @enroute.broker.query(topic="GetTickets")
+    async def get_tickets(self, request: Request) -> Response:
+        """For testing purposes."""
+        return Response(": ".join(("Get Tickets", await request.content(),)))
+
+    @staticmethod
+    @enroute.broker.event(topic="TicketAdded")
+    async def ticket_added(request: Request) -> Response:
+        """For testing purposes."""
+        return Response(": ".join(("Ticket Added", await request.content(),)))
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def bar(self, request: Request):
+        """For testing purposes."""
+        return Response("bar")
+
+
+class FakeRequest(Request):
+    """For testing purposes"""
+
+    def __init__(self, content):
+        super().__init__()
+        self._content = content
+
+    async def content(self, **kwargs):
+        """For testing purposes"""
+        return self._content
+
+    def __eq__(self, other) -> bool:
+        return self._content == other._content
+
+    def __repr__(self) -> str:
+        return f"FakeRequest({self._content!r})"

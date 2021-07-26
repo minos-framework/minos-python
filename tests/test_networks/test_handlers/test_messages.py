@@ -14,59 +14,59 @@ from minos.common import (
     Command,
 )
 from minos.networks import (
-    CommandRequest,
-    CommandResponse,
+    HandlerRequest,
+    HandlerResponse,
 )
 from tests.utils import (
     FakeModel,
 )
 
 
-class TestCommandRequest(unittest.IsolatedAsyncioTestCase):
+class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.data = [FakeModel("foo"), FakeModel("bar")]
         self.saga = uuid4()
         self.command = Command("FooCreated", self.data, self.saga, "AddOrderReply")
 
     def test_repr(self):
-        request = CommandRequest(self.command)
+        request = HandlerRequest(self.command)
         expected = (
-            "CommandRequest(Command(topic=FooCreated, data=[FakeModel(text=foo), FakeModel(text=bar)], "
+            "HandlerRequest(Command(topic=FooCreated, data=[FakeModel(text=foo), FakeModel(text=bar)], "
             f"saga={self.saga!s}, reply_topic=AddOrderReply))"
         )
         self.assertEqual(expected, repr(request))
 
     def test_eq_true(self):
-        self.assertEqual(CommandRequest(self.command), CommandRequest(self.command))
+        self.assertEqual(HandlerRequest(self.command), HandlerRequest(self.command))
 
     def test_eq_false(self):
-        another = CommandRequest(Command("FooUpdated", self.data, self.saga, "AddOrderReply"))
-        self.assertNotEqual(CommandRequest(self.command), another)
+        another = HandlerRequest(Command("FooUpdated", self.data, self.saga, "AddOrderReply"))
+        self.assertNotEqual(HandlerRequest(self.command), another)
 
     def test_command(self):
-        request = CommandRequest(self.command)
-        self.assertEqual(self.command, request.command)
+        request = HandlerRequest(self.command)
+        self.assertEqual(self.command, request.raw)
 
     async def test_content(self):
-        request = CommandRequest(self.command)
+        request = HandlerRequest(self.command)
         self.assertEqual(self.data, await request.content())
 
     async def test_content_single(self):
-        request = CommandRequest(Command("FooCreated", self.data[0], self.saga, "AddOrderReply"))
+        request = HandlerRequest(Command("FooCreated", self.data[0], self.saga, "AddOrderReply"))
         self.assertEqual(self.data[0], await request.content())
 
     async def test_content_simple(self):
-        request = CommandRequest(Command("FooCreated", 1234, self.saga, "AddOrderReply"))
+        request = HandlerRequest(Command("FooCreated", 1234, self.saga, "AddOrderReply"))
         self.assertEqual(1234, await request.content())
 
 
-class TestCommandResponse(unittest.IsolatedAsyncioTestCase):
+class TestHandlerResponse(unittest.IsolatedAsyncioTestCase):
     async def test_content(self):
-        response = CommandResponse([FakeModel("foo"), FakeModel("bar")])
+        response = HandlerResponse([FakeModel("foo"), FakeModel("bar")])
         self.assertEqual([FakeModel("foo"), FakeModel("bar")], await response.content())
 
     async def test_content_single(self):
-        response = CommandResponse(FakeModel("foo"))
+        response = HandlerResponse(FakeModel("foo"))
         self.assertEqual(FakeModel("foo"), await response.content())
 
 

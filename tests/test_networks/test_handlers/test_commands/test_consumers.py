@@ -22,15 +22,15 @@ class TestCommandConsumer(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config(self):
-        dispatcher = CommandConsumer.from_config(config=self.config)
-        self.assertIsInstance(dispatcher, CommandConsumer)
-        self.assertEqual(["AddOrder", "DeleteOrder", "UpdateOrder", "GetOrder"], dispatcher._topics)
-        self.assertEqual(self.config.commands.broker, dispatcher._broker)
-        self.assertEqual(self.config.commands.queue.host, dispatcher.host)
-        self.assertEqual(self.config.commands.queue.port, dispatcher.port)
-        self.assertEqual(self.config.commands.queue.database, dispatcher.database)
-        self.assertEqual(self.config.commands.queue.user, dispatcher.user)
-        self.assertEqual(self.config.commands.queue.password, dispatcher.password)
+        consumer = CommandConsumer.from_config(config=self.config)
+        self.assertIsInstance(consumer, CommandConsumer)
+        self.assertEqual({"GetOrder", "AddOrder", "DeleteOrder", "UpdateOrder"}, consumer.topics)
+        self.assertEqual(self.config.commands.broker, consumer._broker)
+        self.assertEqual(self.config.commands.queue.host, consumer.host)
+        self.assertEqual(self.config.commands.queue.port, consumer.port)
+        self.assertEqual(self.config.commands.queue.database, consumer.database)
+        self.assertEqual(self.config.commands.queue.user, consumer.user)
+        self.assertEqual(self.config.commands.queue.password, consumer.password)
 
     def test_table_name(self):
         self.assertEqual("command_queue", CommandConsumer.TABLE_NAME)

@@ -12,6 +12,9 @@ import logging
 from inspect import (
     isawaitable,
 )
+from itertools import (
+    chain,
+)
 from typing import (
     Any,
     Awaitable,
@@ -32,18 +35,23 @@ from minos.common import (
     MinosBroker,
     MinosConfig,
     MinosException,
+)
+
+from ...decorators import (
+    EnrouteBuilder,
+)
+from ...messages import (
     Response,
     ResponseException,
 )
-
 from ..abc import (
     Handler,
 )
 from ..entries import (
     HandlerEntry,
 )
-from .messages import (
-    CommandRequest,
+from ..messages import (
+    HandlerRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,7 +73,13 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.commands.items}
+        command_decorators = EnrouteBuilder(config.commands.service).get_broker_command_query()
+        query_decorators = EnrouteBuilder(config.queries.service).get_broker_command_query()
+
+        handlers = {
+            decorator.topic: fn for decorator, fn in chain(command_decorators.items(), query_decorators.items())
+        }
+
         return cls(handlers=handlers, **config.commands.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
@@ -84,7 +98,7 @@ class CommandHandler(Handler):
 
     @staticmethod
     def get_callback(
-        fn: Callable[[CommandRequest], Union[Optional[CommandRequest], Awaitable[Optional[CommandRequest]]]]
+        fn: Callable[[HandlerRequest], Union[Optional[HandlerRequest], Awaitable[Optional[HandlerRequest]]]]
     ) -> Callable[[Command], Awaitable[Tuple[Any, CommandStatus]]]:
         """Get the handler function to be used by the Command Handler.
 
@@ -94,7 +108,7 @@ class CommandHandler(Handler):
 
         async def _fn(command: Command) -> Tuple[Any, CommandStatus]:
             try:
-                request = CommandRequest(command)
+                request = HandlerRequest(command)
                 response = fn(request)
                 if isawaitable(response):
                     response = await response

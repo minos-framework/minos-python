@@ -1,4 +1,3 @@
-import socket
 import unittest
 from unittest.mock import (
     AsyncMock,
@@ -11,6 +10,7 @@ from minos.common import (
 from minos.networks import (
     DiscoveryConnector,
     MinosDiscoveryClient,
+    get_host_ip,
 )
 from tests.utils import (
     BASE_PATH,
@@ -22,7 +22,7 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self) -> None:
         self.config = MinosConfig(self.CONFIG_FILE_PATH)
-        self.host = socket.gethostbyname(socket.getfqdn())
+        self.ip = get_host_ip()
         self.discovery = DiscoveryConnector.from_config(config=self.config)
 
     def test_client(self):
@@ -33,7 +33,7 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
         self.discovery.client.subscribe = mock
         await self.discovery.subscribe()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(self.host, 8080, "Order"), mock.call_args)
+        self.assertEqual(call(self.ip, 8080, "Order"), mock.call_args)
 
     async def test_unsubscribe(self):
         mock = AsyncMock()

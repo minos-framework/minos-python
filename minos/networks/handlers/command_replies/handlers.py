@@ -50,9 +50,8 @@ class CommandReplyHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
-        handlers = {
-            f"{item.name}Reply": {"controller": item.controller, "action": item.action} for item in config.saga.items
-        }
+        handlers = {f"{item.name}Reply": None for item in config.saga.items}
+        handlers[f"{config.service.name}QueryReply"] = None
         return cls(*args, handlers=handlers, **config.saga.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:

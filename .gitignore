@@ -108,3 +108,5 @@ ENV/
 .idea
 
 docs/api
+
+.DS_Store
