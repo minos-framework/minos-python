@@ -22,7 +22,7 @@ events:
     database:
         path: ./tests/local_db.lmdb
         name: database_events_test
-    service: tests.services.CqrsTestService.CqrsService
+    service: tests.services.queries.CqrsService
     queue:
         database: order_db
         user: minos
@@ -34,7 +34,7 @@ events:
 commands:
     broker: localhost
     port: 4092
-    service: tests.services.CommandTestService.CommandService
+    service: tests.services.commands.CommandService
     queue:
         database: order_db
         user: minos
@@ -44,4 +44,4 @@ commands:
         records: 10
         retry: 2
 queries:
-    service: tests.services.CqrsTestService.CqrsService
+    service: tests.services.queries.CqrsService
