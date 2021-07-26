@@ -438,60 +438,45 @@ version = "0.1.6"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-aiomisc = "^14.0.3"
-aiopg = "^1.2.1"
-cached-property = "^1.5.2"
-dependency-injector = "^4.32.2"
-fastavro = "^1.4.0"
-lmdb = "^1.2.1"
-orjson = "^3.5.2"
-PyYAML = "^5.4.1"
-
-[package.source]
-type = "directory"
-url = "../minos_microservice_common"
+aiomisc = ">=14.0.3,<15.0.0"
+aiopg = ">=1.2.1,<2.0.0"
+cached-property = ">=1.5.2,<2.0.0"
+dependency-injector = ">=4.32.2,<5.0.0"
+fastavro = ">=1.4.0,<2.0.0"
+lmdb = ">=1.2.1,<2.0.0"
+orjson = ">=3.5.2,<4.0.0"
+PyYAML = ">=5.4.1,<6.0.0"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.0.9"
+version = "0.0.10"
 description = "Python Package with the common network classes and utilities used in Minos Microservice."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-aiohttp = "^3.7.4"
-aiokafka = "^0.7.0"
-aiomisc = "^14.0.3"
-aiopg = "^1.2.1"
-dependency-injector = "^4.32.2"
-minos-microservice-common = "^0.1.6"
-
-[package.source]
-type = "directory"
-url = "../minos_microservice_networks"
+aiohttp = ">=3.7.4,<4.0.0"
+aiokafka = ">=0.7.0,<0.8.0"
+aiomisc = ">=14.0.3,<15.0.0"
+aiopg = ">=1.2.1,<2.0.0"
+dependency-injector = ">=4.32.2,<5.0.0"
+minos-microservice-common = ">=0.1.6,<0.2.0"
 
 [[package]]
 name = "minos-microservice-saga"
-version = "0.0.8"
+version = "0.0.9"
 description = "Saga Library for MinOS project."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-dependency-injector = "^4.32.2"
-minos-microservice-common = "^0.1.6"
-
-[package.source]
-type = "directory"
-url = "../minos_microservice_saga"
+dependency-injector = ">=4.32.2,<5.0.0"
+minos-microservice-common = ">=0.1.6,<0.2.0"
 
 [[package]]
 name = "mistune"
@@ -728,7 +713,7 @@ python-versions = "*"
 
 [[package]]
 name = "sphinx"
-version = "4.1.1"
+version = "4.1.2"
 description = "Python documentation generator"
 category = "dev"
 optional = false
@@ -941,7 +926,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ee6d35a81320609450c39c31e31aeee787591618c9b60c5747b5751d19b5a0f9"
+content-hash = "204061bec595700f1bd319d782e3c6d360669c4e12cfbfcfbcd54ab0cedc57a5"
 
 [metadata.files]
 aiohttp = [
@@ -1377,9 +1362,18 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-microservice-common = []
-minos-microservice-networks = []
-minos-microservice-saga = []
+minos-microservice-common = [
+    {file = "minos_microservice_common-0.1.6-py3-none-any.whl", hash = "sha256:b46517f607106aab43195419cf4db7a449b4a35265764827b698e64c5f291c45"},
+    {file = "minos_microservice_common-0.1.6.tar.gz", hash = "sha256:7de582cc150de5d5a989cbffd0febdd564394b1d9374c70f4fe02746c578d4cf"},
+]
+minos-microservice-networks = [
+    {file = "minos_microservice_networks-0.0.10-py3-none-any.whl", hash = "sha256:033a2a3138b73aadf3a8b3d2173cea7673bbbee315a079df79b110593df37952"},
+    {file = "minos_microservice_networks-0.0.10.tar.gz", hash = "sha256:43963cc50af345f468eaf4f87715924f91a043a95950bfabb30b71a35cd4942d"},
+]
+minos-microservice-saga = [
+    {file = "minos_microservice_saga-0.0.9-py3-none-any.whl", hash = "sha256:911cc561d074968d01cf6ca11e96c88645df009bc199f0e4d40acd157c523681"},
+    {file = "minos_microservice_saga-0.0.9.tar.gz", hash = "sha256:4d2f9b7cf566c32a2ab8fd10078ac64fca735e09df21aa79f909017c6a4f9023"},
+]
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
     {file = "mistune-0.8.4.tar.gz", hash = "sha256:59a3429db53c50b5c6bcc8a07f8848cb00d7dc8bdb431a4ab41920d201d4756e"},
@@ -1616,8 +1610,8 @@ snowballstemmer = [
     {file = "snowballstemmer-2.1.0.tar.gz", hash = "sha256:e997baa4f2e9139951b6f4c631bad912dfd3c792467e2f03d7239464af90e914"},
 ]
 sphinx = [
-    {file = "Sphinx-4.1.1-py3-none-any.whl", hash = "sha256:3d513088236eef51e5b0adb78b0492eb22cc3b8ccdb0b36dd021173b365d4454"},
-    {file = "Sphinx-4.1.1.tar.gz", hash = "sha256:23c846a1841af998cb736218539bb86d16f5eb95f5760b1966abcd2d584e62b8"},
+    {file = "Sphinx-4.1.2-py3-none-any.whl", hash = "sha256:46d52c6cee13fec44744b8c01ed692c18a640f6910a725cbb938bc36e8d64544"},
+    {file = "Sphinx-4.1.2.tar.gz", hash = "sha256:3092d929cd807926d846018f2ace47ba2f3b671b309c7a89cd3306e80c826b13"},
 ]
 sphinx-autodoc-typehints = [
     {file = "sphinx-autodoc-typehints-1.12.0.tar.gz", hash = "sha256:193617d9dbe0847281b1399d369e74e34cd959c82e02c7efde077fca908a9f52"},
