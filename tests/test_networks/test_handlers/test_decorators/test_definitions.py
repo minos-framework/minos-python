@@ -61,10 +61,10 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
     def test_repr(self):
         self.assertEqual("_FakeEnrouteDecorator()", repr(self.decorator))
 
-    async def test_method_call(self):
+    def test_method_call(self):
         instance = FakeService()
-        response = await instance.create_ticket(FakeRequest("test"))
-        self.assertEqual(Response("Create Ticket: test"), response)
+        response = instance.create_ticket(FakeRequest("test"))
+        self.assertEqual(Response("Create Ticket"), response)
 
     async def test_static_method_call(self):
         instance = FakeService()

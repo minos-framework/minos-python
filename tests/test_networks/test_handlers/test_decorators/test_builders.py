@@ -44,7 +44,7 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         observed_response = await handlers[RestQueryEnrouteDecorator("tickets/", "GET")](self.request)
         self.assertEqual(expected_response, observed_response)
 
-        expected_response = Response("Create Ticket: test")
+        expected_response = Response("Create Ticket")
         observed_response = await handlers[RestCommandEnrouteDecorator("orders/", "GET")](self.request)
         self.assertEqual(expected_response, observed_response)
 
@@ -64,7 +64,7 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         observed_response = await handlers[BrokerQueryEnrouteDecorator("GetTickets")](self.request)
         self.assertEqual(expected_response, observed_response)
 
-        expected_response = Response("Create Ticket: test")
+        expected_response = Response("Create Ticket")
         observed_response = await handlers[BrokerCommandEnrouteDecorator(["CreateTicket", "AddTicket"])](self.request)
         self.assertEqual(expected_response, observed_response)
 

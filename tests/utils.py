@@ -171,18 +171,15 @@ class FakeService:
     """For testing purposes."""
 
     # noinspection PyMethodMayBeStatic
-    async def _pre_command_handle(self, request: Request) -> Request:
-        return request
-
-    # noinspection PyMethodMayBeStatic
     async def _pre_event_handle(self, request: Request) -> Request:
         return request
 
+    # noinspection PyUnusedLocal
     @enroute.rest.command(url="orders/", method="GET")
     @enroute.broker.command(topics=["CreateTicket", "AddTicket"])
-    async def create_ticket(self, request: Request) -> Response:
+    def create_ticket(self, request: Request) -> Response:
         """For testing purposes."""
-        return Response(": ".join(("Create Ticket", await request.content(),)))
+        return Response("Create Ticket")
 
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topics=["GetTickets"])
