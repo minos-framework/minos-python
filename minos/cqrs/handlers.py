@@ -11,6 +11,7 @@ from uuid import (
 
 from minos.common import (
     AggregateDiff,
+    DataTransferObject,
     MinosSagaManager,
     ModelRefExtractor,
     ModelRefInjector,
@@ -29,15 +30,15 @@ from .exceptions import (
 
 
 class PreEventHandler:
-    """TODO"""
+    """Pre Event Handler class."""
 
     @classmethod
     async def handle(cls, diff: AggregateDiff, saga_manager: MinosSagaManager) -> AggregateDiff:
-        """TODO
+        """Handle pre event function.
 
-        :param diff: TODO
-        :param saga_manager: TODO
-        :return: TODO
+        :param diff: The initial aggregate difference.
+        :param saga_manager: The saga manager to be used to compute the queries to another microservices.
+        :return: The recomposed aggregate difference.
         """
         definition = cls.build_saga(diff)
         execution = await saga_manager.run(
@@ -49,10 +50,10 @@ class PreEventHandler:
 
     @classmethod
     def build_saga(cls, diff: AggregateDiff) -> Saga:
-        """TODO
+        """Build a saga to query the referenced aggregates.
 
-        :param diff: TODO
-        :return: TODO
+        :param diff: The base aggregate difference.
+        :return: A saga instance.
         """
         missing = ModelRefExtractor(diff.fields_diff).build()
 
@@ -60,8 +61,8 @@ class PreEventHandler:
         for name, uuids in missing.items():
             saga = (
                 saga.step()
-                    .invoke_participant(f"Get{name}s", cls.invoke_callback, SagaContext(uuids=list(uuids)))
-                    .on_reply(f"{name}s")
+                .invoke_participant(f"Get{name}s", cls.invoke_callback, SagaContext(uuids=list(uuids)))
+                .on_reply(f"{name}s")
             )
         saga = saga.commit(cls.commit_callback, parameters=SagaContext(diff=diff))
 
@@ -69,22 +70,22 @@ class PreEventHandler:
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def invoke_callback(context: SagaContext, uuids: list[UUID]):
-        """TODO
+    def invoke_callback(context: SagaContext, uuids: list[UUID]) -> DataTransferObject:
+        """Callback to prepare data before invoking participants.
 
-        :param context: TODO
-        :param uuids: TODO
-        :return: TODO
+        :param context: The saga context (ignored).
+        :param uuids: The list of identifiers.
+        :return: A dto instance.
         """
         return ModelType.build("Query", {"uuids": list[UUID]})(uuids=uuids)
 
     @classmethod
     def commit_callback(cls, context: SagaContext, diff: AggregateDiff) -> SagaContext:
-        """TODO
+        """Callback to be executed at the end of the saga.
 
-        :param context:TODO
-        :param diff:TODO
-        :return:TODO
+        :param context: The saga execution context.
+        :param diff: The initial aggregate difference.
+        :return: A saga context containing the enriched aggregate difference.
         """
 
         recovered = dict()
