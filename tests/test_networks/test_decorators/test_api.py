@@ -8,14 +8,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.networks import (
-    enroute,
-)
-from minos.networks.handlers import (
     BrokerCommandEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
+    enroute,
 )
 
 

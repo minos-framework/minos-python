@@ -11,14 +11,12 @@ from typing import (
 )
 
 from minos.networks import (
+    EnrouteDecorator,
+    EnrouteDecoratorKind,
     MinosMultipleEnrouteDecoratorKindsException,
     Request,
     Response,
     enroute,
-)
-from minos.networks.handlers.decorators import (
-    EnrouteDecorator,
-    EnrouteDecoratorKind,
 )
 from tests.utils import (
     FakeRequest,

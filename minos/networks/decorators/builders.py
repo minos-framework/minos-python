@@ -19,10 +19,10 @@ from minos.common import (
     import_module,
 )
 
-from ...exceptions import (
+from ..exceptions import (
     MinosRedefinedEnrouteDecoratorException,
 )
-from ...messages import (
+from ..messages import (
     Request,
     Response,
 )

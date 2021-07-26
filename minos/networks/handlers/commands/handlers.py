@@ -37,15 +37,15 @@ from minos.common import (
     MinosException,
 )
 
+from ...decorators import (
+    EnrouteBuilder,
+)
 from ...messages import (
     Response,
     ResponseException,
 )
 from ..abc import (
     Handler,
-)
-from ..decorators import (
-    EnrouteBuilder,
 )
 from ..entries import (
     HandlerEntry,

@@ -16,11 +16,11 @@ from minos.common import (
     MinosConfig,
 )
 
+from ...decorators import (
+    EnrouteBuilder,
+)
 from ..abc import (
     Consumer,
-)
-from ..decorators import (
-    EnrouteBuilder,
 )
 
 

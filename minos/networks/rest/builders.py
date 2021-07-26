@@ -37,7 +37,7 @@ from minos.common import (
     classname,
 )
 
-from ..handlers import (
+from ..decorators import (
     EnrouteBuilder,
 )
 from ..messages import (
