@@ -6,7 +6,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 from abc import (
     ABC,
 )
-from functools import partial
+from functools import (
+    partial,
+)
 from typing import (
     Optional,
 )
@@ -16,7 +18,6 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    AggregateDiff,
     MinosConfig,
     MinosSagaManager,
 )
@@ -24,6 +25,7 @@ from minos.networks import (
     Request,
     WrappedRequest,
 )
+
 from .exceptions import (
     MinosIllegalHandlingException,
 )

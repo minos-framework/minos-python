@@ -10,16 +10,16 @@ __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
 __version__ = "0.0.1"
 
+from .exceptions import (
+    MinosCqrsException,
+    MinosIllegalHandlingException,
+    MinosQueryServiceException,
+)
+from .handlers import (
+    PreEventHandler,
+)
 from .services import (
     CommandService,
     QueryService,
     Service,
-)
-from .exceptions import (
-    MinosCqrsException,
-    MinosQueryServiceException,
-    MinosIllegalHandlingException,
-)
-from .handlers import (
-    PreEventHandler,
 )
