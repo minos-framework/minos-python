@@ -11,6 +11,7 @@ from inspect import (
 from typing import (
     Awaitable,
     Callable,
+    Optional,
     Type,
     Union,
 )
@@ -25,6 +26,7 @@ from ..exceptions import (
 from ..messages import (
     Request,
     Response,
+    WrappedRequest,
 )
 from .analyzers import (
     EnrouteAnalyzer,
@@ -90,18 +92,19 @@ class EnrouteBuilder:
         fn = getattr(instance, name)
         pre_fn = getattr(instance, pref_fn_name, None)
 
-        if pre_fn is not None:
-
-            async def _fn(request):
-                request = await pre_fn(request)
-                return await fn(request)
-
+        if iscoroutinefunction(fn):
+            _awaitable_fn = fn
         else:
-            if iscoroutinefunction(fn):
-                _fn = fn
-            else:
 
-                async def _fn(request):
-                    return fn(request)
+            async def _awaitable_fn(request: Request) -> Optional[Response]:
+                return fn(request)
 
-        return _fn
+        if pre_fn is None:
+            _wrapped_fn = _awaitable_fn
+        else:
+
+            async def _wrapped_fn(request: Request) -> Optional[Response]:
+                request = WrappedRequest(request, pre_fn)
+                return await _awaitable_fn(request)
+
+        return _wrapped_fn
