@@ -21,6 +21,7 @@ from minos.common import (
     ModelRef,
 )
 from minos.cqrs import (
+    MinosQueryServiceException,
     PreEventHandler,
 )
 from minos.saga import (
@@ -66,6 +67,24 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
 
         expected = AggregateDiff(self.uuid, "Foo", 1, FieldsDiff([Field("bars", list[ModelRef[Bar]], self.bars)]))
         self.assertEqual(expected, observed)
+
+    async def test_handle_raises(self):
+        execution = SagaExecution.from_saga(
+            (
+                Saga("")
+                .step()
+                .invoke_participant(
+                    "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars]))
+                )
+                .commit(PreEventHandler.commit_callback, SagaContext(diff=self.diff))
+            ),
+            status=SagaStatus.Errored,
+        )
+        mock = AsyncMock(return_value=execution)
+
+        self.saga_manager.run = mock
+        with self.assertRaises(MinosQueryServiceException):
+            await PreEventHandler.handle(self.diff, self.saga_manager)
 
     @unittest.skip
     def test_build_saga(self):
