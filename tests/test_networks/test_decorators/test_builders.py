@@ -52,7 +52,7 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         handlers = self.builder.get_broker_event()
         self.assertEqual(1, len(handlers))
 
-        expected_response = Response("Ticket Added: test")
+        expected_response = Response("Ticket Added: [test]")
         observed_response = await handlers[BrokerEventEnrouteDecorator("TicketAdded")](self.request)
         self.assertEqual(expected_response, observed_response)
 
