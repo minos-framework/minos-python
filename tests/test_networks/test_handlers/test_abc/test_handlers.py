@@ -28,9 +28,9 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandResponse,
     EnrouteBuilder,
     Handler,
+    HandlerResponse,
     MinosActionNotFoundException,
 )
 from minos.networks.handlers import (
@@ -76,7 +76,7 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual(CommandResponse("add_order"), await action(FakeRequest("test")))
+        self.assertEqual(HandlerResponse("add_order"), await action(FakeRequest("test")))
 
     async def test_get_action_none(self):
         action = self.handler.get_action(topic="empty")

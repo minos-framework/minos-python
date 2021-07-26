@@ -12,11 +12,6 @@ from .consumers import (
 from .handlers import (
     CommandHandler,
 )
-from .messages import (
-    CommandRequest,
-    CommandResponse,
-    CommandResponseException,
-)
 from .services import (
     CommandConsumerService,
     CommandHandlerService,

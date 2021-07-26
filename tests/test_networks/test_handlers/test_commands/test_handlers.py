@@ -18,10 +18,10 @@ from minos.common.testing import (
 )
 from minos.networks import (
     CommandHandler,
-    CommandRequest,
-    CommandResponse,
-    CommandResponseException,
     HandlerEntry,
+    HandlerRequest,
+    HandlerResponse,
+    HandlerResponseException,
     MinosActionNotFoundException,
     Request,
     Response,
@@ -36,7 +36,7 @@ from tests.utils import (
 class _Cls:
     @staticmethod
     async def _fn(request: Request) -> Response:
-        return CommandResponse(await request.content())
+        return HandlerResponse(await request.content())
 
     @staticmethod
     async def _fn_none(request: Request):
@@ -44,7 +44,7 @@ class _Cls:
 
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
-        raise CommandResponseException("")
+        raise HandlerResponseException("")
 
     @staticmethod
     async def _fn_raises_minos(request: Request) -> Response:
@@ -99,7 +99,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
         self.assertEqual(1, mock.call_count)
         observed = mock.call_args[0][0]
-        self.assertIsInstance(observed, CommandRequest)
+        self.assertIsInstance(observed, HandlerRequest)
         self.assertEqual(FakeModel("foo"), await observed.content())
 
     async def test_get_callback(self):
