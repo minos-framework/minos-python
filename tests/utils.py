@@ -14,6 +14,8 @@ from minos.common import (
     CommandReply,
     MinosSagaManager,
 )
+from minos.networks import Request
+
 from minos.cqrs import (
     CommandService,
     QueryService,
@@ -43,3 +45,21 @@ class FakeSagaManager(MinosSagaManager):
 
     async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
         """For testing purposes."""
+
+
+class FakeRequest(Request):
+    """For testing purposes"""
+
+    def __init__(self, content):
+        super().__init__()
+        self._content = content
+
+    async def content(self, **kwargs):
+        """For testing purposes"""
+        return self._content
+
+    def __eq__(self, other) -> bool:
+        return self._content == other._content
+
+    def __repr__(self) -> str:
+        return f"FakeRequest({self._content!r})"
