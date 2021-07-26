@@ -8,6 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 from unittest.mock import (
     AsyncMock,
+    patch,
 )
 from uuid import (
     uuid4,
@@ -87,13 +88,15 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             await PreEventHandler.handle(self.diff, self.saga_manager)
 
     def test_build_saga(self):
-        observed = PreEventHandler.build_saga(self.diff)
+        with patch("minos.common.ModelRefExtractor.build") as mock:
+            mock.return_value = {"Bar": [b.uuid for b in self.bars]}
+            observed = PreEventHandler.build_saga(self.diff)
 
         expected = (
             Saga("")
             .step()
             .invoke_participant(
-                "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars]))
+                "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=[b.uuid for b in self.bars])
             )
             .on_reply("Bars")
             .commit(PreEventHandler.commit_callback, SagaContext(diff=self.diff))
