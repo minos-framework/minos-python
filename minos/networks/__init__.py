@@ -56,6 +56,11 @@ from .handlers import (
     ReplyHandlerPool,
     enroute,
 )
+from .messages import (
+    Request,
+    Response,
+    ResponseException,
+)
 from .rest import (
     HttpRequest,
     HttpResponse,

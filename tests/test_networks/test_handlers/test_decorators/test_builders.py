@@ -8,12 +8,12 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
-    Response,
     classname,
 )
 from minos.networks import (
     EnrouteBuilder,
     MinosRedefinedEnrouteDecoratorException,
+    Response,
     enroute,
 )
 from minos.networks.handlers import (

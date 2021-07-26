@@ -1,9 +1,9 @@
 from minos.common import (
     Event,
-    Request,
-    Response,
 )
 from minos.networks import (
+    Request,
+    Response,
     enroute,
 )
 

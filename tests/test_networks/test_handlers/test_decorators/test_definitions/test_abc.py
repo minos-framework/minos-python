@@ -10,12 +10,10 @@ from typing import (
     Iterable,
 )
 
-from minos.common import (
-    Request,
-    Response,
-)
 from minos.networks import (
     MinosMultipleEnrouteDecoratorKindsException,
+    Request,
+    Response,
     enroute,
 )
 from minos.networks.handlers.decorators import (

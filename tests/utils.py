@@ -33,10 +33,10 @@ from minos.common import (
     MinosRepository,
     MinosSagaManager,
     RepositoryEntry,
-    Request,
-    Response,
 )
 from minos.networks import (
+    Request,
+    Response,
     enroute,
 )
 
