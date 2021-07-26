@@ -32,12 +32,12 @@ class PreEventHandler:
     """TODO"""
 
     @classmethod
-    async def handle(cls, saga_manager: MinosSagaManager, diff: AggregateDiff) -> AggregateDiff:
+    async def handle(cls, diff: AggregateDiff, saga_manager: MinosSagaManager) -> AggregateDiff:
         """TODO
 
-        :param saga_manager:
-        :param diff:
-        :return:
+        :param diff: TODO
+        :param saga_manager: TODO
+        :return: TODO
         """
         definition = cls.build_saga(diff)
         execution = await saga_manager.run(
@@ -60,8 +60,8 @@ class PreEventHandler:
         for name, uuids in missing.items():
             saga = (
                 saga.step()
-                .invoke_participant(f"Get{name}s", cls.invoke_callback, SagaContext(uuids=list(uuids)))
-                .on_reply(f"{name}s")
+                    .invoke_participant(f"Get{name}s", cls.invoke_callback, SagaContext(uuids=list(uuids)))
+                    .on_reply(f"{name}s")
             )
         saga = saga.commit(cls.commit_callback, parameters=SagaContext(diff=diff))
 
