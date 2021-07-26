@@ -82,9 +82,9 @@ class EnrouteDecorator(ABC):
         raise NotImplementedError
 
     @property
-    def pref_fn_name(self) -> str:
-        """TODO
+    def pre_fn_name(self) -> str:
+        """Get the pre execution function name.
 
-        :return: TODO
+        :return: A string value containing the function name.
         """
-        return self.KIND.pref_fn_name
+        return self.KIND.pre_fn_name

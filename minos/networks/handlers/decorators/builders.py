@@ -33,7 +33,7 @@ from .definitions import (
 
 
 class EnrouteBuilder:
-    """TODO"""
+    """Enroute builder class."""
 
     def __init__(self, decorated: Union[str, Type]):
         if isinstance(decorated, str):
@@ -43,25 +43,25 @@ class EnrouteBuilder:
         self.analyzer = EnrouteAnalyzer(decorated)
 
     def get_rest_command_query(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
-        """TODO
+        """Get the rest handlers for commands and queries.
 
-        :return: TODO
+        :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         mapping = self.analyzer.get_rest_command_query()
         return self._build(mapping)
 
     def get_broker_command_query(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
-        """TODO
+        """Get the broker handlers for commands and queries.
 
-        :return: TODO
+        :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         mapping = self.analyzer.get_broker_command_query()
         return self._build(mapping)
 
     def get_broker_event(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
-        """TODO
+        """Get the broker handlers for events.
 
-        :return: TODO
+        :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         mapping = self.analyzer.get_broker_event()
         return self._build(mapping)
@@ -75,7 +75,7 @@ class EnrouteBuilder:
             for decorator in decorators:
                 if decorator in ans:
                     raise MinosRedefinedEnrouteDecoratorException(f"{decorator!r} can be used only once.")
-                ans[decorator] = self._build_one(name, decorator.pref_fn_name)
+                ans[decorator] = self._build_one(name, decorator.pre_fn_name)
         return ans
 
     def _build_one(self, name: str, pref_fn_name: str) -> Callable:

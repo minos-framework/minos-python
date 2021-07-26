@@ -19,10 +19,10 @@ class EnrouteDecoratorKind(Enum):
     Event = auto()
 
     @property
-    def pref_fn_name(self) -> str:
-        """TODO
+    def pre_fn_name(self) -> str:
+        """Get the pre execution function name.
 
-        :return:TODO
+        :return: A string value containing the function name.
         """
         mapping = {
             self.Command: "_pre_command_handle",

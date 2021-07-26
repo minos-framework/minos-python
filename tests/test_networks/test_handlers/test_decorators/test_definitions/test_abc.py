@@ -18,13 +18,6 @@ from minos.networks import (
     MinosMultipleEnrouteDecoratorKindsException,
     enroute,
 )
-from minos.networks.handlers import (
-    BrokerCommandEnrouteDecorator,
-    BrokerEventEnrouteDecorator,
-    BrokerQueryEnrouteDecorator,
-    RestCommandEnrouteDecorator,
-    RestQueryEnrouteDecorator,
-)
 from minos.networks.handlers.decorators import (
     EnrouteDecorator,
     EnrouteDecoratorKind,
@@ -83,32 +76,6 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         another = enroute.broker.event(topics=["CreateTicket"])
         with self.assertRaises(MinosMultipleEnrouteDecoratorKindsException):
             another(self.decorator(_fn))
-
-
-class TestEnrouteDecoratorImplementations(unittest.IsolatedAsyncioTestCase):
-    def test_rest_command(self):
-        decorator = enroute.rest.command(url="tickets/", method="GET")
-        self.assertEqual(RestCommandEnrouteDecorator("tickets/", "GET"), decorator)
-
-    def test_rest_query(self):
-        decorator = enroute.rest.query(url="tickets/", method="GET")
-        self.assertEqual(RestQueryEnrouteDecorator("tickets/", "GET"), decorator)
-
-    def test_rest_event_raises(self):
-        with self.assertRaises(AttributeError):
-            enroute.rest.event(topics=["CreateTicket"])
-
-    def test_broker_command_decorators(self):
-        decorator = enroute.broker.command(topics=["CreateTicket"])
-        self.assertEqual(BrokerCommandEnrouteDecorator("CreateTicket"), decorator)
-
-    def test_broker_query_decorators(self):
-        decorator = enroute.broker.query(topics=["CreateTicket"])
-        self.assertEqual(BrokerQueryEnrouteDecorator("CreateTicket"), decorator)
-
-    def test_broker_event_decorators(self):
-        decorator = enroute.broker.event(topics=["CreateTicket"])
-        self.assertEqual(BrokerEventEnrouteDecorator("CreateTicket"), decorator)
 
 
 if __name__ == "__main__":
