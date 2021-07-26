@@ -21,6 +21,9 @@ from minos.common import (
     import_module,
 )
 
+from ...exceptions import (
+    MinosRedefinedEnrouteDecoratorException,
+)
 from .analyzers import (
     EnrouteAnalyzer,
 )
@@ -71,7 +74,7 @@ class EnrouteBuilder:
         for name, decorators in mapping.items():
             for decorator in decorators:
                 if decorator in ans:
-                    raise ValueError()
+                    raise MinosRedefinedEnrouteDecoratorException(f"{decorator!r} can be used only once.")
                 ans[decorator] = self._build_one(name, decorator.pref_fn_name)
         return ans
 

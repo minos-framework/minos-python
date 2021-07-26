@@ -36,3 +36,7 @@ class MinosEnrouteDecoratorException(MinosNetworkException):
 
 class MinosMultipleEnrouteDecoratorKindsException(MinosEnrouteDecoratorException):
     """Exception to be raised when multiple enroute decorator kinds are applied to the same function."""
+
+
+class MinosRedefinedEnrouteDecoratorException(MinosEnrouteDecoratorException):
+    """Exception to be raised when same enroute decorator is used by multiple handlers."""

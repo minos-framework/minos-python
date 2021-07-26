@@ -13,6 +13,8 @@ from minos.common import (
 )
 from minos.networks import (
     EnrouteBuilder,
+    MinosRedefinedEnrouteDecoratorException,
+    enroute,
 )
 from minos.networks.handlers import (
     BrokerCommandEnrouteDecorator,
@@ -27,7 +29,7 @@ from tests.utils import (
 )
 
 
-class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
+class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.request = FakeRequest("test")
         self.builder = EnrouteBuilder(FakeService)
@@ -67,6 +69,20 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         expected_response = Response("Create Ticket")
         observed_response = await handlers[BrokerCommandEnrouteDecorator(["CreateTicket", "AddTicket"])](self.request)
         self.assertEqual(expected_response, observed_response)
+
+    def test_raises(self):
+        class _BadService:
+            @enroute.rest.command(url="orders/", method="GET")
+            def _fn1(self, request):
+                return Response("bar")
+
+            @enroute.rest.command(url="orders/", method="GET")
+            def _fn2(self, request):
+                return Response("bar")
+
+        builder = EnrouteBuilder(_BadService)
+        with self.assertRaises(MinosRedefinedEnrouteDecoratorException):
+            builder.get_rest_command_query()
 
 
 if __name__ == "__main__":

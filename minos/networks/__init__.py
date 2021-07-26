@@ -27,6 +27,7 @@ from .exceptions import (
     MinosHandlerNotFoundEnoughEntriesException,
     MinosMultipleEnrouteDecoratorKindsException,
     MinosNetworkException,
+    MinosRedefinedEnrouteDecoratorException,
 )
 from .handlers import (
     CommandConsumer,

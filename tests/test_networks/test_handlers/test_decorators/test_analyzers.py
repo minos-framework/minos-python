@@ -25,7 +25,7 @@ from tests.utils import (
 )
 
 
-class TestEnrouteDecoratorAnalyzer(unittest.IsolatedAsyncioTestCase):
+class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
     def test_decorated_str(self):
         analyzer = EnrouteAnalyzer(classname(FakeService))
         self.assertEqual(FakeService, analyzer.decorated)
