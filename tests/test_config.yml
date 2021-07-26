@@ -19,7 +19,7 @@ snapshot:
 events:
     broker: localhost
     port: 9092
-    service: tests.services.CqrsTestService.CqrsService
+    service: tests.services.queries.CqrsService
     queue:
         database: order_db
         user: minos
@@ -31,7 +31,7 @@ events:
 commands:
     broker: localhost
     port: 9092
-    service: tests.services.CommandTestService.CommandService
+    service: tests.services.commands.CommandService
     queue:
         database: order_db
         user: minos
@@ -41,7 +41,7 @@ commands:
         records: 10
         retry: 1
 queries:
-    service: tests.services.CqrsTestService.CqrsService
+    service: tests.services.queries.CqrsService
 saga:
     broker: localhost
     port: 9092
@@ -49,10 +49,10 @@ saga:
         path: "./order.lmdb"
     items:
         -   name: AddOrder
-            controller: tests.services.SagaTestService.SagaService
+            controller: tests.services.sagas.SagaService
             action: add_order
         -   name: DeleteOrder
-            controller: tests.services.SagaTestService.SagaService
+            controller: tests.services.sagas.SagaService
             action: delete_order
     queue:
         database: order_db
