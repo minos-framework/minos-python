@@ -71,6 +71,7 @@ class TestRestBuilder(PostgresAsyncTestCase):
 
     def test_from_config(self):
         self.assertIsInstance(self.dispatcher, RestBuilder)
+        self.assertEqual({("/order", "GET"), ("/ticket", "POST")}, set(self.dispatcher.endpoints.keys()))
 
     def test_from_config_raises(self):
         with self.assertRaises(Exception):

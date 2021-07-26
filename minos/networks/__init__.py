@@ -25,7 +25,9 @@ from .exceptions import (
     MinosDiscoveryConnectorException,
     MinosHandlerException,
     MinosHandlerNotFoundEnoughEntriesException,
+    MinosMultipleEnrouteDecoratorKindsException,
     MinosNetworkException,
+    MinosRedefinedEnrouteDecoratorException,
 )
 from .handlers import (
     CommandConsumer,
@@ -41,7 +43,8 @@ from .handlers import (
     CommandResponseException,
     Consumer,
     DynamicHandler,
-    EnrouteDecoratorAnalyzer,
+    EnrouteAnalyzer,
+    EnrouteBuilder,
     EventConsumer,
     EventConsumerService,
     EventHandler,

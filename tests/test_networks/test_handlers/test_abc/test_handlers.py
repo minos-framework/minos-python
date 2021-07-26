@@ -12,9 +12,6 @@ from asyncio import (
 from collections import (
     namedtuple,
 )
-from importlib import (
-    import_module,
-)
 from typing import (
     NoReturn,
 )
@@ -31,7 +28,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    EnrouteDecoratorAnalyzer,
+    CommandResponse,
+    EnrouteBuilder,
     Handler,
     MinosActionNotFoundException,
 )
@@ -41,6 +39,7 @@ from minos.networks.handlers import (
 from tests.utils import (
     BASE_PATH,
     FAKE_AGGREGATE_DIFF,
+    FakeRequest,
 )
 
 
@@ -65,18 +64,8 @@ class TestHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def handlers(self):
-        p, m = self.config.commands.service.rsplit(".", 1)
-        mod = import_module(p)
-        met = getattr(mod, m)
-
-        decorators = EnrouteDecoratorAnalyzer(met).command()
-
-        handlers = {}
-        for key, value in decorators.items():
-            for v in decorators[key]:
-                for topic in v.topics:
-                    handlers[topic] = key
-
+        decorators = EnrouteBuilder(self.config.commands.service).get_broker_command_query()
+        handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers
 
     def setUp(self) -> None:
@@ -87,7 +76,7 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual("wrapper", action.__name__)
+        self.assertEqual(CommandResponse("add_order"), await action(FakeRequest("test")))
 
     async def test_get_action_none(self):
         action = self.handler.get_action(topic="empty")

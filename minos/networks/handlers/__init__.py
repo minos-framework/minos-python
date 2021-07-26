@@ -26,12 +26,15 @@ from .commands import (
     CommandResponseException,
 )
 from .decorators import (
-    BrokerCommandEnroute,
-    BrokerEventEnroute,
-    BrokerQueryEnroute,
-    EnrouteDecoratorAnalyzer,
-    RestCommandEnroute,
-    RestQueryEnroute,
+    BrokerCommandEnrouteDecorator,
+    BrokerEnrouteDecorator,
+    BrokerEventEnrouteDecorator,
+    BrokerQueryEnrouteDecorator,
+    EnrouteAnalyzer,
+    EnrouteBuilder,
+    RestCommandEnrouteDecorator,
+    RestEnrouteDecorator,
+    RestQueryEnrouteDecorator,
     enroute,
 )
 from .dynamic import (

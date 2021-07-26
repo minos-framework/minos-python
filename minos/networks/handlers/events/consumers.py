@@ -9,10 +9,6 @@ from __future__ import (
     annotations,
 )
 
-from importlib import (
-    import_module,
-)
-
 from minos.common import (
     MinosConfig,
 )
@@ -21,7 +17,7 @@ from ..abc import (
     Consumer,
 )
 from ..decorators import (
-    EnrouteDecoratorAnalyzer,
+    EnrouteBuilder,
 )
 
 
@@ -32,15 +28,8 @@ class EventConsumer(Consumer):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventConsumer:
-        p, m = config.events.service.rsplit(".", 1)
-        mod = import_module(p)
-        met = getattr(mod, m)
+        decorators = EnrouteBuilder(config.events.service).get_broker_event()
 
-        decorators = EnrouteDecoratorAnalyzer(met).event()
-
-        topics = []
-        for key, value in decorators.items():
-            for v in decorators[key]:
-                topics.extend(v.topics)
+        topics = {decorator.topic for decorator in decorators.keys()}
 
         return cls(topics=topics, broker=config.events.broker, **config.events.queue._asdict(), **kwargs)

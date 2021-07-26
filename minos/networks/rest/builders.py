@@ -11,13 +11,12 @@ from __future__ import (
 import logging
 from functools import (
     cached_property,
-    partial,
-)
-from importlib import (
-    import_module,
 )
 from inspect import (
     isawaitable,
+)
+from itertools import (
+    chain,
 )
 from typing import (
     Awaitable,
@@ -40,8 +39,8 @@ from minos.common import (
     classname,
 )
 
-from .. import (
-    EnrouteDecoratorAnalyzer,
+from ..handlers import (
+    EnrouteBuilder,
 )
 from .messages import (
     HttpRequest,
@@ -59,29 +58,32 @@ class RestBuilder(MinosSetup):
 
     """
 
-    def __init__(self, host: str, port: int, endpoints: dict, **kwargs):
+    def __init__(self, host: str, port: int, endpoints: dict[(str, str), Callable], **kwargs):
         super().__init__(**kwargs)
         self._host = host
         self._port = port
         self._endpoints = endpoints
+
+    @property
+    def endpoints(self) -> dict[(str, str), Callable]:
+        """Endpoints getter.
+
+        :return: A dictionary value.
+        """
+        return self._endpoints
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
         host = config.rest.broker.host
         port = config.rest.broker.port
 
-        # Get rest endpoints
-        classes = [config.commands.service, config.queries.service]
+        command_decorators = EnrouteBuilder(config.commands.service).get_rest_command_query()
+        query_decorators = EnrouteBuilder(config.queries.service).get_rest_command_query()
 
-        endpoints = {}
-        for cls_name in classes:
-            p, m = cls_name.rsplit(".", 1)
-            mod = import_module(p)
-            met = getattr(mod, m)
-
-            decorators = EnrouteDecoratorAnalyzer(met).rest()
-
-            endpoints = endpoints | decorators
+        endpoints = {
+            (decorator.url, decorator.method): fn
+            for decorator, fn in chain(command_decorators.items(), query_decorators.items())
+        }
 
         return cls(host=host, port=port, endpoints=endpoints, **kwargs)
 
@@ -116,18 +118,14 @@ class RestBuilder(MinosSetup):
 
     def _mount_routes(self, app: web.Application):
         """Load routes from config file."""
-        for key, value in self._endpoints.items():
-            for v in self._endpoints[key]:
-                self._mount_one_route(v.method, v.url, key, app)
+        for (url, method), fn in self._endpoints.items():
+            self._mount_one_route(method, url, fn, app)
 
         # Load default routes
         self._mount_system_health(app)
 
     def _mount_one_route(self, method: str, url: str, action: Callable, app: web.Application) -> NoReturn:
-        instance = action()
-        action = partial(action, self=instance)
         handler = self.get_callback(action)
-
         app.router.add_route(method, url, handler)
 
     @staticmethod
