@@ -14,6 +14,13 @@ from minos.common import (
 from minos.networks import (
     EnrouteBuilder,
 )
+from minos.networks.handlers import (
+    BrokerCommandEnrouteDecorator,
+    BrokerEventEnrouteDecorator,
+    BrokerQueryEnrouteDecorator,
+    RestCommandEnrouteDecorator,
+    RestQueryEnrouteDecorator,
+)
 from tests.utils import (
     FakeRequest,
     FakeService,
@@ -29,11 +36,37 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         builder = EnrouteBuilder(classname(FakeService))
         self.assertEqual(FakeService, builder.decorated)
 
-    async def test_method_query_call_2(self):
-        # FIXME
-        fn = self.builder.get_broker_event()[0][0]
-        response = await fn(self.request)
-        self.assertEqual(Response("test"), response)
+    async def test_get_rest_command_query(self):
+        handlers = self.builder.get_rest_command_query()
+        self.assertEqual(2, len(handlers))
+
+        expected_response = Response("Get Tickets: test")
+        observed_response = await handlers[RestQueryEnrouteDecorator("tickets/", "GET")](self.request)
+        self.assertEqual(expected_response, observed_response)
+
+        expected_response = Response("Create Ticket: test")
+        observed_response = await handlers[RestCommandEnrouteDecorator("orders/", "GET")](self.request)
+        self.assertEqual(expected_response, observed_response)
+
+    async def test_get_broker_event(self):
+        handlers = self.builder.get_broker_event()
+        self.assertEqual(1, len(handlers))
+
+        expected_response = Response("Ticket Added: test")
+        observed_response = await handlers[BrokerEventEnrouteDecorator("TicketAdded")](self.request)
+        self.assertEqual(expected_response, observed_response)
+
+    async def test_get_broker_command_query(self):
+        handlers = self.builder.get_broker_command_query()
+        self.assertEqual(2, len(handlers))
+
+        expected_response = Response("Get Tickets: test")
+        observed_response = await handlers[BrokerQueryEnrouteDecorator("GetTickets")](self.request)
+        self.assertEqual(expected_response, observed_response)
+
+        expected_response = Response("Create Ticket: test")
+        observed_response = await handlers[BrokerCommandEnrouteDecorator(["CreateTicket", "AddTicket"])](self.request)
+        self.assertEqual(expected_response, observed_response)
 
 
 if __name__ == "__main__":

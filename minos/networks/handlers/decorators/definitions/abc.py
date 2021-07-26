@@ -80,3 +80,11 @@ class EnrouteDecorator(ABC):
     @abstractmethod
     def __iter__(self) -> Iterable:
         raise NotImplementedError
+
+    @property
+    def pref_fn_name(self) -> str:
+        """TODO
+
+        :return: TODO
+        """
+        return self.KIND.pref_fn_name

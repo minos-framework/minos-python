@@ -31,12 +31,12 @@ from tests.utils import (
 # noinspection PyUnusedLocal
 def _fn(request: Request) -> Response:
     """For testing purposes."""
-    return Response("test")
+    return Response("Fn")
 
 
 async def _async_fn(request: Request) -> Response:
     """For testing purposes."""
-    return Response(await request.content())
+    return Response(f"Async Fn: {await request.content()}")
 
 
 class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
@@ -47,28 +47,23 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
     def test_repr(self):
         self.assertEqual("BrokerCommandEnrouteDecorator(('Create',))", repr(self.decorator))
 
-    async def test_method_command_call(self):
+    async def test_method_call(self):
         instance = FakeService()
         response = await instance.create_ticket(FakeRequest("test"))
-        self.assertEqual(Response("test"), response)
+        self.assertEqual(Response("Create Ticket: test"), response)
 
-    async def test_method_query_call(self):
-        instance = FakeService()
-        response = await instance.get_tickets(FakeRequest("test"))
-        self.assertEqual(Response("test"), response)
-
-    async def test_static_method_event_call(self):
+    async def test_static_method_call(self):
         instance = FakeService()
         response = await instance.ticket_added(FakeRequest("test"))
-        self.assertEqual(Response("test"), response)
+        self.assertEqual(Response("Ticket Added: test"), response)
 
-    def test_function_command_call(self):
+    def test_function_call(self):
         wrapper = self.decorator(_fn)
-        self.assertEqual(Response("test"), wrapper(self.request))
+        self.assertEqual(Response("Fn"), wrapper(self.request))
 
-    async def test_fn_async(self):
+    async def test_async_function_call(self):
         wrapper = self.decorator(_async_fn)
-        self.assertEqual(Response("test"), await wrapper(self.request))
+        self.assertEqual(Response("Async Fn: test"), await wrapper(self.request))
 
     def test_multiple_decorator_kind_raises(self):
         another = enroute.broker.event(topics=["CreateTicket"])

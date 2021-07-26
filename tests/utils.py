@@ -186,19 +186,19 @@ class FakeService:
     @enroute.broker.command(topics=["CreateTicket", "AddTicket"])
     async def create_ticket(self, request: Request) -> Response:
         """For testing purposes."""
-        return Response(await request.content())
+        return Response(": ".join(("Create Ticket", await request.content(),)))
 
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topics=["GetTickets"])
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
-        return Response(await request.content())
+        return Response(": ".join(("Get Tickets", await request.content(),)))
 
     @staticmethod
     @enroute.broker.event(topics=["TicketAdded"])
     async def ticket_added(request: Request) -> Response:
         """For testing purposes."""
-        return Response(await request.content())
+        return Response(": ".join(("Ticket Added", await request.content(),)))
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def bar(self, request: Request):

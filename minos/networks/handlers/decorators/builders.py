@@ -39,7 +39,7 @@ class EnrouteBuilder:
         self.decorated = decorated
         self.analyzer = EnrouteAnalyzer(decorated)
 
-    def get_rest_command_query(self) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
+    def get_rest_command_query(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
         """TODO
 
         :return: TODO
@@ -47,7 +47,7 @@ class EnrouteBuilder:
         mapping = self.analyzer.get_rest_command_query()
         return self._build(mapping)
 
-    def get_broker_command_query(self) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
+    def get_broker_command_query(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
         """TODO
 
         :return: TODO
@@ -55,7 +55,7 @@ class EnrouteBuilder:
         mapping = self.analyzer.get_broker_command_query()
         return self._build(mapping)
 
-    def get_broker_event(self) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
+    def get_broker_event(self) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
         """TODO
 
         :return: TODO
@@ -65,19 +65,20 @@ class EnrouteBuilder:
 
     def _build(
         self, mapping: dict[str, set[EnrouteDecorator]]
-    ) -> list[(Callable[[Request], Awaitable[Response]], EnrouteDecorator)]:
+    ) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
 
-        ans = list()
+        ans = dict()
         for name, decorators in mapping.items():
             for decorator in decorators:
-                entry = self._build_one(decorator, name)
-                ans.append(entry)
+                if decorator in ans:
+                    raise ValueError()
+                ans[decorator] = self._build_one(name, decorator.pref_fn_name)
         return ans
 
-    def _build_one(self, decorator: EnrouteDecorator, name: str) -> (Callable, EnrouteDecorator):
+    def _build_one(self, name: str, pref_fn_name: str) -> Callable:
         instance = self.decorated()
         fn = getattr(instance, name)
-        pre_fn = getattr(instance, decorator.KIND.pref_fn_name, None)
+        pre_fn = getattr(instance, pref_fn_name, None)
 
         if pre_fn is not None:
 
@@ -93,4 +94,4 @@ class EnrouteBuilder:
                 async def _fn(request):
                     return fn(request)
 
-        return _fn, decorator
+        return _fn
