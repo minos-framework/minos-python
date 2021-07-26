@@ -25,7 +25,9 @@ from .exceptions import (
     MinosDiscoveryConnectorException,
     MinosHandlerException,
     MinosHandlerNotFoundEnoughEntriesException,
+    MinosMultipleEnrouteDecoratorKindsException,
     MinosNetworkException,
+    MinosRedefinedEnrouteDecoratorException,
 )
 from .handlers import (
     CommandConsumer,
@@ -42,7 +44,8 @@ from .handlers import (
     Consumer,
     DynamicHandler,
     DynamicReplyHandler,
-    EnrouteDecoratorAnalyzer,
+    EnrouteAnalyzer,
+    EnrouteBuilder,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -62,4 +65,9 @@ from .rest import (
 )
 from .snapshots import (
     SnapshotService,
+)
+from .utils import (
+    get_host_ip,
+    get_host_name,
+    get_ip,
 )

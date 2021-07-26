@@ -24,6 +24,9 @@ from minos.common import (
 from ..abc import (
     Handler,
 )
+from ..decorators import (
+    EnrouteBuilder,
+)
 from ..entries import (
     HandlerEntry,
 )
@@ -39,7 +42,10 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        handlers = {item.name: {"controller": item.controller, "action": item.action} for item in config.events.items}
+        decorators = EnrouteBuilder(config.events.service).get_broker_event()
+
+        handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
+
         return cls(handlers=handlers, **config.events.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:

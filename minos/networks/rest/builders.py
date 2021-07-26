@@ -14,7 +14,9 @@ from functools import (
 )
 from inspect import (
     isawaitable,
-    isclass,
+)
+from itertools import (
+    chain,
 )
 from typing import (
     Awaitable,
@@ -29,16 +31,17 @@ from aiohttp import (
 )
 
 from minos.common import (
-    ENDPOINT,
     MinosConfig,
     MinosException,
     MinosSetup,
     Response,
     ResponseException,
     classname,
-    import_module,
 )
 
+from ..handlers import (
+    EnrouteBuilder,
+)
 from .messages import (
     HttpRequest,
     HttpResponse,
@@ -55,17 +58,34 @@ class RestBuilder(MinosSetup):
 
     """
 
-    def __init__(self, host: str, port: int, endpoints: list[ENDPOINT], **kwargs):
+    def __init__(self, host: str, port: int, endpoints: dict[(str, str), Callable], **kwargs):
         super().__init__(**kwargs)
         self._host = host
         self._port = port
         self._endpoints = endpoints
 
+    @property
+    def endpoints(self) -> dict[(str, str), Callable]:
+        """Endpoints getter.
+
+        :return: A dictionary value.
+        """
+        return self._endpoints
+
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
         host = config.rest.broker.host
         port = config.rest.broker.port
-        return cls(host=host, port=port, endpoints=config.rest.endpoints, **kwargs)
+
+        command_decorators = EnrouteBuilder(config.commands.service).get_rest_command_query()
+        query_decorators = EnrouteBuilder(config.queries.service).get_rest_command_query()
+
+        endpoints = {
+            (decorator.url, decorator.method): fn
+            for decorator, fn in chain(command_decorators.items(), query_decorators.items())
+        }
+
+        return cls(host=host, port=port, endpoints=endpoints, **kwargs)
 
     @property
     def host(self) -> str:
@@ -98,31 +118,15 @@ class RestBuilder(MinosSetup):
 
     def _mount_routes(self, app: web.Application):
         """Load routes from config file."""
-        for item in self._endpoints:
-            self._mount_one_route(item, app)
+        for (url, method), fn in self._endpoints.items():
+            self._mount_one_route(method, url, fn, app)
 
         # Load default routes
         self._mount_system_health(app)
 
-    def _mount_one_route(self, item: ENDPOINT, app: web.Application) -> NoReturn:
-        action = self.get_action(item.controller, item.action)
+    def _mount_one_route(self, method: str, url: str, action: Callable, app: web.Application) -> NoReturn:
         handler = self.get_callback(action)
-        app.router.add_route(item.method, item.route, handler)
-
-    @staticmethod
-    def get_action(
-        controller: str, action: str
-    ) -> Callable[[HttpRequest], Union[Optional[HttpResponse], Awaitable[Optional[HttpResponse]]]]:
-        """Load controller class and action method.
-        :param controller: Controller string. Example: "tests.service.CommandTestService.CommandService"
-        :param action: Config instance. Example: "get_order"
-        :return: A class method callable instance.
-        """
-        controller = import_module(controller)
-        if isclass(controller):
-            controller = controller()
-        action_fn = getattr(controller, action)
-        return action_fn
+        app.router.add_route(method, url, handler)
 
     @staticmethod
     def get_callback(

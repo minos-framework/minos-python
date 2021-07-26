@@ -42,7 +42,6 @@ commands:
         retry: 1
 queries:
     service: tests.services.CqrsTestService.CqrsService
-
 saga:
     broker: localhost
     port: 9092

@@ -16,9 +16,6 @@ from abc import (
 from datetime import (
     datetime,
 )
-from inspect import (
-    isclass,
-)
 from typing import (
     Any,
     Callable,
@@ -34,7 +31,6 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosModel,
-    import_module,
 )
 
 from ...exceptions import (
@@ -60,14 +56,14 @@ class Handler(HandlerSetup):
 
     ENTRY_MODEL_CLS: Type[MinosModel]
 
-    def __init__(self, records: int, handlers: dict[str, Optional[dict[str, Any]]], retry: int, **kwargs: Any):
+    def __init__(self, records: int, handlers: dict[str, Optional[Callable]], retry: int, **kwargs: Any):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
         self._retry = retry
 
     @property
-    def handlers(self) -> dict[str, Optional[dict[str, Any]]]:
+    def handlers(self) -> dict[str, Optional[Callable]]:
         """Handlers getter.
 
         :return: A dictionary in which the keys are topics and the values are the handler.
@@ -160,13 +156,8 @@ class Handler(HandlerSetup):
         if handler is None:
             return
 
-        controller = import_module(handler["controller"])
-        if isclass(controller):
-            controller = controller()
-        action = getattr(controller, handler["action"])
-
-        logger.debug(f"Loaded {action!r} action!")
-        return action
+        logger.debug(f"Loaded {handler!r} action!")
+        return handler
 
     @abstractmethod
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:

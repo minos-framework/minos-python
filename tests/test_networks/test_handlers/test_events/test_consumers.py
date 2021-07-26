@@ -24,7 +24,7 @@ class TestEventConsumer(PostgresAsyncTestCase):
     def test_from_config(self):
         consumer = EventConsumer.from_config(config=self.config)
         self.assertIsInstance(consumer, EventConsumer)
-        self.assertEqual(["TicketAdded", "TicketDeleted"], consumer.topics)
+        self.assertEqual({"TicketAdded", "TicketDeleted"}, consumer.topics)
         self.assertEqual(self.config.events.broker, consumer._broker)
         self.assertEqual(self.config.events.queue.host, consumer.host)
         self.assertEqual(self.config.events.queue.port, consumer.port)

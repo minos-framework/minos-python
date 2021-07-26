@@ -28,18 +28,18 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    CommandResponse,
+    EnrouteBuilder,
     Handler,
     MinosActionNotFoundException,
 )
 from minos.networks.handlers import (
     HandlerEntry,
 )
-from tests.services.CommandTestService import (
-    CommandService,
-)
 from tests.utils import (
     BASE_PATH,
     FAKE_AGGREGATE_DIFF,
+    FakeRequest,
 )
 
 
@@ -63,17 +63,20 @@ class _FakeHandler(Handler):
 class TestHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
+    def handlers(self):
+        decorators = EnrouteBuilder(self.config.commands.service).get_broker_command_query()
+        handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
+        return handlers
+
     def setUp(self) -> None:
         super().setUp()
-        handlers = {
-            item.name: {"controller": item.controller, "action": item.action} for item in self.config.commands.items
-        }
+        handlers = self.handlers()
         handlers["empty"] = None
         self.handler = _FakeHandler(handlers=handlers, **self.config.commands.queue._asdict())
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual(CommandService.add_order, action.__func__)
+        self.assertEqual(CommandResponse("add_order"), await action(FakeRequest("test")))
 
     async def test_get_action_none(self):
         action = self.handler.get_action(topic="empty")
