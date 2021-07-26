@@ -35,7 +35,7 @@ from tests.utils import (
 )
 
 
-class TestPreEventHandler(unittest.TestCase):
+class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.uuid = uuid4()
         self.bars = [Bar(uuid4(), 1, "hello"), Bar(uuid4(), 1, "world")]
@@ -64,9 +64,7 @@ class TestPreEventHandler(unittest.TestCase):
         self.saga_manager.run = mock
         observed = await PreEventHandler.handle(self.diff, self.saga_manager)
 
-        expected = SagaContext(
-            diff=AggregateDiff(self.uuid, "Foo", 1, FieldsDiff([Field("bars", list[ModelRef[Bar]], self.bars)]))
-        )
+        expected = AggregateDiff(self.uuid, "Foo", 1, FieldsDiff([Field("bars", list[ModelRef[Bar]], self.bars)]))
         self.assertEqual(expected, observed)
 
     @unittest.skip
