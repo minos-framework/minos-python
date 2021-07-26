@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from inspect import (
-    isawaitable,
+    iscoroutinefunction,
 )
 from typing import (
     Awaitable,
@@ -87,7 +87,7 @@ class EnrouteBuilder:
                 return await fn(request)
 
         else:
-            if isawaitable(fn):
+            if iscoroutinefunction(fn):
                 _fn = fn
             else:
 

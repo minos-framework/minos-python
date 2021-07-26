@@ -175,10 +175,6 @@ class FakeService:
         return request
 
     # noinspection PyMethodMayBeStatic
-    async def _pre_query_handle(self, request: Request) -> Request:
-        return request
-
-    # noinspection PyMethodMayBeStatic
     async def _pre_event_handle(self, request: Request) -> Request:
         return request
 

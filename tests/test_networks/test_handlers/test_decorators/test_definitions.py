@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from typing import (
+    Iterable,
+)
 
 from minos.common import (
     Request,
@@ -21,6 +24,10 @@ from minos.networks.handlers import (
     BrokerQueryEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
+)
+from minos.networks.handlers.decorators import (
+    EnrouteDecorator,
+    EnrouteDecoratorKind,
 )
 from tests.utils import (
     FakeRequest,
@@ -39,13 +46,20 @@ async def _async_fn(request: Request) -> Response:
     return Response(f"Async Fn: {await request.content()}")
 
 
+class _FakeEnrouteDecorator(EnrouteDecorator):
+    KIND = EnrouteDecoratorKind.Command
+
+    def __iter__(self) -> Iterable:
+        yield from []
+
+
 class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.request = FakeRequest("test")
-        self.decorator = enroute.broker.command("Create")
+        self.decorator = _FakeEnrouteDecorator()
 
     def test_repr(self):
-        self.assertEqual("BrokerCommandEnrouteDecorator(('Create',))", repr(self.decorator))
+        self.assertEqual("_FakeEnrouteDecorator()", repr(self.decorator))
 
     async def test_method_call(self):
         instance = FakeService()
