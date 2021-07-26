@@ -11,12 +11,6 @@ from __future__ import (
 
 from typing import (
     Any,
-    Union,
-)
-
-from minos.common import (
-    Command,
-    Event,
 )
 
 from ..messages import (
@@ -31,7 +25,7 @@ class HandlerRequest(Request):
 
     __slots__ = "raw"
 
-    def __init__(self, raw: Union[Command, Event]):
+    def __init__(self, raw: Any):
         self.raw = raw
 
     def __eq__(self, other: HandlerRequest) -> bool:
@@ -44,15 +38,15 @@ class HandlerRequest(Request):
         """Request content.
 
         :param kwargs: Additional named arguments.
-        :return: The command content.
+        :return: The content.
         """
         data = self.raw.data
         return data
 
 
 class HandlerResponse(Response):
-    """Command Response class."""
+    """Handler Response class."""
 
 
 class HandlerResponseException(ResponseException):
-    """Command Response Exception class."""
+    """Handler Response Exception class."""
