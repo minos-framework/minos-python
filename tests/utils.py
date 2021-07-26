@@ -33,6 +33,11 @@ from minos.common import (
     MinosRepository,
     MinosSagaManager,
     RepositoryEntry,
+    Request,
+    Response,
+)
+from minos.networks import (
+    enroute,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -160,3 +165,60 @@ class FakeRepository(MinosRepository):
         """For testing purposes."""
         for item in self.items:
             yield item
+
+
+class FakeService:
+    """For testing purposes."""
+
+    # noinspection PyMethodMayBeStatic
+    async def _pre_command_handle(self, request: Request) -> Request:
+        return request
+
+    # noinspection PyMethodMayBeStatic
+    async def _pre_query_handle(self, request: Request) -> Request:
+        return request
+
+    # noinspection PyMethodMayBeStatic
+    async def _pre_event_handle(self, request: Request) -> Request:
+        return request
+
+    @enroute.rest.command(url="orders/", method="GET")
+    @enroute.broker.command(topics=["CreateTicket", "AddTicket"])
+    async def create_ticket(self, request: Request) -> Response:
+        """For testing purposes."""
+        return Response(await request.content())
+
+    @enroute.rest.query(url="tickets/", method="GET")
+    @enroute.broker.query(topics=["GetTickets"])
+    async def get_tickets(self, request: Request) -> Response:
+        """For testing purposes."""
+        return Response(await request.content())
+
+    @staticmethod
+    @enroute.broker.event(topics=["TicketAdded"])
+    async def ticket_added(request: Request) -> Response:
+        """For testing purposes."""
+        return Response(await request.content())
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def bar(self, request: Request):
+        """For testing purposes."""
+        return Response("bar")
+
+
+class FakeRequest(Request):
+    """For testing purposes"""
+
+    def __init__(self, content):
+        super().__init__()
+        self._content = content
+
+    async def content(self, **kwargs):
+        """For testing purposes"""
+        return self._content
+
+    def __eq__(self, other) -> bool:
+        return self._content == other._content
+
+    def __repr__(self) -> str:
+        return str()
