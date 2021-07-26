@@ -171,8 +171,8 @@ class FakeService:
     """For testing purposes."""
 
     # noinspection PyMethodMayBeStatic
-    async def _pre_event_handle(self, request: Request) -> Request:
-        return request
+    async def _pre_event_handle(self, content: str) -> str:
+        return f"[{content}]"
 
     # noinspection PyUnusedLocal
     @enroute.rest.command(url="orders/", method="GET")
