@@ -73,7 +73,7 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(Response("Async Fn: test"), await wrapper(self.request))
 
     def test_multiple_decorator_kind_raises(self):
-        another = enroute.broker.event(topics=["CreateTicket"])
+        another = enroute.broker.event("CreateTicket")
         with self.assertRaises(MinosMultipleEnrouteDecoratorKindsException):
             another(self.decorator(_fn))
 

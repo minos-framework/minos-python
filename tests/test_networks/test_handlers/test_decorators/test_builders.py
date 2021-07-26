@@ -60,14 +60,18 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
 
     async def test_get_broker_command_query(self):
         handlers = self.builder.get_broker_command_query()
-        self.assertEqual(2, len(handlers))
+        self.assertEqual(3, len(handlers))
 
         expected_response = Response("Get Tickets: test")
         observed_response = await handlers[BrokerQueryEnrouteDecorator("GetTickets")](self.request)
         self.assertEqual(expected_response, observed_response)
 
         expected_response = Response("Create Ticket")
-        observed_response = await handlers[BrokerCommandEnrouteDecorator(["CreateTicket", "AddTicket"])](self.request)
+        observed_response = await handlers[BrokerCommandEnrouteDecorator("CreateTicket")](self.request)
+        self.assertEqual(expected_response, observed_response)
+
+        expected_response = Response("Create Ticket")
+        observed_response = await handlers[BrokerCommandEnrouteDecorator("AddTicket")](self.request)
         self.assertEqual(expected_response, observed_response)
 
     def test_raises(self):

@@ -35,12 +35,10 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_all()
         expected = {
-            "get_tickets": {
-                BrokerQueryEnrouteDecorator(("GetTickets",)),
-                RestQueryEnrouteDecorator("tickets/", "GET"),
-            },
+            "get_tickets": {BrokerQueryEnrouteDecorator("GetTickets"), RestQueryEnrouteDecorator("tickets/", "GET")},
             "create_ticket": {
-                BrokerCommandEnrouteDecorator(("CreateTicket", "AddTicket")),
+                BrokerCommandEnrouteDecorator("CreateTicket"),
+                BrokerCommandEnrouteDecorator("AddTicket"),
                 RestCommandEnrouteDecorator("orders/", "GET"),
             },
             "ticket_added": {BrokerEventEnrouteDecorator("TicketAdded")},
@@ -65,7 +63,10 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
         observed = analyzer.get_broker_command_query()
         expected = {
             "get_tickets": {BrokerQueryEnrouteDecorator("GetTickets")},
-            "create_ticket": {BrokerCommandEnrouteDecorator(("CreateTicket", "AddTicket"))},
+            "create_ticket": {
+                BrokerCommandEnrouteDecorator("CreateTicket"),
+                BrokerCommandEnrouteDecorator("AddTicket"),
+            },
         }
 
         self.assertEqual(expected, observed)

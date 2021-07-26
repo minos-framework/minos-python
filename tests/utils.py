@@ -176,19 +176,20 @@ class FakeService:
 
     # noinspection PyUnusedLocal
     @enroute.rest.command(url="orders/", method="GET")
-    @enroute.broker.command(topics=["CreateTicket", "AddTicket"])
+    @enroute.broker.command(topic="CreateTicket")
+    @enroute.broker.command(topic="AddTicket")
     def create_ticket(self, request: Request) -> Response:
         """For testing purposes."""
         return Response("Create Ticket")
 
     @enroute.rest.query(url="tickets/", method="GET")
-    @enroute.broker.query(topics=["GetTickets"])
+    @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
         return Response(": ".join(("Get Tickets", await request.content(),)))
 
     @staticmethod
-    @enroute.broker.event(topics=["TicketAdded"])
+    @enroute.broker.event(topic="TicketAdded")
     async def ticket_added(request: Request) -> Response:
         """For testing purposes."""
         return Response(": ".join(("Ticket Added", await request.content(),)))

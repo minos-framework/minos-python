@@ -24,13 +24,11 @@ from .kinds import (
 class BrokerEnrouteDecorator(EnrouteDecorator, ABC):
     """Broker Enroute class"""
 
-    def __init__(self, topics: Iterable[str]):
-        if isinstance(topics, str):
-            topics = (topics,)
-        self.topics = tuple(topics)
+    def __init__(self, topic: str):
+        self.topic = topic
 
     def __iter__(self) -> Iterable:
-        yield from (self.topics,)
+        yield from (self.topic,)
 
 
 class BrokerCommandEnrouteDecorator(BrokerEnrouteDecorator):

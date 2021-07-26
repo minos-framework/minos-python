@@ -30,18 +30,18 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
 
     def test_rest_event_raises(self):
         with self.assertRaises(AttributeError):
-            enroute.rest.event(topics=["CreateTicket"])
+            enroute.rest.event("CreateTicket")
 
     def test_broker_command_decorators(self):
-        decorator = enroute.broker.command(topics=["CreateTicket"])
+        decorator = enroute.broker.command("CreateTicket")
         self.assertEqual(BrokerCommandEnrouteDecorator("CreateTicket"), decorator)
 
     def test_broker_query_decorators(self):
-        decorator = enroute.broker.query(topics=["CreateTicket"])
+        decorator = enroute.broker.query("CreateTicket")
         self.assertEqual(BrokerQueryEnrouteDecorator("CreateTicket"), decorator)
 
     def test_broker_event_decorators(self):
-        decorator = enroute.broker.event(topics=["CreateTicket"])
+        decorator = enroute.broker.event("CreateTicket")
         self.assertEqual(BrokerEventEnrouteDecorator("CreateTicket"), decorator)
 
 
