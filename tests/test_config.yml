@@ -27,18 +27,12 @@ broker:
     records: 10
     retry: 2
 events:
-    broker: localhost
-    port: 9092
     service: minos.services.CQRSService
 commands:
-    broker: localhost
-    port: 9092
     service: minos.services.OrderService
 queries:
     service: minos.services.OrderQueryService
 saga:
-    broker: localhost
-    port: 8900
     storage:
         path: "./order.lmdb"
     items:

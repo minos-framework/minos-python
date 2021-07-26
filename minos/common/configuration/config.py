@@ -34,10 +34,10 @@ SERVICE = collections.namedtuple("Service", "name injections services")
 CONTROLLER = collections.namedtuple("Controller", "name controller action")
 STORAGE = collections.namedtuple("Storage", "path")
 
-EVENTS = collections.namedtuple("Events", "broker service")
-COMMANDS = collections.namedtuple("Commands", "broker service")
+EVENTS = collections.namedtuple("Events", "service")
+COMMANDS = collections.namedtuple("Commands", "service")
 QUERIES = collections.namedtuple("Queries", "service")
-SAGA = collections.namedtuple("Saga", "items storage broker")
+SAGA = collections.namedtuple("Saga", "items storage")
 REST = collections.namedtuple("Rest", "broker")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
@@ -52,14 +52,8 @@ _ENVIRONMENT_MAPPER = {
     "broker.queue.user": "MINOS_BROKER_QUEUE_USER",
     "broker.queue.password": "MINOS_BROKER_QUEUE_PASSWORD",
     "commands.service": "MINOS_COMMANDS_SERVICE",
-    "commands.broker": "MINOS_COMMANDS_BROKER",
-    "commands.port": "MINOS_COMMANDS_PORT",
     "queries.service": "MINOS_QUERIES_SERVICE",
-    "saga.broker": "MINOS_SAGA_BROKER",
-    "saga.port": "MINOS_SAGA_PORT",
     "events.service": "MINOS_EVENTS_SERVICE",
-    "events.broker": "MINOS_EVENTS_BROKER",
-    "events.port": "MINOS_EVENTS_PORT",
     "repository.host": "MINOS_REPOSITORY_HOST",
     "repository.port": "MINOS_REPOSITORY_PORT",
     "repository.database": "MINOS_REPOSITORY_DATABASE",
@@ -83,14 +77,10 @@ _PARAMETERIZED_MAPPER = {
     "broker.queue.user": "broker_queue_user",
     "broker.queue.password": "broker_queue_password",
     "commands.service": "commands_service",
-    "commands.broker": "commands_broker",
-    "commands.port": "commands_port",
     "queries.service": "queries_service",
     "saga.broker": "saga_broker",
     "saga.port": "saga_port",
     "events.service": "events_service",
-    "events.broker": "events_broker",
-    "events.port": "events_port",
     "repository.host": "repository_host",
     "repository.port": "repository_port",
     "repository.database": "repository_database",
@@ -226,13 +216,8 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``EVENTS`` NamedTuple instance.
         """
-        broker = self._events_broker
         service = self._get("events.service")
-        return EVENTS(broker=broker, service=service)
-
-    @property
-    def _events_broker(self) -> COMMON_BROKER:
-        return COMMON_BROKER(host=self._get("events.broker"), port=int(self._get("events.port")))
+        return EVENTS(service=service)
 
     @property
     def _broker_queue(self) -> QUEUE:
@@ -252,9 +237,8 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``COMMAND`` NamedTuple instance.
         """
-        broker = self._commands_broker
         service = self._get("commands.service")
-        return COMMANDS(broker=broker, service=service)
+        return COMMANDS(service=service)
 
     @property
     def queries(self) -> QUERIES:
@@ -273,13 +257,7 @@ class MinosConfig(MinosConfigAbstract):
 
         sagas = self._saga_items
         storage = self._saga_storage
-        broker = self._saga_broker
-        return SAGA(items=sagas, storage=storage, broker=broker)
-
-    @property
-    def _commands_broker(self) -> COMMON_BROKER:
-        broker = COMMON_BROKER(host=self._get("commands.broker"), port=int(self._get("commands.port")))
-        return broker
+        return SAGA(items=sagas, storage=storage)
 
     @property
     def _saga_storage(self) -> STORAGE:
@@ -288,10 +266,6 @@ class MinosConfig(MinosConfigAbstract):
 
         queue = STORAGE(path=path)
         return queue
-
-    @property
-    def _saga_broker(self) -> COMMON_BROKER:
-        return COMMON_BROKER(host=self._get("saga.broker"), port=int(self._get("saga.port")))
 
     @property
     def _saga_items(self) -> list[CONTROLLER]:

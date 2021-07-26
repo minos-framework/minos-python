@@ -42,19 +42,6 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", broker.host)
         self.assertEqual(8900, broker.port)
 
-    def test_config_saga_broker(self):
-        saga = self.config.saga
-
-        broker = saga.broker
-        self.assertEqual("localhost", broker.host)
-        self.assertEqual(8900, broker.port)
-
-    def test_config_events(self):
-        events = self.config.events
-        broker = events.broker
-        self.assertEqual("localhost", broker.host)
-        self.assertEqual(9092, broker.port)
-
     def test_config_events_service(self):
         events = self.config.events
         self.assertEqual("minos.services.CQRSService", events.service)
