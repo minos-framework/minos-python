@@ -32,6 +32,7 @@ from minos.saga import (
     MinosSagaExecutionNotFoundException,
     MinosSagaFailedExecutionException,
     SagaContext,
+    SagaExecution,
     SagaExecutionStorage,
     SagaManager,
     SagaStatus,
@@ -69,6 +70,11 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     async def test_context_manager(self):
         async with self.manager as saga_manager:
             self.assertIsInstance(saga_manager, SagaManager)
+
+    async def test_run_returning_execution(self):
+        execution = await self.manager.run("AddOrder", broker=self.broker, return_execution=True)
+        self.assertIsInstance(execution, SagaExecution)
+        self.assertEqual(SagaStatus.Paused, execution.status)
 
     async def test_run_with_pause_on_disk(self):
         uuid = await self.manager.run("AddOrder", broker=self.broker)

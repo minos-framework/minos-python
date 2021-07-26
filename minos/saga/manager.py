@@ -13,6 +13,7 @@ import logging
 from typing import (
     NoReturn,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -104,19 +105,24 @@ class SagaManager(MinosSagaManager):
         context: Optional[SagaContext] = None,
         definition: Optional[Saga] = None,
         **kwargs,
-    ) -> UUID:
+    ) -> Union[UUID, SagaExecution]:
         if definition is None:
             definition = self.definitions.get(name)
         execution = SagaExecution.from_saga(definition, context=context)
         return await self._run(execution, **kwargs)
 
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
+    async def _load_and_run(self, reply: CommandReply, **kwargs) -> Union[UUID, SagaExecution]:
         execution = self.storage.load(reply.saga)
         return await self._run(execution, reply=reply, **kwargs)
 
     async def _run(
-        self, execution: SagaExecution, pause_on_disk: bool = True, raise_on_error: bool = False, **kwargs
-    ) -> UUID:
+        self,
+        execution: SagaExecution,
+        pause_on_disk: bool = True,
+        raise_on_error: bool = False,
+        return_execution: bool = False,
+        **kwargs,
+    ) -> Union[UUID, SagaExecution]:
         try:
             if pause_on_disk:
                 await self._run_with_pause_on_disk(execution, **kwargs)
@@ -130,6 +136,9 @@ class SagaManager(MinosSagaManager):
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
+
+        if return_execution:
+            return execution
 
         return execution.uuid
 
