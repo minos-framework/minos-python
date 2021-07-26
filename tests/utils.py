@@ -37,6 +37,7 @@ from minos.common import (
 from minos.networks import (
     Request,
     Response,
+    WrappedRequest,
     enroute,
 )
 
@@ -170,9 +171,13 @@ class FakeRepository(MinosRepository):
 class FakeService:
     """For testing purposes."""
 
-    # noinspection PyMethodMayBeStatic
-    async def _pre_event_handle(self, content: str) -> str:
-        return f"[{content}]"
+    @staticmethod
+    def _pre_query_handle(request: Request) -> Request:
+        return request
+
+    @staticmethod
+    async def _pre_event_handle(request: Request) -> Request:
+        return WrappedRequest(request, lambda content: f"[{content}]")
 
     # noinspection PyUnusedLocal
     @enroute.rest.command(url="orders/", method="GET")
