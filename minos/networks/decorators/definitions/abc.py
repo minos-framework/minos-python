@@ -24,10 +24,10 @@ from typing import (
     Union,
 )
 
-from ....exceptions import (
+from ...exceptions import (
     MinosMultipleEnrouteDecoratorKindsException,
 )
-from ....messages import (
+from ...messages import (
     Request,
     Response,
 )

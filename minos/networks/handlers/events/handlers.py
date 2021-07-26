@@ -21,11 +21,11 @@ from minos.common import (
     MinosConfig,
 )
 
+from ...decorators import (
+    EnrouteBuilder,
+)
 from ..abc import (
     Handler,
-)
-from ..decorators import (
-    EnrouteBuilder,
 )
 from ..entries import (
     HandlerEntry,

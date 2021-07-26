@@ -16,6 +16,20 @@ from .brokers import (
     Producer,
     ProducerService,
 )
+from .decorators import (
+    BrokerCommandEnrouteDecorator,
+    BrokerEnrouteDecorator,
+    BrokerEventEnrouteDecorator,
+    BrokerQueryEnrouteDecorator,
+    EnrouteAnalyzer,
+    EnrouteBuilder,
+    EnrouteDecorator,
+    EnrouteDecoratorKind,
+    RestCommandEnrouteDecorator,
+    RestEnrouteDecorator,
+    RestQueryEnrouteDecorator,
+    enroute,
+)
 from .discovery import (
     DiscoveryConnector,
     MinosDiscoveryClient,
@@ -41,8 +55,6 @@ from .handlers import (
     Consumer,
     DynamicHandler,
     DynamicReplyHandler,
-    EnrouteAnalyzer,
-    EnrouteBuilder,
     EventConsumer,
     EventConsumerService,
     EventHandler,
@@ -54,7 +66,6 @@ from .handlers import (
     HandlerResponseException,
     HandlerSetup,
     ReplyHandlerPool,
-    enroute,
 )
 from .messages import (
     Request,

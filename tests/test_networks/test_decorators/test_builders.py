@@ -11,17 +11,15 @@ from minos.common import (
     classname,
 )
 from minos.networks import (
-    EnrouteBuilder,
-    MinosRedefinedEnrouteDecoratorException,
-    Response,
-    enroute,
-)
-from minos.networks.handlers import (
     BrokerCommandEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
+    EnrouteBuilder,
+    MinosRedefinedEnrouteDecoratorException,
+    Response,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
+    enroute,
 )
 from tests.utils import (
     FakeRequest,

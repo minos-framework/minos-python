@@ -11,12 +11,10 @@ from minos.common import (
     classname,
 )
 from minos.networks import (
-    EnrouteAnalyzer,
-)
-from minos.networks.handlers import (
     BrokerCommandEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
+    EnrouteAnalyzer,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )
