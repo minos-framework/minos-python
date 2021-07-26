@@ -16,13 +16,15 @@ from typing import (
 )
 
 from minos.common import (
-    Request,
-    Response,
     import_module,
 )
 
 from ...exceptions import (
     MinosRedefinedEnrouteDecoratorException,
+)
+from ...messages import (
+    Request,
+    Response,
 )
 from .analyzers import (
     EnrouteAnalyzer,

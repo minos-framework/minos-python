@@ -24,13 +24,12 @@ from typing import (
     Union,
 )
 
-from minos.common import (
-    Request,
-    Response,
-)
-
 from ....exceptions import (
     MinosMultipleEnrouteDecoratorKindsException,
+)
+from ....messages import (
+    Request,
+    Response,
 )
 from .kinds import (
     EnrouteDecoratorKind,

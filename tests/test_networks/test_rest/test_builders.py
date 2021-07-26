@@ -11,15 +11,13 @@ from yarl import (
     URL,
 )
 
-from minos.common import (
-    Request,
-    Response,
-)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     MinosActionNotFoundException,
+    Request,
+    Response,
     RestBuilder,
     RestResponse,
     RestResponseException,
