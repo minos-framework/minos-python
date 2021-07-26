@@ -14,8 +14,25 @@ from minos.common import (
     CommandReply,
     MinosSagaManager,
 )
+from minos.cqrs import (
+    CommandService,
+    QueryService,
+    Service,
+)
 
 BASE_PATH = Path(__file__).parent
+
+
+class FakeService(Service):
+    """For testing purposes."""
+
+
+class FakeQueryService(QueryService):
+    """For testing purposes."""
+
+
+class FakeCommandService(CommandService):
+    """For testing purposes."""
 
 
 class FakeSagaManager(MinosSagaManager):

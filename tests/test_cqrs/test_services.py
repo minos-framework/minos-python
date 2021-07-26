@@ -3,99 +3,58 @@ Copyright (C) 2021 Clariteia SL
 This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import sys
 import unittest
-
-from dependency_injector import (
-    containers,
-    providers,
-)
 
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.cqrs import (
-    CommandService,
-    QueryService,
     Service,
 )
 from tests.utils import (
     BASE_PATH,
+    FakeCommandService,
+    FakeQueryService,
     FakeSagaManager,
+    FakeService,
 )
 
 
 class TestServices(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    def setUp(self) -> None:
+        super().setUp()
         self.saga_manager = FakeSagaManager()
-
-        self.container = containers.DynamicContainer()
-        self.container.config = providers.Object(self.config)
-        self.container.saga_manager = providers.Object(self.saga_manager)
-
-        await self.container.saga_manager().setup()
-        self.container.wire(modules=[sys.modules[__name__]])
-
-    async def asyncTearDown(self):
-        self.container.unwire()
-        await self.container.saga_manager().destroy()
-        await super().asyncTearDown()
+        self.service = FakeService(config=self.config, saga_manager=self.saga_manager)
 
     async def test_constructor(self):
-        service = Service()
-        self.assertEqual(self.config, service.config)
-        self.assertEqual(self.saga_manager, service.saga_manager)
+        self.assertEqual(self.config, self.service.config)
+        self.assertEqual(self.saga_manager, self.service.saga_manager)
 
 
 class TestQueryService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    def setUp(self) -> None:
+        super().setUp()
         self.saga_manager = FakeSagaManager()
-
-        self.container = containers.DynamicContainer()
-        self.container.config = providers.Object(self.config)
-        self.container.saga_manager = providers.Object(self.saga_manager)
-
-        await self.container.saga_manager().setup()
-        self.container.wire(modules=[sys.modules[__name__]])
-
-    async def asyncTearDown(self):
-        self.container.unwire()
-        await self.container.saga_manager().destroy()
-        await super().asyncTearDown()
+        self.service = FakeQueryService(config=self.config, saga_manager=self.saga_manager)
 
     async def test_query_service_constructor(self):
-        service = QueryService()
-        self.assertIsInstance(service, Service)
+        self.assertIsInstance(self.service, Service)
 
 
 class TestCommandService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
+    def setUp(self) -> None:
+        super().setUp()
         self.saga_manager = FakeSagaManager()
-
-        self.container = containers.DynamicContainer()
-        self.container.config = providers.Object(self.config)
-        self.container.saga_manager = providers.Object(self.saga_manager)
-
-        await self.container.saga_manager().setup()
-        self.container.wire(modules=[sys.modules[__name__]])
-
-    async def asyncTearDown(self):
-        self.container.unwire()
-        await self.container.saga_manager().destroy()
-        await super().asyncTearDown()
+        self.service = FakeCommandService(config=self.config, saga_manager=self.saga_manager)
 
     async def test_query_service_constructor(self):
-        service = CommandService()
-        self.assertIsInstance(service, Service)
+        self.assertIsInstance(self.service, Service)
 
 
 if __name__ == "__main__":

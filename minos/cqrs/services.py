@@ -49,7 +49,7 @@ class Service(ABC):
             self.saga_manager = saga_manager
 
 
-class CommandService(Service):
+class CommandService(Service, ABC):
     """Command Service class"""
 
     def _pre_query_handle(self, request: Request) -> Request:
@@ -59,7 +59,7 @@ class CommandService(Service):
         raise MinosIllegalHandlingException("Events cannot be handled by `CommandService` inherited classes.")
 
 
-class QueryService(Service):
+class QueryService(Service, ABC):
     """Query Service class"""
 
     def _pre_command_handle(self, request: Request) -> Request:
