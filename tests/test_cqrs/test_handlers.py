@@ -86,7 +86,6 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosQueryServiceException):
             await PreEventHandler.handle(self.diff, self.saga_manager)
 
-    @unittest.skip
     def test_build_saga(self):
         observed = PreEventHandler.build_saga(self.diff)
 
@@ -96,6 +95,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             .invoke_participant(
                 "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars]))
             )
+            .on_reply("Bars")
             .commit(PreEventHandler.commit_callback, SagaContext(diff=self.diff))
         )
         self.assertEqual(expected, observed)
