@@ -42,9 +42,9 @@ class TestConsumer(PostgresAsyncTestCase):
         consumer = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
         self.consumer = _FakeConsumer(
             topics=[f"{item.name}Reply" for item in self.config.saga.items],
-            broker=self.config.saga.broker,
+            broker=self.config.broker,
             consumer=consumer,
-            **self.config.saga.queue._asdict(),
+            **self.config.broker.queue._asdict(),
         )
 
     async def test_dispatch(self):

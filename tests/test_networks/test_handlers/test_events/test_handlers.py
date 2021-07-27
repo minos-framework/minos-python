@@ -58,13 +58,13 @@ class TestEventHandler(PostgresAsyncTestCase):
 
         self.assertEqual({"TicketAdded", "TicketDeleted"}, set(self.handler.handlers.keys()))
 
-        self.assertEqual(self.config.events.queue.records, self.handler._records)
-        self.assertEqual(self.config.events.queue.retry, self.handler._retry)
-        self.assertEqual(self.config.events.queue.host, self.handler.host)
-        self.assertEqual(self.config.events.queue.port, self.handler.port)
-        self.assertEqual(self.config.events.queue.database, self.handler.database)
-        self.assertEqual(self.config.events.queue.user, self.handler.user)
-        self.assertEqual(self.config.events.queue.password, self.handler.password)
+        self.assertEqual(self.config.broker.queue.records, self.handler._records)
+        self.assertEqual(self.config.broker.queue.retry, self.handler._retry)
+        self.assertEqual(self.config.broker.queue.host, self.handler.host)
+        self.assertEqual(self.config.broker.queue.port, self.handler.port)
+        self.assertEqual(self.config.broker.queue.database, self.handler.database)
+        self.assertEqual(self.config.broker.queue.user, self.handler.user)
+        self.assertEqual(self.config.broker.queue.password, self.handler.password)
 
     def test_entry_model_cls(self):
         self.assertEqual(Event, EventHandler.ENTRY_MODEL_CLS)

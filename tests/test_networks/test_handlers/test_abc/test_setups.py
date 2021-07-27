@@ -28,10 +28,10 @@ class TestHandlerSetup(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_if_queue_table_exists(self):
-        async with _FakeHandlerSetup(**self.saga_queue_db):
+        async with _FakeHandlerSetup(**self.broker_queue_db):
             pass
 
-        async with aiopg.connect(**self.saga_queue_db) as connect:
+        async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
                     "SELECT 1 "

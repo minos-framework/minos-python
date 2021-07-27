@@ -43,7 +43,7 @@ class ReplyHandlerPool(MinosPool):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> ReplyHandlerPool:
-        client = KafkaAdminClient(bootstrap_servers=f"{config.commands.broker.host}:{config.commands.broker.port}")
+        client = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
         return cls(config, client)
 
     async def _create_instance(self) -> DynamicReplyHandler:

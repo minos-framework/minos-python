@@ -37,7 +37,7 @@ class CommandReplyBroker(Broker):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyBroker:
-        return cls(*args, **config.saga.queue._asdict(), **kwargs)
+        return cls(*args, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding
     async def send(self, data: Any, topic: str, saga: UUID, status: CommandStatus, **kwargs) -> int:

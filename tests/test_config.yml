@@ -3,7 +3,6 @@ service:
 rest:
     host: localhost
     port: 8080
-    endpoints: []
 repository:
     database: order_db
     user: minos
@@ -16,35 +15,24 @@ snapshot:
     password: min0s
     host: localhost
     port: 5432
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+    records: 10
+    retry: 2
 events:
-    broker: localhost
-    port: 9092
     service: tests.services.queries.CqrsService
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 1
 commands:
-    broker: localhost
-    port: 9092
     service: tests.services.commands.CommandService
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 1
 queries:
     service: tests.services.queries.CqrsService
 saga:
-    broker: localhost
-    port: 9092
     storage:
         path: "./order.lmdb"
     items:
@@ -54,14 +42,6 @@ saga:
         -   name: DeleteOrder
             controller: tests.services.sagas.SagaService
             action: delete_order
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 1
 discovery:
     host: discovery-service
     port: 8080

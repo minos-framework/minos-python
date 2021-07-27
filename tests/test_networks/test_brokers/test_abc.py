@@ -47,13 +47,13 @@ class TestBrokerSetup(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.broker_setup = BrokerSetup(**self.config.saga.queue._asdict())
+        self.broker_setup = BrokerSetup(**self.config.broker.queue._asdict())
 
     async def test_setup(self):
         async with self.broker_setup:
             pass
 
-        async with aiopg.connect(**self.events_queue_db) as connection:
+        async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute(
                     "SELECT 1 "
@@ -72,7 +72,7 @@ class TestBroker(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.broker = _FakeBroker(**self.saga_queue_db)
+        self.broker = _FakeBroker(**self.broker_queue_db)
 
     async def test_send_bytes(self):
         query = SQL(

@@ -52,7 +52,7 @@ class CommandReplyHandler(Handler):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
         handlers = {f"{item.name}Reply": None for item in config.saga.items}
         handlers[f"{config.service.name}QueryReply"] = None
-        return cls(*args, handlers=handlers, **config.saga.queue._asdict(), **kwargs)
+        return cls(*args, handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         """Dispatch one row.

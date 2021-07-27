@@ -33,7 +33,7 @@ class CommandBroker(Broker):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandBroker:
-        return cls(*args, **config.commands.queue._asdict(), **kwargs)
+        return cls(*args, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding
     async def send(self, data: Any, topic: str, saga: str, reply_topic: str, **kwargs) -> int:
