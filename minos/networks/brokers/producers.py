@@ -47,7 +47,7 @@ class Producer(BrokerSetup):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
-        return cls(*args, config.broker.queue, config.broker, **kwargs)
+        return cls(*args, **config.events._asdict(), **kwargs)
 
     async def dispatch(self) -> NoReturn:
         """Dispatch the items in the publishing queue.
