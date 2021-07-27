@@ -108,11 +108,8 @@ class FakeEntrypoint:
     def __init__(self, *args, **kwargs):
         """For testing purposes."""
 
-    def __enter__(self):
-        return
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return
+    async def __aenter__(self):
+        """For testing purposes."""
 
     async def graceful_shutdown(*args, **kwargs):
         """For testing purposes."""
