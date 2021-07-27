@@ -17,11 +17,9 @@ jobs:
                 options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
         env:
-            MINOS_COMMANDS_QUEUE_HOST: postgres
-            MINOS_EVENTS_QUEUE_HOST: postgres
+            MINOS_BROKER_QUEUE_HOST: postgres
             MINOS_REPOSITORY_HOST: postgres
             MINOS_SNAPSHOT_HOST: postgres
-            MINOS_SAGA_QUEUE_HOST: postgres
 
         steps:
             -   name: Check out repository code
