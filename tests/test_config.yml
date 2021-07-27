@@ -1,8 +1,5 @@
 service:
     name: Order
-rest:
-    host: localhost
-    port: 8900
 repository:
     database: order_db
     user: minos
@@ -15,6 +12,9 @@ snapshot:
     password: min0s
     host: localhost
     port: 5432
+rest:
+    host: localhost
+    port: 8900
 broker:
   host: localhost
   port: 9092
@@ -42,7 +42,6 @@ saga:
         - name: DeleteOrder
           controller: tests.services.SagaTestService.SagaService
           action: delete_order
-
 discovery:
     host: localhost
     port: 8080

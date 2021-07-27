@@ -28,7 +28,6 @@ from ..exceptions import (
 )
 
 BROKER = collections.namedtuple("Broker", "host port queue")
-COMMON_BROKER = collections.namedtuple("CommonBroker", "host port")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
 SERVICE = collections.namedtuple("Service", "name injections services")
 CONTROLLER = collections.namedtuple("Controller", "name controller action")
@@ -38,12 +37,15 @@ EVENTS = collections.namedtuple("Events", "service")
 COMMANDS = collections.namedtuple("Commands", "service")
 QUERIES = collections.namedtuple("Queries", "service")
 SAGA = collections.namedtuple("Saga", "items storage")
-REST = collections.namedtuple("Rest", "broker")
+REST = collections.namedtuple("Rest", "host port")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
 DISCOVERY = collections.namedtuple("Discovery", "host port")
 
 _ENVIRONMENT_MAPPER = {
+    "service.name": "MINOS_SERVICE_NAME",
+    "rest.host": "MINOS_REST_HOST",
+    "rest.port": "MINOS_REST_PORT",
     "broker.host": "MINOS_BROKER_HOST",
     "broker.port": "MINOS_BROKER_PORT",
     "broker.queue.host": "MINOS_BROKER_QUEUE_HOST",
@@ -69,6 +71,9 @@ _ENVIRONMENT_MAPPER = {
 }
 
 _PARAMETERIZED_MAPPER = {
+    "service.name": "service_name",
+    "rest.host": "rest_host",
+    "rest.port": "rest_port",
     "broker.host": "broker_host",
     "broker.port": "broker_port",
     "broker.queue.host": "broker_queue_host",
@@ -193,13 +198,7 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``REST`` NamedTuple instance.
         """
-        broker = self._rest_broker
-        return REST(broker=broker)
-
-    @property
-    def _rest_broker(self) -> COMMON_BROKER:
-        broker = COMMON_BROKER(host=self._get("rest.host"), port=int(self._get("rest.port")))
-        return broker
+        return REST(host=self._get("rest.host"), port=int(self._get("rest.port")))
 
     @property
     def broker(self) -> BROKER:

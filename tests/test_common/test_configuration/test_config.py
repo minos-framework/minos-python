@@ -38,9 +38,8 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_rest(self):
         rest = self.config.rest
 
-        broker = rest.broker
-        self.assertEqual("localhost", broker.host)
-        self.assertEqual(8900, broker.port)
+        self.assertEqual("localhost", rest.host)
+        self.assertEqual(8900, rest.port)
 
     def test_config_events_service(self):
         events = self.config.events
