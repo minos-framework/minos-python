@@ -35,15 +35,6 @@ class TestMinosConfigWithEnvironment(unittest.TestCase):
         repository = self.config.repository
         self.assertEqual("order_db", repository.database)
 
-    @mock.patch.dict(os.environ, {"MINOS_SAGA_BROKER": "TestHost"})
-    @mock.patch.dict(os.environ, {"MINOS_SAGA_PORT": "2222"})
-    def test_config_saga_broker(self):
-        saga = self.config.saga
-
-        broker = saga.broker
-        self.assertEqual("TestHost", broker.host)
-        self.assertEqual(2222, broker.port)
-
     @mock.patch.dict(os.environ, {"MINOS_QUERIES_SERVICE": "src.Test"})
     def test_config_queries_service(self):
         query = self.config.queries
@@ -64,26 +55,7 @@ class TestMinosConfigWithEnvironment(unittest.TestCase):
 
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_HOST": "some-host"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_PORT": "333"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_SUBSCRIBE_PATH": "subscribe-test"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_SUBSCRIBE_METHOD": "TEST-METHOD"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_UNSUBSCRIBE_PATH": "unsubscribe-test"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_UNSUBSCRIBE_METHOD": "TEST-METHOD"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_DISCOVER_PATH": "discover-test"})
-    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_ENDPOINTS_DISCOVER_METHOD": "TEST-METHOD"})
     def test_config_discovery(self):
         discovery = self.config.discovery
         self.assertEqual("some-host", discovery.host)
         self.assertEqual("333", discovery.port)
-
-        endpoints = discovery.endpoints
-        subscribe = endpoints.subscribe
-        self.assertEqual("subscribe-test", subscribe.path)
-        self.assertEqual("TEST-METHOD", subscribe.method)
-
-        unsubscribe = endpoints.unsubscribe
-        self.assertEqual("unsubscribe-test", unsubscribe.path)
-        self.assertEqual("TEST-METHOD", unsubscribe.method)
-
-        discover = endpoints.discover
-        self.assertEqual("discover-test", discover.path)
-        self.assertEqual("TEST-METHOD", discover.method)

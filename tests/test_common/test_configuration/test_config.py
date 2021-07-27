@@ -38,25 +38,8 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_rest(self):
         rest = self.config.rest
 
-        broker = rest.broker
-        self.assertEqual("localhost", broker.host)
-        self.assertEqual(8900, broker.port)
-
-        endpoints = rest.endpoints
-        self.assertEqual("AddOrder", endpoints[0].name)
-
-    def test_config_saga_broker(self):
-        saga = self.config.saga
-
-        broker = saga.broker
-        self.assertEqual("localhost", broker.host)
-        self.assertEqual(8900, broker.port)
-
-    def test_config_events(self):
-        events = self.config.events
-        broker = events.broker
-        self.assertEqual("localhost", broker.host)
-        self.assertEqual(9092, broker.port)
+        self.assertEqual("localhost", rest.host)
+        self.assertEqual(8900, rest.port)
 
     def test_config_events_service(self):
         events = self.config.events
@@ -64,8 +47,8 @@ class TestMinosConfig(unittest.TestCase):
 
     def test_config_events_queue_database(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
-        events = config.events
-        queue = events.queue
+        broker = config.broker
+        queue = broker.queue
         self.assertEqual("order_db", queue.database)
         self.assertEqual("minos", queue.user)
         self.assertEqual("min0s", queue.password)
@@ -78,18 +61,6 @@ class TestMinosConfig(unittest.TestCase):
         commands = self.config.commands
         self.assertEqual("minos.services.OrderService", commands.service)
 
-    def test_config_commands_queue_database(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
-        commands = config.commands
-        queue = commands.queue
-        self.assertEqual("order_db", queue.database)
-        self.assertEqual("minos", queue.user)
-        self.assertEqual("min0s", queue.password)
-        self.assertEqual("localhost", queue.host)
-        self.assertEqual(5432, queue.port)
-        self.assertEqual(10, queue.records)
-        self.assertEqual(2, queue.retry)
-
     def test_config_queries_service(self):
         query = self.config.queries
         self.assertEqual("minos.services.OrderQueryService", query.service)
@@ -99,18 +70,6 @@ class TestMinosConfig(unittest.TestCase):
         saga = config.saga
         storage = saga.storage
         self.assertEqual(BASE_PATH / "order.lmdb", storage.path)
-
-    def test_config_saga_queue_database(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
-        saga = config.saga
-        queue = saga.queue
-        self.assertEqual("order_db", queue.database)
-        self.assertEqual("minos", queue.user)
-        self.assertEqual("min0s", queue.password)
-        self.assertEqual("localhost", queue.host)
-        self.assertEqual(5432, queue.port)
-        self.assertEqual(10, queue.records)
-        self.assertEqual(2, queue.retry)
 
     def test_config_repository(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
@@ -133,21 +92,8 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_discovery(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         discovery = config.discovery
-        self.assertEqual("discovery-service", discovery.host)
+        self.assertEqual("localhost", discovery.host)
         self.assertEqual(8080, discovery.port)
-
-        endpoints = discovery.endpoints
-        subscribe = endpoints.subscribe
-        self.assertEqual("subscribe", subscribe.path)
-        self.assertEqual("POST", subscribe.method)
-
-        unsubscribe = endpoints.unsubscribe
-        self.assertEqual("unsubscribe?name=", unsubscribe.path)
-        self.assertEqual("POST", unsubscribe.method)
-
-        discover = endpoints.discover
-        self.assertEqual("discover?name=", discover.path)
-        self.assertEqual("GET", discover.method)
 
 
 if __name__ == "__main__":

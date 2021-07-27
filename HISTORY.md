@@ -127,3 +127,9 @@ History
 
 * Bugfixes
 * Added Pool for Kafka
+
+0.1.7 (2021-07-27)
+--------------------
+
+* Simplify configuration file
+* Bugfixes

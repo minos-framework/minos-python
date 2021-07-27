@@ -6,13 +6,13 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 from .configuration import (
     BROKER,
     COMMANDS,
     CONTROLLER,
-    ENDPOINT,
+    DISCOVERY,
     EVENTS,
     QUEUE,
     REPOSITORY,
@@ -73,11 +73,6 @@ from .injectors import (
 )
 from .launchers import (
     EntrypointLauncher,
-)
-from .messages import (
-    Request,
-    Response,
-    ResponseException,
 )
 from .meta import (
     classproperty,

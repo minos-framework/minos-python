@@ -11,6 +11,7 @@ from __future__ import (
 
 import logging
 from typing import (
+    Any,
     Generic,
     Iterable,
     Optional,
@@ -82,11 +83,11 @@ class TypeHintBuilder(Generic[T]):
                 return build_union(options)
 
         if isinstance(value, (tuple, list, set)):
-            b1 = None if (base is None or len(get_args(base)) != 1) else get_args(base)[0]
+            b1 = Any if (base is None or len(get_args(base)) != 1) else get_args(base)[0]
             return type(value)[self._build_from_iterable(value, b1)]
 
         if isinstance(value, dict):
-            b1, b2 = (None, None) if (base is None or len(get_args(base)) != 2) else get_args(base)
+            b1, b2 = (Any, Any) if (base is None or len(get_args(base)) != 2) else get_args(base)
             return type(value)[
                 self._build_from_iterable(value.keys(), b1), self._build_from_iterable(value.values(), b2)
             ]

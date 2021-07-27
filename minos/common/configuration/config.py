@@ -27,49 +27,35 @@ from ..exceptions import (
     MinosConfigException,
 )
 
-BROKER = collections.namedtuple("Broker", "host port")
+BROKER = collections.namedtuple("Broker", "host port queue")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
-ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
 SERVICE = collections.namedtuple("Service", "name injections services")
 CONTROLLER = collections.namedtuple("Controller", "name controller action")
 STORAGE = collections.namedtuple("Storage", "path")
 
-EVENTS = collections.namedtuple("Events", "broker service queue")
-COMMANDS = collections.namedtuple("Commands", "broker service queue")
+EVENTS = collections.namedtuple("Events", "service")
+COMMANDS = collections.namedtuple("Commands", "service")
 QUERIES = collections.namedtuple("Queries", "service")
-SAGA = collections.namedtuple("Saga", "items queue storage broker")
-REST = collections.namedtuple("Rest", "broker endpoints")
+SAGA = collections.namedtuple("Saga", "items storage")
+REST = collections.namedtuple("Rest", "host port")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
-DISCOVERY_ENDPOINT = collections.namedtuple("DiscoveryEndpoint", "path method")
-DISCOVERY_ENDPOINTS = collections.namedtuple("DiscoveryEndpoints", "subscribe unsubscribe discover")
-DISCOVERY = collections.namedtuple("Discovery", "host port endpoints")
+DISCOVERY = collections.namedtuple("Discovery", "host port")
 
 _ENVIRONMENT_MAPPER = {
-    "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
-    "commands.queue.port": "MINOS_COMMANDS_QUEUE_PORT",
-    "commands.queue.database": "MINOS_COMMANDS_QUEUE_DATABASE",
-    "commands.queue.user": "MINOS_COMMANDS_QUEUE_USER",
-    "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
+    "service.name": "MINOS_SERVICE_NAME",
+    "rest.host": "MINOS_REST_HOST",
+    "rest.port": "MINOS_REST_PORT",
+    "broker.host": "MINOS_BROKER_HOST",
+    "broker.port": "MINOS_BROKER_PORT",
+    "broker.queue.host": "MINOS_BROKER_QUEUE_HOST",
+    "broker.queue.port": "MINOS_BROKER_QUEUE_PORT",
+    "broker.queue.database": "MINOS_BROKER_QUEUE_DATABASE",
+    "broker.queue.user": "MINOS_BROKER_QUEUE_USER",
+    "broker.queue.password": "MINOS_BROKER_QUEUE_PASSWORD",
     "commands.service": "MINOS_COMMANDS_SERVICE",
-    "commands.broker": "MINOS_COMMANDS_BROKER",
-    "commands.port": "MINOS_COMMANDS_PORT",
     "queries.service": "MINOS_QUERIES_SERVICE",
-    "saga.broker": "MINOS_SAGA_BROKER",
-    "saga.port": "MINOS_SAGA_PORT",
-    "saga.queue.host": "MINOS_SAGA_QUEUE_HOST",
-    "saga.queue.port": "MINOS_SAGA_QUEUE_PORT",
-    "saga.queue.database": "MINOS_SAGA_QUEUE_DATABASE",
-    "saga.queue.user": "MINOS_SAGA_QUEUE_USER",
-    "saga.queue.password": "MINOS_SAGA_QUEUE_PASSWORD",
-    "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
-    "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
-    "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
-    "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
-    "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
     "events.service": "MINOS_EVENTS_SERVICE",
-    "events.broker": "MINOS_EVENTS_BROKER",
-    "events.port": "MINOS_EVENTS_PORT",
     "repository.host": "MINOS_REPOSITORY_HOST",
     "repository.port": "MINOS_REPOSITORY_PORT",
     "repository.database": "MINOS_REPOSITORY_DATABASE",
@@ -82,39 +68,24 @@ _ENVIRONMENT_MAPPER = {
     "snapshot.password": "MINOS_SNAPSHOT_PASSWORD",
     "discovery.host": "MINOS_DISCOVERY_HOST",
     "discovery.port": "MINOS_DISCOVERY_PORT",
-    "discovery.endpoints.subscribe.path": "MINOS_DISCOVERY_ENDPOINTS_SUBSCRIBE_PATH",
-    "discovery.endpoints.subscribe.method": "MINOS_DISCOVERY_ENDPOINTS_SUBSCRIBE_METHOD",
-    "discovery.endpoints.unsubscribe.path": "MINOS_DISCOVERY_ENDPOINTS_UNSUBSCRIBE_PATH",
-    "discovery.endpoints.unsubscribe.method": "MINOS_DISCOVERY_ENDPOINTS_UNSUBSCRIBE_METHOD",
-    "discovery.endpoints.discover.path": "MINOS_DISCOVERY_ENDPOINTS_DISCOVER_PATH",
-    "discovery.endpoints.discover.method": "MINOS_DISCOVERY_ENDPOINTS_DISCOVER_METHOD",
 }
 
 _PARAMETERIZED_MAPPER = {
-    "commands.queue.host": "commands_queue_host",
-    "commands.queue.port": "commands_queue_port",
-    "commands.queue.database": "commands_queue_database",
-    "commands.queue.user": "commands_queue_user",
-    "commands.queue.password": "commands_queue_password",
+    "service.name": "service_name",
+    "rest.host": "rest_host",
+    "rest.port": "rest_port",
+    "broker.host": "broker_host",
+    "broker.port": "broker_port",
+    "broker.queue.host": "broker_queue_host",
+    "broker.queue.port": "broker_queue_port",
+    "broker.queue.database": "broker_queue_database",
+    "broker.queue.user": "broker_queue_user",
+    "broker.queue.password": "broker_queue_password",
     "commands.service": "commands_service",
-    "commands.broker": "commands_broker",
-    "commands.port": "commands_port",
     "queries.service": "queries_service",
     "saga.broker": "saga_broker",
     "saga.port": "saga_port",
-    "saga.queue.host": "saga_queue_host",
-    "saga.queue.port": "saga_queue_port",
-    "saga.queue.database": "saga_queue_database",
-    "saga.queue.user": "saga_queue_user",
-    "saga.queue.password": "saga_queue_password",
-    "events.queue.host": "events_queue_host",
-    "events.queue.port": "events_queue_port",
-    "events.queue.database": "events_queue_database",
-    "events.queue.user": "events_queue_user",
-    "events.queue.password": "events_queue_password",
     "events.service": "events_service",
-    "events.broker": "events_broker",
-    "events.port": "events_port",
     "repository.host": "repository_host",
     "repository.port": "repository_port",
     "repository.database": "repository_database",
@@ -127,12 +98,6 @@ _PARAMETERIZED_MAPPER = {
     "snapshot.password": "snapshot_password",
     "discovery.host": "minos_discovery_host",
     "discovery.port": "minos_discovery_port",
-    "discovery.endpoints.subscribe.path": "minos_discovery_endpoints_subscribe_path",
-    "discovery.endpoints.subscribe.method": "minos_discovery_endpoints_subscribe_method",
-    "discovery.endpoints.unsubscribe.path": "minos_discovery_endpoints_unsubscribe_path",
-    "discovery.endpoints.unsubscribe.method": "minos_discovery_endpoints_unsubscribe_method",
-    "discovery.endpoints.discover.path": "minos_discovery_endpoints_discover_path",
-    "discovery.endpoints.discover.method": "minos_discovery_endpoints_discover_method",
 }
 
 
@@ -233,30 +198,16 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``REST`` NamedTuple instance.
         """
-        broker = self._rest_broker
-        endpoints = self._rest_endpoints
-        return REST(broker=broker, endpoints=endpoints)
+        return REST(host=self._get("rest.host"), port=int(self._get("rest.port")))
 
     @property
-    def _rest_broker(self):
-        broker = BROKER(host=self._get("rest.host"), port=int(self._get("rest.port")))
-        return broker
+    def broker(self) -> BROKER:
+        """Get the events config.
 
-    @property
-    def _rest_endpoints(self) -> list[ENDPOINT]:
-        info = self._get("rest.endpoints")
-        endpoints = [self._rest_endpoints_entry(endpoint) for endpoint in info]
-        return endpoints
-
-    @staticmethod
-    def _rest_endpoints_entry(endpoint: dict[str, Any]) -> ENDPOINT:
-        return ENDPOINT(
-            name=endpoint["name"],
-            route=endpoint["route"],
-            method=endpoint["method"].upper(),
-            controller=endpoint["controller"],
-            action=endpoint["action"],
-        )
+        :return: A ``EVENTS`` NamedTuple instance.
+        """
+        queue = self._broker_queue
+        return BROKER(host=self._get("broker.host"), port=self._get("broker.port"), queue=queue)
 
     @property
     def events(self) -> EVENTS:
@@ -264,25 +215,19 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``EVENTS`` NamedTuple instance.
         """
-        broker = self._events_broker
-        queue = self._events_queue
         service = self._get("events.service")
-        return EVENTS(broker=broker, service=service, queue=queue)
+        return EVENTS(service=service)
 
     @property
-    def _events_broker(self) -> BROKER:
-        return BROKER(host=self._get("events.broker"), port=int(self._get("events.port")))
-
-    @property
-    def _events_queue(self) -> QUEUE:
+    def _broker_queue(self) -> QUEUE:
         return QUEUE(
-            database=self._get("events.queue.database"),
-            user=self._get("events.queue.user"),
-            password=self._get("events.queue.password"),
-            host=self._get("events.queue.host"),
-            port=int(self._get("events.queue.port")),
-            records=int(self._get("events.queue.records")),
-            retry=int(self._get("events.queue.retry")),
+            database=self._get("broker.queue.database"),
+            user=self._get("broker.queue.user"),
+            password=self._get("broker.queue.password"),
+            host=self._get("broker.queue.host"),
+            port=int(self._get("broker.queue.port")),
+            records=int(self._get("broker.queue.records")),
+            retry=int(self._get("broker.queue.retry")),
         )
 
     @property
@@ -291,10 +236,8 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``COMMAND`` NamedTuple instance.
         """
-        broker = self._commands_broker
-        queue = self._commands_queue
         service = self._get("commands.service")
-        return COMMANDS(broker=broker, service=service, queue=queue)
+        return COMMANDS(service=service)
 
     @property
     def queries(self) -> QUERIES:
@@ -310,29 +253,10 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``SAGAS`` NamedTuple instance.
         """
-        queue = self._sagas_queue
+
         sagas = self._saga_items
         storage = self._saga_storage
-        broker = self._saga_broker
-        return SAGA(items=sagas, queue=queue, storage=storage, broker=broker)
-
-    @property
-    def _commands_broker(self) -> BROKER:
-        broker = BROKER(host=self._get("commands.broker"), port=int(self._get("commands.port")))
-        return broker
-
-    @property
-    def _commands_queue(self) -> QUEUE:
-        queue = QUEUE(
-            database=self._get("commands.queue.database"),
-            user=self._get("commands.queue.user"),
-            password=self._get("commands.queue.password"),
-            host=self._get("commands.queue.host"),
-            port=int(self._get("commands.queue.port")),
-            records=int(self._get("commands.queue.records")),
-            retry=int(self._get("commands.queue.retry")),
-        )
-        return queue
+        return SAGA(items=sagas, storage=storage)
 
     @property
     def _saga_storage(self) -> STORAGE:
@@ -340,23 +264,6 @@ class MinosConfig(MinosConfigAbstract):
         path = Path(raw) if raw.startswith("/") else self._path.parent / raw
 
         queue = STORAGE(path=path)
-        return queue
-
-    @property
-    def _saga_broker(self) -> BROKER:
-        return BROKER(host=self._get("saga.broker"), port=int(self._get("saga.port")))
-
-    @property
-    def _sagas_queue(self) -> QUEUE:
-        queue = QUEUE(
-            database=self._get("saga.queue.database"),
-            user=self._get("saga.queue.user"),
-            password=self._get("saga.queue.password"),
-            host=self._get("saga.queue.host"),
-            port=int(self._get("saga.queue.port")),
-            records=int(self._get("saga.queue.records")),
-            retry=int(self._get("saga.queue.retry")),
-        )
         return queue
 
     @property
@@ -405,37 +312,4 @@ class MinosConfig(MinosConfigAbstract):
         """
         host = self._get("discovery.host")
         port = self._get("discovery.port")
-        endpoints = self._discovery_endpoints
-        return DISCOVERY(host=host, port=port, endpoints=endpoints)
-
-    @property
-    def _discovery_endpoints(self) -> DISCOVERY_ENDPOINTS:
-        subscribe = self._discovery_subscribe
-        unsubscribe = self._discovery_unsubscribe
-        discover = self._discovery_discover
-
-        return DISCOVERY_ENDPOINTS(subscribe=subscribe, unsubscribe=unsubscribe, discover=discover)
-
-    @property
-    def _discovery_subscribe(self) -> DISCOVERY_ENDPOINT:
-        endpoint = DISCOVERY_ENDPOINT(
-            path=self._get("discovery.endpoints.subscribe.path"),
-            method=self._get("discovery.endpoints.subscribe.method"),
-        )
-        return endpoint
-
-    @property
-    def _discovery_unsubscribe(self) -> DISCOVERY_ENDPOINT:
-        endpoint = DISCOVERY_ENDPOINT(
-            path=self._get("discovery.endpoints.unsubscribe.path"),
-            method=self._get("discovery.endpoints.unsubscribe.method"),
-        )
-        return endpoint
-
-    @property
-    def _discovery_discover(self) -> DISCOVERY_ENDPOINT:
-        endpoint = DISCOVERY_ENDPOINT(
-            path=self._get("discovery.endpoints.discover.path"),
-            method=self._get("discovery.endpoints.discover.method"),
-        )
-        return endpoint
+        return DISCOVERY(host=host, port=port)
