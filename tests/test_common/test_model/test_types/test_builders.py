@@ -7,6 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 from typing import (
+    Any,
     Union,
 )
 from uuid import (
@@ -34,10 +35,19 @@ class TestTypeHintBuilder(unittest.TestCase):
         self.assertEqual(list[Union[int, str]], TypeHintBuilder([34, "hello", 12]).build())
 
     def test_list_empty(self):
+        self.assertEqual(list[Any], TypeHintBuilder([]).build())
+
+    def test_list_empty_with_base(self):
         self.assertEqual(list[int], TypeHintBuilder([], list[int]).build())
 
     def test_dict(self):
         self.assertEqual(dict[str, int], TypeHintBuilder({"one": 1, "two": 2}).build())
+
+    def test_dict_empty(self):
+        self.assertEqual(dict[Any, Any], TypeHintBuilder(dict()).build())
+
+    def test_dict_empty_with_base(self):
+        self.assertEqual(dict[str, float], TypeHintBuilder(dict(), dict[str, float]).build())
 
     def test_model_type(self):
         one = ModelType.build("tests.model_classes.Foo", {"text": str})
