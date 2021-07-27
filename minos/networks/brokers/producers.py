@@ -22,8 +22,6 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
-    BROKER,
-    QUEUE,
     MinosConfig,
 )
 
@@ -38,16 +36,23 @@ class Producer(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
     # noinspection PyUnresolvedReferences
-    def __init__(self, *args, queue: QUEUE, broker: BROKER, **kwargs):
+    def __init__(self, *args, broker_host: str, broker_port: int, retry: int, records: int, **kwargs):
         # noinspection PyProtectedMember
-        super().__init__(*args, **queue._asdict(), **kwargs)
-        self.retry = queue.retry
-        self.records = queue.records
-        self.broker = broker
+        super().__init__(*args, **kwargs)
+        self.broker_host = broker_host
+        self.broker_port = broker_port
+        self.retry = retry
+        self.records = records
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
-        return cls(*args, config.broker.queue, config.broker, **kwargs)
+        return cls(
+            *args,
+            broker_host=config.broker.host,
+            broker_port=config.broker.port,
+            **config.broker.queue._asdict(),
+            **kwargs,
+        )
 
     async def dispatch(self) -> NoReturn:
         """Dispatch the items in the publishing queue.
@@ -88,7 +93,7 @@ class Producer(BrokerSetup):
         """
         logger.debug(f"Producing message with {topic!s} topic...")
 
-        producer = AIOKafkaProducer(bootstrap_servers=f"{self.broker.host}:{self.broker.port}")
+        producer = AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
         # noinspection PyBroadException
         try:
             # Get cluster layout and initial topic/partition leadership information

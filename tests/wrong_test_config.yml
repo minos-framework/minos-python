@@ -3,7 +3,17 @@ service:
 rest:
     host: localhost
     port: 8900
-    endpoints: []
+broker:
+    host: localhost
+    port: 4092
+    queue:
+        database: order_db
+        user: minos
+        password: min0s
+        host: localhost
+        port: 5432
+        records: 10
+        retry: 2
 repository:
     database: order_db
     user: minos
@@ -17,31 +27,8 @@ snapshot:
     host: localhost
     port: 5432
 events:
-    broker: localhost
-    port: 4092
-    database:
-        path: ./tests/local_db.lmdb
-        name: database_events_test
     service: tests.services.queries.CqrsService
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
 commands:
-    broker: localhost
-    port: 4092
     service: tests.services.commands.CommandService
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
 queries:
     service: tests.services.queries.CqrsService

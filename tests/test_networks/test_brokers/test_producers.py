@@ -99,12 +99,12 @@ class TestProducer(PostgresAsyncTestCase):
 
         config = MinosConfig(
             path=BASE_PATH / "wrong_test_config.yml",
-            events_queue_database=self.config.events.queue.database,
-            events_queue_user=self.config.events.queue.user,
+            broker_queue_database=self.config.broker.queue.database,
+            broker_queue_user=self.config.broker.queue.user,
         )
         await Producer.from_config(config=config).dispatch()
 
-        async with aiopg.connect(**self.events_queue_db) as connection:
+        async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "TestDeleteOrderReply")
                 records = await cursor.fetchone()
