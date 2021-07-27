@@ -23,7 +23,7 @@ def get_host_name() -> str:
 
     :return: A string value.
     """
-    return re.sub(r"\.(?:local|lan)", "", socket.getfqdn())
+    return re.sub(r"\.(?:local|lan)", "", socket.gethostname())
 
 
 def get_ip(name: str) -> str:
