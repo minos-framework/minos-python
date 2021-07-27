@@ -44,7 +44,7 @@ class TestDynamicHandler(PostgresAsyncTestCase):
     async def test_client(self):
         client = self.pool.client
         self.assertIsInstance(client, KafkaAdminClient)
-        expected = f"{self.config.commands.broker.host}:{self.config.commands.broker.port}"
+        expected = f"{self.config.broker.host}:{self.config.broker.port}"
         self.assertEqual(expected, client.config["bootstrap_servers"])
 
     async def test_acquire(self):

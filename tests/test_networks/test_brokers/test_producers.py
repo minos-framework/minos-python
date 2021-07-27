@@ -55,7 +55,7 @@ class TestProducer(PostgresAsyncTestCase):
             async with event_broker:
                 await event_broker.send(FAKE_AGGREGATE_DIFF, topic="EventBroker-Delete")
 
-        async with aiopg.connect(**self.events_queue_db) as connect:
+        async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute("SELECT COUNT(*) FROM producer_queue")
                 records = await cur.fetchone()
@@ -66,7 +66,7 @@ class TestProducer(PostgresAsyncTestCase):
 
         await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
 
-        async with aiopg.connect(**self.events_queue_db) as connect:
+        async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute("SELECT COUNT(*) FROM producer_queue")
                 records = await cur.fetchone()
@@ -80,7 +80,7 @@ class TestProducer(PostgresAsyncTestCase):
 
         await Producer.from_config(config=self.config).dispatch()
 
-        async with aiopg.connect(**self.events_queue_db) as connection:
+        async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "TestDeleteReply")
                 records = await cursor.fetchone()

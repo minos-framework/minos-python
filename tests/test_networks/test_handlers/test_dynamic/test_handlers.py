@@ -117,10 +117,10 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
         self.assertIsInstance(self.handler, MinosHandler)
 
     def test_broker_host(self):
-        self.assertEqual(self.config.commands.broker.host, self.handler.broker_host)
+        self.assertEqual(self.config.broker.host, self.handler.broker_host)
 
     def test_broker_port(self):
-        self.assertEqual(self.config.commands.broker.port, self.handler.broker_port)
+        self.assertEqual(self.config.broker.port, self.handler.broker_port)
 
     async def test_get_one(self):
         with patch("aiokafka.AIOKafkaConsumer.getone") as mock:

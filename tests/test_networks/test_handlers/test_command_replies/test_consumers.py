@@ -26,12 +26,12 @@ class TestCommandReplyConsumer(PostgresAsyncTestCase):
         consumer = CommandReplyConsumer.from_config(config=self.config)
         self.assertIsInstance(consumer, CommandReplyConsumer)
         self.assertEqual(expected_topics, consumer.topics)
-        self.assertEqual(self.config.saga.broker, consumer._broker)
-        self.assertEqual(self.config.saga.queue.host, consumer.host)
-        self.assertEqual(self.config.saga.queue.port, consumer.port)
-        self.assertEqual(self.config.saga.queue.database, consumer.database)
-        self.assertEqual(self.config.saga.queue.user, consumer.user)
-        self.assertEqual(self.config.saga.queue.password, consumer.password)
+        self.assertEqual(self.config.broker, consumer._broker)
+        self.assertEqual(self.config.broker.queue.host, consumer.host)
+        self.assertEqual(self.config.broker.queue.port, consumer.port)
+        self.assertEqual(self.config.broker.queue.database, consumer.database)
+        self.assertEqual(self.config.broker.queue.user, consumer.user)
+        self.assertEqual(self.config.broker.queue.password, consumer.password)
 
     def test_table_name(self):
         self.assertEqual("command_reply_queue", CommandReplyConsumer.TABLE_NAME)

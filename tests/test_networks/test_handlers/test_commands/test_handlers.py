@@ -71,12 +71,12 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
         self.assertEqual({"GetOrder", "AddOrder", "DeleteOrder", "UpdateOrder"}, set(handler.handlers.keys()))
 
-        self.assertEqual(self.config.commands.queue.retry, handler._retry)
-        self.assertEqual(self.config.commands.queue.host, handler.host)
-        self.assertEqual(self.config.commands.queue.port, handler.port)
-        self.assertEqual(self.config.commands.queue.database, handler.database)
-        self.assertEqual(self.config.commands.queue.user, handler.user)
-        self.assertEqual(self.config.commands.queue.password, handler.password)
+        self.assertEqual(self.config.broker.queue.retry, handler._retry)
+        self.assertEqual(self.config.broker.queue.host, handler.host)
+        self.assertEqual(self.config.broker.queue.port, handler.port)
+        self.assertEqual(self.config.broker.queue.database, handler.database)
+        self.assertEqual(self.config.broker.queue.user, handler.user)
+        self.assertEqual(self.config.broker.queue.password, handler.password)
         self.assertEqual(broker, handler.broker)
 
     def test_entry_model_cls(self):
