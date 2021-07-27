@@ -54,7 +54,7 @@ class EventHandler(Handler):
 
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
 
-        return cls(handlers=handlers, **config.events.queue._asdict(), **kwargs)
+        return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         """Dispatch one row.

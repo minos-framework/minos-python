@@ -72,7 +72,7 @@ class TestHandler(PostgresAsyncTestCase):
         super().setUp()
         handlers = self.handlers()
         handlers["empty"] = None
-        self.handler = _FakeHandler(handlers=handlers, **self.config.commands.queue._asdict())
+        self.handler = _FakeHandler(handlers=handlers, **self.config.broker.queue._asdict())
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
@@ -145,7 +145,7 @@ class TestHandler(PostgresAsyncTestCase):
             self.assertEqual(25, await self._count())
 
     async def _insert_one(self, instance):
-        async with aiopg.connect(**self.commands_queue_db) as connect:
+        async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
                     "INSERT INTO fake (topic, partition_id, binary_data, creation_date) "
@@ -156,13 +156,13 @@ class TestHandler(PostgresAsyncTestCase):
                 return (await cur.fetchone())[0]
 
     async def _count(self):
-        async with aiopg.connect(**self.commands_queue_db) as connect:
+        async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute("SELECT COUNT(*) FROM fake")
                 return (await cur.fetchone())[0]
 
     async def _is_processed(self, queue_id):
-        async with aiopg.connect(**self.commands_queue_db) as connect:
+        async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute("SELECT COUNT(*) FROM fake WHERE id=%d" % (queue_id,))
                 return (await cur.fetchone())[0] == 0

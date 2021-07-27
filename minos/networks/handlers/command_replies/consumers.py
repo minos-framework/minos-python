@@ -25,4 +25,4 @@ class CommandReplyConsumer(Consumer):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyConsumer:
         topics = {f"{config.service.name}QueryReply"} | {f"{item.name}Reply" for item in config.saga.items}
-        return cls(topics=topics, broker=config.saga.broker, **config.saga.queue._asdict(), **kwargs)
+        return cls(topics=topics, broker=config.broker, **config.broker.queue._asdict(), **kwargs)

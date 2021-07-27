@@ -76,8 +76,8 @@ class RestBuilder(MinosSetup):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
-        host = config.rest.broker.host
-        port = config.rest.broker.port
+        host = config.rest.host
+        port = config.rest.port
 
         command_decorators = EnrouteBuilder(config.commands.service).get_rest_command_query()
         query_decorators = EnrouteBuilder(config.queries.service).get_rest_command_query()

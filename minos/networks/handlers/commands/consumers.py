@@ -36,4 +36,4 @@ class CommandConsumer(Consumer):
 
         topics = {decorator.topic for decorator in chain(command_decorators.keys(), query_decorators.keys())}
 
-        return cls(topics=topics, broker=config.commands.broker, **config.commands.queue._asdict(), **kwargs)
+        return cls(topics=topics, broker=config.broker, **config.broker.queue._asdict(), **kwargs)
