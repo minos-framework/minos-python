@@ -82,7 +82,11 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         pairs = self._drop_duplicates(
-            [(self._meta_repository_db, self.repository_db), (self._meta_broker_queue_db, self.broker_queue_db)]
+            [
+                (self._meta_repository_db, self.repository_db),
+                (self._meta_broker_queue_db, self.broker_queue_db),
+                (self._meta_snapshot_db, self.snapshot_db),
+            ]
         )
 
         for meta, test in pairs:
