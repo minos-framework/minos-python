@@ -1,8 +1,6 @@
 service:
     name: Order
 saga:
-    broker: localhost
-    port: 9092
     storage:
         path: "./order.lmdb"
     items:
@@ -12,11 +10,3 @@ saga:
         - name: DeleteOrder
           controller: tests.order.SagaService
           action: DELETE_ORDER
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
