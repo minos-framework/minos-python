@@ -87,6 +87,10 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
     async def _get(self, aggregate_name: str, uuids: set[UUID]) -> AsyncIterator[SnapshotEntry]:
         uniques = set(uuids)
+
+        if not len(uniques):
+            return
+
         if len(uniques) != len(uuids):
             seen = set()
             duplicated = {x for x in uuids if x in seen or seen.add(x)}
