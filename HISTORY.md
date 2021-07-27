@@ -55,3 +55,9 @@ History
 * Fix bug related with `DiscoveryConnector`.
 * Add `WrappedRequest`.
 
+0.0.11 (2021-07-27)
+------------------
+
+* Be compatible with `minos-microservice-common==0.1.7`.
+* Fix bug related with `EventConsumerService`, `CommandConsumerService` and `CommandReplyConsumerService` and the `start` method.
+* Fix bug related with `get_host_ip` function and some DNS systems.

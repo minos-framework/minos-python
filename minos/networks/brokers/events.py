@@ -31,7 +31,7 @@ class EventBroker(Broker):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventBroker:
-        return cls(*args, **config.events.queue._asdict(), **kwargs)
+        return cls(*args, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding
     async def send(self, data: AggregateDiff, topic: str, **kwargs) -> int:

@@ -72,7 +72,7 @@ class DynamicHandler(MinosHandler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
-        return cls(broker=config.commands.broker, **kwargs)
+        return cls(broker=config.broker, **kwargs)
 
     async def get_one(self, *args, **kwargs) -> HandlerEntry:
         """Get one handler entry from the given topics.
@@ -177,7 +177,7 @@ class DynamicReplyHandler(MinosHandler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicReplyHandler:
-        return cls(broker=config.commands.broker, **kwargs)
+        return cls(broker=config.broker, **kwargs)
 
     async def _setup(self) -> NoReturn:
         await self.consumer.start()

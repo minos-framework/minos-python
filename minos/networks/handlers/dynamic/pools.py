@@ -43,7 +43,7 @@ class ReplyHandlerPool(MinosPool):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> ReplyHandlerPool:
-        client = KafkaAdminClient(bootstrap_servers=f"{config.commands.broker.host}:{config.commands.broker.port}")
+        client = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
         return cls(config, client)
 
     async def _create_instance(self) -> DynamicReplyHandler:
@@ -56,10 +56,6 @@ class ReplyHandlerPool(MinosPool):
     async def _destroy_instance(self, instance: DynamicReplyHandler):
         await instance.destroy()
         await self._delete_reply_topic(instance.topic)
-
-    async def _check_instance(self, instance: DynamicReplyHandler) -> bool:
-        # FIXME
-        return True
 
     async def _create_reply_topic(self, topic: str):
         name = f"{topic}Reply"

@@ -5,7 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
+import logging
 from typing import (
     Any,
 )
@@ -25,6 +25,8 @@ from .handlers import (
     CommandHandler,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class CommandConsumerService(Service):
     """Minos QueueDispatcherService class."""
@@ -35,6 +37,12 @@ class CommandConsumerService(Service):
         :return: This method does not return anything.
         """
         await self.dispatcher.setup()
+
+        try:
+            self.start_event.set()
+        except RuntimeError:
+            logger.warning("Runtime is not properly setup.")
+
         await self.dispatcher.dispatch()
 
     async def stop(self, exception: Exception = None) -> Any:

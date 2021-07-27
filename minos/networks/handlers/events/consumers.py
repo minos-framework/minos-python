@@ -32,4 +32,4 @@ class EventConsumer(Consumer):
 
         topics = {decorator.topic for decorator in decorators.keys()}
 
-        return cls(topics=topics, broker=config.events.broker, **config.events.queue._asdict(), **kwargs)
+        return cls(topics=topics, broker=config.broker, **config.broker.queue._asdict(), **kwargs)
