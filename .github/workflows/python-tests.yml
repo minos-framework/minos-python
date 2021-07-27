@@ -31,7 +31,7 @@ jobs:
                     KAFKA_DELETE_TOPIC_ENABLE: "true"
         env:
             MINOS_BROKER_QUEUE_HOST: postgres
-            MINOS_BROKER: kafka
+            MINOS_BROKER_HOST: kafka
             MINOS_REPOSITORY_HOST: postgres
             MINOS_SNAPSHOT_HOST: postgres
 
