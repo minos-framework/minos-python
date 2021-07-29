@@ -83,13 +83,13 @@ class Handler(HandlerSetup):
             Exception: An error occurred inserting record.
         """
 
-        pool = await self.pool
-        with await pool.cursor() as cursor:
+        with await self.cursor() as cursor:
             # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
             # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
             await cursor.execute("BEGIN")
 
             # Select records and lock them FOR UPDATE
+            # noinspection PyTypeChecker
             await cursor.execute(
                 _SELECT_NON_PROCESSED_ROWS_QUERY.format(Identifier(self.TABLE_NAME)), (self._retry, self._records)
             )
@@ -98,8 +98,10 @@ class Handler(HandlerSetup):
             for row in result:
                 dispatched = await self._dispatch_one(row)
                 if dispatched:
+                    # noinspection PyTypeChecker
                     await cursor.execute(_DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
                 else:
+                    # noinspection PyTypeChecker
                     await cursor.execute(_UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
 
             # Manually commit
