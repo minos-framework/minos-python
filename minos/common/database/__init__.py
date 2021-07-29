@@ -10,5 +10,5 @@ from .abc import (
     PostgreSqlMinosDatabase,
 )
 from .pool import (
-    PostgresPool,
+    PostgreSqlPool,
 )

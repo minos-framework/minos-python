@@ -28,8 +28,8 @@ from .constants import (
     NULL_UUID,
 )
 from .database import (
-    PostgresPool,
     PostgreSqlMinosDatabase,
+    PostgreSqlPool,
 )
 from .exceptions import (
     EmptyMinosModelSequenceException,

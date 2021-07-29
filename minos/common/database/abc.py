@@ -9,20 +9,21 @@ from abc import (
     ABC,
 )
 from typing import (
+    AsyncContextManager,
     AsyncIterator,
-    ContextManager,
     NoReturn,
     Optional,
 )
 
-import aiopg
 from aiopg import (
     Cursor,
-    Pool,
 )
 
 from ..setup import (
     MinosSetup,
+)
+from .pool import (
+    PostgreSqlPool,
 )
 
 
@@ -40,8 +41,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
 
     async def _destroy(self) -> NoReturn:
         if self._pool is not None:
-            self._pool.close()
-            await self._pool.wait_closed()
+            await self._pool.destroy()
             self._pool = None
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
@@ -60,7 +60,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        with (await self.cursor()) as cursor:
+        async with self.cursor() as cursor:
             await cursor.execute(*args, **kwargs)
             async for row in cursor:
                 yield row
@@ -74,7 +74,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        with (await self.cursor()) as cursor:
+        async with self.cursor() as cursor:
             if lock is not None:
                 await cursor.execute("select pg_advisory_lock(%s)", (lock,))
             try:
@@ -83,23 +83,23 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
                 if lock is not None:
                     await cursor.execute("select pg_advisory_unlock(%s)", (lock,))
 
-    async def cursor(self, *args, **kwargs) -> ContextManager[Cursor]:
+    def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
         """Get a connection cursor from the pool.
 
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A ``Cursor`` instance wrapped inside a context manager.
         """
-        return await (await self.pool).cursor(*args, **kwargs)
+        return self.pool.cursor(*args, **kwargs)
 
     @property
-    async def pool(self) -> Pool:
+    def pool(self) -> PostgreSqlPool:
         """Get the connections pool.
 
         :return: A ``Pool`` object.
         """
         if self._pool is None:
-            self._pool = await aiopg.create_pool(
-                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
+            self._pool = PostgreSqlPool(
+                host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
             )
         return self._pool
