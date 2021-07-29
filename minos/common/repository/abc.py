@@ -20,6 +20,9 @@ from typing import (
     Optional,
     Union,
 )
+from uuid import (
+    UUID,
+)
 
 from ..configuration import (
     MinosConfig,
@@ -28,13 +31,13 @@ from ..setup import (
     MinosSetup,
 )
 from .entries import (
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
+    RepositoryAction,
+    RepositoryEntry,
 )
 
 if TYPE_CHECKING:
     from ..model import (
-        Aggregate,
+        AggregateDiff,
     )
 
 
@@ -45,50 +48,44 @@ class MinosRepository(ABC, MinosSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
-    async def insert(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
-        """Store new insertion entry into de repository.
+    async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
+        """Store new creation entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        await self.setup()
+        if not isinstance(entry, RepositoryEntry):
+            entry = RepositoryEntry.from_aggregate_diff(entry)
 
-        if not isinstance(entry, MinosRepositoryEntry):
-            entry = MinosRepositoryEntry.from_aggregate(entry)
-
-        entry.action = MinosRepositoryAction.INSERT
+        entry.action = RepositoryAction.CREATE
         return await self._submit(entry)
 
-    async def update(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
+    async def update(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new update entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        await self.setup()
+        if not isinstance(entry, RepositoryEntry):
+            entry = RepositoryEntry.from_aggregate_diff(entry)
 
-        if not isinstance(entry, MinosRepositoryEntry):
-            entry = MinosRepositoryEntry.from_aggregate(entry)
-
-        entry.action = MinosRepositoryAction.UPDATE
+        entry.action = RepositoryAction.UPDATE
         return await self._submit(entry)
 
-    async def delete(self, entry: Union[Aggregate, MinosRepositoryEntry]) -> MinosRepositoryEntry:
+    async def delete(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new deletion entry into de repository.
 
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        await self.setup()
+        if not isinstance(entry, RepositoryEntry):
+            entry = RepositoryEntry.from_aggregate_diff(entry)
 
-        if not isinstance(entry, MinosRepositoryEntry):
-            entry = MinosRepositoryEntry.from_aggregate(entry)
-
-        entry.action = MinosRepositoryAction.DELETE
+        entry.action = RepositoryAction.DELETE
         return await self._submit(entry)
 
     @abstractmethod
-    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         """Submit a new entry into the events table.
 
         :param entry: Entry to be submitted.
@@ -98,7 +95,7 @@ class MinosRepository(ABC, MinosSetup):
     # noinspection PyShadowingBuiltins
     async def select(
         self,
-        aggregate_id: Optional[int] = None,
+        aggregate_uuid: Optional[UUID] = None,
         aggregate_name: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
@@ -110,10 +107,10 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
-    ) -> AsyncIterator[MinosRepositoryEntry]:
+    ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
 
-        :param aggregate_id: Aggregate identifier.
+        :param aggregate_uuid: Aggregate identifier.
         :param aggregate_name: Aggregate name.
         :param version: Aggregate version.
         :param version_lt: Aggregate version lower than the given value.
@@ -127,10 +124,8 @@ class MinosRepository(ABC, MinosSetup):
         :param id_ge: Entry identifier greater or equal to the given value.
         :return: A list of entries.
         """
-        await self.setup()
-
         generator = self._select(
-            aggregate_id=aggregate_id,
+            aggregate_uuid=aggregate_uuid,
             aggregate_name=aggregate_name,
             version=version,
             version_lt=version_lt,
@@ -148,5 +143,5 @@ class MinosRepository(ABC, MinosSetup):
             yield entry
 
     @abstractmethod
-    async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository."""

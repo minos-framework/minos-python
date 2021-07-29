@@ -7,6 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import importlib
+from types import (
+    ModuleType,
+)
 from typing import (
     Callable,
 )
@@ -16,20 +19,21 @@ from .exceptions import (
 )
 
 
+# noinspection SpellCheckingInspection
 def import_module(module_name: str) -> Callable:
     """Import the given module from a package"""
-    module_name, qualified_name = module_name.rsplit(".", 1)
+    parts = module_name.rsplit(".", 1)
 
     try:
-        module = importlib.import_module(module_name)
+        kallable = importlib.import_module(parts[0])
     except ImportError:
-        raise MinosImportException("Error importing Package: the module does not exist")
+        raise MinosImportException(f"Error importing {module_name!r}: the module does not exist")
 
-    try:
-        # noinspection SpellCheckingInspection
-        kallable = getattr(module, qualified_name)
-    except AttributeError:
-        raise MinosImportException("Error importing Package: the qualname does not exist.")
+    if len(parts) > 1:
+        try:
+            kallable = getattr(kallable, parts[1])
+        except AttributeError:
+            raise MinosImportException(f"Error importing {module_name!r}: the qualname does not exist.")
 
     return kallable
 
@@ -40,5 +44,7 @@ def classname(cls: Callable) -> str:
     :param cls: Target class.
     :return: An string object.
     """
+    if isinstance(cls, ModuleType):
+        return cls.__name__
     # noinspection PyUnresolvedReferences
     return f"{cls.__module__}.{cls.__qualname__}"

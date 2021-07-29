@@ -10,21 +10,28 @@ import unittest
 from minos.common import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
-    MinosConfigDefaultAlreadySetException,
+    MinosBrokerException,
+    MinosBrokerNotProvidedException,
     MinosConfigException,
+    MinosConfigNotProvidedException,
     MinosException,
+    MinosHandlerException,
+    MinosHandlerNotProvidedException,
     MinosMalformedAttributeException,
     MinosModelAttributeException,
     MinosModelException,
     MinosParseAttributeException,
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
     MinosRepositoryException,
-    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException,
+    MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSagaManagerException,
+    MinosSagaManagerNotProvidedException,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
+    MinosSnapshotException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
@@ -45,17 +52,26 @@ class TestExceptions(unittest.TestCase):
     def test_config(self):
         self.assertTrue(issubclass(MinosConfigException, MinosException))
 
-    def test_config_default_already_set(self):
-        self.assertTrue(issubclass(MinosConfigDefaultAlreadySetException, MinosConfigException))
+    def test_config_not_set(self):
+        self.assertTrue(issubclass(MinosConfigNotProvidedException, MinosException))
 
-    def test_repository_aggregate_not_found(self):
-        self.assertTrue(issubclass(MinosRepositoryAggregateNotFoundException, MinosRepositoryException))
+    def test_broker(self):
+        self.assertTrue(issubclass(MinosBrokerException, MinosException))
 
-    def test_repository_deleted_aggregate(self):
-        self.assertTrue(issubclass(MinosRepositoryDeletedAggregateException, MinosRepositoryException))
+    def test_broker_not_set(self):
+        self.assertTrue(issubclass(MinosBrokerNotProvidedException, MinosBrokerException))
 
-    def test_repository_manually_set_aggregate_id(self):
-        self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateIdException, MinosRepositoryException))
+    def test_handler(self):
+        self.assertTrue(issubclass(MinosHandlerException, MinosException))
+
+    def test_handler_not_set(self):
+        self.assertTrue(issubclass(MinosHandlerNotProvidedException, MinosHandlerException))
+
+    def test_repository(self):
+        self.assertTrue(issubclass(MinosRepositoryException, MinosException))
+
+    def test_repository_manually_set_aggregate_uuid(self):
+        self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateIdentifierException, MinosRepositoryException))
 
     def test_repository_manually_set_aggregate_version(self):
         self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateVersionException, MinosRepositoryException))
@@ -63,13 +79,22 @@ class TestExceptions(unittest.TestCase):
     def test_repository_bad_action(self):
         self.assertTrue(issubclass(MinosRepositoryUnknownActionException, MinosRepositoryException))
 
-    def test_repository_non_set(self):
-        self.assertTrue(issubclass(MinosRepositoryNonProvidedException, MinosRepositoryException))
+    def test_repository_not_set(self):
+        self.assertTrue(issubclass(MinosRepositoryNotProvidedException, MinosRepositoryException))
+
+    def test_snapshot(self):
+        self.assertTrue(issubclass(MinosSnapshotException, MinosException))
+
+    def test_snapshot_aggregate_not_found(self):
+        self.assertTrue(issubclass(MinosSnapshotAggregateNotFoundException, MinosSnapshotException))
+
+    def test_snapshot_deleted_aggregate(self):
+        self.assertTrue(issubclass(MinosSnapshotDeletedAggregateException, MinosSnapshotException))
 
     def test_model(self):
         self.assertTrue(issubclass(MinosModelException, MinosException))
 
-    def test_model_emtpy_sequence(self):
+    def test_model_empty_sequence(self):
         self.assertTrue(issubclass(EmptyMinosModelSequenceException, MinosModelException))
 
     def test_model_multi_type_sequence(self):
@@ -88,7 +113,7 @@ class TestExceptions(unittest.TestCase):
         exception = MinosTypeAttributeException("foo", float, True)
         message = (
             "MinosTypeAttributeException(message=\"The <class 'float'> expected type for 'foo' "
-            "does not match with the given data type: <class 'bool'>\")"
+            "does not match with the given data type: <class 'bool'> (True)\")"
         )
         self.assertEqual(message, repr(exception))
 
@@ -113,6 +138,12 @@ class TestExceptions(unittest.TestCase):
         exception = MinosAttributeValidationException("foo", 34)
         message = "MinosAttributeValidationException(message=\"34 value does not pass the 'foo' field validation.\")"
         self.assertEqual(message, repr(exception))
+
+    def test_saga_manager(self):
+        self.assertTrue(issubclass(MinosSagaManagerException, MinosException))
+
+    def test_saga_manager_not_provided(self):
+        self.assertTrue(issubclass(MinosSagaManagerNotProvidedException, MinosSagaManagerException))
 
 
 if __name__ == "__main__":

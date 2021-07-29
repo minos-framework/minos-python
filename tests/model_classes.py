@@ -8,11 +8,33 @@ Minos framework can not be copied and/or distributed without the express permiss
 from typing import (
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from minos.common import (
     MinosModel,
     MissingSentinel,
 )
+
+
+class Foo(MinosModel):
+    """For testing purposes"""
+
+    text: str
+
+
+class Bar(MinosModel):
+    """For testing purposes"""
+
+    first: Foo
+    second: Foo
+
+
+class FooBar(MinosModel):
+    """For testing purposes"""
+
+    identifier: UUID
 
 
 class Base(MinosModel):
@@ -114,21 +136,17 @@ class CustomerDict(User):
     friends: dict[str, str]
 
 
-class CustomerFailList(User):
+class CustomerFailList(MinosModel):
     """
     Test a Model Class with a List wrong formatted
     """
 
-    name: Optional[str]
-    surname: Optional[str]
-    listes_failed: Optional[list]
+    friends: list
 
 
-class CustomerFailDict(User):
+class CustomerFailDict(MinosModel):
     """
     Test a Model Class with a Dictionary wrong formatted
     """
 
-    name: Optional[str]
-    surname: Optional[str]
     friends: dict

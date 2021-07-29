@@ -12,52 +12,50 @@ from __future__ import (
 import abc
 import collections
 import os
-import typing as t
 from pathlib import (
     Path,
+)
+from typing import (
+    Any,
+    NoReturn,
+    Union,
 )
 
 import yaml
 
 from ..exceptions import (
-    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
 )
 
-BROKER = collections.namedtuple("Broker", "host port")
+BROKER = collections.namedtuple("Broker", "host port queue")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
-ENDPOINT = collections.namedtuple("Endpoint", "name route method controller action")
-SERVICE = collections.namedtuple("Service", "name")
+SERVICE = collections.namedtuple("Service", "name injections services")
 CONTROLLER = collections.namedtuple("Controller", "name controller action")
 STORAGE = collections.namedtuple("Storage", "path")
 
-EVENTS = collections.namedtuple("Events", "broker items queue")
-COMMANDS = collections.namedtuple("Commands", "broker items queue")
-SAGA = collections.namedtuple("Saga", "items queue storage")
-REST = collections.namedtuple("Rest", "broker endpoints")
+EVENTS = collections.namedtuple("Events", "service")
+COMMANDS = collections.namedtuple("Commands", "service")
+QUERIES = collections.namedtuple("Queries", "service")
+SAGA = collections.namedtuple("Saga", "items storage")
+REST = collections.namedtuple("Rest", "host port")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
+DISCOVERY = collections.namedtuple("Discovery", "host port")
 
 _ENVIRONMENT_MAPPER = {
-    "commands.queue.host": "MINOS_COMMANDS_QUEUE_HOST",
-    "commands.queue.port": "MINOS_COMMANDS_QUEUE_PORT",
-    "commands.queue.database": "MINOS_COMMANDS_QUEUE_DATABASE",
-    "commands.queue.user": "MINOS_COMMANDS_QUEUE_USER",
-    "commands.queue.password": "MINOS_COMMANDS_QUEUE_PASSWORD",
-    "commands.broker": "MINOS_COMMANDS_BROKER",
-    "commands.port": "MINOS_COMMANDS_PORT",
-    "saga.queue.host": "MINOS_SAGA_QUEUE_HOST",
-    "saga.queue.port": "MINOS_SAGA_QUEUE_PORT",
-    "saga.queue.database": "MINOS_SAGA_QUEUE_DATABASE",
-    "saga.queue.user": "MINOS_SAGA_QUEUE_USER",
-    "saga.queue.password": "MINOS_SAGA_QUEUE_PASSWORD",
-    "events.queue.host": "MINOS_EVENTS_QUEUE_HOST",
-    "events.queue.port": "MINOS_EVENTS_QUEUE_PORT",
-    "events.queue.database": "MINOS_EVENTS_QUEUE_DATABASE",
-    "events.queue.user": "MINOS_EVENTS_QUEUE_USER",
-    "events.queue.password": "MINOS_EVENTS_QUEUE_PASSWORD",
-    "events.broker": "MINOS_EVENTS_BROKER",
-    "events.port": "MINOS_EVENTS_PORT",
+    "service.name": "MINOS_SERVICE_NAME",
+    "rest.host": "MINOS_REST_HOST",
+    "rest.port": "MINOS_REST_PORT",
+    "broker.host": "MINOS_BROKER_HOST",
+    "broker.port": "MINOS_BROKER_PORT",
+    "broker.queue.host": "MINOS_BROKER_QUEUE_HOST",
+    "broker.queue.port": "MINOS_BROKER_QUEUE_PORT",
+    "broker.queue.database": "MINOS_BROKER_QUEUE_DATABASE",
+    "broker.queue.user": "MINOS_BROKER_QUEUE_USER",
+    "broker.queue.password": "MINOS_BROKER_QUEUE_PASSWORD",
+    "commands.service": "MINOS_COMMANDS_SERVICE",
+    "queries.service": "MINOS_QUERIES_SERVICE",
+    "events.service": "MINOS_EVENTS_SERVICE",
     "repository.host": "MINOS_REPOSITORY_HOST",
     "repository.port": "MINOS_REPOSITORY_PORT",
     "repository.database": "MINOS_REPOSITORY_DATABASE",
@@ -68,28 +66,26 @@ _ENVIRONMENT_MAPPER = {
     "snapshot.database": "MINOS_SNAPSHOT_DATABASE",
     "snapshot.user": "MINOS_SNAPSHOT_USER",
     "snapshot.password": "MINOS_SNAPSHOT_PASSWORD",
+    "discovery.host": "MINOS_DISCOVERY_HOST",
+    "discovery.port": "MINOS_DISCOVERY_PORT",
 }
 
 _PARAMETERIZED_MAPPER = {
-    "commands.queue.host": "commands_queue_host",
-    "commands.queue.port": "commands_queue_port",
-    "commands.queue.database": "commands_queue_database",
-    "commands.queue.user": "commands_queue_user",
-    "commands.queue.password": "commands_queue_password",
-    "commands.broker": "commands_broker",
-    "commands.port": "commands_port",
-    "saga.queue.host": "saga_queue_host",
-    "saga.queue.port": "saga_queue_port",
-    "saga.queue.database": "saga_queue_database",
-    "saga.queue.user": "saga_queue_user",
-    "saga.queue.password": "saga_queue_password",
-    "events.queue.host": "events_queue_host",
-    "events.queue.port": "events_queue_port",
-    "events.queue.database": "events_queue_database",
-    "events.queue.user": "events_queue_user",
-    "events.queue.password": "events_queue_password",
-    "events.broker": "events_broker",
-    "events.port": "events_port",
+    "service.name": "service_name",
+    "rest.host": "rest_host",
+    "rest.port": "rest_port",
+    "broker.host": "broker_host",
+    "broker.port": "broker_port",
+    "broker.queue.host": "broker_queue_host",
+    "broker.queue.port": "broker_queue_port",
+    "broker.queue.database": "broker_queue_database",
+    "broker.queue.user": "broker_queue_user",
+    "broker.queue.password": "broker_queue_password",
+    "commands.service": "commands_service",
+    "queries.service": "queries_service",
+    "saga.broker": "saga_broker",
+    "saga.port": "saga_port",
+    "events.service": "events_service",
     "repository.host": "repository_host",
     "repository.port": "repository_port",
     "repository.database": "repository_database",
@@ -100,9 +96,9 @@ _PARAMETERIZED_MAPPER = {
     "snapshot.database": "snapshot_database",
     "snapshot.user": "snapshot_user",
     "snapshot.password": "snapshot_password",
+    "discovery.host": "minos_discovery_host",
+    "discovery.port": "minos_discovery_port",
 }
-
-_default: t.Optional[MinosConfigAbstract] = None
 
 
 class MinosConfigAbstract(abc.ABC):
@@ -110,7 +106,7 @@ class MinosConfigAbstract(abc.ABC):
 
     __slots__ = "_services", "_path"
 
-    def __init__(self, path: t.Union[Path, str]):
+    def __init__(self, path: Union[Path, str]):
         if isinstance(path, str):
             path = Path(path)
         self._services = {}
@@ -122,72 +118,46 @@ class MinosConfigAbstract(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _get(self, key: str, **kwargs: t.Any):
+    def _get(self, key: str, **kwargs: Any):
         raise NotImplementedError
-
-    def __enter__(self) -> MinosConfigAbstract:
-        self.set_default(self)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> t.NoReturn:
-        self.unset_default()
-
-    @staticmethod
-    def set_default(value: MinosConfigAbstract) -> t.NoReturn:
-        """Set default config.
-
-        :param value: Default config.
-        :return: This method does not return anything.
-        """
-        if MinosConfigAbstract.get_default() is not None:
-            raise MinosConfigDefaultAlreadySetException("There is already another config set as default.")
-        global _default
-        _default = value
-
-    @classmethod
-    def get_default(cls) -> MinosConfigAbstract:
-        """Get default config.
-
-        :return: A ``MinosConfigAbstract`` instance.
-        """
-        global _default
-        return _default
-
-    @staticmethod
-    def unset_default() -> t.NoReturn:
-        """Unset the default config.
-
-        :return: This method does not return anything.
-        """
-        global _default
-        _default = None
 
 
 class MinosConfig(MinosConfigAbstract):
-    """Minos config class."""
+    """
+    A Minos configuration provides information on the connection points available at that service.
+    It consists of the following parts:
+
+    - Service meta-information (such as name, or version).
+    - REST Service endpoints available.
+    - Repository database connection for event sourcing.
+    - Snapshot database connection.
+    - Events it publishes/consumes from de given Kafka service.
+    - Commands it reacts to from other microservices.
+    - Sagas it takes part on.
+    """
 
     __slots__ = ("_data", "_with_environment", "_parameterized")
 
-    def __init__(self, path: t.Union[Path, str], with_environment: bool = True, **kwargs):
+    def __init__(self, path: Path | str, with_environment: bool = True, **kwargs):
         super().__init__(path)
         self._with_environment = with_environment
         self._parameterized = kwargs
 
-    def _load(self, path: Path) -> t.NoReturn:
+    def _load(self, path: Path) -> NoReturn:
         if not path.exists():
             raise MinosConfigException(f"Check if this path: {path} is correct")
 
         with path.open() as file:
             self._data = yaml.load(file, Loader=yaml.FullLoader)
 
-    def _get(self, key: str, **kwargs: t.Any) -> t.Any:
+    def _get(self, key: str, **kwargs: Any) -> Any:
         if key in _PARAMETERIZED_MAPPER and _PARAMETERIZED_MAPPER[key] in self._parameterized:
             return self._parameterized[_PARAMETERIZED_MAPPER[key]]
 
         if self._with_environment and key in _ENVIRONMENT_MAPPER and _ENVIRONMENT_MAPPER[key] in os.environ:
             return os.environ[_ENVIRONMENT_MAPPER[key]]
 
-        def _fn(k: str, data: dict[str, t.Any]) -> t.Any:
+        def _fn(k: str, data: dict[str, Any]) -> Any:
             current, _, following = k.partition(".")
 
             part = data[current]
@@ -204,7 +174,23 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``SERVICE`` NamedTuple instance.
         """
-        return SERVICE(name=self._get("service.name"))
+        return SERVICE(
+            name=self._get("service.name"), injections=self._service_injections, services=self._service_services
+        )
+
+    @property
+    def _service_injections(self) -> dict[str, str]:
+        try:
+            return self._get("service.injections")
+        except KeyError:
+            return dict()
+
+    @property
+    def _service_services(self) -> list[str]:
+        try:
+            return self._get("service.services")
+        except KeyError:
+            return list()
 
     @property
     def rest(self) -> REST:
@@ -212,30 +198,16 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``REST`` NamedTuple instance.
         """
-        broker = self._rest_broker
-        endpoints = self._rest_endpoints
-        return REST(broker=broker, endpoints=endpoints)
+        return REST(host=self._get("rest.host"), port=int(self._get("rest.port")))
 
     @property
-    def _rest_broker(self):
-        broker = BROKER(host=self._get("rest.host"), port=int(self._get("rest.port")))
-        return broker
+    def broker(self) -> BROKER:
+        """Get the events config.
 
-    @property
-    def _rest_endpoints(self) -> list[ENDPOINT]:
-        info = self._get("rest.endpoints")
-        endpoints = [self._rest_endpoints_entry(endpoint) for endpoint in info]
-        return endpoints
-
-    @staticmethod
-    def _rest_endpoints_entry(endpoint: dict[str, t.Any]) -> ENDPOINT:
-        return ENDPOINT(
-            name=endpoint["name"],
-            route=endpoint["route"],
-            method=endpoint["method"].upper(),
-            controller=endpoint["controller"],
-            action=endpoint["action"],
-        )
+        :return: A ``EVENTS`` NamedTuple instance.
+        """
+        queue = self._broker_queue
+        return BROKER(host=self._get("broker.host"), port=self._get("broker.port"), queue=queue)
 
     @property
     def events(self) -> EVENTS:
@@ -243,36 +215,20 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``EVENTS`` NamedTuple instance.
         """
-        broker = self._events_broker
-        queue = self._events_queue
-        events = self._events_items
-        return EVENTS(broker=broker, items=events, queue=queue)
+        service = self._get("events.service")
+        return EVENTS(service=service)
 
     @property
-    def _events_broker(self) -> BROKER:
-        return BROKER(host=self._get("events.broker"), port=int(self._get("events.port")))
-
-    @property
-    def _events_queue(self) -> QUEUE:
+    def _broker_queue(self) -> QUEUE:
         return QUEUE(
-            database=self._get("events.queue.database"),
-            user=self._get("events.queue.user"),
-            password=self._get("events.queue.password"),
-            host=self._get("events.queue.host"),
-            port=int(self._get("events.queue.port")),
-            records=int(self._get("events.queue.records")),
-            retry=int(self._get("events.queue.retry")),
+            database=self._get("broker.queue.database"),
+            user=self._get("broker.queue.user"),
+            password=self._get("broker.queue.password"),
+            host=self._get("broker.queue.host"),
+            port=int(self._get("broker.queue.port")),
+            records=int(self._get("broker.queue.records")),
+            retry=int(self._get("broker.queue.retry")),
         )
-
-    @property
-    def _events_items(self) -> list[CONTROLLER]:
-        info = self._get("events.items")
-        events = [self._events_items_entry(event) for event in info]
-        return events
-
-    @staticmethod
-    def _events_items_entry(event: dict[str, t.Any]) -> CONTROLLER:
-        return CONTROLLER(name=event["name"], controller=event["controller"], action=event["action"])
 
     @property
     def commands(self) -> COMMANDS:
@@ -280,10 +236,16 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``COMMAND`` NamedTuple instance.
         """
-        broker = self._commands_broker
-        queue = self._commands_queue
-        commands = self._commands_items
-        return COMMANDS(broker=broker, items=commands, queue=queue)
+        service = self._get("commands.service")
+        return COMMANDS(service=service)
+
+    @property
+    def queries(self) -> QUERIES:
+        """Get the queries config.
+
+        :return: A ``QUERIES`` NamedTuple instance.
+        """
+        return QUERIES(service=self._get("queries.service"))
 
     @property
     def saga(self) -> SAGA:
@@ -291,38 +253,10 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``SAGAS`` NamedTuple instance.
         """
-        queue = self._sagas_queue
+
         sagas = self._saga_items
         storage = self._saga_storage
-        return SAGA(items=sagas, queue=queue, storage=storage)
-
-    @property
-    def _commands_broker(self) -> BROKER:
-        broker = BROKER(host=self._get("commands.broker"), port=int(self._get("commands.port")))
-        return broker
-
-    @property
-    def _commands_queue(self) -> QUEUE:
-        queue = QUEUE(
-            database=self._get("commands.queue.database"),
-            user=self._get("commands.queue.user"),
-            password=self._get("commands.queue.password"),
-            host=self._get("commands.queue.host"),
-            port=int(self._get("commands.queue.port")),
-            records=int(self._get("commands.queue.records")),
-            retry=int(self._get("commands.queue.retry")),
-        )
-        return queue
-
-    @property
-    def _commands_items(self) -> list[CONTROLLER]:
-        info = self._get("commands.items")
-        commands = [self._commands_items_entry(command) for command in info]
-        return commands
-
-    @staticmethod
-    def _commands_items_entry(command: dict[str, t.Any]) -> CONTROLLER:
-        return CONTROLLER(name=command["name"], controller=command["controller"], action=command["action"])
+        return SAGA(items=sagas, storage=storage)
 
     @property
     def _saga_storage(self) -> STORAGE:
@@ -333,26 +267,13 @@ class MinosConfig(MinosConfigAbstract):
         return queue
 
     @property
-    def _sagas_queue(self) -> QUEUE:
-        queue = QUEUE(
-            database=self._get("saga.queue.database"),
-            user=self._get("saga.queue.user"),
-            password=self._get("saga.queue.password"),
-            host=self._get("saga.queue.host"),
-            port=int(self._get("saga.queue.port")),
-            records=int(self._get("saga.queue.records")),
-            retry=int(self._get("saga.queue.retry")),
-        )
-        return queue
-
-    @property
     def _saga_items(self) -> list[CONTROLLER]:
         info = self._get("saga.items")
         sagas = [self._sagas_items_entry(saga) for saga in info]
         return sagas
 
     @staticmethod
-    def _sagas_items_entry(saga: dict[str, t.Any]) -> CONTROLLER:
+    def _sagas_items_entry(saga: dict[str, Any]) -> CONTROLLER:
         return CONTROLLER(name=saga["name"], controller=saga["controller"], action=saga["action"])
 
     @property
@@ -382,3 +303,13 @@ class MinosConfig(MinosConfigAbstract):
             host=self._get("snapshot.host"),
             port=int(self._get("snapshot.port")),
         )
+
+    @property
+    def discovery(self) -> DISCOVERY:
+        """Get the sagas config.
+
+        :return: A ``DISCOVERY`` NamedTuple instance.
+        """
+        host = self._get("discovery.host")
+        port = self._get("discovery.port")
+        return DISCOVERY(host=host, port=port)

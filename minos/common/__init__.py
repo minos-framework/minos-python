@@ -6,13 +6,13 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.0.14"
+__version__ = "0.1.7"
 
 from .configuration import (
     BROKER,
     COMMANDS,
     CONTROLLER,
-    ENDPOINT,
+    DISCOVERY,
     EVENTS,
     QUEUE,
     REPOSITORY,
@@ -24,6 +24,9 @@ from .configuration import (
     MinosConfig,
     MinosConfigAbstract,
 )
+from .constants import (
+    NULL_UUID,
+)
 from .database import (
     PostgresPool,
     PostgreSqlMinosDatabase,
@@ -31,24 +34,34 @@ from .database import (
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
-    MinosConfigDefaultAlreadySetException,
+    MinosBrokerException,
+    MinosBrokerNotProvidedException,
     MinosConfigException,
+    MinosConfigNotProvidedException,
     MinosException,
+    MinosHandlerException,
+    MinosHandlerNotProvidedException,
+    MinosImmutableClassException,
     MinosImportException,
     MinosMalformedAttributeException,
     MinosMessageException,
     MinosModelAttributeException,
     MinosModelException,
     MinosParseAttributeException,
+    MinosPreviousVersionSnapshotException,
     MinosProtocolException,
-    MinosRepositoryAggregateNotFoundException,
-    MinosRepositoryDeletedAggregateException,
     MinosRepositoryException,
-    MinosRepositoryManuallySetAggregateIdException,
+    MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
-    MinosRepositoryNonProvidedException,
+    MinosRepositoryNotProvidedException,
     MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
+    MinosSagaManagerException,
+    MinosSagaManagerNotProvidedException,
+    MinosSnapshotAggregateNotFoundException,
+    MinosSnapshotDeletedAggregateException,
+    MinosSnapshotException,
+    MinosSnapshotNotProvidedException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
@@ -57,16 +70,10 @@ from .importlib import (
     import_module,
 )
 from .injectors import (
-    MinosDependencyInjector,
+    DependencyInjector,
 )
-from .messages import (
-    MinosBaseRequest,
-    MinosBaseResponse,
-    MinosRequest,
-    MinosResponse,
-    MinosRPCBodyRequest,
-    MinosRPCHeadersRequest,
-    MinosRPCResponse,
+from .launchers import (
+    EntrypointLauncher,
 )
 from .meta import (
     classproperty,
@@ -74,62 +81,73 @@ from .meta import (
     self_or_classmethod,
 )
 from .model import (
-    ARRAY,
-    BOOLEAN,
-    BYTES,
-    CUSTOM_TYPES,
-    DATE,
-    DECIMAL,
-    DOUBLE,
-    ENUM,
-    FIXED,
-    FLOAT,
-    INT,
-    LONG,
-    MAP,
-    NULL,
-    PYTHON_ARRAY_TYPES,
-    PYTHON_IMMUTABLE_TYPES,
-    PYTHON_LIST_TYPES,
-    PYTHON_NULL_TYPE,
-    PYTHON_TYPE_TO_AVRO,
-    STRING,
-    TIME_MILLIS,
-    TIMESTAMP_MILLIS,
-    UUID,
     Aggregate,
+    AggregateDiff,
+    AggregateRef,
+    AvroDataDecoder,
+    AvroDataEncoder,
+    AvroSchemaDecoder,
+    AvroSchemaEncoder,
+    BucketModel,
     Command,
     CommandReply,
+    CommandStatus,
+    DataTransferObject,
     Decimal,
+    DeclarativeModel,
+    DynamicModel,
     Enum,
     Event,
+    Field,
+    FieldsDiff,
     Fixed,
     MinosModel,
     MissingSentinel,
+    Model,
     ModelField,
     ModelRef,
+    ModelRefExtractor,
+    ModelRefInjector,
+    ModelType,
+    NoneType,
+    TypeHintBuilder,
+    TypeHintComparator,
+    ValueObject,
 )
 from .networks import (
     MinosBroker,
+    MinosHandler,
+)
+from .pools import (
+    MinosPool,
 )
 from .protocol import (
+    MinosAvroDatabaseProtocol,
+    MinosAvroMessageProtocol,
     MinosAvroProtocol,
-    MinosAvroValuesDatabase,
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
 )
 from .repository import (
-    MinosInMemoryRepository,
+    InMemoryRepository,
     MinosRepository,
-    MinosRepositoryAction,
-    MinosRepositoryEntry,
-    PostgreSqlMinosRepository,
+    PostgreSqlRepository,
+    RepositoryAction,
+    RepositoryEntry,
 )
 from .saga import (
     MinosSagaManager,
 )
 from .setup import (
     MinosSetup,
+)
+from .snapshot import (
+    InMemorySnapshot,
+    MinosSnapshot,
+    PostgreSqlSnapshot,
+    PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotSetup,
+    SnapshotEntry,
 )
 from .storage import (
     MinosStorage,

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_common"
-version = "0.0.14"
+version = "0.1.7"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_common"
@@ -48,6 +48,10 @@ coverage = "^5.5"
 flake8 = "^3.9.2"
 Sphinx = "^4.0.1"
 pre-commit = "^2.12.1"
+sphinx-autodoc-typehints = "^1.12.0"
+sphinxcontrib-apidoc = "^0.3.0"
+sphinx-rtd-theme = "^0.5.2"
+m2r2 = "^0.2.7"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

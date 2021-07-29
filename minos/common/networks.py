@@ -14,7 +14,7 @@ from abc import (
     abstractmethod,
 )
 from typing import (
-    TYPE_CHECKING,
+    Any,
     NoReturn,
 )
 
@@ -22,30 +22,40 @@ from .setup import (
     MinosSetup,
 )
 
-if TYPE_CHECKING:
-    from .model import (
-        MinosModel,
-    )
-
 
 class MinosBroker(ABC, MinosSetup):
     """Base Broker class."""
 
-    async def send_one(self, item: MinosModel, **kwargs) -> NoReturn:
-        """Send one ``Aggregate`` instance.
+    @abstractmethod
+    async def send(self, data: Any, **kwargs) -> NoReturn:
+        """Send a list of ``Aggregate`` instances.
 
-        :param item: The instance to be send.
+        :param data: The data to be send.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        return await self.send([item], **kwargs)
+        raise NotImplementedError
+
+
+class MinosHandler(ABC, MinosSetup):
+    """Base Handler class."""
 
     @abstractmethod
-    async def send(self, items: list[MinosModel], **kwargs) -> NoReturn:
-        """Send a list of ``Aggregate`` instances.
+    async def get_one(self, *args, **kwargs) -> Any:
+        """Get one entry.
 
-        :param items: A list of aggregates.
+        :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
+        :return: The entry to be retrieved.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_many(self, *args, **kwargs) -> list[Any]:
+        """Get a list of entries.
+
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The list of entries to be retrieved.
         """
         raise NotImplementedError

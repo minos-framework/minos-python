@@ -9,7 +9,13 @@ from typing import (
     AsyncIterator,
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
+from ..constants import (
+    NULL_UUID,
+)
 from ..database import (
     PostgreSqlMinosDatabase,
 )
@@ -17,12 +23,12 @@ from .abc import (
     MinosRepository,
 )
 from .entries import (
-    MinosRepositoryEntry,
+    RepositoryEntry,
 )
 
 
-class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
-    """PostgreSQL-based implementation of the repository class in ``minos``."""
+class PostgreSqlRepository(MinosRepository, PostgreSqlMinosDatabase):
+    """PostgreSQL-based implementation of the repository class in ``Minos``."""
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
@@ -34,29 +40,31 @@ class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
         await self._create_events_table()
 
     async def _create_events_table(self):
-        await self.submit_query(_CREATE_ACTION_ENUM_QUERY)
-        await self.submit_query(_CREATE_TABLE_QUERY)
+        await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock=hash("aggregate_event"))
+        await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("aggregate_event"))
 
-    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         params = {
             "action": entry.action.value,
-            "aggregate_id": entry.aggregate_id,
+            "aggregate_uuid": entry.aggregate_uuid,
             "aggregate_name": entry.aggregate_name,
             "data": entry.data,
+            "null_uuid": NULL_UUID,
         }
         response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params)
-        entry.id, entry.aggregate_id, entry.version, entry.created_at = response
+        entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
 
-    async def _select(self, **kwargs,) -> AsyncIterator[MinosRepositoryEntry]:
+    async def _select(self, **kwargs,) -> AsyncIterator[RepositoryEntry]:
         query = self._build_select_query(**kwargs)
         async for row in self.submit_query_and_iter(query, kwargs):
-            yield MinosRepositoryEntry(*row)
+            yield RepositoryEntry(*row)
 
     # noinspection PyUnusedLocal
     @staticmethod
     def _build_select_query(
-        aggregate_id: Optional[int] = None,
+        aggregate_uuid: Optional[UUID] = None,
         aggregate_name: Optional[str] = None,
         version: Optional[int] = None,
         version_lt: Optional[int] = None,
@@ -72,8 +80,8 @@ class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
     ) -> str:
         conditions = list()
 
-        if aggregate_id is not None:
-            conditions.append("aggregate_id = %(aggregate_id)s")
+        if aggregate_uuid is not None:
+            conditions.append("aggregate_uuid = %(aggregate_uuid)s")
         if aggregate_name is not None:
             conditions.append("aggregate_name = %(aggregate_name)s")
         if version is not None:
@@ -98,9 +106,9 @@ class PostgreSqlMinosRepository(MinosRepository, PostgreSqlMinosDatabase):
             conditions.append("id >= %(id_ge)s")
 
         if not conditions:
-            return _SELECT_ALL_ENTRIES_QUERY
+            return f"{_SELECT_ALL_ENTRIES_QUERY} ORDER BY id;"
 
-        return f"{_SELECT_ALL_ENTRIES_QUERY} WHERE {' AND '.join(conditions)}"
+        return f"{_SELECT_ALL_ENTRIES_QUERY} WHERE {' AND '.join(conditions)} ORDER BY id;"
 
 
 _CREATE_ACTION_ENUM_QUERY = """
@@ -113,7 +121,7 @@ $$
                                           ON nsp.oid = typ.typnamespace
                       WHERE nsp.nspname = current_schema()
                         AND typ.typname = 'action_type') THEN
-            CREATE TYPE action_type AS ENUM ('insert', 'update', 'delete');
+            CREATE TYPE action_type AS ENUM ('create', 'update', 'delete');
         END IF;
     END;
 $$
@@ -124,43 +132,35 @@ _CREATE_TABLE_QUERY = """
 CREATE TABLE IF NOT EXISTS aggregate_event (
     id BIGSERIAL PRIMARY KEY,
     action ACTION_TYPE NOT NULL,
-    aggregate_id BIGINT NOT NULL,
+    aggregate_uuid UUID NOT NULL,
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
     data BYTEA NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (aggregate_id, aggregate_name, version)
+    UNIQUE (aggregate_uuid, aggregate_name, version)
 );
 """.strip()
 
 _INSERT_VALUES_QUERY = """
-INSERT INTO aggregate_event (id, action, aggregate_id, aggregate_name, version, data, created_at)
+INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at)
 VALUES (
     default,
     %(action)s,
-    (
-        CASE %(aggregate_id)s
-            WHEN 0 THEN (
-                SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(aggregate_id) + 1 END)
-                FROM aggregate_event
-                WHERE aggregate_name = %(aggregate_name)s
-            )
-            ELSE %(aggregate_id)s END
-        ),
+    CASE %(aggregate_uuid)s WHEN %(null_uuid)s THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
     %(aggregate_name)s,
     (
         SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(version) + 1 END)
         FROM aggregate_event
-        WHERE aggregate_id = %(aggregate_id)s
+        WHERE aggregate_uuid = %(aggregate_uuid)s
           AND aggregate_name = %(aggregate_name)s
     ),
     %(data)s,
     default
 )
-RETURNING id, aggregate_id, version, created_at;
+RETURNING id, aggregate_uuid, version, created_at;
 """.strip()
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_id, aggregate_name, version, data, id, action, created_at
+SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at
 FROM aggregate_event
 """.strip()

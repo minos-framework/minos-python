@@ -10,10 +10,13 @@ from __future__ import (
     annotations,
 )
 
+from asyncio import (
+    gather,
+)
 from typing import (
     NoReturn,
-    Optional,
     Type,
+    Union,
 )
 
 from cached_property import (
@@ -27,35 +30,58 @@ from dependency_injector import (
 from .configuration import (
     MinosConfig,
 )
-from .networks import (
-    MinosBroker,
+from .importlib import (
+    import_module,
 )
-from .repository import (
-    MinosRepository,
-)
-from .saga import (
-    MinosSagaManager,
+from .setup import (
+    MinosSetup,
 )
 
 
-class MinosDependencyInjector(object):
-    """Wrapper class for ``dependency_injector.containers.Container``. """
+class DependencyInjector:
+    """Async wrapper of ``dependency_injector.containers.Container``. """
 
-    def __init__(
-        self,
-        config: MinosConfig,
-        repository_cls: Optional[Type[MinosRepository]] = None,
-        event_broker_cls: Optional[Type[MinosBroker]] = None,
-        command_broker_cls: Optional[Type[MinosBroker]] = None,
-        command_reply_broker_cls: Optional[Type[MinosBroker]] = None,
-        saga_manager_cls: Optional[Type[MinosSagaManager]] = None,
-    ):
+    def __init__(self, config: MinosConfig, **kwargs: Union[MinosSetup, Type[MinosSetup], str]):
         self.config = config
-        self.repository_cls = repository_cls
-        self.event_broker_cls = event_broker_cls
-        self.command_broker_cls = command_broker_cls
-        self.command_reply_broker_cls = command_reply_broker_cls
-        self.saga_manager_cls = saga_manager_cls
+        self._raw_injections = kwargs
+
+    @cached_property
+    def injections(self) -> dict[str, MinosSetup]:
+        """Get the injections dictionary.
+
+        :return: A dict of injections..
+        """
+        injections = dict()
+
+        def _fn(raw: Union[MinosSetup, Type[MinosSetup], str]) -> MinosSetup:
+            if isinstance(raw, str):
+                raw = import_module(raw)
+            if isinstance(raw, type):
+                # noinspection PyUnresolvedReferences
+                return raw.from_config(config=self.config, **injections)
+            return raw
+
+        for key, value in self._raw_injections.items():
+            injections[key] = _fn(value)
+
+        return injections
+
+    async def wire(self, *args, **kwargs) -> NoReturn:
+        """Connect the configuration.
+
+        :return: This method does not return anything.
+        """
+        self.container.wire(*args, **kwargs)
+
+        await gather(*(injection.setup() for injection in self.injections.values()))
+
+    async def unwire(self) -> NoReturn:
+        """Disconnect the configuration.
+
+        :return: This method does not return anything.
+        """
+        self.container.unwire()
+        await gather(*(injection.destroy() for injection in self.injections.values()))
 
     @cached_property
     def container(self) -> containers.Container:
@@ -66,64 +92,11 @@ class MinosDependencyInjector(object):
         container = containers.DynamicContainer()
         container.config = providers.Object(self.config)
 
-        if self.repository_cls is not None:
-            container.repository = providers.Object(self.repository_cls.from_config(config=self.config))
-        if self.event_broker_cls is not None:
-            container.event_broker = providers.Object(self.event_broker_cls.from_config(config=self.config))
-        if self.command_broker_cls is not None:
-            container.command_broker = providers.Object(self.command_broker_cls.from_config(config=self.config))
-        if self.command_reply_broker_cls is not None:
-            container.command_reply_broker = providers.Object(
-                self.command_reply_broker_cls.from_config(config=self.config)
-            )
-        if self.saga_manager_cls is not None:
-            container.saga_manager = providers.Object(self.saga_manager_cls.from_config(config=self.config))
-
+        for name, injection in self.injections.items():
+            container.set_provider(name, providers.Object(injection))
         return container
 
-    async def wire(self, *args, **kwargs) -> NoReturn:
-        """Connect the configuration.
-
-        :return: This method does not return anything.
-        """
-        self.container.wire(*args, **kwargs)
-
-        if self.repository_cls is not None:
-            await self.container.repository().setup()
-
-        if self.event_broker_cls is not None:
-            await self.container.event_broker().setup()
-
-        if self.command_broker_cls is not None:
-            await self.container.command_broker().setup()
-
-        if self.command_reply_broker_cls is not None:
-            await self.container.command_reply_broker().setup()
-
-        if self.saga_manager_cls is not None:
-            await self.container.saga_manager().setup()
-
-    async def unwire(self) -> NoReturn:
-        """Disconnect the configuration.
-
-        :return: This method does not return anything.
-        """
-        self.container.unwire()
-
-        if self.repository_cls is not None:
-            await self.container.repository().destroy()
-
-        if self.repository_cls is not None:
-            await self.container.repository().destroy()
-
-        if self.event_broker_cls is not None:
-            await self.container.event_broker().destroy()
-
-        if self.command_broker_cls is not None:
-            await self.container.command_broker().destroy()
-
-        if self.command_reply_broker_cls is not None:
-            await self.container.command_reply_broker().destroy()
-
-        if self.saga_manager_cls is not None:
-            await self.container.saga_manager().destroy()
+    def __getattr__(self, item: str) -> MinosSetup:
+        if item not in self.injections:
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
+        return self.injections[item]

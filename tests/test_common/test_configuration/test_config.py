@@ -5,16 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-import os
 import unittest
-from unittest import (
-    mock,
-)
 
 from minos.common import (
     MinosConfig,
-    MinosConfigAbstract,
-    MinosConfigDefaultAlreadySetException,
     MinosConfigException,
 )
 from tests.utils import (
@@ -25,42 +19,36 @@ from tests.utils import (
 class TestMinosConfig(unittest.TestCase):
     def setUp(self) -> None:
         self.config_file_path = BASE_PATH / "test_config.yml"
+        self.config = MinosConfig(path=self.config_file_path)
 
     def test_config_ini_fail(self):
         with self.assertRaises(MinosConfigException):
             MinosConfig(path=BASE_PATH / "test_fail_config.yaml")
 
     def test_cast_path(self):
-        config = MinosConfig(path=str(self.config_file_path))
-        self.assertEqual(self.config_file_path, config._path)
+        config_path = self.config._path
+        self.assertEqual(self.config_file_path, config_path)
 
     def test_config_service(self):
-        config = MinosConfig(path=self.config_file_path)
-        service = config.service
+        service = self.config.service
         self.assertEqual("Order", service.name)
+        self.assertEqual(dict(), service.injections)
+        self.assertEqual(list(), service.services)
 
     def test_config_rest(self):
-        config = MinosConfig(path=self.config_file_path)
-        rest = config.rest
+        rest = self.config.rest
 
-        broker = rest.broker
-        self.assertEqual("localhost", broker.host)
-        self.assertEqual(8900, broker.port)
+        self.assertEqual("localhost", rest.host)
+        self.assertEqual(8900, rest.port)
 
-        endpoints = rest.endpoints
-        self.assertEqual("AddOrder", endpoints[0].name)
-
-    def test_config_events(self):
-        config = MinosConfig(path=self.config_file_path)
-        events = config.events
-        broker = events.broker
-        self.assertEqual("localhost", broker.host)
-        self.assertEqual(9092, broker.port)
+    def test_config_events_service(self):
+        events = self.config.events
+        self.assertEqual("minos.services.CQRSService", events.service)
 
     def test_config_events_queue_database(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
-        events = config.events
-        queue = events.queue
+        broker = config.broker
+        queue = broker.queue
         self.assertEqual("order_db", queue.database)
         self.assertEqual("minos", queue.user)
         self.assertEqual("min0s", queue.password)
@@ -69,35 +57,19 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(10, queue.records)
         self.assertEqual(2, queue.retry)
 
-    def test_config_commands_queue_database(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
-        commands = config.commands
-        queue = commands.queue
-        self.assertEqual("order_db", queue.database)
-        self.assertEqual("minos", queue.user)
-        self.assertEqual("min0s", queue.password)
-        self.assertEqual("localhost", queue.host)
-        self.assertEqual(5432, queue.port)
-        self.assertEqual(10, queue.records)
-        self.assertEqual(2, queue.retry)
+    def test_config_commands_service(self):
+        commands = self.config.commands
+        self.assertEqual("minos.services.OrderService", commands.service)
+
+    def test_config_queries_service(self):
+        query = self.config.queries
+        self.assertEqual("minos.services.OrderQueryService", query.service)
 
     def test_config_saga_storage(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         saga = config.saga
         storage = saga.storage
         self.assertEqual(BASE_PATH / "order.lmdb", storage.path)
-
-    def test_config_saga_queue_database(self):
-        config = MinosConfig(path=self.config_file_path, with_environment=False)
-        saga = config.saga
-        queue = saga.queue
-        self.assertEqual("order_db", queue.database)
-        self.assertEqual("minos", queue.user)
-        self.assertEqual("min0s", queue.password)
-        self.assertEqual("localhost", queue.host)
-        self.assertEqual(5432, queue.port)
-        self.assertEqual(10, queue.records)
-        self.assertEqual(2, queue.retry)
 
     def test_config_repository(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
@@ -117,38 +89,11 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", snapshot.host)
         self.assertEqual(5432, snapshot.port)
 
-    @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
-    def test_overwrite_with_environment(self):
-        config = MinosConfig(path=self.config_file_path)
-        repository = config.repository
-        self.assertEqual("foo", repository.database)
-
-    @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
-    def test_overwrite_with_environment_false(self):
+    def test_config_discovery(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
-        repository = config.repository
-        self.assertEqual("order_db", repository.database)
-
-    def test_overwrite_with_parameter(self):
-        config = MinosConfig(path=self.config_file_path, repository_database="foo")
-        repository = config.repository
-        self.assertEqual("foo", repository.database)
-
-    @mock.patch.dict(os.environ, {"MINOS_REPOSITORY_DATABASE": "foo"})
-    def test_overwrite_with_parameter_priority(self):
-        config = MinosConfig(path=self.config_file_path, repository_database="bar")
-        repository = config.repository
-        self.assertEqual("bar", repository.database)
-
-    def test_get_default_default(self):
-        with MinosConfig(path=self.config_file_path) as config:
-            self.assertEqual(config, MinosConfigAbstract.get_default())
-
-    def test_multiple_default_config_raises(self):
-        with self.assertRaises(MinosConfigDefaultAlreadySetException):
-            with MinosConfig(path=self.config_file_path):
-                with MinosConfig(path=self.config_file_path):
-                    pass
+        discovery = config.discovery
+        self.assertEqual("localhost", discovery.host)
+        self.assertEqual(8080, discovery.port)
 
 
 if __name__ == "__main__":

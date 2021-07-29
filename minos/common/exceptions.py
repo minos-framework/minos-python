@@ -5,10 +5,21 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from typing import (
+    TYPE_CHECKING,
     Any,
     Type,
 )
+
+if TYPE_CHECKING:
+    from .model import (
+        Aggregate,
+        AggregateDiff,
+    )
 
 
 class MinosException(Exception):
@@ -43,23 +54,31 @@ class MinosConfigException(MinosException):
     """Base config exception."""
 
 
-class MinosConfigDefaultAlreadySetException(MinosConfigException):
-    """Exception to be raised when some config is already set as default."""
+class MinosConfigNotProvidedException(MinosConfigException):
+    """Exception to be raised when a config is needed but none is set."""
+
+
+class MinosBrokerException(MinosException):
+    """Base broker exception"""
+
+
+class MinosBrokerNotProvidedException(MinosBrokerException):
+    """Exception to be raised when a broker is needed but none is set."""
+
+
+class MinosHandlerException(MinosException):
+    """Base handler exception"""
+
+
+class MinosHandlerNotProvidedException(MinosHandlerException):
+    """Exception to be raised when a handler is needed but none is set."""
 
 
 class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
 
-class MinosRepositoryAggregateNotFoundException(MinosRepositoryException):
-    """Exception to be raised when some aggregate is not found on the repository."""
-
-
-class MinosRepositoryDeletedAggregateException(MinosRepositoryException):
-    """Exception to be raised when some aggregate is already deleted from the repository."""
-
-
-class MinosRepositoryManuallySetAggregateIdException(MinosRepositoryException):
+class MinosRepositoryManuallySetAggregateIdentifierException(MinosRepositoryException):
     """Exception to be raised when some aggregate is trying to be created with a manually set id."""
 
 
@@ -71,8 +90,44 @@ class MinosRepositoryUnknownActionException(MinosRepositoryException):
     """Exception to be raised when some entry tries to perform an unknown action."""
 
 
-class MinosRepositoryNonProvidedException(MinosRepositoryException):
+class MinosRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a repository is needed but none is set."""
+
+
+class MinosSnapshotException(MinosException):
+    """Base snapshot exception."""
+
+
+class MinosSnapshotNotProvidedException(MinosSnapshotException):
+    """Exception to be raised when a snapshot is needed but none is set."""
+
+
+class MinosPreviousVersionSnapshotException(MinosSnapshotException):
+    """Exception to be raised when current version is newer than the one to be processed."""
+
+    def __init__(self, previous: Aggregate, diff: AggregateDiff):
+        self.previous = previous
+        self.diff = diff
+        super().__init__(
+            f"Version for {repr(previous.classname)} aggregate must be "
+            f"greater than {previous.version}. Obtained: {diff.version}"
+        )
+
+
+class MinosSnapshotAggregateNotFoundException(MinosSnapshotException):
+    """Exception to be raised when some aggregate is not found on the repository."""
+
+
+class MinosSnapshotDeletedAggregateException(MinosSnapshotException):
+    """Exception to be raised when some aggregate is already deleted from the repository."""
+
+
+class MinosSagaManagerException(MinosException):
+    """Base Saga Manager exception"""
+
+
+class MinosSagaManagerNotProvidedException(MinosSagaManagerException):
+    """Exception to be raised when a SAGA Manager is not provided."""
 
 
 class MinosModelException(MinosException):
@@ -99,6 +154,12 @@ class MinosModelAttributeException(MinosException):
     pass
 
 
+class MinosImmutableClassException(MinosException):
+    """If an attribute of an immutable class is modified, this exception will be raised"""
+
+    pass
+
+
 class MinosReqAttributeException(MinosModelAttributeException):
     """Exception to be raised when some required attributes are not provided."""
 
@@ -113,8 +174,8 @@ class MinosTypeAttributeException(MinosModelAttributeException):
         self.target_type = target_type
         self.value = value
         super().__init__(
-            f"The {repr(target_type)} expected type for {repr(name)} does not match with "
-            f"the given data type: {type(value)}"
+            f"The {target_type!r} expected type for {name!r} does not match with "
+            f"the given data type: {type(value)!r} ({value!r})"
         )
 
 

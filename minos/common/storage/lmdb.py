@@ -10,15 +10,21 @@ from __future__ import (
     annotations,
 )
 
-import typing as t
 from pathlib import (
     Path,
+)
+from typing import (
+    Any,
+    NoReturn,
+    Optional,
+    Type,
+    Union,
 )
 
 import lmdb
 
 from ..protocol import (
-    MinosAvroValuesDatabase,
+    MinosAvroDatabaseProtocol,
     MinosBinaryProtocol,
 )
 from .abc import (
@@ -31,12 +37,15 @@ class MinosStorageLmdb(MinosStorage):
 
     __slots__ = "_env", "_protocol", "_tables"
 
-    def __init__(self, env: lmdb.Environment, protocol: t.Type[MinosBinaryProtocol] = MinosAvroValuesDatabase):
+    # noinspection PyUnusedLocal
+    def __init__(
+        self, env: lmdb.Environment, protocol: Type[MinosBinaryProtocol] = MinosAvroDatabaseProtocol, **kwargs
+    ):
         self._env: lmdb.Environment = env
         self._protocol = protocol
         self._tables = {}
 
-    def add(self, table: str, key: str, value: t.Any) -> t.NoReturn:
+    def add(self, table: str, key: str, value: Any) -> NoReturn:
         """Store a value.
 
         :param table: Table in which the data is stored.
@@ -49,7 +58,7 @@ class MinosStorageLmdb(MinosStorage):
             value_bytes: bytes = self._protocol.encode(value)
             txn.put(key.encode(), value_bytes, db=db_instance)
 
-    def get(self, table: str, key: str) -> t.Optional[t.Any]:
+    def get(self, table: str, key: str) -> Optional[Any]:
         """Get the stored value..
 
         :param table: Table in which the data is stored.
@@ -64,7 +73,7 @@ class MinosStorageLmdb(MinosStorage):
                 return self._protocol.decode(value_binary)
             return None
 
-    def delete(self, table: str, key: str) -> t.NoReturn:
+    def delete(self, table: str, key: str) -> NoReturn:
         """Delete the stored value.
 
         :param table: Table in which the data is stored.
@@ -75,7 +84,7 @@ class MinosStorageLmdb(MinosStorage):
         with self._env.begin(write=True, db=db_instance) as txn:
             txn.delete(key.encode())
 
-    def update(self, table: str, key: str, value: t.Any) -> t.NoReturn:
+    def update(self, table: str, key: str, value: Any) -> NoReturn:
         """Update the stored value.
 
         :param table: Table in which the data is stored.
@@ -97,14 +106,15 @@ class MinosStorageLmdb(MinosStorage):
             return self._tables[table]
 
     @classmethod
-    def build(cls, path: t.Union[str, Path], max_db: int = 10, **kwargs) -> MinosStorageLmdb:
+    def build(cls, path: Union[str, Path], max_db: int = 10, map_size: int = int(1e9), **kwargs) -> MinosStorageLmdb:
         """Build a new instance.
 
         :param path: Path in which the database is stored.
         :param max_db: Maximum number of available databases.
+        :param map_size: Maximum number of entries to be stored on the database. Default set to 1GB
         :param kwargs: Additional named arguments.
         :return: A ``MinosStorageLmdb`` instance.
         """
 
-        env: lmdb.Environment = lmdb.open(str(path), max_dbs=max_db)
+        env: lmdb.Environment = lmdb.open(str(path), max_dbs=max_db, map_size=map_size)
         return cls(env, **kwargs)

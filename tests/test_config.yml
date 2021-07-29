@@ -1,14 +1,5 @@
 service:
     name: Order
-rest:
-    host: localhost
-    port: 8900
-    endpoints:
-        - name: AddOrder
-          route: /order
-          method: POST
-          controller: minos.services.OrderService
-          action: add_order
 repository:
     database: order_db
     user: minos
@@ -21,51 +12,26 @@ snapshot:
     password: min0s
     host: localhost
     port: 5432
+rest:
+    host: localhost
+    port: 8900
+broker:
+  host: localhost
+  port: 9092
+  queue:
+    database: order_db
+    user: minos
+    password: min0s
+    host: localhost
+    port: 5432
+    records: 10
+    retry: 2
 events:
-    broker: localhost
-    port: 9092
-    items:
-        - name: TicketAdded
-          controller: minos.services.CQRSService
-          action: ticket_added
-        - name: TicketDeleted
-          controller: minos.services.CQRSService
-          action: ticket_deleted
-        - name: OrderAdded
-          controller: minos.services.CQRSService
-          action: order_added
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
+    service: minos.services.CQRSService
 commands:
-    broker: localhost
-    port: 9092
-    items:
-        - name: AddOrder
-          controller: minos.services.OrderService
-          action: add_order
-        - name: DeleteOrder
-          controller: minos.services.OrderService
-          action: delete_order
-        - name: UpdateOrder
-          controller: minos.services.OrderService
-          action: update_order
-        - name: GetOrder
-          controller: minos.service.OrderService
-          action: get_order
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
+    service: minos.services.OrderService
+queries:
+    service: minos.services.OrderQueryService
 saga:
     storage:
         path: "./order.lmdb"
@@ -76,11 +42,6 @@ saga:
         - name: DeleteOrder
           controller: tests.services.SagaTestService.SagaService
           action: delete_order
-    queue:
-        database: order_db
-        user: minos
-        password: min0s
-        host: localhost
-        port: 5432
-        records: 10
-        retry: 2
+discovery:
+    host: localhost
+    port: 8080

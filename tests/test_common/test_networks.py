@@ -6,34 +6,41 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from typing import (
-    NoReturn,
+from abc import (
+    ABC,
 )
 
 from minos.common import (
-    Aggregate,
     MinosBroker,
+    MinosHandler,
+    MinosSetup,
 )
-from tests.aggregate_classes import (
-    Car,
+from tests.model_classes import (
+    Foo,
+)
+from tests.utils import (
+    FakeBroker,
 )
 
 
-class _MinosBroker(MinosBroker):
-    @classmethod
-    async def send(cls, items: list[Aggregate], **kwargs) -> NoReturn:
-        pass
-
-
-class TestMinosBaseBroker(unittest.IsolatedAsyncioTestCase):
+class TestMinosBroker(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.broker = _MinosBroker()
+        self.broker = FakeBroker()
+
+    def test_abstract(self):
+        self.assertTrue(issubclass(MinosBroker, (ABC, MinosSetup)))
+        self.assertEqual({"send"}, MinosBroker.__abstractmethods__)
 
     async def test_send(self):
-        self.assertEqual(None, await self.broker.send([Car(1, 1, 3, "red"), Car(1, 1, 3, "red")]))
+        await self.broker.send([Foo("red"), Foo("red")])
+        self.assertEqual(1, self.broker.call_count)
+        self.assertEqual({"data": [Foo("red"), Foo("red")]}, self.broker.call_kwargs)
 
-    async def test_send_one(self):
-        self.assertEqual(None, await self.broker.send_one(Car(1, 1, 3, "red")))
+
+class TestMinosHandler(unittest.IsolatedAsyncioTestCase):
+    def test_abstract(self):
+        self.assertTrue(issubclass(MinosHandler, (ABC, MinosSetup)))
+        self.assertEqual({"get_many", "get_one"}, MinosHandler.__abstractmethods__)
 
 
 if __name__ == "__main__":

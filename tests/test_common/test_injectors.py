@@ -7,50 +7,26 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import sys
 import unittest
-from typing import (
-    AsyncIterator,
-    NoReturn,
-)
 from unittest.mock import (
     MagicMock,
     call,
 )
 
+from dependency_injector.containers import (
+    Container,
+)
+
 from minos.common import (
-    Aggregate,
-    CommandReply,
-    MinosBroker,
+    DependencyInjector,
     MinosConfig,
-    MinosDependencyInjector,
-    MinosRepository,
-    MinosRepositoryEntry,
-    MinosSagaManager,
+    classname,
 )
 from tests.utils import (
     BASE_PATH,
+    FakeBroker,
+    FakeRepository,
+    FakeSagaManager,
 )
-
-
-class _MinosRepository(MinosRepository):
-    async def _submit(self, entry: MinosRepositoryEntry) -> MinosRepositoryEntry:
-        pass
-
-    async def _select(self, *args, **kwargs) -> AsyncIterator[MinosRepositoryEntry]:
-        pass
-
-
-class _MinosBroker(MinosBroker):
-    @classmethod
-    async def send(cls, items: list[Aggregate], **kwargs) -> NoReturn:
-        pass
-
-
-class _MinosSagaManager(MinosSagaManager):
-    def _run_new(self, name: str, **kwargs) -> NoReturn:
-        pass
-
-    def _load_and_run(self, reply: CommandReply, **kwargs) -> NoReturn:
-        pass
 
 
 class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
@@ -58,38 +34,72 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.config_file_path = BASE_PATH / "test_config.yml"
         self.config = MinosConfig(path=str(self.config_file_path))
 
+    def test_from_str(self):
+        injector = DependencyInjector(self.config, repository=classname(FakeRepository))
+        self.assertIsInstance(injector.repository, FakeRepository)
+
+    def test_repository(self):
+        injector = DependencyInjector(self.config, repository=FakeRepository)
+        self.assertIsInstance(injector.repository, FakeRepository)
+
+    def test_event_broker(self):
+        injector = DependencyInjector(self.config, event_broker=FakeBroker)
+        self.assertIsInstance(injector.event_broker, FakeBroker)
+
+    def test_command_broker(self):
+        injector = DependencyInjector(self.config, command_broker=FakeBroker)
+        self.assertIsInstance(injector.command_broker, FakeBroker)
+
+    def test_command_reply_broker(self):
+        injector = DependencyInjector(self.config, command_reply_broker=FakeBroker)
+        self.assertIsInstance(injector.container.command_reply_broker(), FakeBroker)
+
+    def test_saga_manager(self):
+        injector = DependencyInjector(self.config, saga_manager=FakeSagaManager)
+        self.assertIsInstance(injector.saga_manager, FakeSagaManager)
+
+    def test_another(self):
+        injector = DependencyInjector(self.config, foo=1)
+        self.assertEqual(1, injector.foo)
+
+    def test_raises_attribute_error(self):
+        injector = DependencyInjector(self.config)
+        with self.assertRaises(AttributeError):
+            injector.foo
+
     def test_container(self):
-        injector = MinosDependencyInjector(self.config)
+        injector = DependencyInjector(self.config)
+        self.assertIsInstance(injector.container, Container)
         self.assertEqual(self.config, injector.container.config())
 
     def test_container_repository(self):
-        injector = MinosDependencyInjector(self.config, repository_cls=_MinosRepository)
-        self.assertIsInstance(injector.container.repository(), _MinosRepository)
+        injector = DependencyInjector(self.config, repository=FakeRepository)
+        self.assertEqual(injector.repository, injector.container.repository())
 
     def test_container_event_broker(self):
-        injector = MinosDependencyInjector(self.config, event_broker_cls=_MinosBroker)
-        self.assertIsInstance(injector.container.event_broker(), _MinosBroker)
+        injector = DependencyInjector(self.config, event_broker=FakeBroker)
+        self.assertEqual(injector.event_broker, injector.container.event_broker())
 
     def test_container_command_broker(self):
-        injector = MinosDependencyInjector(self.config, command_broker_cls=_MinosBroker)
-        self.assertIsInstance(injector.container.command_broker(), _MinosBroker)
+        injector = DependencyInjector(self.config, command_broker=FakeBroker)
+        self.assertEqual(injector.command_broker, injector.container.command_broker())
 
     def test_container_command_reply_broker(self):
-        injector = MinosDependencyInjector(self.config, command_reply_broker_cls=_MinosBroker)
-        self.assertIsInstance(injector.container.command_reply_broker(), _MinosBroker)
+        injector = DependencyInjector(self.config, command_reply_broker=FakeBroker)
+        self.assertEqual(injector.command_reply_broker, injector.container.command_reply_broker())
 
     def test_container_saga_manager(self):
-        injector = MinosDependencyInjector(self.config, saga_manager_cls=_MinosSagaManager)
-        self.assertIsInstance(injector.container.saga_manager(), _MinosSagaManager)
+        injector = DependencyInjector(self.config, saga_manager=FakeSagaManager)
+        self.assertEqual(injector.saga_manager, injector.container.saga_manager())
 
     async def test_wire_unwire(self):
-        injector = MinosDependencyInjector(
+        injector = DependencyInjector(
             self.config,
-            repository_cls=_MinosRepository,
-            event_broker_cls=_MinosBroker,
-            command_broker_cls=_MinosBroker,
-            command_reply_broker_cls=_MinosBroker,
-            saga_manager_cls=_MinosSagaManager,
+            repository=FakeRepository,
+            event_broker=FakeBroker,
+            command_broker=FakeBroker,
+            command_reply_broker=FakeBroker,
+            saga_manager=FakeSagaManager,
         )
 
         mock = MagicMock()
