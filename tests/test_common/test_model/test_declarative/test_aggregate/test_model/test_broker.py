@@ -11,6 +11,7 @@ from typing import (
 )
 
 from minos.common import (
+    AggregateAction,
     AggregateDiff,
     Field,
     FieldsDiff,
@@ -38,6 +39,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             uuid=car.uuid,
                             name=Car.classname,
                             version=1,
+                            action=AggregateAction.CREATE,
                             fields_diff=FieldsDiff(
                                 {
                                     "doors": Field("doors", int, 3),
@@ -65,6 +67,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             uuid=car.uuid,
                             name=Car.classname,
                             version=2,
+                            action=AggregateAction.UPDATE,
                             fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
                         ),
                         "topic": "CarUpdated",
@@ -82,7 +85,13 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(
                 [
                     {
-                        "data": AggregateDiff(car.uuid, name=Car.classname, version=2, fields_diff=FieldsDiff.empty()),
+                        "data": AggregateDiff(
+                            car.uuid,
+                            name=Car.classname,
+                            version=2,
+                            action=AggregateAction.DELETE,
+                            fields_diff=FieldsDiff.empty(),
+                        ),
                         "topic": "CarDeleted",
                     }
                 ],

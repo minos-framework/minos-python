@@ -31,7 +31,6 @@ from ..setup import (
     MinosSetup,
 )
 from .entries import (
-    RepositoryAction,
     RepositoryEntry,
 )
 
@@ -56,8 +55,11 @@ class MinosRepository(ABC, MinosSetup):
         """
         if not isinstance(entry, RepositoryEntry):
             entry = RepositoryEntry.from_aggregate_diff(entry)
+        from ..model import (
+            AggregateAction,
+        )
 
-        entry.action = RepositoryAction.CREATE
+        entry.action = AggregateAction.CREATE
         return await self._submit(entry)
 
     async def update(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
@@ -69,7 +71,11 @@ class MinosRepository(ABC, MinosSetup):
         if not isinstance(entry, RepositoryEntry):
             entry = RepositoryEntry.from_aggregate_diff(entry)
 
-        entry.action = RepositoryAction.UPDATE
+        from ..model import (
+            AggregateAction,
+        )
+
+        entry.action = AggregateAction.UPDATE
         return await self._submit(entry)
 
     async def delete(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
@@ -81,7 +87,11 @@ class MinosRepository(ABC, MinosSetup):
         if not isinstance(entry, RepositoryEntry):
             entry = RepositoryEntry.from_aggregate_diff(entry)
 
-        entry.action = RepositoryAction.DELETE
+        from ..model import (
+            AggregateAction,
+        )
+
+        entry.action = AggregateAction.DELETE
         return await self._submit(entry)
 
     @abstractmethod
