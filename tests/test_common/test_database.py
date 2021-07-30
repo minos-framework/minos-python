@@ -8,12 +8,10 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 import aiopg
-from aiopg import (
-    Pool,
-)
 
 from minos.common import (
     PostgreSqlMinosDatabase,
+    PostgreSqlPool,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -40,7 +38,7 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
 
     async def test_pool(self):
         async with _PostgreSqlMinosDatabase(**self.repository_db) as database:
-            self.assertIsInstance(await database.pool, Pool)
+            self.assertIsInstance(database.pool, PostgreSqlPool)
 
     async def test_submit_query(self):
         async with _PostgreSqlMinosDatabase(**self.repository_db) as database:

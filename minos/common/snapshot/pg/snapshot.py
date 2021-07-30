@@ -98,7 +98,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
         parameters = (aggregate_name, tuple(uniques))
 
-        with (await self.cursor()) as cursor:
+        async with self.cursor() as cursor:
             async with cursor.begin():
 
                 await cursor.execute(_CHECK_MULTIPLE_ENTRIES_QUERY, parameters)

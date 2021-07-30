@@ -61,20 +61,20 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
     async def test_setup(self):
         async with aiopg.connect(**self.repository_db) as connection:
             async with connection.cursor() as cursor:
-                template = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
-                await cursor.execute(template.format(**self.repository_db))
+                await cursor.execute(
+                    "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
+                )
                 response = (await cursor.fetchone())[0]
                 self.assertFalse(response)
 
-        repository = PostgreSqlRepository(**self.repository_db)
-        await repository._setup()
-
-        async with aiopg.connect(**self.repository_db) as connection:
-            async with connection.cursor() as cursor:
-                template = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
-                await cursor.execute(template.format(**self.repository_db))
-                response = (await cursor.fetchone())[0]
-                self.assertTrue(response)
+        async with PostgreSqlRepository(**self.repository_db):
+            async with aiopg.connect(**self.repository_db) as connection:
+                async with connection.cursor() as cursor:
+                    await cursor.execute(
+                        "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'aggregate_event');"
+                    )
+                    response = (await cursor.fetchone())[0]
+        self.assertTrue(response)
 
     async def test_aggregate(self):
         async with FakeBroker() as broker, PostgreSqlRepository(

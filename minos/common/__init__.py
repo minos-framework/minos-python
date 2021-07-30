@@ -29,6 +29,7 @@ from .constants import (
 )
 from .database import (
     PostgreSqlMinosDatabase,
+    PostgreSqlPool,
 )
 from .exceptions import (
     EmptyMinosModelSequenceException,
