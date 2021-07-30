@@ -42,7 +42,7 @@ class AggregateAction(str, Enum):
 
         :return: A boolean value.
         """
-        return self is AggregateAction.DELETE
+        return self is AggregateAction.CREATE
 
     @property
     def is_update(self) -> bool:

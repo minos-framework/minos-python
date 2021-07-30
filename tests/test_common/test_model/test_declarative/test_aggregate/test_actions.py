@@ -23,6 +23,21 @@ class TestAggregateAction(unittest.TestCase):
         with self.assertRaises(MinosModelException):
             AggregateAction.value_of("foo")
 
+    def test_is_create(self):
+        self.assertTrue(AggregateAction.CREATE.is_create)
+        self.assertFalse(AggregateAction.UPDATE.is_create)
+        self.assertFalse(AggregateAction.DELETE.is_create)
+
+    def test_is_update(self):
+        self.assertFalse(AggregateAction.CREATE.is_update)
+        self.assertTrue(AggregateAction.UPDATE.is_update)
+        self.assertFalse(AggregateAction.DELETE.is_update)
+
+    def test_is_delete(self):
+        self.assertFalse(AggregateAction.CREATE.is_delete)
+        self.assertFalse(AggregateAction.UPDATE.is_delete)
+        self.assertTrue(AggregateAction.DELETE.is_delete)
+
 
 if __name__ == "__main__":
     unittest.main()
