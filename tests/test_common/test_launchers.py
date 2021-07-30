@@ -48,7 +48,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
             "saga_manager": FakeSagaManager,
         }
         self.services = [1, 2, Foo, classname(Foo)]
-        self.launcher = EntrypointLauncher(config=self.config, injections=self.injections, services=self.services)
+        import tests
+
+        self.launcher = EntrypointLauncher(
+            config=self.config, injections=self.injections, services=self.services, external_modules=[tests],
+        )
 
     def test_from_config(self):
         launcher = EntrypointLauncher.from_config(config=self.config)
@@ -91,11 +95,12 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         await self.launcher.setup()
 
         self.assertEqual(1, mock.call_count)
+        import tests
         from minos import (
             common,
         )
 
-        self.assertEqual(call(modules=[common]), mock.call_args)
+        self.assertEqual(call(modules=[tests, common]), mock.call_args)
 
     async def test_destroy(self):
         self.launcher.injector.wire = AsyncMock()
