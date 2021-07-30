@@ -35,3 +35,27 @@ class AggregateAction(str, Enum):
             if item.value == value:
                 return item
         raise MinosModelException(f"The given value does not match with any enum items. Obtained {value}")
+
+    @property
+    def is_create(self) -> bool:
+        """Check if the action is create.
+
+        :return: A boolean value.
+        """
+        return self is AggregateAction.DELETE
+
+    @property
+    def is_update(self) -> bool:
+        """Check if the action is create.
+
+        :return: A boolean value.
+        """
+        return self is AggregateAction.UPDATE
+
+    @property
+    def is_delete(self) -> bool:
+        """Check if the action is create.
+
+        :return: A boolean value.
+        """
+        return self is AggregateAction.DELETE

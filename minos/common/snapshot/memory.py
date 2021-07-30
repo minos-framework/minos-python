@@ -63,11 +63,8 @@ class InMemorySnapshot(MinosSnapshot):
             raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
 
         entries.sort(key=attrgetter("version"))
-        from ..model import (
-            AggregateAction,
-        )
 
-        if entries[-1].action == AggregateAction.DELETE:
+        if entries[-1].action.is_delete:
             raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
 
         cls = entries[0].aggregate_cls
