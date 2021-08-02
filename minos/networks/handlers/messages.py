@@ -11,6 +11,10 @@ from __future__ import (
 
 from typing import (
     Any,
+    Optional,
+)
+from uuid import (
+    UUID,
 )
 
 from ..messages import (
@@ -33,6 +37,9 @@ class HandlerRequest(Request):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw!r})"
+
+    def user(self) -> Optional[UUID]:
+        pass
 
     async def content(self, **kwargs) -> Any:
         """Request content.

@@ -17,10 +17,17 @@ from json import (
 )
 from typing import (
     Any,
+    Optional,
     Type,
     Union,
 )
+from uuid import (
+    UUID,
+)
 
+from aiohttp import (
+    web,
+)
 from cached_property import (
     cached_property,
 )
@@ -43,7 +50,7 @@ from ..messages import (
 class RestRequest(Request):
     """Rest Request class."""
 
-    def __init__(self, request):
+    def __init__(self, request: web.Request):
         self.raw_request = request
 
     def __eq__(self, other: RestRequest) -> bool:
@@ -51,6 +58,9 @@ class RestRequest(Request):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw_request!r})"
+
+    def user(self) -> Optional[UUID]:
+        return UUID(self.raw_request.headers["User"])
 
     async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
         """Get the request content.

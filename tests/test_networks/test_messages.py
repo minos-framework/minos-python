@@ -25,7 +25,7 @@ from tests.utils import (
 class TestRequest(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(Request, ABC))
-        self.assertEqual({"content", "__eq__", "__repr__"}, Request.__abstractmethods__)
+        self.assertEqual({"user", "content", "__eq__", "__repr__"}, Request.__abstractmethods__)
 
 
 async def _action(content: str) -> str:

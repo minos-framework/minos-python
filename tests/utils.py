@@ -17,8 +17,10 @@ from pathlib import (
 from typing import (
     AsyncIterator,
     NoReturn,
+    Optional,
 )
 from uuid import (
+    UUID,
     uuid4,
 )
 
@@ -211,6 +213,9 @@ class FakeRequest(Request):
     def __init__(self, content):
         super().__init__()
         self._content = content
+
+    def user(self) -> Optional[UUID]:
+        return "test_user_uuid"
 
     async def content(self, **kwargs):
         """For testing purposes"""
