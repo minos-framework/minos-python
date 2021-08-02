@@ -59,6 +59,7 @@ class RestRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw_request!r})"
 
+    @property
     def user(self) -> Optional[UUID]:
         return UUID(self.raw_request.headers["User"])
 

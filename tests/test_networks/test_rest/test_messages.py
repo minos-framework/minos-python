@@ -6,6 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+import uuid
 from json import (
     JSONDecodeError,
 )
@@ -36,6 +37,7 @@ class MockedRequest:
         self.remote = "127.0.0.1"
         self.rel_url = URL("localhost")
         self.match_info = dict()
+        self.headers = {"User": str(uuid.uuid1())}
 
     def __repr__(self):
         return "repr"
@@ -62,6 +64,12 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
 
     def test_eq_false(self):
         self.assertNotEqual(RestRequest(MockedRequest()), RestRequest(MockedRequest()))
+
+    def test_user(self):
+        raw_request = MockedRequest()
+        request = RestRequest(raw_request)
+        user = request.user
+        self.assertEqual(uuid.UUID(raw_request.headers["User"]), user)
 
     async def test_content(self):
         Content = ModelType.build(
