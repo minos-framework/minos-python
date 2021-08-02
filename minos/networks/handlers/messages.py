@@ -38,8 +38,9 @@ class HandlerRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw!r})"
 
+    @property
     def user(self) -> Optional[UUID]:
-        pass
+        return getattr(self.raw, "user", None)
 
     async def content(self, **kwargs) -> Any:
         """Request content.
