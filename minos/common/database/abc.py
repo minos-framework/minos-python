@@ -57,17 +57,39 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         """
         return await self.submit_query_and_iter(*args, **kwargs).__anext__()
 
-    async def submit_query_and_iter(self, *args, **kwargs) -> AsyncIterator[tuple]:
+    async def submit_query_and_iter(
+        self, *args, lock: Optional[int] = None, streaming_mode: bool = False, **kwargs
+    ) -> AsyncIterator[tuple]:
         """Submit a SQL query and return an asynchronous iterator.
 
         :param args: Additional positional arguments.
+        :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
+            lock.
+        :param streaming_mode: If ``True`` the data fetching is performed in streaming mode, that is iterating over the
+            cursor and yielding once a time (requires an opening connection to do that). Otherwise, all the data is
+            fetched and keep in memory before yielding it.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            await cursor.execute(*args, **kwargs)
-            async for row in cursor:
-                yield row
+            if lock is not None:
+                await cursor.execute("select pg_advisory_lock(%s)", (lock,))
+
+            try:
+                await cursor.execute(*args, **kwargs)
+
+                if streaming_mode:
+                    async for row in cursor:
+                        yield row
+                    return
+
+                rows = await cursor.fetchall()
+            finally:
+                if lock is not None:
+                    await cursor.execute("select pg_advisory_unlock(%s)", (lock,))
+
+        for row in rows:
+            yield row
 
     async def submit_query(self, *args, lock: Optional[int] = None, **kwargs) -> NoReturn:
         """Submit a SQL query.

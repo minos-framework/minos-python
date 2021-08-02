@@ -67,6 +67,15 @@ class TestPostgreSqlMinosDatabase(PostgresAsyncTestCase):
 
         self.assertEqual([(3,), (4,), (5,)], observed)
 
+    async def test_submit_query_and_iter_streaming_mode_true(self):
+        async with _PostgreSqlMinosDatabase(**self.repository_db) as database:
+            await database.submit_query("CREATE TABLE foo (id INT NOT NULL);")
+            await database.submit_query("INSERT INTO foo (id) VALUES (3), (4), (5);")
+
+            observed = [v async for v in database.submit_query_and_iter("SELECT * FROM foo;", streaming_mode=True)]
+
+        self.assertEqual([(3,), (4,), (5,)], observed)
+
 
 if __name__ == "__main__":
     unittest.main()
