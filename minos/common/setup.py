@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from typing import (
     Generic,
     NoReturn,
@@ -27,6 +28,7 @@ from .exceptions import (
 )
 
 T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 
 class MinosSetup(Generic[T]):
@@ -102,3 +104,7 @@ class MinosSetup(Generic[T]):
 
     async def _destroy(self) -> NoReturn:
         """Destroy miscellaneous repository things."""
+
+    def __del__(self):
+        if not self.already_destroyed:
+            logger.warning(f"A not destroyed {type(self).__name__!r} instance is trying to be deleted...")
