@@ -62,9 +62,8 @@ class TestProducer(PostgresAsyncTestCase):
 
         assert records[0] == 60
 
-        handler = Producer.from_config(config=self.config)
-
-        await asyncio.gather(*[handler.dispatch() for i in range(0, 6)])
+        async with Producer.from_config(config=self.config) as producer:
+            await asyncio.gather(*[producer.dispatch() for i in range(0, 6)])
 
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -78,7 +77,8 @@ class TestProducer(PostgresAsyncTestCase):
             queue_id_1 = await broker.send(FAKE_AGGREGATE_DIFF, "TestDeleteReply")
             queue_id_2 = await broker.send(FAKE_AGGREGATE_DIFF, "TestDeleteReply")
 
-        await Producer.from_config(config=self.config).dispatch()
+        async with Producer.from_config(config=self.config) as producer:
+            await producer.dispatch()
 
         async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:
@@ -102,7 +102,8 @@ class TestProducer(PostgresAsyncTestCase):
             broker_queue_database=self.config.broker.queue.database,
             broker_queue_user=self.config.broker.queue.user,
         )
-        await Producer.from_config(config=config).dispatch()
+        async with Producer.from_config(config=config) as producer:
+            await producer.dispatch()
 
         async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:

@@ -59,7 +59,7 @@ class Producer(BrokerSetup):
 
         :return: This method does not return anything.
         """
-        with await self.cursor() as cursor:
+        async with self.cursor() as cursor:
             # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
             # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
             await cursor.execute("BEGIN")
