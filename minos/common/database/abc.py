@@ -73,8 +73,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         """
         async with self.cursor() as cursor:
             if lock is not None:
-                await cursor.execute("select pg_advisory_lock(%s)", (lock,))
-
+                await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
             try:
                 await cursor.execute(*args, **kwargs)
 
@@ -86,7 +85,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
                 rows = await cursor.fetchall()
             finally:
                 if lock is not None:
-                    await cursor.execute("select pg_advisory_unlock(%s)", (lock,))
+                    await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
 
         for row in rows:
             yield row
@@ -102,12 +101,12 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         """
         async with self.cursor() as cursor:
             if lock is not None:
-                await cursor.execute("select pg_advisory_lock(%s)", (lock,))
+                await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
             try:
                 await cursor.execute(*args, **kwargs)
             finally:
                 if lock is not None:
-                    await cursor.execute("select pg_advisory_unlock(%s)", (lock,))
+                    await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
 
     def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
         """Get a connection cursor from the pool.

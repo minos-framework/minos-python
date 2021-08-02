@@ -52,11 +52,16 @@ class PostgreSqlRepository(MinosRepository, PostgreSqlMinosDatabase):
             "data": entry.data,
             "null_uuid": NULL_UUID,
         }
-        response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params)
+
+        lock = None
+        if entry.aggregate_uuid != NULL_UUID:
+            lock = entry.aggregate_uuid.int & (1 << 32) - 1
+
+        response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
 
-    async def _select(self, **kwargs,) -> AsyncIterator[RepositoryEntry]:
+    async def _select(self, **kwargs) -> AsyncIterator[RepositoryEntry]:
         query = self._build_select_query(**kwargs)
         async for row in self.submit_query_and_iter(query, kwargs):
             yield RepositoryEntry(*row)
