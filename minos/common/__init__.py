@@ -54,7 +54,6 @@ from .exceptions import (
     MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
-    MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
     MinosSagaManagerException,
     MinosSagaManagerNotProvidedException,
@@ -82,6 +81,7 @@ from .meta import (
 )
 from .model import (
     Aggregate,
+    AggregateAction,
     AggregateDiff,
     AggregateRef,
     AvroDataDecoder,
@@ -132,7 +132,6 @@ from .repository import (
     InMemoryRepository,
     MinosRepository,
     PostgreSqlRepository,
-    RepositoryAction,
     RepositoryEntry,
 )
 from .saga import (

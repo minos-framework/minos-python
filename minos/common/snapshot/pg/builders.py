@@ -35,7 +35,6 @@ from ...importlib import (
 )
 from ...repository import (
     MinosRepository,
-    RepositoryAction,
     RepositoryEntry,
 )
 from ..entries import (
@@ -133,7 +132,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset})
 
     async def _dispatch_one(self, event_entry: RepositoryEntry) -> Optional[SnapshotEntry]:
-        if event_entry.action is RepositoryAction.DELETE:
+        if event_entry.action.is_delete:
             return await self._submit_delete(event_entry)
 
         instance = await self._build_instance(event_entry)

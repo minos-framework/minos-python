@@ -14,6 +14,7 @@ from uuid import (
 )
 
 from minos.common import (
+    AggregateAction,
     AggregateDiff,
     Field,
     FieldsDiff,
@@ -45,6 +46,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid,
             name=Car.classname,
             version=1,
+            action=AggregateAction.CREATE,
             fields_diff=FieldsDiff(
                 {
                     "doors": Field("doors", int, 3),
@@ -57,7 +59,13 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_from_deleted_aggregate(self):
-        expected = AggregateDiff(uuid=self.uuid, name=Car.classname, version=1, fields_diff=FieldsDiff.empty())
+        expected = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=1,
+            action=AggregateAction.DELETE,
+            fields_diff=FieldsDiff.empty(),
+        )
         observed = AggregateDiff.from_deleted_aggregate(self.initial)
         self.assertEqual(expected, observed)
 
@@ -66,6 +74,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid,
             name=Car.classname,
             version=3,
+            action=AggregateAction.UPDATE,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
         )
         observed = AggregateDiff.from_difference(self.final, self.initial)
@@ -80,17 +89,23 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid,
             name=Car.classname,
             version=3,
+            action=AggregateAction.UPDATE,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "red")}),
         )
 
-        one = AggregateDiff(self.uuid, Car.classname, 1, FieldsDiff({"color": Field("color", str, "yellow")}))
+        one = AggregateDiff(
+            self.uuid, Car.classname, 1, AggregateAction.UPDATE, FieldsDiff({"color": Field("color", str, "yellow")})
+        )
         two = AggregateDiff(
             uuid=self.uuid,
             name=Car.classname,
             version=2,
+            action=AggregateAction.UPDATE,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 1), "color": Field("color", str, "red")}),
         )
-        three = AggregateDiff(self.uuid, Car.classname, 3, FieldsDiff({"doors": Field("doors", int, 5)}))
+        three = AggregateDiff(
+            self.uuid, Car.classname, 3, AggregateAction.UPDATE, FieldsDiff({"doors": Field("doors", int, 5)})
+        )
         observed = AggregateDiff.simplify(one, two, three)
         self.assertEqual(expected, observed)
 
@@ -99,6 +114,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid,
             name=Car.classname,
             version=1,
+            action=AggregateAction.CREATE,
             fields_diff=FieldsDiff(
                 {
                     "doors": Field("doors", int, 3),

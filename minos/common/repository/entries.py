@@ -12,9 +12,6 @@ from __future__ import (
 from datetime import (
     datetime,
 )
-from enum import (
-    Enum,
-)
 from typing import (
     TYPE_CHECKING,
     Iterable,
@@ -26,9 +23,6 @@ from uuid import (
     UUID,
 )
 
-from ..exceptions import (
-    MinosRepositoryUnknownActionException,
-)
 from ..importlib import (
     import_module,
 )
@@ -36,26 +30,9 @@ from ..importlib import (
 if TYPE_CHECKING:
     from ..model import (
         Aggregate,
+        AggregateAction,
         AggregateDiff,
     )
-
-
-class RepositoryAction(Enum):
-    """Enum class that describes the available repository actions."""
-
-    CREATE = "create"
-    UPDATE = "update"
-    DELETE = "delete"
-
-    @classmethod
-    def value_of(cls, value: str) -> Optional[RepositoryAction]:
-        """Get the action based on its text representation."""
-        for item in cls.__members__.values():
-            if item.value == value:
-                return item
-        raise MinosRepositoryUnknownActionException(
-            f"The given value does not match with any enum items. Obtained {value}"
-        )
 
 
 class RepositoryEntry:
@@ -71,13 +48,17 @@ class RepositoryEntry:
         version: int,
         data: Union[bytes, memoryview] = bytes(),
         id: Optional[int] = None,
-        action: Optional[Union[str, RepositoryAction]] = None,
+        action: Optional[Union[str, AggregateAction]] = None,
         created_at: Optional[datetime] = None,
     ):
         if isinstance(data, memoryview):
             data = data.tobytes()
         if action is not None and isinstance(action, str):
-            action = RepositoryAction.value_of(action)
+            from ..model import (
+                AggregateAction,
+            )
+
+            action = AggregateAction.value_of(action)
 
         self.aggregate_uuid = aggregate_uuid
         self.aggregate_name = aggregate_name
@@ -121,7 +102,7 @@ class RepositoryEntry:
         )
 
         return AggregateDiff(
-            self.aggregate_uuid, self.aggregate_name, self.version, FieldsDiff.from_avro_bytes(self.data)
+            self.aggregate_uuid, self.aggregate_name, self.version, self.action, FieldsDiff.from_avro_bytes(self.data)
         )
 
     def __eq__(self, other: "RepositoryEntry") -> bool:
