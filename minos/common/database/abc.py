@@ -18,6 +18,9 @@ from typing import (
 from aiopg import (
     Cursor,
 )
+from dependency_injector.wiring import (
+    Provide,
+)
 
 from ..setup import (
     MinosSetup,
@@ -30,6 +33,8 @@ from .pool import (
 class PostgreSqlMinosDatabase(ABC, MinosSetup):
     """PostgreSql Minos Database base class."""
 
+    _pool: Optional[PostgreSqlPool] = Provide["postgresql_pool"]
+
     def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.host = host
@@ -37,10 +42,9 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         self.database = database
         self.user = user
         self.password = password
-        self._pool = None
 
     async def _destroy(self) -> NoReturn:
-        if self._pool is not None:
+        if self._pool is not None and not isinstance(self._pool, Provide):
             await self._pool.destroy()
             self._pool = None
 
@@ -98,7 +102,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
 
         :return: A ``Pool`` object.
         """
-        if self._pool is None:
+        if self._pool is None or isinstance(self._pool, Provide):
             self._pool = PostgreSqlPool(
                 host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
             )

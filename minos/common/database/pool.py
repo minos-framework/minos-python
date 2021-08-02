@@ -37,6 +37,10 @@ class PostgreSqlPool(MinosPool):
         self.user = user
         self.password = password
 
+    @classmethod
+    def _from_config(cls, *args, config, **kwargs):
+        return cls(*args, **config.repository._asdict(), **kwargs)
+
     async def _create_instance(self) -> Connection:
         connection = await aiopg.connect(
             host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
