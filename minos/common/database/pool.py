@@ -38,16 +38,16 @@ class PostgreSqlPool(MinosPool):
         self.password = password
 
     async def _create_instance(self) -> Connection:
-        logger.info(f"Creating {self.database!r} database connection...")
         connection = await aiopg.connect(
             host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
         )
+        logger.info(f"Created {self.database!r} database connection identified by {id(connection)}!")
         return connection
 
     async def _destroy_instance(self, instance: Connection):
-        logger.info(f"Destroying {self.database!r} database connection...")
         if not instance.closed:
             await instance.close()
+        logger.info(f"Destroyed {self.database!r} database connection identified by {id(instance)}!")
 
     def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
         """Get a new cursor.
