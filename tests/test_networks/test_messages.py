@@ -51,6 +51,9 @@ class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
     def test_repr(self):
         self.assertEqual(f"WrappedRequest({self.base!r}, {self.action!r})", repr(self.request))
 
+    def test_user(self):
+        self.assertEqual(self.base.user, self.request.user)
+
 
 class TestResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:

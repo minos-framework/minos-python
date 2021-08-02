@@ -5,11 +5,15 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import uuid
 from collections import (
     namedtuple,
 )
 from datetime import (
     datetime,
+)
+from functools import (
+    cached_property,
 )
 from pathlib import (
     Path,
@@ -214,8 +218,9 @@ class FakeRequest(Request):
         super().__init__()
         self._content = content
 
+    @cached_property
     def user(self) -> Optional[UUID]:
-        return "test_user_uuid"
+        return uuid.uuid4()
 
     async def content(self, **kwargs):
         """For testing purposes"""
