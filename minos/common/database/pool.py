@@ -5,7 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-
+import logging
 from typing import (
     AsyncContextManager,
 )
@@ -23,6 +23,8 @@ from ..pools import (
     MinosPool,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class PostgreSqlPool(MinosPool):
     """Postgres Pool class."""
@@ -36,12 +38,14 @@ class PostgreSqlPool(MinosPool):
         self.password = password
 
     async def _create_instance(self) -> Connection:
+        logger.info(f"Creating {self.database!r} database connection...")
         connection = await aiopg.connect(
             host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
         )
         return connection
 
     async def _destroy_instance(self, instance: Connection):
+        logger.info(f"Destroying {self.database!r} database connection...")
         if not instance.closed:
             await instance.close()
 
