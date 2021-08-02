@@ -43,10 +43,13 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         self.user = user
         self.password = password
 
+        self._owned_pool = False
+
     async def _destroy(self) -> NoReturn:
-        if self._pool is not None and not isinstance(self._pool, Provide):
+        if self._owned_pool:
             await self._pool.destroy()
             self._pool = None
+            self._owned_pool = False
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.
@@ -127,4 +130,5 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
             self._pool = PostgreSqlPool(
                 host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
             )
+            self._owned_pool = True
         return self._pool
