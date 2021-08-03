@@ -66,6 +66,11 @@ class TestMinosSetup(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosConfigNotProvidedException):
             _MinosSetupMock.from_config()
 
+    def test_del(self):
+        instance = _MinosSetupMock(already_setup=True)
+        with self.assertWarns(ResourceWarning):
+            del instance
+
 
 class _MinosSetupMock(MinosSetup):
     def __init__(self, *args, **kwargs):

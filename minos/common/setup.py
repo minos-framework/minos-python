@@ -9,6 +9,8 @@ from __future__ import (
     annotations,
 )
 
+import logging
+import warnings
 from typing import (
     Generic,
     NoReturn,
@@ -27,6 +29,7 @@ from .exceptions import (
 )
 
 T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 
 class MinosSetup(Generic[T]):
@@ -66,6 +69,8 @@ class MinosSetup(Generic[T]):
             config = cls._config
             if isinstance(config, Provide):
                 raise MinosConfigNotProvidedException("The config object must be provided.")
+
+        logger.info(f"Building a {cls.__name__!r} instance from config...")
         return cls._from_config(*args, config=config, **kwargs)
 
     @classmethod
@@ -82,6 +87,7 @@ class MinosSetup(Generic[T]):
         :return: This method does not return anything.
         """
         if not self._already_setup:
+            logger.info(f"Setting up a {type(self).__name__!r} instance...")
             await self._setup()
             self._already_setup = True
 
@@ -97,8 +103,15 @@ class MinosSetup(Generic[T]):
         :return: This method does not return anything.
         """
         if self._already_setup:
+            logger.info(f"Destroying a {type(self).__name__!r} instance...")
             await self._destroy()
             self._already_setup = False
 
     async def _destroy(self) -> NoReturn:
         """Destroy miscellaneous repository things."""
+
+    def __del__(self):
+        if not self.already_destroyed:
+            warnings.warn(
+                f"A not destroyed {type(self).__name__!r} instance is trying to be deleted...", ResourceWarning
+            )
