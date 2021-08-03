@@ -40,6 +40,9 @@ class HandlerRequest(Request):
 
     @property
     def user(self) -> Optional[UUID]:
+        """
+        Returns the UUID of the user making the Request.
+        """
         return getattr(self.raw, "user", None)
 
     async def content(self, **kwargs) -> Any:

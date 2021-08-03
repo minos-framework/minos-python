@@ -73,6 +73,9 @@ class WrappedRequest(Request):
 
     @property
     def user(self) -> Optional[UUID]:
+        """
+        Returns the UUID of the user making the Request.
+        """
         return self.base.user
 
     async def content(self, **kwargs) -> Any:

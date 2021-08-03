@@ -61,6 +61,9 @@ class RestRequest(Request):
 
     @cached_property
     def user(self) -> Optional[UUID]:
+        """
+        Returns the UUID of the user making the Request.
+        """
         return UUID(self.raw_request.headers["User"])
 
     async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
