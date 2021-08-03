@@ -38,39 +38,47 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
 
     async def test_get_rest_command_query(self):
         handlers = self.builder.get_rest_command_query()
-        self.assertEqual(2, len(handlers))
+        self.assertEqual(3, len(handlers))
 
-        expected_response = Response("Get Tickets: test")
-        observed_response = await handlers[RestQueryEnrouteDecorator("tickets/", "GET")](self.request)
-        self.assertEqual(expected_response, observed_response)
+        expected = Response("Get Tickets: test")
+        observed = await handlers[RestQueryEnrouteDecorator("tickets/", "GET")](self.request)
+        self.assertEqual(expected, observed)
 
-        expected_response = Response("Create Ticket")
-        observed_response = await handlers[RestCommandEnrouteDecorator("orders/", "GET")](self.request)
-        self.assertEqual(expected_response, observed_response)
+        expected = Response("Create Ticket")
+        observed = await handlers[RestCommandEnrouteDecorator("orders/", "GET")](self.request)
+        self.assertEqual(expected, observed)
+
+        expected = None
+        observed = await handlers[RestCommandEnrouteDecorator("orders/", "DELETE")](self.request)
+        self.assertEqual(expected, observed)
 
     async def test_get_broker_event(self):
         handlers = self.builder.get_broker_event()
         self.assertEqual(1, len(handlers))
 
-        expected_response = Response("Ticket Added: [test]")
-        observed_response = await handlers[BrokerEventEnrouteDecorator("TicketAdded")](self.request)
-        self.assertEqual(expected_response, observed_response)
+        expected = Response("Ticket Added: [test]")
+        observed = await handlers[BrokerEventEnrouteDecorator("TicketAdded")](self.request)
+        self.assertEqual(expected, observed)
 
     async def test_get_broker_command_query(self):
         handlers = self.builder.get_broker_command_query()
-        self.assertEqual(3, len(handlers))
+        self.assertEqual(4, len(handlers))
 
-        expected_response = Response("Get Tickets: test")
-        observed_response = await handlers[BrokerQueryEnrouteDecorator("GetTickets")](self.request)
-        self.assertEqual(expected_response, observed_response)
+        expected = Response("Get Tickets: test")
+        observed = await handlers[BrokerQueryEnrouteDecorator("GetTickets")](self.request)
+        self.assertEqual(expected, observed)
 
-        expected_response = Response("Create Ticket")
-        observed_response = await handlers[BrokerCommandEnrouteDecorator("CreateTicket")](self.request)
-        self.assertEqual(expected_response, observed_response)
+        expected = Response("Create Ticket")
+        observed = await handlers[BrokerCommandEnrouteDecorator("CreateTicket")](self.request)
+        self.assertEqual(expected, observed)
 
-        expected_response = Response("Create Ticket")
-        observed_response = await handlers[BrokerCommandEnrouteDecorator("AddTicket")](self.request)
-        self.assertEqual(expected_response, observed_response)
+        expected = Response("Create Ticket")
+        observed = await handlers[BrokerCommandEnrouteDecorator("AddTicket")](self.request)
+        self.assertEqual(expected, observed)
+
+        expected = None
+        observed = await handlers[BrokerCommandEnrouteDecorator("DeleteTicket")](self.request)
+        self.assertEqual(expected, observed)
 
     def test_raises(self):
         class _BadService:

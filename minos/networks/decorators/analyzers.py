@@ -8,6 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 from inspect import (
     getmembers,
     isfunction,
+    ismethod,
 )
 from typing import (
     Type,
@@ -72,7 +73,7 @@ class EnrouteAnalyzer:
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
         result = dict()
-        for name, fn in getmembers(self.decorated, predicate=isfunction):
+        for name, fn in getmembers(self.decorated, predicate=lambda x: ismethod(x) or isfunction(x)):
             if not hasattr(fn, "__decorators__"):
                 continue
             result[name] = fn.__decorators__
