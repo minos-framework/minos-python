@@ -26,6 +26,7 @@ from .configuration import (
 )
 from .constants import (
     NULL_UUID,
+    UUID_REGEX,
 )
 from .database import (
     PostgreSqlMinosDatabase,
