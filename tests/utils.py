@@ -12,9 +12,6 @@ from collections import (
 from datetime import (
     datetime,
 )
-from functools import (
-    cached_property,
-)
 from pathlib import (
     Path,
 )
@@ -26,6 +23,10 @@ from typing import (
 from uuid import (
     UUID,
     uuid4,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (

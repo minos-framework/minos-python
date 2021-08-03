@@ -13,9 +13,6 @@ from abc import (
     ABC,
     abstractmethod,
 )
-from functools import (
-    cached_property,
-)
 from inspect import (
     isawaitable,
 )
@@ -74,7 +71,7 @@ class WrappedRequest(Request):
         self.action = action
         self._content = None
 
-    @cached_property
+    @property
     def user(self) -> Optional[UUID]:
         return self.base.user
 
