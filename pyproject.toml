@@ -36,7 +36,7 @@ aiomisc = "^14.0.3"
 aiopg = "^1.2.1"
 aiohttp = "^3.7.4"
 dependency-injector = "^4.32.2"
-minos-microservice-common = { git = "https://github.com/Clariteia/minos_microservice_common.git", rev="2ac9f6679ed420f2db31ebf0da7f2785f4233569" }
+minos-microservice-common = "^0.1.8"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"
