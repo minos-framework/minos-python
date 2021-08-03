@@ -5,6 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+import uuid
 from collections import (
     namedtuple,
 )
@@ -17,12 +18,19 @@ from pathlib import (
 from typing import (
     AsyncIterator,
     NoReturn,
+    Optional,
 )
 from uuid import (
+    UUID,
     uuid4,
 )
 
+from cached_property import (
+    cached_property,
+)
+
 from minos.common import (
+    AggregateAction,
     AggregateDiff,
     CommandReply,
     CommandStatus,
@@ -43,7 +51,9 @@ from minos.networks import (
 
 BASE_PATH = Path(__file__).parent
 
-FAKE_AGGREGATE_DIFF = AggregateDiff(uuid4(), "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
+FAKE_AGGREGATE_DIFF = AggregateDiff(
+    uuid4(), "Foo", 3, AggregateAction.CREATE, FieldsDiff({"doors": Field("doors", int, 5)})
+)
 
 
 class FakeModel(MinosModel):
@@ -187,6 +197,14 @@ class FakeService:
         """For testing purposes."""
         return Response("Create Ticket")
 
+    # noinspection PyUnusedLocal
+    @classmethod
+    @enroute.rest.command(url="orders/", method="DELETE")
+    @enroute.broker.command(topic="DeleteTicket")
+    def delete_ticket(cls, request: Request) -> NoReturn:
+        """For testing purposes."""
+        return
+
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
@@ -211,6 +229,10 @@ class FakeRequest(Request):
     def __init__(self, content):
         super().__init__()
         self._content = content
+
+    @cached_property
+    def user(self) -> Optional[UUID]:
+        return uuid.uuid4()
 
     async def content(self, **kwargs):
         """For testing purposes"""

@@ -61,3 +61,9 @@ History
 * Be compatible with `minos-microservice-common==0.1.7`.
 * Fix bug related with `EventConsumerService`, `CommandConsumerService` and `CommandReplyConsumerService` and the `start` method.
 * Fix bug related with `get_host_ip` function and some DNS systems.
+
+0.0.12 (2021-08-03)
+------------------
+
+* Small Improvements
+* Bugfixes

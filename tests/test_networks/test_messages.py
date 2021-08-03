@@ -25,7 +25,7 @@ from tests.utils import (
 class TestRequest(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(Request, ABC))
-        self.assertEqual({"content", "__eq__", "__repr__"}, Request.__abstractmethods__)
+        self.assertEqual({"user", "content", "__eq__", "__repr__"}, Request.__abstractmethods__)
 
 
 async def _action(content: str) -> str:
@@ -50,6 +50,9 @@ class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
 
     def test_repr(self):
         self.assertEqual(f"WrappedRequest({self.base!r}, {self.action!r})", repr(self.request))
+
+    def test_user(self):
+        self.assertEqual(self.base.user, self.request.user)
 
 
 class TestResponse(unittest.IsolatedAsyncioTestCase):
