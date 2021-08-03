@@ -43,6 +43,10 @@ class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
         another = HandlerRequest(Command("FooUpdated", self.data, self.saga, "AddOrderReply"))
         self.assertNotEqual(HandlerRequest(self.command), another)
 
+    def test_no_user(self):
+        request = HandlerRequest(self.command)
+        self.assertEqual(None, request.user)
+
     def test_command(self):
         request = HandlerRequest(self.command)
         self.assertEqual(self.command, request.raw)

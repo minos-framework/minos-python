@@ -19,6 +19,10 @@ from inspect import (
 from typing import (
     Any,
     Callable,
+    Optional,
+)
+from uuid import (
+    UUID,
 )
 
 from minos.common import (
@@ -32,6 +36,14 @@ from .exceptions import (
 
 class Request(ABC):
     """Request interface."""
+
+    @property
+    @abstractmethod
+    def user(self) -> Optional[UUID]:
+        """
+        Returns the UUID of the user making the Request.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     async def content(self, **kwargs) -> Any:
@@ -58,6 +70,13 @@ class WrappedRequest(Request):
         self.base = base
         self.action = action
         self._content = None
+
+    @property
+    def user(self) -> Optional[UUID]:
+        """
+        Returns the UUID of the user making the Request.
+        """
+        return self.base.user
 
     async def content(self, **kwargs) -> Any:
         """Get the request content.
