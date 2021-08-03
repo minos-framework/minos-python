@@ -10,6 +10,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from typing import (
     Generic,
     NoReturn,
@@ -68,6 +69,8 @@ class MinosSetup(Generic[T]):
             config = cls._config
             if isinstance(config, Provide):
                 raise MinosConfigNotProvidedException("The config object must be provided.")
+
+        logger.info(f"Building a {cls.__name__!r} instance from config...")
         return cls._from_config(*args, config=config, **kwargs)
 
     @classmethod
@@ -84,6 +87,7 @@ class MinosSetup(Generic[T]):
         :return: This method does not return anything.
         """
         if not self._already_setup:
+            logger.info(f"Setting up a {type(self).__name__!r} instance...")
             await self._setup()
             self._already_setup = True
 
@@ -99,6 +103,7 @@ class MinosSetup(Generic[T]):
         :return: This method does not return anything.
         """
         if self._already_setup:
+            logger.info(f"Destroying a {type(self).__name__!r} instance...")
             await self._destroy()
             self._already_setup = False
 
@@ -107,4 +112,6 @@ class MinosSetup(Generic[T]):
 
     def __del__(self):
         if not self.already_destroyed:
-            logger.warning(f"A not destroyed {type(self).__name__!r} instance is trying to be deleted...")
+            warnings.warn(
+                f"A not destroyed {type(self).__name__!r} instance is trying to be deleted...", ResourceWarning
+            )

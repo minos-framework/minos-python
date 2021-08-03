@@ -68,7 +68,8 @@ class TestMinosSetup(unittest.IsolatedAsyncioTestCase):
 
     def test_del(self):
         instance = _MinosSetupMock(already_setup=True)
-        del instance  # TODO: check warning
+        with self.assertWarns(ResourceWarning):
+            del instance
 
 
 class _MinosSetupMock(MinosSetup):
