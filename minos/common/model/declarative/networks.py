@@ -15,6 +15,7 @@ from enum import (
 )
 from typing import (
     Any,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -35,6 +36,7 @@ class Command(DeclarativeModel):
     data: Any
     saga: UUID
     reply_topic: str
+    user: Optional[UUID]
 
 
 class CommandReply(DeclarativeModel):
