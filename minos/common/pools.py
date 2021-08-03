@@ -29,8 +29,8 @@ T = TypeVar("T")
 class MinosPool(MinosSetup, PoolBase, Generic[T], ABC):
     """Base class for Pool implementations in minos"""
 
-    def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = None, **kwargs):
-        MinosSetup.__init__(self, *args, **kwargs)
+    def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = None, already_setup: bool = True, **kwargs):
+        MinosSetup.__init__(self, *args, already_setup=already_setup, **kwargs)
         PoolBase.__init__(self, maxsize=maxsize, recycle=recycle)
 
     def acquire(self) -> T:

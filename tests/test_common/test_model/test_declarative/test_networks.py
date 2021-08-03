@@ -11,6 +11,7 @@ from uuid import (
 )
 
 from minos.common import (
+    AggregateAction,
     AggregateDiff,
     Command,
     CommandReply,
@@ -30,16 +31,18 @@ class TestCommand(unittest.TestCase):
         self.data = [Foo("blue"), Foo("red")]
         self.saga = uuid4()
         self.reply_topic = "AddOrderReply"
+        self.user = uuid4()
 
     def test_constructor(self):
-        command = Command(self.topic, self.data, self.saga, self.reply_topic)
+        command = Command(self.topic, self.data, self.saga, self.reply_topic, self.user)
         self.assertEqual(self.topic, command.topic)
         self.assertEqual(self.data, command.data)
         self.assertEqual(self.saga, command.saga)
         self.assertEqual(self.reply_topic, command.reply_topic)
+        self.assertEqual(self.user, command.user)
 
     def test_avro_serialization(self):
-        command = Command(self.topic, self.data, self.saga, self.reply_topic)
+        command = Command(self.topic, self.data, self.saga, self.reply_topic, self.user)
         decoded_command = Command.from_avro_bytes(command.avro_bytes)
         self.assertEqual(command, decoded_command)
 
@@ -66,7 +69,9 @@ class TestCommandReply(unittest.TestCase):
 
 class TestEvent(unittest.TestCase):
     def setUp(self) -> None:
-        self.data = AggregateDiff(uuid4(), "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
+        self.data = AggregateDiff(
+            uuid4(), "Foo", 3, AggregateAction.CREATE, FieldsDiff({"doors": Field("doors", int, 5)})
+        )
         self.topic = "FooCreated"
 
     def test_constructor(self):

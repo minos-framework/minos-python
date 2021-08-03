@@ -9,25 +9,31 @@ from abc import (
     ABC,
 )
 from typing import (
+    AsyncContextManager,
     AsyncIterator,
-    ContextManager,
     NoReturn,
     Optional,
 )
 
-import aiopg
 from aiopg import (
     Cursor,
-    Pool,
+)
+from dependency_injector.wiring import (
+    Provide,
 )
 
-from .setup import (
+from ..setup import (
     MinosSetup,
+)
+from .pool import (
+    PostgreSqlPool,
 )
 
 
 class PostgreSqlMinosDatabase(ABC, MinosSetup):
     """PostgreSql Minos Database base class."""
+
+    _pool: Optional[PostgreSqlPool] = Provide["postgresql_pool"]
 
     def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -36,13 +42,14 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         self.database = database
         self.user = user
         self.password = password
-        self._pool = None
+
+        self._owned_pool = False
 
     async def _destroy(self) -> NoReturn:
-        if self._pool is not None:
-            self._pool.close()
-            await self._pool.wait_closed()
+        if self._owned_pool:
+            await self._pool.destroy()
             self._pool = None
+            self._owned_pool = False
 
     async def submit_query_and_fetchone(self, *args, **kwargs) -> tuple:
         """Submit a SQL query and gets the first response.
@@ -53,17 +60,38 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         """
         return await self.submit_query_and_iter(*args, **kwargs).__anext__()
 
-    async def submit_query_and_iter(self, *args, **kwargs) -> AsyncIterator[tuple]:
+    async def submit_query_and_iter(
+        self, *args, lock: Optional[int] = None, streaming_mode: bool = False, **kwargs
+    ) -> AsyncIterator[tuple]:
         """Submit a SQL query and return an asynchronous iterator.
 
         :param args: Additional positional arguments.
+        :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
+            lock.
+        :param streaming_mode: If ``True`` the data fetching is performed in streaming mode, that is iterating over the
+            cursor and yielding once a time (requires an opening connection to do that). Otherwise, all the data is
+            fetched and keep in memory before yielding it.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        with (await self.cursor()) as cursor:
-            await cursor.execute(*args, **kwargs)
-            async for row in cursor:
-                yield row
+        async with self.cursor() as cursor:
+            if lock is not None:
+                await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
+            try:
+                await cursor.execute(*args, **kwargs)
+
+                if streaming_mode:
+                    async for row in cursor:
+                        yield row
+                    return
+
+                rows = await cursor.fetchall()
+            finally:
+                if lock is not None:
+                    await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
+
+        for row in rows:
+            yield row
 
     async def submit_query(self, *args, lock: Optional[int] = None, **kwargs) -> NoReturn:
         """Submit a SQL query.
@@ -74,32 +102,33 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        with (await self.cursor()) as cursor:
+        async with self.cursor() as cursor:
             if lock is not None:
-                await cursor.execute("select pg_advisory_lock(%s)", (lock,))
+                await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
             try:
                 await cursor.execute(*args, **kwargs)
             finally:
                 if lock is not None:
-                    await cursor.execute("select pg_advisory_unlock(%s)", (lock,))
+                    await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
 
-    async def cursor(self, *args, **kwargs) -> ContextManager[Cursor]:
+    def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
         """Get a connection cursor from the pool.
 
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A ``Cursor`` instance wrapped inside a context manager.
         """
-        return await (await self.pool).cursor(*args, **kwargs)
+        return self.pool.cursor(*args, **kwargs)
 
     @property
-    async def pool(self) -> Pool:
+    def pool(self) -> PostgreSqlPool:
         """Get the connections pool.
 
         :return: A ``Pool`` object.
         """
-        if self._pool is None:
-            self._pool = await aiopg.create_pool(
-                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password,
+        if self._pool is None or isinstance(self._pool, Provide):
+            self._pool = PostgreSqlPool(
+                host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
             )
+            self._owned_pool = True
         return self._pool

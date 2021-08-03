@@ -9,7 +9,6 @@ from .abc import (
     MinosRepository,
 )
 from .entries import (
-    RepositoryAction,
     RepositoryEntry,
 )
 from .memory import (

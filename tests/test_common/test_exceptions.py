@@ -25,7 +25,6 @@ from minos.common import (
     MinosRepositoryManuallySetAggregateIdentifierException,
     MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
-    MinosRepositoryUnknownActionException,
     MinosReqAttributeException,
     MinosSagaManagerException,
     MinosSagaManagerNotProvidedException,
@@ -75,9 +74,6 @@ class TestExceptions(unittest.TestCase):
 
     def test_repository_manually_set_aggregate_version(self):
         self.assertTrue(issubclass(MinosRepositoryManuallySetAggregateVersionException, MinosRepositoryException))
-
-    def test_repository_bad_action(self):
-        self.assertTrue(issubclass(MinosRepositoryUnknownActionException, MinosRepositoryException))
 
     def test_repository_not_set(self):
         self.assertTrue(issubclass(MinosRepositoryNotProvidedException, MinosRepositoryException))

@@ -126,7 +126,7 @@ class AvroDataDecoder:
                 return self._cast_float(data)
 
             if issubclass(type_field, str):
-                return self._cast_string(data)
+                return self._cast_string(type_field, data)
 
             if issubclass(type_field, bytes):
                 return self._cast_bytes(data)
@@ -174,10 +174,10 @@ class AvroDataDecoder:
             raise MinosTypeAttributeException(self._name, bool, data)
         return data
 
-    def _cast_string(self, data: Any) -> str:
+    def _cast_string(self, type_field, data: Any) -> str:
         if not isinstance(data, str):
             raise MinosTypeAttributeException(self._name, str, data)
-        return data
+        return type_field(data)
 
     def _cast_bytes(self, data: Any) -> bytes:
         if not isinstance(data, bytes):

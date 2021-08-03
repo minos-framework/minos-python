@@ -133,3 +133,10 @@ History
 
 * Simplify configuration file
 * Bugfixes
+
+0.1.8 (2021-08-03)
+--------------------
+
+* Connection Pool improvement for async
+* Small inmprovements
+* Bugfixes

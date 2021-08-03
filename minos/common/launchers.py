@@ -16,8 +16,12 @@ from asyncio import (
 from enum import (
     Enum,
 )
+from types import (
+    ModuleType,
+)
 from typing import (
     NoReturn,
+    Optional,
     Type,
     Union,
 )
@@ -79,9 +83,13 @@ class EntrypointLauncher(MinosSetup):
         log_level: Union[int, str] = logging.INFO,
         log_format: Union[str, LogFormat] = "color",
         log_date_format: Union[str, DateFormat] = DateFormat["color"],
+        external_modules: Optional[list[ModuleType]] = None,
         *args,
         **kwargs
     ):
+        if external_modules is None:
+            external_modules = list()
+
         super().__init__(*args, **kwargs)
 
         if isinstance(log_date_format, Enum):
@@ -96,6 +104,7 @@ class EntrypointLauncher(MinosSetup):
 
         self._raw_injections = injections
         self._raw_services = services
+        self._external_modules = external_modules
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EntrypointLauncher:
@@ -182,10 +191,10 @@ class EntrypointLauncher(MinosSetup):
 
         :return: This method does not return anything.
         """
-        await self.injector.wire(modules=self._internal_modules)
+        await self.injector.wire(modules=self._external_modules + self._internal_modules)
 
     @property
-    def _internal_modules(self):
+    def _internal_modules(self) -> list[ModuleType]:
         from minos import (
             common,
         )
