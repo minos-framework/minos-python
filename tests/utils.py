@@ -187,6 +187,14 @@ class FakeService:
         """For testing purposes."""
         return Response("Create Ticket")
 
+    # noinspection PyUnusedLocal
+    @classmethod
+    @enroute.rest.command(url="orders/", method="DELETE")
+    @enroute.broker.command(topic="DeleteTicket")
+    def delete_ticket(cls, request: Request) -> NoReturn:
+        """For testing purposes."""
+        return
+
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
