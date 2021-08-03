@@ -117,12 +117,12 @@ class CommandHandler(Handler):
                 return response, CommandStatus.SUCCESS
             except ResponseException as exc:
                 logger.info(f"Raised a user exception: {exc!s}")
-                return None, CommandStatus.ERROR
+                return repr(exc), CommandStatus.ERROR
             except MinosException as exc:
                 logger.warning(f"Raised a 'minos' exception: {exc!r}")
-                return None, CommandStatus.SYSTEM_ERROR
+                return repr(exc), CommandStatus.SYSTEM_ERROR
             except Exception as exc:
                 logger.exception(f"Raised an exception: {exc!r}.")
-                return None, CommandStatus.SYSTEM_ERROR
+                return repr(exc), CommandStatus.SYSTEM_ERROR
 
         return _fn

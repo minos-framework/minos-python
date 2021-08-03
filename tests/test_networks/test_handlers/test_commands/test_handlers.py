@@ -44,11 +44,11 @@ class _Cls:
 
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
-        raise HandlerResponseException("")
+        raise HandlerResponseException("foo")
 
     @staticmethod
     async def _fn_raises_minos(request: Request) -> Response:
-        raise MinosActionNotFoundException("")
+        raise MinosActionNotFoundException("bar")
 
     @staticmethod
     async def _fn_raises_exception(request: Request) -> Response:
@@ -112,15 +112,18 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
-        self.assertEqual((None, CommandStatus.ERROR), await fn(self.command))
+        expected = (repr(HandlerResponseException("foo")), CommandStatus.ERROR)
+        self.assertEqual(expected, await fn(self.command))
 
     async def test_get_callback_raises_minos(self):
         fn = self.handler.get_callback(_Cls._fn_raises_minos)
-        self.assertEqual((None, CommandStatus.SYSTEM_ERROR), await fn(self.command))
+        expected = (repr(MinosActionNotFoundException("bar")), CommandStatus.SYSTEM_ERROR)
+        self.assertEqual(expected, await fn(self.command))
 
     async def test_get_callback_raises_exception(self):
         fn = self.handler.get_callback(_Cls._fn_raises_exception)
-        self.assertEqual((None, CommandStatus.SYSTEM_ERROR), await fn(self.command))
+        expected = (repr(ValueError()), CommandStatus.SYSTEM_ERROR)
+        self.assertEqual(expected, await fn(self.command))
 
 
 if __name__ == "__main__":
