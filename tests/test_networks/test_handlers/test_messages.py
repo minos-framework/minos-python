@@ -32,7 +32,7 @@ class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
         request = HandlerRequest(self.command)
         expected = (
             "HandlerRequest(Command(topic=FooCreated, data=[FakeModel(text=foo), FakeModel(text=bar)], "
-            f"saga={self.saga!s}, reply_topic=AddOrderReply))"
+            f"saga={self.saga!s}, reply_topic=AddOrderReply, user=None))"
         )
         self.assertEqual(expected, repr(request))
 

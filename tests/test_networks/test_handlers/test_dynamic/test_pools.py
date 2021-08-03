@@ -34,7 +34,7 @@ class TestDynamicHandler(PostgresAsyncTestCase):
         self.assertEqual(self.config, self.pool.config)
 
     async def test_setup_destroy(self):
-        self.assertFalse(self.pool.already_setup)
+        self.assertTrue(self.pool.already_setup)
         async with self.pool:
             self.assertTrue(self.pool.already_setup)
             async with self.pool.acquire():

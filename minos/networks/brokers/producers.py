@@ -59,13 +59,13 @@ class Producer(BrokerSetup):
 
         :return: This method does not return anything.
         """
-        pool = await self.pool
-        with await pool.cursor() as cursor:
+        async with self.cursor() as cursor:
             # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
             # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
             await cursor.execute("BEGIN")
 
             # Select records and lock them FOR UPDATE
+            # noinspection PyTypeChecker
             await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self.retry, self.records))
             result = await cursor.fetchall()
 
@@ -77,8 +77,10 @@ class Producer(BrokerSetup):
                     logger.warning(f"Raised an exception while publishing a message: {exc!r}")
                 finally:
                     if published:
+                        # noinspection PyTypeChecker
                         await cursor.execute(_DELETE_PROCESSED_QUERY, (row[0],))
                     else:
+                        # noinspection PyTypeChecker
                         await cursor.execute(_UPDATE_NON_PROCESSED_QUERY, (row[0],))
 
             # Manually commit
