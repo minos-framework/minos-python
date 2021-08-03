@@ -30,6 +30,7 @@ from cached_property import (
 )
 
 from minos.common import (
+    AggregateAction,
     AggregateDiff,
     CommandReply,
     CommandStatus,
@@ -50,7 +51,9 @@ from minos.networks import (
 
 BASE_PATH = Path(__file__).parent
 
-FAKE_AGGREGATE_DIFF = AggregateDiff(uuid4(), "Foo", 3, FieldsDiff({"doors": Field("doors", int, 5)}))
+FAKE_AGGREGATE_DIFF = AggregateDiff(
+    uuid4(), "Foo", 3, AggregateAction.CREATE, FieldsDiff({"doors": Field("doors", int, 5)})
+)
 
 
 class FakeModel(MinosModel):
@@ -193,6 +196,14 @@ class FakeService:
     def create_ticket(self, request: Request) -> Response:
         """For testing purposes."""
         return Response("Create Ticket")
+
+    # noinspection PyUnusedLocal
+    @classmethod
+    @enroute.rest.command(url="orders/", method="DELETE")
+    @enroute.broker.command(topic="DeleteTicket")
+    def delete_ticket(cls, request: Request) -> NoReturn:
+        """For testing purposes."""
+        return
 
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topic="GetTickets")
