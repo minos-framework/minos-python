@@ -16,6 +16,9 @@ from datetime import (
     time,
     timedelta,
 )
+from decimal import (
+    Decimal,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -64,6 +67,12 @@ class AvroDataEncoder:
 
         if isinstance(value, (str, int, bool, float, bytes)):
             return value
+
+        if isinstance(value, memoryview):
+            return value.tobytes()
+
+        if isinstance(value, Decimal):
+            return float(value)
 
         if isinstance(value, datetime):
             return self._datetime_to_avro_raw(value)
