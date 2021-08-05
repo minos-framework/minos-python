@@ -49,20 +49,21 @@ class DeclarativeModel(Model, Generic[T]):
         :param kwargs: Named arguments to be set as model attributes.
         """
         super().__init__()
-        self._list_fields(*args, **kwargs)
+        self._build_fields(*args, **kwargs)
 
     # noinspection PyUnusedLocal
     @classmethod
-    def from_model_type(cls, model_type: ModelType, data: dict[str, Any]):
-        """Build a ``DeclarativeModel`` from a ``ModelType`` and ``data``.
+    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> T:
+        """Build a ``DeclarativeModel`` from a ``ModelType``.
 
-        :param model_type: ``ModelType`` object containing the DTO's structure
-        :param data: A dictionary containing the values to be stored on the DTO.
+        :param model_type: ``ModelType`` object containing the model structure.
+        :param args: Positional arguments to be passed to the model constructor.
+        :param kwargs: Named arguments to be passed to the model constructor.
         :return: A new ``DeclarativeModel`` instance.
         """
-        return cls(**data)
+        return cls(*args, **kwargs)
 
-    def _list_fields(self, *args, **kwargs) -> NoReturn:
+    def _build_fields(self, *args, **kwargs) -> NoReturn:
         for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
             if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")

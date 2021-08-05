@@ -142,12 +142,20 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
             DataTransferObject("example.Order", {})
 
     def test_from_typed_dict_model(self):
-        dto = DataTransferObject.from_typed_dict(TypedDict("Foo", {"text": str}), {"text": "test"})
+        dto = DataTransferObject.from_typed_dict(TypedDict("Foo", {"text": str}), text="test")
         self.assertEqual(DataTransferObject("Foo", {Field("text", str, "test")}), dto)
 
-    def test_from_model_type_model(self):
-        dto = DataTransferObject.from_model_type(ModelType.build("Foo", {"text": str}), {"text": "test"})
+    def test_from_model_type_positional(self):
+        dto = DataTransferObject.from_model_type(ModelType.build("Foo", {"text": str}), "test")
         self.assertEqual(DataTransferObject("Foo", {Field("text", str, "test")}), dto)
+
+    def test_from_model_type_named(self):
+        dto = DataTransferObject.from_model_type(ModelType.build("Foo", {"text": str}), text="test")
+        self.assertEqual(DataTransferObject("Foo", {Field("text", str, "test")}), dto)
+
+    def test_from_model_type_raises(self):
+        with self.assertRaises(TypeError):
+            DataTransferObject.from_model_type(ModelType.build("Foo", {"text": str}), "test", text="test")
 
     def test_avro_schema(self):
         data = {"price": 34, "user": {"username": [434324, 66464, 45432]}}
