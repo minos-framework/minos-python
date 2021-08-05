@@ -12,6 +12,9 @@ from datetime import (
     datetime,
     time,
 )
+from decimal import (
+    Decimal,
+)
 from uuid import (
     uuid4,
 )
@@ -33,6 +36,19 @@ class TestAvroDataEncoder(unittest.TestCase):
     def test_build_float(self):
         encoder = AvroDataEncoder(3.5)
         self.assertEqual(3.5, encoder.build())
+
+    def test_build_decimal(self):
+        encoder = AvroDataEncoder(Decimal("3.5"))
+        self.assertEqual(3.5, encoder.build())
+
+    def test_build_bytes(self):
+        encoder = AvroDataEncoder(b"test")
+        self.assertEqual(b"test", encoder.build())
+
+    # noinspection SpellCheckingInspection
+    def test_build_memoryview(self):
+        encoder = AvroDataEncoder(memoryview(b"test"))
+        self.assertEqual(b"test", encoder.build())
 
     def test_build_raises(self):
         encoder = AvroDataEncoder(_Foo())
