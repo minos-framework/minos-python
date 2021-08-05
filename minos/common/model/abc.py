@@ -10,6 +10,9 @@ from __future__ import (
 )
 
 import logging
+from abc import (
+    abstractmethod,
+)
 from base64 import (
     b64decode,
     b64encode,
@@ -20,6 +23,7 @@ from typing import (
     Iterable,
     NoReturn,
     Type,
+    TypedDict,
     TypeVar,
     Union,
 )
@@ -129,6 +133,28 @@ class Model(Generic[T]):
         if isinstance(decoded, list):
             return [cls.from_avro(schema, d | kwargs) for d in decoded]
         return cls.from_avro(schema, decoded | kwargs)
+
+    @classmethod
+    def from_typed_dict(cls, typed_dict: TypedDict, *args, **kwargs) -> T:
+        """Build a ``Model`` from a ``TypeDict`` and ``data``.
+
+        :param typed_dict: ``TypeDict`` object containing the DTO's structure
+        :param args: Positional arguments to be passed to the model constructor.
+        :param kwargs: Named arguments to be passed to the model constructor.
+        :return: A new ``DataTransferObject`` instance.
+        """
+        return cls.from_model_type(ModelType.from_typed_dict(typed_dict), *args, **kwargs)
+
+    @classmethod
+    @abstractmethod
+    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> T:
+        """Build a ``Model`` from a ``ModelType``.
+
+        :param model_type: ``ModelType`` object containing the DTO's structure
+        :param args: Positional arguments to be passed to the model constructor.
+        :param kwargs: Named arguments to be passed to the model constructor.
+        :return: A new ``DeclarativeModel`` instance.
+        """
 
     @classmethod
     def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> T:

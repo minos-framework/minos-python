@@ -69,7 +69,7 @@ class ModelType(type):
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
 
     def __call__(cls, *args, **kwargs) -> Model:
-        return cls.model_cls.from_model_type(cls, kwargs)
+        return cls.model_cls.from_model_type(cls, *args, **kwargs)
 
     @property
     def model_cls(cls) -> Type[Model]:

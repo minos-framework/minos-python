@@ -10,8 +10,10 @@ from __future__ import (
 )
 
 import logging
+from itertools import (
+    zip_longest,
+)
 from typing import (
-    Any,
     Generic,
     Iterable,
     TypeVar,
@@ -25,6 +27,7 @@ from ..fields import (
     Field,
 )
 from ..types import (
+    MissingSentinel,
     ModelType,
 )
 
@@ -40,11 +43,26 @@ class DynamicModel(Model, Generic[T]):
         super().__init__(fields)
 
     @classmethod
-    def from_model_type(cls, model_type: ModelType, data: dict[str, Any]) -> T:
-        """Build a ``DynamicModel`` from a ``ModelType`` and ``data``.
+    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> T:
+        """Build a ``DynamicModel`` from a ``ModelType``.
 
-        :param model_type: ``ModelType`` object containing the DTO's structure
-        :param data: A dictionary containing the values to be stored on the DTO.
+        :param model_type: ``ModelType`` object containing the model structure
+        :param args: Positional arguments to be passed to the model constructor.
+        :param kwargs: Named arguments to be passed to the model constructor.
         :return: A new ``DynamicModel`` instance.
         """
-        return cls(fields={k: Field(k, v, data[k]) for k, v in model_type.type_hints.items()})
+        fields = cls._build_fields(model_type.type_hints, *args, **kwargs)
+        return cls(fields)
+
+    @staticmethod
+    def _build_fields(type_hints: dict[str, type], *args, **kwargs) -> dict[str, Field]:
+        fields = dict()
+        for (name, type_val), value in zip_longest(type_hints.items(), args, fillvalue=MissingSentinel):
+            if name in kwargs and value is not MissingSentinel:
+                raise TypeError(f"got multiple values for argument {repr(name)}")
+
+            if value is MissingSentinel and name in kwargs:
+                value = kwargs[name]
+
+            fields[name] = Field(name, type_val, value)
+        return fields
