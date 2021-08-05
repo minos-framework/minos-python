@@ -121,7 +121,7 @@ class AvroSchemaDecoder:
             return mt
 
         model_type = ModelType.build(
-            name, {field["name"]: self._build_type(field["type"]) for field in fields}, namespace
+            name, {field["name"]: self._build_type(field["type"]) for field in fields}, namespace_=namespace
         )
 
         model_type = _unpatch_namespace(model_type)

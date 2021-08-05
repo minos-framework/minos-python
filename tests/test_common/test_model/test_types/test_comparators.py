@@ -96,13 +96,13 @@ class TestTypeHintComparator(unittest.TestCase):
         self.assertTrue(TypeHintComparator(list[Aggregate], list[Car.model_type]).match())
 
     def test_equal_optional(self):
-        one = ModelType.build("Foo", {"text": int}, "bar")
-        two = ModelType.build("Foo", {"text": int}, "bar")
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int}, namespace_="bar")
         self.assertTrue(TypeHintComparator(Optional[one], Optional[two]).match())
 
     def test_equal_optional_false(self):
-        one = ModelType.build("Foo", {"text": int}, "bar")
-        two = ModelType.build("Foo", {"text": float}, "bar")
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": float}, namespace_="bar")
         self.assertFalse(TypeHintComparator(Optional[one], Optional[two]).match())
 
     def test_equal_declarative(self):

@@ -45,7 +45,7 @@ class TestAvroSchemaEncoder(unittest.TestCase):
             },
         }
 
-        observed = AvroSchemaEncoder("class", ModelType.build("User", {"username": str}, "path.to")).build()
+        observed = AvroSchemaEncoder("class", ModelType.build("User", {"username": str}, namespace_="path.to")).build()
         self.assertEqual(expected, observed)
 
     def test_int(self):
