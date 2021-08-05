@@ -51,7 +51,7 @@ class OnReplyExecutor(LocalExecutor):
             raise MinosSagaPausedExecutionStepException()
 
         if reply.status != CommandStatus.SUCCESS:
-            raise MinosCommandReplyFailedException(f"CommandReply status is not success. Obtained: {reply.status!s}")
+            raise MinosCommandReplyFailedException(f"CommandReply failed with {reply.status!s} status: {reply.data!s}")
 
         if operation is None:
             return context
