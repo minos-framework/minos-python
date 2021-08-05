@@ -72,9 +72,9 @@ class HandlerEntry(Generic[T]):
 
     @cached_property
     def callback(self) -> Optional[Callable]:
-        """
+        """Get the callback if lookup is provided.
 
-        :return:
+        :return: A Callable object or None.
         """
         if self.callback_lookup is None:
             return None
@@ -82,9 +82,9 @@ class HandlerEntry(Generic[T]):
 
     @cached_property
     def data(self) -> T:
-        """
+        """Get the data.
 
-        :return:
+        :return: A ``Model`` inherited instance.
         """
         return self.data_cls.from_avro_bytes(self.data_bytes)
 
