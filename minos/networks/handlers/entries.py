@@ -9,6 +9,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from datetime import (
     datetime,
 )
@@ -24,6 +25,7 @@ from minos.common import (
     Model,
 )
 
+logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
@@ -39,6 +41,7 @@ class HandlerEntry(Generic[T]):
         data: T,
         retry: int,
         created_at: datetime,
+        failed: bool = False,
     ):
         self.id = id
         self.topic = topic
@@ -47,6 +50,7 @@ class HandlerEntry(Generic[T]):
         self.data = data
         self.retry = retry
         self.created_at = created_at
+        self.failed = failed
 
     @classmethod
     def from_raw(
@@ -64,11 +68,27 @@ class HandlerEntry(Generic[T]):
         """
         id = raw[0]
         topic = raw[1]
-        callback = None if callback_lookup is None else callback_lookup(raw[1])
+
+        failed = False
+        try:
+            callback = None if callback_lookup is None else callback_lookup(raw[1])
+        except Exception as exc:
+            logger.warning(f"Raised an exception while dispatching {id!s} row: {exc!r}")
+            callback = None
+            failed = True
+
         partition_id = raw[2]
-        data = data_cls.from_avro_bytes(raw[3])
+
+        try:
+            data = data_cls.from_avro_bytes(raw[3])
+        except Exception as exc:
+            logger.warning(f"Raised an exception while dispatching {id!s} row: {exc!r}")
+
+            data = None
+            failed = True
+
         retry = raw[4]
         created_at = raw[5]
 
-        entry = cls(id, topic, callback, partition_id, data, retry, created_at)
+        entry = cls(id, topic, callback, partition_id, data, retry, created_at, failed)
         return entry

@@ -93,36 +93,37 @@ class Handler(HandlerSetup):
             await cursor.execute(
                 _SELECT_NON_PROCESSED_ROWS_QUERY.format(Identifier(self.TABLE_NAME)), (self._retry, self._records)
             )
+
             result = await cursor.fetchall()
+            entries = self._build_entries(result)
 
-            for row in result:
-                dispatched = await self._dispatch_one(row)
-                if dispatched:
-                    # noinspection PyTypeChecker
-                    await cursor.execute(_DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
+            for entry in entries:
+                await self._dispatch_one(entry)
+
+            for entry in entries:
+                if not entry.failed:
+                    query = _DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME))
                 else:
-                    # noinspection PyTypeChecker
-                    await cursor.execute(_UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
+                    query = _UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME))
 
+                # noinspection PyTypeChecker
+                await cursor.execute(query, (entry.id,))
             # Manually commit
             await cursor.execute("COMMIT")
 
-    async def _dispatch_one(self, row: tuple) -> bool:
-        try:
-            entry = self._build_entry(row)
-        except Exception as exc:
-            logger.warning(f"Raised an exception while building the message with id={row[0]}: {exc!r}")
-            return False
-
+    async def _dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         logger.debug(f"Dispatching '{entry.data!s}'...")
+        if entry.failed:
+            return
 
         try:
             await self.dispatch_one(entry)
         except Exception as exc:
             logger.warning(f"Raised an exception while dispatching {entry.data!s}: {exc!r}")
-            return False
+            entry.failed = True
 
-        return True
+    def _build_entries(self, rows: list[tuple]) -> list[HandlerEntry]:
+        return [self._build_entry(row) for row in rows]
 
     def _build_entry(self, row: tuple[int, str, int, bytes, int, datetime]) -> HandlerEntry:
         return HandlerEntry.from_raw(row, callback_lookup=self.get_action, data_cls=self.ENTRY_MODEL_CLS)
