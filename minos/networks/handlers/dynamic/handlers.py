@@ -32,7 +32,6 @@ from minos.common import (
     BROKER,
     MinosConfig,
     MinosHandler,
-    Model,
 )
 
 from ...exceptions import (
@@ -94,10 +93,6 @@ class DynamicHandler(MinosHandler):
         :return: A list of ``HandlerEntry`` instances.
         """
 
-        async def _fn(message: Any) -> HandlerEntry:
-            message = self._build_tuple(message)
-            return await self._build_entry(message)
-
         try:
             raw = await wait_for(self._get_many(topics, count), timeout=timeout)
         except TimeoutError:
@@ -105,9 +100,13 @@ class DynamicHandler(MinosHandler):
                 f"Timeout exceeded while trying to fetch {count!r} entries from {topics!r}."
             )
 
-        entries = [await _fn(message) for message in raw]
+        def _fn(message: Any) -> HandlerEntry:
+            message = self._build_tuple(message)
+            return HandlerEntry(*message)
 
-        logger.info(f"Obtained {[v.data for v in entries]} entries...")
+        entries = [_fn(message) for message in raw]
+
+        logger.info(f"Obtained {entries!r} entries...")
 
         return entries
 
@@ -130,21 +129,6 @@ class DynamicHandler(MinosHandler):
     @staticmethod
     def _build_tuple(record: Any) -> tuple[int, str, int, bytes, int, datetime]:
         return 0, record.topic, record.partition, record.value, 0, datetime.now()
-
-    @staticmethod
-    async def _build_entry(row: tuple[int, str, int, bytes, int, datetime]) -> HandlerEntry:
-        # TODO: Refactor this method.
-
-        id = row[0]
-        topic = row[1]
-        callback = None
-        partition_id = row[2]
-        data = Model.from_avro_bytes(row[3])
-        retry = row[4]
-        created_at = row[5]
-
-        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
-        return entry
 
 
 class DynamicReplyHandler(MinosHandler):
@@ -201,11 +185,6 @@ class DynamicReplyHandler(MinosHandler):
         :param count: Number of entries to be collected.
         :return: A list of ``HandlerEntry`` instances.
         """
-
-        async def _fn(message: Any) -> HandlerEntry:
-            message = self._build_tuple(message)
-            return await self._build_entry(message)
-
         try:
             raw = await wait_for(self._get_many(count), timeout=timeout)
         except TimeoutError:
@@ -213,9 +192,9 @@ class DynamicReplyHandler(MinosHandler):
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self._real_topic!r}."
             )
 
-        entries = [await _fn(message) for message in raw]
+        entries = [HandlerEntry(0, record.topic, record.partition, record.value) for record in raw]
 
-        logger.info(f"Obtained {[v.data for v in entries]} entries...")
+        logger.info(f"Dispatching '{entries if count > 1 else entries[0]!s}'...")
 
         return entries
 
@@ -226,22 +205,3 @@ class DynamicReplyHandler(MinosHandler):
             raw.append(await self.consumer.getone())
 
         return raw
-
-    @staticmethod
-    def _build_tuple(record: Any) -> tuple[int, str, int, bytes, int, datetime]:
-        return 0, record.topic, record.partition, record.value, 0, datetime.now()
-
-    @staticmethod
-    async def _build_entry(row: tuple[int, str, int, bytes, int, datetime]) -> HandlerEntry:
-        # TODO: Refactor this method.
-
-        id = row[0]
-        topic = row[1]
-        callback = None
-        partition_id = row[2]
-        data = Model.from_avro_bytes(row[3])
-        retry = row[4]
-        created_at = row[5]
-
-        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
-        return entry

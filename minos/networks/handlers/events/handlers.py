@@ -56,7 +56,7 @@ class EventHandler(Handler):
 
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry[Event]) -> NoReturn:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.

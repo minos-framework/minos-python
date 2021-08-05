@@ -13,9 +13,6 @@ import logging
 from abc import (
     abstractmethod,
 )
-from datetime import (
-    datetime,
-)
 from typing import (
     Any,
     Callable,
@@ -24,6 +21,9 @@ from typing import (
     Type,
 )
 
+from cached_property import (
+    cached_property,
+)
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -88,53 +88,52 @@ class Handler(HandlerSetup):
             # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
             await cursor.execute("BEGIN")
 
-            # Select records and lock them FOR UPDATE
             # noinspection PyTypeChecker
-            await cursor.execute(
-                _SELECT_NON_PROCESSED_ROWS_QUERY.format(Identifier(self.TABLE_NAME)), (self._retry, self._records)
-            )
+            await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
+
             result = await cursor.fetchall()
+            entries = self._build_entries(result)
+            await self._dispatch_entries(entries)
 
-            for row in result:
-                dispatched = await self._dispatch_one(row)
-                if dispatched:
-                    # noinspection PyTypeChecker
-                    await cursor.execute(_DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
-                else:
-                    # noinspection PyTypeChecker
-                    await cursor.execute(_UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)), (row[0],))
+            for entry in entries:
+                query = self._queries["delete_processed"] if entry.success else self._queries["update_non_processed"]
+                # noinspection PyTypeChecker
+                await cursor.execute(query, (entry.id,))
 
-            # Manually commit
             await cursor.execute("COMMIT")
 
-    async def _dispatch_one(self, row: tuple) -> bool:
-        try:
-            entry = await self._build_entry(row)
-        except Exception as exc:
-            logger.warning(f"Raised an exception while building the message with id={row[0]}: {exc!r}")
-            return False
+    @cached_property
+    def _queries(self):
+        return {
+            "select_non_processed": _SELECT_NON_PROCESSED_ROWS_QUERY.format(Identifier(self.TABLE_NAME)),
+            "delete_processed": _DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
+            "update_non_processed": _UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
+        }
 
-        logger.debug(f"Dispatching '{entry.data!s}'...")
+    def _build_entries(self, rows: list[tuple]) -> list[HandlerEntry]:
+        kwargs = {"callback_lookup": self.get_action, "data_cls": self.ENTRY_MODEL_CLS}
+        return [HandlerEntry(*row, **kwargs) for row in rows]
 
+    async def _dispatch_entries(self, entries: list[HandlerEntry]) -> NoReturn:
+        for entry in entries:
+            await self._dispatch_one(entry)
+
+    async def _dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+        logger.debug(f"Dispatching '{entry!r}'...")
         try:
             await self.dispatch_one(entry)
         except Exception as exc:
-            logger.warning(f"Raised an exception while dispatching {entry.data!s}: {exc!r}")
-            return False
+            logger.warning(f"Raised an exception while dispatching {entry!r}: {exc!r}")
+            entry.exception = exc
 
-        return True
+    @abstractmethod
+    async def dispatch_one(self, entry: HandlerEntry[ENTRY_MODEL_CLS]) -> NoReturn:
+        """Dispatch one row.
 
-    async def _build_entry(self, row: tuple[int, str, int, bytes, datetime]) -> HandlerEntry:
-        id = row[0]
-        topic = row[1]
-        callback = self.get_action(row[1])
-        partition_id = row[2]
-        data = self.ENTRY_MODEL_CLS.from_avro_bytes(row[3])
-        retry = row[4]
-        created_at = row[5]
-
-        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
-        return entry
+        :param entry: Entry to be dispatched.
+        :return: This method does not return anything.
+        """
+        raise NotImplementedError
 
     def get_action(self, topic: str) -> Optional[Callable]:
         """Get Event instance to call.
@@ -160,15 +159,6 @@ class Handler(HandlerSetup):
 
         logger.debug(f"Loaded {handler!r} action!")
         return handler
-
-    @abstractmethod
-    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
-        """Dispatch one row.
-
-        :param entry: Entry to be dispatched.
-        :return: This method does not return anything.
-        """
-        raise NotImplementedError
 
 
 _SELECT_NON_PROCESSED_ROWS_QUERY = SQL(

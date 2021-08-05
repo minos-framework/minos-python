@@ -1,7 +1,4 @@
 import unittest
-from datetime import (
-    datetime,
-)
 from uuid import (
     uuid4,
 )
@@ -49,7 +46,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         saga_manager = FakeSagaManager()
         saga = uuid4()
         command = CommandReply("TicketAdded", [FakeModel("foo")], saga, CommandStatus.SUCCESS)
-        entry = HandlerEntry(1, "TicketAdded", None, 0, command, 1, datetime.now())
+        entry = HandlerEntry(1, "TicketAdded", 0, command.avro_bytes, 1)
 
         async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:
             await handler.dispatch_one(entry)

@@ -1,9 +1,7 @@
 import unittest
-from datetime import (
-    datetime,
-)
 from unittest.mock import (
     AsyncMock,
+    MagicMock,
     call,
 )
 
@@ -70,15 +68,21 @@ class TestEventHandler(PostgresAsyncTestCase):
         self.assertEqual(Event, EventHandler.ENTRY_MODEL_CLS)
 
     async def test_dispatch_one(self):
-        mock = AsyncMock()
+        callback_mock = AsyncMock()
+        lookup_mock = MagicMock(return_value=callback_mock)
+
         topic = "TicketAdded"
         event = Event(topic, FAKE_AGGREGATE_DIFF)
-        entry = HandlerEntry(1, topic, mock, 0, event, 1, datetime.now())
+        entry = HandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         async with self.handler:
             await self.handler.dispatch_one(entry)
-        self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(HandlerRequest(event)), mock.call_args)
+
+        self.assertEqual(1, lookup_mock.call_count)
+        self.assertEqual(call("TicketAdded"), lookup_mock.call_args)
+
+        self.assertEqual(1, callback_mock.call_count)
+        self.assertEqual(call(HandlerRequest(event)), callback_mock.call_args)
 
     async def test_get_callback(self):
         fn = self.handler.get_callback(_Cls._fn)
