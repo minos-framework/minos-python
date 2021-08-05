@@ -1,9 +1,8 @@
 import unittest
-from datetime import (
-    datetime,
-)
 from unittest.mock import (
     AsyncMock,
+    MagicMock,
+    call,
 )
 from uuid import (
     uuid4,
@@ -83,12 +82,15 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(Command, CommandHandler.ENTRY_MODEL_CLS)
 
     async def test_dispatch(self):
-        mock = AsyncMock(return_value=Response("add_order"))
-
-        entry = HandlerEntry(1, "AddOrder", mock, 0, self.command, 1, datetime.now())
+        callback_mock = AsyncMock(return_value=Response("add_order"))
+        lookup_mock = MagicMock(return_value=callback_mock)
+        entry = HandlerEntry(1, "AddOrder", 0, self.command.avro_bytes, 1, callback_lookup=lookup_mock)
 
         async with self.handler:
             await self.handler.dispatch_one(entry)
+
+        self.assertEqual(1, lookup_mock.call_count)
+        self.assertEqual(call("AddOrder"), lookup_mock.call_args)
 
         self.assertEqual(1, self.broker.call_count)
         self.assertEqual("add_order", self.broker.items)
@@ -97,8 +99,8 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(None, self.broker.reply_topic)
         self.assertEqual(CommandStatus.SUCCESS, self.broker.status)
 
-        self.assertEqual(1, mock.call_count)
-        observed = mock.call_args[0][0]
+        self.assertEqual(1, callback_mock.call_count)
+        observed = callback_mock.call_args[0][0]
         self.assertIsInstance(observed, HandlerRequest)
         self.assertEqual(FakeModel("foo"), await observed.content())
 

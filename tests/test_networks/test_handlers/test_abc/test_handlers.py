@@ -58,6 +58,7 @@ class _FakeHandler(Handler):
         self.call_args = (entry,)
         if entry.topic == "DeleteOrder":
             raise ValueError()
+        entry.callback(entry.data)
 
 
 class TestHandler(PostgresAsyncTestCase):

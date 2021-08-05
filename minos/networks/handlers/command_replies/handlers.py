@@ -60,5 +60,5 @@ class CommandReplyHandler(Handler):
         :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        logger.info(f"Dispatching '{entry.data!s}'...")
+        logger.info(f"Dispatching '{entry!s}'...")
         await self.saga_manager.run(reply=entry.data)

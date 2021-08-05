@@ -102,11 +102,11 @@ class DynamicHandler(MinosHandler):
 
         def _fn(message: Any) -> HandlerEntry:
             message = self._build_tuple(message)
-            return self._build_entry(message)
+            return HandlerEntry(*message)
 
         entries = [_fn(message) for message in raw]
 
-        logger.info(f"Obtained {[v.data for v in entries]} entries...")
+        logger.info(f"Obtained {entries!r} entries...")
 
         return entries
 
@@ -129,10 +129,6 @@ class DynamicHandler(MinosHandler):
     @staticmethod
     def _build_tuple(record: Any) -> tuple[int, str, int, bytes, int, datetime]:
         return 0, record.topic, record.partition, record.value, 0, datetime.now()
-
-    @staticmethod
-    def _build_entry(row: tuple[int, str, int, bytes, int, datetime]) -> HandlerEntry:
-        return HandlerEntry.from_raw(row)
 
 
 class DynamicReplyHandler(MinosHandler):
@@ -196,13 +192,9 @@ class DynamicReplyHandler(MinosHandler):
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self._real_topic!r}."
             )
 
-        def _fn(message: Any) -> HandlerEntry:
-            message = self._build_tuple(message)
-            return self._build_entry(message)
+        entries = [HandlerEntry(0, record.topic, record.partition, record.value) for record in raw]
 
-        entries = [_fn(message) for message in raw]
-
-        logger.info(f"Obtained {[v.data for v in entries]} entries...")
+        logger.info(f"Dispatching '{entries if count > 1 else entries[0]!s}'...")
 
         return entries
 
@@ -213,11 +205,3 @@ class DynamicReplyHandler(MinosHandler):
             raw.append(await self.consumer.getone())
 
         return raw
-
-    @staticmethod
-    def _build_tuple(record: Any) -> tuple[int, str, int, bytes, int, datetime]:
-        return 0, record.topic, record.partition, record.value, 0, datetime.now()
-
-    @staticmethod
-    def _build_entry(row: tuple[int, str, int, bytes, int, datetime]) -> HandlerEntry:
-        return HandlerEntry.from_raw(row)

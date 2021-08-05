@@ -21,7 +21,12 @@ from typing import (
     TypeVar,
 )
 
+from cached_property import (
+    cached_property,
+)
+
 from minos.common import (
+    MinosException,
     Model,
 )
 
@@ -36,59 +41,55 @@ class HandlerEntry(Generic[T]):
         self,
         id: int,
         topic: str,
-        callback: Optional[Callable],
         partition_id: int,
-        data: T,
-        retry: int,
-        created_at: datetime,
-        failed: bool = False,
+        data_bytes: bytes,
+        retry: int = 0,
+        created_at: Optional[datetime] = None,
+        data_cls: Type[Model] = Model,
+        callback_lookup: Optional[Callable] = None,
+        exception: Optional[Exception] = None,
     ):
+        if created_at is None:
+            created_at = datetime.now()
+
         self.id = id
         self.topic = topic
-        self.callback = callback
         self.partition_id = partition_id
-        self.data = data
+        self.data_bytes = data_bytes
+        self.data_cls = data_cls
         self.retry = retry
         self.created_at = created_at
-        self.failed = failed
+        self.callback_lookup = callback_lookup
+        self.exception = exception
 
-    @classmethod
-    def from_raw(
-        cls,
-        raw: tuple[int, str, int, bytes, int, datetime],
-        callback_lookup: Optional[Callable[[str], Callable]] = None,
-        data_cls: Type[Model] = Model,
-    ) -> HandlerEntry:
-        """Build a new instance from raw
+    @property
+    def success(self) -> bool:
+        """Check if the entry is in success state or not
 
-        :param raw: The raw entry.
-        :param callback_lookup: The lookup function for callbacks.
-        :param data_cls: The model class to be used for deserialization.
-        :return: A new ``HandlerEntry``.
+        :return: A boolean value.
         """
-        id = raw[0]
-        topic = raw[1]
+        return self.exception is None
 
-        failed = False
+    @cached_property
+    def callback(self) -> Optional[Callable]:
+        """
+
+        :return:
+        """
+        if self.callback_lookup is None:
+            return None
+        return self.callback_lookup(self.topic)
+
+    @cached_property
+    def data(self) -> T:
+        """
+
+        :return:
+        """
+        return self.data_cls.from_avro_bytes(self.data_bytes)
+
+    def __repr__(self):
         try:
-            callback = None if callback_lookup is None else callback_lookup(raw[1])
-        except Exception as exc:
-            logger.warning(f"Raised an exception while dispatching {id!s} row: {exc!r}")
-            callback = None
-            failed = True
-
-        partition_id = raw[2]
-
-        try:
-            data = data_cls.from_avro_bytes(raw[3])
-        except Exception as exc:
-            logger.warning(f"Raised an exception while dispatching {id!s} row: {exc!r}")
-
-            data = None
-            failed = True
-
-        retry = raw[4]
-        created_at = raw[5]
-
-        entry = cls(id, topic, callback, partition_id, data, retry, created_at, failed)
-        return entry
+            return f"{type(self).__name__}(id={self.id!r}, data={self.data!r})"
+        except MinosException:
+            return f"{type(self).__name__}(id={self.id!r})"
