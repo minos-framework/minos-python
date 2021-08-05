@@ -109,7 +109,7 @@ class Handler(HandlerSetup):
 
     async def _dispatch_one(self, row: tuple) -> bool:
         try:
-            entry = await self._build_entry(row)
+            entry = self._build_entry(row)
         except Exception as exc:
             logger.warning(f"Raised an exception while building the message with id={row[0]}: {exc!r}")
             return False
@@ -124,17 +124,8 @@ class Handler(HandlerSetup):
 
         return True
 
-    async def _build_entry(self, row: tuple[int, str, int, bytes, datetime]) -> HandlerEntry:
-        id = row[0]
-        topic = row[1]
-        callback = self.get_action(row[1])
-        partition_id = row[2]
-        data = self.ENTRY_MODEL_CLS.from_avro_bytes(row[3])
-        retry = row[4]
-        created_at = row[5]
-
-        entry = HandlerEntry(id, topic, callback, partition_id, data, retry, created_at)
-        return entry
+    def _build_entry(self, row: tuple[int, str, int, bytes, int, datetime]) -> HandlerEntry:
+        return HandlerEntry.from_raw(row, callback_lookup=self.get_action, data_cls=self.ENTRY_MODEL_CLS)
 
     def get_action(self, topic: str) -> Optional[Callable]:
         """Get Event instance to call.

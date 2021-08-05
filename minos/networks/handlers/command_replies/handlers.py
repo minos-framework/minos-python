@@ -54,7 +54,7 @@ class CommandReplyHandler(Handler):
         handlers[f"{config.service.name}QueryReply"] = None
         return cls(*args, handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry[CommandReply]) -> NoReturn:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.
