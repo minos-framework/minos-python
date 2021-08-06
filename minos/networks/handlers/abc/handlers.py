@@ -13,6 +13,9 @@ import logging
 from abc import (
     abstractmethod,
 )
+from asyncio import (
+    gather,
+)
 from typing import (
     Any,
     Callable,
@@ -115,8 +118,8 @@ class Handler(HandlerSetup):
         return [HandlerEntry(*row, **kwargs) for row in rows]
 
     async def _dispatch_entries(self, entries: list[HandlerEntry]) -> NoReturn:
-        for entry in entries:
-            await self._dispatch_one(entry)
+        futures = (self._dispatch_one(entry) for entry in entries)
+        await gather(*futures)
 
     async def _dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         logger.debug(f"Dispatching '{entry!r}'...")
