@@ -62,11 +62,10 @@ class EventHandler(Handler):
         :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        event = entry.data
-        logger.info(f"Dispatching '{event!s}'...")
+        logger.info(f"Dispatching '{entry!s}'...")
 
         fn = self.get_callback(entry.callback)
-        await fn(event)
+        await fn(entry.data)
 
     @staticmethod
     def get_callback(
