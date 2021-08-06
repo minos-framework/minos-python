@@ -99,9 +99,9 @@ class Handler(HandlerSetup):
             await self._dispatch_entries(entries)
 
             for entry in entries:
-                query = self._queries["delete_processed"] if entry.success else self._queries["update_non_processed"]
+                query_id = "delete_processed" if entry.success else "update_non_processed"
                 # noinspection PyTypeChecker
-                await cursor.execute(query, (entry.id,))
+                await cursor.execute(self._queries[query_id], (entry.id,))
 
             await cursor.execute("COMMIT")
 
