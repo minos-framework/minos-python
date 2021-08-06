@@ -12,8 +12,12 @@ from typing import (
 )
 
 from minos.common import (
+    MinosConfig,
     MinosConfigNotProvidedException,
     MinosSetup,
+)
+from tests.utils import (
+    BASE_PATH,
 )
 
 
@@ -61,6 +65,13 @@ class TestMinosSetup(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(True, instance.already_destroyed)
         self.assertEqual(0, instance.setup_calls)
         self.assertEqual(0, instance.destroy_calls)
+
+    def test_from_config(self):
+        config = MinosConfig(BASE_PATH / "test_config.yml")
+        _MinosSetupMock.from_config(config)
+
+    def test_from_config_file_path(self):
+        _MinosSetupMock.from_config(BASE_PATH / "test_config.yml")
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosConfigNotProvidedException):
