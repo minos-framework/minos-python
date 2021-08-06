@@ -61,6 +61,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         """
         return await self.submit_query_and_iter(*args, **kwargs).__anext__()
 
+    # noinspection PyUnusedLocal
     async def submit_query_and_iter(
         self,
         operation: Any,
@@ -69,13 +70,13 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         timeout: Optional[float] = None,
         lock: Optional[int] = None,
         streaming_mode: bool = False,
-        **kwargs
+        **kwargs,
     ) -> AsyncIterator[tuple]:
         """Submit a SQL query and return an asynchronous iterator.
 
-        :param operation: TODO
-        :param parameters: TODO
-        :param timeout: TODO
+        :param operation: Query to be executed.
+        :param parameters: Parameters to be projected into the query.
+        :param timeout: An optional timeout.
         :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
             lock.
         :param streaming_mode: If ``True`` the data fetching is performed in streaming mode, that is iterating over the
@@ -103,6 +104,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         for row in rows:
             yield row
 
+    # noinspection PyUnusedLocal
     async def submit_query(
         self,
         operation: Any,
@@ -110,13 +112,13 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         *,
         timeout: Optional[float] = None,
         lock: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> NoReturn:
         """Submit a SQL query.
 
-        :param operation: TODO
-        :param parameters: TODO
-        :param timeout: TODO
+        :param operation: Query to be executed.
+        :param parameters: Parameters to be projected into the query.
+        :param timeout: An optional timeout.
         :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
             lock.
         :param kwargs: Additional named arguments.
