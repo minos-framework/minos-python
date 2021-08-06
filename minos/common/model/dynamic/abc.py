@@ -52,7 +52,7 @@ class DynamicModel(Model, Generic[T]):
         :return: A new ``DynamicModel`` instance.
         """
         fields = cls._build_fields(model_type.type_hints, *args, **kwargs)
-        return cls(fields)
+        return cls(fields=fields)
 
     @staticmethod
     def _build_fields(type_hints: dict[str, type], *args, **kwargs) -> dict[str, Field]:
