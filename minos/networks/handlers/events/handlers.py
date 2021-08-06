@@ -71,8 +71,7 @@ class EventHandler(Handler):
     async def _dispatch_entries(self, entries: list[HandlerEntry[Event]]) -> NoReturn:
         grouped = defaultdict(list)
         for entry in entries:
-            uuid = uuid_getter(entry)
-            grouped[uuid].append(entry)
+            grouped[uuid_getter(entry)].append(entry)
 
         for group in grouped.values():
             group.sort(key=version_getter)
