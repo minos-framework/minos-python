@@ -43,30 +43,30 @@ class ModelType(type):
 
     @classmethod
     def build(
-        mcs, name: str, type_hints: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs
+        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs
     ) -> Type[T]:
         """Build a new ``ModelType`` instance.
 
-        :param name: Name of the new type.
-        :param type_hints: Type hints of the new type.
+        :param name_: Name of the new type.
+        :param type_hints_: Type hints of the new type.
         :param namespace_: Namespace of the new type.
         :param kwargs: Type hints of the new type as named parameters.
         :return: A ``ModelType`` instance.
         """
-        if type_hints is not None and len(kwargs):
+        if type_hints_ is not None and len(kwargs):
             raise ValueError("Type hints can be passed in a dictionary or as named parameters, but not both.")
 
-        if type_hints is None:
-            type_hints = kwargs
+        if type_hints_ is None:
+            type_hints_ = kwargs
 
         if namespace_ is None:
             try:
-                namespace_, name = name.rsplit(".", 1)
+                namespace_, name_ = name_.rsplit(".", 1)
             except ValueError:
                 namespace_ = str()
 
         # noinspection PyTypeChecker
-        return mcs(name, tuple(), {"type_hints": type_hints, "namespace": namespace_})
+        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict) -> Type[T]:
