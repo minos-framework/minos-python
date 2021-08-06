@@ -18,8 +18,8 @@ from cached_property import (
     cached_property,
 )
 
-from .builders import (
-    RestBuilder,
+from .handlers import (
+    RestHandler,
 )
 
 
@@ -40,15 +40,15 @@ class RestService(AIOHTTPService):
 
         :return: A ``web.Application`` instance.
         """
-        return self.builder.get_app()  # pragma: no cover
+        return self.handler.get_app()  # pragma: no cover
 
     @cached_property
-    def builder(self) -> RestBuilder:
+    def handler(self) -> RestHandler:
         """Get the service builder.
 
-        :return: A ``RestBuilder`` instance.
+        :return: A ``RestHandler`` instance.
         """
-        builder = RestBuilder.from_config(**self._init_kwargs)
+        builder = RestHandler.from_config(**self._init_kwargs)
 
         # Setup socket.
         self.socket = bind_socket(address=builder.host, port=builder.port, proto_name="http")
