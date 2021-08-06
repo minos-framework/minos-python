@@ -117,6 +117,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
+        **kwargs
     ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
 
@@ -147,6 +148,7 @@ class MinosRepository(ABC, MinosSetup):
             id_gt=id_gt,
             id_le=id_le,
             id_ge=id_ge,
+            **kwargs,
         )
         # noinspection PyTypeChecker
         async for entry in generator:
