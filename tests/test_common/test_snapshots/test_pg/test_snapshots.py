@@ -89,10 +89,10 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
         self.assertEqual(expected, observed)
 
-    async def test_get_stream_true(self):
+    async def test_get_streaming_true(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3}, stream_mode=True)
+                iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3}, streaming_mode=True)
                 observed = {v async for v in iterable}
 
         expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
