@@ -89,12 +89,14 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         :return: ``True`` if has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset(**kwargs)
-        query = self._repository.select(
+        iterable = self._repository.select(
             id_ge=offset, aggregate_name=aggregate_name, aggregate_uuid=aggregate_uuid, **kwargs
         )
-        async for _ in query:
+        try:
+            await iterable.__anext__()
             return False
-        return True
+        except StopAsyncIteration:
+            return True
 
     async def dispatch(self, **kwargs) -> NoReturn:
         """Perform a dispatching step, based on the sequence of non already processed ``RepositoryEntry`` objects.
