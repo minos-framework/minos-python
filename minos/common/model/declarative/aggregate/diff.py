@@ -111,3 +111,18 @@ class AggregateDiff(DeclarativeModel):
             current |= another.fields
 
         return cls(args[-1].uuid, args[-1].name, args[-1].version, args[-1].action, FieldsDiff(current))
+
+    def decompose(self) -> list[AggregateDiff]:
+        """Decompose AggregateDiff Fields into AggregateDiff with once Field.
+
+        :return: An list of``AggregateDiff`` instances.
+        """
+        decomposed = []
+        fields = self.fields_diff
+
+        for field in fields:
+            diff_field = FieldsDiff({field.name: field})
+            aggr_diff = AggregateDiff(self.uuid, self.name, self.version, self.action, diff_field)
+            decomposed.append(aggr_diff)
+
+        return decomposed
