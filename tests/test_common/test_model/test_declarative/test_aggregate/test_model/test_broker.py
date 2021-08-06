@@ -71,7 +71,17 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
                         ),
                         "topic": "CarUpdated",
-                    }
+                    },
+                    {
+                        "data": AggregateDiff(
+                            uuid=car.uuid,
+                            name=Car.classname,
+                            version=2,
+                            action=AggregateAction.UPDATE,
+                            fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
+                        ),
+                        "topic": "CarUpdated.color",
+                    },
                 ],
                 b.calls_kwargs,
             )

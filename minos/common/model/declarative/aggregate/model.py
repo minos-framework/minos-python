@@ -10,6 +10,9 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    gather,
+)
 from typing import (
     AsyncIterator,
     Generic,
@@ -209,7 +212,16 @@ class Aggregate(DeclarativeModel, Generic[T]):
         self.uuid, self.version = entry.aggregate_uuid, entry.version
         diff.uuid, diff.version = entry.aggregate_uuid, entry.version
 
-        await self._broker.send(diff, topic=f"{type(self).__name__}Updated")
+        # Declare Futures and add Main AggregateDiff Event with whole fields
+        futures = [self._broker.send(diff, topic=f"{type(self).__name__}Updated")]
+
+        for aggr in diff.decompose():
+            # Append AggregateDiff with specific field modified Event.
+            # Example: 'CarUpdated.doors' or 'CarUpdated.color' ...
+            topic = f"{type(self).__name__}Updated.{list(aggr.fields_diff.fields.keys())[0]}"
+            futures.append(self._broker.send(aggr, topic=topic))
+
+        await gather(*futures)
 
         return self
 
