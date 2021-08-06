@@ -8,14 +8,8 @@ Minos framework can not be copied and/or distributed without the express permiss
 from aiohttp import (
     web,
 )
-from aiomisc import (
-    bind_socket,
-)
 from aiomisc.service.aiohttp import (
     AIOHTTPService,
-)
-from cached_property import (
-    cached_property,
 )
 
 from .handlers import (
@@ -32,8 +26,8 @@ class RestService(AIOHTTPService):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(**({"port": 9999} | kwargs))
-        self._init_kwargs = kwargs
+        self.handler = RestHandler.from_config(**kwargs)
+        super().__init__(**(kwargs | {"address": self.handler.host, "port": self.handler.port}))
 
     async def create_application(self) -> web.Application:
         """Create the web application.
@@ -41,16 +35,3 @@ class RestService(AIOHTTPService):
         :return: A ``web.Application`` instance.
         """
         return self.handler.get_app()  # pragma: no cover
-
-    @cached_property
-    def handler(self) -> RestHandler:
-        """Get the service builder.
-
-        :return: A ``RestHandler`` instance.
-        """
-        builder = RestHandler.from_config(**self._init_kwargs)
-
-        # Setup socket.
-        self.socket = bind_socket(address=builder.host, port=builder.port, proto_name="http")
-
-        return builder
