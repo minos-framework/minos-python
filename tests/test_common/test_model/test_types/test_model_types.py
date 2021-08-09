@@ -24,22 +24,38 @@ from tests.model_classes import (
 
 class TestModelType(unittest.TestCase):
     def test_build(self):
-        model_type = ModelType.build("Foo", {"text": int}, "bar")
+        model_type = ModelType.build("Foo", {"text": int})
+        self.assertEqual("Foo", model_type.name)
+        self.assertEqual({"text": int}, model_type.type_hints)
+        self.assertEqual(str(), model_type.namespace)
+
+    def test_build_with_kwargs(self):
+        model_type = ModelType.build("Foo", text=int)
+        self.assertEqual("Foo", model_type.name)
+        self.assertEqual({"text": int}, model_type.type_hints)
+        self.assertEqual(str(), model_type.namespace)
+
+    def test_build_with_namespace(self):
+        model_type = ModelType.build("Foo", {"text": int}, namespace_="bar")
         self.assertEqual("Foo", model_type.name)
         self.assertEqual({"text": int}, model_type.type_hints)
         self.assertEqual("bar", model_type.namespace)
 
+    def test_build_raises(self):
+        with self.assertRaises(ValueError):
+            ModelType.build("Foo", {"text": int}, foo=int)
+
     def test_classname(self):
-        model_type = ModelType.build("Foo", {"text": int}, "bar")
+        model_type = ModelType.build("Foo", {"text": int}, namespace_="bar")
         self.assertEqual("bar.Foo", model_type.classname)
 
     def test_hash(self):
-        model_type = ModelType.build("Foo", {"text": int}, "bar")
+        model_type = ModelType.build("Foo", {"text": int}, namespace_="bar")
         self.assertIsInstance(hash(model_type), int)
 
     def test_equal(self):
-        one = ModelType.build("Foo", {"text": int}, "bar")
-        two = ModelType.build("Foo", {"text": int}, "bar")
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int}, namespace_="bar")
         self.assertEqual(one, two)
 
     def test_equal_declarative(self):
@@ -47,13 +63,13 @@ class TestModelType(unittest.TestCase):
         self.assertEqual(one, Foo)
 
     def test_not_equal(self):
-        base = ModelType.build("Foo", {"text": int}, "bar")
-        self.assertNotEqual(ModelType.build("aaa", {"text": int}, "bar"), base)
-        self.assertNotEqual(ModelType.build("Foo", {"aaa": float}, "bar"), base)
-        self.assertNotEqual(ModelType.build("Foo", {"text": int}, "aaa"), base)
+        base = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        self.assertNotEqual(ModelType.build("aaa", {"text": int}, namespace_="bar"), base)
+        self.assertNotEqual(ModelType.build("Foo", {"aaa": float}, namespace_="bar"), base)
+        self.assertNotEqual(ModelType.build("Foo", {"text": int}, namespace_="aaa"), base)
 
     def test_from_typed_dict(self):
-        expected = ModelType.build("Foo", {"text": int}, "bar")
+        expected = ModelType.build("Foo", {"text": int}, namespace_="bar")
         observed = ModelType.from_typed_dict(TypedDict("bar.Foo", {"text": int}))
         self.assertEqual(expected, observed)
 
