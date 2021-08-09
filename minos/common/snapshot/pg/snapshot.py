@@ -79,13 +79,15 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
         # noinspection PyShadowingBuiltins
-        if not await self.builder.are_synced(aggregate_name, uuids):
+        if not await self.builder.are_synced(aggregate_name, uuids, **kwargs):
             await self.builder.dispatch()
 
-        async for item in self._get(aggregate_name, uuids):
+        async for item in self._get(aggregate_name, uuids, **kwargs):
             yield item.aggregate
 
-    async def _get(self, aggregate_name: str, uuids: set[UUID]) -> AsyncIterator[SnapshotEntry]:
+    async def _get(
+        self, aggregate_name: str, uuids: set[UUID], streaming_mode: bool = False, **kwargs,
+    ) -> AsyncIterator[SnapshotEntry]:
         uniques = set(uuids)
 
         if not len(uniques):
@@ -118,9 +120,16 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
                     missing = uniques - found
                     raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
 
-                async for row in cursor:
-                    # noinspection PyArgumentList
-                    yield SnapshotEntry(*row)
+                if streaming_mode:
+                    async for row in cursor:
+                        # noinspection PyArgumentList
+                        yield SnapshotEntry(*row)
+                    return
+
+                rows = await cursor.fetchall()
+
+        for row in rows:
+            yield SnapshotEntry(*row)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
@@ -130,7 +139,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: A sequence of ``MinosSnapshotEntry`` objects.
         """
-        async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY):
+        async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY, **kwargs):
             yield SnapshotEntry(*row)
 
 

@@ -63,7 +63,7 @@ class PostgreSqlRepository(MinosRepository, PostgreSqlMinosDatabase):
 
     async def _select(self, **kwargs) -> AsyncIterator[RepositoryEntry]:
         query = self._build_select_query(**kwargs)
-        async for row in self.submit_query_and_iter(query, kwargs):
+        async for row in self.submit_query_and_iter(query, kwargs, **kwargs):
             yield RepositoryEntry(*row)
 
     # noinspection PyUnusedLocal

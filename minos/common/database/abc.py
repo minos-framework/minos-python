@@ -9,6 +9,7 @@ from abc import (
     ABC,
 )
 from typing import (
+    Any,
     AsyncContextManager,
     AsyncIterator,
     NoReturn,
@@ -60,12 +61,22 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         """
         return await self.submit_query_and_iter(*args, **kwargs).__anext__()
 
+    # noinspection PyUnusedLocal
     async def submit_query_and_iter(
-        self, *args, lock: Optional[int] = None, streaming_mode: bool = False, **kwargs
+        self,
+        operation: Any,
+        parameters: Any = None,
+        *,
+        timeout: Optional[float] = None,
+        lock: Optional[int] = None,
+        streaming_mode: bool = False,
+        **kwargs,
     ) -> AsyncIterator[tuple]:
         """Submit a SQL query and return an asynchronous iterator.
 
-        :param args: Additional positional arguments.
+        :param operation: Query to be executed.
+        :param parameters: Parameters to be projected into the query.
+        :param timeout: An optional timeout.
         :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
             lock.
         :param streaming_mode: If ``True`` the data fetching is performed in streaming mode, that is iterating over the
@@ -78,7 +89,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
             if lock is not None:
                 await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
             try:
-                await cursor.execute(*args, **kwargs)
+                await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
 
                 if streaming_mode:
                     async for row in cursor:
@@ -93,10 +104,21 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         for row in rows:
             yield row
 
-    async def submit_query(self, *args, lock: Optional[int] = None, **kwargs) -> NoReturn:
+    # noinspection PyUnusedLocal
+    async def submit_query(
+        self,
+        operation: Any,
+        parameters: Any = None,
+        *,
+        timeout: Optional[float] = None,
+        lock: Optional[int] = None,
+        **kwargs,
+    ) -> NoReturn:
         """Submit a SQL query.
 
-        :param args: Additional positional arguments.
+        :param operation: Query to be executed.
+        :param parameters: Parameters to be projected into the query.
+        :param timeout: An optional timeout.
         :param lock: Optional key to perform the query with locking. If not set, the query is performed without any
             lock.
         :param kwargs: Additional named arguments.
@@ -106,7 +128,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
             if lock is not None:
                 await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
             try:
-                await cursor.execute(*args, **kwargs)
+                await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
             finally:
                 if lock is not None:
                     await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
