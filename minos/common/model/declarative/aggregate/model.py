@@ -10,6 +10,9 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    gather,
+)
 from typing import (
     AsyncIterator,
     Generic,
@@ -191,12 +194,22 @@ class Aggregate(DeclarativeModel, Generic[T]):
         :param kwargs: Additional named arguments.
         :return: An updated ``Aggregate``  instance.
         """
+
+        await self._send_update_events(**kwargs)
+
+        return self
+
+    async def _send_update_events(self, **kwargs):
+        """Update an existing ``Aggregate`` instance.
+
+        :param kwargs: Additional named arguments.
+        :return: An updated ``Aggregate``  instance.
+        """
         if "version" in kwargs:
             raise MinosRepositoryManuallySetAggregateVersionException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
 
-        # Update model...
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -209,9 +222,13 @@ class Aggregate(DeclarativeModel, Generic[T]):
         self.uuid, self.version = entry.aggregate_uuid, entry.version
         diff.uuid, diff.version = entry.aggregate_uuid, entry.version
 
-        await self._broker.send(diff, topic=f"{type(self).__name__}Updated")
+        futures = [self._broker.send(diff, topic=f"{type(self).__name__}Updated")]
 
-        return self
+        for aggr in diff.decompose():
+            topic = f"{type(self).__name__}Updated.{list(aggr.fields_diff.fields.keys())[0]}"
+            futures.append(self._broker.send(aggr, topic=topic))
+
+        await gather(*futures)
 
     async def save(self) -> NoReturn:
         """Store the current instance on the repository.
