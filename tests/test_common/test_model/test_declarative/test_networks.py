@@ -11,7 +11,7 @@ from uuid import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
     Command,
     CommandReply,
@@ -69,9 +69,7 @@ class TestCommandReply(unittest.TestCase):
 
 class TestEvent(unittest.TestCase):
     def setUp(self) -> None:
-        self.data = AggregateDiff(
-            uuid4(), "Foo", 3, AggregateAction.CREATE, FieldsDiff({"doors": Field("doors", int, 5)})
-        )
+        self.data = AggregateDiff(uuid4(), "Foo", 3, Action.CREATE, FieldsDiff({"doors": Field("doors", int, 5)}))
         self.topic = "FooCreated"
 
     def test_constructor(self):

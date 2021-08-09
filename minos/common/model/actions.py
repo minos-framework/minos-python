@@ -12,24 +12,21 @@ from __future__ import (
 from enum import (
     Enum,
 )
-from typing import (
-    Optional,
-)
 
-from ....exceptions import (
+from ..exceptions import (
     MinosModelException,
 )
 
 
-class AggregateAction(str, Enum):
-    """Enum class that describes the Aggregate diff actions."""
+class Action(str, Enum):
+    """Enum class that describes the actions."""
 
     CREATE = "create"
     UPDATE = "update"
     DELETE = "delete"
 
     @classmethod
-    def value_of(cls, value: str) -> Optional[AggregateAction]:
+    def value_of(cls, value: str) -> Action:
         """Get the action based on its text representation."""
         for item in cls.__members__.values():
             if item.value == value:
@@ -42,7 +39,7 @@ class AggregateAction(str, Enum):
 
         :return: A boolean value.
         """
-        return self is AggregateAction.CREATE
+        return self is Action.CREATE
 
     @property
     def is_update(self) -> bool:
@@ -50,7 +47,7 @@ class AggregateAction(str, Enum):
 
         :return: A boolean value.
         """
-        return self is AggregateAction.UPDATE
+        return self is Action.UPDATE
 
     @property
     def is_delete(self) -> bool:
@@ -58,4 +55,4 @@ class AggregateAction(str, Enum):
 
         :return: A boolean value.
         """
-        return self is AggregateAction.DELETE
+        return self is Action.DELETE

@@ -25,7 +25,7 @@ from dependency_injector import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     Field,
     FieldsDiff,
     MinosConfigException,
@@ -130,9 +130,9 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         aggregate_name: str = Car.classname
 
         async def _fn(*args, **kwargs):
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, AggregateAction.CREATE)
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, AggregateAction.CREATE)
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, AggregateAction.CREATE)
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE)
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE)
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE)
 
         async with await self._populate() as repository:
             with patch("minos.common.PostgreSqlRepository.select", _fn):

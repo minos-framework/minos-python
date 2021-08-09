@@ -14,7 +14,7 @@ from uuid import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
     Field,
     FieldsDiff,
@@ -46,7 +46,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             version=0,
             data=bytes("car", "utf-8"),
             id=5678,
-            action=AggregateAction.CREATE,
+            action=Action.CREATE,
             created_at=datetime(2020, 10, 13, 8, 45, 32),
         )
         self.assertEqual(self.uuid, entry.aggregate_uuid)
@@ -54,13 +54,13 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, entry.version)
         self.assertEqual(bytes("car", "utf-8"), entry.data)
         self.assertEqual(5678, entry.id)
-        self.assertEqual(AggregateAction.CREATE, entry.action)
+        self.assertEqual(Action.CREATE, entry.action)
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
 
     async def test_from_aggregate_diff(self):
         fields_diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
         aggregate_diff = AggregateDiff(
-            uuid=self.uuid, name=Car.classname, version=1, action=AggregateAction.CREATE, fields_diff=fields_diff
+            uuid=self.uuid, name=Car.classname, version=1, action=Action.CREATE, fields_diff=fields_diff
         )
 
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
@@ -81,8 +81,8 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
     def test_id_action(self):
         entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.action)
-        entry.action = AggregateAction.CREATE
-        self.assertEqual(AggregateAction.CREATE, entry.action)
+        entry.action = Action.CREATE
+        self.assertEqual(Action.CREATE, entry.action)
 
     def test_equals(self):
         a = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
@@ -100,13 +100,12 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             version=0,
             data=bytes("car", "utf-8"),
             id=5678,
-            action=AggregateAction.CREATE,
+            action=Action.CREATE,
             created_at=datetime(2020, 10, 13, 8, 45, 32),
         )
         expected = (
             f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name='example.Car', version=0, data=b'car', "
-            "id=5678, action=<AggregateAction.CREATE: 'create'>, "
-            "created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
+            "id=5678, action=<Action.CREATE: 'create'>, created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
         )
         self.assertEqual(expected, repr(entry))
 
