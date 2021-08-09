@@ -10,19 +10,15 @@ from __future__ import (
 )
 
 import logging
-from uuid import (
-    UUID,
-)
 
-from ..abc import (
-    DeclarativeModel,
+from ..entities import (
+    Entity,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class AggregateRef(DeclarativeModel):
+class AggregateRef(Entity):
     """Sub Aggregate class."""
 
-    uuid: UUID
     version: int

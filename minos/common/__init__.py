@@ -97,6 +97,7 @@ from .model import (
     Decimal,
     DeclarativeModel,
     DynamicModel,
+    Entity,
     Enum,
     Event,
     Field,

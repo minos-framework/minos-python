@@ -17,6 +17,7 @@ from .declarative import (
     CommandReply,
     CommandStatus,
     DeclarativeModel,
+    Entity,
     Event,
     MinosModel,
     ValueObject,
