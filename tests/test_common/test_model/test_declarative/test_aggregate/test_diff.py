@@ -130,6 +130,34 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         deserialized = AggregateDiff.from_avro_bytes(serialized)
         self.assertEqual(initial, deserialized)
 
+    def test_decompose(self):
+        expected = [
+            AggregateDiff(
+                uuid=self.uuid,
+                name=Car.classname,
+                version=3,
+                action=AggregateAction.UPDATE,
+                fields_diff=FieldsDiff({"doors": Field("doors", int, 5)}),
+            ),
+            AggregateDiff(
+                uuid=self.uuid,
+                name=Car.classname,
+                version=3,
+                action=AggregateAction.UPDATE,
+                fields_diff=FieldsDiff({"color": Field("color", str, "yellow")}),
+            ),
+        ]
+
+        aggr = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=3,
+            action=AggregateAction.UPDATE,
+            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
+        )
+        observed = aggr.decompose()
+        self.assertEqual(expected, observed)
+
 
 if __name__ == "__main__":
     unittest.main()
