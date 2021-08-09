@@ -16,11 +16,13 @@ from typing import (
     Generic,
     Iterator,
     NoReturn,
+    Optional,
     TypeVar,
     Union,
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from .abc import (
@@ -32,6 +34,11 @@ T = TypeVar("T")
 
 class Entity(DeclarativeModel):
     uuid: UUID
+
+    def __init__(self, uuid: Optional[UUID] = None, *args, **kwargs):
+        if uuid is None:
+            uuid = uuid4()
+        super().__init__(uuid, *args, **kwargs)
 
 
 class EntitySet(DeclarativeModel, MutableSet, Generic[T]):

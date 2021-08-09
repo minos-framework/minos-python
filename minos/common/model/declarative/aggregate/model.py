@@ -47,8 +47,8 @@ from ....repository import (
 from ....snapshot import (
     MinosSnapshot,
 )
-from ..abc import (
-    DeclarativeModel,
+from ..entities import (
+    Entity,
 )
 from .diff import (
     AggregateDiff,
@@ -58,10 +58,9 @@ T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
-class Aggregate(DeclarativeModel, Generic[T]):
+class Aggregate(Entity, Generic[T]):
     """Base aggregate class."""
 
-    uuid: UUID
     version: int
 
     _broker: MinosBroker = Provide["event_broker"]
