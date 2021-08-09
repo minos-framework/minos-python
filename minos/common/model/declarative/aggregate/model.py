@@ -217,11 +217,6 @@ class Aggregate(DeclarativeModel, Generic[T]):
         return self
 
     async def _send_update_events(self, diff: AggregateDiff):
-        """Update an existing ``Aggregate`` instance.
-
-        :param kwargs: Additional named arguments.
-        :return: An updated ``Aggregate``  instance.
-        """
 
         futures = [self._broker.send(diff, topic=f"{type(self).__name__}Updated")]
 
