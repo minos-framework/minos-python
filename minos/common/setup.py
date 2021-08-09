@@ -11,10 +11,15 @@ from __future__ import (
 
 import logging
 import warnings
+from pathlib import (
+    Path,
+)
 from typing import (
     Generic,
     NoReturn,
+    Optional,
     TypeVar,
+    Union,
 )
 
 from dependency_injector.wiring import (
@@ -57,10 +62,9 @@ class MinosSetup(Generic[T]):
         return not self._already_setup
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig = None, **kwargs) -> T:
+    def from_config(cls, config: Optional[Union[MinosConfig, Path]] = None, **kwargs) -> T:
         """Build a new instance from config.
 
-        :param args: Additional positional arguments.
         :param config: Config instance. If `None` is provided, default config is chosen.
         :param kwargs: Additional named arguments.
         :return: A instance of the called class.
@@ -70,12 +74,15 @@ class MinosSetup(Generic[T]):
             if isinstance(config, Provide):
                 raise MinosConfigNotProvidedException("The config object must be provided.")
 
+        if isinstance(config, Path):
+            config = MinosConfig(config)
+
         logger.info(f"Building a {cls.__name__!r} instance from config...")
-        return cls._from_config(*args, config=config, **kwargs)
+        return cls._from_config(config=config, **kwargs)
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> T:
-        return cls(*args, **kwargs)
+    def _from_config(cls, config: MinosConfig, **kwargs) -> T:
+        return cls(**kwargs)
 
     async def __aenter__(self) -> T:
         await self.setup()
