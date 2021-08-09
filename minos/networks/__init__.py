@@ -74,7 +74,7 @@ from .messages import (
     WrappedRequest,
 )
 from .rest import (
-    RestBuilder,
+    RestHandler,
     RestRequest,
     RestResponse,
     RestResponseException,

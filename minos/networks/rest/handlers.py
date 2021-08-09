@@ -52,13 +52,8 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
-class RestBuilder(MinosSetup):
-    """
-    Rest Interface Handler
-
-    Rest Interface for aiohttp web handling.
-
-    """
+class RestHandler(MinosSetup):
+    """Rest Handler class."""
 
     def __init__(self, host: str, port: int, endpoints: dict[(str, str), Callable], **kwargs):
         super().__init__(**kwargs)
@@ -75,7 +70,7 @@ class RestBuilder(MinosSetup):
         return self._endpoints
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestHandler:
         host = config.rest.host
         port = config.rest.port
 
