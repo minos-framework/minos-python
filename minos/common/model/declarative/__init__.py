@@ -14,6 +14,10 @@ from .aggregate import (
     AggregateDiff,
     AggregateRef,
 )
+from .entities import (
+    Entity,
+    EntitySet,
+)
 from .networks import (
     Command,
     CommandReply,
