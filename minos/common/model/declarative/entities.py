@@ -40,6 +40,8 @@ T = TypeVar("T")
 
 
 class Entity(DeclarativeModel):
+    """Entity class ."""
+
     uuid: UUID
 
     def __init__(self, *args, uuid: Optional[UUID] = None, **kwargs):
