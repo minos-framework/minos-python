@@ -40,7 +40,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=1,
                             action=Action.CREATE,
-                            fields_diff=FieldsDiff(
+                            differences=FieldsDiff(
                                 {
                                     "doors": Field("doors", int, 3),
                                     "color": Field("color", str, "blue"),
@@ -68,7 +68,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
+                            differences=FieldsDiff({"color": Field("color", str, "red")}),
                         ),
                         "topic": "CarUpdated",
                     },
@@ -78,7 +78,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
+                            differences=FieldsDiff({"color": Field("color", str, "red")}),
                         ),
                         "topic": "CarUpdated.color",
                     },
@@ -100,7 +100,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.DELETE,
-                            fields_diff=FieldsDiff.empty(),
+                            differences=FieldsDiff.empty(),
                         ),
                         "topic": "CarDeleted",
                     }

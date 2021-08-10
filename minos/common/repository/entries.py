@@ -70,16 +70,14 @@ class RepositoryEntry:
         self.created_at = created_at
 
     @classmethod
-    def from_aggregate_diff(cls, aggregate_diff: AggregateDiff) -> RepositoryEntry:
+    def from_aggregate_diff(cls, diff: AggregateDiff) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
-        :param aggregate_diff: The aggregate instance.
+        :param diff: The aggregate difference.
         :return: A new ``RepositoryEntry`` instance.
         """
         # noinspection PyTypeChecker
-        return cls(
-            aggregate_diff.uuid, aggregate_diff.name, aggregate_diff.version, aggregate_diff.fields_diff.avro_bytes
-        )
+        return cls(diff.uuid, diff.name, diff.version, diff.differences.avro_bytes)
 
     @property
     def aggregate_cls(self) -> Type[Aggregate]:

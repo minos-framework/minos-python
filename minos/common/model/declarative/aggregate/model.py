@@ -220,7 +220,7 @@ class Aggregate(Entity, Generic[T]):
         futures = [self._broker.send(diff, topic=f"{type(self).__name__}Updated")]
 
         for aggr in diff.decompose():
-            topic = f"{type(self).__name__}Updated.{list(aggr.fields_diff.fields.keys())[0]}"
+            topic = f"{type(self).__name__}Updated.{list(aggr.differences.fields.keys())[0]}"
             futures.append(self._broker.send(aggr, topic=topic))
 
         await gather(*futures)
@@ -290,29 +290,28 @@ class Aggregate(Entity, Generic[T]):
         """
         return AggregateDiff.from_difference(self, another)
 
-    def apply_diff(self, difference: AggregateDiff) -> NoReturn:
+    def apply_diff(self, diff: AggregateDiff) -> NoReturn:
         """Apply the differences over the instance.
 
-        :param difference: The ``FieldsDiff`` containing the values to be set.
+        :param diff: The ``FieldsDiff`` containing the values to be set.
         :return: This method does not return anything.
         """
-        if self.uuid != difference.uuid:
+        if self.uuid != diff.uuid:
             raise ValueError(
-                f"To apply the difference, it must have same uuid. "
-                f"Expected: {self.uuid!r} Obtained: {difference.uuid!r}"
+                f"To apply the difference, it must have same uuid. " f"Expected: {self.uuid!r} Obtained: {diff.uuid!r}"
             )
-        logger.debug(f"Applying {difference!r} to {self!r}...")
-        for field in difference.fields_diff:
+        logger.debug(f"Applying {diff!r} to {self!r}...")
+        for field in diff.differences:
             setattr(self, field.name, field.value)
-        self.version = difference.version
+        self.version = diff.version
 
     @classmethod
-    def from_diff(cls, difference: AggregateDiff, *args, **kwargs) -> T:
+    def from_diff(cls, diff: AggregateDiff, *args, **kwargs) -> T:
         """Build a new instance from an ``AggregateDiff``.
 
-        :param difference: The difference that contains the data.
+        :param diff: The difference that contains the data.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        return cls(*args, uuid=difference.uuid, version=difference.version, **difference.fields_diff, **kwargs)
+        return cls(*args, uuid=diff.uuid, version=diff.version, **diff.differences, **kwargs)

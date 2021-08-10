@@ -45,7 +45,7 @@ class AggregateDiff(DeclarativeModel):
     name: str
     version: int
     action: Action
-    fields_diff: FieldsDiff
+    differences: FieldsDiff
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:
@@ -66,9 +66,9 @@ class AggregateDiff(DeclarativeModel):
 
         old, new = sorted([a, b], key=attrgetter("version"))
 
-        fields_diff = FieldsDiff.from_difference(a, b, ignore=["uuid", "version"])
+        differences = FieldsDiff.from_difference(a, b, ignore=["uuid", "version"])
 
-        return cls(new.uuid, new.classname, new.version, action, fields_diff)
+        return cls(new.uuid, new.classname, new.version, action, differences)
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate, action: Action = Action.CREATE) -> AggregateDiff:
@@ -79,8 +79,8 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
 
-        fields_diff = FieldsDiff.from_model(aggregate, ignore=["uuid", "version"])
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, fields_diff)
+        differences = FieldsDiff.from_model(aggregate, ignore=["uuid", "version"])
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, differences)
 
     @classmethod
     def from_deleted_aggregate(cls, aggregate: Aggregate, action: Action = Action.DELETE) -> AggregateDiff:
@@ -102,7 +102,7 @@ class AggregateDiff(DeclarativeModel):
         args = sorted(args, key=attrgetter("version"))
 
         current = dict()
-        for another in map(attrgetter("fields_diff"), args):
+        for another in map(attrgetter("differences"), args):
             # noinspection PyUnresolvedReferences
             current |= another.fields
 
@@ -114,7 +114,7 @@ class AggregateDiff(DeclarativeModel):
         :return: An list of``AggregateDiff`` instances.
         """
         decomposed = []
-        fields = self.fields_diff
+        fields = self.differences
 
         for field in fields:
             diff_field = FieldsDiff({field.name: field})
