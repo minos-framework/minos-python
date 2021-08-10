@@ -85,10 +85,17 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
             if not hasattr(entity, "uuid"):
                 return False
             entity = entity.uuid
-        return entity in self.data
+        return str(entity) in self.data
 
     def __len__(self) -> int:
         return len(self.data)
 
     def __iter__(self) -> Iterator[T]:
         yield from self.data.values()
+
+    def __eq__(self, other):
+        if isinstance(other, EntitySet):
+            return super().__eq__(other)
+        if isinstance(other, dict):
+            return self.data == other
+        return set(self) == other
