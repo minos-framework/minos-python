@@ -99,6 +99,8 @@ from .model import (
     DynamicModel,
     Entity,
     EntitySet,
+    EntitySetDiff,
+    EntitySetDiffEntry,
     Enum,
     Event,
     Field,

@@ -17,6 +17,8 @@ from .aggregate import (
 from .entities import (
     Entity,
     EntitySet,
+    EntitySetDiff,
+    EntitySetDiffEntry,
 )
 from .networks import (
     Command,

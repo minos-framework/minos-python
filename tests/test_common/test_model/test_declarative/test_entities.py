@@ -12,9 +12,12 @@ from uuid import (
 )
 
 from minos.common import (
+    Action,
     DeclarativeModel,
     Entity,
     EntitySet,
+    EntitySetDiff,
+    EntitySetDiffEntry,
 )
 
 NULL_UUID = UUID("00000000-0000-0000-0000-000000000000")
@@ -103,6 +106,23 @@ class TestEntitySet(unittest.TestCase):
         entities.remove(raw[1])
 
         self.assertEqual({raw[0]}, entities)
+
+
+class TestEntitySetDiff(unittest.TestCase):
+    def setUp(self) -> None:
+        self.raw = [FakeEntity("John"), FakeEntity("Michael")]
+        self.old = EntitySet(self.raw)
+
+        self.clone = [FakeEntity(name=entity.name, uuid=entity.uuid) for entity in self.raw]
+
+    def test_from_difference_create(self):
+        entities = EntitySet(self.clone)
+        new = FakeEntity("Charlie")
+        entities.add(new)
+
+        differences = EntitySetDiff.from_difference(entities, self.old)
+
+        self.assertEqual([EntitySetDiffEntry(Action.CREATE, new)], differences.diffs)
 
 
 if __name__ == "__main__":
