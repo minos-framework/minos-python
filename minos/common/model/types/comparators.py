@@ -13,7 +13,6 @@ import logging
 from typing import (
     Any,
     Generic,
-    Type,
     TypeVar,
     Union,
     get_args,
@@ -56,14 +55,17 @@ def is_aggregate_type(type_field: Any) -> bool:
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
-K = TypeVar("K")
+T = TypeVar("T", bound=type)
+K = TypeVar("K", bound=type)
 
 
 class TypeHintComparator(Generic[T, K]):
     """Type Hint Comparator class."""
 
-    def __init__(self, first: Type[T], second: Type[K]):
+    _first: T
+    _second: K
+
+    def __init__(self, first: T, second: K):
         self._first = first
         self._second = second
 
@@ -75,7 +77,7 @@ class TypeHintComparator(Generic[T, K]):
 
         return self._compare(self._first, self._second)
 
-    def _compare(self, first: Type[T], second: Type[K]) -> bool:
+    def _compare(self, first: T, second: K) -> bool:
         if get_origin(first) is ModelRef:
             first = Union[(*get_args(first), UUID)]
 
@@ -97,7 +99,7 @@ class TypeHintComparator(Generic[T, K]):
 
         return False
 
-    def _compare_args(self, first: Type[T], second: Type[K]) -> bool:
+    def _compare_args(self, first: T, second: K) -> bool:
         first_args, second_args = get_args(first), get_args(second)
         if len(first_args) != len(second_args):
             return False

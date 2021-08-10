@@ -5,11 +5,14 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from abc import (
     ABC,
 )
 from typing import (
-    Generic,
     NoReturn,
     Optional,
     TypeVar,
@@ -23,10 +26,8 @@ from .setup import (
     MinosSetup,
 )
 
-T = TypeVar("T")
 
-
-class MinosPool(MinosSetup, PoolBase, Generic[T], ABC):
+class MinosPool(MinosSetup, PoolBase, ABC):
     """Base class for Pool implementations in minos"""
 
     def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = None, already_setup: bool = True, **kwargs):
@@ -43,5 +44,8 @@ class MinosPool(MinosSetup, PoolBase, Generic[T], ABC):
     async def _destroy(self) -> NoReturn:
         await self.close()
 
-    async def _check_instance(self, instance: T) -> bool:
+    async def _check_instance(self: T, instance: T) -> bool:
         return True
+
+
+T = TypeVar("T")

@@ -58,6 +58,9 @@ def build_union(options: tuple[Type[T], ...]) -> Type[T]:
 class TypeHintBuilder(Generic[T]):
     """Type Hint Builder class."""
 
+    _value: T
+    _base: Type[T]
+
     def __init__(self, value: T, base: Optional[Type[T]] = None):
         self._value = value
         self._base = base
