@@ -120,9 +120,49 @@ class TestEntitySetDiff(unittest.TestCase):
         new = FakeEntity("Charlie")
         entities.add(new)
 
-        differences = EntitySetDiff.from_difference(entities, self.old)
+        observed = EntitySetDiff.from_difference(entities, self.old)
+        expected = EntitySetDiff([EntitySetDiffEntry(Action.CREATE, new)])
+        self.assertEqual(expected, observed)
 
-        self.assertEqual([EntitySetDiffEntry(Action.CREATE, new)], differences.diffs)
+    def test_from_difference_delete(self):
+        entities = EntitySet(self.clone)
+        removed = self.clone[1]
+        entities.remove(removed)
+
+        observed = EntitySetDiff.from_difference(entities, self.old)
+        expected = EntitySetDiff([EntitySetDiffEntry(Action.DELETE, removed)])
+        self.assertEqual(expected, observed)
+
+    def test_from_difference_update(self):
+        entities = EntitySet(self.clone)
+        updated = entities.get(self.clone[0].uuid)
+        updated.name = "Ryan"
+
+        observed = EntitySetDiff.from_difference(entities, self.old)
+        expected = EntitySetDiff([EntitySetDiffEntry(Action.UPDATE, updated)])
+        self.assertEqual(expected, observed)
+
+    def test_from_difference_combined(self):
+        entities = EntitySet(self.clone)
+        new = FakeEntity("Charlie")
+        entities.add(new)
+
+        removed = self.clone[1]
+        entities.remove(removed)
+
+        updated = entities.get(self.clone[0].uuid)
+        updated.name = "Ryan"
+
+        observed = EntitySetDiff.from_difference(entities, self.old)
+
+        expected = EntitySetDiff(
+            [
+                EntitySetDiffEntry(Action.CREATE, new),
+                EntitySetDiffEntry(Action.DELETE, removed),
+                EntitySetDiffEntry(Action.UPDATE, updated),
+            ]
+        )
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":

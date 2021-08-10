@@ -152,7 +152,7 @@ class EntitySetDiff(DeclarativeModel):
             entry = EntitySetDiffEntry(Action.DELETE, entity)
             result.append(entry)
 
-        for entity in new & old:
+        for entity in old & new:
             if entity == old.get(entity.uuid):
                 continue
             entry = EntitySetDiffEntry(Action.UPDATE, entity)
