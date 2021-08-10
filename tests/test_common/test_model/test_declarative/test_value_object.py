@@ -36,24 +36,30 @@ class TestValueObjectSet(TestCase):
         self.location_1 = Location(street="street name")
         self.location_2 = Location(street="another street name")
         self.fake_value_obj = [self.location_1, self.location_2]
+        self.fake_value_obj_set = (self.location_1, self.location_2)
 
     def test_data(self):
         value_objects = ValueObjectSet(self.fake_value_obj)
-        self.assertEqual([v for v in self.fake_value_obj], value_objects.data)
+        self.assertEqual([v for v in self.fake_value_obj], value_objects)
+
+    def test_from_set(self):
+        value_objects = ValueObjectSet(self.fake_value_obj_set)
+        self.assertEqual([v for v in self.fake_value_obj], value_objects)
 
     def test_eq_true(self):
         observed = ValueObjectSet(self.fake_value_obj)
 
-        self.assertEqual(self.fake_value_obj, observed.data)
-        self.assertEqual([v for v in self.fake_value_obj], observed.data)
+        self.assertEqual(self.fake_value_obj, observed)
+        self.assertEqual([v for v in self.fake_value_obj], observed)
 
     def test_eq_false(self):
         raw = self.fake_value_obj
         observed = ValueObjectSet(raw)
         other = [Location("Test")]
-        self.assertNotEqual(ValueObjectSet(other), observed.data)
-        self.assertNotEqual(other, observed.data)
-        self.assertNotEqual([v for v in other], observed.data)
+        self.assertNotEqual(ValueObjectSet(other), set(raw))
+        self.assertNotEqual(ValueObjectSet(other), observed)
+        self.assertNotEqual(other, observed)
+        self.assertNotEqual([v for v in other], observed)
 
     def test_len(self):
         value_objects = ValueObjectSet(self.fake_value_obj)
@@ -61,27 +67,27 @@ class TestValueObjectSet(TestCase):
 
     def test_iter(self):
         value_objects = ValueObjectSet(self.fake_value_obj)
-        self.assertEqual(self.fake_value_obj, value_objects.data)
+        self.assertEqual(self.fake_value_obj, list(value_objects))
 
     def test_contains(self):
         raw = [self.location_1]
 
         value_objects = ValueObjectSet(raw)
 
-        self.assertIn(raw[0], value_objects.data)
-        self.assertNotIn(self.location_2, value_objects.data)
-        self.assertNotIn(1234, value_objects.data)
+        self.assertIn(raw[0], value_objects)
+        self.assertNotIn(self.location_2, value_objects)
+        self.assertNotIn(1234, value_objects)
 
     def test_add(self):
 
         value_objects = ValueObjectSet()
         value_objects.add(self.location_1)
 
-        self.assertEqual([self.location_1], value_objects.data)
+        self.assertEqual([self.location_1], value_objects)
 
     def test_remove(self):
 
         value_objects = ValueObjectSet(self.fake_value_obj)
         value_objects.remove(self.location_1)
 
-        self.assertEqual([self.location_2], value_objects.data)
+        self.assertEqual([self.location_2], value_objects)

@@ -72,6 +72,6 @@ class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
     def __eq__(self, other):
         if isinstance(other, ValueObjectSet):
             return super().__eq__(other)
-        if isinstance(other, dict):
+        if isinstance(other, list):
             return self.data == other
-        return set(self) == other
+        return list(self) == other
