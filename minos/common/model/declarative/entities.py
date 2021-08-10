@@ -30,8 +30,6 @@ from .abc import (
     DeclarativeModel,
 )
 
-T = TypeVar("T")
-
 
 class Entity(DeclarativeModel):
     """Entity class ."""
@@ -44,10 +42,13 @@ class Entity(DeclarativeModel):
         super().__init__(uuid, *args, **kwargs)
 
 
+T = TypeVar("T", bound=Entity)
+
+
 class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
     """Entity set class."""
 
-    data: dict[str, Entity]
+    data: dict[str, T]
 
     def __init__(self, data: Optional[Iterable[T]] = None, *args, **kwargs):
         if data is None:
@@ -56,7 +57,7 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
             data = {str(entity.uuid): entity for entity in data}
         super().__init__(data, *args, **kwargs)
 
-    def add(self, entity: Entity) -> NoReturn:
+    def add(self, entity: T) -> NoReturn:
         """Add an entity.
 
         :param entity: The entity to be added.
@@ -64,7 +65,7 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
         """
         self.data[str(entity.uuid)] = entity
 
-    def discard(self, entity: Entity) -> NoReturn:
+    def discard(self, entity: T) -> NoReturn:
         """Discard an entity.
 
         :param entity: The entity to be discarded.
@@ -82,7 +83,7 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
         """
         return self.data[str(uuid)]
 
-    def __contains__(self, entity: Union[Entity, UUID]) -> bool:
+    def __contains__(self, entity: Union[T, UUID]) -> bool:
         if not isinstance(entity, UUID):
             if not hasattr(entity, "uuid"):
                 return False

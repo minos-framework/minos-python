@@ -237,6 +237,9 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_composed_value(self, type_field: Type, data: Any) -> Any:
+        if isinstance(type_field, TypeVar):
+            t = Union[type_field.__constraints__ or (type_field.__bound__,) or (Any,)]
+            return self._cast_value(t, data)
         origin_type = get_origin(type_field)
         if origin_type is None:
             raise MinosMalformedAttributeException(f"{self._name!r} field is malformed. Type: '{type_field}'.")
@@ -249,6 +252,9 @@ class AvroDataDecoder:
 
         if origin_type is ModelRef:
             return self._convert_model_ref(data, type_field)
+
+        if is_model_subclass(origin_type):
+            return self._cast_model(origin_type, data)
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 
