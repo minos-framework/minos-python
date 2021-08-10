@@ -109,10 +109,10 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
         return set(self) == other
 
     def diff(self, another: EntitySet[T]) -> EntitySetDiff:
-        """TODO
+        """Compute the difference between self and another entity set.
 
-        :param another: TODO
-        :return: TODO
+        :param another: Another entity set instance.
+        :return: The difference between both entity sets.
         """
         return EntitySetDiff.from_difference(self, another)
 
@@ -121,30 +121,23 @@ EntitySetDiffEntry = ModelType.build("EntitySetDiffEntry", {"action": Action, "e
 
 
 class EntitySetDiff(DeclarativeModel):
-    """TODO"""
+    """Entity Set Diff class."""
 
     diffs: list[EntitySetDiffEntry]
 
     @classmethod
     def from_difference(cls, new: EntitySet[T], old: EntitySet[T]) -> EntitySetDiff:
-        """TODO
+        """Build a new instance from two entity sets.
 
-        :param new: TODO
-        :param old: TODO
-        :return: TODO
+        :param new: The new entity set.
+        :param old: The old entity set.
+        :return: The diference between new and old.
         """
         differences = cls._diff(new, old)
         return cls(differences)
 
     @staticmethod
     def _diff(new: EntitySet[T], old: EntitySet[T]) -> list[EntitySetDiffEntry]:
-        """TODO
-
-        :param new: TODO
-        :param old: TODO
-        :return: TODO
-        """
-
         result = list()
         for entity in new - old:
             entry = EntitySetDiffEntry(Action.CREATE, entity)
