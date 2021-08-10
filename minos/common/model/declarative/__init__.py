@@ -15,6 +15,9 @@ from .aggregate import (
     AggregateDiff,
     AggregateRef,
 )
+from .entities import (
+    Entity,
+)
 from .networks import (
     Command,
     CommandReply,

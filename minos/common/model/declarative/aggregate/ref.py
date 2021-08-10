@@ -14,15 +14,17 @@ from uuid import (
     UUID,
 )
 
-from ..abc import (
-    DeclarativeModel,
+from ..entities import (
+    Entity,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class AggregateRef(DeclarativeModel):
+class AggregateRef(Entity):
     """Sub Aggregate class."""
 
-    uuid: UUID
     version: int
+
+    def __init__(self, uuid: UUID, *args, **kwargs):
+        super().__init__(uuid=uuid, *args, **kwargs)
