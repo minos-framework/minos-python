@@ -231,7 +231,7 @@ class AvroDataDecoder:
             data = {k: self._cast_value(v, data.get(k, None)) for k, v in type_field.type_hints.items()}
             return type_field(**data)
 
-        if hasattr(data, "model_type") and type_field == data.model_type:
+        if hasattr(data, "model_type") and data.model_type == type_field:
             return data
 
         raise MinosTypeAttributeException(self._name, type_field, data)
