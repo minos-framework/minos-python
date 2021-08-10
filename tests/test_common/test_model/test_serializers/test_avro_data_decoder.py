@@ -57,6 +57,14 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(observed, DataTransferObject)
         self.assertEqual({"bar": "foobar"}, observed.avro_data)
 
+    def test_model_type_with_inheritance(self):
+        # noinspection PyPep8Naming
+        Foo = ModelType.build("Foo", {"bar": Base})
+        decoder = AvroDataDecoder("test", Foo)
+        value = Foo(User(1234))
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
+
     def test_model_type_already_casted(self):
         value = DataTransferObject("Foo", {"bar": Field("bar", str, "foobar")})
         observed = AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build(value)
