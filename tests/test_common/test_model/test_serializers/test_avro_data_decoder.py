@@ -38,6 +38,7 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.model_classes import (
+    Base,
     User,
 )
 from tests.subaggregate_classes import (
@@ -50,7 +51,7 @@ from tests.utils import (
 
 
 class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
-    def test_model_typ(self):
+    def test_model_type(self):
         observed = AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build({"bar": "foobar"})
 
         self.assertIsInstance(observed, DataTransferObject)
@@ -264,6 +265,12 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     def test_model(self):
         decoder = AvroDataDecoder("test", User)
+        value = User(1234)
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
+
+    def test_model_with_inheritance(self):
+        decoder = AvroDataDecoder("test", Base)
         value = User(1234)
         observed = decoder.build(value)
         self.assertEqual(value, observed)

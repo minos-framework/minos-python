@@ -221,6 +221,8 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_model(self, type_field: Type, data: Any) -> Any:
+        if isinstance(data, type_field):
+            return data
         # noinspection PyUnresolvedReferences
         return self._cast_model_type(type_field.model_type, data)
 
