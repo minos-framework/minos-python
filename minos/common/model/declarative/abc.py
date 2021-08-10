@@ -69,7 +69,7 @@ class DeclarativeModel(Model):
             if value is MissingSentinel and name in kwargs:
                 value = kwargs[name]
 
-            self._fields[name] = Field(
+            self._fields[name] = Field[type_val](
                 name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
             )
 

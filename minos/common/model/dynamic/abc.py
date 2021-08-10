@@ -62,7 +62,7 @@ class DynamicModel(Model):
             if value is MissingSentinel and name in kwargs:
                 value = kwargs[name]
 
-            fields[name] = Field(name, type_val, value)
+            fields[name] = Field[type_val](name, type_val, value)
         return fields
 
 
