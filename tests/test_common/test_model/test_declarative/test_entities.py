@@ -22,6 +22,7 @@ NULL_UUID = UUID("00000000-0000-0000-0000-000000000000")
 
 class FakeEntity(Entity):
     """For testing purposes."""
+
     name: str
 
 
@@ -37,7 +38,6 @@ class TestEvent(unittest.TestCase):
 
 
 class TestEntitySet(unittest.TestCase):
-
     def test_constructor(self):
         raw = {FakeEntity("John"), FakeEntity("Michael")}
 
