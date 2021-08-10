@@ -12,22 +12,25 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     DeclarativeModel,
     Entity,
 )
-
-NULL_UUID = UUID("00000000-0000-0000-0000-000000000000")
 
 
 class TestEvent(unittest.TestCase):
     def test_default(self):
         entity = Entity()
         self.assertIsInstance(entity, DeclarativeModel)
+        self.assertIsNot(entity.uuid, NULL_UUID)
+        self.assertIsInstance(entity.uuid, UUID)
 
     def test_uuid(self):
-        entity = Entity(uuid=uuid4())
+        uuid = uuid4()
+        entity = Entity(uuid=uuid)
         self.assertIsInstance(entity, DeclarativeModel)
         self.assertIsNot(entity.uuid, NULL_UUID)
+        self.assertEqual(uuid, entity.uuid)
 
 
 if __name__ == "__main__":
