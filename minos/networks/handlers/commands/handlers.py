@@ -88,10 +88,10 @@ class CommandHandler(Handler):
         :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        command = entry.data
-        logger.info(f"Dispatching '{command!s}'...")
+        logger.info(f"Dispatching '{entry!s}'...")
 
         fn = self.get_callback(entry.callback)
+        command = entry.data
         items, status = await fn(command)
 
         await self.broker.send(items, topic=command.reply_topic, saga=command.saga, status=status)

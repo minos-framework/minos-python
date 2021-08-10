@@ -13,6 +13,9 @@ import logging
 from abc import (
     abstractmethod,
 )
+from asyncio import (
+    gather,
+)
 from typing import (
     Any,
     Callable,
@@ -84,23 +87,16 @@ class Handler(HandlerSetup):
         """
 
         async with self.cursor() as cursor:
-            # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
-            # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
-            await cursor.execute("BEGIN")
+            async with cursor.begin():
+                await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
 
-            # noinspection PyTypeChecker
-            await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
+                result = await cursor.fetchall()
+                entries = self._build_entries(result)
+                await self._dispatch_entries(entries)
 
-            result = await cursor.fetchall()
-            entries = self._build_entries(result)
-            await self._dispatch_entries(entries)
-
-            for entry in entries:
-                query = self._queries["delete_processed"] if entry.success else self._queries["update_non_processed"]
-                # noinspection PyTypeChecker
-                await cursor.execute(query, (entry.id,))
-
-            await cursor.execute("COMMIT")
+                for entry in entries:
+                    query_id = "delete_processed" if entry.success else "update_non_processed"
+                    await cursor.execute(self._queries[query_id], (entry.id,))
 
     @cached_property
     def _queries(self):
@@ -115,8 +111,8 @@ class Handler(HandlerSetup):
         return [HandlerEntry(*row, **kwargs) for row in rows]
 
     async def _dispatch_entries(self, entries: list[HandlerEntry]) -> NoReturn:
-        for entry in entries:
-            await self._dispatch_one(entry)
+        futures = (self._dispatch_one(entry) for entry in entries)
+        await gather(*futures)
 
     async def _dispatch_one(self, entry: HandlerEntry) -> NoReturn:
         logger.debug(f"Dispatching '{entry!r}'...")
