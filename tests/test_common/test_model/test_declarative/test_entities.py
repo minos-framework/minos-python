@@ -17,12 +17,9 @@ from minos.common import (
     Entity,
     EntitySet,
 )
-
-
-class FakeEntity(Entity):
-    """For testing purposes."""
-
-    name: str
+from tests.utils import (
+    FakeEntity,
+)
 
 
 class TestEntity(unittest.TestCase):
