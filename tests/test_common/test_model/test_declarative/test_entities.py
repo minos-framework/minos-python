@@ -18,7 +18,7 @@ from minos.common import (
 )
 
 
-class TestEvent(unittest.TestCase):
+class TestEntity(unittest.TestCase):
     def test_default(self):
         entity = Entity()
         self.assertIsInstance(entity, DeclarativeModel)
