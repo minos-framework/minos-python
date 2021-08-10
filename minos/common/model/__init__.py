@@ -21,6 +21,7 @@ from .declarative import (
     Event,
     MinosModel,
     ValueObject,
+    ValueObjectSet,
 )
 from .dynamic import (
     BucketModel,
