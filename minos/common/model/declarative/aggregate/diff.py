@@ -14,6 +14,7 @@ from operator import (
     attrgetter,
 )
 from typing import (
+    Any,
     TYPE_CHECKING,
 )
 from uuid import (
@@ -45,7 +46,7 @@ class AggregateDiff(DeclarativeModel):
     name: str
     version: int
     action: Action
-    fields_diff: FieldsDiff
+    differences: dict[str, Any]
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:
@@ -66,9 +67,9 @@ class AggregateDiff(DeclarativeModel):
 
         old, new = sorted([a, b], key=attrgetter("version"))
 
-        fields_diff = FieldsDiff.from_difference(a, b, ignore=["uuid", "version"])
+        differences = FieldsDiff.from_difference(a, b, ignore=["uuid", "version"]).avro_data
 
-        return cls(new.uuid, new.classname, new.version, action, fields_diff)
+        return cls(new.uuid, new.classname, new.version, action, differences)
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate, action: Action = Action.CREATE) -> AggregateDiff:
@@ -79,8 +80,8 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
 
-        fields_diff = FieldsDiff.from_model(aggregate, ignore=["uuid", "version"])
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, fields_diff)
+        differences = FieldsDiff.from_model(aggregate, ignore=["uuid", "version"]).avro_data
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, differences)
 
     @classmethod
     def from_deleted_aggregate(cls, aggregate: Aggregate, action: Action = Action.DELETE) -> AggregateDiff:
@@ -90,7 +91,7 @@ class AggregateDiff(DeclarativeModel):
         :param action: The action to that generates the aggregate difference.
         :return: An ``AggregateDiff`` instance.
         """
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, FieldsDiff.empty())
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, dict())
 
     @classmethod
     def simplify(cls, *args: AggregateDiff) -> AggregateDiff:
@@ -102,11 +103,11 @@ class AggregateDiff(DeclarativeModel):
         args = sorted(args, key=attrgetter("version"))
 
         current = dict()
-        for another in map(attrgetter("fields_diff"), args):
+        for another in map(attrgetter("differences"), args):
             # noinspection PyUnresolvedReferences
-            current |= another.fields
+            current |= another
 
-        return cls(args[-1].uuid, args[-1].name, args[-1].version, args[-1].action, FieldsDiff(current))
+        return cls(args[-1].uuid, args[-1].name, args[-1].version, args[-1].action, current)
 
     def decompose(self) -> list[AggregateDiff]:
         """Decompose AggregateDiff Fields into AggregateDiff with once Field.
@@ -114,11 +115,9 @@ class AggregateDiff(DeclarativeModel):
         :return: An list of``AggregateDiff`` instances.
         """
         decomposed = []
-        fields = self.fields_diff
 
-        for field in fields:
-            diff_field = FieldsDiff({field.name: field})
-            aggr_diff = AggregateDiff(self.uuid, self.name, self.version, self.action, diff_field)
+        for name, value in self.differences.items():
+            aggr_diff = AggregateDiff(self.uuid, self.name, self.version, self.action, {name: value})
             decomposed.append(aggr_diff)
 
         return decomposed
