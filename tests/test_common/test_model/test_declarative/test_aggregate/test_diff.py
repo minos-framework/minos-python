@@ -40,13 +40,19 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
-            differences={"doors": 3, "color": "blue", "owner": None},
+            differences={
+                "doors": 3,
+                "color": "blue",
+                "owner": None,
+            }
         )
         observed = AggregateDiff.from_aggregate(self.initial)
         self.assertEqual(expected, observed)
 
     def test_from_deleted_aggregate(self):
-        expected = AggregateDiff(uuid=self.uuid, name=Car.classname, version=1, action=Action.DELETE, differences={})
+        expected = AggregateDiff(
+            uuid=self.uuid, name=Car.classname, version=1, action=Action.DELETE, differences={},
+        )
         observed = AggregateDiff.from_deleted_aggregate(self.initial)
         self.assertEqual(expected, observed)
 
@@ -56,7 +62,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            differences={"doors": 5, "color": "yellow"},
+            differences={"doors": 5, "color": "yellow"}
         )
         observed = AggregateDiff.from_difference(self.final, self.initial)
         self.assertEqual(expected, observed)
@@ -92,7 +98,11 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
-            differences={"doors": 3, "color": "blue", "owner": None},
+            differences={
+                "doors": 3,
+                "color": "blue",
+                "owner": None,
+            }
         )
 
         serialized = initial.avro_bytes
@@ -104,10 +114,18 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
     def test_decompose(self):
         expected = [
             AggregateDiff(
-                uuid=self.uuid, name=Car.classname, version=3, action=Action.UPDATE, differences={"doors": 5},
+                uuid=self.uuid,
+                name=Car.classname,
+                version=3,
+                action=Action.UPDATE,
+                differences={"doors": 5},
             ),
             AggregateDiff(
-                uuid=self.uuid, name=Car.classname, version=3, action=Action.UPDATE, differences={"color": "yellow"},
+                uuid=self.uuid,
+                name=Car.classname,
+                version=3,
+                action=Action.UPDATE,
+                differences={"color": "yellow"},
             ),
         ]
 

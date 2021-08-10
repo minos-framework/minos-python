@@ -14,8 +14,8 @@ from operator import (
     attrgetter,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
+    TYPE_CHECKING,
 )
 from uuid import (
     UUID,
