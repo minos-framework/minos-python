@@ -14,6 +14,7 @@ from collections.abc import (
 )
 from typing import (
     Generic,
+    Iterable,
     Iterator,
     NoReturn,
     Optional,
@@ -46,9 +47,11 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
 
     data: dict[str, Entity]
 
-    def __init__(self, data=None, *args, **kwargs):
+    def __init__(self, data: Optional[Iterable[T]] = None, *args, **kwargs):
         if data is None:
             data = dict()
+        elif not isinstance(data, dict):
+            data = {str(entity.uuid): entity for entity in data}
         super().__init__(data, *args, **kwargs)
 
     def add(self, entity: Entity) -> NoReturn:

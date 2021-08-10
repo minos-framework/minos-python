@@ -14,9 +14,15 @@ from uuid import (
 from minos.common import (
     DeclarativeModel,
     Entity,
+    EntitySet,
 )
 
 NULL_UUID = UUID("00000000-0000-0000-0000-000000000000")
+
+
+class FakeEntity(Entity):
+    """For testing purposes."""
+    name: str
 
 
 class TestEvent(unittest.TestCase):
@@ -28,6 +34,15 @@ class TestEvent(unittest.TestCase):
         entity = Entity(uuid=uuid4())
         self.assertIsInstance(entity, DeclarativeModel)
         self.assertIsNot(entity.uuid, NULL_UUID)
+
+
+class TestEntitySet(unittest.TestCase):
+
+    def test_constructor(self):
+        raw = {FakeEntity("John"), FakeEntity("Michael")}
+
+        entities = EntitySet(raw)
+        self.assertEqual({str(v.uuid): v for v in raw}, entities.data)
 
 
 if __name__ == "__main__":
