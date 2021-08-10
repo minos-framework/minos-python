@@ -107,6 +107,15 @@ class TestEntitySet(unittest.TestCase):
 
         self.assertEqual({raw[0]}, entities)
 
+    def test_diff(self):
+        raw = [FakeEntity("John"), FakeEntity("Michael")]
+        entities = EntitySet(raw)
+
+        observed = entities.diff(EntitySet([raw[0]]))
+        expected = EntitySetDiff([EntitySetDiffEntry(Action.CREATE, raw[1])])
+
+        self.assertEqual(observed, expected)
+
 
 class TestEntitySetDiff(unittest.TestCase):
     def setUp(self) -> None:
