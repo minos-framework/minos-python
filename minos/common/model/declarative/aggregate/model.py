@@ -78,7 +78,7 @@ class Aggregate(Entity, Generic[T]):
         **kwargs,
     ):
 
-        super().__init__(uuid, version, *args, **kwargs)
+        super().__init__(version, *args, uuid=uuid, **kwargs)
 
         if _broker is not None:
             self._broker = _broker

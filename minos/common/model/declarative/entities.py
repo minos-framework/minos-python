@@ -36,7 +36,7 @@ T = TypeVar("T")
 class Entity(DeclarativeModel):
     uuid: UUID
 
-    def __init__(self, uuid: Optional[UUID] = None, *args, **kwargs):
+    def __init__(self, *args, uuid: Optional[UUID] = None, **kwargs):
         if uuid is None:
             uuid = uuid4()
         super().__init__(uuid, *args, **kwargs)
