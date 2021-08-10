@@ -14,6 +14,7 @@ import logging
 from typing import (
     Any,
     Callable,
+    Generic,
     Iterable,
     NoReturn,
     Optional,
@@ -42,10 +43,15 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-class Field:
+class Field(Generic[T]):
     """Represents a model field."""
 
     __slots__ = "_name", "_type", "_value", "_parser", "_validator"
+
+    _type: Type[T]
+    _value: T
+    _parser: Optional[Callable[[Any], T]]
+    _validator: Optional[Callable[[T], bool]]
 
     def __init__(
         self,
@@ -53,7 +59,7 @@ class Field:
         type_val: Type[T],
         value: T = MissingSentinel,
         parser: Optional[Callable[[Any], T]] = None,
-        validator: Optional[Callable[[Any], bool]] = None,
+        validator: Optional[Callable[[T], bool]] = None,
     ):
         self._name = name
         self._type = type_val
@@ -105,7 +111,7 @@ class Field:
             return self.validator.__func__
 
     @property
-    def value(self) -> Any:
+    def value(self) -> T:
         """Value getter."""
         return self._value
 
