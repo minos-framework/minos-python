@@ -58,37 +58,6 @@ from .types import (
 logger = logging.getLogger(__name__)
 
 
-# def _process_aggregate(cls):
-#     """
-#     Get the list of the class arguments and define it as an AggregateField class
-#     """
-#     cls_annotations = cls.__dict__.get('__annotations__', {})
-#     aggregate_fields = []
-#     for name, type in cls_annotations.items():
-#         attribute = getattr(cls, name, None)
-#         aggregate_fields.append(
-#             AggregateField(name=name, type=type, value=attribute)
-#         )
-#     setattr(cls, "_FIELDS", aggregate_fields)
-#
-#     # g get metaclass
-#     meta_class = getattr(cls, "Meta", None)
-#     if meta_class:
-#         # meta class exist so get the information related
-#         ...
-#     return cls
-#
-#
-# def aggregate(cls=None):
-#     def wrap(cls):
-#         return _process_aggregate(cls)
-#
-#     if cls is None:
-#         return wrap
-#
-#     return wrap(cls)
-
-
 class Model:
     """Base class for ``minos`` model entities."""
 
