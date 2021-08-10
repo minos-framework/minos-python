@@ -13,6 +13,7 @@ from abc import (
     ABC,
 )
 from typing import (
+    Generic,
     NoReturn,
     Optional,
     TypeVar,
@@ -26,8 +27,10 @@ from .setup import (
     MinosSetup,
 )
 
+T = TypeVar("T")
 
-class MinosPool(MinosSetup, PoolBase, ABC):
+
+class MinosPool(MinosSetup, PoolBase, Generic[T], ABC):
     """Base class for Pool implementations in minos"""
 
     def __init__(self, *args, maxsize: int = 10, recycle: Optional[int] = None, already_setup: bool = True, **kwargs):
@@ -46,6 +49,3 @@ class MinosPool(MinosSetup, PoolBase, ABC):
 
     async def _check_instance(self: T, instance: T) -> bool:
         return True
-
-
-T = TypeVar("T")
