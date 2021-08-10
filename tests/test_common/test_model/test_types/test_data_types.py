@@ -7,9 +7,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
-from typing import (
-    Generic,
-)
 
 from minos.common import (
     MissingSentinel,
@@ -19,7 +16,7 @@ from minos.common import (
 class TestMissingSentinel(unittest.TestCase):
     def test_subclass(self):
         # noinspection PyTypeHints
-        self.assertTrue(issubclass(MissingSentinel, Generic))
+        self.assertTrue(issubclass(MissingSentinel, object))
 
 
 if __name__ == "__main__":

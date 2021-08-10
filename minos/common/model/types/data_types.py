@@ -5,14 +5,8 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from typing import (
-    Generic,
-    TypeVar,
-)
-
-T = TypeVar("T")
 NoneType = type(None)
 
 
-class MissingSentinel(Generic[T]):
+class MissingSentinel:
     """Class to detect when a field is not initialized."""
