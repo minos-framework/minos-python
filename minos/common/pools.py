@@ -5,10 +5,6 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from __future__ import (
-    annotations,
-)
-
 from abc import (
     ABC,
 )
@@ -47,5 +43,5 @@ class MinosPool(MinosSetup, PoolBase, Generic[T], ABC):
     async def _destroy(self) -> NoReturn:
         await self.close()
 
-    async def _check_instance(self: T, instance: T) -> bool:
+    async def _check_instance(self, instance: T) -> bool:
         return True
