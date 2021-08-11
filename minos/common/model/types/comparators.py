@@ -12,7 +12,6 @@ from __future__ import (
 import logging
 from typing import (
     Any,
-    Generic,
     TypeVar,
     Union,
     get_args,
@@ -59,11 +58,8 @@ T = TypeVar("T", bound=type)
 K = TypeVar("K", bound=type)
 
 
-class TypeHintComparator(Generic[T, K]):
+class TypeHintComparator:
     """Type Hint Comparator class."""
-
-    _first: T
-    _second: K
 
     def __init__(self, first: T, second: K):
         self._first = first

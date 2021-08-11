@@ -12,7 +12,6 @@ from __future__ import (
 import logging
 from typing import (
     Any,
-    Generic,
     Iterable,
     Optional,
     Type,
@@ -55,11 +54,8 @@ def build_union(options: tuple[Type[T], ...]) -> Type[T]:
     return Union[options]
 
 
-class TypeHintBuilder(Generic[T]):
+class TypeHintBuilder:
     """Type Hint Builder class."""
-
-    _value: T
-    _base: Type[T]
 
     def __init__(self, value: T, base: Optional[Type[T]] = None):
         self._value = value
