@@ -15,8 +15,8 @@ from itertools import (
 )
 from typing import (
     Any,
-    Generic,
     NoReturn,
+    Type,
     TypeVar,
     get_type_hints,
 )
@@ -37,10 +37,8 @@ from ..types import (
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
 
-
-class DeclarativeModel(Model, Generic[T]):
+class DeclarativeModel(Model):
     """Base class for ``minos`` declarative model entities."""
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +51,7 @@ class DeclarativeModel(Model, Generic[T]):
 
     # noinspection PyUnusedLocal
     @classmethod
-    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> T:
+    def from_model_type(cls: Type[T], model_type: ModelType, *args, **kwargs) -> T:
         """Build a ``DeclarativeModel`` from a ``ModelType``.
 
         :param model_type: ``ModelType`` object containing the model structure.
@@ -93,4 +91,5 @@ class DeclarativeModel(Model, Generic[T]):
         yield from fields.items()
 
 
+T = TypeVar("T", bound=DeclarativeModel)
 MinosModel = DeclarativeModel

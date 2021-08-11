@@ -42,9 +42,6 @@ from .serializers import (
     AvroSchemaEncoder,
 )
 from .types import (
-    Decimal,
-    Enum,
-    Fixed,
     MissingSentinel,
     ModelRef,
     ModelRefExtractor,

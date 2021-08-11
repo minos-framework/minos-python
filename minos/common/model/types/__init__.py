@@ -16,9 +16,6 @@ from .comparators import (
     is_type_subclass,
 )
 from .data_types import (
-    Decimal,
-    Enum,
-    Fixed,
     MissingSentinel,
     NoneType,
 )
