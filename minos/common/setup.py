@@ -15,9 +15,9 @@ from pathlib import (
     Path,
 )
 from typing import (
-    Generic,
     NoReturn,
     Optional,
+    Type,
     TypeVar,
     Union,
 )
@@ -33,11 +33,10 @@ from .exceptions import (
     MinosConfigNotProvidedException,
 )
 
-T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
-class MinosSetup(Generic[T]):
+class MinosSetup:
     """Minos setup base class."""
 
     _config: MinosConfig = Provide["config"]
@@ -62,7 +61,7 @@ class MinosSetup(Generic[T]):
         return not self._already_setup
 
     @classmethod
-    def from_config(cls, config: Optional[Union[MinosConfig, Path]] = None, **kwargs) -> T:
+    def from_config(cls: Type[T], config: Optional[Union[MinosConfig, Path]] = None, **kwargs) -> T:
         """Build a new instance from config.
 
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -122,3 +121,6 @@ class MinosSetup(Generic[T]):
             warnings.warn(
                 f"A not destroyed {type(self).__name__!r} instance is trying to be deleted...", ResourceWarning
             )
+
+
+T = TypeVar("T", bound=MinosSetup)

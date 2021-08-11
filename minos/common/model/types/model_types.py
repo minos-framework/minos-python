@@ -15,7 +15,6 @@ from typing import (
     Iterable,
     Optional,
     Type,
-    TypeVar,
     Union,
 )
 
@@ -31,20 +30,18 @@ if TYPE_CHECKING:
         Model,
     )
 
-T = TypeVar("T")
-
 
 class ModelType(type):
     """Model Type class."""
 
     name: str
     namespace: str
-    type_hints: dict[str, Type[T]]
+    type_hints: dict[str, Type]
 
     @classmethod
     def build(
         mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs
-    ) -> Type[T]:
+    ) -> ModelType:
         """Build a new ``ModelType`` instance.
 
         :param name_: Name of the new type.
@@ -69,7 +66,7 @@ class ModelType(type):
         return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
 
     @classmethod
-    def from_typed_dict(mcs, typed_dict) -> Type[T]:
+    def from_typed_dict(mcs, typed_dict) -> ModelType:
         """Build a new ``ModelType`` instance from a ``typing.TypedDict``.
 
         :param typed_dict: Typed dict to be used as base.

@@ -5,8 +5,12 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from typing import (
-    Generic,
+    Type,
     TypeVar,
 )
 
@@ -14,16 +18,17 @@ from .abc import (
     DynamicModel,
 )
 
-T = TypeVar("T")
 
-
-class BucketModel(DynamicModel, Generic[T]):
+class BucketModel(DynamicModel):
     """Bucket Model class."""
 
     @classmethod
-    def empty(cls) -> T:
+    def empty(cls: Type[T]) -> T:
         """Build an empty ``BucketModel`` instance.
 
         :return: A ``BucketModel`` instance.
         """
         return cls(dict())
+
+
+T = TypeVar("T", bound=BucketModel)
