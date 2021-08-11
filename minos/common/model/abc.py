@@ -167,7 +167,7 @@ class Model:
 
     # noinspection PyMethodParameters
     @property_or_classproperty
-    def model_type(self_or_cls: Union[T, Type[T]]) -> Type[T]:
+    def model_type(self_or_cls) -> ModelType:
         """Get the model type of the instance.
 
         :return: A ``ModelType`` instance.
