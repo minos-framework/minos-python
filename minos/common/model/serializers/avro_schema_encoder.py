@@ -19,7 +19,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Type,
-    TypeVar,
     Union,
     get_args,
     get_origin,
@@ -54,8 +53,6 @@ if TYPE_CHECKING:
     from ..fields import Field  # pragma: no cover
 
 logger = logging.getLogger(__name__)
-
-T = TypeVar("T")
 
 
 class AvroSchemaEncoder:
