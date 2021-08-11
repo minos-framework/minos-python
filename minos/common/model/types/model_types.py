@@ -218,7 +218,8 @@ class GenericParameterProjector:
 
         if is_type_subclass(value):
             return value
-        if isinstance(value, TypeVar) and value in self.mapper:
-            return self.mapper[value]
+
+        if isinstance(value, TypeVar):
+            return self.mapper.get(value, value)
 
         return self._build(get_origin(value))[tuple(self._build(arg) for arg in get_args(value))]
