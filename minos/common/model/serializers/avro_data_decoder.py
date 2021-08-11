@@ -106,6 +106,10 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
+        if isinstance(type_field, TypeVar):
+            t = Union[type_field.__constraints__ or (type_field.__bound__,) or (Any,)]
+            return self._cast_value(t, data)
+
         if type_field is NoneType:
             return self._cast_none_value(type_field, data)
 
@@ -237,9 +241,6 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_composed_value(self, type_field: Type, data: Any) -> Any:
-        if isinstance(type_field, TypeVar):
-            t = Union[type_field.__constraints__ or (type_field.__bound__,) or (Any,)]
-            return self._cast_value(t, data)
         origin_type = get_origin(type_field)
         if origin_type is None:
             raise MinosMalformedAttributeException(f"{self._name!r} field is malformed. Type: '{type_field}'.")
@@ -254,7 +255,10 @@ class AvroDataDecoder:
             return self._convert_model_ref(data, type_field)
 
         if is_model_subclass(origin_type):
-            return self._cast_model(origin_type, data)
+            # noinspection PyUnresolvedReferences
+            new = type_field.model_type.project_parameters(get_args(type_field))
+            # noinspection PyUnresolvedReferences
+            return self._cast_model_type(new, data)
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 

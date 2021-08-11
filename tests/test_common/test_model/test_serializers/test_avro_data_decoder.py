@@ -353,6 +353,13 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(entities, observed)
 
+    def test_entity_set_raises(self):
+        raw = {FakeEntity("John"), FakeEntity("Michael")}
+        entities = EntitySet(raw)
+        decoder = AvroDataDecoder("test", EntitySet[Base])
+        with self.assertRaises(MinosTypeAttributeException):
+            decoder.build(entities)
+
 
 if __name__ == "__main__":
     unittest.main()

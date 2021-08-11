@@ -14,9 +14,16 @@ from typing import (
     Any,
     Iterable,
     Optional,
+    Tuple,
     Type,
     TypeVar,
     Union,
+    get_args,
+    get_origin,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from ...exceptions import (
@@ -38,6 +45,7 @@ class ModelType(type):
     name: str
     namespace: str
     type_hints: dict[str, Type]
+    parameters: tuple[TypeVar, ...]
 
     @classmethod
     def build(
@@ -170,3 +178,44 @@ class ModelType(type):
 
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
+
+    def project_parameters(cls, parameters: Tuple[Type, ...]) -> ModelType:
+        """
+
+        :param parameters:
+        :return:
+        """
+        return ParameterProjector(cls, parameters).build()
+
+
+class ParameterProjector:
+    """Model Reference Injector class."""
+
+    def __init__(self, mt: ModelType, parameters: Tuple[Type, ...]):
+        self.mt = mt
+        self.parameters = parameters
+
+    @cached_property
+    def mapper(self) -> dict[TypeVar, Type]:
+        return dict(zip(self.mt.parameters, self.parameters))
+
+    def build(self) -> ModelType:
+        """Inject the model instances referenced by identifiers.
+
+        :return: A model in which the model references have been replaced by the values.
+        """
+        type_hints = {k: self._build(v) for k, v in self.mt.type_hints.items()}
+        new = ModelType.build(name_=self.mt.name, type_hints_=type_hints, namespace_=self.mt.namespace)
+        return new
+
+    def _build(self, value):
+        from .comparators import (
+            is_type_subclass,
+        )
+
+        if is_type_subclass(value):
+            return value
+        if isinstance(value, TypeVar) and value in self.mapper:
+            return self.mapper[value]
+
+        return self._build(get_origin(value))[tuple(self._build(arg) for arg in get_args(value))]
