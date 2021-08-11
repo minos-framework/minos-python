@@ -25,6 +25,7 @@ from uuid import (
 from minos.common import (
     Aggregate,
     CommandReply,
+    Entity,
     MinosBroker,
     MinosHandler,
     MinosRepository,
@@ -133,3 +134,9 @@ class FakeSnapshot(MinosSnapshot):
 
     async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""
+
+
+class FakeEntity(Entity):
+    """For testing purposes."""
+
+    name: str
