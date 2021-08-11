@@ -45,6 +45,7 @@ from ..types import (
     is_aggregate_type,
     is_model_subclass,
     is_type_subclass,
+    unpack_typevar,
 )
 
 if TYPE_CHECKING:
@@ -107,7 +108,7 @@ class AvroDataDecoder:
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
         if isinstance(type_field, TypeVar):
-            unpacked_type = Union[type_field.__constraints__ or (type_field.__bound__ or Any,)]
+            unpacked_type = unpack_typevar(type_field)
             return self._cast_value(unpacked_type, data)
 
         if type_field is NoneType:
@@ -150,8 +151,8 @@ class AvroDataDecoder:
             if isinstance(type_field, ModelType):
                 return self._cast_model_type(type_field, data)
 
-            if is_model_subclass(type_field):
-                return self._cast_model(type_field, data)
+        if is_model_subclass(type_field):
+            return self._cast_model(type_field, data)
 
         return self._cast_composed_value(type_field, data)
 
@@ -225,17 +226,17 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_model(self, type_field: Type, data: Any) -> Any:
-        if isinstance(data, type_field):
+        if is_type_subclass(type_field) and isinstance(data, type_field):
             return data
         # noinspection PyUnresolvedReferences
-        return self._cast_model_type(type_field.model_type, data)
+        return self._cast_model_type(ModelType.from_model(type_field), data)
 
     def _cast_model_type(self, type_field: ModelType, data: Any) -> Any:
         if isinstance(data, dict):
             data = {k: self._cast_value(v, data.get(k, None)) for k, v in type_field.type_hints.items()}
             return type_field(**data)
 
-        if hasattr(data, "model_type") and data.model_type == type_field:
+        if hasattr(data, "model_type") and ModelType.from_model(data) == type_field:
             return data
 
         raise MinosTypeAttributeException(self._name, type_field, data)
@@ -253,12 +254,6 @@ class AvroDataDecoder:
 
         if origin_type is ModelRef:
             return self._convert_model_ref(data, type_field)
-
-        if is_model_subclass(origin_type):
-            # noinspection PyUnresolvedReferences
-            new = type_field.model_type.replace_generics(get_args(type_field))
-            # noinspection PyUnresolvedReferences
-            return self._cast_model_type(new, data)
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 

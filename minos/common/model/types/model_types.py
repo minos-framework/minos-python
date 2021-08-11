@@ -14,16 +14,8 @@ from typing import (
     Any,
     Iterable,
     Optional,
-    Tuple,
     Type,
-    TypeVar,
     Union,
-    get_args,
-    get_origin,
-)
-
-from cached_property import (
-    cached_property,
 )
 
 from ...exceptions import (
@@ -31,6 +23,9 @@ from ...exceptions import (
 )
 from ...importlib import (
     import_module,
+)
+from .generics import (
+    GenericTypeProjector,
 )
 
 if TYPE_CHECKING:
@@ -45,23 +40,15 @@ class ModelType(type):
     name: str
     namespace: str
     type_hints: dict[str, Type]
-    generics: tuple[TypeVar, ...]
 
     @classmethod
     def build(
-        mcs,
-        name_: str,
-        type_hints_: Optional[dict[str, type]] = None,
-        generics_: tuple[TypeVar, ...] = None,
-        *,
-        namespace_: Optional[str] = None,
-        **kwargs,
+        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs,
     ) -> ModelType:
         """Build a new ``ModelType`` instance.
 
         :param name_: Name of the new type.
         :param type_hints_: Type hints of the new type.
-        :param generics_: Generic parameters of the new type.
         :param namespace_: Namespace of the new type.
         :param kwargs: Type hints of the new type as named parameters.
         :return: A ``ModelType`` instance.
@@ -72,9 +59,6 @@ class ModelType(type):
         if type_hints_ is None:
             type_hints_ = kwargs
 
-        if generics_ is None:
-            generics_ = tuple()
-
         if namespace_ is None:
             try:
                 namespace_, name_ = name_.rsplit(".", 1)
@@ -82,7 +66,7 @@ class ModelType(type):
                 namespace_ = str()
 
         # noinspection PyTypeChecker
-        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_, "generics": generics_})
+        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict) -> ModelType:
@@ -92,6 +76,15 @@ class ModelType(type):
         :return: A ``ModelType`` instance.
         """
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
+
+    @staticmethod
+    def from_model(type_) -> ModelType:
+        """Build a new instance from model class.
+
+        :param type_: The model class.
+        :return: A new ``ModelType`` instance.
+        """
+        return ModelType.build(name_=type_.classname, type_hints_=GenericTypeProjector.from_model(type_).build())
 
     def __call__(cls, *args, **kwargs) -> Model:
         return cls.model_cls.from_model_type(cls, *args, **kwargs)
@@ -154,7 +147,7 @@ class ModelType(type):
         )
 
     def _equal_with_model(cls, other: Any) -> bool:
-        return hasattr(other, "model_type") and cls == other.model_type
+        return hasattr(other, "model_type") and cls == ModelType.from_model(other)
 
     def _equal_with_inherited_model(cls, other: ModelType) -> bool:
         return (
@@ -178,48 +171,3 @@ class ModelType(type):
 
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
-
-    def replace_generics(cls, parameters: Tuple[Type, ...]) -> ModelType:
-        """
-
-        :param parameters:
-        :return:
-        """
-        return GenericParameterProjector(cls, parameters).build()
-
-
-class GenericParameterProjector:
-    """TODO"""
-
-    def __init__(self, model_type: ModelType, parameters: Tuple[Type, ...]):
-        self.model_type = model_type
-        self.parameters = parameters
-
-    @cached_property
-    def mapper(self) -> dict[TypeVar, Type]:
-        """TODO
-
-        :return: TODO
-        """
-        return dict(zip(self.model_type.generics, self.parameters))
-
-    def build(self) -> ModelType:
-        """TODO
-
-        :return: TODO
-        """
-        type_hints = {k: self._build(v) for k, v in self.model_type.type_hints.items()}
-        return ModelType.build(name_=self.model_type.name, type_hints_=type_hints, namespace_=self.model_type.namespace)
-
-    def _build(self, value):
-        from .comparators import (
-            is_type_subclass,
-        )
-
-        if is_type_subclass(value):
-            return value
-
-        if isinstance(value, TypeVar):
-            return self.mapper.get(value, value)
-
-        return self._build(get_origin(value))[tuple(self._build(arg) for arg in get_args(value))]

@@ -100,6 +100,7 @@ from .model import (
     Event,
     Field,
     FieldsDiff,
+    GenericTypeProjector,
     MinosModel,
     MissingSentinel,
     Model,
