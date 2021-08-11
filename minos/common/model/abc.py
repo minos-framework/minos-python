@@ -173,7 +173,11 @@ class Model:
         :return: A ``ModelType`` instance.
         """
         # noinspection PyTypeChecker
-        return ModelType.build(self_or_cls.classname, self_or_cls.type_hints)
+        return ModelType.build(
+            name_=self_or_cls.classname,
+            type_hints_=self_or_cls.type_hints,
+            generics_=getattr(self_or_cls, "__parameters__", tuple()),
+        )
 
     # noinspection PyMethodParameters
     @classproperty
