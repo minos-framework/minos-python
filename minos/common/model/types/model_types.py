@@ -45,14 +45,14 @@ class ModelType(type):
     name: str
     namespace: str
     type_hints: dict[str, Type]
-    parameters: tuple[TypeVar, ...]
+    generics: tuple[TypeVar, ...]
 
     @classmethod
     def build(
         mcs,
         name_: str,
         type_hints_: Optional[dict[str, type]] = None,
-        parameters_: tuple[TypeVar, ...] = None,
+        generics_: tuple[TypeVar, ...] = None,
         *,
         namespace_: Optional[str] = None,
         **kwargs,
@@ -61,7 +61,7 @@ class ModelType(type):
 
         :param name_: Name of the new type.
         :param type_hints_: Type hints of the new type.
-        :param parameters_: Generic parameters of the new type.
+        :param generics_: Generic parameters of the new type.
         :param namespace_: Namespace of the new type.
         :param kwargs: Type hints of the new type as named parameters.
         :return: A ``ModelType`` instance.
@@ -72,8 +72,8 @@ class ModelType(type):
         if type_hints_ is None:
             type_hints_ = kwargs
 
-        if parameters_ is None:
-            parameters_ = tuple()
+        if generics_ is None:
+            generics_ = tuple()
 
         if namespace_ is None:
             try:
@@ -82,7 +82,7 @@ class ModelType(type):
                 namespace_ = str()
 
         # noinspection PyTypeChecker
-        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_, "parameters": parameters_})
+        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_, "generics": generics_})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict) -> ModelType:
@@ -179,34 +179,37 @@ class ModelType(type):
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
 
-    def project_parameters(cls, parameters: Tuple[Type, ...]) -> ModelType:
+    def replace_generics(cls, parameters: Tuple[Type, ...]) -> ModelType:
         """
 
         :param parameters:
         :return:
         """
-        return ParameterProjector(cls, parameters).build()
+        return GenericParameterProjector(cls, parameters).build()
 
 
-class ParameterProjector:
-    """Model Reference Injector class."""
+class GenericParameterProjector:
+    """TODO"""
 
-    def __init__(self, mt: ModelType, parameters: Tuple[Type, ...]):
-        self.mt = mt
+    def __init__(self, model_type: ModelType, parameters: Tuple[Type, ...]):
+        self.model_type = model_type
         self.parameters = parameters
 
     @cached_property
     def mapper(self) -> dict[TypeVar, Type]:
-        return dict(zip(self.mt.parameters, self.parameters))
+        """TODO
+
+        :return: TODO
+        """
+        return dict(zip(self.model_type.generics, self.parameters))
 
     def build(self) -> ModelType:
-        """Inject the model instances referenced by identifiers.
+        """TODO
 
-        :return: A model in which the model references have been replaced by the values.
+        :return: TODO
         """
-        type_hints = {k: self._build(v) for k, v in self.mt.type_hints.items()}
-        new = ModelType.build(name_=self.mt.name, type_hints_=type_hints, namespace_=self.mt.namespace)
-        return new
+        type_hints = {k: self._build(v) for k, v in self.model_type.type_hints.items()}
+        return ModelType.build(name_=self.model_type.name, type_hints_=type_hints, namespace_=self.model_type.namespace)
 
     def _build(self, value):
         from .comparators import (

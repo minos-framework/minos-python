@@ -256,7 +256,7 @@ class AvroDataDecoder:
 
         if is_model_subclass(origin_type):
             # noinspection PyUnresolvedReferences
-            new = type_field.model_type.project_parameters(get_args(type_field))
+            new = type_field.model_type.replace_generics(get_args(type_field))
             # noinspection PyUnresolvedReferences
             return self._cast_model_type(new, data)
 
