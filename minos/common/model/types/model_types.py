@@ -79,10 +79,10 @@ class ModelType(type):
 
     @staticmethod
     def from_model(type_) -> ModelType:
-        """TODO
+        """Build a new instance from model class.
 
-        :param type_: TODO
-        :return:TODO
+        :param type_: The model class.
+        :return: A new ``ModelType`` instance.
         """
         return ModelType.build(name_=type_.classname, type_hints_=GenericTypeProjector.from_model(type_).build())
 

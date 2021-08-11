@@ -21,16 +21,16 @@ from typing import (
 
 # noinspection SpellCheckingInspection
 def unpack_typevar(value: TypeVar) -> Type:
-    """TODO
+    """Unpack `TypeVar` into a union of possible types.
 
-    :param value: TODO
-    :return: TODO
+    :param value: A type var instance.
+    :return: A union of types.
     """
     return Union[value.__constraints__ or (value.__bound__ or Any,)]
 
 
 class GenericTypeProjector:
-    """TODO"""
+    """Generic Type Projector."""
 
     def __init__(self, type_hints: dict[str, Type], mapper: dict[TypeVar, Type]):
         self.type_hints = type_hints
@@ -38,18 +38,18 @@ class GenericTypeProjector:
 
     @classmethod
     def from_model(cls, type_) -> GenericTypeProjector:
-        """TODO
+        """Build a new instance from model.
 
-        :param type_: TODO
-        :return: TODO
+        :param type_: The model class.
+        :return: A ``GenericTypeProjector`` instance.
         """
         generics_ = dict(zip(type_.type_hints_parameters, get_args(type_)))
         return cls(type_.type_hints, generics_)
 
     def build(self) -> dict[str, Type]:
-        """TODO
+        """Builder a projection of type vars values.
 
-        :return: TODO
+        :return: A dict of type hints.
         """
         return {k: self._build(v) for k, v in self.type_hints.items()}
 
