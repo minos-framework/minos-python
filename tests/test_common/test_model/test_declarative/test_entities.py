@@ -70,7 +70,7 @@ class TestEntitySet(unittest.TestCase):
         raw = {FakeEntity("John"), FakeEntity("Michael")}
 
         entities = EntitySet(raw)
-        self.assertEqual(raw, entities)
+        self.assertEqual(raw, set(entities))
 
     def test_contains(self):
         raw = [FakeEntity("John")]
