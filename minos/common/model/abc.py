@@ -21,6 +21,7 @@ from typing import (
     Any,
     Iterable,
     NoReturn,
+    Tuple,
     Type,
     TypedDict,
     TypeVar,
@@ -173,7 +174,7 @@ class Model:
         :return: A ``ModelType`` instance.
         """
         # noinspection PyTypeChecker
-        return ModelType.build(self_or_cls.classname, self_or_cls.type_hints)
+        return ModelType.build(self_or_cls.classname, self_or_cls.type_hints, self_or_cls.type_parameters)
 
     # noinspection PyMethodParameters
     @classproperty
@@ -213,6 +214,15 @@ class Model:
         :return: A dictionary in which the keys are the field names and the values are the types.
         """
         return dict(self_or_cls._type_hints())
+
+    # noinspection PyMethodParameters
+    @property_or_classproperty
+    def type_parameters(self_or_cls) -> Tuple[TypeVar, ...]:
+        """Get type parameters.
+
+        :return: A tuple of `TypeVar` instances.
+        """
+        return getattr(self_or_cls, "__parameters__", tuple())
 
     # noinspection PyMethodParameters
     @self_or_classmethod

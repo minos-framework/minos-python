@@ -347,7 +347,7 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     def test_entity_set(self):
         raw = {FakeEntity("John"), FakeEntity("Michael")}
-        entities = EntitySet[Base](raw)
+        entities = EntitySet(raw)
         decoder = AvroDataDecoder("test", EntitySet[FakeEntity])
         observed = decoder.build(entities)
 

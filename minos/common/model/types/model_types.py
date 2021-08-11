@@ -16,6 +16,7 @@ from typing import (
     Optional,
     Type,
     TypedDict,
+    TypeVar,
     Union,
 )
 
@@ -41,12 +42,19 @@ class ModelType(type):
 
     @classmethod
     def build(
-        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs
+        mcs,
+        name_: str,
+        type_hints_: Optional[dict[str, type]] = None,
+        parameters_: tuple[TypeVar, ...] = None,
+        *,
+        namespace_: Optional[str] = None,
+        **kwargs,
     ) -> ModelType:
         """Build a new ``ModelType`` instance.
 
         :param name_: Name of the new type.
         :param type_hints_: Type hints of the new type.
+        :param parameters_: Generic parameters of the new type.
         :param namespace_: Namespace of the new type.
         :param kwargs: Type hints of the new type as named parameters.
         :return: A ``ModelType`` instance.
@@ -57,6 +65,9 @@ class ModelType(type):
         if type_hints_ is None:
             type_hints_ = kwargs
 
+        if parameters_ is None:
+            parameters_ = tuple()
+
         if namespace_ is None:
             try:
                 namespace_, name_ = name_.rsplit(".", 1)
@@ -64,7 +75,7 @@ class ModelType(type):
                 namespace_ = str()
 
         # noinspection PyTypeChecker
-        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
+        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_, "parameters": parameters_})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict: TypedDict) -> ModelType:
