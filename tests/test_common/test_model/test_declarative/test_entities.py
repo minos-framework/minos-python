@@ -104,6 +104,11 @@ class TestEntitySet(unittest.TestCase):
 
         self.assertEqual({raw[0]}, entities)
 
+    def test_avro_serialization(self):
+        base = EntitySet({FakeEntity("John"), FakeEntity("Michael")})
+        recovered = EntitySet.from_avro_bytes(base.avro_bytes)
+        self.assertEqual(base, recovered)
+
 
 if __name__ == "__main__":
     unittest.main()
