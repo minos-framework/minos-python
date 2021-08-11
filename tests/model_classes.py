@@ -78,15 +78,6 @@ class User(Base):
         return not value.count(" ")
 
 
-T = TypeVar("T", str, int)
-
-
-class GenericUser(DeclarativeModel, Generic[T]):
-    """For testing purposes."""
-
-    username: T
-
-
 class ShoppingList(MinosModel):
     """Class to test ``MinosModel`` composition."""
 
@@ -162,3 +153,18 @@ class CustomerFailDict(MinosModel):
     """
 
     friends: dict
+
+
+T = TypeVar("T", str, int)
+
+
+class GenericUser(DeclarativeModel, Generic[T]):
+    """For testing purposes."""
+
+    username: T
+
+
+class Auth(DeclarativeModel):
+    """For testing purposes."""
+
+    user: GenericUser[str]

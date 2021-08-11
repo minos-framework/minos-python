@@ -21,9 +21,6 @@ from uuid import (
     UUID,
 )
 
-from .model_refs import (
-    ModelRef,
-)
 from .model_types import (
     ModelType,
 )
@@ -45,8 +42,17 @@ def is_type_subclass(type_field: Any) -> bool:
     return issubclass(type(type_field), type(type))
 
 
+def is_model_type(type_field: Any):
+    """Check if the given type is a model instance."""
+    from ..abc import (
+        Model,
+    )
+
+    return isinstance(type_field, Model)
+
+
 def is_aggregate_type(type_field: Any) -> bool:
-    """Check if the given type is follows the ``Aggregate`` protocol."""
+    """Check if the given type follows the ``Aggregate`` protocol."""
     return (is_model_subclass(type_field) or isinstance(type_field, ModelType)) and {
         "uuid": UUID,
         "version": int,
@@ -75,6 +81,10 @@ class TypeHintComparator:
         return self._compare(self._first, self._second)
 
     def _compare(self, first: T, second: K) -> bool:
+        from .model_refs import (
+            ModelRef,
+        )
+
         if get_origin(first) is ModelRef:
             first = Union[(*get_args(first), UUID)]
 
