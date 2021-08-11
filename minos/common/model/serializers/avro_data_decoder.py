@@ -107,8 +107,8 @@ class AvroDataDecoder:
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
         if isinstance(type_field, TypeVar):
-            t = Union[type_field.__constraints__ or (type_field.__bound__,) or (Any,)]
-            return self._cast_value(t, data)
+            unpacked_type = Union[type_field.__constraints__ or (type_field.__bound__ or Any,)]
+            return self._cast_value(unpacked_type, data)
 
         if type_field is NoneType:
             return self._cast_none_value(type_field, data)
