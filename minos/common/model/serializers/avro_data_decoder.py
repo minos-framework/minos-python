@@ -150,8 +150,8 @@ class AvroDataDecoder:
             if isinstance(type_field, ModelType):
                 return self._cast_model_type(type_field, data)
 
-            if is_model_subclass(type_field):
-                return self._cast_model(type_field, data)
+        if is_model_subclass(type_field):
+            return self._cast_model(type_field, data)
 
         return self._cast_composed_value(type_field, data)
 
@@ -225,7 +225,7 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, UUID, data)
 
     def _cast_model(self, type_field: Type, data: Any) -> Any:
-        if isinstance(data, type_field):
+        if is_type_subclass(type_field) and isinstance(data, type_field):
             return data
         # noinspection PyUnresolvedReferences
         return self._cast_model_type(ModelType.from_model(type_field), data)
@@ -253,9 +253,6 @@ class AvroDataDecoder:
 
         if origin_type is ModelRef:
             return self._convert_model_ref(data, type_field)
-
-        if is_model_subclass(origin_type):
-            return self._cast_model_type(type_field, data)
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 
