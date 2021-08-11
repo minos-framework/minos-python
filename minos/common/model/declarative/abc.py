@@ -15,6 +15,7 @@ from itertools import (
 )
 from typing import (
     Any,
+    Iterator,
     NoReturn,
     Type,
     TypeVar,
@@ -75,7 +76,7 @@ class DeclarativeModel(Model):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def _type_hints(self_or_cls) -> dict[str, Any]:
+    def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
         fields = dict()
         if isinstance(self_or_cls, type):
             cls = self_or_cls
