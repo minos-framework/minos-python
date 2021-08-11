@@ -40,23 +40,15 @@ class ModelType(type):
     name: str
     namespace: str
     type_hints: dict[str, Type]
-    generics: dict[TypeVar, Type]
 
     @classmethod
     def build(
-        mcs,
-        name_: str,
-        type_hints_: Optional[dict[str, type]] = None,
-        generics_: dict[TypeVar, Type] = None,
-        *,
-        namespace_: Optional[str] = None,
-        **kwargs,
+        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs,
     ) -> ModelType:
         """Build a new ``ModelType`` instance.
 
         :param name_: Name of the new type.
         :param type_hints_: Type hints of the new type.
-        :param generics_: Generic parameters of the new type.
         :param namespace_: Namespace of the new type.
         :param kwargs: Type hints of the new type as named parameters.
         :return: A ``ModelType`` instance.
@@ -67,9 +59,6 @@ class ModelType(type):
         if type_hints_ is None:
             type_hints_ = kwargs
 
-        if generics_ is None:
-            generics_ = dict()
-
         if namespace_ is None:
             try:
                 namespace_, name_ = name_.rsplit(".", 1)
@@ -77,7 +66,7 @@ class ModelType(type):
                 namespace_ = str()
 
         # noinspection PyTypeChecker
-        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_, "generics": generics_})
+        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
 
     @classmethod
     def from_typed_dict(mcs, typed_dict) -> ModelType:
@@ -97,11 +86,10 @@ class ModelType(type):
         :return:
         """
         name_ = type_.classname
-        type_hints_ = type_.type_hints
         generics_ = dict(zip(type_.type_hints_parameters, get_args(type_)))
+        type_hints_ = GenericParameterProjector(type_.type_hints, generics_).build()
 
-        # type_hints_ = GenericParameterProjector(type_hints_, generics_).build()
-        return ModelType.build(name_, type_hints_, generics_)
+        return ModelType.build(name_, type_hints_)
 
     def __call__(cls, *args, **kwargs) -> Model:
         return cls.model_cls.from_model_type(cls, *args, **kwargs)
@@ -160,7 +148,7 @@ class ModelType(type):
             and cls.name == other.name
             and cls.namespace == other.namespace
             and set(cls.type_hints.keys()) == set(other.type_hints.keys())
-            and all(TypeHintComparator(v, other.replace_generics[k]).match() for k, v in cls.replace_generics.items())
+            and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
         )
 
     def _equal_with_model(cls, other: Any) -> bool:
@@ -189,16 +177,6 @@ class ModelType(type):
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
 
-    @property
-    def replace_generics(cls) -> dict[str, Type]:
-        """
-
-        :return:
-        """
-        if not len(cls.generics):
-            return cls.type_hints
-        return GenericParameterProjector(cls.type_hints, cls.generics).build()
-
 
 class GenericParameterProjector:
     """TODO"""
@@ -212,6 +190,8 @@ class GenericParameterProjector:
 
         :return: TODO
         """
+        if not len(self.mapper):
+            return self.type_hints
         return {k: self._build(v) for k, v in self.type_hints.items()}
 
     def _build(self, value):
