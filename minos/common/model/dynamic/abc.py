@@ -14,8 +14,8 @@ from itertools import (
     zip_longest,
 )
 from typing import (
-    Generic,
     Iterable,
+    Type,
     TypeVar,
     Union,
 )
@@ -33,17 +33,15 @@ from ..types import (
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
 
-
-class DynamicModel(Model, Generic[T]):
+class DynamicModel(Model):
     """Base class for ``minos`` dynamic model entities"""
 
     def __init__(self, fields: Union[Iterable[Field], dict[str, Field]], **kwargs):
         super().__init__(fields)
 
     @classmethod
-    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> T:
+    def from_model_type(cls: Type[T], model_type: ModelType, *args, **kwargs) -> T:
         """Build a ``DynamicModel`` from a ``ModelType``.
 
         :param model_type: ``ModelType`` object containing the model structure
@@ -66,3 +64,6 @@ class DynamicModel(Model, Generic[T]):
 
             fields[name] = Field(name, type_val, value)
         return fields
+
+
+T = TypeVar("T", bound=DynamicModel)

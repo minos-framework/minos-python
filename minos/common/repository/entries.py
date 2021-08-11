@@ -29,8 +29,8 @@ from ..importlib import (
 
 if TYPE_CHECKING:
     from ..model import (
+        Action,
         Aggregate,
-        AggregateAction,
         AggregateDiff,
     )
 
@@ -48,17 +48,17 @@ class RepositoryEntry:
         version: int,
         data: Union[bytes, memoryview] = bytes(),
         id: Optional[int] = None,
-        action: Optional[Union[str, AggregateAction]] = None,
+        action: Optional[Union[str, Action]] = None,
         created_at: Optional[datetime] = None,
     ):
         if isinstance(data, memoryview):
             data = data.tobytes()
         if action is not None and isinstance(action, str):
             from ..model import (
-                AggregateAction,
+                Action,
             )
 
-            action = AggregateAction.value_of(action)
+            action = Action.value_of(action)
 
         self.aggregate_uuid = aggregate_uuid
         self.aggregate_name = aggregate_name

@@ -11,7 +11,7 @@ from uuid import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
     Field,
     FieldsDiff,
@@ -41,7 +41,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid,
             name=Car.classname,
             version=3,
-            action=AggregateAction.UPDATE,
+            action=Action.UPDATE,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
         )
         observed = self.final.diff(self.initial)
@@ -52,7 +52,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid,
             name=Car.classname,
             version=3,
-            action=AggregateAction.UPDATE,
+            action=Action.UPDATE,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
         )
         self.initial.apply_diff(diff)
@@ -63,7 +63,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid_another,
             name=Car.classname,
             version=3,
-            action=AggregateAction.UPDATE,
+            action=Action.UPDATE,
             fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
         )
         with self.assertRaises(ValueError):

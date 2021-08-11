@@ -106,6 +106,10 @@ class AvroDataDecoder:
         raise MinosTypeAttributeException(self._name, type_field, data)
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
+        if isinstance(type_field, TypeVar):
+            unpacked_type = Union[type_field.__constraints__ or (type_field.__bound__ or Any,)]
+            return self._cast_value(unpacked_type, data)
+
         if type_field is NoneType:
             return self._cast_none_value(type_field, data)
 
@@ -249,6 +253,12 @@ class AvroDataDecoder:
 
         if origin_type is ModelRef:
             return self._convert_model_ref(data, type_field)
+
+        if is_model_subclass(origin_type):
+            # noinspection PyUnresolvedReferences
+            new = type_field.model_type.replace_generics(get_args(type_field))
+            # noinspection PyUnresolvedReferences
+            return self._cast_model_type(new, data)
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 

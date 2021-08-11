@@ -15,9 +15,9 @@ from asyncio import (
 )
 from typing import (
     AsyncIterator,
-    Generic,
     NoReturn,
     Optional,
+    Type,
     TypeVar,
 )
 from uuid import (
@@ -54,11 +54,10 @@ from .diff import (
     AggregateDiff,
 )
 
-T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
-class Aggregate(Entity, Generic[T]):
+class Aggregate(Entity):
     """Base aggregate class."""
 
     version: int
@@ -96,7 +95,7 @@ class Aggregate(Entity, Generic[T]):
 
     @classmethod
     async def get(
-        cls,
+        cls: Type[T],
         uuids: set[UUID],
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
@@ -135,7 +134,7 @@ class Aggregate(Entity, Generic[T]):
 
     @classmethod
     async def get_one(
-        cls,
+        cls: Type[T],
         uuid: UUID,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
@@ -154,7 +153,11 @@ class Aggregate(Entity, Generic[T]):
 
     @classmethod
     async def create(
-        cls, *args, _broker: Optional[MinosBroker] = None, _repository: Optional[MinosRepository] = None, **kwargs
+        cls: Type[T],
+        *args,
+        _broker: Optional[MinosBroker] = None,
+        _repository: Optional[MinosRepository] = None,
+        **kwargs,
     ) -> T:
         """Create a new ``Aggregate`` instance.
 
@@ -187,7 +190,7 @@ class Aggregate(Entity, Generic[T]):
         return instance
 
     # noinspection PyMethodParameters,PyShadowingBuiltins
-    async def update(self, **kwargs) -> T:
+    async def update(self: T, **kwargs) -> T:
         """Update an existing ``Aggregate`` instance.
 
         :param kwargs: Additional named arguments.
@@ -307,7 +310,7 @@ class Aggregate(Entity, Generic[T]):
         self.version = difference.version
 
     @classmethod
-    def from_diff(cls, difference: AggregateDiff, *args, **kwargs) -> T:
+    def from_diff(cls: Type[T], difference: AggregateDiff, *args, **kwargs) -> T:
         """Build a new instance from an ``AggregateDiff``.
 
         :param difference: The difference that contains the data.
@@ -315,4 +318,8 @@ class Aggregate(Entity, Generic[T]):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
+        # noinspection PyArgumentList
         return cls(*args, uuid=difference.uuid, version=difference.version, **difference.fields_diff, **kwargs)
+
+
+T = TypeVar("T", bound=Aggregate)

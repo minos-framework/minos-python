@@ -26,7 +26,7 @@ from ..pools import (
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlPool(MinosPool):
+class PostgreSqlPool(MinosPool[Connection]):
     """Postgres Pool class."""
 
     def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):
