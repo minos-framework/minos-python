@@ -174,11 +174,7 @@ class Model:
         :return: A ``ModelType`` instance.
         """
         # noinspection PyTypeChecker
-        return ModelType.build(
-            name_=self_or_cls.classname,
-            type_hints_=self_or_cls.type_hints,
-            generics_=self_or_cls.type_hints_parameters,
-        )
+        return ModelType.from_model(self_or_cls)
 
     # noinspection PyMethodParameters
     @classproperty
@@ -242,7 +238,7 @@ class Model:
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder("", self_or_cls.model_type).build()["type"]]
+        return [AvroSchemaEncoder("", ModelType.from_model(self_or_cls)).build()["type"]]
 
     @property
     def avro_data(self) -> dict[str, Any]:

@@ -81,10 +81,10 @@ class TypeHintComparator:
             second = Union[(*get_args(second), UUID)]
 
         if is_type_subclass(first) and is_model_subclass(first):
-            first = first.model_type
+            first = ModelType.from_model(first)
 
         if is_type_subclass(second) and is_model_subclass(second):
-            second = second.model_type
+            second = ModelType.from_model(second)
 
         if first == second:
             return True

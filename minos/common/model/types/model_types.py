@@ -14,16 +14,11 @@ from typing import (
     Any,
     Iterable,
     Optional,
-    Tuple,
     Type,
     TypeVar,
     Union,
     get_args,
     get_origin,
-)
-
-from cached_property import (
-    cached_property,
 )
 
 from ...exceptions import (
@@ -45,14 +40,14 @@ class ModelType(type):
     name: str
     namespace: str
     type_hints: dict[str, Type]
-    generics: tuple[TypeVar, ...]
+    generics: dict[TypeVar, Type]
 
     @classmethod
     def build(
         mcs,
         name_: str,
         type_hints_: Optional[dict[str, type]] = None,
-        generics_: tuple[TypeVar, ...] = None,
+        generics_: dict[TypeVar, Type] = None,
         *,
         namespace_: Optional[str] = None,
         **kwargs,
@@ -73,7 +68,7 @@ class ModelType(type):
             type_hints_ = kwargs
 
         if generics_ is None:
-            generics_ = tuple()
+            generics_ = dict()
 
         if namespace_ is None:
             try:
@@ -92,6 +87,21 @@ class ModelType(type):
         :return: A ``ModelType`` instance.
         """
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
+
+    # noinspection PyUnresolvedReferences
+    @staticmethod
+    def from_model(type_) -> ModelType:
+        """
+
+        :param type_:
+        :return:
+        """
+        name_ = type_.classname
+        type_hints_ = type_.type_hints
+        generics_ = dict(zip(type_.type_hints_parameters, get_args(type_)))
+
+        # type_hints_ = GenericParameterProjector(type_hints_, generics_).build()
+        return ModelType.build(name_, type_hints_, generics_)
 
     def __call__(cls, *args, **kwargs) -> Model:
         return cls.model_cls.from_model_type(cls, *args, **kwargs)
@@ -150,11 +160,11 @@ class ModelType(type):
             and cls.name == other.name
             and cls.namespace == other.namespace
             and set(cls.type_hints.keys()) == set(other.type_hints.keys())
-            and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
+            and all(TypeHintComparator(v, other.replace_generics[k]).match() for k, v in cls.replace_generics.items())
         )
 
     def _equal_with_model(cls, other: Any) -> bool:
-        return hasattr(other, "model_type") and cls == other.model_type
+        return hasattr(other, "model_type") and cls == ModelType.from_model(other)
 
     def _equal_with_inherited_model(cls, other: ModelType) -> bool:
         return (
@@ -179,37 +189,30 @@ class ModelType(type):
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
 
-    def replace_generics(cls, parameters: Tuple[Type, ...]) -> ModelType:
+    @property
+    def replace_generics(cls) -> dict[str, Type]:
         """
 
-        :param parameters:
         :return:
         """
-        return GenericParameterProjector(cls, parameters).build()
+        if not len(cls.generics):
+            return cls.type_hints
+        return GenericParameterProjector(cls.type_hints, cls.generics).build()
 
 
 class GenericParameterProjector:
     """TODO"""
 
-    def __init__(self, model_type: ModelType, parameters: Tuple[Type, ...]):
-        self.model_type = model_type
-        self.parameters = parameters
+    def __init__(self, type_hints: dict[str, Type], mapper: dict[TypeVar, Type]):
+        self.type_hints = type_hints
+        self.mapper = mapper
 
-    @cached_property
-    def mapper(self) -> dict[TypeVar, Type]:
+    def build(self) -> dict[str, Type]:
         """TODO
 
         :return: TODO
         """
-        return dict(zip(self.model_type.generics, self.parameters))
-
-    def build(self) -> ModelType:
-        """TODO
-
-        :return: TODO
-        """
-        type_hints = {k: self._build(v) for k, v in self.model_type.type_hints.items()}
-        return ModelType.build(name_=self.model_type.name, type_hints_=type_hints, namespace_=self.model_type.namespace)
+        return {k: self._build(v) for k, v in self.type_hints.items()}
 
     def _build(self, value):
         from .comparators import (
