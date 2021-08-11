@@ -6,13 +6,16 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 from typing import (
+    Generic,
     Optional,
+    TypeVar,
 )
 from uuid import (
     UUID,
 )
 
 from minos.common import (
+    DeclarativeModel,
     MinosModel,
     MissingSentinel,
 )
@@ -73,6 +76,15 @@ class User(Base):
         if self.id == 0 and value != "admin":
             return False
         return not value.count(" ")
+
+
+T = TypeVar("T", str, int)
+
+
+class GenericUser(DeclarativeModel, Generic[T]):
+    """For testing purposes."""
+
+    username: T
 
 
 class ShoppingList(MinosModel):
