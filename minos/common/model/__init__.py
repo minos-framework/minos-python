@@ -50,5 +50,4 @@ from .types import (
     NoneType,
     TypeHintBuilder,
     TypeHintComparator,
-    unpack_typevar,
 )

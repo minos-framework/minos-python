@@ -25,10 +25,14 @@ from uuid import (
 
 from .comparators import (
     is_aggregate_type,
+    is_model_type,
     is_type_subclass,
 )
 from .model_refs import (
     ModelRef,
+)
+from .model_types import (
+    ModelType,
 )
 
 logger = logging.getLogger(__name__)
@@ -88,15 +92,7 @@ class TypeHintBuilder:
                 self._build_from_iterable(value.keys(), b1), self._build_from_iterable(value.values(), b2)
             ]
 
-        from ..abc import (
-            Model,
-        )
-
-        if isinstance(value, Model):
-            from .model_types import (
-                ModelType,
-            )
-
+        if is_model_type(value):
             return ModelType.from_model(value)
 
         return type(value)
