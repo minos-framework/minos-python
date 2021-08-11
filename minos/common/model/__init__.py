@@ -8,9 +8,11 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .abc import (
     Model,
 )
+from .actions import (
+    Action,
+)
 from .declarative import (
     Aggregate,
-    AggregateAction,
     AggregateDiff,
     AggregateRef,
     Command,

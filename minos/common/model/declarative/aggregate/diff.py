@@ -20,14 +20,14 @@ from uuid import (
     UUID,
 )
 
+from ...actions import (
+    Action,
+)
 from ...dynamic import (
     FieldsDiff,
 )
 from ..abc import (
     DeclarativeModel,
-)
-from .actions import (
-    AggregateAction,
 )
 
 if TYPE_CHECKING:
@@ -44,13 +44,11 @@ class AggregateDiff(DeclarativeModel):
     uuid: UUID
     name: str
     version: int
-    action: AggregateAction
+    action: Action
     fields_diff: FieldsDiff
 
     @classmethod
-    def from_difference(
-        cls, a: Aggregate, b: Aggregate, action: AggregateAction = AggregateAction.UPDATE
-    ) -> AggregateDiff:
+    def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:
         """Build an ``AggregateDiff`` instance from the difference of two aggregates.
 
         :param a: One ``Aggregate`` instance.
@@ -73,7 +71,7 @@ class AggregateDiff(DeclarativeModel):
         return cls(new.uuid, new.classname, new.version, action, fields_diff)
 
     @classmethod
-    def from_aggregate(cls, aggregate: Aggregate, action: AggregateAction = AggregateAction.CREATE) -> AggregateDiff:
+    def from_aggregate(cls, aggregate: Aggregate, action: Action = Action.CREATE) -> AggregateDiff:
         """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
@@ -85,9 +83,7 @@ class AggregateDiff(DeclarativeModel):
         return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, fields_diff)
 
     @classmethod
-    def from_deleted_aggregate(
-        cls, aggregate: Aggregate, action: AggregateAction = AggregateAction.DELETE
-    ) -> AggregateDiff:
+    def from_deleted_aggregate(cls, aggregate: Aggregate, action: Action = Action.DELETE) -> AggregateDiff:
         """Build an ``AggregateDiff`` from an ``Aggregate`` (considering all fields as differences).
 
         :param aggregate: An ``Aggregate`` instance.
