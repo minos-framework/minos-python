@@ -35,7 +35,9 @@ def is_model_subclass(type_field: Any) -> bool:
         Model,
     )
 
-    return issubclass(type_field, Model)
+    if not is_type_subclass(type_field):
+        type_field = get_origin(type_field)
+    return is_type_subclass(type_field) and issubclass(type_field, Model)
 
 
 def is_type_subclass(type_field: Any) -> bool:
@@ -45,11 +47,10 @@ def is_type_subclass(type_field: Any) -> bool:
 
 def is_aggregate_type(type_field: Any) -> bool:
     """Check if the given type is follows the ``Aggregate`` protocol."""
-    return (
-        is_type_subclass(type_field)
-        and (is_model_subclass(type_field) or isinstance(type_field, ModelType))
-        and {"uuid": UUID, "version": int}.items() <= type_field.type_hints.items()
-    )
+    return (is_model_subclass(type_field) or isinstance(type_field, ModelType)) and {
+        "uuid": UUID,
+        "version": int,
+    }.items() <= type_field.type_hints.items()
 
 
 logger = logging.getLogger(__name__)
@@ -80,11 +81,11 @@ class TypeHintComparator:
         if get_origin(second) is ModelRef:
             second = Union[(*get_args(second), UUID)]
 
-        if is_type_subclass(first) and is_model_subclass(first):
-            first = first.model_type
+        if is_model_subclass(first):
+            first = ModelType.from_model(first)
 
-        if is_type_subclass(second) and is_model_subclass(second):
-            second = second.model_type
+        if is_model_subclass(second):
+            second = ModelType.from_model(second)
 
         if first == second:
             return True

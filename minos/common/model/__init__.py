@@ -42,6 +42,7 @@ from .serializers import (
     AvroSchemaEncoder,
 )
 from .types import (
+    GenericTypeProjector,
     MissingSentinel,
     ModelRef,
     ModelRefExtractor,
@@ -50,4 +51,5 @@ from .types import (
     NoneType,
     TypeHintBuilder,
     TypeHintComparator,
+    unpack_typevar,
 )

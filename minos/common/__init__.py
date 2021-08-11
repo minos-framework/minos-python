@@ -101,6 +101,7 @@ from .model import (
     Event,
     Field,
     FieldsDiff,
+    GenericTypeProjector,
     MinosModel,
     MissingSentinel,
     Model,
@@ -113,6 +114,7 @@ from .model import (
     TypeHintBuilder,
     TypeHintComparator,
     ValueObject,
+    unpack_typevar,
 )
 from .networks import (
     MinosBroker,

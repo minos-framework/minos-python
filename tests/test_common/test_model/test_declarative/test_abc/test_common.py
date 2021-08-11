@@ -25,12 +25,14 @@ from tests.model_classes import (
     Customer,
     CustomerFailDict,
     CustomerFailList,
+    GenericUser,
     ShoppingList,
+    T,
     User,
 )
 
 
-class TestMinosModel(unittest.TestCase):
+class TestDeclarativeModel(unittest.TestCase):
     def test_constructor_args(self):
         model = Customer(1234, "johndoe", "John", "Doe")
         self.assertEqual(1234, model.id)
@@ -251,6 +253,12 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(
             ModelType.build("tests.model_classes.User", {"id": int, "username": Optional[str]}), model.model_type
         )
+
+    def test_type_type_hints_parameters(self):
+        self.assertEqual((T,), GenericUser.type_hints_parameters)
+
+    def test_type_hints_parameters_empty(self):
+        self.assertEqual(tuple(), User.type_hints_parameters)
 
 
 if __name__ == "__main__":
