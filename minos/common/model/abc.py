@@ -20,6 +20,7 @@ from base64 import (
 from typing import (
     Any,
     Iterable,
+    Iterator,
     NoReturn,
     Type,
     TypedDict,
@@ -188,6 +189,21 @@ class Model:
         # noinspection PyTypeChecker
         return classname(cls)
 
+    # noinspection PyMethodParameters
+    @property_or_classproperty
+    def type_hints(self_or_cls) -> dict[str, type]:
+        """Get the type hinting of the instance or class.
+
+        :return: A dictionary in which the keys are the field names and the values are the types.
+        """
+        return dict(self_or_cls._type_hints())
+
+    # noinspection PyMethodParameters
+    @self_or_classmethod
+    def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
+        if not isinstance(self_or_cls, type):
+            yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
+
     @property
     def fields(self) -> dict[str, Field]:
         """Fields getter"""
@@ -208,21 +224,6 @@ class Model:
             return self._fields[item].value
         else:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
-
-    # noinspection PyMethodParameters
-    @property_or_classproperty
-    def type_hints(self_or_cls) -> dict[str, type]:
-        """Get the type hinting of the instance or class.
-
-        :return: A dictionary in which the keys are the field names and the values are the types.
-        """
-        return dict(self_or_cls._type_hints())
-
-    # noinspection PyMethodParameters
-    @self_or_classmethod
-    def _type_hints(self_or_cls) -> dict[str, Any]:
-        if not isinstance(self_or_cls, type):
-            yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
 
     # noinspection PyMethodParameters
     @property_or_classproperty
