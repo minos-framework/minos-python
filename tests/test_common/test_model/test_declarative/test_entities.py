@@ -20,12 +20,9 @@ from minos.common import (
     EntitySetDiff,
     EntitySetDiffEntry,
 )
-
-
-class FakeEntity(Entity):
-    """For testing purposes."""
-
-    name: str
+from tests.utils import (
+    FakeEntity,
+)
 
 
 class TestEntity(unittest.TestCase):
@@ -76,7 +73,7 @@ class TestEntitySet(unittest.TestCase):
         raw = {FakeEntity("John"), FakeEntity("Michael")}
 
         entities = EntitySet(raw)
-        self.assertEqual(raw, entities)
+        self.assertEqual(raw, set(entities))
 
     def test_contains(self):
         raw = [FakeEntity("John")]
@@ -109,6 +106,11 @@ class TestEntitySet(unittest.TestCase):
         entities.remove(raw[1])
 
         self.assertEqual({raw[0]}, entities)
+
+    def test_avro_serialization(self):
+        base = EntitySet({FakeEntity("John"), FakeEntity("Michael")})
+        recovered = EntitySet.from_avro_bytes(base.avro_bytes)
+        self.assertEqual(base, recovered)
 
     def test_diff(self):
         raw = [FakeEntity("John"), FakeEntity("Michael")]
