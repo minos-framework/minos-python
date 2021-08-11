@@ -20,6 +20,7 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.model_classes import (
+    Auth,
     Bar,
     Customer,
     Foo,
@@ -123,6 +124,29 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             }
         ]
         self.assertEqual(expected, GenericUser.avro_schema)
+
+    def test_avro_schema_generics_nested(self):
+        expected = [
+            {
+                "fields": [
+                    {
+                        "name": "user",
+                        "type": [
+                            {
+                                "fields": [{"name": "username", "type": "string"}],
+                                "name": "GenericUser",
+                                "namespace": "tests.model_classes.user",
+                                "type": "record",
+                            }
+                        ],
+                    }
+                ],
+                "name": "Auth",
+                "namespace": "tests.model_classes",
+                "type": "record",
+            }
+        ]
+        self.assertEqual(expected, Auth.avro_schema)
 
     async def test_avro_data_model_ref(self):
         async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot() as s:
@@ -275,6 +299,14 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         serialized = original.avro_bytes
         recovered = FooBar.from_avro_bytes(serialized)
         self.assertEqual(original, recovered)
+
+    def test_avro_bytes_generics(self):
+        base = GenericUser("foo")
+        self.assertEqual(base, GenericUser.from_avro_bytes(base.avro_bytes))
+
+    def test_avro_bytes_generics_nested(self):
+        base = Auth(GenericUser("foo"))
+        self.assertEqual(base, Auth.from_avro_bytes(base.avro_bytes))
 
 
 if __name__ == "__main__":

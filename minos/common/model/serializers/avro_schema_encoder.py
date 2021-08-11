@@ -138,10 +138,13 @@ class AvroSchemaEncoder:
             if isinstance(type_field, ModelType):
                 return self._build_model_type_schema(type_field)
 
-            if is_model_subclass(type_field):
-                return self._build_model_schema(type_field)
+        if is_model_subclass(type_field):
+            return self._build_model_schema(type_field)
 
         return self._build_composed_schema(type_field)
+
+    def _build_model_schema(self, type_field: Type) -> Any:
+        return [self._build_model_type_schema(ModelType.from_model(type_field))]
 
     def _build_model_type_schema(self, type_field: ModelType) -> Any:
         namespace = type_field.namespace
@@ -154,15 +157,6 @@ class AvroSchemaEncoder:
             "fields": [AvroSchemaEncoder(k, v).build() for k, v in type_field.type_hints.items()],
         }
         return schema
-
-    def _build_model_schema(self, type_field: Type) -> Any:
-        def _patch_namespace(s: dict) -> dict:
-            if len(self._name) > 0:
-                s["namespace"] += f".{self._name}"
-            return s
-
-        # noinspection PyUnresolvedReferences
-        return [_patch_namespace(s) for s in type_field.avro_schema]
 
     def _build_composed_schema(self, type_field: Type) -> Any:
         origin_type = get_origin(type_field)
