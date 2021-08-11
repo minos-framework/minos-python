@@ -24,6 +24,7 @@ from tests.model_classes import (
     Customer,
     Foo,
     FooBar,
+    GenericUser,
     ShoppingList,
     User,
 )
@@ -111,6 +112,17 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             }
         ]
         self.assertEqual(expected, Car.avro_schema)
+
+    def test_avro_schema_generics(self):
+        expected = [
+            {
+                "fields": [{"name": "username", "type": ["string", "int"]}],
+                "name": "GenericUser",
+                "namespace": "tests.model_classes",
+                "type": "record",
+            }
+        ]
+        self.assertEqual(expected, GenericUser.avro_schema)
 
     async def test_avro_data_model_ref(self):
         async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot() as s:

@@ -15,10 +15,7 @@ from typing import (
     Iterable,
     Optional,
     Type,
-    TypeVar,
     Union,
-    get_args,
-    get_origin,
 )
 
 from ...exceptions import (
@@ -26,6 +23,9 @@ from ...exceptions import (
 )
 from ...importlib import (
     import_module,
+)
+from .generics import (
+    GenericTypeProjector,
 )
 
 if TYPE_CHECKING:
@@ -77,19 +77,14 @@ class ModelType(type):
         """
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
 
-    # noinspection PyUnresolvedReferences
     @staticmethod
     def from_model(type_) -> ModelType:
-        """
+        """TODO
 
-        :param type_:
-        :return:
+        :param type_: TODO
+        :return:TODO
         """
-        name_ = type_.classname
-        generics_ = dict(zip(type_.type_hints_parameters, get_args(type_)))
-        type_hints_ = GenericParameterProjector(type_.type_hints, generics_).build()
-
-        return ModelType.build(name_, type_hints_)
+        return ModelType.build(name_=type_.classname, type_hints_=GenericTypeProjector.from_model(type_).build())
 
     def __call__(cls, *args, **kwargs) -> Model:
         return cls.model_cls.from_model_type(cls, *args, **kwargs)
@@ -176,33 +171,3 @@ class ModelType(type):
 
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
-
-
-class GenericParameterProjector:
-    """TODO"""
-
-    def __init__(self, type_hints: dict[str, Type], mapper: dict[TypeVar, Type]):
-        self.type_hints = type_hints
-        self.mapper = mapper
-
-    def build(self) -> dict[str, Type]:
-        """TODO
-
-        :return: TODO
-        """
-        if not len(self.mapper):
-            return self.type_hints
-        return {k: self._build(v) for k, v in self.type_hints.items()}
-
-    def _build(self, value):
-        from .comparators import (
-            is_type_subclass,
-        )
-
-        if is_type_subclass(value):
-            return value
-
-        if isinstance(value, TypeVar):
-            return self.mapper.get(value, value)
-
-        return self._build(get_origin(value))[tuple(self._build(arg) for arg in get_args(value))]

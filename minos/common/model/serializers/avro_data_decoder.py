@@ -45,6 +45,7 @@ from ..types import (
     is_aggregate_type,
     is_model_subclass,
     is_type_subclass,
+    unpack_typevar,
 )
 
 if TYPE_CHECKING:
@@ -107,7 +108,7 @@ class AvroDataDecoder:
 
     def _cast_single_value(self, type_field: Type, data: Any) -> Any:
         if isinstance(type_field, TypeVar):
-            unpacked_type = Union[type_field.__constraints__ or (type_field.__bound__ or Any,)]
+            unpacked_type = unpack_typevar(type_field)
             return self._cast_value(unpacked_type, data)
 
         if type_field is NoneType:
