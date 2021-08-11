@@ -11,7 +11,7 @@ from typing import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
     Field,
     FieldsDiff,
@@ -39,7 +39,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             uuid=car.uuid,
                             name=Car.classname,
                             version=1,
-                            action=AggregateAction.CREATE,
+                            action=Action.CREATE,
                             fields_diff=FieldsDiff(
                                 {
                                     "doors": Field("doors", int, 3),
@@ -67,7 +67,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             uuid=car.uuid,
                             name=Car.classname,
                             version=2,
-                            action=AggregateAction.UPDATE,
+                            action=Action.UPDATE,
                             fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
                         ),
                         "topic": "CarUpdated",
@@ -77,7 +77,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             uuid=car.uuid,
                             name=Car.classname,
                             version=2,
-                            action=AggregateAction.UPDATE,
+                            action=Action.UPDATE,
                             fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
                         ),
                         "topic": "CarUpdated.color",
@@ -99,7 +99,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             car.uuid,
                             name=Car.classname,
                             version=2,
-                            action=AggregateAction.DELETE,
+                            action=Action.DELETE,
                             fields_diff=FieldsDiff.empty(),
                         ),
                         "topic": "CarDeleted",

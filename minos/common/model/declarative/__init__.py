@@ -11,7 +11,6 @@ from .abc import (
 )
 from .aggregate import (
     Aggregate,
-    AggregateAction,
     AggregateDiff,
     AggregateRef,
 )

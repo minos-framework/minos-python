@@ -81,8 +81,8 @@ from .meta import (
     self_or_classmethod,
 )
 from .model import (
+    Action,
     Aggregate,
-    AggregateAction,
     AggregateDiff,
     AggregateRef,
     AvroDataDecoder,
