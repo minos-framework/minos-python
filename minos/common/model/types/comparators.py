@@ -21,9 +21,6 @@ from uuid import (
     UUID,
 )
 
-from .model_refs import (
-    ModelRef,
-)
 from .model_types import (
     ModelType,
 )
@@ -35,7 +32,9 @@ def is_model_subclass(type_field: Any) -> bool:
         Model,
     )
 
-    return issubclass(type_field, Model)
+    if not is_type_subclass(type_field):
+        type_field = get_origin(type_field)
+    return is_type_subclass(type_field) and issubclass(type_field, Model)
 
 
 def is_type_subclass(type_field: Any) -> bool:
@@ -43,13 +42,21 @@ def is_type_subclass(type_field: Any) -> bool:
     return issubclass(type(type_field), type(type))
 
 
-def is_aggregate_type(type_field: Any) -> bool:
-    """Check if the given type is follows the ``Aggregate`` protocol."""
-    return (
-        is_type_subclass(type_field)
-        and (is_model_subclass(type_field) or isinstance(type_field, ModelType))
-        and {"uuid": UUID, "version": int}.items() <= type_field.type_hints.items()
+def is_model_type(type_field: Any):
+    """Check if the given type is a model instance."""
+    from ..abc import (
+        Model,
     )
+
+    return isinstance(type_field, Model)
+
+
+def is_aggregate_type(type_field: Any) -> bool:
+    """Check if the given type follows the ``Aggregate`` protocol."""
+    return (is_model_subclass(type_field) or isinstance(type_field, ModelType)) and {
+        "uuid": UUID,
+        "version": int,
+    }.items() <= type_field.type_hints.items()
 
 
 logger = logging.getLogger(__name__)
@@ -74,17 +81,21 @@ class TypeHintComparator:
         return self._compare(self._first, self._second)
 
     def _compare(self, first: T, second: K) -> bool:
+        from .model_refs import (
+            ModelRef,
+        )
+
         if get_origin(first) is ModelRef:
             first = Union[(*get_args(first), UUID)]
 
         if get_origin(second) is ModelRef:
             second = Union[(*get_args(second), UUID)]
 
-        if is_type_subclass(first) and is_model_subclass(first):
-            first = first.model_type
+        if is_model_subclass(first):
+            first = ModelType.from_model(first)
 
-        if is_type_subclass(second) and is_model_subclass(second):
-            second = second.model_type
+        if is_model_subclass(second):
+            second = ModelType.from_model(second)
 
         if first == second:
             return True

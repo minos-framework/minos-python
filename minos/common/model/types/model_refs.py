@@ -28,6 +28,10 @@ from uuid import (
     UUID,
 )
 
+from .comparators import (
+    is_model_type,
+)
+
 if TYPE_CHECKING:
     from ..abc import (
         Model,
@@ -63,10 +67,6 @@ class ModelRefExtractor:
         return ans
 
     def _build(self, value: Any, kind: Type, ans: dict[str, set[UUID]]) -> NoReturn:
-        from ..abc import (
-            Model,
-        )
-
         if isinstance(value, (tuple, list, set)):
             self._build_iterable(value, get_args(kind)[0], ans)
 
@@ -74,7 +74,7 @@ class ModelRefExtractor:
             self._build_iterable(value.keys(), get_args(kind)[0], ans)
             self._build_iterable(value.values(), get_args(kind)[1], ans)
 
-        elif isinstance(value, Model):
+        elif is_model_type(value):
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 
@@ -103,17 +103,13 @@ class ModelRefInjector:
         return self._build(self.value)
 
     def _build(self, value: Any) -> NoReturn:
-        from ..abc import (
-            Model,
-        )
-
         if isinstance(value, (tuple, list, set)):
             return type(value)(self._build(v) for v in value)
 
         if isinstance(value, dict):
             return type(value)((self._build(k), self._build(v)) for k, v in value.items())
 
-        if isinstance(value, Model):
+        if is_model_type(value):
             for field in value.fields.values():
                 field.value = self._build(field.value)
             return value
