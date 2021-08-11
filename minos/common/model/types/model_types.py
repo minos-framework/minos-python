@@ -15,7 +15,6 @@ from typing import (
     Iterable,
     Optional,
     Type,
-    TypedDict,
     Union,
 )
 
@@ -67,7 +66,7 @@ class ModelType(type):
         return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
 
     @classmethod
-    def from_typed_dict(mcs, typed_dict: TypedDict) -> ModelType:
+    def from_typed_dict(mcs, typed_dict) -> ModelType:
         """Build a new ``ModelType`` instance from a ``typing.TypedDict``.
 
         :param typed_dict: Typed dict to be used as base.
