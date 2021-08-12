@@ -195,6 +195,12 @@ class Model:
         return dict(self_or_cls._type_hints())
 
     # noinspection PyMethodParameters
+    @self_or_classmethod
+    def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
+        if not isinstance(self_or_cls, type):
+            yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
+
+    # noinspection PyMethodParameters
     @property_or_classproperty
     def type_hints_parameters(self_or_cls) -> tuple[TypeVar, ...]:
         """Get the sequence of generic type hints parameters..
@@ -202,12 +208,6 @@ class Model:
         :return: A tuple of `TypeVar` instances.
         """
         return getattr(self_or_cls, "__parameters__", tuple())
-
-    # noinspection PyMethodParameters
-    @self_or_classmethod
-    def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
-        if not isinstance(self_or_cls, type):
-            yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
 
     @property
     def fields(self) -> dict[str, Field]:
