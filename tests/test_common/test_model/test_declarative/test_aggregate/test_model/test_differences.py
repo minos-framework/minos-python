@@ -69,6 +69,27 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             self.initial.apply_diff(diff)
 
+    def test_get_attr(self):
+        diff = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=3,
+            action=Action.UPDATE,
+            differences=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
+        )
+        self.assertEqual(5, diff.doors)
+
+    def test_get_attr_raises(self):
+        diff = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=3,
+            action=Action.UPDATE,
+            differences=FieldsDiff.empty(),
+        )
+        with self.assertRaises(AttributeError):
+            diff.doors
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,7 +14,7 @@ from operator import (
     attrgetter,
 )
 from typing import (
-    TYPE_CHECKING,
+    Any, TYPE_CHECKING,
 )
 from uuid import (
     UUID,
@@ -46,6 +46,13 @@ class AggregateDiff(DeclarativeModel):
     version: int
     action: Action
     differences: FieldsDiff
+
+    def __getattr__(self, item: str) -> Any:
+        if "differences" in self._fields:
+            differences = self._fields["differences"].value
+            if hasattr(differences, item):
+                return getattr(differences, item)
+        return super().__getattr__(item)
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:
