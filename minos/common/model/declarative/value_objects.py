@@ -41,24 +41,28 @@ class ValueObject(DeclarativeModel):
 class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
     """Value Object Set class."""
 
-    data: list[ValueObject]
+    data: dict[str, ValueObject]
 
     def __init__(self, data: Optional[Iterable[T]] = None, *args, **kwargs):
         if data is None:
-            data = list()
-        elif not isinstance(data, list):
-            data = [value_obj for value_obj in data]
+            data = dict()
+        elif not isinstance(data, dict):
+            data = {str(hash(value_obj)): value_obj for value_obj in data}
         super().__init__(data, *args, **kwargs)
 
-    def add(self, value_obj: ValueObject) -> NoReturn:
-        """Add an entity.
-        :param value_obj: The value object to be added.
+    def add(self, value_object: ValueObject) -> NoReturn:
+        """Add an value object.
+        :param value_object: The value object to be added.
         :return: This method does not return anything.
         """
-        self.data.append(value_obj)
+        self.data[str(hash(value_object))] = value_object
 
     def discard(self, value_object: ValueObject) -> NoReturn:
-        self.data.remove(value_object)
+        """Remove an value object.
+        :param value_object: The value object to be added.
+        :return: This method does not return anything.
+        """
+        del self.data[str(hash(value_object))]
 
     def __contains__(self, value_object: ValueObject) -> bool:
         return value_object in self.data
@@ -72,6 +76,6 @@ class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
     def __eq__(self, other):
         if isinstance(other, ValueObjectSet):
             return super().__eq__(other)
-        if isinstance(other, list):
+        if isinstance(other, dict):
             return self.data == other
-        return list(self) == other
+        return dict(self) == other
