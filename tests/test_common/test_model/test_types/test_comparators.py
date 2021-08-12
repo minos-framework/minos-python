@@ -7,6 +7,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 import unittest
 from typing import (
+    Any,
     Optional,
     Union,
 )
@@ -27,6 +28,14 @@ from tests.aggregate_classes import (
 from tests.model_classes import (
     Foo,
 )
+
+
+class _A:
+    """For testing purposes."""
+
+
+class _B(_A):
+    """For testing purposes."""
 
 
 class TestTypeHintComparator(unittest.TestCase):
@@ -61,6 +70,14 @@ class TestTypeHintComparator(unittest.TestCase):
         self.assertFalse(TypeHintComparator(dict[str, int], dict).match())
         self.assertFalse(TypeHintComparator(dict[str, int], dict[str]).match())
 
+    def test_inherited(self):
+        self.assertTrue(TypeHintComparator(_B, _A).match())
+        self.assertFalse(TypeHintComparator(_A, _B).match())
+
+    def test_any(self):
+        self.assertTrue(TypeHintComparator(int, Any).match())
+        self.assertFalse(TypeHintComparator(Any, int).match())
+
     def test_model_ref_union(self):
         self.assertTrue(TypeHintComparator(ModelRef[str], Union[str, UUID]).match())
 
@@ -90,8 +107,10 @@ class TestTypeHintComparator(unittest.TestCase):
     def test_model_nested_false(self):
         self.assertFalse(TypeHintComparator(list[Car], list[Owner]).match())
 
-    def test_model_inherited_true(self):
+    def test_model_inherited(self):
         self.assertTrue(TypeHintComparator(list[Car], list[Aggregate]).match())
+        self.assertFalse(TypeHintComparator(list[Aggregate], list[Car]).match())
+
         self.assertTrue(TypeHintComparator(list[Car.model_type], list[Aggregate]).match())
         self.assertTrue(TypeHintComparator(list[Aggregate], list[Car.model_type]).match())
 

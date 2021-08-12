@@ -25,6 +25,7 @@ from typing import (
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from ..types import (
@@ -146,7 +147,7 @@ class AvroSchemaEncoder:
     def _build_model_type_schema(self, type_field: ModelType) -> Any:
         namespace = type_field.namespace
         if len(namespace) > 0 and len(self._name) > 0:
-            namespace = f"{type_field.namespace}.{self._name}"
+            namespace = f"{type_field.namespace}.{self.generate_random_str()}"
         schema = {
             "name": type_field.name,
             "namespace": namespace,
@@ -177,3 +178,11 @@ class AvroSchemaEncoder:
 
     def _build_model_ref_schema(self, type_field: Type) -> Union[bool, Any]:
         return self._build_schema(Union[get_args(type_field)[0], UUID])
+
+    @staticmethod
+    def generate_random_str() -> str:
+        """Generate a random string
+
+        :return: A random string value.
+        """
+        return str(uuid4())
