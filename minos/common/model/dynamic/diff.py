@@ -10,11 +10,29 @@ from __future__ import (
 )
 
 import logging
+from collections import (
+    defaultdict,
+)
 from typing import (
     TYPE_CHECKING,
+    Any,
+    Generic,
     Optional,
+    TypeVar,
+)
+from uuid import (
+    uuid4,
 )
 
+from ...exceptions import (
+    MinosImmutableClassException,
+)
+from ..actions import (
+    Action,
+)
+from ..declarative import (
+    DeclarativeModel,
+)
 from .bucket import (
     BucketModel,
 )
@@ -28,6 +46,54 @@ if TYPE_CHECKING:
     )
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
+
+
+class Difference(DeclarativeModel, Generic[T]):
+    """TODO"""
+
+    name: str
+    value: T
+
+
+class IncrementalDifference(Difference, Generic[T]):
+    """TODO"""
+
+    action: Action
+
+
+class DifferenceContainer(BucketModel):
+    """TODO"""
+
+    def __init__(self, fields: list[Difference], *args, **kwargs):
+        if isinstance(fields, list):
+            fields = [Field(str(uuid4()), Difference, v) for v in fields]
+        super().__init__(fields, **kwargs)
+
+        mapper = defaultdict(list)
+        for name, field in self.fields.items():
+            mapper[field.value.name].append(name)
+        self._name_mapper = mapper
+
+    def __setattr__(self, key: str, value: Any):
+        if key.startswith("_"):
+            super().__setattr__(key, value)
+        else:
+            raise MinosImmutableClassException("modification of an immutable value object not allowed")
+
+    def __getattr__(self, item: str) -> Any:
+        if item in self._name_mapper:
+            values = [getattr(self, name).value for name in self._name_mapper.get(item)]
+            if len(values) == 1:
+                return values[0]
+            return values
+        else:
+            return super().__getattr__(item)
+
+    def __repr__(self) -> str:
+        fields_repr = ", ".join(f"{name}={getattr(self, name)}" for name in self._name_mapper.keys())
+        return f"{type(self).__name__}({fields_repr})"
 
 
 class FieldsDiff(BucketModel):
