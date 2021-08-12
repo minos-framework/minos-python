@@ -98,7 +98,7 @@ ValueObjectSetDiffEntry = ModelType.build("EntitySetDiffEntry", {"action": Actio
 
 
 class ValueObjectSetDiff(DeclarativeModel):
-    """Entity Set Diff class."""
+    """Value Object Set Diff class."""
 
     diffs: list[ValueObjectSetDiffEntry]
 
