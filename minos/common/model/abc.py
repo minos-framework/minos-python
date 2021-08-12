@@ -20,6 +20,7 @@ from base64 import (
 from typing import (
     Any,
     Iterable,
+    Iterator,
     NoReturn,
     Type,
     TypedDict,
@@ -167,17 +168,13 @@ class Model:
 
     # noinspection PyMethodParameters
     @property_or_classproperty
-    def model_type(self_or_cls: Union[T, Type[T]]) -> Type[T]:
+    def model_type(self_or_cls) -> ModelType:
         """Get the model type of the instance.
 
         :return: A ``ModelType`` instance.
         """
         # noinspection PyTypeChecker
-        return ModelType.build(
-            name_=self_or_cls.classname,
-            type_hints_=self_or_cls.type_hints,
-            generics_=getattr(self_or_cls, "__parameters__", tuple()),
-        )
+        return ModelType.from_model(self_or_cls)
 
     # noinspection PyMethodParameters
     @classproperty
@@ -187,6 +184,30 @@ class Model:
         """
         # noinspection PyTypeChecker
         return classname(cls)
+
+    # noinspection PyMethodParameters
+    @property_or_classproperty
+    def type_hints(self_or_cls) -> dict[str, type]:
+        """Get the type hinting of the instance or class.
+
+        :return: A dictionary in which the keys are the field names and the values are the types.
+        """
+        return dict(self_or_cls._type_hints())
+
+    # noinspection PyMethodParameters
+    @property_or_classproperty
+    def type_hints_parameters(self_or_cls) -> tuple[TypeVar, ...]:
+        """Get the sequence of generic type hints parameters..
+
+        :return: A tuple of `TypeVar` instances.
+        """
+        return getattr(self_or_cls, "__parameters__", tuple())
+
+    # noinspection PyMethodParameters
+    @self_or_classmethod
+    def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
+        if not isinstance(self_or_cls, type):
+            yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
 
     @property
     def fields(self) -> dict[str, Field]:
@@ -211,28 +232,13 @@ class Model:
 
     # noinspection PyMethodParameters
     @property_or_classproperty
-    def type_hints(self_or_cls) -> dict[str, type]:
-        """Get the type hinting of the instance or class.
-
-        :return: A dictionary in which the keys are the field names and the values are the types.
-        """
-        return dict(self_or_cls._type_hints())
-
-    # noinspection PyMethodParameters
-    @self_or_classmethod
-    def _type_hints(self_or_cls) -> dict[str, Any]:
-        if not isinstance(self_or_cls, type):
-            yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
-
-    # noinspection PyMethodParameters
-    @property_or_classproperty
     def avro_schema(self_or_cls) -> list[dict[str, Any]]:
         """Compute the avro schema of the model.
 
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder("", self_or_cls.model_type).build()["type"]]
+        return [AvroSchemaEncoder("", ModelType.from_model(self_or_cls)).build()["type"]]
 
     @property
     def avro_data(self) -> dict[str, Any]:

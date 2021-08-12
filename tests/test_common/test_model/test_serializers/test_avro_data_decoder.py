@@ -40,6 +40,7 @@ from tests.aggregate_classes import (
 )
 from tests.model_classes import (
     Base,
+    GenericUser,
     User,
 )
 from tests.subaggregate_classes import (
@@ -344,6 +345,18 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         decoder = AvroDataDecoder("test", Optional[int])
         observed = decoder.build(None)
         self.assertIsNone(observed)
+
+    def test_model_generic(self):
+        value = GenericUser("foo")
+        decoder = AvroDataDecoder("test", GenericUser[str])
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
+
+    def test_model_generic_fail(self):
+        value = GenericUser("foo")
+        decoder = AvroDataDecoder("test", GenericUser[int])
+        with self.assertRaises(MinosTypeAttributeException):
+            decoder.build(value)
 
     def test_entity_set(self):
         raw = {FakeEntity("John"), FakeEntity("Michael")}

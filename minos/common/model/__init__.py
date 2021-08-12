@@ -44,6 +44,7 @@ from .serializers import (
     AvroSchemaEncoder,
 )
 from .types import (
+    GenericTypeProjector,
     MissingSentinel,
     ModelRef,
     ModelRefExtractor,
