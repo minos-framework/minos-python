@@ -165,7 +165,7 @@ class Field:
             and self.value == other.value
             and self._parser_function == other._parser_function
             and self._validator_function == other._validator_function
-            and TypeHintComparator(self.type, other.type).match()
+            and TypeHintComparator(self.real_type, other.real_type).match()
         )
 
     def __hash__(self) -> int:
