@@ -24,6 +24,9 @@ from ...exceptions import (
 from ...importlib import (
     import_module,
 )
+from .generics import (
+    GenericTypeProjector,
+)
 
 if TYPE_CHECKING:
     from ..abc import (
@@ -40,7 +43,7 @@ class ModelType(type):
 
     @classmethod
     def build(
-        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs
+        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs,
     ) -> ModelType:
         """Build a new ``ModelType`` instance.
 
@@ -73,6 +76,15 @@ class ModelType(type):
         :return: A ``ModelType`` instance.
         """
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
+
+    @staticmethod
+    def from_model(type_) -> ModelType:
+        """Build a new instance from model class.
+
+        :param type_: The model class.
+        :return: A new ``ModelType`` instance.
+        """
+        return ModelType.build(name_=type_.classname, type_hints_=GenericTypeProjector.from_model(type_).build())
 
     def __call__(cls, *args, **kwargs) -> Model:
         return cls.model_cls.from_model_type(cls, *args, **kwargs)
@@ -135,7 +147,7 @@ class ModelType(type):
         )
 
     def _equal_with_model(cls, other: Any) -> bool:
-        return hasattr(other, "model_type") and cls == other.model_type
+        return hasattr(other, "model_type") and cls == ModelType.from_model(other)
 
     def _equal_with_inherited_model(cls, other: ModelType) -> bool:
         return (

@@ -19,13 +19,13 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Type,
-    TypeVar,
     Union,
     get_args,
     get_origin,
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from ..types import (
@@ -54,8 +54,6 @@ if TYPE_CHECKING:
     from ..fields import Field  # pragma: no cover
 
 logger = logging.getLogger(__name__)
-
-T = TypeVar("T")
 
 
 class AvroSchemaEncoder:
@@ -138,15 +136,18 @@ class AvroSchemaEncoder:
             if isinstance(type_field, ModelType):
                 return self._build_model_type_schema(type_field)
 
-            if is_model_subclass(type_field):
-                return self._build_model_schema(type_field)
+        if is_model_subclass(type_field):
+            return self._build_model_schema(type_field)
 
         return self._build_composed_schema(type_field)
+
+    def _build_model_schema(self, type_field: Type) -> Any:
+        return [self._build_model_type_schema(ModelType.from_model(type_field))]
 
     def _build_model_type_schema(self, type_field: ModelType) -> Any:
         namespace = type_field.namespace
         if len(namespace) > 0 and len(self._name) > 0:
-            namespace = f"{type_field.namespace}.{self._name}"
+            namespace = f"{type_field.namespace}.{self.generate_random_str()}"
         schema = {
             "name": type_field.name,
             "namespace": namespace,
@@ -154,15 +155,6 @@ class AvroSchemaEncoder:
             "fields": [AvroSchemaEncoder(k, v).build() for k, v in type_field.type_hints.items()],
         }
         return schema
-
-    def _build_model_schema(self, type_field: Type) -> Any:
-        def _patch_namespace(s: dict) -> dict:
-            if len(self._name) > 0:
-                s["namespace"] += f".{self._name}"
-            return s
-
-        # noinspection PyUnresolvedReferences
-        return [_patch_namespace(s) for s in type_field.avro_schema]
 
     def _build_composed_schema(self, type_field: Type) -> Any:
         origin_type = get_origin(type_field)
@@ -186,3 +178,11 @@ class AvroSchemaEncoder:
 
     def _build_model_ref_schema(self, type_field: Type) -> Union[bool, Any]:
         return self._build_schema(Union[get_args(type_field)[0], UUID])
+
+    @staticmethod
+    def generate_random_str() -> str:
+        """Generate a random string
+
+        :return: A random string value.
+        """
+        return str(uuid4())

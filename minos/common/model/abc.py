@@ -174,7 +174,7 @@ class Model:
         :return: A ``ModelType`` instance.
         """
         # noinspection PyTypeChecker
-        return ModelType.build(self_or_cls.classname, self_or_cls.type_hints)
+        return ModelType.from_model(self_or_cls)
 
     # noinspection PyMethodParameters
     @classproperty
@@ -199,6 +199,15 @@ class Model:
     def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
         if not isinstance(self_or_cls, type):
             yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
+
+    # noinspection PyMethodParameters
+    @property_or_classproperty
+    def type_hints_parameters(self_or_cls) -> tuple[TypeVar, ...]:
+        """Get the sequence of generic type hints parameters..
+
+        :return: A tuple of `TypeVar` instances.
+        """
+        return getattr(self_or_cls, "__parameters__", tuple())
 
     @property
     def fields(self) -> dict[str, Field]:
@@ -229,7 +238,7 @@ class Model:
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder("", self_or_cls.model_type).build()["type"]]
+        return [AvroSchemaEncoder("", ModelType.from_model(self_or_cls)).build()["type"]]
 
     @property
     def avro_data(self) -> dict[str, Any]:
