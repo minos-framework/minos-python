@@ -25,7 +25,7 @@ from ...actions import (
     Action,
 )
 from ...dynamic import (
-    FieldsDiff,
+    DifferenceContainer,
 )
 from ..abc import (
     DeclarativeModel,
@@ -46,14 +46,17 @@ class AggregateDiff(DeclarativeModel):
     name: str
     version: int
     action: Action
-    differences: FieldsDiff
+    differences: DifferenceContainer
 
     def __getattr__(self, item: str) -> Any:
-        if "differences" in self._fields:
-            differences = self._fields["differences"].value
-            if hasattr(differences, item):
-                return getattr(differences, item)
-        return super().__getattr__(item)
+        try:
+            return super().__getattr__(item)
+        except AttributeError as exc:
+            if "differences" in self._fields:
+                differences = self._fields["differences"].value
+                if hasattr(differences, item):
+                    return getattr(differences, item).value
+            raise exc
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:
@@ -74,7 +77,7 @@ class AggregateDiff(DeclarativeModel):
 
         old, new = sorted([a, b], key=attrgetter("version"))
 
-        differences = FieldsDiff.from_difference(a, b, ignore=["uuid", "version"])
+        differences = DifferenceContainer.from_difference(a, b, ignore=["uuid", "version"])
 
         return cls(new.uuid, new.classname, new.version, action, differences)
 
@@ -87,7 +90,7 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
 
-        differences = FieldsDiff.from_model(aggregate, ignore=["uuid", "version"])
+        differences = DifferenceContainer.from_model(aggregate, ignore={"uuid", "version"})
         return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, differences)
 
     @classmethod
@@ -98,23 +101,7 @@ class AggregateDiff(DeclarativeModel):
         :param action: The action to that generates the aggregate difference.
         :return: An ``AggregateDiff`` instance.
         """
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, FieldsDiff.empty())
-
-    @classmethod
-    def simplify(cls, *args: AggregateDiff) -> AggregateDiff:
-        """Simplify an iterable of aggregate differences into a single one.
-
-        :param args: A sequence of ``FieldsDiff` instances.
-        :return: An ``FieldsDiff`` instance.
-        """
-        args = sorted(args, key=attrgetter("version"))
-
-        current = dict()
-        for another in map(attrgetter("differences"), args):
-            # noinspection PyUnresolvedReferences
-            current |= another.fields
-
-        return cls(args[-1].uuid, args[-1].name, args[-1].version, args[-1].action, FieldsDiff(current))
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, DifferenceContainer.empty())
 
     def decompose(self) -> list[AggregateDiff]:
         """Decompose AggregateDiff Fields into AggregateDiff with once Field.
@@ -125,7 +112,7 @@ class AggregateDiff(DeclarativeModel):
         fields = self.differences
 
         for field in fields:
-            diff_field = FieldsDiff({field.name: field})
+            diff_field = DifferenceContainer({field.name: field})
             aggr_diff = AggregateDiff(self.uuid, self.name, self.version, self.action, diff_field)
             decomposed.append(aggr_diff)
 

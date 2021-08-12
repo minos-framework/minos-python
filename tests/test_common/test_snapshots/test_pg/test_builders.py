@@ -26,8 +26,8 @@ from dependency_injector import (
 
 from minos.common import (
     Action,
-    Field,
-    FieldsDiff,
+    Difference,
+    DifferenceContainer,
     MinosConfigException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotDeletedAggregateException,
@@ -125,7 +125,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car", self.uuid_1))
 
     async def test_dispatch_ignore_previous_version(self):
-        diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
+        diff = DifferenceContainer([Difference("doors", 3), Difference("color", "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
 
@@ -177,7 +177,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                     aggregate_uuid=self.uuid_3,
                     aggregate_name=Car.classname,
                     version=1,
-                    data=FieldsDiff({Field("doors", int, 3), Field("color", str, "blue")}).avro_bytes,
+                    data=DifferenceContainer([Difference("doors", 3), Difference("color", "blue")]).avro_bytes,
                 )
                 await repository.create(entry)
 
@@ -197,7 +197,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 mock.reset_mock()
 
     async def _populate(self):
-        diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
+        diff = DifferenceContainer([Difference("doors", 3), Difference("color", "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:

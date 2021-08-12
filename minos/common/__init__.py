@@ -104,7 +104,6 @@ from .model import (
     EntitySetDiffEntry,
     Event,
     Field,
-    FieldsDiff,
     GenericTypeProjector,
     IncrementalDifference,
     MinosModel,

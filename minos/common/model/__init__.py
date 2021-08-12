@@ -33,7 +33,6 @@ from .dynamic import (
     Difference,
     DifferenceContainer,
     DynamicModel,
-    FieldsDiff,
     IncrementalDifference,
 )
 from .fields import (

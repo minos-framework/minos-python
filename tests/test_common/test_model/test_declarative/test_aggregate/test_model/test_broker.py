@@ -6,22 +6,17 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
-from typing import (
-    Optional,
-)
 
 from minos.common import (
     Action,
     AggregateDiff,
-    Field,
-    FieldsDiff,
+    Difference,
+    DifferenceContainer,
     InMemoryRepository,
     InMemorySnapshot,
-    ModelRef,
 )
 from tests.aggregate_classes import (
     Car,
-    Owner,
 )
 from tests.utils import (
     FakeBroker,
@@ -40,12 +35,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=1,
                             action=Action.CREATE,
-                            differences=FieldsDiff(
-                                {
-                                    "doors": Field("doors", int, 3),
-                                    "color": Field("color", str, "blue"),
-                                    "owner": Field("owner", Optional[list[ModelRef[Owner]]], None),
-                                }
+                            differences=DifferenceContainer(
+                                [Difference("doors", 3), Difference("color", "blue"), Difference("owner", None)]
                             ),
                         ),
                         "topic": "CarCreated",
@@ -68,7 +59,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            differences=FieldsDiff({"color": Field("color", str, "red")}),
+                            differences=DifferenceContainer([Difference("color", "red")]),
                         ),
                         "topic": "CarUpdated",
                     },
@@ -78,7 +69,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            differences=FieldsDiff({"color": Field("color", str, "red")}),
+                            differences=DifferenceContainer([Difference("color", "red")]),
                         ),
                         "topic": "CarUpdated.color",
                     },
@@ -100,7 +91,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.DELETE,
-                            differences=FieldsDiff.empty(),
+                            differences=DifferenceContainer.empty(),
                         ),
                         "topic": "CarDeleted",
                     }

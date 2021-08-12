@@ -96,11 +96,15 @@ class RepositoryEntry:
         """
         from ..model import (
             AggregateDiff,
-            FieldsDiff,
+            DifferenceContainer,
         )
 
         return AggregateDiff(
-            self.aggregate_uuid, self.aggregate_name, self.version, self.action, FieldsDiff.from_avro_bytes(self.data)
+            self.aggregate_uuid,
+            self.aggregate_name,
+            self.version,
+            self.action,
+            DifferenceContainer.from_avro_bytes(self.data),
         )
 
     def __eq__(self, other: "RepositoryEntry") -> bool:
