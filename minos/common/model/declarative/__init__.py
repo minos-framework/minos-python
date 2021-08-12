@@ -26,4 +26,6 @@ from .networks import (
 from .value_objects import (
     ValueObject,
     ValueObjectSet,
+    ValueObjectSetDiff,
+    ValueObjectSetDiffEntry,
 )

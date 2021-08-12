@@ -5,6 +5,10 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from collections.abc import (
     MutableSet,
 )
@@ -20,6 +24,12 @@ from typing import (
 
 from ...exceptions import (
     MinosImmutableClassException,
+)
+from ..actions import (
+    Action,
+)
+from ..types import (
+    ModelType,
 )
 from .abc import (
     DeclarativeModel,
@@ -75,3 +85,42 @@ class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
         if isinstance(other, list):
             return self.data == other
         return list(self) == other
+
+    def diff(self, another: ValueObjectSet[T]) -> ValueObjectSetDiff:
+        """Compute the difference between self and another entity set.
+        :param another: Another entity set instance.
+        :return: The difference between both entity sets.
+        """
+        return ValueObjectSetDiff.from_difference(self, another)
+
+
+ValueObjectSetDiffEntry = ModelType.build("EntitySetDiffEntry", {"action": Action, "entity": ValueObject})
+
+
+class ValueObjectSetDiff(DeclarativeModel):
+    """Entity Set Diff class."""
+
+    diffs: list[ValueObjectSetDiffEntry]
+
+    @classmethod
+    def from_difference(cls, new: ValueObjectSet[T], old: ValueObjectSet[T]) -> ValueObjectSetDiff:
+        """Build a new instance from two entity sets.
+        :param new: The new entity set.
+        :param old: The old entity set.
+        :return: The diference between new and old.
+        """
+        differences = cls._diff(new, old)
+        return cls(differences)
+
+    @staticmethod
+    def _diff(new: ValueObjectSet[T], old: ValueObjectSet[T]) -> list[ValueObjectSetDiffEntry]:
+        result = list()
+        for entity in new - old:
+            entry = ValueObjectSetDiffEntry(Action.CREATE, entity)
+            result.append(entry)
+
+        for entity in old - new:
+            entry = ValueObjectSetDiffEntry(Action.DELETE, entity)
+            result.append(entry)
+
+        return result
