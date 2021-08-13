@@ -116,6 +116,7 @@ from .model import (
     TypeHintBuilder,
     TypeHintComparator,
     ValueObject,
+    ValueObjectSet,
 )
 from .networks import (
     MinosBroker,
