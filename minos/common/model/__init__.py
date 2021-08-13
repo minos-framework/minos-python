@@ -26,6 +26,9 @@ from .declarative import (
     Event,
     MinosModel,
     ValueObject,
+    ValueObjectSet,
+    ValueObjectSetDiff,
+    ValueObjectSetDiffEntry,
 )
 from .dynamic import (
     BucketModel,

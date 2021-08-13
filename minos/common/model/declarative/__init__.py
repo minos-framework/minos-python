@@ -26,6 +26,9 @@ from .networks import (
     CommandStatus,
     Event,
 )
-from .value_object import (
+from .value_objects import (
     ValueObject,
+    ValueObjectSet,
+    ValueObjectSetDiff,
+    ValueObjectSetDiffEntry,
 )
