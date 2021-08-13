@@ -97,7 +97,7 @@ class TestSnapshotEntry(unittest.TestCase):
     def test_aggregate(self):
         car = Car(3, "blue", uuid=self.uuid, version=1)
         entry = SnapshotEntry.from_aggregate(car)
-        self.assertEqual(car, entry.aggregate)
+        self.assertEqual(car, entry.build_aggregate())
 
     def test_repr(self):
         entry = SnapshotEntry(

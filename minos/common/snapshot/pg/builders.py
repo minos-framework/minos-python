@@ -116,7 +116,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
         async for entry in self._repository.select(id_gt=offset, **kwargs):
             try:
-                await self._dispatch_one(entry)
+                await self._dispatch_one(entry, **kwargs)
             except MinosPreviousVersionSnapshotException:
                 pass
             offset = _update_offset(entry, offset)
@@ -138,7 +138,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         if event_entry.action.is_delete:
             return await self._submit_delete(event_entry, **kwargs)
 
-        instance = await self._build_instance(event_entry)
+        instance = await self._build_instance(event_entry, **kwargs)
         return await self._submit_instance(instance, **kwargs)
 
     async def _submit_delete(self, entry: RepositoryEntry, **kwargs) -> NoReturn:
@@ -150,21 +150,21 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         }
         await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params, **kwargs)
 
-    async def _build_instance(self, event_entry: RepositoryEntry) -> Aggregate:
+    async def _build_instance(self, event_entry: RepositoryEntry, **kwargs) -> Aggregate:
         # noinspection PyTypeChecker
         diff = event_entry.aggregate_diff
-        instance = await self._update_if_exists(diff)
+        instance = await self._update_if_exists(diff, **kwargs)
         return instance
 
-    async def _update_if_exists(self, diff: AggregateDiff) -> Aggregate:
+    async def _update_if_exists(self, diff: AggregateDiff, **kwargs) -> Aggregate:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
-            previous = await self._select_one_aggregate(diff.uuid, diff.name)
+            previous = await self._select_one_aggregate(diff.uuid, diff.name, **kwargs)
         except Exception:
             # noinspection PyTypeChecker
             aggregate_cls: Type[Aggregate] = import_module(diff.name)
-            return aggregate_cls.from_diff(diff)
+            return aggregate_cls.from_diff(diff, **kwargs)
 
         if previous.version >= diff.version:
             raise MinosPreviousVersionSnapshotException(previous, diff)
@@ -172,9 +172,9 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         previous.apply_diff(diff)
         return previous
 
-    async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str) -> Aggregate:
-        snapshot_entry = await self._select_one(aggregate_uuid, aggregate_name)
-        return snapshot_entry.aggregate
+    async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> Aggregate:
+        snapshot_entry = await self._select_one(aggregate_uuid, aggregate_name, **kwargs)
+        return snapshot_entry.build_aggregate(**kwargs)
 
     async def _select_one(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> SnapshotEntry:
         raw = await self.submit_query_and_fetchone(
