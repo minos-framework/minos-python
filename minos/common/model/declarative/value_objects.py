@@ -50,22 +50,24 @@ class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
             data = {str(hash(value_obj)): value_obj for value_obj in data}
         super().__init__(data, *args, **kwargs)
 
-    def add(self, value_object: ValueObject) -> NoReturn:
+    def add(self, value_object: T) -> NoReturn:
         """Add an value object.
         :param value_object: The value object to be added.
         :return: This method does not return anything.
         """
         self.data[str(hash(value_object))] = value_object
 
-    def discard(self, value_object: ValueObject) -> NoReturn:
+    def discard(self, value_object: T) -> NoReturn:
         """Remove an value object.
         :param value_object: The value object to be added.
         :return: This method does not return anything.
         """
-        del self.data[str(hash(value_object))]
+        self.data.pop(str(hash(value_object)), None)
 
-    def __contains__(self, value_object: ValueObject) -> bool:
-        return value_object in self.data
+    def __contains__(self, value_object: T) -> bool:
+        if not isinstance(value_object, ValueObject):
+            return False
+        return str(hash(value_object)) in self.data
 
     def __len__(self) -> int:
         return len(self.data)
@@ -73,7 +75,7 @@ class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
     def __iter__(self) -> Iterator[T]:
         yield from self.data.values()
 
-    def __eq__(self, other):
+    def __eq__(self, other: T) -> bool:
         if isinstance(other, ValueObjectSet):
             return super().__eq__(other)
         if isinstance(other, dict):

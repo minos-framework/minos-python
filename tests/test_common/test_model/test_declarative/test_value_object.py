@@ -77,7 +77,7 @@ class TestValueObjectSet(TestCase):
 
         value_objects = ValueObjectSet(raw)
 
-        self.assertIn(str_hash, value_objects)
+        self.assertIn(self.location_1, value_objects)
         self.assertNotIn(self.location_2, value_objects)
         self.assertNotIn(1234, value_objects)
 
