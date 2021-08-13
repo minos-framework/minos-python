@@ -43,7 +43,7 @@ class SnapshotEntry:
     Is the python object representation of a row in the ``snapshot`` storage system.
     """
 
-    __slots__ = "aggregate_uuid", "aggregate_name", "version", "data", "created_at", "updated_at"
+    __slots__ = "aggregate_uuid", "aggregate_name", "version", "data", "created_at", "updated_at", "kwargs"
 
     # noinspection PyShadowingBuiltins
     def __init__(
@@ -54,6 +54,7 @@ class SnapshotEntry:
         data: Union[bytes, memoryview, None] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
+        **kwargs,
     ):
         if isinstance(data, memoryview):
             data = data.tobytes()
@@ -65,6 +66,8 @@ class SnapshotEntry:
 
         self.created_at = created_at
         self.updated_at = updated_at
+
+        self.kwargs = kwargs
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate) -> SnapshotEntry:
@@ -87,7 +90,7 @@ class SnapshotEntry:
                 f"The {self.aggregate_uuid!r} id points to an already deleted aggregate."
             )
         cls = self.aggregate_cls
-        instance = cls.from_avro_bytes(self.data, id=self.aggregate_uuid, version=self.version)
+        instance = cls.from_avro_bytes(self.data, id=self.aggregate_uuid, version=self.version, **self.kwargs)
         return instance
 
     @property

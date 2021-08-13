@@ -228,7 +228,7 @@ class AvroDataDecoder:
 
     def _cast_model_type(self, type_field: ModelType, data: Any) -> Any:
         if isinstance(data, dict):
-            data = {k: self._cast_value(v, data.get(k, None)) for k, v in type_field.type_hints.items()}
+            data |= {k: self._cast_value(v, data.get(k, None)) for k, v in type_field.type_hints.items()}
             return type_field(**data)
 
         if hasattr(data, "model_type") and data.model_type == type_field:

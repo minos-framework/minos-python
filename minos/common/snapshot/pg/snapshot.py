@@ -80,7 +80,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         """
         # noinspection PyShadowingBuiltins
         if not await self.builder.are_synced(aggregate_name, uuids, **kwargs):
-            await self.builder.dispatch()
+            await self.builder.dispatch(**kwargs)
 
         async for item in self._get(aggregate_name, uuids, **kwargs):
             yield item.aggregate
@@ -129,7 +129,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
                 rows = await cursor.fetchall()
 
         for row in rows:
-            yield SnapshotEntry(*row)
+            yield SnapshotEntry(*row, **kwargs)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
