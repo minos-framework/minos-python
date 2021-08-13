@@ -20,6 +20,7 @@ from .declarative import (
     CommandStatus,
     DeclarativeModel,
     Entity,
+    EntitySet,
     Event,
     MinosModel,
     ValueObject,

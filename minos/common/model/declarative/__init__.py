@@ -16,6 +16,7 @@ from .aggregate import (
 )
 from .entities import (
     Entity,
+    EntitySet,
 )
 from .networks import (
     Command,

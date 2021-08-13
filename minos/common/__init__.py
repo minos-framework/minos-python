@@ -97,6 +97,7 @@ from .model import (
     DeclarativeModel,
     DynamicModel,
     Entity,
+    EntitySet,
     Event,
     Field,
     FieldsDiff,
