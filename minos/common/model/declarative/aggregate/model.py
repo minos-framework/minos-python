@@ -304,9 +304,24 @@ class Aggregate(Entity):
             raise ValueError(
                 f"To apply the difference, it must have same uuid. " f"Expected: {self.uuid!r} Obtained: {diff.uuid!r}"
             )
+        from ...actions import (
+            Action,
+        )
+        from ...dynamic import (
+            IncrementalDifference,
+        )
+
         logger.debug(f"Applying {diff!r} to {self!r}...")
         for field in diff.differences:
-            setattr(self, field.value.name, field.value.value)
+            difference = field.value
+            if isinstance(difference, IncrementalDifference):
+                v = getattr(self, difference.name)
+                if difference.action != Action.DELETE:
+                    v.add(difference.value)
+                else:
+                    v.discard(difference.value)
+            else:
+                setattr(self, difference.name, difference.value)
         self.version = diff.version
 
     @classmethod

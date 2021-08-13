@@ -5,12 +5,18 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
+from __future__ import (
+    annotations,
+)
+
 from typing import (
     Optional,
 )
 
 from minos.common import (
     Aggregate,
+    Entity,
+    EntitySet,
     ModelRef,
 )
 
@@ -29,3 +35,15 @@ class Car(Aggregate):
     doors: int
     color: str
     owner: Optional[list[ModelRef[Owner]]]
+
+
+class Order(Aggregate):
+    """For testing purposes"""
+
+    products: EntitySet[OrderItem]
+
+
+class OrderItem(Entity):
+    """For testing purposes"""
+
+    amount: int

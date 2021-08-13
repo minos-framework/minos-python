@@ -127,15 +127,20 @@ class DifferenceContainer(BucketModel):
         :param b: TODO
         :return: TODO
         """
-
-        def _condition(key: str) -> bool:
-            return key not in b or a[key] != b[key]
-
-        fields = {key: a[key] for key in a if _condition(key)}
+        from ..declarative import (
+            EntitySet,
+            EntitySetDiff,
+        )
 
         differences = list()
-        for field in fields.values():
-            differences.append(Difference(field.name, field.value))
+        for a_name, a_field in a.items():
+            if a_name not in b or a_field != b[a_name]:
+                if isinstance(a_field.value, EntitySet):
+                    diffs = EntitySetDiff.from_difference(a_field.value, b[a_name].value).diffs
+                    for diff in diffs:
+                        differences.append(IncrementalDifference(a_name, diff.entity, diff.action))
+                else:
+                    differences.append(Difference(a_name, a_field.value))
 
         return differences
 
