@@ -73,7 +73,7 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
         """
         if not isinstance(entity, UUID):
             entity = entity.uuid
-        del self.data[str(entity)]
+        self.data.pop(str(entity), None)
 
     def get(self, uuid: UUID) -> T:
         """Get an entity by identifier.
