@@ -10,6 +10,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from operator import (
     attrgetter,
 )
@@ -47,6 +48,15 @@ class AggregateDiff(DeclarativeModel):
     version: int
     action: Action
     differences: DifferenceContainer
+
+    @property
+    def fields_diff(self) -> DifferenceContainer:
+        """TODO
+
+        :return: TODO
+        """
+        warnings.warn('"fields_diff" is deprecated! Use "differences" instead', DeprecationWarning)
+        return self.differences
 
     def __getattr__(self, item: str) -> Any:
         try:

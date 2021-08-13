@@ -36,6 +36,18 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             self.final = Car(5, "yellow", uuid=self.uuid, version=3, _broker=b, _repository=r, _snapshot=s)
             self.another = Car(3, "blue", uuid=self.uuid_another, version=1, _broker=b, _repository=r, _snapshot=s)
 
+    def test_fields_diff(self):
+        diff = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=1,
+            action=Action.CREATE,
+            differences=DifferenceContainer(
+                [Difference("doors", 3), Difference("color", "blue"), Difference("owner", None)]
+            ),
+        )
+        self.assertEqual(diff.differences, diff.fields_diff)
+
     def test_from_aggregate(self):
         expected = AggregateDiff(
             uuid=self.uuid,
