@@ -69,7 +69,7 @@ class TestValueObjectSet(TestCase):
 
     def test_iter(self):
         value_objects = ValueObjectSet(self.fake_value_obj)
-        self.assertEqual(self.fake_value_obj, value_objects)
+        self.assertEqual(set(self.fake_value_obj.values()), set(value_objects))
 
     def test_contains(self):
         str_hash = str(hash(self.location_1))

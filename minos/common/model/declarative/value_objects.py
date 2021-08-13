@@ -71,11 +71,11 @@ class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
         return len(self.data)
 
     def __iter__(self) -> Iterator[T]:
-        yield from self.data
+        yield from self.data.values()
 
     def __eq__(self, other):
         if isinstance(other, ValueObjectSet):
             return super().__eq__(other)
         if isinstance(other, dict):
             return self.data == other
-        return dict(self) == other
+        return set(self) == other
