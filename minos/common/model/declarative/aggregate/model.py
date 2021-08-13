@@ -309,9 +309,6 @@ class Aggregate(Entity):
             raise ValueError(
                 f"To apply the difference, it must have same uuid. " f"Expected: {self.uuid!r} Obtained: {diff.uuid!r}"
             )
-        from ...actions import (
-            Action,
-        )
         from ...dynamic import (
             IncrementalDifference,
         )
@@ -320,11 +317,11 @@ class Aggregate(Entity):
         for field in diff.differences:
             difference = field.value
             if isinstance(difference, IncrementalDifference):
-                v = getattr(self, difference.name)
-                if difference.action != Action.DELETE:
-                    v.add(difference.value)
+                container = getattr(self, difference.name)
+                if difference.action.is_delete:
+                    container.discard(difference.value)
                 else:
-                    v.discard(difference.value)
+                    container.add(difference.value)
             else:
                 setattr(self, difference.name, difference.value)
         self.version = diff.version
@@ -338,7 +335,7 @@ class Aggregate(Entity):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        values = {d.value.name: d.value.value for d in diff.differences.fields.values()}
+        values = {difference.value.name: difference.value.value for difference in diff.differences.fields.values()}
         # noinspection PyArgumentList
         return cls(*args, uuid=diff.uuid, version=diff.version, **values, **kwargs)
 
