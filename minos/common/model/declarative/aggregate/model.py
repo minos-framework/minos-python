@@ -219,12 +219,17 @@ class Aggregate(Entity):
         return self
 
     async def _send_update_events(self, diff: AggregateDiff):
+        from ...dynamic import (
+            IncrementalDifference,
+        )
 
         futures = [self._broker.send(diff, topic=f"{type(self).__name__}Updated")]
 
         for aggr in diff.decompose():
             difference = next(iter(aggr.differences)).value
             topic = f"{type(self).__name__}Updated.{difference.name}"
+            if isinstance(difference, IncrementalDifference):
+                topic += f".{difference.action.value}"
             futures.append(self._broker.send(aggr, topic=topic))
 
         await gather(*futures)
