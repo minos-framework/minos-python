@@ -130,6 +130,8 @@ class DifferenceContainer(BucketModel):
         from ..declarative import (
             EntitySet,
             EntitySetDiff,
+            ValueObjectSet,
+            ValueObjectSetDiff,
         )
 
         differences = list()
@@ -137,6 +139,10 @@ class DifferenceContainer(BucketModel):
             if a_name not in b or a_field != b[a_name]:
                 if isinstance(a_field.value, EntitySet):
                     diffs = EntitySetDiff.from_difference(a_field.value, b[a_name].value).diffs
+                    for diff in diffs:
+                        differences.append(IncrementalDifference(a_name, diff.entity, diff.action))
+                elif isinstance(a_field.value, ValueObjectSet):
+                    diffs = ValueObjectSetDiff.from_difference(a_field.value, b[a_name].value).diffs
                     for diff in diffs:
                         differences.append(IncrementalDifference(a_name, diff.entity, diff.action))
                 else:
