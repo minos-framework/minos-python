@@ -1,4 +1,6 @@
-from unittest import TestCase
+from unittest import (
+    TestCase,
+)
 
 from minos.common import (
     Action,
