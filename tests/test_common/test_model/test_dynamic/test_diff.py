@@ -7,8 +7,14 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
+from typing import (
+    Optional,
+)
 from unittest.mock import (
     patch,
+)
+from uuid import (
+    UUID,
 )
 
 from minos.common import (
@@ -17,10 +23,12 @@ from minos.common import (
     Difference,
     DifferenceContainer,
     IncrementalDifference,
+    ModelRef,
     ModelType,
 )
 from tests.aggregate_classes import (
     Car,
+    Owner,
 )
 from tests.utils import (
     FakeBroker,
@@ -40,44 +48,49 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
             self.car_four = Car(3, "blue", id=2, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
 
     def test_differences(self):
-        fields = [Difference("doors", 5), Difference("color", "red")]
+        fields = [Difference("doors", int, 5), Difference("color", str, "red")]
         difference = DifferenceContainer(fields)
-        expected = {"doors": [Difference("doors", 5)], "color": [Difference("color", "red")]}
+        expected = {"doors": [Difference("doors", int, 5)], "color": [Difference("color", str, "red")]}
         self.assertEqual(expected, difference.differences)
 
     def test_get_attr(self):
-        fields = [Difference("doors", 5), Difference("color", "red")]
+        fields = [Difference("doors", int, 5), Difference("color", str, "red")]
         difference = DifferenceContainer(fields)
-        self.assertEqual(Difference("doors", 5), difference["doors"])
+        self.assertEqual(Difference("doors", int, 5), difference["doors"])
 
     def test_get_attr_list(self):
         fields = [
-            IncrementalDifference("doors", 5, Action.CREATE),
-            IncrementalDifference("doors", 3, Action.CREATE),
-            Difference("color", "red"),
+            IncrementalDifference("doors", int, 5, Action.CREATE),
+            IncrementalDifference("doors", int, 3, Action.CREATE),
+            Difference("color", str, "red"),
         ]
         difference = DifferenceContainer(fields)
-        expected = [IncrementalDifference("doors", 5, Action.CREATE), IncrementalDifference("doors", 3, Action.CREATE)]
+        expected = [
+            IncrementalDifference("doors", int, 5, Action.CREATE),
+            IncrementalDifference("doors", int, 3, Action.CREATE),
+        ]
         self.assertEqual(expected, difference["doors"])
 
     def test_model_type(self):
-        fields = [Difference("doors", 5), Difference("color", "red")]
+        fields = [Difference("doors", int, 5), Difference("color", str, "red")]
         difference = DifferenceContainer(fields)
         # noinspection PyTypeChecker
         self.assertEqual(ModelType.build(DifferenceContainer.classname, {"doors": str}), difference.model_type)
 
     def test_from_difference(self):
-        expected = DifferenceContainer([Difference("version", 2), Difference("doors", 5), Difference("color", "red")])
+        expected = DifferenceContainer(
+            [Difference("version", int, 2), Difference("doors", int, 5), Difference("color", str, "red")]
+        )
         observed = DifferenceContainer.from_difference(self.car_two, self.car_one)
         self.assertEqual(expected, observed)
 
     def test_from_difference_with_ignore(self):
-        expected = DifferenceContainer([Difference("doors", 5), Difference("color", "red")])
+        expected = DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "red")])
         observed = DifferenceContainer.from_difference(self.car_two, self.car_one, ignore={"uuid", "version"})
         self.assertEqual(expected, observed)
 
     def test_with_difference_not_hashable(self):
-        expected = DifferenceContainer([Difference("values", [1, 2, 3])])
+        expected = DifferenceContainer([Difference("values", list[int], [1, 2, 3])])
 
         model_type = ModelType.build("Foo", {"values": list[int]})
         a, b = model_type(values=[0]), model_type(values=[1, 2, 3])
@@ -87,18 +100,24 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
     def test_from_model(self):
         expected = DifferenceContainer(
             [
-                Difference("uuid", NULL_UUID),
-                Difference("version", 2),
-                Difference("doors", 5),
-                Difference("color", "red"),
-                Difference("owner", None),
+                Difference("uuid", UUID, NULL_UUID),
+                Difference("version", int, 2),
+                Difference("doors", int, 5),
+                Difference("color", str, "red"),
+                Difference("owner", Optional[list[ModelRef[Owner]]], None),
             ]
         )
         observed = DifferenceContainer.from_model(self.car_two)
         self.assertEqual(expected, observed)
 
     def test_from_model_with_ignore(self):
-        expected = DifferenceContainer([Difference("doors", 5), Difference("color", "red"), Difference("owner", None)])
+        expected = DifferenceContainer(
+            [
+                Difference("doors", int, 5),
+                Difference("color", str, "red"),
+                Difference("owner", Optional[list[ModelRef[Owner]]], None),
+            ]
+        )
         observed = DifferenceContainer.from_model(self.car_two, ignore={"uuid", "version"})
         self.assertEqual(expected, observed)
 
@@ -131,7 +150,7 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
             }
         ]
         with patch("minos.common.DifferenceContainer.generate_random_str", side_effect=["hello", "goodbye"]):
-            diff = DifferenceContainer([Difference("doors", 5), Difference("color", "yellow")])
+            diff = DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")])
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hola", "adios"]):
             self.assertEqual(expected, diff.avro_schema)
 
@@ -139,16 +158,16 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
         expected = {"hello": {"name": "doors", "value": 5}, "goodbye": {"name": "color", "value": "yellow"}}
 
         with patch("minos.common.DifferenceContainer.generate_random_str", side_effect=["hello", "goodbye"]):
-            diff = DifferenceContainer([Difference("doors", 5), Difference("color", "yellow")])
+            diff = DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")])
 
         self.assertEqual(expected, diff.avro_data)
 
     def test_avro_bytes(self):
-        diff = DifferenceContainer([Difference("doors", 5), Difference("color", "yellow")])
+        diff = DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")])
         self.assertIsInstance(diff.avro_bytes, bytes)
 
     def test_from_avro_bytes(self):
-        initial = DifferenceContainer([Difference("doors", 5), Difference("color", "yellow")])
+        initial = DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")])
         observed = DifferenceContainer.from_avro_bytes(initial.avro_bytes)
         self.assertEqual(initial, observed)
 

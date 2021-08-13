@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from typing import (
+    Optional,
+)
 
 from minos.common import (
     Action,
@@ -14,9 +17,11 @@ from minos.common import (
     DifferenceContainer,
     InMemoryRepository,
     InMemorySnapshot,
+    ModelRef,
 )
 from tests.aggregate_classes import (
     Car,
+    Owner,
 )
 from tests.utils import (
     FakeBroker,
@@ -36,7 +41,11 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             version=1,
                             action=Action.CREATE,
                             differences=DifferenceContainer(
-                                [Difference("doors", 3), Difference("color", "blue"), Difference("owner", None)]
+                                [
+                                    Difference("doors", int, 3),
+                                    Difference("color", str, "blue"),
+                                    Difference("owner", Optional[list[ModelRef[Owner]]], None),
+                                ]
                             ),
                         ),
                         "topic": "CarCreated",
@@ -59,7 +68,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            differences=DifferenceContainer([Difference("color", "red")]),
+                            differences=DifferenceContainer([Difference("color", str, "red")]),
                         ),
                         "topic": "CarUpdated",
                     },
@@ -69,7 +78,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            differences=DifferenceContainer([Difference("color", "red")]),
+                            differences=DifferenceContainer([Difference("color", str, "red")]),
                         ),
                         "topic": "CarUpdated.color",
                     },

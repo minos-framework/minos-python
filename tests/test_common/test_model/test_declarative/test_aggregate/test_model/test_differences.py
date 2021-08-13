@@ -42,7 +42,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            differences=DifferenceContainer([Difference("doors", 5), Difference("color", "yellow")]),
+            differences=DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")]),
         )
         observed = self.final.diff(self.initial)
         self.assertEqual(expected, observed)
@@ -53,7 +53,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            differences=DifferenceContainer([Difference("doors", 5), Difference("color", "yellow")]),
+            differences=DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")]),
         )
         self.initial.apply_diff(diff)
         self.assertEqual(self.final, self.initial)
@@ -64,7 +64,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            differences=DifferenceContainer([Difference("doors", 5), Difference("color", "yellow")]),
+            differences=DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")]),
         )
         with self.assertRaises(ValueError):
             self.initial.apply_diff(diff)
@@ -75,7 +75,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            differences=DifferenceContainer([Difference("doors", 5)]),
+            differences=DifferenceContainer([Difference("doors", int, 5)]),
         )
         self.assertEqual(5, diff.doors)
 

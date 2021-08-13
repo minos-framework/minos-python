@@ -18,6 +18,8 @@ from minos.common import (
     Entity,
     EntitySet,
     ModelRef,
+    ValueObject,
+    ValueObjectSet,
 )
 
 
@@ -41,9 +43,16 @@ class Order(Aggregate):
     """For testing purposes"""
 
     products: EntitySet[OrderItem]
+    reviews: ValueObjectSet[Review]
 
 
 class OrderItem(Entity):
     """For testing purposes"""
 
     amount: int
+
+
+class Review(ValueObject):
+    """For testing purposes."""
+
+    message: str

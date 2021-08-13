@@ -26,6 +26,9 @@ from uuid import (
     uuid4,
 )
 
+from ..abc import (
+    Model,
+)
 from ..actions import (
     Action,
 )
@@ -48,7 +51,7 @@ class Entity(DeclarativeModel):
         super().__init__(uuid, *args, **kwargs)
 
 
-T = TypeVar("T", bound=Entity)
+T = TypeVar("T", bound=Model)
 
 
 class EntitySet(DeclarativeModel, MutableSet, Generic[T]):

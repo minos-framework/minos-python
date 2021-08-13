@@ -12,6 +12,7 @@ from minos.common import (
     MinosSnapshotDeletedAggregateException,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
+    ValueObjectSet,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -20,6 +21,7 @@ from tests.aggregate_classes import (
     Car,
     Order,
     OrderItem,
+    Review,
 )
 from tests.utils import (
     BASE_PATH,
@@ -71,9 +73,9 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
             with self.assertRaises(MinosSnapshotDeletedAggregateException):
                 await Car.get_one(car.uuid, **self.kwargs)
 
-    async def test_entity_set(self):
+    async def test_entity_set_value_object_set(self):
         async with self.event_broker, self.repository, self.snapshot:
-            order = await Order.create(products=EntitySet({OrderItem(12)}), **self.kwargs)
+            order = await Order.create(products=EntitySet(), reviews=ValueObjectSet(), **self.kwargs)
             item = OrderItem(24)
             order.products.add(item)
 
@@ -90,6 +92,18 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
             self.assertEqual(order, recovered)
 
             order.products.remove(item)
+            await order.save()
+
+            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            self.assertEqual(order, recovered)
+
+            order.reviews.add(Review("GoodReview"))
+            await order.save()
+
+            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            self.assertEqual(order, recovered)
+
+            order.reviews.discard(Review("GoodReview"))
             await order.save()
 
             recovered = await Order.get_one(order.uuid, **self.kwargs)

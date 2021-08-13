@@ -152,7 +152,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             self.assertIsInstance(obs.updated_at, datetime)
 
     async def _populate(self):
-        diff = DifferenceContainer([Difference("doors", 3), Difference("color", "blue")])
+        diff = DifferenceContainer([Difference("doors", int, 3), Difference("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:

@@ -58,7 +58,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
 
     async def test_from_aggregate_diff(self):
-        differences = DifferenceContainer([Difference("doors", 3), Difference("color", "blue")])
+        differences = DifferenceContainer([Difference("doors", int, 3), Difference("color", str, "blue")])
         aggregate_diff = AggregateDiff(
             uuid=self.uuid, name=Car.classname, version=1, action=Action.CREATE, differences=differences
         )

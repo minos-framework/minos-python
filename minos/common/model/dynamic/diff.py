@@ -14,50 +14,69 @@ from collections import (
     defaultdict,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
     Generic,
     Optional,
+    Type,
     TypeVar,
+    get_args,
 )
 from uuid import (
     uuid4,
 )
 
+from ..abc import (
+    Model,
+)
 from ..actions import (
     Action,
 )
-from ..declarative import (
-    DeclarativeModel,
+from ..fields import (
+    Field,
+)
+from ..types import (
+    ModelType,
 )
 from .bucket import (
     BucketModel,
 )
-
-if TYPE_CHECKING:
-    from ..abc import (
-        Model,
-    )
-    from ..fields import (
-        Field,
-    )
 
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
 
-class Difference(DeclarativeModel, Generic[T]):
+class Difference(Model, Generic[T]):
     """TODO"""
 
     name: str
     value: T
 
+    @classmethod
+    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> Difference:
+        """TODO"""
+        kwargs["type_"] = model_type.type_hints["value"]
+        return cls(*args, **kwargs)
+
+    def __init__(self, name: str, type_: Type, value: Any):
+        super().__init__([Field("name", str, name), Field("value", type_, value)])
+
 
 class IncrementalDifference(Difference, Generic[T]):
     """TODO"""
 
+    name: str
+    value: T
     action: Action
+
+    @classmethod
+    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> IncrementalDifference:
+        """TODO"""
+        kwargs["type_"] = model_type.type_hints["value"]
+        return cls(*args, **kwargs)
+
+    def __init__(self, name: str, type_: Type, value: Any, action: Action):
+        Model.__init__(self, [Field("name", str, name), Field("value", type_, value), Field("action", Action, action)])
 
 
 class DifferenceContainer(BucketModel):
@@ -140,13 +159,17 @@ class DifferenceContainer(BucketModel):
                 if isinstance(a_field.value, EntitySet):
                     diffs = EntitySetDiff.from_difference(a_field.value, b[a_name].value).diffs
                     for diff in diffs:
-                        differences.append(IncrementalDifference(a_name, diff.entity, diff.action))
+                        differences.append(
+                            IncrementalDifference(a_name, get_args(a_field.type)[0], diff.entity, diff.action)
+                        )
                 elif isinstance(a_field.value, ValueObjectSet):
                     diffs = ValueObjectSetDiff.from_difference(a_field.value, b[a_name].value).diffs
                     for diff in diffs:
-                        differences.append(IncrementalDifference(a_name, diff.entity, diff.action))
+                        differences.append(
+                            IncrementalDifference(a_name, get_args(a_field.type)[0], diff.entity, diff.action)
+                        )
                 else:
-                    differences.append(Difference(a_name, a_field.value))
+                    differences.append(Difference(a_name, a_field.type, a_field.value))
 
         return differences
 
@@ -164,7 +187,7 @@ class DifferenceContainer(BucketModel):
 
         differences = list()
         for field in aggregate.fields.values():
-            differences.append(Difference(field.name, field.value))
+            differences.append(Difference(field.name, field.type, field.value))
 
         differences = [difference for difference in differences if difference.name not in ignore]
         return cls(differences)
