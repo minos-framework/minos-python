@@ -3,9 +3,12 @@ from unittest import (
 )
 
 from minos.common import (
+    Action,
     MinosImmutableClassException,
     ValueObject,
     ValueObjectSet,
+    ValueObjectSetDiff,
+    ValueObjectSetDiffEntry,
 )
 from tests.value_objects import (
     Address,
@@ -99,3 +102,53 @@ class TestValueObjectSet(TestCase):
         str_hash = str(hash(self.location_2))
         raw = {str_hash: self.location_2}
         self.assertEqual(raw, value_objects)
+
+    def test_diff(self):
+        raw = [Location(street="street name"), Location(street="another street name")]
+        entities = ValueObjectSet(raw)
+
+        observed = entities.diff(ValueObjectSet([raw[0]]))
+        expected = ValueObjectSetDiff([ValueObjectSetDiffEntry(Action.CREATE, raw[1])])
+
+        self.assertEqual(observed, expected)
+
+
+class TestValueObjectSetDiff(TestCase):
+    def setUp(self) -> None:
+        self.raw = [Location(street="street name"), Location(street="another street name")]
+        self.old = ValueObjectSet(self.raw)
+
+        self.clone = [Location(street=entity.street) for entity in self.raw]
+
+    def test_from_difference_create(self):
+        entities = ValueObjectSet(self.clone)
+        new = Location("San Anton, 23")
+        entities.add(new)
+
+        observed = ValueObjectSetDiff.from_difference(entities, self.old)
+        expected = ValueObjectSetDiff([ValueObjectSetDiffEntry(Action.CREATE, new)])
+        self.assertEqual(expected, observed)
+
+    def test_from_difference_delete(self):
+        entities = ValueObjectSet(self.clone)
+        removed = self.clone[1]
+        entities.remove(removed)
+
+        observed = ValueObjectSetDiff.from_difference(entities, self.old)
+        expected = ValueObjectSetDiff([ValueObjectSetDiffEntry(Action.DELETE, removed)])
+        self.assertEqual(expected, observed)
+
+    def test_from_difference_combined(self):
+        entities = ValueObjectSet(self.clone)
+        new = Location("Europa, 12")
+        entities.add(new)
+
+        removed = self.clone[1]
+        entities.remove(removed)
+
+        observed = ValueObjectSetDiff.from_difference(entities, self.old)
+
+        expected = ValueObjectSetDiff(
+            [ValueObjectSetDiffEntry(Action.CREATE, new), ValueObjectSetDiffEntry(Action.DELETE, removed)]
+        )
+        self.assertEqual(expected, observed)
