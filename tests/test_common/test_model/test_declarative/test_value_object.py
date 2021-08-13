@@ -1,6 +1,4 @@
-from unittest import (
-    TestCase,
-)
+from unittest import TestCase
 
 from minos.common import (
     Action,
@@ -102,7 +100,7 @@ class TestValueObjectSet(TestCase):
         str_hash = str(hash(self.location_2))
         raw = {str_hash: self.location_2}
         self.assertEqual(raw, value_objects)
-      
+
     def test_diff(self):
         raw = [Location(street="street name"), Location(street="another street name")]
         entities = ValueObjectSet(raw)
