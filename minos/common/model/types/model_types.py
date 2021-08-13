@@ -154,13 +154,16 @@ class ModelType(type):
             type(cls) == type(other) and cls.model_cls != other.model_cls and issubclass(cls.model_cls, other.model_cls)
         )
 
-    @staticmethod
-    def _equal_with_bucket_model(other: Any) -> bool:
+    def _equal_with_bucket_model(self, other: Any) -> bool:
         from ..dynamic import (
             BucketModel,
         )
 
-        return hasattr(other, "model_cls") and issubclass(other.model_cls, BucketModel)
+        return (
+            hasattr(other, "model_cls")
+            and issubclass(self.model_cls, other.model_cls)
+            and issubclass(other.model_cls, BucketModel)
+        )
 
     def __hash__(cls) -> int:
         return hash(tuple(cls))
