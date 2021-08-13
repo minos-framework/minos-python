@@ -41,7 +41,7 @@ class ValueObject(DeclarativeModel):
 class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
     """Value Object Set class."""
 
-    data: dict[str, ValueObject]
+    data: dict[str, T]
 
     def __init__(self, data: Optional[Iterable[T]] = None, *args, **kwargs):
         if data is None:
