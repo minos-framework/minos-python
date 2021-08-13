@@ -145,9 +145,9 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             if exp.data is None:
                 with self.assertRaises(MinosSnapshotDeletedAggregateException):
                     # noinspection PyStatementEffect
-                    obs.aggregate
+                    obs.build_aggregate()
             else:
-                self.assertEqual(exp.aggregate, obs.aggregate)
+                self.assertEqual(exp.build_aggregate(), obs.build_aggregate())
             self.assertIsInstance(obs.created_at, datetime)
             self.assertIsInstance(obs.updated_at, datetime)
 

@@ -76,10 +76,10 @@ class SnapshotEntry:
         # noinspection PyTypeChecker
         return cls(aggregate.uuid, aggregate.classname, aggregate.version, aggregate.avro_bytes)
 
-    @property
-    def aggregate(self) -> Aggregate:
+    def build_aggregate(self, **kwargs) -> Aggregate:
         """Rebuild the stored ``Aggregate`` object instance from the internal state.
 
+        :param kwargs: Additional named arguments.
         :return: A ``Aggregate`` instance.
         """
         if self.data is None:
@@ -87,7 +87,7 @@ class SnapshotEntry:
                 f"The {self.aggregate_uuid!r} id points to an already deleted aggregate."
             )
         cls = self.aggregate_cls
-        instance = cls.from_avro_bytes(self.data, id=self.aggregate_uuid, version=self.version)
+        instance = cls.from_avro_bytes(self.data, id=self.aggregate_uuid, version=self.version, **kwargs)
         return instance
 
     @property

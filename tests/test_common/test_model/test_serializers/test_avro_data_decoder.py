@@ -25,6 +25,7 @@ from uuid import (
 from minos.common import (
     AvroDataDecoder,
     DataTransferObject,
+    EntitySet,
     Field,
     InMemorySnapshot,
     MinosMalformedAttributeException,
@@ -47,6 +48,7 @@ from tests.subaggregate_classes import (
 )
 from tests.utils import (
     FakeBroker,
+    FakeEntity,
     FakeRepository,
 )
 
@@ -355,6 +357,21 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         decoder = AvroDataDecoder("test", GenericUser[int])
         with self.assertRaises(MinosTypeAttributeException):
             decoder.build(value)
+
+    def test_entity_set(self):
+        raw = {FakeEntity("John"), FakeEntity("Michael")}
+        entities = EntitySet(raw)
+        decoder = AvroDataDecoder("test", EntitySet[FakeEntity])
+        observed = decoder.build(entities)
+
+        self.assertEqual(entities, observed)
+
+    def test_entity_set_raises(self):
+        raw = {FakeEntity("John"), FakeEntity("Michael")}
+        entities = EntitySet(raw)
+        decoder = AvroDataDecoder("test", EntitySet[Base])
+        with self.assertRaises(MinosTypeAttributeException):
+            decoder.build(entities)
 
 
 if __name__ == "__main__":

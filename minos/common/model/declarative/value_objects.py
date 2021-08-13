@@ -51,40 +51,46 @@ class ValueObject(DeclarativeModel):
 class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
     """Value Object Set class."""
 
-    data: list[ValueObject]
+    data: dict[str, T]
 
     def __init__(self, data: Optional[Iterable[T]] = None, *args, **kwargs):
         if data is None:
-            data = list()
-        elif not isinstance(data, list):
-            data = [value_obj for value_obj in data]
+            data = dict()
+        elif not isinstance(data, dict):
+            data = {str(hash(value_obj)): value_obj for value_obj in data}
         super().__init__(data, *args, **kwargs)
 
-    def add(self, value_obj: ValueObject) -> NoReturn:
-        """Add an entity.
-        :param value_obj: The value object to be added.
+    def add(self, value_object: T) -> NoReturn:
+        """Add an value object.
+        :param value_object: The value object to be added.
         :return: This method does not return anything.
         """
-        self.data.append(value_obj)
+        self.data[str(hash(value_object))] = value_object
 
-    def discard(self, value_object: ValueObject) -> NoReturn:
-        self.data.remove(value_object)
+    def discard(self, value_object: T) -> NoReturn:
+        """Remove an value object.
+        :param value_object: The value object to be added.
+        :return: This method does not return anything.
+        """
+        self.data.pop(str(hash(value_object)), None)
 
-    def __contains__(self, value_object: ValueObject) -> bool:
-        return value_object in self.data
+    def __contains__(self, value_object: T) -> bool:
+        if not isinstance(value_object, ValueObject):
+            return False
+        return str(hash(value_object)) in self.data
 
     def __len__(self) -> int:
         return len(self.data)
 
     def __iter__(self) -> Iterator[T]:
-        yield from self.data
+        yield from self.data.values()
 
-    def __eq__(self, other):
+    def __eq__(self, other: T) -> bool:
         if isinstance(other, ValueObjectSet):
             return super().__eq__(other)
-        if isinstance(other, list):
+        if isinstance(other, dict):
             return self.data == other
-        return list(self) == other
+        return set(self) == other
 
     def diff(self, another: ValueObjectSet[T]) -> ValueObjectSetDiff:
         """Compute the difference between self and another entity set.

@@ -80,10 +80,10 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         """
         # noinspection PyShadowingBuiltins
         if not await self.builder.are_synced(aggregate_name, uuids, **kwargs):
-            await self.builder.dispatch()
+            await self.builder.dispatch(**kwargs)
 
         async for item in self._get(aggregate_name, uuids, **kwargs):
-            yield item.aggregate
+            yield item.build_aggregate(**kwargs)
 
     async def _get(
         self, aggregate_name: str, uuids: set[UUID], streaming_mode: bool = False, **kwargs,

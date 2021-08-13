@@ -16,6 +16,9 @@ from typing import (
     Any,
     Optional,
 )
+from unittest.mock import (
+    MagicMock,
+)
 from uuid import (
     UUID,
 )
@@ -40,12 +43,13 @@ class TestAvroSchemaEncoder(unittest.TestCase):
             "type": {
                 "fields": [{"name": "username", "type": "string"}],
                 "name": "User",
-                "namespace": "path.to.class",
+                "namespace": "path.to.hello",
                 "type": "record",
             },
         }
-
-        observed = AvroSchemaEncoder("class", ModelType.build("User", {"username": str}, namespace_="path.to")).build()
+        encoder = AvroSchemaEncoder("class", ModelType.build("User", {"username": str}, namespace_="path.to"))
+        encoder.generate_random_str = MagicMock(return_value="hello")
+        observed = encoder.build()
         self.assertEqual(expected, observed)
 
     def test_int(self):
@@ -106,14 +110,17 @@ class TestAvroSchemaEncoder(unittest.TestCase):
                         {"name": "age", "type": ["int", "null"]},
                     ],
                     "name": "Owner",
-                    "namespace": "tests.aggregate_classes.test",
+                    "namespace": "tests.aggregate_classes.hello",
                     "type": "record",
                 },
                 {"type": "string", "logicalType": "uuid"},
                 "null",
             ],
         }
-        observed = AvroSchemaEncoder("test", Optional[ModelRef[Owner]]).build()
+        encoder = AvroSchemaEncoder("test", Optional[ModelRef[Owner]])
+        encoder.generate_random_str = MagicMock(return_value="hello")
+
+        observed = encoder.build()
         self.assertEqual(expected, observed)
 
     def test_list_model(self):
@@ -124,7 +131,7 @@ class TestAvroSchemaEncoder(unittest.TestCase):
                     {
                         "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
                         "name": "User",
-                        "namespace": "tests.model_classes.test",
+                        "namespace": "tests.model_classes.hello",
                         "type": "record",
                     },
                     "null",
@@ -132,7 +139,10 @@ class TestAvroSchemaEncoder(unittest.TestCase):
                 "type": "array",
             },
         }
-        observed = AvroSchemaEncoder("test", list[Optional[User]]).build()
+        encoder = AvroSchemaEncoder("test", list[Optional[User]])
+        encoder.generate_random_str = MagicMock(return_value="hello")
+
+        observed = encoder.build()
         self.assertEqual(expected, observed)
 
     def test_uuid(self):
