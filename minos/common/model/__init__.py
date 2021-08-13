@@ -21,6 +21,8 @@ from .declarative import (
     DeclarativeModel,
     Entity,
     EntitySet,
+    EntitySetDiff,
+    EntitySetDiffEntry,
     Event,
     MinosModel,
     ValueObject,

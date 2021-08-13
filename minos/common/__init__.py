@@ -98,6 +98,8 @@ from .model import (
     DynamicModel,
     Entity,
     EntitySet,
+    EntitySetDiff,
+    EntitySetDiffEntry,
     Event,
     Field,
     FieldsDiff,

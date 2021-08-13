@@ -26,6 +26,12 @@ from uuid import (
     uuid4,
 )
 
+from ..actions import (
+    Action,
+)
+from ..types import (
+    ModelType,
+)
 from .abc import (
     DeclarativeModel,
 )
@@ -102,3 +108,50 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
         if isinstance(other, dict):
             return self.data == other
         return set(self) == other
+
+    def diff(self, another: EntitySet[T]) -> EntitySetDiff:
+        """Compute the difference between self and another entity set.
+
+        :param another: Another entity set instance.
+        :return: The difference between both entity sets.
+        """
+        return EntitySetDiff.from_difference(self, another)
+
+
+EntitySetDiffEntry = ModelType.build("EntitySetDiffEntry", {"action": Action, "entity": Entity})
+
+
+class EntitySetDiff(DeclarativeModel):
+    """Entity Set Diff class."""
+
+    diffs: list[EntitySetDiffEntry]
+
+    @classmethod
+    def from_difference(cls, new: EntitySet[T], old: EntitySet[T]) -> EntitySetDiff:
+        """Build a new instance from two entity sets.
+
+        :param new: The new entity set.
+        :param old: The old entity set.
+        :return: The diference between new and old.
+        """
+        differences = cls._diff(new, old)
+        return cls(differences)
+
+    @staticmethod
+    def _diff(new: EntitySet[T], old: EntitySet[T]) -> list[EntitySetDiffEntry]:
+        result = list()
+        for entity in new - old:
+            entry = EntitySetDiffEntry(Action.CREATE, entity)
+            result.append(entry)
+
+        for entity in old - new:
+            entry = EntitySetDiffEntry(Action.DELETE, entity)
+            result.append(entry)
+
+        for entity in old & new:
+            if entity == old.get(entity.uuid):
+                continue
+            entry = EntitySetDiffEntry(Action.UPDATE, entity)
+            result.append(entry)
+
+        return result
