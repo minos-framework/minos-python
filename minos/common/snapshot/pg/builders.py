@@ -174,13 +174,13 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
     async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> Aggregate:
         snapshot_entry = await self._select_one(aggregate_uuid, aggregate_name, **kwargs)
-        return snapshot_entry.aggregate
+        return snapshot_entry.build_aggregate(**kwargs)
 
     async def _select_one(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> SnapshotEntry:
         raw = await self.submit_query_and_fetchone(
             _SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_uuid, aggregate_name), **kwargs
         )
-        return SnapshotEntry(aggregate_uuid, aggregate_name, *raw, **kwargs)
+        return SnapshotEntry(aggregate_uuid, aggregate_name, *raw)
 
     async def _submit_instance(self, aggregate: Aggregate, **kwargs) -> SnapshotEntry:
         snapshot_entry = SnapshotEntry.from_aggregate(aggregate)

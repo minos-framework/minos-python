@@ -83,7 +83,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
             await self.builder.dispatch(**kwargs)
 
         async for item in self._get(aggregate_name, uuids, **kwargs):
-            yield item.aggregate
+            yield item.build_aggregate(**kwargs)
 
     async def _get(
         self, aggregate_name: str, uuids: set[UUID], streaming_mode: bool = False, **kwargs,
@@ -129,7 +129,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
                 rows = await cursor.fetchall()
 
         for row in rows:
-            yield SnapshotEntry(*row, **kwargs)
+            yield SnapshotEntry(*row)
 
     # noinspection PyUnusedLocal
     async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
