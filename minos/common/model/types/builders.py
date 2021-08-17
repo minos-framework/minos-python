@@ -14,7 +14,6 @@ from typing import (
     Any,
     Iterable,
     Optional,
-    Type,
     Union,
     get_args,
     get_origin,
@@ -38,7 +37,7 @@ from .model_types import (
 logger = logging.getLogger(__name__)
 
 
-def build_union(options: tuple[Type, ...]) -> Type:
+def build_union(options: tuple[type, ...]) -> type:
     """Build the union type base on the given options.
 
     :param options: A tuple of types.
@@ -58,24 +57,24 @@ def build_union(options: tuple[Type, ...]) -> Type:
 class TypeHintBuilder:
     """Type Hint Builder class."""
 
-    def __init__(self, value, base: Optional[Type] = None):
+    def __init__(self, value, base: Optional[type] = None):
         self._value = value
         self._base = base
 
-    def build(self) -> Type:
+    def build(self) -> type:
         """Build type hint from an instance..
 
         :return: A type.
         """
         return self._build(self._value, self._base)
 
-    def _build(self, value, base: Optional[Type]) -> Type:
+    def _build(self, value, base: Optional[type]) -> type:
         if base is not None:
             if get_origin(base) is ModelRef:
                 base = Union[(*get_args(base), UUID)]
 
             if get_origin(base) is Union:
-                dynamic: Type = self._build(value, None)
+                dynamic = self._build(value, None)
                 options = tuple(
                     (dynamic if not len(get_args(static)) and issubclass(dynamic, static) else static)
                     for static in get_args(base)
@@ -97,7 +96,7 @@ class TypeHintBuilder:
 
         return type(value)
 
-    def _build_from_iterable(self, values: Iterable, base: Optional[Type]) -> Type:
+    def _build_from_iterable(self, values: Iterable, base: Optional[type]) -> type:
         values = tuple(values)
         if len(values) == 0:
             return base

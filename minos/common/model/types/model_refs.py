@@ -19,7 +19,6 @@ from typing import (
     Iterable,
     NoReturn,
     Optional,
-    Type,
     TypeVar,
     get_args,
     get_origin,
@@ -47,7 +46,7 @@ class ModelRef(Generic[T]):
 class ModelRefExtractor:
     """Model Reference Extractor class."""
 
-    def __init__(self, value: Any, kind: Optional[Type] = None):
+    def __init__(self, value: Any, kind: Optional[type] = None):
         if kind is None:
             from .builders import (
                 TypeHintBuilder,
@@ -66,7 +65,7 @@ class ModelRefExtractor:
         self._build(self.value, self.kind, ans)
         return ans
 
-    def _build(self, value: Any, kind: Type, ans: dict[str, set[UUID]]) -> NoReturn:
+    def _build(self, value: Any, kind: type, ans: dict[str, set[UUID]]) -> NoReturn:
         if isinstance(value, (tuple, list, set)):
             self._build_iterable(value, get_args(kind)[0], ans)
 
@@ -83,7 +82,7 @@ class ModelRefExtractor:
             name = cls.__name__
             ans[name].add(value)
 
-    def _build_iterable(self, value: Iterable, kind: Type, ans: dict[str, set[UUID]]) -> NoReturn:
+    def _build_iterable(self, value: Iterable, kind: type, ans: dict[str, set[UUID]]) -> NoReturn:
         for sub_value in value:
             self._build(sub_value, kind, ans)
 

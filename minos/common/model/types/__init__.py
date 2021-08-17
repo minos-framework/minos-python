@@ -16,7 +16,7 @@ from .comparators import (
     is_model_type,
     is_type_subclass,
 )
-from .data_types import (
+from .constants import (
     MissingSentinel,
     NoneType,
 )
