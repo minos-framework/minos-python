@@ -10,6 +10,9 @@ from __future__ import (
 )
 
 import logging
+from collections.abc import (
+    MutableSet,
+)
 from datetime import (
     date,
     datetime,
@@ -236,8 +239,11 @@ class AvroDataDecoder:
             data |= {k: self._cast_value(v, data.get(k, None)) for k, v in type_field.type_hints.items()}
             return type_field(**data)
 
-        if hasattr(data, "model_type") and ModelType.from_model(data) == type_field:
-            return data
+        if hasattr(data, "model_type"):
+            if isinstance(data, MutableSet) and isinstance(data, type_field.model_cls) and not len(data):
+                return data
+            if ModelType.from_model(data) == type_field:
+                return data
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 

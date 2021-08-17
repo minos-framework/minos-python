@@ -26,6 +26,9 @@ from uuid import (
     uuid4,
 )
 
+from ..abc import (
+    Model,
+)
 from ..actions import (
     Action,
 )
@@ -48,7 +51,7 @@ class Entity(DeclarativeModel):
         super().__init__(uuid, *args, **kwargs)
 
 
-T = TypeVar("T", bound=Entity)
+T = TypeVar("T", bound=Model)
 
 
 class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
@@ -132,7 +135,7 @@ class EntitySetDiff(DeclarativeModel):
 
         :param new: The new entity set.
         :param old: The old entity set.
-        :return: The diference between new and old.
+        :return: The difference between new and old.
         """
         differences = cls._diff(new, old)
         return cls(differences)

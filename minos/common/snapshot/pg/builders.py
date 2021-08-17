@@ -156,20 +156,20 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         instance = await self._update_if_exists(diff, **kwargs)
         return instance
 
-    async def _update_if_exists(self, diff: AggregateDiff, **kwargs) -> Aggregate:
+    async def _update_if_exists(self, aggregate_diff: AggregateDiff, **kwargs) -> Aggregate:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
-            previous = await self._select_one_aggregate(diff.uuid, diff.name, **kwargs)
+            previous = await self._select_one_aggregate(aggregate_diff.uuid, aggregate_diff.name, **kwargs)
         except Exception:
             # noinspection PyTypeChecker
-            aggregate_cls: Type[Aggregate] = import_module(diff.name)
-            return aggregate_cls.from_diff(diff, **kwargs)
+            aggregate_cls: Type[Aggregate] = import_module(aggregate_diff.name)
+            return aggregate_cls.from_diff(aggregate_diff, **kwargs)
 
-        if previous.version >= diff.version:
-            raise MinosPreviousVersionSnapshotException(previous, diff)
+        if previous.version >= aggregate_diff.version:
+            raise MinosPreviousVersionSnapshotException(previous, aggregate_diff)
 
-        previous.apply_diff(diff)
+        previous.apply_diff(aggregate_diff)
         return previous
 
     async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> Aggregate:

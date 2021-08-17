@@ -73,7 +73,7 @@ class RepositoryEntry:
     def from_aggregate_diff(cls, aggregate_diff: AggregateDiff) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
-        :param aggregate_diff: The aggregate instance.
+        :param aggregate_diff: The aggregate difference.
         :return: A new ``RepositoryEntry`` instance.
         """
         # noinspection PyTypeChecker
@@ -98,11 +98,15 @@ class RepositoryEntry:
         """
         from ..model import (
             AggregateDiff,
-            FieldsDiff,
+            FieldDiffContainer,
         )
 
         return AggregateDiff(
-            self.aggregate_uuid, self.aggregate_name, self.version, self.action, FieldsDiff.from_avro_bytes(self.data)
+            self.aggregate_uuid,
+            self.aggregate_name,
+            self.version,
+            self.action,
+            FieldDiffContainer.from_avro_bytes(self.data),
         )
 
     def __eq__(self, other: "RepositoryEntry") -> bool:

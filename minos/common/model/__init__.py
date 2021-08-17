@@ -34,7 +34,9 @@ from .dynamic import (
     BucketModel,
     DataTransferObject,
     DynamicModel,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
 )
 from .fields import (
     Field,
