@@ -17,6 +17,9 @@ from base64 import (
     b64decode,
     b64encode,
 )
+from collections.abc import (
+    Mapping,
+)
 from typing import (
     Any,
     Iterable,
@@ -59,10 +62,10 @@ from .types import (
 logger = logging.getLogger(__name__)
 
 
-class Model:
+class Model(Mapping):
     """Base class for ``minos`` model entities."""
 
-    _fields: dict[str, Field] = {}
+    _fields: dict[str, Field]
 
     def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
         """Class constructor.
@@ -134,7 +137,7 @@ class Model:
         """
         if isinstance(schema, list):
             schema = schema[-1]
-        model_type: ModelType = AvroSchemaDecoder(schema).build()
+        model_type = AvroSchemaDecoder(schema).build()
         return AvroDataDecoder("", model_type).build(data)
 
     @classmethod
@@ -215,17 +218,15 @@ class Model:
         return self._fields
 
     def __setattr__(self, key: str, value: Any) -> NoReturn:
-        if self._fields is not None and key in self._fields:
-            field_class: Field = self._fields[key]
-            field_class.value = value
-            self._fields[key] = field_class
-        elif key.startswith("_"):
+        if key.startswith("_"):
             super().__setattr__(key, value)
+        elif key in self._fields:
+            self._fields[key].value = value
         else:
             raise MinosModelException(f"model attribute {key} doesn't exist")
 
     def __getattr__(self, item: str) -> Any:
-        if self._fields is not None and item in self._fields:
+        if item in self._fields:
             return self._fields[item].value
         else:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
@@ -270,11 +271,10 @@ class Model:
         return type(self) == type(other) and self.fields == other.fields
 
     def __hash__(self) -> int:
-        return hash(tuple(self))
+        return hash(tuple(self.fields.values()))
 
-    def __iter__(self) -> Iterable:
-        # noinspection PyRedundantParentheses
-        yield from self.fields.values()
+    def __iter__(self) -> Iterable[str]:
+        yield from self.fields.keys()
 
     def __getitem__(self, item: str) -> Any:
         return getattr(self, item)
@@ -282,12 +282,8 @@ class Model:
     def __setitem__(self, key: str, value: Any) -> NoReturn:
         setattr(self, key, value)
 
-    def keys(self) -> Iterable[str]:
-        """Get the field names.
-
-        :return: An iterable of string values.
-        """
-        return self.fields.keys()
+    def __len__(self):
+        return len(self.fields)
 
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())

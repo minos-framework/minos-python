@@ -17,7 +17,6 @@ from typing import (
     Any,
     Generic,
     Iterable,
-    Iterator,
     Type,
     TypeVar,
     Union,
@@ -113,19 +112,12 @@ class FieldDiffContainer(BucketModel):
         fields_repr = ", ".join(f"{diff.name}={diff.value}" for diff in self.values())
         return f"{type(self).__name__}({fields_repr})"
 
-    def keys(self) -> Iterable[str]:
+    def __iter__(self) -> Iterable[str]:
         """Get the field names.
 
         :return: An iterable of string values.
         """
-        return self._name_mapper.keys()
-
-    def values(self) -> Iterator[Union[FieldDiff, list[IncrementalFieldDiff]]]:
-        """Iterate over diff instances.
-
-        :return: An iterator instance.
-        """
-        return map(lambda name: getattr(self, name), self._name_mapper.keys())
+        yield from self._name_mapper.keys()
 
     @classmethod
     def from_difference(cls, a: Model, b: Model, ignore: set[str] = frozenset()) -> FieldDiffContainer:
