@@ -47,42 +47,40 @@ T = TypeVar("T")
 
 
 class Difference(Model, Generic[T]):
-    """TODO"""
+    """Difference class."""
 
     name: str
     value: T
-
-    @classmethod
-    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> Difference:
-        """TODO"""
-        kwargs["type_"] = model_type.type_hints["value"]
-        return cls(*args, **kwargs)
 
     def __init__(self, name: str, type_: Type, value: Any):
         super().__init__([Field("name", str, name), Field("value", type_, value)])
 
-
-class IncrementalDifference(Difference, Generic[T]):
-    """TODO"""
-
-    name: str
-    value: T
-    action: Action
-
     @classmethod
-    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> IncrementalDifference:
-        """TODO"""
+    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> Difference:
+        """Build a new instance from model type.
+
+        :param model_type: The model type.
+        :param args: Additional positional. arguments.
+        :param kwargs: Additional named arguments.
+        :return: A new ``Difference`` instance.
+        """
         kwargs["type_"] = model_type.type_hints["value"]
         return cls(*args, **kwargs)
+
+
+class IncrementalDifference(Difference, Generic[T]):
+    """Incremental Difference class."""
+
+    action: Action
 
     def __init__(self, name: str, type_: Type, value: Any, action: Action):
         Model.__init__(self, [Field("name", str, name), Field("value", type_, value), Field("action", Action, action)])
 
 
 class DifferenceContainer(BucketModel):
-    """TODO"""
+    """Difference Container class."""
 
-    def __init__(self, fields: list[Difference], *args, **kwargs):
+    def __init__(self, fields: list[Difference], **kwargs):
         if isinstance(fields, list):
             from ..fields import (
                 Field,
@@ -122,12 +120,12 @@ class DifferenceContainer(BucketModel):
 
     @classmethod
     def from_difference(cls, a: Model, b: Model, ignore: Optional[set[str]] = None) -> DifferenceContainer:
-        """TODO
+        """Build a new instance from the difference between two models.
 
-        :param a: TODO
-        :param b: TODO
-        :param ignore: TODO
-        :return: TODO
+        :param a: Latest model instance.
+        :param b: Oldest model instance.
+        :param ignore: Set of fields to be ignored.
+        :return: A new ``DifferenceContainer`` instance.
         """
         if ignore is None:
             ignore = set()
@@ -140,12 +138,6 @@ class DifferenceContainer(BucketModel):
 
     @staticmethod
     def _diff(a: dict[str, Field], b: dict[str, Field]) -> list[Difference]:
-        """TODO
-
-        :param a: TODO
-        :param b: TODO
-        :return: TODO
-        """
         from ..declarative import (
             EntitySet,
             EntitySetDiff,
@@ -174,19 +166,19 @@ class DifferenceContainer(BucketModel):
         return differences
 
     @classmethod
-    def from_model(cls, aggregate: Model, ignore: Optional[set[str]] = None) -> DifferenceContainer:
-        """TODO
+    def from_model(cls, model: Model, ignore: Optional[set[str]] = None) -> DifferenceContainer:
+        """Build a new difference from a single model.
 
-        :param aggregate: TODO
-        :param ignore: TODO
-        :return: TODO
+        :param model: The model instance.
+        :param ignore: Set of fields to be ignored.
+        :return: A new ``DifferenceContainer`` instance.
         """
         if ignore is None:
             ignore = set()
         ignore = set(ignore)
 
         differences = list()
-        for field in aggregate.fields.values():
+        for field in model.fields.values():
             differences.append(Difference(field.name, field.type, field.value))
 
         differences = [difference for difference in differences if difference.name not in ignore]

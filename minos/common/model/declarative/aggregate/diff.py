@@ -51,9 +51,9 @@ class AggregateDiff(DeclarativeModel):
 
     @property
     def fields_diff(self) -> DifferenceContainer:
-        """TODO
+        """Ge the differences container.
 
-        :return: TODO
+        :return: A ``DifferenceContainer`` instance.
         """
         warnings.warn('"fields_diff" is deprecated! Use "differences" instead', DeprecationWarning)
         return self.differences
