@@ -17,6 +17,7 @@ from typing import (
     Any,
     Generic,
     Iterable,
+    Iterator,
     Optional,
     Type,
     TypeVar,
@@ -104,19 +105,18 @@ class FieldsDiff(BucketModel):
             raise exc
 
     def __eq__(self, other):
-        return type(self) == type(other) and self.differences == other.differences
-
-    @property
-    def differences(self) -> dict[str, Union[Diff, list[IncrementalDiff]]]:
-        """Ge the differences.
-
-        :return: A dictionary of differences.
-        """
-        return {name: getattr(self, name) for name in self._name_mapper.keys()}
+        return type(self) == type(other) and tuple(self.values()) == tuple(other.values())
 
     def __repr__(self) -> str:
-        fields_repr = ", ".join(f"{name}={getattr(self, name)}" for name in self._name_mapper.keys())
+        fields_repr = ", ".join(f"{diff.name}={diff.value}" for diff in self.values())
         return f"{type(self).__name__}({fields_repr})"
+
+    def values(self) -> Iterator[Union[Diff, list[IncrementalDiff]]]:
+        """Iterate over diff instances.
+
+        :return: An iterator instance.
+        """
+        return map(lambda name: getattr(self, name), self._name_mapper.keys())
 
     @classmethod
     def from_difference(cls, a: Model, b: Model, ignore: Optional[set[str]] = None) -> FieldsDiff:

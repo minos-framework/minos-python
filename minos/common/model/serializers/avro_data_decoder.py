@@ -11,7 +11,7 @@ from __future__ import (
 
 import logging
 from collections.abc import (
-    Sized,
+    MutableSet,
 )
 from datetime import (
     date,
@@ -240,7 +240,7 @@ class AvroDataDecoder:
             return type_field(**data)
 
         if hasattr(data, "model_type"):
-            if isinstance(data, Sized) and isinstance(data, type_field.model_cls) and not len(data):
+            if isinstance(data, MutableSet) and isinstance(data, type_field.model_cls) and not len(data):
                 return data
             if ModelType.from_model(data) == type_field:
                 return data

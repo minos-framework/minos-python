@@ -48,10 +48,9 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
             self.car_four = Car(3, "blue", id=2, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
 
     def test_differences(self):
-        fields = [Diff("doors", int, 5), Diff("color", str, "red")]
-        difference = FieldsDiff(fields)
-        expected = {"doors": Diff("doors", int, 5), "color": Diff("color", str, "red")}
-        self.assertEqual(expected, difference.differences)
+        diffs = [Diff("doors", int, 5), Diff("color", str, "red")]
+        difference = FieldsDiff(diffs)
+        self.assertEqual(diffs, list(difference.values()))
 
     def test_get_attr(self):
         fields = [Diff("doors", int, 5), Diff("color", str, "red")]
@@ -88,10 +87,10 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_with_difference_not_hashable(self):
-        expected = FieldsDiff([Diff("values", list[int], [1, 2, 3])])
+        expected = FieldsDiff([Diff("numbers", list[int], [1, 2, 3])])
 
-        model_type = ModelType.build("Foo", {"values": list[int]})
-        a, b = model_type(values=[0]), model_type(values=[1, 2, 3])
+        model_type = ModelType.build("Foo", {"numbers": list[int]})
+        a, b = model_type([0]), model_type([1, 2, 3])
         observed = FieldsDiff.from_difference(b, a)
         self.assertEqual(expected, observed)
 

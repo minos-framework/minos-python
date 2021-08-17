@@ -226,10 +226,10 @@ class Aggregate(Entity):
         futures = [self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Updated")]
 
         for decomposed_aggregate_diff in aggregate_diff.decompose():
-            difference = next(iter(decomposed_aggregate_diff.fields_diff)).value
-            topic = f"{type(self).__name__}Updated.{difference.name}"
-            if isinstance(difference, IncrementalDiff):
-                topic += f".{difference.action.value}"
+            diff = next(decomposed_aggregate_diff.fields_diff.values())
+            topic = f"{type(self).__name__}Updated.{diff.name}"
+            if isinstance(diff, IncrementalDiff):
+                topic += f".{diff.action.value}"
             futures.append(self._broker.send(decomposed_aggregate_diff, topic=topic))
 
         await gather(*futures)
@@ -315,16 +315,15 @@ class Aggregate(Entity):
         )
 
         logger.debug(f"Applying {aggregate_diff!r} to {self!r}...")
-        for field in aggregate_diff.fields_diff:
-            difference = field.value
-            if isinstance(difference, IncrementalDiff):
-                container = getattr(self, difference.name)
-                if difference.action.is_delete:
-                    container.discard(difference.value)
+        for diff in aggregate_diff.fields_diff.values():
+            if isinstance(diff, IncrementalDiff):
+                container = getattr(self, diff.name)
+                if diff.action.is_delete:
+                    container.discard(diff.value)
                 else:
-                    container.add(difference.value)
+                    container.add(diff.value)
             else:
-                setattr(self, difference.name, difference.value)
+                setattr(self, diff.name, diff.value)
         self.version = aggregate_diff.version
 
     @classmethod
@@ -336,8 +335,7 @@ class Aggregate(Entity):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        values = {difference.name: difference.value for difference in aggregate_diff.differences.values()}
-        # noinspection PyArgumentList
+        values = {diff.name: diff.value for diff in aggregate_diff.fields_diff.values()}
         return cls(*args, uuid=aggregate_diff.uuid, version=aggregate_diff.version, **values, **kwargs)
 
 

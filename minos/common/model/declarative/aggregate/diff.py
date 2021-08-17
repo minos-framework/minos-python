@@ -16,7 +16,6 @@ from operator import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Union,
 )
 from uuid import (
     UUID,
@@ -26,9 +25,7 @@ from ...actions import (
     Action,
 )
 from ...dynamic import (
-    Diff,
     FieldsDiff,
-    IncrementalDiff,
 )
 from ..abc import (
     DeclarativeModel,
@@ -58,14 +55,6 @@ class AggregateDiff(DeclarativeModel):
             if item != "fields_diff":
                 return getattr(self.fields_diff, item).value
             raise exc
-
-    @property
-    def differences(self) -> dict[str, Union[Diff, list[IncrementalDiff]]]:
-        """Ge the differences.
-
-        :return: A dictionary of differences.
-        """
-        return self.fields_diff.differences
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:
@@ -118,6 +107,6 @@ class AggregateDiff(DeclarativeModel):
         :return: An list of``AggregateDiff`` instances.
         """
         return [
-            AggregateDiff(self.uuid, self.name, self.version, self.action, FieldsDiff(fields=[field]))
-            for field in self.fields_diff
+            AggregateDiff(self.uuid, self.name, self.version, self.action, FieldsDiff([diff]))
+            for diff in self.fields_diff.values()
         ]
