@@ -76,7 +76,7 @@ class ModelRefExtractor:
 
         elif is_model_type(value):
             for field in value.fields.values():
-                self._build(field.value, field.real_type, ans)
+                self._build(field.value, field.type, ans)
 
         elif get_origin(kind) is ModelRef and isinstance(value, UUID):
             cls = get_args(kind)[0]
