@@ -135,7 +135,7 @@ class EntitySetDiff(DeclarativeModel):
 
         :param new: The new entity set.
         :param old: The old entity set.
-        :return: The diference between new and old.
+        :return: The difference between new and old.
         """
         differences = cls._diff(new, old)
         return cls(differences)
