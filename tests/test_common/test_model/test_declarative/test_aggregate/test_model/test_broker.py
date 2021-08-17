@@ -14,7 +14,7 @@ from minos.common import (
     Action,
     AggregateDiff,
     Difference,
-    DifferenceContainer,
+    FieldsDiff,
     InMemoryRepository,
     InMemorySnapshot,
     ModelRef,
@@ -40,7 +40,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=1,
                             action=Action.CREATE,
-                            differences=DifferenceContainer(
+                            fields_diff=FieldsDiff(
                                 [
                                     Difference("doors", int, 3),
                                     Difference("color", str, "blue"),
@@ -68,7 +68,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            differences=DifferenceContainer([Difference("color", str, "red")]),
+                            fields_diff=FieldsDiff([Difference("color", str, "red")]),
                         ),
                         "topic": "CarUpdated",
                     },
@@ -78,7 +78,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            differences=DifferenceContainer([Difference("color", str, "red")]),
+                            fields_diff=FieldsDiff([Difference("color", str, "red")]),
                         ),
                         "topic": "CarUpdated.color",
                     },
@@ -100,7 +100,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.DELETE,
-                            differences=DifferenceContainer.empty(),
+                            fields_diff=FieldsDiff.empty(),
                         ),
                         "topic": "CarDeleted",
                     }

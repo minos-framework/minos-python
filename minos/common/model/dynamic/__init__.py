@@ -13,7 +13,7 @@ from .bucket import (
 )
 from .diff import (
     Difference,
-    DifferenceContainer,
+    FieldsDiff,
     IncrementalDifference,
 )
 from .dto import (

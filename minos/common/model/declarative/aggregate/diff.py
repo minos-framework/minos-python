@@ -10,13 +10,13 @@ from __future__ import (
 )
 
 import logging
-import warnings
 from operator import (
     attrgetter,
 )
 from typing import (
     TYPE_CHECKING,
     Any,
+    Union,
 )
 from uuid import (
     UUID,
@@ -26,7 +26,9 @@ from ...actions import (
     Action,
 )
 from ...dynamic import (
-    DifferenceContainer,
+    Difference,
+    FieldsDiff,
+    IncrementalDifference,
 )
 from ..abc import (
     DeclarativeModel,
@@ -47,24 +49,23 @@ class AggregateDiff(DeclarativeModel):
     name: str
     version: int
     action: Action
-    differences: DifferenceContainer
-
-    @property
-    def fields_diff(self) -> DifferenceContainer:
-        """Ge the differences container.
-
-        :return: A ``DifferenceContainer`` instance.
-        """
-        warnings.warn('"fields_diff" is deprecated! Use "differences" instead', DeprecationWarning)
-        return self.differences
+    fields_diff: FieldsDiff
 
     def __getattr__(self, item: str) -> Any:
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item != "differences":
-                return getattr(self.differences, item).value
+            if item != "fields_diff":
+                return getattr(self.fields_diff, item).value
             raise exc
+
+    @property
+    def differences(self) -> dict[str, Union[Difference, list[IncrementalDifference]]]:
+        """Ge the differences.
+
+        :return: A dictionary of differences.
+        """
+        return self.fields_diff.differences
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:
@@ -85,7 +86,7 @@ class AggregateDiff(DeclarativeModel):
 
         old, new = sorted([a, b], key=attrgetter("version"))
 
-        differences = DifferenceContainer.from_difference(a, b, ignore=["uuid", "version"])
+        differences = FieldsDiff.from_difference(a, b, ignore=["uuid", "version"])
 
         return cls(new.uuid, new.classname, new.version, action, differences)
 
@@ -98,7 +99,7 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
 
-        differences = DifferenceContainer.from_model(aggregate, ignore={"uuid", "version"})
+        differences = FieldsDiff.from_model(aggregate, ignore={"uuid", "version"})
         return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, differences)
 
     @classmethod
@@ -109,7 +110,7 @@ class AggregateDiff(DeclarativeModel):
         :param action: The action to that generates the aggregate difference.
         :return: An ``AggregateDiff`` instance.
         """
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, DifferenceContainer.empty())
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, FieldsDiff.empty())
 
     def decompose(self) -> list[AggregateDiff]:
         """Decompose AggregateDiff Fields into AggregateDiff with once Field.
@@ -117,10 +118,10 @@ class AggregateDiff(DeclarativeModel):
         :return: An list of``AggregateDiff`` instances.
         """
         decomposed = []
-        fields = self.differences
+        fields = self.fields_diff
 
         for field in fields:
-            diff_field = DifferenceContainer({field.name: field})
+            diff_field = FieldsDiff({field.name: field})
             aggr_diff = AggregateDiff(self.uuid, self.name, self.version, self.action, diff_field)
             decomposed.append(aggr_diff)
 

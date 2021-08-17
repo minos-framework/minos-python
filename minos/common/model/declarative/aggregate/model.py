@@ -226,7 +226,7 @@ class Aggregate(Entity):
         futures = [self._broker.send(diff, topic=f"{type(self).__name__}Updated")]
 
         for aggr in diff.decompose():
-            difference = next(iter(aggr.differences)).value
+            difference = next(iter(aggr.fields_diff)).value
             topic = f"{type(self).__name__}Updated.{difference.name}"
             if isinstance(difference, IncrementalDifference):
                 topic += f".{difference.action.value}"
@@ -314,7 +314,7 @@ class Aggregate(Entity):
         )
 
         logger.debug(f"Applying {diff!r} to {self!r}...")
-        for field in diff.differences:
+        for field in diff.fields_diff:
             difference = field.value
             if isinstance(difference, IncrementalDifference):
                 container = getattr(self, difference.name)
@@ -335,7 +335,7 @@ class Aggregate(Entity):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        values = {difference.value.name: difference.value.value for difference in diff.differences.fields.values()}
+        values = {difference.name: difference.value for difference in diff.differences.values()}
         # noinspection PyArgumentList
         return cls(*args, uuid=diff.uuid, version=diff.version, **values, **kwargs)
 

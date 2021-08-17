@@ -17,8 +17,8 @@ from minos.common import (
     CommandReply,
     CommandStatus,
     Difference,
-    DifferenceContainer,
     Event,
+    FieldsDiff,
 )
 from tests.model_classes import (
     Foo,
@@ -69,7 +69,7 @@ class TestCommandReply(unittest.TestCase):
 
 class TestEvent(unittest.TestCase):
     def setUp(self) -> None:
-        self.data = AggregateDiff(uuid4(), "Foo", 3, Action.CREATE, DifferenceContainer([Difference("doors", int, 5)]))
+        self.data = AggregateDiff(uuid4(), "Foo", 3, Action.CREATE, FieldsDiff([Difference("doors", int, 5)]))
         self.topic = "FooCreated"
 
     def test_constructor(self):

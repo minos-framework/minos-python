@@ -78,8 +78,8 @@ class IncrementalDifference(Difference, Generic[T]):
         Model.__init__(self, [Field("name", str, name), Field("value", type_, value), Field("action", Action, action)])
 
 
-class DifferenceContainer(BucketModel):
-    """Difference Container class."""
+class FieldsDiff(BucketModel):
+    """FieldsDiff class."""
 
     def __init__(self, fields: list[Difference], **kwargs):
         if isinstance(fields, list):
@@ -107,9 +107,9 @@ class DifferenceContainer(BucketModel):
 
     @property
     def differences(self) -> dict[str, Union[Difference, list[IncrementalDifference]]]:
-        """TODO
+        """Ge the differences.
 
-        :return: TODO
+        :return: A dictionary of differences.
         """
         return {name: getattr(self, name) for name in self._name_mapper.keys()}
 
@@ -118,13 +118,13 @@ class DifferenceContainer(BucketModel):
         return f"{type(self).__name__}({fields_repr})"
 
     @classmethod
-    def from_difference(cls, a: Model, b: Model, ignore: Optional[set[str]] = None) -> DifferenceContainer:
+    def from_difference(cls, a: Model, b: Model, ignore: Optional[set[str]] = None) -> FieldsDiff:
         """Build a new instance from the difference between two models.
 
         :param a: Latest model instance.
         :param b: Oldest model instance.
         :param ignore: Set of fields to be ignored.
-        :return: A new ``DifferenceContainer`` instance.
+        :return: A new ``FieldsDiff`` instance.
         """
         if ignore is None:
             ignore = set()
@@ -165,12 +165,12 @@ class DifferenceContainer(BucketModel):
         return differences
 
     @classmethod
-    def from_model(cls, model: Model, ignore: Optional[set[str]] = None) -> DifferenceContainer:
+    def from_model(cls, model: Model, ignore: Optional[set[str]] = None) -> FieldsDiff:
         """Build a new difference from a single model.
 
         :param model: The model instance.
         :param ignore: Set of fields to be ignored.
-        :return: A new ``DifferenceContainer`` instance.
+        :return: A new ``FieldsDiff`` instance.
         """
         if ignore is None:
             ignore = set()

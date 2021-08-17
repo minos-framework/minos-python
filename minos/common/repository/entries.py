@@ -77,7 +77,7 @@ class RepositoryEntry:
         :return: A new ``RepositoryEntry`` instance.
         """
         # noinspection PyTypeChecker
-        return cls(diff.uuid, diff.name, diff.version, diff.differences.avro_bytes)
+        return cls(diff.uuid, diff.name, diff.version, diff.fields_diff.avro_bytes)
 
     @property
     def aggregate_cls(self) -> Type[Aggregate]:
@@ -96,15 +96,11 @@ class RepositoryEntry:
         """
         from ..model import (
             AggregateDiff,
-            DifferenceContainer,
+            FieldsDiff,
         )
 
         return AggregateDiff(
-            self.aggregate_uuid,
-            self.aggregate_name,
-            self.version,
-            self.action,
-            DifferenceContainer.from_avro_bytes(self.data),
+            self.aggregate_uuid, self.aggregate_name, self.version, self.action, FieldsDiff.from_avro_bytes(self.data),
         )
 
     def __eq__(self, other: "RepositoryEntry") -> bool:

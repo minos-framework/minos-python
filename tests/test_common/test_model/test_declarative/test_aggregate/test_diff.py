@@ -17,7 +17,7 @@ from minos.common import (
     Action,
     AggregateDiff,
     Difference,
-    DifferenceContainer,
+    FieldsDiff,
     ModelRef,
 )
 from tests.aggregate_classes import (
@@ -47,7 +47,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
-            differences=DifferenceContainer(
+            fields_diff=FieldsDiff(
                 [
                     Difference("doors", int, 3),
                     Difference("color", str, "blue"),
@@ -63,7 +63,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
-            differences=DifferenceContainer(
+            fields_diff=FieldsDiff(
                 [
                     Difference("doors", int, 3),
                     Difference("color", str, "blue"),
@@ -80,7 +80,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
-            differences=DifferenceContainer(
+            fields_diff=FieldsDiff(
                 [
                     Difference("doors", int, 3),
                     Difference("color", str, "blue"),
@@ -88,7 +88,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
                 ]
             ),
         )
-        self.assertEqual(diff.differences, diff.fields_diff)
+        self.assertEqual(diff.fields_diff, diff.fields_diff)
 
     def test_from_aggregate(self):
         expected = AggregateDiff(
@@ -96,7 +96,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
-            differences=DifferenceContainer(
+            fields_diff=FieldsDiff(
                 [
                     Difference("doors", int, 3),
                     Difference("color", str, "blue"),
@@ -109,11 +109,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
 
     def test_from_deleted_aggregate(self):
         expected = AggregateDiff(
-            uuid=self.uuid,
-            name=Car.classname,
-            version=1,
-            action=Action.DELETE,
-            differences=DifferenceContainer.empty(),
+            uuid=self.uuid, name=Car.classname, version=1, action=Action.DELETE, fields_diff=FieldsDiff.empty(),
         )
         observed = AggregateDiff.from_deleted_aggregate(self.initial)
         self.assertEqual(expected, observed)
@@ -124,7 +120,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            differences=DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")]),
+            fields_diff=FieldsDiff([Difference("doors", int, 5), Difference("color", str, "yellow")]),
         )
         observed = AggregateDiff.from_difference(self.final, self.initial)
         self.assertEqual(expected, observed)
@@ -139,7 +135,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
-            differences=DifferenceContainer(
+            fields_diff=FieldsDiff(
                 [
                     Difference("doors", int, 3),
                     Difference("color", str, "blue"),
@@ -161,14 +157,14 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
                 name=Car.classname,
                 version=3,
                 action=Action.UPDATE,
-                differences=DifferenceContainer([Difference("doors", int, 5)]),
+                fields_diff=FieldsDiff([Difference("doors", int, 5)]),
             ),
             AggregateDiff(
                 uuid=self.uuid,
                 name=Car.classname,
                 version=3,
                 action=Action.UPDATE,
-                differences=DifferenceContainer([Difference("color", str, "yellow")]),
+                fields_diff=FieldsDiff([Difference("color", str, "yellow")]),
             ),
         ]
 
@@ -177,7 +173,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            differences=DifferenceContainer([Difference("doors", int, 5), Difference("color", str, "yellow")]),
+            fields_diff=FieldsDiff([Difference("doors", int, 5), Difference("color", str, "yellow")]),
         )
         observed = aggr.decompose()
         self.assertEqual(expected, observed)
