@@ -18,7 +18,6 @@ from datetime import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    Type,
     Union,
     get_args,
     get_origin,
@@ -51,7 +50,9 @@ from .constants import (
 )
 
 if TYPE_CHECKING:
-    from ..fields import Field  # pragma: no cover
+    from ..fields import (
+        Field,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ logger = logging.getLogger(__name__)
 class AvroSchemaEncoder:
     """Avro Schema Encoder class."""
 
-    def __init__(self, field_name: str, field_type: Type):
+    def __init__(self, field_name: str, field_type: type):
         self._name = field_name
         self._type = field_type
 
@@ -80,13 +81,13 @@ class AvroSchemaEncoder:
 
         return {"name": self._name, "type": self._build_schema(self._type)}
 
-    def _build_schema(self, type_field: Type) -> Any:
+    def _build_schema(self, type_field: type) -> Any:
         origin = get_origin(type_field)
         if origin is not Union:
             return self._build_single_schema(type_field)
         return self._build_union_schema(type_field)
 
-    def _build_union_schema(self, type_field: Type) -> Any:
+    def _build_union_schema(self, type_field: type) -> Any:
         ans = list()
         alternatives = get_args(type_field)
         for alternative_type in alternatives:
@@ -97,7 +98,7 @@ class AvroSchemaEncoder:
                 ans.append(step)
         return ans
 
-    def _build_single_schema(self, type_field: Type) -> Any:
+    def _build_single_schema(self, type_field: type) -> Any:
         if type_field is Any:
             # FIXME: This is a design decision that must be revisited in the future.
             return AVRO_NULL
@@ -141,7 +142,7 @@ class AvroSchemaEncoder:
 
         return self._build_composed_schema(type_field)
 
-    def _build_model_schema(self, type_field: Type) -> Any:
+    def _build_model_schema(self, type_field: type) -> Any:
         return [self._build_model_type_schema(ModelType.from_model(type_field))]
 
     def _build_model_type_schema(self, type_field: ModelType) -> Any:
@@ -156,7 +157,7 @@ class AvroSchemaEncoder:
         }
         return schema
 
-    def _build_composed_schema(self, type_field: Type) -> Any:
+    def _build_composed_schema(self, type_field: type) -> Any:
         origin_type = get_origin(type_field)
 
         if origin_type is list:
@@ -170,13 +171,13 @@ class AvroSchemaEncoder:
 
         raise ValueError(f"Given field type is not supported: {type_field}")  # pragma: no cover
 
-    def _build_list_schema(self, type_field: Type) -> dict[str, Any]:
+    def _build_list_schema(self, type_field: type) -> dict[str, Any]:
         return {"type": AVRO_ARRAY, "items": self._build_schema(get_args(type_field)[0])}
 
-    def _build_dict_schema(self, type_field: Type) -> dict[str, Any]:
+    def _build_dict_schema(self, type_field: type) -> dict[str, Any]:
         return {"type": AVRO_MAP, "values": self._build_schema(get_args(type_field)[1])}
 
-    def _build_model_ref_schema(self, type_field: Type) -> Union[bool, Any]:
+    def _build_model_ref_schema(self, type_field: type) -> Union[bool, Any]:
         return self._build_schema(Union[get_args(type_field)[0], UUID])
 
     @staticmethod

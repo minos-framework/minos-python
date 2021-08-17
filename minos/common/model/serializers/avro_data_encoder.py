@@ -22,7 +22,6 @@ from decimal import (
 from typing import (
     TYPE_CHECKING,
     Any,
-    TypeVar,
 )
 from uuid import (
     UUID,
@@ -33,10 +32,11 @@ from ...exceptions import (
 )
 
 if TYPE_CHECKING:
-    from ..fields import Field  # pragma: no cover
-logger = logging.getLogger(__name__)
+    from ..fields import (
+        Field,
+    )
 
-T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 
 class AvroDataEncoder:

@@ -17,8 +17,6 @@ from typing import (
     Iterable,
     NoReturn,
     Optional,
-    Type,
-    TypeVar,
 )
 
 from ..exceptions import (
@@ -39,8 +37,6 @@ from .types import (
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
-
 
 class Field:
     """Represents a model field."""
@@ -50,9 +46,9 @@ class Field:
     def __init__(
         self,
         name: str,
-        type_val: Type[T],
-        value: T = MissingSentinel,
-        parser: Optional[Callable[[Any], T]] = None,
+        type_val: type,
+        value: Any = MissingSentinel,
+        parser: Optional[Callable[[Any], Any]] = None,
         validator: Optional[Callable[[Any], bool]] = None,
     ):
         self._name = name
@@ -68,22 +64,22 @@ class Field:
         return self._name
 
     @property
-    def type(self) -> Type[T]:
+    def type(self) -> type:
         """Type getter."""
         return self._type
 
     @property
-    def real_type(self):
+    def real_type(self) -> type:
         """Real Type getter."""
         return TypeHintBuilder(self.value, self.type).build()
 
     @property
-    def parser(self) -> Optional[Callable[[Any], T]]:
+    def parser(self) -> Optional[Callable[[Any], Any]]:
         """Parser getter."""
         return self._parser
 
     @property
-    def _parser_function(self) -> Optional[Callable[[Any], T]]:
+    def _parser_function(self) -> Optional[Callable[[Any], Any]]:
         if self.parser is None:
             return None
         if inspect.ismethod(self.parser):
@@ -92,12 +88,12 @@ class Field:
         return self.parser
 
     @property
-    def validator(self) -> Optional[Callable[[Any], T]]:
+    def validator(self) -> Optional[Callable[[Any], Any]]:
         """Parser getter."""
         return self._validator
 
     @property
-    def _validator_function(self) -> Optional[Callable[[Any], T]]:
+    def _validator_function(self) -> Optional[Callable[[Any], Any]]:
         if self.validator is None:
             return None
         if inspect.ismethod(self.validator):
@@ -175,7 +171,7 @@ class Field:
         # noinspection PyRedundantParentheses
         yield from (self.name, self.type, self.value, self._parser_function, self._validator_function)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.name}={self.value!s}"
 
 

@@ -21,7 +21,6 @@ from typing import (
     Any,
     Iterable,
     Mapping,
-    Type,
     TypeVar,
     Union,
     get_args,
@@ -54,13 +53,11 @@ if TYPE_CHECKING:
     )
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
-
 
 class AvroDataDecoder:
     """Avro Data Decoder class."""
 
-    def __init__(self, field_name: str, field_type: Type):
+    def __init__(self, field_name: str, field_type: type):
         self._name = field_name
         self._type = field_type
 
@@ -81,7 +78,7 @@ class AvroDataDecoder:
         """
         return self._cast_value(self._type, data)
 
-    def _cast_value(self, type_field: Type, data: Any) -> Any:
+    def _cast_value(self, type_field: type, data: Any) -> Any:
         if type_field is Any:
             type_field = TypeHintBuilder(data).build()
         origin = get_origin(type_field)
@@ -89,7 +86,7 @@ class AvroDataDecoder:
             return self._cast_single_value(type_field, data)
         return self._cast_union_value(type_field, data)
 
-    def _cast_union_value(self, type_field: Type, data: Any) -> Any:
+    def _cast_union_value(self, type_field: type, data: Any) -> Any:
         alternatives = get_args(type_field)
         for alternative_type in alternatives:
             try:
@@ -106,7 +103,7 @@ class AvroDataDecoder:
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 
-    def _cast_single_value(self, type_field: Type, data: Any) -> Any:
+    def _cast_single_value(self, type_field: type, data: Any) -> Any:
         if isinstance(type_field, TypeVar):
             unpacked_type = unpack_typevar(type_field)
             return self._cast_value(unpacked_type, data)
@@ -156,7 +153,7 @@ class AvroDataDecoder:
 
         return self._cast_composed_value(type_field, data)
 
-    def _cast_none_value(self, type_field: Type, data: Any) -> Any:
+    def _cast_none_value(self, type_field: type, data: Any) -> Any:
         if data is None or data is MissingSentinel:
             return None
 
@@ -225,7 +222,7 @@ class AvroDataDecoder:
                 pass
         raise MinosTypeAttributeException(self._name, UUID, data)
 
-    def _cast_model(self, type_field: Type, data: Any) -> Any:
+    def _cast_model(self, type_field: type, data: Any) -> Any:
         if is_type_subclass(type_field) and isinstance(data, type_field):
             return data
         # noinspection PyUnresolvedReferences
@@ -241,7 +238,7 @@ class AvroDataDecoder:
 
         raise MinosTypeAttributeException(self._name, type_field, data)
 
-    def _cast_composed_value(self, type_field: Type, data: Any) -> Any:
+    def _cast_composed_value(self, type_field: type, data: Any) -> Any:
         origin_type = get_origin(type_field)
         if origin_type is None:
             raise MinosMalformedAttributeException(f"{self._name!r} field is malformed. Type: '{type_field}'.")
@@ -264,7 +261,7 @@ class AvroDataDecoder:
 
         return self._convert_list_params(data, type_values)
 
-    def _convert_dict(self, data: list, type_field: Type) -> dict[str, Any]:
+    def _convert_dict(self, data: list, type_field: type) -> dict[str, Any]:
         type_keys, type_values = get_args(type_field)
         if not isinstance(data, dict):
             raise MinosTypeAttributeException(self._name, dict, data)
@@ -274,12 +271,12 @@ class AvroDataDecoder:
 
         return self._convert_dict_params(data, type_keys, type_values)
 
-    def _convert_dict_params(self, data: Mapping, type_keys: Type, type_values: Type) -> dict[Any, Any]:
+    def _convert_dict_params(self, data: Mapping, type_keys: type, type_values: type) -> dict[Any, Any]:
         keys = self._convert_list_params(data.keys(), type_keys)
         values = self._convert_list_params(data.values(), type_values)
         return dict(zip(keys, values))
 
-    def _convert_model_ref(self, data: Any, type_field: Type) -> Any:
+    def _convert_model_ref(self, data: Any, type_field: type) -> Any:
         inner_type = get_args(type_field)[0]
         if not is_aggregate_type(inner_type):
             raise MinosMalformedAttributeException(
@@ -288,7 +285,7 @@ class AvroDataDecoder:
 
         return self._cast_value(Union[inner_type, UUID], data)
 
-    def _convert_list_params(self, data: Iterable, type_params: Type) -> list[Any]:
+    def _convert_list_params(self, data: Iterable, type_params: type) -> list[Any]:
         """
         check if the parameters list are equal to @type_params type
         """
