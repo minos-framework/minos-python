@@ -141,7 +141,6 @@ History
 * Small inmprovements
 * Bugfixes
 
-
 0.1.9 (2021-08-17)
 --------------------
 
