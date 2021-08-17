@@ -13,7 +13,7 @@ from uuid import (
 from minos.common import (
     Action,
     AggregateDiff,
-    Difference,
+    Diff,
     FieldsDiff,
 )
 from tests.aggregate_classes import (
@@ -42,7 +42,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            fields_diff=FieldsDiff([Difference("doors", int, 5), Difference("color", str, "yellow")]),
+            fields_diff=FieldsDiff([Diff("doors", int, 5), Diff("color", str, "yellow")]),
         )
         observed = self.final.diff(self.initial)
         self.assertEqual(expected, observed)
@@ -53,7 +53,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            fields_diff=FieldsDiff([Difference("doors", int, 5), Difference("color", str, "yellow")]),
+            fields_diff=FieldsDiff([Diff("doors", int, 5), Diff("color", str, "yellow")]),
         )
         self.initial.apply_diff(diff)
         self.assertEqual(self.final, self.initial)
@@ -64,7 +64,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            fields_diff=FieldsDiff([Difference("doors", int, 5), Difference("color", str, "yellow")]),
+            fields_diff=FieldsDiff([Diff("doors", int, 5), Diff("color", str, "yellow")]),
         )
         with self.assertRaises(ValueError):
             self.initial.apply_diff(diff)
@@ -75,7 +75,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            fields_diff=FieldsDiff([Difference("doors", int, 5)]),
+            fields_diff=FieldsDiff([Diff("doors", int, 5)]),
         )
         self.assertEqual(5, diff.doors)
 

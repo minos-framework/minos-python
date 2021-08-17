@@ -26,9 +26,9 @@ from ...actions import (
     Action,
 )
 from ...dynamic import (
-    Difference,
+    Diff,
     FieldsDiff,
-    IncrementalDifference,
+    IncrementalDiff,
 )
 from ..abc import (
     DeclarativeModel,
@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 class AggregateDiff(DeclarativeModel):
-    """Aggregate Difference class."""
+    """Aggregate Diff class."""
 
     uuid: UUID
     name: str
@@ -60,7 +60,7 @@ class AggregateDiff(DeclarativeModel):
             raise exc
 
     @property
-    def differences(self) -> dict[str, Union[Difference, list[IncrementalDifference]]]:
+    def differences(self) -> dict[str, Union[Diff, list[IncrementalDiff]]]:
         """Ge the differences.
 
         :return: A dictionary of differences.

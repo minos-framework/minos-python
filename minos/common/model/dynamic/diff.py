@@ -47,8 +47,8 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-class Difference(Model, Generic[T]):
-    """Difference class."""
+class Diff(Model, Generic[T]):
+    """Diff class."""
 
     name: str
     value: T
@@ -57,20 +57,20 @@ class Difference(Model, Generic[T]):
         super().__init__([Field("name", str, name), Field("value", type_, value)])
 
     @classmethod
-    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> Difference:
+    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> Diff:
         """Build a new instance from model type.
 
         :param model_type: The model type.
         :param args: Additional positional. arguments.
         :param kwargs: Additional named arguments.
-        :return: A new ``Difference`` instance.
+        :return: A new ``Diff`` instance.
         """
         kwargs["type_"] = model_type.type_hints["value"]
         return cls(*args, **kwargs)
 
 
-class IncrementalDifference(Difference, Generic[T]):
-    """Incremental Difference class."""
+class IncrementalDiff(Diff, Generic[T]):
+    """Incremental Diff class."""
 
     action: Action
 
@@ -81,9 +81,9 @@ class IncrementalDifference(Difference, Generic[T]):
 class FieldsDiff(BucketModel):
     """FieldsDiff class."""
 
-    def __init__(self, fields: list[Difference], **kwargs):
+    def __init__(self, fields: list[Diff], **kwargs):
         if isinstance(fields, list):
-            fields = [Field(self.generate_random_str(), Difference, v) for v in fields]
+            fields = [Field(self.generate_random_str(), Diff, v) for v in fields]
         super().__init__(fields, **kwargs)
 
         mapper = defaultdict(list)
@@ -106,7 +106,7 @@ class FieldsDiff(BucketModel):
         return type(self) == type(other) and self.differences == other.differences
 
     @property
-    def differences(self) -> dict[str, Union[Difference, list[IncrementalDifference]]]:
+    def differences(self) -> dict[str, Union[Diff, list[IncrementalDiff]]]:
         """Ge the differences.
 
         :return: A dictionary of differences.
@@ -136,7 +136,7 @@ class FieldsDiff(BucketModel):
         return cls(differences)
 
     @staticmethod
-    def _diff(a: dict[str, Field], b: dict[str, Field]) -> list[Difference]:
+    def _diff(a: dict[str, Field], b: dict[str, Field]) -> list[Diff]:
         from ..declarative import (
             EntitySet,
             EntitySetDiff,
@@ -150,17 +150,13 @@ class FieldsDiff(BucketModel):
                 if isinstance(a_field.value, EntitySet):
                     diffs = EntitySetDiff.from_difference(a_field.value, b[a_name].value).diffs
                     for diff in diffs:
-                        differences.append(
-                            IncrementalDifference(a_name, get_args(a_field.type)[0], diff.entity, diff.action)
-                        )
+                        differences.append(IncrementalDiff(a_name, get_args(a_field.type)[0], diff.entity, diff.action))
                 elif isinstance(a_field.value, ValueObjectSet):
                     diffs = ValueObjectSetDiff.from_difference(a_field.value, b[a_name].value).diffs
                     for diff in diffs:
-                        differences.append(
-                            IncrementalDifference(a_name, get_args(a_field.type)[0], diff.entity, diff.action)
-                        )
+                        differences.append(IncrementalDiff(a_name, get_args(a_field.type)[0], diff.entity, diff.action))
                 else:
-                    differences.append(Difference(a_name, a_field.type, a_field.value))
+                    differences.append(Diff(a_name, a_field.type, a_field.value))
 
         return differences
 
@@ -178,7 +174,7 @@ class FieldsDiff(BucketModel):
 
         differences = list()
         for field in model.fields.values():
-            differences.append(Difference(field.name, field.type, field.value))
+            differences.append(Diff(field.name, field.type, field.value))
 
         differences = [difference for difference in differences if difference.name not in ignore]
         return cls(differences)

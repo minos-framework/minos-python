@@ -33,10 +33,10 @@ from .declarative import (
 from .dynamic import (
     BucketModel,
     DataTransferObject,
-    Difference,
+    Diff,
     DynamicModel,
     FieldsDiff,
-    IncrementalDifference,
+    IncrementalDiff,
 )
 from .fields import (
     Field,

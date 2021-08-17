@@ -220,7 +220,7 @@ class Aggregate(Entity):
 
     async def _send_update_events(self, diff: AggregateDiff):
         from ...dynamic import (
-            IncrementalDifference,
+            IncrementalDiff,
         )
 
         futures = [self._broker.send(diff, topic=f"{type(self).__name__}Updated")]
@@ -228,7 +228,7 @@ class Aggregate(Entity):
         for aggr in diff.decompose():
             difference = next(iter(aggr.fields_diff)).value
             topic = f"{type(self).__name__}Updated.{difference.name}"
-            if isinstance(difference, IncrementalDifference):
+            if isinstance(difference, IncrementalDiff):
                 topic += f".{difference.action.value}"
             futures.append(self._broker.send(aggr, topic=topic))
 
@@ -310,13 +310,13 @@ class Aggregate(Entity):
                 f"To apply the difference, it must have same uuid. " f"Expected: {self.uuid!r} Obtained: {diff.uuid!r}"
             )
         from ...dynamic import (
-            IncrementalDifference,
+            IncrementalDiff,
         )
 
         logger.debug(f"Applying {diff!r} to {self!r}...")
         for field in diff.fields_diff:
             difference = field.value
-            if isinstance(difference, IncrementalDifference):
+            if isinstance(difference, IncrementalDiff):
                 container = getattr(self, difference.name)
                 if difference.action.is_delete:
                     container.discard(difference.value)
