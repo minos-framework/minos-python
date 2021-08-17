@@ -101,12 +101,12 @@ class MinosSnapshotNotProvidedException(MinosSnapshotException):
 class MinosPreviousVersionSnapshotException(MinosSnapshotException):
     """Exception to be raised when current version is newer than the one to be processed."""
 
-    def __init__(self, previous: Aggregate, diff: AggregateDiff):
+    def __init__(self, previous: Aggregate, aggregate_diff: AggregateDiff):
         self.previous = previous
-        self.diff = diff
+        self.aggregate_diff = aggregate_diff
         super().__init__(
             f"Version for {repr(previous.classname)} aggregate must be "
-            f"greater than {previous.version}. Obtained: {diff.version}"
+            f"greater than {previous.version}. Obtained: {aggregate_diff.version}"
         )
 
 
