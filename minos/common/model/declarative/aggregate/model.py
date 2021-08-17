@@ -48,7 +48,7 @@ from ....snapshot import (
     MinosSnapshot,
 )
 from ...dynamic import (
-    IncrementalDiff,
+    IncrementalFieldDiff,
 )
 from ..entities import (
     Entity,
@@ -227,7 +227,7 @@ class Aggregate(Entity):
         for decomposed_aggregate_diff in aggregate_diff.decompose():
             diff = next(decomposed_aggregate_diff.fields_diff.values())
             topic = f"{type(self).__name__}Updated.{diff.name}"
-            if isinstance(diff, IncrementalDiff):
+            if isinstance(diff, IncrementalFieldDiff):
                 topic += f".{diff.action.value}"
             futures.append(self._broker.send(decomposed_aggregate_diff, topic=topic))
 
@@ -294,14 +294,14 @@ class Aggregate(Entity):
         Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``uuid`` value.
 
         :param another: Another ``Aggregate`` instance.
-        :return: An ``FieldsDiff`` instance.
+        :return: An ``FieldDiffContainer`` instance.
         """
         return AggregateDiff.from_difference(self, another)
 
     def apply_diff(self, aggregate_diff: AggregateDiff) -> NoReturn:
         """Apply the differences over the instance.
 
-        :param aggregate_diff: The ``FieldsDiff`` containing the values to be set.
+        :param aggregate_diff: The ``FieldDiffContainer`` containing the values to be set.
         :return: This method does not return anything.
         """
         if self.uuid != aggregate_diff.uuid:
@@ -312,7 +312,7 @@ class Aggregate(Entity):
 
         logger.debug(f"Applying {aggregate_diff!r} to {self!r}...")
         for diff in aggregate_diff.fields_diff.values():
-            if isinstance(diff, IncrementalDiff):
+            if isinstance(diff, IncrementalFieldDiff):
                 container = getattr(self, diff.name)
                 if diff.action.is_delete:
                     container.discard(diff.value)

@@ -13,8 +13,8 @@ from typing import (
 from minos.common import (
     Action,
     AggregateDiff,
-    Diff,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
     InMemoryRepository,
     InMemorySnapshot,
     ModelRef,
@@ -40,11 +40,11 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=1,
                             action=Action.CREATE,
-                            fields_diff=FieldsDiff(
+                            fields_diff=FieldDiffContainer(
                                 [
-                                    Diff("doors", int, 3),
-                                    Diff("color", str, "blue"),
-                                    Diff("owner", Optional[list[ModelRef[Owner]]], None),
+                                    FieldDiff("doors", int, 3),
+                                    FieldDiff("color", str, "blue"),
+                                    FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
                                 ]
                             ),
                         ),
@@ -68,7 +68,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            fields_diff=FieldsDiff([Diff("color", str, "red")]),
+                            fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
                         ),
                         "topic": "CarUpdated",
                     },
@@ -78,7 +78,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            fields_diff=FieldsDiff([Diff("color", str, "red")]),
+                            fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
                         ),
                         "topic": "CarUpdated.color",
                     },
@@ -100,7 +100,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.DELETE,
-                            fields_diff=FieldsDiff.empty(),
+                            fields_diff=FieldDiffContainer.empty(),
                         ),
                         "topic": "CarDeleted",
                     }

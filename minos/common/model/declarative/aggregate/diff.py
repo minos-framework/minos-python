@@ -25,7 +25,7 @@ from ...actions import (
     Action,
 )
 from ...dynamic import (
-    FieldsDiff,
+    FieldDiffContainer,
 )
 from ..abc import (
     DeclarativeModel,
@@ -46,7 +46,7 @@ class AggregateDiff(DeclarativeModel):
     name: str
     version: int
     action: Action
-    fields_diff: FieldsDiff
+    fields_diff: FieldDiffContainer
 
     def __getattr__(self, item: str) -> Any:
         try:
@@ -75,7 +75,7 @@ class AggregateDiff(DeclarativeModel):
 
         old, new = sorted([a, b], key=attrgetter("version"))
 
-        fields_diff = FieldsDiff.from_difference(a, b, ignore={"uuid", "version"})
+        fields_diff = FieldDiffContainer.from_difference(a, b, ignore={"uuid", "version"})
 
         return cls(new.uuid, new.classname, new.version, action, fields_diff)
 
@@ -88,7 +88,7 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
 
-        fields_diff = FieldsDiff.from_model(aggregate, ignore={"uuid", "version"})
+        fields_diff = FieldDiffContainer.from_model(aggregate, ignore={"uuid", "version"})
         return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, fields_diff)
 
     @classmethod
@@ -99,7 +99,7 @@ class AggregateDiff(DeclarativeModel):
         :param action: The action to that generates the aggregate difference.
         :return: An ``AggregateDiff`` instance.
         """
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, FieldsDiff.empty())
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, FieldDiffContainer.empty())
 
     def decompose(self) -> list[AggregateDiff]:
         """Decompose AggregateDiff Fields into AggregateDiff with once Field.
@@ -107,6 +107,6 @@ class AggregateDiff(DeclarativeModel):
         :return: An list of``AggregateDiff`` instances.
         """
         return [
-            AggregateDiff(self.uuid, self.name, self.version, self.action, FieldsDiff([diff]))
+            AggregateDiff(self.uuid, self.name, self.version, self.action, FieldDiffContainer([diff]))
             for diff in self.fields_diff.values()
         ]

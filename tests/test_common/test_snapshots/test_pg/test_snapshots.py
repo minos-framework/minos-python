@@ -20,8 +20,8 @@ from dependency_injector import (
 )
 
 from minos.common import (
-    Diff,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
     MinosConfigException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
@@ -152,7 +152,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             self.assertIsInstance(obs.updated_at, datetime)
 
     async def _populate(self):
-        diff = FieldsDiff([Diff("doors", int, 3), Diff("color", str, "blue")])
+        diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:
