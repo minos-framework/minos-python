@@ -26,37 +26,37 @@ from .model_types import (
 )
 
 
-def is_model_subclass(type_field: Any) -> bool:
+def is_model_subclass(type_: type) -> bool:
     """Check if the given type field is subclass of ``Model``."""
     from ..abc import (
         Model,
     )
 
-    if not is_type_subclass(type_field):
-        type_field = get_origin(type_field)
-    return is_type_subclass(type_field) and issubclass(type_field, Model)
+    if not is_type_subclass(type_):
+        type_ = get_origin(type_)
+    return is_type_subclass(type_) and issubclass(type_, Model)
 
 
-def is_type_subclass(type_field: Any) -> bool:
+def is_type_subclass(type_: type) -> bool:
     """Check if the given type field is subclass of ``type``."""
-    return issubclass(type(type_field), type(type))
+    return issubclass(type(type_), type(type))
 
 
-def is_model_type(type_field: Any):
+def is_model_type(type_: type):
     """Check if the given type is a model instance."""
     from ..abc import (
         Model,
     )
 
-    return isinstance(type_field, Model)
+    return isinstance(type_, Model)
 
 
-def is_aggregate_type(type_field: Any) -> bool:
+def is_aggregate_type(type_: type) -> bool:
     """Check if the given type follows the ``Aggregate`` protocol."""
-    return (is_model_subclass(type_field) or isinstance(type_field, ModelType)) and {
+    return (is_model_subclass(type_) or isinstance(type_, ModelType)) and {
         "uuid": UUID,
         "version": int,
-    }.items() <= type_field.type_hints.items()
+    }.items() <= type_.type_hints.items()
 
 
 logger = logging.getLogger(__name__)
