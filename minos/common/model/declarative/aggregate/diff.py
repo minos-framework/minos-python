@@ -117,12 +117,7 @@ class AggregateDiff(DeclarativeModel):
 
         :return: An list of``AggregateDiff`` instances.
         """
-        decomposed = []
-        fields = self.fields_diff
-
-        for field in fields:
-            diff_field = FieldsDiff({field.name: field})
-            aggr_diff = AggregateDiff(self.uuid, self.name, self.version, self.action, diff_field)
-            decomposed.append(aggr_diff)
-
-        return decomposed
+        return [
+            AggregateDiff(self.uuid, self.name, self.version, self.action, FieldsDiff(fields=[field]))
+            for field in self.fields_diff
+        ]

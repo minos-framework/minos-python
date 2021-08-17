@@ -16,6 +16,7 @@ from collections import (
 from typing import (
     Any,
     Generic,
+    Iterable,
     Optional,
     Type,
     TypeVar,
@@ -81,9 +82,9 @@ class IncrementalDiff(Diff, Generic[T]):
 class FieldsDiff(BucketModel):
     """FieldsDiff class."""
 
-    def __init__(self, fields: list[Diff], **kwargs):
-        if isinstance(fields, list):
-            fields = [Field(self.generate_random_str(), Diff, v) for v in fields]
+    def __init__(self, diffs: list[Diff] = None, fields: Union[Iterable[Field], dict[str, Field]] = None, **kwargs):
+        if diffs is not None:
+            fields = [Field(self.generate_random_str(), Diff, v) for v in diffs]
         super().__init__(fields, **kwargs)
 
         mapper = defaultdict(list)
