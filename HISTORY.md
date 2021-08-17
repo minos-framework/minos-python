@@ -140,3 +140,16 @@ History
 * Connection Pool improvement for async
 * Small inmprovements
 * Bugfixes
+
+
+0.1.9 (2021-08-17)
+--------------------
+
+* Add `minos.common.Entity`.
+* Refactor `minos.common.AggregateDiff.fields_diff`:
+  * Support incremental field differences over `EntitySet` and `ValueObjectSet`.
+  * Add `FieldDiff`, `IncrementalFieldDiff` and `FieldDiffContainer`.
+* Now `Model` inherits from `collections.abc.Mapping`.
+* Add support for `typing.Generic` and `typing.TypeVar`.
+* Bugfixes
+
