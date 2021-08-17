@@ -47,6 +47,9 @@ from ....repository import (
 from ....snapshot import (
     MinosSnapshot,
 )
+from ...dynamic import (
+    IncrementalDiff,
+)
 from ..entities import (
     Entity,
 )
@@ -177,7 +180,7 @@ class Aggregate(Entity):
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
 
-        instance = cls(*args, _broker=_broker, _repository=_repository, **kwargs)
+        instance: T = cls(*args, _broker=_broker, _repository=_repository, **kwargs)
 
         diff = AggregateDiff.from_aggregate(instance)
         entry = await instance._repository.create(diff)
@@ -219,10 +222,6 @@ class Aggregate(Entity):
         return self
 
     async def _send_update_events(self, aggregate_diff: AggregateDiff):
-        from ...dynamic import (
-            IncrementalDiff,
-        )
-
         futures = [self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Updated")]
 
         for decomposed_aggregate_diff in aggregate_diff.decompose():
@@ -310,9 +309,6 @@ class Aggregate(Entity):
                 f"To apply the difference, it must have same uuid. "
                 f"Expected: {self.uuid!r} Obtained: {aggregate_diff.uuid!r}"
             )
-        from ...dynamic import (
-            IncrementalDiff,
-        )
 
         logger.debug(f"Applying {aggregate_diff!r} to {self!r}...")
         for diff in aggregate_diff.fields_diff.values():
