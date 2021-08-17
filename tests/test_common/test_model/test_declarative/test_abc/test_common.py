@@ -207,16 +207,20 @@ class TestDeclarativeModel(unittest.TestCase):
         a, b = User(123), User(456)
         self.assertNotEqual(a, b)
 
-    def test_list(self):
+    def test_iter_list(self):
         user = User(123)
         expected = ["id", "username"]
 
         self.assertEqual(expected, list(user))
 
-    def test_dict(self):
+    def test_iter_dict(self):
         user = User(123)
         expected = {"id": 123, "username": None}
         self.assertEqual(expected, dict(user))
+
+    def test_len(self):
+        user = User(123)
+        self.assertEqual(2, len(user))
 
     def test_hash(self):
         user = User(123)

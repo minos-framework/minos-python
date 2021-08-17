@@ -273,8 +273,7 @@ class Model(Mapping):
     def __hash__(self) -> int:
         return hash(tuple(self.fields.values()))
 
-    def __iter__(self) -> Iterable:
-        # noinspection PyRedundantParentheses
+    def __iter__(self) -> Iterable[str]:
         yield from self.fields.keys()
 
     def __getitem__(self, item: str) -> Any:
