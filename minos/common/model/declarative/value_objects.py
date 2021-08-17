@@ -25,6 +25,9 @@ from typing import (
 from ...exceptions import (
     MinosImmutableClassException,
 )
+from ..abc import (
+    Model,
+)
 from ..actions import (
     Action,
 )
@@ -35,8 +38,6 @@ from .abc import (
     DeclarativeModel,
 )
 
-T = TypeVar("T")
-
 
 class ValueObject(DeclarativeModel):
     """Value Object class."""
@@ -46,6 +47,9 @@ class ValueObject(DeclarativeModel):
             super().__setattr__(key, value)
         else:
             raise MinosImmutableClassException("modification of an immutable value object not allowed")
+
+
+T = TypeVar("T", bound=Model)
 
 
 class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):

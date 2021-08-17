@@ -71,7 +71,7 @@ class AvroSchemaEncoder:
         :param field: The model field.
         :return: A new avro schema builder instance.
         """
-        return cls(field.name, field.real_type)
+        return cls(field.name, field.type)
 
     def build(self) -> dict[str, Any]:
         """Build the avro schema for the given field.

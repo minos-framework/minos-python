@@ -12,7 +12,9 @@ from .bucket import (
     BucketModel,
 )
 from .diff import (
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
 )
 from .dto import (
     DataTransferObject,

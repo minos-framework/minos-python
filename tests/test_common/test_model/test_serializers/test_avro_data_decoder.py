@@ -366,6 +366,13 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(entities, observed)
 
+    def test_entity_set_empty(self):
+        entities = EntitySet()
+        decoder = AvroDataDecoder("test", EntitySet[FakeEntity])
+        observed = decoder.build(entities)
+
+        self.assertEqual(entities, observed)
+
     def test_entity_set_raises(self):
         raw = {FakeEntity("John"), FakeEntity("Michael")}
         entities = EntitySet(raw)

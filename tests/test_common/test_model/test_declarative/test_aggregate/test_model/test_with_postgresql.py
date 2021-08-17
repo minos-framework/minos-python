@@ -8,15 +8,20 @@ Minos framework can not be copied and/or distributed without the express permiss
 import unittest
 
 from minos.common import (
+    EntitySet,
     MinosSnapshotDeletedAggregateException,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
+    ValueObjectSet,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from tests.aggregate_classes import (
     Car,
+    Order,
+    OrderItem,
+    Review,
 )
 from tests.utils import (
     BASE_PATH,
@@ -67,6 +72,42 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
             await car.delete()
             with self.assertRaises(MinosSnapshotDeletedAggregateException):
                 await Car.get_one(car.uuid, **self.kwargs)
+
+    async def test_entity_set_value_object_set(self):
+        async with self.event_broker, self.repository, self.snapshot:
+            order = await Order.create(products=EntitySet(), reviews=ValueObjectSet(), **self.kwargs)
+            item = OrderItem(24)
+            order.products.add(item)
+
+            await order.save()
+
+            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            self.assertEqual(order, recovered)
+
+            item.amount = 36
+            order.products.add(item)
+            await order.save()
+
+            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            self.assertEqual(order, recovered)
+
+            order.products.remove(item)
+            await order.save()
+
+            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            self.assertEqual(order, recovered)
+
+            order.reviews.add(Review("GoodReview"))
+            await order.save()
+
+            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            self.assertEqual(order, recovered)
+
+            order.reviews.discard(Review("GoodReview"))
+            await order.save()
+
+            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            self.assertEqual(order, recovered)
 
 
 if __name__ == "__main__":

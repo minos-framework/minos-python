@@ -47,6 +47,9 @@ from ....repository import (
 from ....snapshot import (
     MinosSnapshot,
 )
+from ...dynamic import (
+    IncrementalFieldDiff,
+)
 from ..entities import (
     Entity,
 )
@@ -177,7 +180,7 @@ class Aggregate(Entity):
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
 
-        instance = cls(*args, _broker=_broker, _repository=_repository, **kwargs)
+        instance: T = cls(*args, _broker=_broker, _repository=_repository, **kwargs)
 
         diff = AggregateDiff.from_aggregate(instance)
         entry = await instance._repository.create(diff)
@@ -208,23 +211,25 @@ class Aggregate(Entity):
         previous = await self.get_one(
             self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
-        diff = AggregateDiff.from_difference(self, previous)
-        entry = await self._repository.update(diff)
+        aggregate_diff = AggregateDiff.from_difference(self, previous)
+        entry = await self._repository.update(aggregate_diff)
 
         self.uuid, self.version = entry.aggregate_uuid, entry.version
-        diff.uuid, diff.version = entry.aggregate_uuid, entry.version
+        aggregate_diff.uuid, aggregate_diff.version = entry.aggregate_uuid, entry.version
 
-        await self._send_update_events(diff)
+        await self._send_update_events(aggregate_diff)
 
         return self
 
-    async def _send_update_events(self, diff: AggregateDiff):
+    async def _send_update_events(self, aggregate_diff: AggregateDiff):
+        futures = [self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Updated")]
 
-        futures = [self._broker.send(diff, topic=f"{type(self).__name__}Updated")]
-
-        for aggr in diff.decompose():
-            topic = f"{type(self).__name__}Updated.{list(aggr.fields_diff.fields.keys())[0]}"
-            futures.append(self._broker.send(aggr, topic=topic))
+        for decomposed_aggregate_diff in aggregate_diff.decompose():
+            diff = next(decomposed_aggregate_diff.fields_diff.values())
+            topic = f"{type(self).__name__}Updated.{diff.name}"
+            if isinstance(diff, IncrementalFieldDiff):
+                topic += f".{diff.action.value}"
+            futures.append(self._broker.send(decomposed_aggregate_diff, topic=topic))
 
         await gather(*futures)
 
@@ -289,37 +294,45 @@ class Aggregate(Entity):
         Both ``Aggregate`` instances (``self`` and ``another``) must share the same ``uuid`` value.
 
         :param another: Another ``Aggregate`` instance.
-        :return: An ``FieldsDiff`` instance.
+        :return: An ``FieldDiffContainer`` instance.
         """
         return AggregateDiff.from_difference(self, another)
 
-    def apply_diff(self, difference: AggregateDiff) -> NoReturn:
+    def apply_diff(self, aggregate_diff: AggregateDiff) -> NoReturn:
         """Apply the differences over the instance.
 
-        :param difference: The ``FieldsDiff`` containing the values to be set.
+        :param aggregate_diff: The ``FieldDiffContainer`` containing the values to be set.
         :return: This method does not return anything.
         """
-        if self.uuid != difference.uuid:
+        if self.uuid != aggregate_diff.uuid:
             raise ValueError(
                 f"To apply the difference, it must have same uuid. "
-                f"Expected: {self.uuid!r} Obtained: {difference.uuid!r}"
+                f"Expected: {self.uuid!r} Obtained: {aggregate_diff.uuid!r}"
             )
-        logger.debug(f"Applying {difference!r} to {self!r}...")
-        for field in difference.fields_diff:
-            setattr(self, field.name, field.value)
-        self.version = difference.version
+
+        logger.debug(f"Applying {aggregate_diff!r} to {self!r}...")
+        for diff in aggregate_diff.fields_diff.values():
+            if isinstance(diff, IncrementalFieldDiff):
+                container = getattr(self, diff.name)
+                if diff.action.is_delete:
+                    container.discard(diff.value)
+                else:
+                    container.add(diff.value)
+            else:
+                setattr(self, diff.name, diff.value)
+        self.version = aggregate_diff.version
 
     @classmethod
-    def from_diff(cls: Type[T], difference: AggregateDiff, *args, **kwargs) -> T:
+    def from_diff(cls: Type[T], aggregate_diff: AggregateDiff, *args, **kwargs) -> T:
         """Build a new instance from an ``AggregateDiff``.
 
-        :param difference: The difference that contains the data.
+        :param aggregate_diff: The difference that contains the data.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        # noinspection PyArgumentList
-        return cls(*args, uuid=difference.uuid, version=difference.version, **difference.fields_diff, **kwargs)
+        values = {diff.name: diff.value for diff in aggregate_diff.fields_diff.values()}
+        return cls(*args, uuid=aggregate_diff.uuid, version=aggregate_diff.version, **values, **kwargs)
 
 
 T = TypeVar("T", bound=Aggregate)

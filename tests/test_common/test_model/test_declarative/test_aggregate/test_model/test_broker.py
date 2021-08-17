@@ -13,8 +13,8 @@ from typing import (
 from minos.common import (
     Action,
     AggregateDiff,
-    Field,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
     InMemoryRepository,
     InMemorySnapshot,
     ModelRef,
@@ -40,12 +40,12 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=1,
                             action=Action.CREATE,
-                            fields_diff=FieldsDiff(
-                                {
-                                    "doors": Field("doors", int, 3),
-                                    "color": Field("color", str, "blue"),
-                                    "owner": Field("owner", Optional[list[ModelRef[Owner]]], None),
-                                }
+                            fields_diff=FieldDiffContainer(
+                                [
+                                    FieldDiff("doors", int, 3),
+                                    FieldDiff("color", str, "blue"),
+                                    FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
+                                ]
                             ),
                         ),
                         "topic": "CarCreated",
@@ -68,7 +68,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
+                            fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
                         ),
                         "topic": "CarUpdated",
                     },
@@ -78,7 +78,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.UPDATE,
-                            fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
+                            fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
                         ),
                         "topic": "CarUpdated.color",
                     },
@@ -100,7 +100,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             name=Car.classname,
                             version=2,
                             action=Action.DELETE,
-                            fields_diff=FieldsDiff.empty(),
+                            fields_diff=FieldDiffContainer.empty(),
                         ),
                         "topic": "CarDeleted",
                     }
