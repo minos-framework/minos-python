@@ -83,10 +83,8 @@ class DeclarativeModel(Model):
         else:
             cls = type(self_or_cls)
         for b in cls.__mro__[::-1]:
-            base_fields = getattr(b, "_fields", None)
-            if base_fields is not None:
-                list_fields = {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
-                fields |= list_fields
+            list_fields = {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
+            fields |= list_fields
         logger.debug(f"The obtained fields are: {fields!r}")
         fields |= super()._type_hints()
         yield from fields.items()

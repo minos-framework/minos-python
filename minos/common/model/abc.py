@@ -65,7 +65,7 @@ logger = logging.getLogger(__name__)
 class Model(Mapping):
     """Base class for ``minos`` model entities."""
 
-    _fields: dict[str, Field] = {}
+    _fields: dict[str, Field]
 
     def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
         """Class constructor.
@@ -218,17 +218,15 @@ class Model(Mapping):
         return self._fields
 
     def __setattr__(self, key: str, value: Any) -> NoReturn:
-        if self._fields is not None and key in self._fields:
-            field_class: Field = self._fields[key]
-            field_class.value = value
-            self._fields[key] = field_class
-        elif key.startswith("_"):
+        if key.startswith("_"):
             super().__setattr__(key, value)
+        elif key in self._fields:
+            self._fields[key].value = value
         else:
             raise MinosModelException(f"model attribute {key} doesn't exist")
 
     def __getattr__(self, item: str) -> Any:
-        if self._fields is not None and item in self._fields:
+        if item in self._fields:
             return self._fields[item].value
         else:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
