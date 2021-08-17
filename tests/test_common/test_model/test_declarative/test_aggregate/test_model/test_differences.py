@@ -11,10 +11,10 @@ from uuid import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
-    Field,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
 )
 from tests.aggregate_classes import (
     Car,
@@ -41,8 +41,8 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid,
             name=Car.classname,
             version=3,
-            action=AggregateAction.UPDATE,
-            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
+            action=Action.UPDATE,
+            fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         observed = self.final.diff(self.initial)
         self.assertEqual(expected, observed)
@@ -52,8 +52,8 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid,
             name=Car.classname,
             version=3,
-            action=AggregateAction.UPDATE,
-            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
+            action=Action.UPDATE,
+            fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         self.initial.apply_diff(diff)
         self.assertEqual(self.final, self.initial)
@@ -63,11 +63,28 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             uuid=self.uuid_another,
             name=Car.classname,
             version=3,
-            action=AggregateAction.UPDATE,
-            fields_diff=FieldsDiff({"doors": Field("doors", int, 5), "color": Field("color", str, "yellow")}),
+            action=Action.UPDATE,
+            fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         with self.assertRaises(ValueError):
             self.initial.apply_diff(diff)
+
+    def test_get_attr(self):
+        diff = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=3,
+            action=Action.UPDATE,
+            fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5)]),
+        )
+        self.assertEqual(5, diff.doors)
+
+    def test_get_attr_raises(self):
+        diff = AggregateDiff(
+            uuid=self.uuid, name=Car.classname, version=3, action=Action.UPDATE, fields_diff=FieldDiffContainer.empty(),
+        )
+        with self.assertRaises(AttributeError):
+            diff.doors
 
 
 if __name__ == "__main__":

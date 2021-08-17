@@ -11,9 +11,14 @@ from .abc import (
 )
 from .aggregate import (
     Aggregate,
-    AggregateAction,
     AggregateDiff,
     AggregateRef,
+)
+from .entities import (
+    Entity,
+    EntitySet,
+    EntitySetDiff,
+    EntitySetDiffEntry,
 )
 from .networks import (
     Command,
@@ -21,6 +26,9 @@ from .networks import (
     CommandStatus,
     Event,
 )
-from .value_object import (
+from .value_objects import (
     ValueObject,
+    ValueObjectSet,
+    ValueObjectSetDiff,
+    ValueObjectSetDiffEntry,
 )

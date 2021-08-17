@@ -8,24 +8,35 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .abc import (
     Model,
 )
+from .actions import (
+    Action,
+)
 from .declarative import (
     Aggregate,
-    AggregateAction,
     AggregateDiff,
     AggregateRef,
     Command,
     CommandReply,
     CommandStatus,
     DeclarativeModel,
+    Entity,
+    EntitySet,
+    EntitySetDiff,
+    EntitySetDiffEntry,
     Event,
     MinosModel,
     ValueObject,
+    ValueObjectSet,
+    ValueObjectSetDiff,
+    ValueObjectSetDiffEntry,
 )
 from .dynamic import (
     BucketModel,
     DataTransferObject,
     DynamicModel,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
 )
 from .fields import (
     Field,
@@ -38,9 +49,7 @@ from .serializers import (
     AvroSchemaEncoder,
 )
 from .types import (
-    Decimal,
-    Enum,
-    Fixed,
+    GenericTypeProjector,
     MissingSentinel,
     ModelRef,
     ModelRefExtractor,

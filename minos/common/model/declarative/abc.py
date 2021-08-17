@@ -15,8 +15,9 @@ from itertools import (
 )
 from typing import (
     Any,
-    Generic,
+    Iterator,
     NoReturn,
+    Type,
     TypeVar,
     get_type_hints,
 )
@@ -37,10 +38,8 @@ from ..types import (
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
 
-
-class DeclarativeModel(Model, Generic[T]):
+class DeclarativeModel(Model):
     """Base class for ``minos`` declarative model entities."""
 
     def __init__(self, *args, **kwargs):
@@ -49,20 +48,21 @@ class DeclarativeModel(Model, Generic[T]):
         :param kwargs: Named arguments to be set as model attributes.
         """
         super().__init__()
-        self._list_fields(*args, **kwargs)
+        self._build_fields(*args, **kwargs)
 
     # noinspection PyUnusedLocal
     @classmethod
-    def from_model_type(cls, model_type: ModelType, data: dict[str, Any]):
-        """Build a ``DeclarativeModel`` from a ``ModelType`` and ``data``.
+    def from_model_type(cls: Type[T], model_type: ModelType, *args, **kwargs) -> T:
+        """Build a ``DeclarativeModel`` from a ``ModelType``.
 
-        :param model_type: ``ModelType`` object containing the DTO's structure
-        :param data: A dictionary containing the values to be stored on the DTO.
+        :param model_type: ``ModelType`` object containing the model structure.
+        :param args: Positional arguments to be passed to the model constructor.
+        :param kwargs: Named arguments to be passed to the model constructor.
         :return: A new ``DeclarativeModel`` instance.
         """
-        return cls(**data)
+        return cls(*args, **kwargs)
 
-    def _list_fields(self, *args, **kwargs) -> NoReturn:
+    def _build_fields(self, *args, **kwargs) -> NoReturn:
         for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
             if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
@@ -76,20 +76,19 @@ class DeclarativeModel(Model, Generic[T]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def _type_hints(self_or_cls) -> dict[str, Any]:
+    def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
         fields = dict()
         if isinstance(self_or_cls, type):
             cls = self_or_cls
         else:
             cls = type(self_or_cls)
         for b in cls.__mro__[::-1]:
-            base_fields = getattr(b, "_fields", None)
-            if base_fields is not None:
-                list_fields = {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
-                fields |= list_fields
+            list_fields = {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
+            fields |= list_fields
         logger.debug(f"The obtained fields are: {fields!r}")
         fields |= super()._type_hints()
         yield from fields.items()
 
 
+T = TypeVar("T", bound=DeclarativeModel)
 MinosModel = DeclarativeModel

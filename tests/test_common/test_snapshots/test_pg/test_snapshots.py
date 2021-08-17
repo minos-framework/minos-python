@@ -20,8 +20,8 @@ from dependency_injector import (
 )
 
 from minos.common import (
-    Field,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
     MinosConfigException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
@@ -89,6 +89,15 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
         self.assertEqual(expected, observed)
 
+    async def test_get_streaming_true(self):
+        async with await self._populate() as repository:
+            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+                iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3}, streaming_mode=True)
+                observed = {v async for v in iterable}
+
+        expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
+        self.assertEqual(expected, observed)
+
     async def test_get_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
         async with await self._populate() as repository:
@@ -136,14 +145,14 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             if exp.data is None:
                 with self.assertRaises(MinosSnapshotDeletedAggregateException):
                     # noinspection PyStatementEffect
-                    obs.aggregate
+                    obs.build_aggregate()
             else:
-                self.assertEqual(exp.aggregate, obs.aggregate)
+                self.assertEqual(exp.build_aggregate(), obs.build_aggregate())
             self.assertIsInstance(obs.created_at, datetime)
             self.assertIsInstance(obs.updated_at, datetime)
 
     async def _populate(self):
-        diff = FieldsDiff({"doors": Field("doors", int, 3), "color": Field("color", str, "blue")})
+        diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
         async with PostgreSqlRepository.from_config(config=self.config) as repository:

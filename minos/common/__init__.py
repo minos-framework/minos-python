@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 from .configuration import (
     BROKER,
@@ -81,8 +81,8 @@ from .meta import (
     self_or_classmethod,
 )
 from .model import (
+    Action,
     Aggregate,
-    AggregateAction,
     AggregateDiff,
     AggregateRef,
     AvroDataDecoder,
@@ -94,14 +94,18 @@ from .model import (
     CommandReply,
     CommandStatus,
     DataTransferObject,
-    Decimal,
     DeclarativeModel,
     DynamicModel,
-    Enum,
+    Entity,
+    EntitySet,
+    EntitySetDiff,
+    EntitySetDiffEntry,
     Event,
     Field,
-    FieldsDiff,
-    Fixed,
+    FieldDiff,
+    FieldDiffContainer,
+    GenericTypeProjector,
+    IncrementalFieldDiff,
     MinosModel,
     MissingSentinel,
     Model,
@@ -114,6 +118,9 @@ from .model import (
     TypeHintBuilder,
     TypeHintComparator,
     ValueObject,
+    ValueObjectSet,
+    ValueObjectSetDiff,
+    ValueObjectSetDiffEntry,
 )
 from .networks import (
     MinosBroker,

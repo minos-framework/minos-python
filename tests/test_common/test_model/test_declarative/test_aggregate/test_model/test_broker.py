@@ -11,10 +11,10 @@ from typing import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
-    Field,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
     InMemoryRepository,
     InMemorySnapshot,
     ModelRef,
@@ -39,13 +39,13 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             uuid=car.uuid,
                             name=Car.classname,
                             version=1,
-                            action=AggregateAction.CREATE,
-                            fields_diff=FieldsDiff(
-                                {
-                                    "doors": Field("doors", int, 3),
-                                    "color": Field("color", str, "blue"),
-                                    "owner": Field("owner", Optional[list[ModelRef[Owner]]], None),
-                                }
+                            action=Action.CREATE,
+                            fields_diff=FieldDiffContainer(
+                                [
+                                    FieldDiff("doors", int, 3),
+                                    FieldDiff("color", str, "blue"),
+                                    FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
+                                ]
                             ),
                         ),
                         "topic": "CarCreated",
@@ -67,11 +67,21 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             uuid=car.uuid,
                             name=Car.classname,
                             version=2,
-                            action=AggregateAction.UPDATE,
-                            fields_diff=FieldsDiff({"color": Field("color", str, "red")}),
+                            action=Action.UPDATE,
+                            fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
                         ),
                         "topic": "CarUpdated",
-                    }
+                    },
+                    {
+                        "data": AggregateDiff(
+                            uuid=car.uuid,
+                            name=Car.classname,
+                            version=2,
+                            action=Action.UPDATE,
+                            fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
+                        ),
+                        "topic": "CarUpdated.color",
+                    },
                 ],
                 b.calls_kwargs,
             )
@@ -89,8 +99,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                             car.uuid,
                             name=Car.classname,
                             version=2,
-                            action=AggregateAction.DELETE,
-                            fields_diff=FieldsDiff.empty(),
+                            action=Action.DELETE,
+                            fields_diff=FieldDiffContainer.empty(),
                         ),
                         "topic": "CarDeleted",
                     }

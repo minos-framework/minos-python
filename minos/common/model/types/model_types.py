@@ -15,7 +15,6 @@ from typing import (
     Iterable,
     Optional,
     Type,
-    TypeVar,
     Union,
 )
 
@@ -25,13 +24,14 @@ from ...exceptions import (
 from ...importlib import (
     import_module,
 )
+from .generics import (
+    GenericTypeProjector,
+)
 
 if TYPE_CHECKING:
     from ..abc import (
         Model,
     )
-
-T = TypeVar("T")
 
 
 class ModelType(type):
@@ -39,28 +39,37 @@ class ModelType(type):
 
     name: str
     namespace: str
-    type_hints: dict[str, Type[T]]
+    type_hints: dict[str, Type]
 
     @classmethod
-    def build(mcs, name: str, type_hints: dict[str, type], namespace: Optional[str] = None) -> Type[T]:
+    def build(
+        mcs, name_: str, type_hints_: Optional[dict[str, type]] = None, *, namespace_: Optional[str] = None, **kwargs,
+    ) -> ModelType:
         """Build a new ``ModelType`` instance.
 
-        :param name: Name of the new type.
-        :param type_hints: Type hints of the new type.
-        :param namespace: Namespace of the new type.
+        :param name_: Name of the new type.
+        :param type_hints_: Type hints of the new type.
+        :param namespace_: Namespace of the new type.
+        :param kwargs: Type hints of the new type as named parameters.
         :return: A ``ModelType`` instance.
         """
-        if namespace is None:
+        if type_hints_ is not None and len(kwargs):
+            raise ValueError("Type hints can be passed in a dictionary or as named parameters, but not both.")
+
+        if type_hints_ is None:
+            type_hints_ = kwargs
+
+        if namespace_ is None:
             try:
-                namespace, name = name.rsplit(".", 1)
+                namespace_, name_ = name_.rsplit(".", 1)
             except ValueError:
-                namespace = str()
+                namespace_ = str()
 
         # noinspection PyTypeChecker
-        return mcs(name, tuple(), {"type_hints": type_hints, "namespace": namespace})
+        return mcs(name_, tuple(), {"type_hints": type_hints_, "namespace": namespace_})
 
     @classmethod
-    def from_typed_dict(mcs, typed_dict) -> Type[T]:
+    def from_typed_dict(mcs, typed_dict) -> ModelType:
         """Build a new ``ModelType`` instance from a ``typing.TypedDict``.
 
         :param typed_dict: Typed dict to be used as base.
@@ -68,8 +77,17 @@ class ModelType(type):
         """
         return mcs.build(typed_dict.__name__, typed_dict.__annotations__)
 
+    @staticmethod
+    def from_model(type_) -> ModelType:
+        """Build a new instance from model class.
+
+        :param type_: The model class.
+        :return: A new ``ModelType`` instance.
+        """
+        return ModelType.build(name_=type_.classname, type_hints_=GenericTypeProjector.from_model(type_).build())
+
     def __call__(cls, *args, **kwargs) -> Model:
-        return cls.model_cls.from_model_type(cls, kwargs)
+        return cls.model_cls.from_model_type(cls, *args, **kwargs)
 
     @property
     def model_cls(cls) -> Type[Model]:
@@ -129,20 +147,23 @@ class ModelType(type):
         )
 
     def _equal_with_model(cls, other: Any) -> bool:
-        return hasattr(other, "model_type") and cls == other.model_type
+        return hasattr(other, "model_type") and cls == ModelType.from_model(other)
 
     def _equal_with_inherited_model(cls, other: ModelType) -> bool:
         return (
             type(cls) == type(other) and cls.model_cls != other.model_cls and issubclass(cls.model_cls, other.model_cls)
         )
 
-    @staticmethod
-    def _equal_with_bucket_model(other: Any) -> bool:
+    def _equal_with_bucket_model(self, other: Any) -> bool:
         from ..dynamic import (
             BucketModel,
         )
 
-        return hasattr(other, "model_cls") and issubclass(other.model_cls, BucketModel)
+        return (
+            hasattr(other, "model_cls")
+            and issubclass(self.model_cls, other.model_cls)
+            and issubclass(other.model_cls, BucketModel)
+        )
 
     def __hash__(cls) -> int:
         return hash(tuple(cls))

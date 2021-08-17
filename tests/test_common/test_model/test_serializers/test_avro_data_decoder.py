@@ -25,6 +25,7 @@ from uuid import (
 from minos.common import (
     AvroDataDecoder,
     DataTransferObject,
+    EntitySet,
     Field,
     InMemorySnapshot,
     MinosMalformedAttributeException,
@@ -38,6 +39,8 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.model_classes import (
+    Base,
+    GenericUser,
     User,
 )
 from tests.subaggregate_classes import (
@@ -45,16 +48,25 @@ from tests.subaggregate_classes import (
 )
 from tests.utils import (
     FakeBroker,
+    FakeEntity,
     FakeRepository,
 )
 
 
 class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
-    def test_model_typ(self):
+    def test_model_type(self):
         observed = AvroDataDecoder("test", ModelType.build("Foo", {"bar": str})).build({"bar": "foobar"})
 
         self.assertIsInstance(observed, DataTransferObject)
         self.assertEqual({"bar": "foobar"}, observed.avro_data)
+
+    def test_model_type_with_inheritance(self):
+        # noinspection PyPep8Naming
+        Foo = ModelType.build("Foo", {"bar": Base})
+        decoder = AvroDataDecoder("test", Foo)
+        value = Foo(User(1234))
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
 
     def test_model_type_already_casted(self):
         value = DataTransferObject("Foo", {"bar": Field("bar", str, "foobar")})
@@ -268,6 +280,12 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         observed = decoder.build(value)
         self.assertEqual(value, observed)
 
+    def test_model_with_inheritance(self):
+        decoder = AvroDataDecoder("test", Base)
+        value = User(1234)
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
+
     def test_model_from_dict(self):
         decoder = AvroDataDecoder("test", User)
         value = User(1234)
@@ -327,6 +345,40 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         decoder = AvroDataDecoder("test", Optional[int])
         observed = decoder.build(None)
         self.assertIsNone(observed)
+
+    def test_model_generic(self):
+        value = GenericUser("foo")
+        decoder = AvroDataDecoder("test", GenericUser[str])
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
+
+    def test_model_generic_fail(self):
+        value = GenericUser("foo")
+        decoder = AvroDataDecoder("test", GenericUser[int])
+        with self.assertRaises(MinosTypeAttributeException):
+            decoder.build(value)
+
+    def test_entity_set(self):
+        raw = {FakeEntity("John"), FakeEntity("Michael")}
+        entities = EntitySet(raw)
+        decoder = AvroDataDecoder("test", EntitySet[FakeEntity])
+        observed = decoder.build(entities)
+
+        self.assertEqual(entities, observed)
+
+    def test_entity_set_empty(self):
+        entities = EntitySet()
+        decoder = AvroDataDecoder("test", EntitySet[FakeEntity])
+        observed = decoder.build(entities)
+
+        self.assertEqual(entities, observed)
+
+    def test_entity_set_raises(self):
+        raw = {FakeEntity("John"), FakeEntity("Michael")}
+        entities = EntitySet(raw)
+        decoder = AvroDataDecoder("test", EntitySet[Base])
+        with self.assertRaises(MinosTypeAttributeException):
+            decoder.build(entities)
 
 
 if __name__ == "__main__":

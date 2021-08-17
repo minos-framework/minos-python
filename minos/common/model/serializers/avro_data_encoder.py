@@ -16,10 +16,12 @@ from datetime import (
     time,
     timedelta,
 )
+from decimal import (
+    Decimal,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
-    TypeVar,
 )
 from uuid import (
     UUID,
@@ -30,17 +32,18 @@ from ...exceptions import (
 )
 
 if TYPE_CHECKING:
-    from ..fields import Field  # pragma: no cover
-logger = logging.getLogger(__name__)
+    from ..fields import (
+        Field,
+    )
 
-T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 
 class AvroDataEncoder:
     """Avro Data Encoder class."""
 
     def __init__(self, value: Any):
-        self._value = value
+        self.value = value
 
     @classmethod
     def from_field(cls, field: Field) -> AvroDataEncoder:
@@ -51,12 +54,12 @@ class AvroDataEncoder:
         """
         return cls(field.value)
 
-    def build(self):
+    def build(self) -> Any:
         """Build a avro data representation based on the content of the given field.
 
         :return: A `avro`-compatible data.
         """
-        return self._to_avro_raw(self._value)
+        return self._to_avro_raw(self.value)
 
     def _to_avro_raw(self, value: Any) -> Any:
         if value is None:
@@ -64,6 +67,12 @@ class AvroDataEncoder:
 
         if isinstance(value, (str, int, bool, float, bytes)):
             return value
+
+        if isinstance(value, memoryview):
+            return value.tobytes()
+
+        if isinstance(value, Decimal):
+            return float(value)
 
         if isinstance(value, datetime):
             return self._datetime_to_avro_raw(value)

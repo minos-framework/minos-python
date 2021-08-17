@@ -25,12 +25,14 @@ from tests.model_classes import (
     Customer,
     CustomerFailDict,
     CustomerFailList,
+    GenericUser,
     ShoppingList,
+    T,
     User,
 )
 
 
-class TestMinosModel(unittest.TestCase):
+class TestDeclarativeModel(unittest.TestCase):
     def test_constructor_args(self):
         model = Customer(1234, "johndoe", "John", "Doe")
         self.assertEqual(1234, model.id)
@@ -205,19 +207,20 @@ class TestMinosModel(unittest.TestCase):
         a, b = User(123), User(456)
         self.assertNotEqual(a, b)
 
-    def test_list(self):
+    def test_iter_list(self):
         user = User(123)
-        expected = [
-            Field("id", int, 123, validator=user.validate_id),
-            Field("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
-        ]
+        expected = ["id", "username"]
 
         self.assertEqual(expected, list(user))
 
-    def test_dict(self):
+    def test_iter_dict(self):
         user = User(123)
         expected = {"id": 123, "username": None}
         self.assertEqual(expected, dict(user))
+
+    def test_len(self):
+        user = User(123)
+        self.assertEqual(2, len(user))
 
     def test_hash(self):
         user = User(123)
@@ -251,6 +254,12 @@ class TestMinosModel(unittest.TestCase):
         self.assertEqual(
             ModelType.build("tests.model_classes.User", {"id": int, "username": Optional[str]}), model.model_type
         )
+
+    def test_type_type_hints_parameters(self):
+        self.assertEqual((T,), GenericUser.type_hints_parameters)
+
+    def test_type_hints_parameters_empty(self):
+        self.assertEqual(tuple(), User.type_hints_parameters)
 
 
 if __name__ == "__main__":

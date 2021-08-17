@@ -10,16 +10,23 @@ from __future__ import (
 )
 
 import logging
+from abc import (
+    abstractmethod,
+)
 from base64 import (
     b64decode,
     b64encode,
 )
+from collections.abc import (
+    Mapping,
+)
 from typing import (
     Any,
-    Generic,
     Iterable,
+    Iterator,
     NoReturn,
     Type,
+    TypedDict,
     TypeVar,
     Union,
 )
@@ -54,43 +61,11 @@ from .types import (
 
 logger = logging.getLogger(__name__)
 
-# def _process_aggregate(cls):
-#     """
-#     Get the list of the class arguments and define it as an AggregateField class
-#     """
-#     cls_annotations = cls.__dict__.get('__annotations__', {})
-#     aggregate_fields = []
-#     for name, type in cls_annotations.items():
-#         attribute = getattr(cls, name, None)
-#         aggregate_fields.append(
-#             AggregateField(name=name, type=type, value=attribute)
-#         )
-#     setattr(cls, "_FIELDS", aggregate_fields)
-#
-#     # g get metaclass
-#     meta_class = getattr(cls, "Meta", None)
-#     if meta_class:
-#         # meta class exist so get the information related
-#         ...
-#     return cls
-#
-#
-# def aggregate(cls=None):
-#     def wrap(cls):
-#         return _process_aggregate(cls)
-#
-#     if cls is None:
-#         return wrap
-#
-#     return wrap(cls)
 
-T = TypeVar("T")
-
-
-class Model(Generic[T]):
+class Model(Mapping):
     """Base class for ``minos`` model entities."""
 
-    _fields: dict[str, Field] = {}
+    _fields: dict[str, Field]
 
     def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
         """Class constructor.
@@ -104,7 +79,7 @@ class Model(Generic[T]):
         self._fields = fields
 
     @classmethod
-    def from_avro_str(cls, raw: str, **kwargs) -> Union[T, list[T]]:
+    def from_avro_str(cls: Type[T], raw: str, **kwargs) -> Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -114,7 +89,7 @@ class Model(Generic[T]):
         return cls.from_avro_bytes(raw, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls, raw: bytes, **kwargs) -> Union[T, list[T]]:
+    def from_avro_bytes(cls: Type[T], raw: bytes, **kwargs) -> Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A bytes data.
@@ -131,7 +106,29 @@ class Model(Generic[T]):
         return cls.from_avro(schema, decoded | kwargs)
 
     @classmethod
-    def from_avro(cls, schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> T:
+    def from_typed_dict(cls: Type[T], typed_dict: TypedDict, *args, **kwargs) -> T:
+        """Build a ``Model`` from a ``TypeDict`` and ``data``.
+
+        :param typed_dict: ``TypeDict`` object containing the DTO's structure
+        :param args: Positional arguments to be passed to the model constructor.
+        :param kwargs: Named arguments to be passed to the model constructor.
+        :return: A new ``DataTransferObject`` instance.
+        """
+        return cls.from_model_type(ModelType.from_typed_dict(typed_dict), *args, **kwargs)
+
+    @classmethod
+    @abstractmethod
+    def from_model_type(cls: Type[T], model_type: ModelType, *args, **kwargs) -> T:
+        """Build a ``Model`` from a ``ModelType``.
+
+        :param model_type: ``ModelType`` object containing the DTO's structure
+        :param args: Positional arguments to be passed to the model constructor.
+        :param kwargs: Named arguments to be passed to the model constructor.
+        :return: A new ``DeclarativeModel`` instance.
+        """
+
+    @classmethod
+    def from_avro(cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
@@ -140,11 +137,11 @@ class Model(Generic[T]):
         """
         if isinstance(schema, list):
             schema = schema[-1]
-        model_type: ModelType = AvroSchemaDecoder(schema).build()
+        model_type = AvroSchemaDecoder(schema).build()
         return AvroDataDecoder("", model_type).build(data)
 
     @classmethod
-    def to_avro_str(cls, models: list[T]) -> str:
+    def to_avro_str(cls: Type[T], models: list[T]) -> str:
         """Create a bytes representation of the given object instances.
 
         :param models: A sequence of minos models.
@@ -153,7 +150,7 @@ class Model(Generic[T]):
         return b64encode(cls.to_avro_bytes(models)).decode()
 
     @classmethod
-    def to_avro_bytes(cls, models: list[T]) -> bytes:
+    def to_avro_bytes(cls: Type[T], models: list[T]) -> bytes:
         """Create a bytes representation of the given object instances.
 
         :param models: A sequence of minos models.
@@ -174,13 +171,13 @@ class Model(Generic[T]):
 
     # noinspection PyMethodParameters
     @property_or_classproperty
-    def model_type(self_or_cls) -> Type[T]:
+    def model_type(self_or_cls) -> ModelType:
         """Get the model type of the instance.
 
         :return: A ``ModelType`` instance.
         """
         # noinspection PyTypeChecker
-        return ModelType.build(self_or_cls.classname, self_or_cls.type_hints)
+        return ModelType.from_model(self_or_cls)
 
     # noinspection PyMethodParameters
     @classproperty
@@ -190,27 +187,6 @@ class Model(Generic[T]):
         """
         # noinspection PyTypeChecker
         return classname(cls)
-
-    @property
-    def fields(self) -> dict[str, Field]:
-        """Fields getter"""
-        return self._fields
-
-    def __setattr__(self, key: str, value: Any) -> NoReturn:
-        if self._fields is not None and key in self._fields:
-            field_class: Field = self._fields[key]
-            field_class.value = value
-            self._fields[key] = field_class
-        elif key.startswith("_"):
-            super().__setattr__(key, value)
-        else:
-            raise MinosModelException(f"model attribute {key} doesn't exist")
-
-    def __getattr__(self, item: str) -> Any:
-        if self._fields is not None and item in self._fields:
-            return self._fields[item].value
-        else:
-            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
     # noinspection PyMethodParameters
     @property_or_classproperty
@@ -223,9 +199,37 @@ class Model(Generic[T]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def _type_hints(self_or_cls) -> dict[str, Any]:
+    def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
         if not isinstance(self_or_cls, type):
             yield from ((field.name, field.real_type) for field in self_or_cls.fields.values())
+
+    # noinspection PyMethodParameters
+    @property_or_classproperty
+    def type_hints_parameters(self_or_cls) -> tuple[TypeVar, ...]:
+        """Get the sequence of generic type hints parameters..
+
+        :return: A tuple of `TypeVar` instances.
+        """
+        return getattr(self_or_cls, "__parameters__", tuple())
+
+    @property
+    def fields(self) -> dict[str, Field]:
+        """Fields getter"""
+        return self._fields
+
+    def __setattr__(self, key: str, value: Any) -> NoReturn:
+        if key.startswith("_"):
+            super().__setattr__(key, value)
+        elif key in self._fields:
+            self._fields[key].value = value
+        else:
+            raise MinosModelException(f"model attribute {key} doesn't exist")
+
+    def __getattr__(self, item: str) -> Any:
+        if item in self._fields:
+            return self._fields[item].value
+        else:
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
 
     # noinspection PyMethodParameters
     @property_or_classproperty
@@ -235,7 +239,7 @@ class Model(Generic[T]):
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder("", self_or_cls.model_type).build()["type"]]
+        return [AvroSchemaEncoder("", ModelType.from_model(self_or_cls)).build()["type"]]
 
     @property
     def avro_data(self) -> dict[str, Any]:
@@ -263,15 +267,14 @@ class Model(Generic[T]):
         # noinspection PyTypeChecker
         return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
 
-    def __eq__(self, other: T) -> bool:
+    def __eq__(self: T, other: T) -> bool:
         return type(self) == type(other) and self.fields == other.fields
 
     def __hash__(self) -> int:
-        return hash(tuple(self))
+        return hash(tuple(self.fields.values()))
 
-    def __iter__(self) -> Iterable:
-        # noinspection PyRedundantParentheses
-        yield from self.fields.values()
+    def __iter__(self) -> Iterable[str]:
+        yield from self.fields.keys()
 
     def __getitem__(self, item: str) -> Any:
         return getattr(self, item)
@@ -279,13 +282,12 @@ class Model(Generic[T]):
     def __setitem__(self, key: str, value: Any) -> NoReturn:
         setattr(self, key, value)
 
-    def keys(self) -> Iterable[str]:
-        """Get the field names.
-
-        :return: An iterable of string values.
-        """
-        return self.fields.keys()
+    def __len__(self):
+        return len(self.fields)
 
     def __repr__(self) -> str:
         fields_repr = ", ".join(repr(field) for field in self.fields.values())
         return f"{type(self).__name__}({fields_repr})"
+
+
+T = TypeVar("T", bound=Model)

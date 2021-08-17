@@ -9,14 +9,6 @@ from __future__ import (
     annotations,
 )
 
-from typing import (
-    Any,
-    TypedDict,
-)
-
-from ..fields import (
-    Field,
-)
 from ..types import (
     ModelType,
 )
@@ -38,24 +30,15 @@ class DataTransferObject(DynamicModel):
         self._namespace = namespace
 
     @classmethod
-    def from_typed_dict(cls, typed_dict: TypedDict, data: dict[str, Any]) -> DataTransferObject:
-        """Build a ``DataTransferObject`` from a ``TypeDict`` and ``data``.
+    def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> DataTransferObject:
+        """Build a ``DataTransferObject`` from a ``ModelType``.
 
-        :param typed_dict: ``TypeDict`` object containing the DTO's structure
-        :param data: A dictionary containing the values to be stored on the DTO.
+        :param model_type: ``ModelType`` object containing the model structure
+        :param args: Positional arguments to be passed to the model constructor.
+        :param kwargs: Named arguments to be passed to the model constructor.
         :return: A new ``DataTransferObject`` instance.
         """
-        return cls.from_model_type(ModelType.from_typed_dict(typed_dict), data)
-
-    @classmethod
-    def from_model_type(cls, model_type: ModelType, data: dict[str, Any]) -> DataTransferObject:
-        """Build a ``DataTransferObject`` from a ``ModelType`` and ``data``.
-
-        :param model_type: ``ModelType`` object containing the DTO's structure
-        :param data: A dictionary containing the values to be stored on the DTO.
-        :return: A new ``DataTransferObject`` instance.
-        """
-        fields = {k: Field(k, v, data[k]) for k, v in model_type.type_hints.items()}
+        fields = cls._build_fields(model_type.type_hints, *args, **kwargs)
         return cls(model_type.name, fields, namespace=model_type.namespace)
 
     @property

@@ -6,6 +6,9 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 import unittest
+from unittest.mock import (
+    patch,
+)
 from uuid import (
     uuid4,
 )
@@ -20,10 +23,12 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.model_classes import (
+    Auth,
     Bar,
     Customer,
     Foo,
     FooBar,
+    GenericUser,
     ShoppingList,
     User,
 )
@@ -47,7 +52,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                                     {"name": "username", "type": ["string", "null"]},
                                 ],
                                 "name": "User",
-                                "namespace": "tests.model_classes.user",
+                                "namespace": "tests.model_classes.hello",
                                 "type": "record",
                             },
                             "null",
@@ -60,7 +65,8 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                 "type": "record",
             }
         ]
-        self.assertEqual(expected, ShoppingList.avro_schema)
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            self.assertEqual(expected, ShoppingList.avro_schema)
 
     def test_avro_data(self):
         shopping_list = ShoppingList(User(1234))
@@ -94,7 +100,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                                             {"name": "age", "type": ["int", "null"]},
                                         ],
                                         "name": "Owner",
-                                        "namespace": "tests.aggregate_classes.owner",
+                                        "namespace": "tests.aggregate_classes.hello",
                                         "type": "record",
                                     },
                                     {"type": "string", "logicalType": "uuid"},
@@ -110,7 +116,43 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                 "type": "record",
             }
         ]
-        self.assertEqual(expected, Car.avro_schema)
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            self.assertEqual(expected, Car.avro_schema)
+
+    def test_avro_schema_generics(self):
+        expected = [
+            {
+                "fields": [{"name": "username", "type": ["string", "int"]}],
+                "name": "GenericUser",
+                "namespace": "tests.model_classes",
+                "type": "record",
+            }
+        ]
+        self.assertEqual(expected, GenericUser.avro_schema)
+
+    def test_avro_schema_generics_nested(self):
+        expected = [
+            {
+                "fields": [
+                    {
+                        "name": "user",
+                        "type": [
+                            {
+                                "fields": [{"name": "username", "type": "string"}],
+                                "name": "GenericUser",
+                                "namespace": "tests.model_classes.hello",
+                                "type": "record",
+                            }
+                        ],
+                    }
+                ],
+                "name": "Auth",
+                "namespace": "tests.model_classes",
+                "type": "record",
+            }
+        ]
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            self.assertEqual(expected, Auth.avro_schema)
 
     async def test_avro_data_model_ref(self):
         async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot() as s:
@@ -224,7 +266,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                         "type": {
                             "fields": [{"name": "text", "type": "string"}],
                             "name": "Foo",
-                            "namespace": "tests.model_classes.first",
+                            "namespace": "tests.model_classes.hello",
                             "type": "record",
                         },
                     },
@@ -233,7 +275,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                         "type": {
                             "fields": [{"name": "text", "type": "string"}],
                             "name": "Foo",
-                            "namespace": "tests.model_classes.second",
+                            "namespace": "tests.model_classes.goodbye",
                             "type": "record",
                         },
                     },
@@ -244,7 +286,8 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             }
         ]
 
-        self.assertEqual(expected, bar.avro_schema)
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello", "goodbye"]):
+            self.assertEqual(expected, bar.avro_schema)
 
     def test_multiple_fields_avro_data(self):
         bar = Bar(first=Foo("one"), second=Foo("two"))
@@ -263,6 +306,14 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         serialized = original.avro_bytes
         recovered = FooBar.from_avro_bytes(serialized)
         self.assertEqual(original, recovered)
+
+    def test_avro_bytes_generics(self):
+        base = GenericUser("foo")
+        self.assertEqual(base, GenericUser.from_avro_bytes(base.avro_bytes))
+
+    def test_avro_bytes_generics_nested(self):
+        base = Auth(GenericUser("foo"))
+        self.assertEqual(base, Auth.from_avro_bytes(base.avro_bytes))
 
 
 if __name__ == "__main__":
