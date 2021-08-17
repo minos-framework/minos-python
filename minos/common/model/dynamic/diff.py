@@ -18,7 +18,6 @@ from typing import (
     Generic,
     Iterable,
     Iterator,
-    Optional,
     Type,
     TypeVar,
     Union,
@@ -119,7 +118,7 @@ class FieldsDiff(BucketModel):
         return map(lambda name: getattr(self, name), self._name_mapper.keys())
 
     @classmethod
-    def from_difference(cls, a: Model, b: Model, ignore: Optional[set[str]] = None) -> FieldsDiff:
+    def from_difference(cls, a: Model, b: Model, ignore: set[str] = frozenset()) -> FieldsDiff:
         """Build a new instance from the difference between two models.
 
         :param a: Latest model instance.
@@ -127,10 +126,6 @@ class FieldsDiff(BucketModel):
         :param ignore: Set of fields to be ignored.
         :return: A new ``FieldsDiff`` instance.
         """
-        if ignore is None:
-            ignore = set()
-        ignore = set(ignore)
-
         logger.debug(f"Computing the {cls!r} between {a!r} and {b!r}...")
         differences = cls._diff(a.fields, b.fields)
         differences = [difference for difference in differences if difference.name not in ignore]
@@ -162,17 +157,13 @@ class FieldsDiff(BucketModel):
         return differences
 
     @classmethod
-    def from_model(cls, model: Model, ignore: Optional[set[str]] = None) -> FieldsDiff:
+    def from_model(cls, model: Model, ignore: set[str] = frozenset()) -> FieldsDiff:
         """Build a new difference from a single model.
 
         :param model: The model instance.
         :param ignore: Set of fields to be ignored.
         :return: A new ``FieldsDiff`` instance.
         """
-        if ignore is None:
-            ignore = set()
-        ignore = set(ignore)
-
         differences = list()
         for field in model.fields.values():
             differences.append(Diff(field.name, field.type, field.value))
