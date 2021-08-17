@@ -62,10 +62,8 @@ class AggregateDiff(DeclarativeModel):
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if "differences" in self._fields:
-                differences = self._fields["differences"].value
-                if hasattr(differences, item):
-                    return getattr(differences, item).value
+            if item != "differences":
+                return getattr(self.differences, item).value
             raise exc
 
     @classmethod

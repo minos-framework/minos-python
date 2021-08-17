@@ -37,7 +37,7 @@ from tests.utils import (
 )
 
 
-class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
+class TestDifferenceContainer(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         async with FakeBroker() as broker, FakeRepository() as repository, FakeSnapshot() as snapshot:
             self.car_one = Car(3, "blue", id=1, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
@@ -50,7 +50,7 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
     def test_differences(self):
         fields = [Difference("doors", int, 5), Difference("color", str, "red")]
         difference = DifferenceContainer(fields)
-        expected = {"doors": [Difference("doors", int, 5)], "color": [Difference("color", str, "red")]}
+        expected = {"doors": Difference("doors", int, 5), "color": Difference("color", str, "red")}
         self.assertEqual(expected, difference.differences)
 
     def test_get_attr(self):

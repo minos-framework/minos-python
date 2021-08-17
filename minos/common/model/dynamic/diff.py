@@ -19,6 +19,7 @@ from typing import (
     Optional,
     Type,
     TypeVar,
+    Union,
     get_args,
 )
 from uuid import (
@@ -95,24 +96,26 @@ class DifferenceContainer(BucketModel):
         self._name_mapper = mapper
 
     def __getattr__(self, item: str) -> Any:
-        if item in self._name_mapper:
-            values = [getattr(self, name) for name in self._name_mapper.get(item)]
-            if len(values) == 1:
-                return values[0]
-            return values
-        else:
+        try:
             return super().__getattr__(item)
+        except AttributeError as exc:
+            if item in self._name_mapper:
+                values = [getattr(self, name) for name in self._name_mapper.get(item)]
+                if len(values) == 1:
+                    return values[0]
+                return values
+            raise exc
 
     def __eq__(self, other):
         return type(self) == type(other) and self.differences == other.differences
 
     @property
-    def differences(self) -> dict[str, Difference]:
+    def differences(self) -> dict[str, Union[Difference, list[IncrementalDifference]]]:
         """TODO
 
         :return: TODO
         """
-        return {k: [getattr(self, name) for name in vs] for k, vs in self._name_mapper.items()}
+        return {name: getattr(self, name) for name in self._name_mapper.keys()}
 
     def __repr__(self) -> str:
         fields_repr = ", ".join(f"{name}={getattr(self, name)}" for name in self._name_mapper.keys())

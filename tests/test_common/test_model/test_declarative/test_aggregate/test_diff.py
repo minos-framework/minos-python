@@ -41,6 +41,39 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             self.final = Car(5, "yellow", uuid=self.uuid, version=3, _broker=b, _repository=r, _snapshot=s)
             self.another = Car(3, "blue", uuid=self.uuid_another, version=1, _broker=b, _repository=r, _snapshot=s)
 
+    def test_getattr(self):
+        diff = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=1,
+            action=Action.CREATE,
+            differences=DifferenceContainer(
+                [
+                    Difference("doors", int, 3),
+                    Difference("color", str, "blue"),
+                    Difference("owner", Optional[list[ModelRef[Owner]]], None),
+                ]
+            ),
+        )
+        self.assertEqual(3, diff.doors)
+
+    def test_getattr_raises(self):
+        diff = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=1,
+            action=Action.CREATE,
+            differences=DifferenceContainer(
+                [
+                    Difference("doors", int, 3),
+                    Difference("color", str, "blue"),
+                    Difference("owner", Optional[list[ModelRef[Owner]]], None),
+                ]
+            ),
+        )
+        with self.assertRaises(AttributeError):
+            diff.wheels
+
     def test_fields_diff(self):
         diff = AggregateDiff(
             uuid=self.uuid,
