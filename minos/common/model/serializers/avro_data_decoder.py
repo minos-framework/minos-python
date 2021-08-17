@@ -57,9 +57,9 @@ logger = logging.getLogger(__name__)
 class AvroDataDecoder:
     """Avro Data Decoder class."""
 
-    def __init__(self, field_name: str, field_type: type):
-        self._name = field_name
-        self._type = field_type
+    def __init__(self, name: str, type_: type):
+        self.name = name
+        self.type_ = type_
 
     @classmethod
     def from_field(cls, field: Field) -> AvroDataDecoder:
@@ -76,114 +76,114 @@ class AvroDataDecoder:
         :param data: Data to be casted.
         :return: Casted object.
         """
-        return self._cast_value(self._type, data)
+        return self._cast_value(self.type_, data)
 
-    def _cast_value(self, type_field: type, data: Any) -> Any:
-        if type_field is Any:
-            type_field = TypeHintBuilder(data).build()
-        origin = get_origin(type_field)
+    def _cast_value(self, type_: type, data: Any) -> Any:
+        if type_ is Any:
+            type_ = TypeHintBuilder(data).build()
+        origin = get_origin(type_)
         if origin is not Union:
-            return self._cast_single_value(type_field, data)
-        return self._cast_union_value(type_field, data)
+            return self._cast_single_value(type_, data)
+        return self._cast_union_value(type_, data)
 
-    def _cast_union_value(self, type_field: type, data: Any) -> Any:
-        alternatives = get_args(type_field)
+    def _cast_union_value(self, type_: type, data: Any) -> Any:
+        alternatives = get_args(type_)
         for alternative_type in alternatives:
             try:
                 return self._cast_single_value(alternative_type, data)
             except (MinosTypeAttributeException, MinosReqAttributeException):
                 pass
 
-        if type_field is not NoneType:
+        if type_ is not NoneType:
             if data is None:
-                raise MinosReqAttributeException(f"{self._name!r} field is {None!r}.")
+                raise MinosReqAttributeException(f"{self.name!r} field is {None!r}.")
 
             if data is MissingSentinel:
-                raise MinosReqAttributeException(f"{self._name!r} field is missing.")
+                raise MinosReqAttributeException(f"{self.name!r} field is missing.")
 
-        raise MinosTypeAttributeException(self._name, type_field, data)
+        raise MinosTypeAttributeException(self.name, type_, data)
 
-    def _cast_single_value(self, type_field: type, data: Any) -> Any:
-        if isinstance(type_field, TypeVar):
-            unpacked_type = unpack_typevar(type_field)
+    def _cast_single_value(self, type_: type, data: Any) -> Any:
+        if isinstance(type_, TypeVar):
+            unpacked_type = unpack_typevar(type_)
             return self._cast_value(unpacked_type, data)
 
-        if type_field is NoneType:
-            return self._cast_none_value(type_field, data)
+        if type_ is NoneType:
+            return self._cast_none_value(type_, data)
 
         if data is None:
-            raise MinosReqAttributeException(f"{self._name!r} field is '{None!r}'.")
+            raise MinosReqAttributeException(f"{self.name!r} field is '{None!r}'.")
 
         if data is MissingSentinel:
-            raise MinosReqAttributeException(f"{self._name!r} field is missing.")
+            raise MinosReqAttributeException(f"{self.name!r} field is missing.")
 
-        if is_type_subclass(type_field):
-            if issubclass(type_field, bool):
+        if is_type_subclass(type_):
+            if issubclass(type_, bool):
                 return self._cast_bool(data)
 
-            if issubclass(type_field, int):
-                return self._cast_int(type_field, data)
+            if issubclass(type_, int):
+                return self._cast_int(type_, data)
 
-            if issubclass(type_field, float):
+            if issubclass(type_, float):
                 return self._cast_float(data)
 
-            if issubclass(type_field, str):
-                return self._cast_string(type_field, data)
+            if issubclass(type_, str):
+                return self._cast_string(type_, data)
 
-            if issubclass(type_field, bytes):
+            if issubclass(type_, bytes):
                 return self._cast_bytes(data)
 
-            if issubclass(type_field, datetime):
+            if issubclass(type_, datetime):
                 return self._cast_datetime(data)
 
-            if issubclass(type_field, date):
+            if issubclass(type_, date):
                 return self._cast_date(data)
 
-            if issubclass(type_field, time):
+            if issubclass(type_, time):
                 return self._cast_time(data)
 
-            if issubclass(type_field, UUID):
+            if issubclass(type_, UUID):
                 return self._cast_uuid(data)
 
-            if isinstance(type_field, ModelType):
-                return self._cast_model_type(type_field, data)
+            if isinstance(type_, ModelType):
+                return self._cast_model_type(type_, data)
 
-        if is_model_subclass(type_field):
-            return self._cast_model(type_field, data)
+        if is_model_subclass(type_):
+            return self._cast_model(type_, data)
 
-        return self._cast_composed_value(type_field, data)
+        return self._cast_composed_value(type_, data)
 
-    def _cast_none_value(self, type_field: type, data: Any) -> Any:
+    def _cast_none_value(self, type_: type, data: Any) -> Any:
         if data is None or data is MissingSentinel:
             return None
 
-        raise MinosTypeAttributeException(self._name, type_field, data)
+        raise MinosTypeAttributeException(self.name, type_, data)
 
-    def _cast_int(self, type_field, data: Any) -> int:
+    def _cast_int(self, type_, data: Any) -> int:
         try:
-            return type_field(data)
+            return type_(data)
         except (ValueError, TypeError):
-            raise MinosTypeAttributeException(self._name, type_field, data)
+            raise MinosTypeAttributeException(self.name, type_, data)
 
     def _cast_float(self, data: Any) -> float:
         try:
             return float(data)
         except (ValueError, TypeError):
-            raise MinosTypeAttributeException(self._name, float, data)
+            raise MinosTypeAttributeException(self.name, float, data)
 
     def _cast_bool(self, data: Any) -> bool:
         if not isinstance(data, bool):
-            raise MinosTypeAttributeException(self._name, bool, data)
+            raise MinosTypeAttributeException(self.name, bool, data)
         return data
 
-    def _cast_string(self, type_field, data: Any) -> str:
+    def _cast_string(self, type_, data: Any) -> str:
         if not isinstance(data, str):
-            raise MinosTypeAttributeException(self._name, str, data)
-        return type_field(data)
+            raise MinosTypeAttributeException(self.name, str, data)
+        return type_(data)
 
     def _cast_bytes(self, data: Any) -> bytes:
         if not isinstance(data, bytes):
-            raise MinosTypeAttributeException(self._name, bytes, data)
+            raise MinosTypeAttributeException(self.name, bytes, data)
         return data
 
     def _cast_date(self, data: Any) -> date:
@@ -191,21 +191,21 @@ class AvroDataDecoder:
             return data
         elif isinstance(data, int):
             return date(1970, 1, 1) + timedelta(days=data)
-        raise MinosTypeAttributeException(self._name, date, data)
+        raise MinosTypeAttributeException(self.name, date, data)
 
     def _cast_time(self, data: Any) -> time:
         if isinstance(data, time):
             return data
         if isinstance(data, int):
             return (datetime(1, 1, 1) + timedelta(microseconds=data)).time()
-        raise MinosTypeAttributeException(self._name, time, data)
+        raise MinosTypeAttributeException(self.name, time, data)
 
     def _cast_datetime(self, data: Any) -> datetime:
         if isinstance(data, datetime):
             return data
         if isinstance(data, int):
             return datetime(1970, 1, 1) + data * timedelta(microseconds=1)
-        raise MinosTypeAttributeException(self._name, datetime, data)
+        raise MinosTypeAttributeException(self.name, datetime, data)
 
     def _cast_uuid(self, data: Any) -> UUID:
         if isinstance(data, UUID):
@@ -220,51 +220,51 @@ class AvroDataDecoder:
                 return UUID(bytes=data)
             except ValueError:
                 pass
-        raise MinosTypeAttributeException(self._name, UUID, data)
+        raise MinosTypeAttributeException(self.name, UUID, data)
 
-    def _cast_model(self, type_field: type, data: Any) -> Any:
-        if is_type_subclass(type_field) and isinstance(data, type_field):
+    def _cast_model(self, type_: type, data: Any) -> Any:
+        if is_type_subclass(type_) and isinstance(data, type_):
             return data
         # noinspection PyUnresolvedReferences
-        return self._cast_model_type(ModelType.from_model(type_field), data)
+        return self._cast_model_type(ModelType.from_model(type_), data)
 
-    def _cast_model_type(self, type_field: ModelType, data: Any) -> Any:
+    def _cast_model_type(self, type_: ModelType, data: Any) -> Any:
         if isinstance(data, dict):
-            data |= {k: self._cast_value(v, data.get(k, None)) for k, v in type_field.type_hints.items()}
-            return type_field(**data)
+            data |= {k: self._cast_value(v, data.get(k, None)) for k, v in type_.type_hints.items()}
+            return type_(**data)
 
-        if hasattr(data, "model_type") and ModelType.from_model(data) == type_field:
+        if hasattr(data, "model_type") and ModelType.from_model(data) == type_:
             return data
 
-        raise MinosTypeAttributeException(self._name, type_field, data)
+        raise MinosTypeAttributeException(self.name, type_, data)
 
-    def _cast_composed_value(self, type_field: type, data: Any) -> Any:
-        origin_type = get_origin(type_field)
+    def _cast_composed_value(self, type_: type, data: Any) -> Any:
+        origin_type = get_origin(type_)
         if origin_type is None:
-            raise MinosMalformedAttributeException(f"{self._name!r} field is malformed. Type: '{type_field}'.")
+            raise MinosMalformedAttributeException(f"{self.name!r} field is malformed. Type: '{type_}'.")
 
         if origin_type is list:
-            return self._convert_list(data, type_field)
+            return self._convert_list(data, type_)
 
         if origin_type is dict:
-            return self._convert_dict(data, type_field)
+            return self._convert_dict(data, type_)
 
         if origin_type is ModelRef:
-            return self._convert_model_ref(data, type_field)
+            return self._convert_model_ref(data, type_)
 
-        raise MinosTypeAttributeException(self._name, type_field, data)
+        raise MinosTypeAttributeException(self.name, type_, data)
 
     def _convert_list(self, data: list, type_values: Any) -> list[Any]:
         type_values = get_args(type_values)[0]
         if not isinstance(data, list):
-            raise MinosTypeAttributeException(self._name, list, data)
+            raise MinosTypeAttributeException(self.name, list, data)
 
         return self._convert_list_params(data, type_values)
 
-    def _convert_dict(self, data: list, type_field: type) -> dict[str, Any]:
-        type_keys, type_values = get_args(type_field)
+    def _convert_dict(self, data: list, type_: type) -> dict[str, Any]:
+        type_keys, type_values = get_args(type_)
         if not isinstance(data, dict):
-            raise MinosTypeAttributeException(self._name, dict, data)
+            raise MinosTypeAttributeException(self.name, dict, data)
 
         if type_keys is not str:
             raise MinosMalformedAttributeException(f"dictionary keys must be {str!r}. Obtained: {type_keys!r}")
@@ -276,8 +276,8 @@ class AvroDataDecoder:
         values = self._convert_list_params(data.values(), type_values)
         return dict(zip(keys, values))
 
-    def _convert_model_ref(self, data: Any, type_field: type) -> Any:
-        inner_type = get_args(type_field)[0]
+    def _convert_model_ref(self, data: Any, type_: type) -> Any:
+        inner_type = get_args(type_)[0]
         if not is_aggregate_type(inner_type):
             raise MinosMalformedAttributeException(
                 f"'ModelRef[T]' T type must follow the 'Aggregate' protocol. Obtained: {inner_type!r}"

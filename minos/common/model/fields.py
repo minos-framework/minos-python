@@ -46,13 +46,13 @@ class Field:
     def __init__(
         self,
         name: str,
-        type_val: type,
+        type_: type,
         value: Any = MissingSentinel,
         parser: Optional[Callable[[Any], Any]] = None,
         validator: Optional[Callable[[Any], bool]] = None,
     ):
         self._name = name
-        self._type = type_val
+        self._type = type_
         self._parser = parser
         self._validator = validator
 

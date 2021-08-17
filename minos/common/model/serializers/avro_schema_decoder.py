@@ -63,8 +63,7 @@ class AvroSchemaDecoder:
 
         :return: A dictionary object.
         """
-        built_type = self._build_type(self._schema)
-        return built_type
+        return self._build_type(self._schema)
 
     def _build_type(self, schema: Union[dict, list, str]) -> type:
         if isinstance(schema, dict):
@@ -91,16 +90,16 @@ class AvroSchemaDecoder:
             return self._build_type(schema["type"])
 
     @staticmethod
-    def _build_logical_type(type_field: str) -> type:
-        if type_field == AVRO_DATE["logicalType"]:
+    def _build_logical_type(type_: str) -> type:
+        if type_ == AVRO_DATE["logicalType"]:
             return date
-        if type_field == AVRO_TIME["logicalType"]:
+        if type_ == AVRO_TIME["logicalType"]:
             return time
-        if type_field == AVRO_TIMESTAMP["logicalType"]:
+        if type_ == AVRO_TIMESTAMP["logicalType"]:
             return datetime
-        if type_field == AVRO_UUID["logicalType"]:
+        if type_ == AVRO_UUID["logicalType"]:
             return UUID
-        raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_field!r}")
+        raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_!r}")
 
     def _build_list_type(self, items: Union[dict, str, Any] = None) -> type:
         return list[self._build_type(items)]
@@ -125,20 +124,20 @@ class AvroSchemaDecoder:
         return model_type
 
     @staticmethod
-    def _build_simple_type(type_field: str) -> type:
-        if type_field == AVRO_NULL:
+    def _build_simple_type(type_: str) -> type:
+        if type_ == AVRO_NULL:
             return NoneType
-        if type_field == AVRO_INT:
+        if type_ == AVRO_INT:
             return int
-        if type_field == AVRO_BOOLEAN:
+        if type_ == AVRO_BOOLEAN:
             return bool
-        if type_field == AVRO_FLOAT:
+        if type_ == AVRO_FLOAT:
             return float
-        if type_field == AVRO_DOUBLE:
+        if type_ == AVRO_DOUBLE:
             return float
-        if type_field == AVRO_STRING:
+        if type_ == AVRO_STRING:
             return str
-        if type_field == AVRO_BYTES:
+        if type_ == AVRO_BYTES:
             return bytes
 
-        raise MinosMalformedAttributeException(f"Given field type is not supported: {type_field!r}")
+        raise MinosMalformedAttributeException(f"Given field type is not supported: {type_!r}")

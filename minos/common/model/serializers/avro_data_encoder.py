@@ -43,7 +43,7 @@ class AvroDataEncoder:
     """Avro Data Encoder class."""
 
     def __init__(self, value: Any):
-        self._value = value
+        self.value = value
 
     @classmethod
     def from_field(cls, field: Field) -> AvroDataEncoder:
@@ -54,12 +54,12 @@ class AvroDataEncoder:
         """
         return cls(field.value)
 
-    def build(self):
+    def build(self) -> Any:
         """Build a avro data representation based on the content of the given field.
 
         :return: A `avro`-compatible data.
         """
-        return self._to_avro_raw(self._value)
+        return self._to_avro_raw(self.value)
 
     def _to_avro_raw(self, value: Any) -> Any:
         if value is None:

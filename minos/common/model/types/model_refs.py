@@ -46,15 +46,15 @@ class ModelRef(Generic[T]):
 class ModelRefExtractor:
     """Model Reference Extractor class."""
 
-    def __init__(self, value: Any, kind: Optional[type] = None):
-        if kind is None:
+    def __init__(self, value: Any, type_: Optional[type] = None):
+        if type_ is None:
             from .builders import (
                 TypeHintBuilder,
             )
 
-            kind = TypeHintBuilder(value).build()
+            type_ = TypeHintBuilder(value).build()
         self.value = value
-        self.kind = kind
+        self.type_ = type_
 
     def build(self) -> dict[str, set[UUID]]:
         """Run the model reference extractor.
@@ -62,29 +62,29 @@ class ModelRefExtractor:
         :return: A dictionary in which the keys are the class names and the values are the identifiers.
         """
         ans = defaultdict(set)
-        self._build(self.value, self.kind, ans)
+        self._build(self.value, self.type_, ans)
         return ans
 
-    def _build(self, value: Any, kind: type, ans: dict[str, set[UUID]]) -> NoReturn:
+    def _build(self, value: Any, type_: type, ans: dict[str, set[UUID]]) -> NoReturn:
         if isinstance(value, (tuple, list, set)):
-            self._build_iterable(value, get_args(kind)[0], ans)
+            self._build_iterable(value, get_args(type_)[0], ans)
 
         elif isinstance(value, dict):
-            self._build_iterable(value.keys(), get_args(kind)[0], ans)
-            self._build_iterable(value.values(), get_args(kind)[1], ans)
+            self._build_iterable(value.keys(), get_args(type_)[0], ans)
+            self._build_iterable(value.values(), get_args(type_)[1], ans)
 
         elif is_model_type(value):
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 
-        elif get_origin(kind) is ModelRef and isinstance(value, UUID):
-            cls = get_args(kind)[0]
+        elif get_origin(type_) is ModelRef and isinstance(value, UUID):
+            cls = get_args(type_)[0]
             name = cls.__name__
             ans[name].add(value)
 
-    def _build_iterable(self, value: Iterable, kind: type, ans: dict[str, set[UUID]]) -> NoReturn:
+    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[UUID]]) -> NoReturn:
         for sub_value in value:
-            self._build(sub_value, kind, ans)
+            self._build(sub_value, value_, ans)
 
 
 class ModelRefInjector:
