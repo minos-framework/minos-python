@@ -225,7 +225,7 @@ class Aggregate(Entity):
         futures = [self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Updated")]
 
         for decomposed_aggregate_diff in aggregate_diff.decompose():
-            diff = next(decomposed_aggregate_diff.fields_diff.values())
+            diff = next(iter(decomposed_aggregate_diff.fields_diff.values()))
             topic = f"{type(self).__name__}Updated.{diff.name}"
             if isinstance(diff, IncrementalFieldDiff):
                 topic += f".{diff.action.value}"

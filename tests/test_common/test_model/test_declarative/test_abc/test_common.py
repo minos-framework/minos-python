@@ -209,10 +209,7 @@ class TestDeclarativeModel(unittest.TestCase):
 
     def test_list(self):
         user = User(123)
-        expected = [
-            Field("id", int, 123, validator=user.validate_id),
-            Field("username", Optional[str], parser=user.parse_username, validator=user.validate_username),
-        ]
+        expected = ["id", "username"]
 
         self.assertEqual(expected, list(user))
 
