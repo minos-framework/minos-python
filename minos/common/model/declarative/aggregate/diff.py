@@ -86,9 +86,9 @@ class AggregateDiff(DeclarativeModel):
 
         old, new = sorted([a, b], key=attrgetter("version"))
 
-        differences = FieldsDiff.from_difference(a, b, ignore=["uuid", "version"])
+        fields_diff = FieldsDiff.from_difference(a, b, ignore={"uuid", "version"})
 
-        return cls(new.uuid, new.classname, new.version, action, differences)
+        return cls(new.uuid, new.classname, new.version, action, fields_diff)
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate, action: Action = Action.CREATE) -> AggregateDiff:
@@ -99,8 +99,8 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
 
-        differences = FieldsDiff.from_model(aggregate, ignore={"uuid", "version"})
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, differences)
+        fields_diff = FieldsDiff.from_model(aggregate, ignore={"uuid", "version"})
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, fields_diff)
 
     @classmethod
     def from_deleted_aggregate(cls, aggregate: Aggregate, action: Action = Action.DELETE) -> AggregateDiff:
