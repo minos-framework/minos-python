@@ -83,10 +83,6 @@ class DifferenceContainer(BucketModel):
 
     def __init__(self, fields: list[Difference], **kwargs):
         if isinstance(fields, list):
-            from ..fields import (
-                Field,
-            )
-
             fields = [Field(self.generate_random_str(), Difference, v) for v in fields]
         super().__init__(fields, **kwargs)
 
