@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.networks.discovery.clients module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import logging
 from asyncio import (
     sleep,
