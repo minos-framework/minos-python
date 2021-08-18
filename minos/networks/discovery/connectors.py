@@ -56,14 +56,17 @@ class DiscoveryConnector(MinosSetup):
         port = config.rest.port
         name = config.service.name
         host = get_host_ip()
+        endpoints = cls._endpoints_from_config(config)
 
+        return cls(client, name, host, port, endpoints, *args, **kwargs)
+
+    @staticmethod
+    def _endpoints_from_config(config: MinosConfig) -> list[dict[str, Any]]:
         command_decorators = EnrouteAnalyzer(config.commands.service).get_rest_command_query()
         query_decorators = EnrouteAnalyzer(config.queries.service).get_rest_command_query()
         iterable = chain(chain(*command_decorators.values()), chain(*query_decorators.values()))
 
-        endpoints = [{"url": decorator.url, "method": decorator.method} for decorator in iterable]
-
-        return cls(client, name, host, port, endpoints, *args, **kwargs)
+        return [{"url": decorator.url, "method": decorator.method} for decorator in iterable]
 
     async def _setup(self) -> NoReturn:
         await self.subscribe()
