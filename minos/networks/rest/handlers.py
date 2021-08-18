@@ -34,7 +34,6 @@ from minos.common import (
     MinosConfig,
     MinosException,
     MinosSetup,
-    classname,
 )
 
 from ..decorators import (
@@ -136,7 +135,8 @@ class RestHandler(MinosSetup):
         """
 
         async def _fn(request: web.Request) -> web.Response:
-            logger.info(f"Dispatching {classname(fn)!r} from {request.remote!r}...")
+            logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")
+
             request = RestRequest(request)
 
             try:
@@ -169,5 +169,5 @@ class RestHandler(MinosSetup):
         """System Health Route Handler.
         :return: A `web.json_response` response.
         """
-        logger.info(f"Dispatching 'health' from {request.remote!r}...")
+        logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")
         return web.json_response({"host": request.host}, status=200)
