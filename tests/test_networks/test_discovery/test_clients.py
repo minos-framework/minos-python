@@ -47,13 +47,15 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     async def test_subscribe(self, mock):
         mock.return_value.__aenter__ = _fn
 
-        await self.client.subscribe("56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}])
+        await self.client.subscribe(
+            "56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}]
+        )
 
         self.assertEqual(1, mock.call_count)
         # noinspection HttpUrlsUsage
         expected = call(
             "http://123.456.123.1:1234/microservices/test",
-            json={"address": "56.56.56.56", "port": 56, "endpoints": [{"url": "/foo", "method": "POST"}]},
+            json={"address": "56.56.56.56", "port": 56, "endpoints": [["POST", "/foo"], ["GET", "/bar"]]},
         )
         self.assertEqual(expected, mock.call_args)
 

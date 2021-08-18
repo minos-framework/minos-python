@@ -58,7 +58,11 @@ class MinosDiscoveryClient:
         :return: This method does not return anything.
         """
         endpoint = f"{self.route}/microservices/{name}"
-        service_metadata = {"address": host, "port": port, "endpoints": endpoints}
+        service_metadata = {
+            "address": host,
+            "port": port,
+            "endpoints": [[endpoint["method"], endpoint["url"]] for endpoint in endpoints],
+        }
 
         logger.debug(f"Subscribing into {endpoint!r}...")
         try:

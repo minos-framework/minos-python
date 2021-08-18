@@ -14,6 +14,9 @@ import logging
 from itertools import (
     chain,
 )
+from operator import (
+    itemgetter,
+)
 from typing import (
     Any,
     NoReturn,
@@ -64,9 +67,12 @@ class DiscoveryConnector(MinosSetup):
     def _endpoints_from_config(config: MinosConfig) -> list[dict[str, Any]]:
         command_decorators = EnrouteAnalyzer(config.commands.service).get_rest_command_query()
         query_decorators = EnrouteAnalyzer(config.queries.service).get_rest_command_query()
-        iterable = chain(chain(*command_decorators.values()), chain(*query_decorators.values()))
 
-        return [{"url": decorator.url, "method": decorator.method} for decorator in iterable]
+        endpoints = chain(chain(*command_decorators.values()), chain(*query_decorators.values()))
+        endpoints = set(endpoints)
+        endpoints = [{"url": decorator.url, "method": decorator.method} for decorator in endpoints]
+        endpoints.sort(key=itemgetter("url", "method"))
+        return endpoints
 
     async def _setup(self) -> NoReturn:
         await self.subscribe()
