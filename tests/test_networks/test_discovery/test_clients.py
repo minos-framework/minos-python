@@ -47,11 +47,14 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
     async def test_subscribe(self, mock):
         mock.return_value.__aenter__ = _fn
 
-        await self.client.subscribe("56.56.56.56", 56, "test")
+        await self.client.subscribe("56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}])
 
         self.assertEqual(1, mock.call_count)
         # noinspection HttpUrlsUsage
-        expected = call("http://123.456.123.1:1234/subscribe", json={"ip": "56.56.56.56", "port": 56, "name": "test"})
+        expected = call(
+            "http://123.456.123.1:1234/microservices/test",
+            json={"address": "56.56.56.56", "port": 56, "endpoints": [{"url": "/foo", "method": "POST"}]},
+        )
         self.assertEqual(expected, mock.call_args)
 
     @patch("aiohttp.ClientSession.post")
@@ -59,7 +62,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         mock.return_value.__aenter__ = _fn_failure
 
         with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.subscribe("56.56.56.56", 56, "test", retry_delay=0)
+            await self.client.subscribe("56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}], retry_delay=0)
         self.assertEqual(3, mock.call_count)
 
     @patch("aiohttp.ClientSession.post")
@@ -67,18 +70,18 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         mock.return_value.__aenter__ = _fn_raises
 
         with self.assertRaises(MinosDiscoveryConnectorException):
-            await self.client.subscribe("56.56.56.56", 56, "test", retry_delay=0)
+            await self.client.subscribe("56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}], retry_delay=0)
         self.assertEqual(3, mock.call_count)
 
-    @patch("aiohttp.ClientSession.post")
+    @patch("aiohttp.ClientSession.delete")
     async def test_unsubscribe(self, mock):
         mock.return_value.__aenter__ = _fn
         await self.client.unsubscribe("test")
         self.assertEqual(1, mock.call_count)
         # noinspection HttpUrlsUsage
-        self.assertEqual(call("http://123.456.123.1:1234/unsubscribe?name=test"), mock.call_args)
+        self.assertEqual(call("http://123.456.123.1:1234/microservices/test"), mock.call_args)
 
-    @patch("aiohttp.ClientSession.post")
+    @patch("aiohttp.ClientSession.delete")
     async def test_unsubscribe_raises_failure(self, mock):
         mock.return_value.__aenter__ = _fn_failure
 
@@ -86,7 +89,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             await self.client.unsubscribe("test", retry_delay=0)
         self.assertEqual(3, mock.call_count)
 
-    @patch("aiohttp.ClientSession.post")
+    @patch("aiohttp.ClientSession.delete")
     async def test_unsubscribe_raises_exception(self, mock):
         mock.return_value.__aenter__ = _fn_raises
 
