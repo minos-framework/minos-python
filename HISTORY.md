@@ -67,3 +67,12 @@ History
 
 * Small Improvements
 * Bugfixes
+
+0.0.13 (2021-08-19)
+------------------
+
+* Update `DiscoveryConnector` to support auto discoverable endpoint.
+* Increase the concurrency degree of `Handler.dispatch`.
+* Rename `RestBuilder` as `RestHandler`.
+* Refactor `HandlerEntry`
+
