@@ -17,10 +17,10 @@ from uuid import (
 import aiopg
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
     Event,
-    FieldsDiff,
+    FieldDiffContainer,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -129,8 +129,8 @@ class TestEventHandler(PostgresAsyncTestCase):
         for i in range(1, 6):
             events.extend(
                 [
-                    Event("AddOrder", AggregateDiff(uuid1, "Foo", i, AggregateAction.CREATE, FieldsDiff.empty())),
-                    Event("AddOrder", AggregateDiff(uuid2, "Foo", i, AggregateAction.CREATE, FieldsDiff.empty())),
+                    Event("AddOrder", AggregateDiff(uuid1, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
+                    Event("AddOrder", AggregateDiff(uuid2, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
                 ]
             )
         shuffle(events)

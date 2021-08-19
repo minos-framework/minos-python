@@ -45,13 +45,3 @@ saga:
 discovery:
     host: discovery-service
     port: 8080
-    endpoints:
-        subscribe:
-            path: subscribe
-            method: POST
-        unsubscribe:
-            path: unsubscribe
-            method: POST
-        discover:
-            path: discover
-            method: GET

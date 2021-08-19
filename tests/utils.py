@@ -30,12 +30,13 @@ from cached_property import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
     CommandReply,
     CommandStatus,
     Field,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
     MinosBroker,
     MinosModel,
     MinosRepository,
@@ -51,9 +52,7 @@ from minos.networks import (
 
 BASE_PATH = Path(__file__).parent
 
-FAKE_AGGREGATE_DIFF = AggregateDiff(
-    uuid4(), "Foo", 3, AggregateAction.CREATE, FieldsDiff({"doors": Field("doors", int, 5)})
-)
+FAKE_AGGREGATE_DIFF = AggregateDiff(uuid4(), "Foo", 3, Action.CREATE, FieldDiffContainer({FieldDiff("doors", int, 5)}))
 
 
 class FakeModel(MinosModel):
