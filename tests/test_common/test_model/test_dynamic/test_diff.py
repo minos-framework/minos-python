@@ -55,12 +55,22 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
     def test_values(self):
         diffs = [FieldDiff("doors", int, 5), FieldDiff("color", str, "red")]
         difference = FieldDiffContainer(diffs)
-        self.assertEqual(diffs, list(difference.values()))
+        self.assertEqual([[FieldDiff("doors", int, 5)], [FieldDiff("color", str, "red")]], list(difference.values()))
+
+    def test_flatten_values(self):
+        diffs = [FieldDiff("doors", int, 5), FieldDiff("color", str, "red")]
+        difference = FieldDiffContainer(diffs)
+        self.assertEqual(diffs, list(difference.flatten_values()))
+
+    def test_flatten_items(self):
+        difference = FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "red")])
+        expected = [("doors", FieldDiff("doors", int, 5)), ("color", FieldDiff("color", str, "red"))]
+        self.assertEqual(expected, list(difference.flatten_items()))
 
     def test_get_attr(self):
         fields = [FieldDiff("doors", int, 5), FieldDiff("color", str, "red")]
         difference = FieldDiffContainer(fields)
-        self.assertEqual(FieldDiff("doors", int, 5), difference["doors"])
+        self.assertEqual([fields[0]], difference["doors"])
 
     def test_get_attr_list(self):
         fields = [
@@ -182,7 +192,7 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
             FieldDiff("color", str, "red"),
         ]
         difference = FieldDiffContainer(fields)
-        expected = f"FieldDiffContainer(doors=[{fields[0]}, {fields[1]}], color={fields[2]})"
+        expected = f"FieldDiffContainer(doors=[{fields[0]}, {fields[1]}], color=[{fields[2]}])"
         self.assertEqual(expected, repr(difference))
 
 

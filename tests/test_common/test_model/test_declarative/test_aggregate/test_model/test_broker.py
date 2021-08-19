@@ -96,7 +96,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 [
                     {
                         "data": AggregateDiff(
-                            car.uuid,
+                            uuid=car.uuid,
                             name=Car.classname,
                             version=2,
                             action=Action.DELETE,

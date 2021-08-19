@@ -53,7 +53,7 @@ class AggregateDiff(DeclarativeModel):
             return super().__getattr__(item)
         except AttributeError as exc:
             if item != "fields_diff":
-                return getattr(self.fields_diff, item).value
+                return getattr(self.fields_diff, item)[0].value
             raise exc
 
     @classmethod
@@ -108,5 +108,5 @@ class AggregateDiff(DeclarativeModel):
         """
         return [
             AggregateDiff(self.uuid, self.name, self.version, self.action, FieldDiffContainer([diff]))
-            for diff in self.fields_diff.values()
+            for diff in self.fields_diff.flatten_values()
         ]

@@ -41,8 +41,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             self.final = Car(5, "yellow", uuid=self.uuid, version=3, _broker=b, _repository=r, _snapshot=s)
             self.another = Car(3, "blue", uuid=self.uuid_another, version=1, _broker=b, _repository=r, _snapshot=s)
 
-    def test_getattr(self):
-        diff = AggregateDiff(
+        self.diff = AggregateDiff(
             uuid=self.uuid,
             name=Car.classname,
             version=1,
@@ -55,62 +54,31 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
                 ]
             ),
         )
-        self.assertEqual(3, diff.doors)
+
+    def test_getattr(self):
+        self.assertEqual(3, self.diff.doors)
 
     def test_getattr_raises(self):
-        diff = AggregateDiff(
-            uuid=self.uuid,
-            name=Car.classname,
-            version=1,
-            action=Action.CREATE,
-            fields_diff=FieldDiffContainer(
-                [
-                    FieldDiff("doors", int, 3),
-                    FieldDiff("color", str, "blue"),
-                    FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
-                ]
-            ),
-        )
         with self.assertRaises(AttributeError):
-            diff.wheels
+            self.diff.wheels
 
     def test_fields_diff(self):
-        diff = AggregateDiff(
-            uuid=self.uuid,
-            name=Car.classname,
-            version=1,
-            action=Action.CREATE,
-            fields_diff=FieldDiffContainer(
-                [
-                    FieldDiff("doors", int, 3),
-                    FieldDiff("color", str, "blue"),
-                    FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
-                ]
-            ),
+        fields_diff = FieldDiffContainer(
+            [
+                FieldDiff("doors", int, 3),
+                FieldDiff("color", str, "blue"),
+                FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
+            ]
         )
-        self.assertEqual(diff.fields_diff, diff.fields_diff)
+        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
+        self.assertEqual(fields_diff, diff.fields_diff)
 
     def test_from_aggregate(self):
-        expected = AggregateDiff(
-            uuid=self.uuid,
-            name=Car.classname,
-            version=1,
-            action=Action.CREATE,
-            fields_diff=FieldDiffContainer(
-                [
-                    FieldDiff("doors", int, 3),
-                    FieldDiff("color", str, "blue"),
-                    FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
-                ]
-            ),
-        )
         observed = AggregateDiff.from_aggregate(self.initial)
-        self.assertEqual(expected, observed)
+        self.assertEqual(self.diff, observed)
 
     def test_from_deleted_aggregate(self):
-        expected = AggregateDiff(
-            uuid=self.uuid, name=Car.classname, version=1, action=Action.DELETE, fields_diff=FieldDiffContainer.empty(),
-        )
+        expected = AggregateDiff(self.uuid, Car.classname, 1, Action.DELETE, FieldDiffContainer.empty())
         observed = AggregateDiff.from_deleted_aggregate(self.initial)
         self.assertEqual(expected, observed)
 
@@ -130,25 +98,11 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             AggregateDiff.from_difference(self.initial, self.another)
 
     def test_avro_serialization(self):
-        initial = AggregateDiff(
-            uuid=self.uuid,
-            name=Car.classname,
-            version=1,
-            action=Action.CREATE,
-            fields_diff=FieldDiffContainer(
-                [
-                    FieldDiff("doors", int, 3),
-                    FieldDiff("color", str, "blue"),
-                    FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
-                ]
-            ),
-        )
-
-        serialized = initial.avro_bytes
+        serialized = self.diff.avro_bytes
         self.assertIsInstance(serialized, bytes)
 
         deserialized = AggregateDiff.from_avro_bytes(serialized)
-        self.assertEqual(initial, deserialized)
+        self.assertEqual(self.diff, deserialized)
 
     def test_decompose(self):
         expected = [

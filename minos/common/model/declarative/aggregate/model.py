@@ -225,7 +225,7 @@ class Aggregate(Entity):
         futures = [self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Updated")]
 
         for decomposed_aggregate_diff in aggregate_diff.decompose():
-            diff = next(iter(decomposed_aggregate_diff.fields_diff.values()))
+            diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
             topic = f"{type(self).__name__}Updated.{diff.name}"
             if isinstance(diff, IncrementalFieldDiff):
                 topic += f".{diff.action.value}"
@@ -311,7 +311,7 @@ class Aggregate(Entity):
             )
 
         logger.debug(f"Applying {aggregate_diff!r} to {self!r}...")
-        for diff in aggregate_diff.fields_diff.values():
+        for diff in aggregate_diff.fields_diff.flatten_values():
             if isinstance(diff, IncrementalFieldDiff):
                 container = getattr(self, diff.name)
                 if diff.action.is_delete:
@@ -331,7 +331,7 @@ class Aggregate(Entity):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        values = {diff.name: diff.value for diff in aggregate_diff.fields_diff.values()}
+        values = {name: diff.value for name, diff in aggregate_diff.fields_diff.flatten_items()}
         return cls(*args, uuid=aggregate_diff.uuid, version=aggregate_diff.version, **values, **kwargs)
 
 

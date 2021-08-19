@@ -13,10 +13,14 @@ import logging
 from collections import (
     defaultdict,
 )
+from itertools import (
+    chain,
+)
 from typing import (
     Any,
     Generic,
     Iterable,
+    Iterator,
     Type,
     TypeVar,
     Union,
@@ -99,10 +103,7 @@ class FieldDiffContainer(BucketModel):
             return super().__getattr__(item)
         except AttributeError as exc:
             if item in self._name_mapper:
-                values = [getattr(self, name) for name in self._name_mapper.get(item)]
-                if len(values) == 1:
-                    return values[0]
-                return values
+                return [getattr(self, name) for name in self._name_mapper.get(item)]
             raise exc
 
     def __eq__(self, other):
@@ -118,6 +119,20 @@ class FieldDiffContainer(BucketModel):
         :return: An iterable of string values.
         """
         yield from self._name_mapper.keys()
+
+    def flatten_items(self) -> Iterator[tuple[str, FieldDiff]]:
+        """Get the field differences in a flatten way.
+
+        :return: An ``Iterator`` of ``tuple[str, FieldDiff]`` instances.
+        """
+        return map(lambda diff: (diff.name, diff), self.flatten_values())
+
+    def flatten_values(self) -> Iterator[FieldDiff]:
+        """Get the field differences in a flatten way.
+
+        :return: An ``Iterator`` of ``FieldDiff`` instances.
+        """
+        return chain.from_iterable(self.values())
 
     @classmethod
     def from_difference(cls, a: Model, b: Model, ignore: set[str] = frozenset()) -> FieldDiffContainer:
