@@ -1,4 +1,10 @@
+"""tests.test_networks.test_handlers.test_command_replies.test_handlers module."""
+
 import unittest
+from unittest.mock import (
+    AsyncMock,
+    call,
+)
 from uuid import (
     uuid4,
 )
@@ -44,6 +50,9 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
 
     async def test_dispatch(self):
         saga_manager = FakeSagaManager()
+        mock = AsyncMock()
+        saga_manager._load_and_run = mock
+
         saga = uuid4()
         command = CommandReply("TicketAdded", [FakeModel("foo")], saga, CommandStatus.SUCCESS)
         entry = HandlerEntry(1, "TicketAdded", 0, command.avro_bytes, 1)
@@ -51,8 +60,9 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:
             await handler.dispatch_one(entry)
 
-        self.assertEqual(None, saga_manager.name)
-        self.assertEqual(command, saga_manager.reply)
+        self.assertEqual(1, mock.call_count)
+        expected = call(command, pause_on_disk=True, raise_on_error=False, return_execution=False)
+        self.assertEqual(expected, mock.call_args)
 
 
 if __name__ == "__main__":
