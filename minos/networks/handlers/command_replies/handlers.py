@@ -1,9 +1,5 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
+"""minos.networks.handlers.command_replies.handlers module."""
+
 from __future__ import (
     annotations,
 )
@@ -54,11 +50,11 @@ class CommandReplyHandler(Handler):
         handlers[f"{config.service.name}QueryReply"] = None
         return cls(*args, handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry[CommandReply]) -> NoReturn:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        logger.info(f"Dispatching '{entry.data!s}'...")
-        await self.saga_manager.run(reply=entry.data)
+        logger.info(f"Dispatching '{entry!s}'...")
+        await self.saga_manager.run(reply=entry.data, pause_on_disk=True, raise_on_error=False, return_execution=False)

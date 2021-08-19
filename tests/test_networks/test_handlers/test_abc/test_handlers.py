@@ -58,6 +58,7 @@ class _FakeHandler(Handler):
         self.call_args = (entry,)
         if entry.topic == "DeleteOrder":
             raise ValueError()
+        entry.callback(entry.data)
 
 
 class TestHandler(PostgresAsyncTestCase):
@@ -112,13 +113,16 @@ class TestHandler(PostgresAsyncTestCase):
 
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
         instance_2 = Event("DeleteOrder", FAKE_AGGREGATE_DIFF)
+        instance_3 = Event("NoActionTopic", FAKE_AGGREGATE_DIFF)
 
         async with self.handler:
             queue_id_1 = await self._insert_one(instance_1)
             queue_id_2 = await self._insert_one(instance_2)
+            queue_id_3 = await self._insert_one(instance_3)
             await self.handler.dispatch()
             self.assertFalse(await self._is_processed(queue_id_1))
             self.assertFalse(await self._is_processed(queue_id_2))
+            self.assertFalse(await self._is_processed(queue_id_3))
 
     async def test_dispatch_concurrent(self):
         from minos.common import (

@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.utils module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import uuid
 from collections import (
     namedtuple,
@@ -30,12 +25,13 @@ from cached_property import (
 )
 
 from minos.common import (
-    AggregateAction,
+    Action,
     AggregateDiff,
     CommandReply,
     CommandStatus,
     Field,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
     MinosBroker,
     MinosModel,
     MinosRepository,
@@ -51,9 +47,7 @@ from minos.networks import (
 
 BASE_PATH = Path(__file__).parent
 
-FAKE_AGGREGATE_DIFF = AggregateDiff(
-    uuid4(), "Foo", 3, AggregateAction.CREATE, FieldsDiff({"doors": Field("doors", int, 5)})
-)
+FAKE_AGGREGATE_DIFF = AggregateDiff(uuid4(), "Foo", 3, Action.CREATE, FieldDiffContainer({FieldDiff("doors", int, 5)}))
 
 
 class FakeModel(MinosModel):
@@ -111,16 +105,11 @@ class FakeDispatcher:
 class FakeSagaManager(MinosSagaManager):
     """For testing purposes."""
 
-    def __init__(self):
-        super().__init__()
-        self.name = None
-        self.reply = None
-
     async def _run_new(self, name: str, **kwargs) -> NoReturn:
-        self.name = name
+        """For testing purposes."""
 
     async def _load_and_run(self, reply: CommandReply, **kwargs) -> NoReturn:
-        self.reply = reply
+        """For testing purposes."""
 
 
 class FakeBroker(MinosBroker):

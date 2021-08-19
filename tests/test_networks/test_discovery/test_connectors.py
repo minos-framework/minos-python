@@ -1,3 +1,5 @@
+"""tests.test_networks.test_discovery.test_connectors module."""
+
 import unittest
 from unittest.mock import (
     AsyncMock,
@@ -33,7 +35,10 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
         self.discovery.client.subscribe = mock
         await self.discovery.subscribe()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(self.ip, 8080, "Order"), mock.call_args)
+        expected = call(
+            self.ip, 8080, "Order", [{"url": "/order", "method": "GET"}, {"url": "/ticket", "method": "POST"}]
+        )
+        self.assertEqual(expected, mock.call_args)
 
     async def test_unsubscribe(self):
         mock = AsyncMock()

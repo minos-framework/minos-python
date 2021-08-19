@@ -34,7 +34,6 @@ from minos.common import (
     MinosConfig,
     MinosException,
     MinosSetup,
-    classname,
 )
 
 from ..decorators import (
@@ -52,13 +51,8 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
-class RestBuilder(MinosSetup):
-    """
-    Rest Interface Handler
-
-    Rest Interface for aiohttp web handling.
-
-    """
+class RestHandler(MinosSetup):
+    """Rest Handler class."""
 
     def __init__(self, host: str, port: int, endpoints: dict[(str, str), Callable], **kwargs):
         super().__init__(**kwargs)
@@ -75,19 +69,21 @@ class RestBuilder(MinosSetup):
         return self._endpoints
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestBuilder:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestHandler:
         host = config.rest.host
         port = config.rest.port
+        endpoints = cls._endpoints_from_config(config)
 
+        return cls(host=host, port=port, endpoints=endpoints, **kwargs)
+
+    @staticmethod
+    def _endpoints_from_config(config: MinosConfig) -> dict[(str, str), Callable]:
         command_decorators = EnrouteBuilder(config.commands.service).get_rest_command_query()
         query_decorators = EnrouteBuilder(config.queries.service).get_rest_command_query()
 
-        endpoints = {
-            (decorator.url, decorator.method): fn
-            for decorator, fn in chain(command_decorators.items(), query_decorators.items())
-        }
-
-        return cls(host=host, port=port, endpoints=endpoints, **kwargs)
+        endpoints = chain(command_decorators.items(), query_decorators.items())
+        endpoints = {(decorator.url, decorator.method): fn for decorator, fn in endpoints}
+        return endpoints
 
     @property
     def host(self) -> str:
@@ -141,7 +137,8 @@ class RestBuilder(MinosSetup):
         """
 
         async def _fn(request: web.Request) -> web.Response:
-            logger.info(f"Dispatching {classname(fn)!r} from {request.remote!r}...")
+            logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")
+
             request = RestRequest(request)
 
             try:
@@ -174,5 +171,5 @@ class RestBuilder(MinosSetup):
         """System Health Route Handler.
         :return: A `web.json_response` response.
         """
-        logger.info(f"Dispatching 'health' from {request.remote!r}...")
+        logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")
         return web.json_response({"host": request.host}, status=200)

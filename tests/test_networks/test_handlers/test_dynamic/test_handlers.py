@@ -8,7 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 import asyncio
 import unittest
 from datetime import (
-    datetime,
     timedelta,
 )
 from unittest.mock import (
@@ -62,10 +61,10 @@ class TestDynamicHandler(PostgresAsyncTestCase):
 
     async def test_get_many(self):
         expected = [
-            HandlerEntry(0, "foo", None, 0, FakeModel("test1"), 0, datetime.now()),
-            HandlerEntry(0, "foo", None, 0, FakeModel("test2"), 0, datetime.now()),
-            HandlerEntry(0, "bar", None, 0, FakeModel("test3"), 0, datetime.now()),
-            HandlerEntry(0, "bar", None, 0, FakeModel("test4"), 0, datetime.now()),
+            HandlerEntry(0, "foo", 0, FakeModel("test1").avro_bytes),
+            HandlerEntry(0, "foo", 0, FakeModel("test2").avro_bytes),
+            HandlerEntry(0, "bar", 0, FakeModel("test3").avro_bytes),
+            HandlerEntry(0, "bar", 0, FakeModel("test4").avro_bytes),
         ]
         with patch("aiokafka.AIOKafkaConsumer.getone") as mock:
             mock.side_effect = [
@@ -134,10 +133,10 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
 
     async def test_get_many(self):
         expected = [
-            HandlerEntry(0, "foo", None, 0, FakeModel("test1"), 0, datetime.now()),
-            HandlerEntry(0, "foo", None, 0, FakeModel("test2"), 0, datetime.now()),
-            HandlerEntry(0, "bar", None, 0, FakeModel("test3"), 0, datetime.now()),
-            HandlerEntry(0, "bar", None, 0, FakeModel("test4"), 0, datetime.now()),
+            HandlerEntry(0, "foo", 0, FakeModel("test1").avro_bytes),
+            HandlerEntry(0, "foo", 0, FakeModel("test2").avro_bytes),
+            HandlerEntry(0, "bar", 0, FakeModel("test3").avro_bytes),
+            HandlerEntry(0, "bar", 0, FakeModel("test4").avro_bytes),
         ]
         with patch("aiokafka.AIOKafkaConsumer.getone") as mock:
             mock.side_effect = [

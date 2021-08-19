@@ -1,11 +1,6 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.networks module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
-__version__ = "0.0.12"
+__version__ = "0.0.13"
 
 from .brokers import (
     Broker,
@@ -74,7 +69,7 @@ from .messages import (
     WrappedRequest,
 )
 from .rest import (
-    RestBuilder,
+    RestHandler,
     RestRequest,
     RestResponse,
     RestResponseException,

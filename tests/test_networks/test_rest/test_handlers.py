@@ -18,7 +18,7 @@ from minos.networks import (
     MinosActionNotFoundException,
     Request,
     Response,
-    RestBuilder,
+    RestHandler,
     RestResponse,
     RestResponseException,
 )
@@ -60,50 +60,50 @@ class MockedRequest:
         return self.data
 
 
-class TestRestBuilder(PostgresAsyncTestCase):
+class TestRestHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
-        self.dispatcher = RestBuilder.from_config(config=self.config)
+        self.handler = RestHandler.from_config(config=self.config)
 
     def test_from_config(self):
-        self.assertIsInstance(self.dispatcher, RestBuilder)
-        self.assertEqual({("/order", "GET"), ("/ticket", "POST")}, set(self.dispatcher.endpoints.keys()))
+        self.assertIsInstance(self.handler, RestHandler)
+        self.assertEqual({("/order", "GET"), ("/ticket", "POST")}, set(self.handler.endpoints.keys()))
 
     def test_from_config_raises(self):
         with self.assertRaises(Exception):
-            RestBuilder.from_config()
+            RestHandler.from_config()
 
     def test_get_app(self):
-        self.assertIsInstance(self.dispatcher.get_app(), web.Application)
+        self.assertIsInstance(self.handler.get_app(), web.Application)
 
     async def test_get_callback(self):
-        handler = self.dispatcher.get_callback(_Cls._fn)
+        handler = self.handler.get_callback(_Cls._fn)
         response = await handler(MockedRequest({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
         self.assertEqual('{"foo": "bar"}', response.text)
         self.assertEqual("application/json", response.content_type)
 
     async def test_get_callback_none(self):
-        handler = self.dispatcher.get_callback(_Cls._fn_none)
+        handler = self.handler.get_callback(_Cls._fn_none)
         response = await handler(MockedRequest())
         self.assertIsInstance(response, web.Response)
         self.assertEqual(None, response.text)
         self.assertEqual("application/json", response.content_type)
 
     async def test_get_callback_raises_response(self):
-        handler = self.dispatcher.get_callback(_Cls._fn_raises_response)
+        handler = self.handler.get_callback(_Cls._fn_raises_response)
         with self.assertRaises(HTTPBadRequest):
             await handler(MockedRequest({"foo": "bar"}))
 
     async def test_get_callback_raises_minos(self):
-        handler = self.dispatcher.get_callback(_Cls._fn_raises_minos)
+        handler = self.handler.get_callback(_Cls._fn_raises_minos)
         with self.assertRaises(HTTPInternalServerError):
             await handler(MockedRequest({"foo": "bar"}))
 
     async def test_get_callback_raises_exception(self):
-        handler = self.dispatcher.get_callback(_Cls._fn_raises_exception)
+        handler = self.handler.get_callback(_Cls._fn_raises_exception)
         with self.assertRaises(HTTPInternalServerError):
             await handler(MockedRequest({"foo": "bar"}))
 

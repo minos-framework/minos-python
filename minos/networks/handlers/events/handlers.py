@@ -9,8 +9,17 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    gather,
+)
+from collections import (
+    defaultdict,
+)
 from inspect import (
     isawaitable,
+)
+from operator import (
+    attrgetter,
 )
 from typing import (
     Awaitable,
@@ -41,6 +50,9 @@ from ..messages import (
 
 logger = logging.getLogger(__name__)
 
+uuid_getter = attrgetter("data.data.uuid")
+version_getter = attrgetter("data.data.version")
+
 
 class EventHandler(Handler):
     """Event Handler class."""
@@ -56,17 +68,31 @@ class EventHandler(Handler):
 
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+    async def _dispatch_entries(self, entries: list[HandlerEntry[Event]]) -> NoReturn:
+        grouped = defaultdict(list)
+        for entry in entries:
+            grouped[uuid_getter(entry)].append(entry)
+
+        for group in grouped.values():
+            group.sort(key=version_getter)
+
+        futures = (self._dispatch_group(group) for group in grouped.values())
+        await gather(*futures)
+
+    async def _dispatch_group(self, entries: list[HandlerEntry[Event]]):
+        for entry in entries:
+            await self._dispatch_one(entry)
+
+    async def dispatch_one(self, entry: HandlerEntry[Event]) -> NoReturn:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.
         :return: This method does not return anything.
         """
-        event = entry.data
-        logger.info(f"Dispatching '{event!s}'...")
+        logger.info(f"Dispatching '{entry!s}'...")
 
         fn = self.get_callback(entry.callback)
-        await fn(event)
+        await fn(entry.data)
 
     @staticmethod
     def get_callback(
