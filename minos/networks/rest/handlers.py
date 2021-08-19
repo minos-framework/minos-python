@@ -72,16 +72,18 @@ class RestHandler(MinosSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> RestHandler:
         host = config.rest.host
         port = config.rest.port
+        endpoints = cls._endpoints_from_config(config)
 
+        return cls(host=host, port=port, endpoints=endpoints, **kwargs)
+
+    @staticmethod
+    def _endpoints_from_config(config: MinosConfig) -> dict[(str, str), Callable]:
         command_decorators = EnrouteBuilder(config.commands.service).get_rest_command_query()
         query_decorators = EnrouteBuilder(config.queries.service).get_rest_command_query()
 
-        endpoints = {
-            (decorator.url, decorator.method): fn
-            for decorator, fn in chain(command_decorators.items(), query_decorators.items())
-        }
-
-        return cls(host=host, port=port, endpoints=endpoints, **kwargs)
+        endpoints = chain(command_decorators.items(), query_decorators.items())
+        endpoints = {(decorator.url, decorator.method): fn for decorator, fn in endpoints}
+        return endpoints
 
     @property
     def host(self) -> str:
