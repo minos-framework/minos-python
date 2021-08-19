@@ -1,9 +1,5 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
+"""minos.networks.handlers.command_replies.handlers module."""
+
 from __future__ import (
     annotations,
 )
@@ -61,4 +57,4 @@ class CommandReplyHandler(Handler):
         :return: This method does not return anything.
         """
         logger.info(f"Dispatching '{entry!s}'...")
-        await self.saga_manager.run(reply=entry.data)
+        await self.saga_manager.run(reply=entry.data, pause_on_disk=True, raise_on_error=False, return_execution=False)

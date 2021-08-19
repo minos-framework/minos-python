@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.utils module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import uuid
 from collections import (
     namedtuple,
@@ -111,16 +106,11 @@ class FakeDispatcher:
 class FakeSagaManager(MinosSagaManager):
     """For testing purposes."""
 
-    def __init__(self):
-        super().__init__()
-        self.name = None
-        self.reply = None
-
     async def _run_new(self, name: str, **kwargs) -> NoReturn:
-        self.name = name
+        """For testing purposes."""
 
     async def _load_and_run(self, reply: CommandReply, **kwargs) -> NoReturn:
-        self.reply = reply
+        """For testing purposes."""
 
 
 class FakeBroker(MinosBroker):
