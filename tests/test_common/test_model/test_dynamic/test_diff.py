@@ -175,6 +175,16 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
         observed = FieldDiffContainer.from_avro_bytes(initial.avro_bytes)
         self.assertEqual(initial, observed)
 
+    def test_repr(self):
+        fields = [
+            IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+            IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+            FieldDiff("color", str, "red"),
+        ]
+        difference = FieldDiffContainer(fields)
+        expected = f"FieldDiffContainer(doors=[{fields[0]}, {fields[1]}], color={fields[2]})"
+        self.assertEqual(expected, repr(difference))
+
 
 if __name__ == "__main__":
     unittest.main()

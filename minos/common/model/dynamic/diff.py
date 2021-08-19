@@ -109,7 +109,7 @@ class FieldDiffContainer(BucketModel):
         return type(self) == type(other) and tuple(self.values()) == tuple(other.values())
 
     def __repr__(self) -> str:
-        fields_repr = ", ".join(f"{diff.name}={diff.value}" for diff in self.values())
+        fields_repr = ", ".join(f"{k}={v}" for k, v in self.items())
         return f"{type(self).__name__}({fields_repr})"
 
     def __iter__(self) -> Iterable[str]:
