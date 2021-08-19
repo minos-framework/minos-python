@@ -33,7 +33,6 @@ from typing import (
 
 from ..exceptions import (
     EmptyMinosModelSequenceException,
-    MinosModelException,
     MultiTypeMinosModelSequenceException,
 )
 from ..importlib import (
@@ -217,19 +216,31 @@ class Model(Mapping):
         """Fields getter"""
         return self._fields
 
+    def __setitem__(self, key: str, value: Any) -> NoReturn:
+        try:
+            setattr(self, key, value)
+        except AttributeError as exc:
+            raise KeyError(exc)
+
+    def __getitem__(self, item: str) -> Any:
+        try:
+            return getattr(self, item)
+        except AttributeError as exc:
+            raise KeyError(exc)
+
     def __setattr__(self, key: str, value: Any) -> NoReturn:
         if key.startswith("_"):
             super().__setattr__(key, value)
         elif key in self._fields:
             self._fields[key].value = value
         else:
-            raise MinosModelException(f"model attribute {key} doesn't exist")
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {key!r} field")
 
     def __getattr__(self, item: str) -> Any:
         if item in self._fields:
             return self._fields[item].value
         else:
-            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} attribute.")
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")
 
     # noinspection PyMethodParameters
     @property_or_classproperty
@@ -275,12 +286,6 @@ class Model(Mapping):
 
     def __iter__(self) -> Iterable[str]:
         yield from self.fields.keys()
-
-    def __getitem__(self, item: str) -> Any:
-        return getattr(self, item)
-
-    def __setitem__(self, key: str, value: Any) -> NoReturn:
-        setattr(self, key, value)
 
     def __len__(self):
         return len(self.fields)

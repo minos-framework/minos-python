@@ -14,7 +14,6 @@ from minos.common import (
     Field,
     MinosAttributeValidationException,
     MinosMalformedAttributeException,
-    MinosModelException,
     MinosParseAttributeException,
     MinosReqAttributeException,
     MinosTypeAttributeException,
@@ -53,23 +52,43 @@ class TestDeclarativeModel(unittest.TestCase):
         self.assertEqual("Doe", model.surname)
         self.assertEqual("John", model.name)
 
-    def test_aggregate_setter(self):
-        model = Customer(1234)
-        model.name = "John"
-        model.surname = "Doe"
+    def test_getattr(self):
+        model = Customer(1234, name="John", surname="Doe")
         self.assertEqual(1234, model.id)
         self.assertEqual("Doe", model.surname)
         self.assertEqual("John", model.name)
 
-    def test_get_item(self):
-        model = Customer(1234)
-        model.name = "John"
-        model.surname = "Doe"
+    def test_setattr(self):
+        expected = Customer(1234, name="John", surname="Doe")
+
+        observed = Customer(1234)
+        observed.name = "John"
+        observed.surname = "Doe"
+
+        self.assertEqual(expected, observed)
+
+    def test_setattr_raises(self):
+        model = Customer(123)
+        with self.assertRaises(AttributeError):
+            model.address = "str kennedy"
+
+    def test_getattr_raises(self):
+        model = Customer(123)
+        with self.assertRaises(AttributeError):
+            model.address
+
+    def test_getitem(self):
+        model = Customer(1234, name="John", surname="Doe")
         self.assertEqual(1234, model["id"])
         self.assertEqual("Doe", model["surname"])
         self.assertEqual("John", model["name"])
 
-    def test_set_item(self):
+    def test_getitem_raises(self):
+        model = Customer(1234)
+        with self.assertRaises(KeyError):
+            model["failure"]
+
+    def test_setitem(self):
         expected = Customer(1234, name="John", surname="Doe")
 
         observed = Customer(1234)
@@ -77,6 +96,11 @@ class TestDeclarativeModel(unittest.TestCase):
         observed["surname"] = "Doe"
 
         self.assertEqual(expected, observed)
+
+    def test_setitem_raises(self):
+        model = Customer(1234)
+        with self.assertRaises(KeyError):
+            model["failure"] = ""
 
     def test_attribute_parser_same_type(self):
         model = Customer(1234, name="john")
@@ -130,11 +154,6 @@ class TestDeclarativeModel(unittest.TestCase):
     def test_aggregate_empty_mandatory_field(self):
         with self.assertRaises(MinosReqAttributeException):
             Customer()
-
-    def test_model_is_freezed_class(self):
-        model = Customer(123)
-        with self.assertRaises(MinosModelException):
-            model.address = "str kennedy"
 
     def test_model_list_class_attribute(self):
         model = Customer(123)
