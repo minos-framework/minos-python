@@ -118,9 +118,9 @@ class SagaManager(MinosSagaManager):
     async def _run(
         self,
         execution: SagaExecution,
-        pause_on_disk: bool = True,
-        raise_on_error: bool = False,
-        return_execution: bool = False,
+        pause_on_disk: bool = False,
+        raise_on_error: bool = True,
+        return_execution: bool = True,
         **kwargs,
     ) -> Union[UUID, SagaExecution]:
         try:
