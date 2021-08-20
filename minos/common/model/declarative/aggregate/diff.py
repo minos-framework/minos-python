@@ -25,6 +25,7 @@ from ...actions import (
     Action,
 )
 from ...dynamic import (
+    FieldDiff,
     FieldDiffContainer,
 )
 from ..abc import (
@@ -55,6 +56,38 @@ class AggregateDiff(DeclarativeModel):
             if item != "fields_diff":
                 return getattr(self.fields_diff, item)[0].value
             raise exc
+
+    def get_one_value(self, name: str) -> Any:
+        """Get first value with given name.
+
+        :param name: The name of the value.
+        :return: A ``object`` instance.
+        """
+        return self.fields_diff.get_one_value(name)
+
+    def get_one(self, name: str) -> FieldDiff:
+        """Get first field diff with given name.
+
+        :param name: The name of the field diff.
+        :return: A ``FieldDiff`` instance.
+        """
+        return self.fields_diff.get_one(name)
+
+    def get_all_values(self, name: str) -> list[Any]:
+        """Get all values with given name.
+
+        :param name: The name of the values.
+        :return: A list of ``object`` instances.
+        """
+        return self.fields_diff.get_all_values(name)
+
+    def get_all(self, name: str) -> list[FieldDiff]:
+        """Get all field diffs with given name.
+
+        :param name: The name of the field diffs.
+        :return: A list of ``FieldDiff`` instances.
+        """
+        return self.fields_diff.get_all(name)
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:

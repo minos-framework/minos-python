@@ -121,15 +121,15 @@ class FieldDiffContainer(BucketModel):
         yield from self._name_mapper.keys()
 
     def get_one_value(self, name: str) -> Any:
-        """Get the first value with given name.
+        """Get first value with given name.
 
-        :param name: The name of the value
-        :return: A value.
+        :param name: The name of the value.
+        :return: A ``object`` instance.
         """
         return self.get_one(name).value
 
     def get_one(self, name: str) -> FieldDiff:
-        """Get the first diff with given name.
+        """Get first field diff with given name.
 
         :param name: The name of the field diff.
         :return: A ``FieldDiff`` instance.
@@ -138,15 +138,15 @@ class FieldDiffContainer(BucketModel):
         return getattr(self, name)
 
     def get_all_values(self, name: str) -> list[Any]:
-        """Get all the values with given name.
+        """Get all values with given name.
 
-        :param name: The name of the value.
-        :return: A list of values.
+        :param name: The name of the values.
+        :return: A list of ``object`` instances.
         """
         return [diff.value for diff in self.get_all(name)]
 
     def get_all(self, name: str) -> list[FieldDiff]:
-        """Get all the field diffs with given name.
+        """Get all field diffs with given name.
 
         :param name: The name of the field diffs.
         :return: A list of ``FieldDiff`` instances.

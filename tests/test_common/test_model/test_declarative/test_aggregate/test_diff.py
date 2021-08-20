@@ -18,6 +18,7 @@ from minos.common import (
     AggregateDiff,
     FieldDiff,
     FieldDiffContainer,
+    IncrementalFieldDiff,
     ModelRef,
 )
 from tests.aggregate_classes import (
@@ -72,6 +73,65 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         )
         diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
         self.assertEqual(fields_diff, diff.fields_diff)
+
+    def test_get_one(self):
+        fields_diff = FieldDiffContainer(
+            [
+                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+                FieldDiff("color", str, "red"),
+            ]
+        )
+        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
+        observed = diff.get_one("doors")
+
+        expected = IncrementalFieldDiff("doors", int, 5, Action.CREATE)
+        self.assertEqual(expected, observed)
+
+    def test_get_one_value(self):
+        fields_diff = FieldDiffContainer(
+            [
+                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+                FieldDiff("color", str, "red"),
+            ]
+        )
+        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
+        observed = diff.get_one_value("doors")
+
+        expected = 5
+        self.assertEqual(expected, observed)
+
+    def test_get_all(self):
+        fields_diff = FieldDiffContainer(
+            [
+                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+                FieldDiff("color", str, "red"),
+            ]
+        )
+        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
+        observed = diff.get_all("doors")
+
+        expected = [
+            IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+            IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+        ]
+        self.assertEqual(expected, observed)
+
+    def test_get_all_values(self):
+        fields_diff = FieldDiffContainer(
+            [
+                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+                FieldDiff("color", str, "red"),
+            ]
+        )
+        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
+        observed = diff.get_all_values("doors")
+
+        expected = [5, 3]
+        self.assertEqual(expected, observed)
 
     def test_from_aggregate(self):
         observed = AggregateDiff.from_aggregate(self.initial)
