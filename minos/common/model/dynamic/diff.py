@@ -103,7 +103,7 @@ class FieldDiffContainer(BucketModel):
             return super().__getattr__(item)
         except AttributeError as exc:
             if item in self._name_mapper:
-                return [getattr(self, name) for name in self._name_mapper.get(item)]
+                return self.get_all(item)
             raise exc
 
     def __eq__(self, other):
@@ -119,6 +119,39 @@ class FieldDiffContainer(BucketModel):
         :return: An iterable of string values.
         """
         yield from self._name_mapper.keys()
+
+    def get_one_value(self, name: str) -> Any:
+        """Get the first value with given name.
+
+        :param name: The name of the value
+        :return: A value.
+        """
+        return self.get_one(name).value
+
+    def get_one(self, name: str) -> FieldDiff:
+        """Get the first diff with given name.
+
+        :param name: The name of the field diff.
+        :return: A ``FieldDiff`` instance.
+        """
+        name = self._name_mapper.get(name)[0]
+        return getattr(self, name)
+
+    def get_all_values(self, name: str) -> list[Any]:
+        """Get all the values with given name.
+
+        :param name: The name of the value.
+        :return: A list of values.
+        """
+        return [diff.value for diff in self.get_all(name)]
+
+    def get_all(self, name: str) -> list[FieldDiff]:
+        """Get all the field diffs with given name.
+
+        :param name: The name of the field diffs.
+        :return: A list of ``FieldDiff`` instances.
+        """
+        return [getattr(self, name) for name in self._name_mapper.get(name)]
 
     def flatten_items(self) -> Iterator[tuple[str, FieldDiff]]:
         """Get the field differences in a flatten way.
