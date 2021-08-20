@@ -56,13 +56,6 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
-    def test_getattr(self):
-        self.assertEqual(3, self.diff.doors)
-
-    def test_getattr_raises(self):
-        with self.assertRaises(AttributeError):
-            self.diff.wheels
-
     def test_fields_diff(self):
         fields_diff = FieldDiffContainer(
             [
@@ -73,65 +66,6 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         )
         diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
         self.assertEqual(fields_diff, diff.fields_diff)
-
-    def test_get_one(self):
-        fields_diff = FieldDiffContainer(
-            [
-                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
-                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
-                FieldDiff("color", str, "red"),
-            ]
-        )
-        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
-        observed = diff.get_one("doors")
-
-        expected = IncrementalFieldDiff("doors", int, 5, Action.CREATE)
-        self.assertEqual(expected, observed)
-
-    def test_get_one_value(self):
-        fields_diff = FieldDiffContainer(
-            [
-                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
-                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
-                FieldDiff("color", str, "red"),
-            ]
-        )
-        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
-        observed = diff.get_one_value("doors")
-
-        expected = 5
-        self.assertEqual(expected, observed)
-
-    def test_get_all(self):
-        fields_diff = FieldDiffContainer(
-            [
-                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
-                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
-                FieldDiff("color", str, "red"),
-            ]
-        )
-        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
-        observed = diff.get_all("doors")
-
-        expected = [
-            IncrementalFieldDiff("doors", int, 5, Action.CREATE),
-            IncrementalFieldDiff("doors", int, 3, Action.CREATE),
-        ]
-        self.assertEqual(expected, observed)
-
-    def test_get_all_values(self):
-        fields_diff = FieldDiffContainer(
-            [
-                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
-                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
-                FieldDiff("color", str, "red"),
-            ]
-        )
-        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
-        observed = diff.get_all_values("doors")
-
-        expected = [5, 3]
-        self.assertEqual(expected, observed)
 
     def test_from_aggregate(self):
         observed = AggregateDiff.from_aggregate(self.initial)
@@ -190,6 +124,53 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         observed = aggr.decompose()
+        self.assertEqual(expected, observed)
+
+
+class TestAggregateDiffGet(unittest.TestCase):
+    def setUp(self) -> None:
+        self.diff = AggregateDiff(
+            uuid=uuid4(),
+            name=Car.classname,
+            version=1,
+            action=Action.CREATE,
+            fields_diff=FieldDiffContainer(
+                [
+                    IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                    IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+                    FieldDiff("color", str, "red"),
+                ]
+            ),
+        )
+
+    def test_getattr(self):
+        self.assertEqual(5, self.diff.doors)
+
+    def test_getattr_raises(self):
+        with self.assertRaises(AttributeError):
+            self.diff.wheels
+
+    def test_get_one(self):
+        observed = self.diff.get_one("doors")
+        expected = IncrementalFieldDiff("doors", int, 5, Action.CREATE)
+        self.assertEqual(expected, observed)
+
+    def test_get_one_value(self):
+        observed = self.diff.get_one_value("doors")
+        expected = 5
+        self.assertEqual(expected, observed)
+
+    def test_get_all(self):
+        observed = self.diff.get_all("doors")
+        expected = [
+            IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+            IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+        ]
+        self.assertEqual(expected, observed)
+
+    def test_get_all_values(self):
+        observed = self.diff.get_all_values("doors")
+        expected = [5, 3]
         self.assertEqual(expected, observed)
 
 
