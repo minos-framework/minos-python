@@ -143,7 +143,10 @@ class TestAggregateDiffGet(unittest.TestCase):
             ),
         )
 
-    def test_getattr(self):
+    def test_getattr_single(self):
+        self.assertEqual("red", self.diff.color)
+
+    def test_getattr_multiple(self):
         self.assertEqual(5, self.diff.doors)
 
     def test_getattr_raises(self):
