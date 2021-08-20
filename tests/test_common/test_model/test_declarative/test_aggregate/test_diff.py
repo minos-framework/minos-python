@@ -147,62 +147,52 @@ class TestAggregateDiffGet(unittest.TestCase):
         self.assertEqual("red", self.diff.color)
 
     def test_getattr_multiple(self):
-        self.assertEqual(5, self.diff.doors)
+        self.assertEqual([5, 3], self.diff.doors)
 
     def test_getattr_raises(self):
         with self.assertRaises(AttributeError):
             self.diff.wheels
 
-    def test_get_one(self):
+    def test_get_one_single(self):
+        observed = self.diff.get_one("color")
+        expected = "red"
+        self.assertEqual(expected, observed)
+
+    def test_get_one_single_diff(self):
+        observed = self.diff.get_one("color", return_diff=True)
+        expected = FieldDiff("color", str, "red")
+        self.assertEqual(expected, observed)
+
+    def test_get_one_multiple(self):
         observed = self.diff.get_one("doors")
-        expected = IncrementalFieldDiff("doors", int, 5, Action.CREATE)
+        expected = [5, 3]
         self.assertEqual(expected, observed)
 
-    def test_get_one_value(self):
-        observed = self.diff.get_one_value("doors")
-        expected = 5
-        self.assertEqual(expected, observed)
-
-    def test_get_one_dict(self):
-        observed = self.diff.get_one_dict()
-        expected = {
-            "color": FieldDiff("color", str, "red"),
-            "doors": IncrementalFieldDiff("doors", int, 5, Action.CREATE),
-        }
-        self.assertEqual(expected, observed)
-
-    def test_get_one_value_dict(self):
-        observed = self.diff.get_one_value_dict()
-        expected = {"doors": 5, "color": "red"}
-        self.assertEqual(expected, observed)
-
-    def test_get_all(self):
-        observed = self.diff.get_all("doors")
+    def test_get_one_multiple_diff(self):
+        observed = self.diff.get_one("doors", return_diff=True)
         expected = [
             IncrementalFieldDiff("doors", int, 5, Action.CREATE),
             IncrementalFieldDiff("doors", int, 3, Action.CREATE),
         ]
         self.assertEqual(expected, observed)
 
-    def test_get_all_dict(self):
-        observed = self.diff.get_all_dict()
+    def test_get_all(self):
+        observed = self.diff.get_all()
         expected = {
-            "color": [FieldDiff("color", str, "red")],
+            "color": "red",
+            "doors": [5, 3],
+        }
+        self.assertEqual(expected, observed)
+
+    def test_get_all_diffs(self):
+        observed = self.diff.get_all(return_diff=True)
+        expected = {
+            "color": FieldDiff("color", str, "red"),
             "doors": [
                 IncrementalFieldDiff("doors", int, 5, Action.CREATE),
                 IncrementalFieldDiff("doors", int, 3, Action.CREATE),
             ],
         }
-        self.assertEqual(expected, observed)
-
-    def test_get_all_values(self):
-        observed = self.diff.get_all_values("doors")
-        expected = [5, 3]
-        self.assertEqual(expected, observed)
-
-    def test_get_all_values_dict(self):
-        observed = self.diff.get_all_values_dict()
-        expected = {"doors": [5, 3], "color": ["red"]}
         self.assertEqual(expected, observed)
 
 

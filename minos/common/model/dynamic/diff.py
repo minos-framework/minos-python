@@ -102,9 +102,10 @@ class FieldDiffContainer(BucketModel):
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item in self._name_mapper:
-                return self.get_all(item)
-            raise exc
+            try:
+                return self.get_one(item)
+            except Exception:
+                raise exc
 
     def __eq__(self, other):
         return type(self) == type(other) and tuple(self.values()) == tuple(other.values())
@@ -120,66 +121,33 @@ class FieldDiffContainer(BucketModel):
         """
         yield from self._name_mapper.keys()
 
-    def get_one_value_dict(self) -> dict[str, Any]:
-        """Get a dictionary containing all names as keys and the first value of each one as values.
-
-        :return: A ``dict`` with ``str`` keys and ``Any`` values.
-        """
-        return {key: self.get_one_value(key) for key in self.keys()}
-
-    def get_one_value(self, name: str) -> Any:
-        """Get first value with given name.
-
-        :param name: The name of the value.
-        :return: A ``object`` instance.
-        """
-        return self.get_one(name).value
-
-    def get_one_dict(self) -> dict[str, FieldDiff]:
-        """Get a dictionary containing all names as keys and the first field diff of each one as values.
-
-        :return: A ``dict`` with ``str`` keys and ``FieldDiff`` values.
-        """
-        return {key: self.get_one(key) for key in self.keys()}
-
-    def get_one(self, name: str) -> FieldDiff:
+    def get_one(self, name: str, return_diff: bool = True) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         """Get first field diff with given name.
 
         :param name: The name of the field diff.
+        :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
+            returned as value instances.
         :return: A ``FieldDiff`` instance.
         """
-        name = self._name_mapper[name][0]
-        return getattr(self, name)
+        names = self._name_mapper[name]
+        if len(names) == 1:
+            return self._get_one(names[0], return_diff)
+        return [self._get_one(name, return_diff) for name in names]
 
-    def get_all_values_dict(self) -> dict[str, list[Any]]:
+    def _get_one(self, name: str, return_diff: bool) -> Union[FieldDiff, Any]:
+        diff = getattr(self, name)
+        if return_diff:
+            return diff
+        return diff.value
+
+    def get_all(self, return_diff: bool = True) -> dict[str, Union[FieldDiff, Any, list[FieldDiff], list[Any]]]:
         """Get a dictionary containing all names as keys and all the values of each one as values.
 
+        :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
+            returned as value instances.
         :return: A ``dict`` with ``str`` keys and ``list[Any]`` values.
         """
-        return {key: self.get_all_values(key) for key in self.keys()}
-
-    def get_all_values(self, name: str) -> list[Any]:
-        """Get all values with given name.
-
-        :param name: The name of the values.
-        :return: A list of ``object`` instances.
-        """
-        return [diff.value for diff in self.get_all(name)]
-
-    def get_all_dict(self) -> dict[str, list[FieldDiff]]:
-        """Get a dictionary containing all names as keys and all the field diffs of each one as values.
-
-        :return: A ``dict`` with ``str`` keys and ``list[Any]`` values.
-        """
-        return {key: self.get_all(key) for key in self.keys()}
-
-    def get_all(self, name: str) -> list[FieldDiff]:
-        """Get all field diffs with given name.
-
-        :param name: The name of the field diffs.
-        :return: A list of ``FieldDiff`` instances.
-        """
-        return [getattr(self, name) for name in self._name_mapper[name]]
+        return {key: self.get_one(key, return_diff) for key in self.keys()}
 
     def flatten_items(self) -> Iterator[tuple[str, FieldDiff]]:
         """Get the field differences in a flatten way.
@@ -193,7 +161,8 @@ class FieldDiffContainer(BucketModel):
 
         :return: An ``Iterator`` of ``FieldDiff`` instances.
         """
-        return chain.from_iterable(self.values())
+        iterable = (v if isinstance(v, list) else [v] for v in self.values())
+        return chain.from_iterable(iterable)
 
     @classmethod
     def from_difference(cls, a: Model, b: Model, ignore: set[str] = frozenset()) -> FieldDiffContainer:

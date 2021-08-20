@@ -16,6 +16,7 @@ from operator import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Union,
 )
 from uuid import (
     UUID,
@@ -53,69 +54,29 @@ class AggregateDiff(DeclarativeModel):
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item != "fields_diff" and item in self.fields_diff:
-                return self.fields_diff.get_one_value(item)
-            raise exc
+            try:
+                return self.get_one(item)
+            except Exception:
+                raise exc
 
-    def get_one_value_dict(self) -> dict[str, Any]:
-        """Get a dictionary containing all names as keys and the first value of each one as values.
-
-        :return: A ``dict`` with ``str`` keys and ``Any`` values.
-        """
-        return self.fields_diff.get_one_value_dict()
-
-    def get_one_value(self, name: str) -> Any:
-        """Get first value with given name.
-
-        :param name: The name of the value.
-        :return: A ``object`` instance.
-        """
-        return self.fields_diff.get_one_value(name)
-
-    def get_one_dict(self) -> dict[str, FieldDiff]:
-        """Get a dictionary containing all names as keys and the first field diff of each one as values.
-
-        :return: A ``dict`` with ``str`` keys and ``FieldDiff`` values.
-        """
-        return self.fields_diff.get_one_dict()
-
-    def get_one(self, name: str) -> FieldDiff:
+    def get_one(self, name: str, return_diff: bool = False) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         """Get first field diff with given name.
 
         :param name: The name of the field diff.
+        :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
+            returned as value instances.
         :return: A ``FieldDiff`` instance.
         """
-        return self.fields_diff.get_one(name)
+        return self.fields_diff.get_one(name, return_diff)
 
-    def get_all_values_dict(self) -> dict[str, list[Any]]:
-        """Get a dictionary containing all names as keys and all the values of each one as values.
-
-        :return: A ``dict`` with ``str`` keys and ``list[Any]`` values.
-        """
-        return self.fields_diff.get_all_values_dict()
-
-    def get_all_values(self, name: str) -> list[Any]:
-        """Get all values with given name.
-
-        :param name: The name of the values.
-        :return: A list of ``object`` instances.
-        """
-        return self.fields_diff.get_all_values(name)
-
-    def get_all_dict(self) -> dict[str, list[FieldDiff]]:
-        """Get a dictionary containing all names as keys and all the field diffs of each one as values.
-
-        :return: A ``dict`` with ``str`` keys and ``list[Any]`` values.
-        """
-        return self.fields_diff.get_all_dict()
-
-    def get_all(self, name: str) -> list[FieldDiff]:
+    def get_all(self, return_diff: bool = False) -> dict[str, Union[FieldDiff, Any, list[FieldDiff], list[Any]]]:
         """Get all field diffs with given name.
 
-        :param name: The name of the field diffs.
+        :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
+            returned as value instances.
         :return: A list of ``FieldDiff`` instances.
         """
-        return self.fields_diff.get_all(name)
+        return self.fields_diff.get_all(return_diff)
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:

@@ -47,26 +47,6 @@ class TestFieldDiffContainer(unittest.IsolatedAsyncioTestCase):
             )
             self.car_four = Car(3, "blue", id=2, version=1, _broker=broker, _repository=repository, _snapshot=snapshot)
 
-    def test_keys(self):
-        diffs = [FieldDiff("doors", int, 5), FieldDiff("color", str, "red")]
-        difference = FieldDiffContainer(diffs)
-        self.assertEqual({"doors", "color"}, set(difference.keys()))
-
-    def test_values(self):
-        diffs = [FieldDiff("doors", int, 5), FieldDiff("color", str, "red")]
-        difference = FieldDiffContainer(diffs)
-        self.assertEqual([[FieldDiff("doors", int, 5)], [FieldDiff("color", str, "red")]], list(difference.values()))
-
-    def test_flatten_values(self):
-        diffs = [FieldDiff("doors", int, 5), FieldDiff("color", str, "red")]
-        difference = FieldDiffContainer(diffs)
-        self.assertEqual(diffs, list(difference.flatten_values()))
-
-    def test_flatten_items(self):
-        difference = FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "red")])
-        expected = [("doors", FieldDiff("doors", int, 5)), ("color", FieldDiff("color", str, "red"))]
-        self.assertEqual(expected, list(difference.flatten_items()))
-
     def test_model_type(self):
         fields = [FieldDiff("doors", int, 5), FieldDiff("color", str, "red")]
         difference = FieldDiffContainer(fields)
@@ -174,11 +154,11 @@ class TestFieldDiffContainer(unittest.IsolatedAsyncioTestCase):
             FieldDiff("color", str, "red"),
         ]
         difference = FieldDiffContainer(fields)
-        expected = f"FieldDiffContainer(doors=[{fields[0]}, {fields[1]}], color=[{fields[2]}])"
+        expected = f"FieldDiffContainer(doors=[{fields[0]}, {fields[1]}], color={fields[2]})"
         self.assertEqual(expected, repr(difference))
 
 
-class TestFieldDiffContainerGet(unittest.TestCase):
+class TestFieldDiffContainerAccessors(unittest.TestCase):
     def setUp(self) -> None:
         self.fields_diff = FieldDiffContainer(
             [
@@ -188,9 +168,48 @@ class TestFieldDiffContainerGet(unittest.TestCase):
             ]
         )
 
+    def test_as_dict(self):
+        expected = {
+            "color": FieldDiff("color", str, "red"),
+            "doors": [
+                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+            ],
+        }
+        self.assertEqual(expected, dict(self.fields_diff))
+
+    def test_keys(self):
+        self.assertEqual({"doors", "color"}, set(self.fields_diff.keys()))
+
+    def test_values(self):
+        expected = [
+            [
+                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+            ],
+            FieldDiff("color", str, "red"),
+        ]
+        self.assertEqual(expected, list(self.fields_diff.values()))
+
+    def test_flatten_values(self):
+        expected = [
+            IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+            IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+            FieldDiff("color", str, "red"),
+        ]
+        self.assertEqual(expected, list(self.fields_diff.flatten_values()))
+
+    def test_flatten_items(self):
+        expected = [
+            ("doors", IncrementalFieldDiff("doors", int, 5, Action.CREATE)),
+            ("doors", IncrementalFieldDiff("doors", int, 3, Action.CREATE)),
+            ("color", FieldDiff("color", str, "red")),
+        ]
+        self.assertEqual(expected, list(self.fields_diff.flatten_items()))
+
     def test_get_attr_single(self):
         observed = self.fields_diff["color"]
-        expected = [FieldDiff("color", str, "red")]
+        expected = FieldDiff("color", str, "red")
         self.assertEqual(expected, observed)
 
     def test_get_attr_multiple(self):
@@ -201,41 +220,33 @@ class TestFieldDiffContainerGet(unittest.TestCase):
         ]
         self.assertEqual(expected, observed)
 
-    def test_get_one(self):
+    def test_get_one_single(self):
+        observed = self.fields_diff.get_one("color")
+        expected = FieldDiff("color", str, "red")
+        self.assertEqual(expected, observed)
+
+    def test_get_one_multiple(self):
         observed = self.fields_diff.get_one("doors")
-        expected = IncrementalFieldDiff("doors", int, 5, Action.CREATE)
-        self.assertEqual(expected, observed)
-
-    def test_get_one_dict(self):
-        observed = self.fields_diff.get_one_dict()
-        expected = {
-            "color": FieldDiff("color", str, "red"),
-            "doors": IncrementalFieldDiff("doors", int, 5, Action.CREATE),
-        }
-        self.assertEqual(expected, observed)
-
-    def test_get_one_value(self):
-        observed = self.fields_diff.get_one_value("doors")
-        expected = 5
-        self.assertEqual(expected, observed)
-
-    def test_get_one_value_dict(self):
-        observed = self.fields_diff.get_one_value_dict()
-        expected = {"doors": 5, "color": "red"}
-        self.assertEqual(expected, observed)
-
-    def test_get_all(self):
-        observed = self.fields_diff.get_all("doors")
         expected = [
             IncrementalFieldDiff("doors", int, 5, Action.CREATE),
             IncrementalFieldDiff("doors", int, 3, Action.CREATE),
         ]
         self.assertEqual(expected, observed)
 
-    def test_get_all_dict(self):
-        observed = self.fields_diff.get_all_dict()
+    def test_get_one_single_value(self):
+        observed = self.fields_diff.get_one("color", return_diff=False)
+        expected = "red"
+        self.assertEqual(expected, observed)
+
+    def test_get_one_multiple_values(self):
+        observed = self.fields_diff.get_one("doors", return_diff=False)
+        expected = [5, 3]
+        self.assertEqual(expected, observed)
+
+    def test_get_all(self):
+        observed = self.fields_diff.get_all()
         expected = {
-            "color": [FieldDiff("color", str, "red")],
+            "color": FieldDiff("color", str, "red"),
             "doors": [
                 IncrementalFieldDiff("doors", int, 5, Action.CREATE),
                 IncrementalFieldDiff("doors", int, 3, Action.CREATE),
@@ -244,13 +255,8 @@ class TestFieldDiffContainerGet(unittest.TestCase):
         self.assertEqual(expected, observed)
 
     def test_get_all_values(self):
-        observed = self.fields_diff.get_all_values("doors")
-        expected = [5, 3]
-        self.assertEqual(expected, observed)
-
-    def test_get_all_values_dict(self):
-        observed = self.fields_diff.get_all_values_dict()
-        expected = {"doors": [5, 3], "color": ["red"]}
+        observed = self.fields_diff.get_all(return_diff=False)
+        expected = {"doors": [5, 3], "color": "red"}
         self.assertEqual(expected, observed)
 
 
