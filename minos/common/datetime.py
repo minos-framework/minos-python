@@ -7,8 +7,8 @@ from datetime import (
 
 
 def current_datetime() -> datetime:
-    """TODO
+    """Get current datetime in `UTC`.
 
-    :return: TODO
+    :return: A ``datetime`` instance.
     """
     return datetime.now(tz=timezone.utc)
