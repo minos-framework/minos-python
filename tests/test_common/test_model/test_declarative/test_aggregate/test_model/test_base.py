@@ -34,7 +34,17 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
     async def test_create(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
             observed = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
-            expected = Car(3, "blue", uuid=observed.uuid, version=1, _broker=b, _repository=r, _snapshot=s)
+            expected = Car(
+                3,
+                "blue",
+                uuid=observed.uuid,
+                version=1,
+                created_at=observed.created_at,
+                updated_at=observed.updated_at,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
             self.assertEqual(expected, observed)
 
     async def test_create_raises(self):
@@ -78,11 +88,33 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
 
             await car.update(color="red")
-            self.assertEqual(Car(3, "red", uuid=car.uuid, version=2, _broker=b, _repository=r, _snapshot=s), car)
+            expected = Car(
+                3,
+                "red",
+                uuid=car.uuid,
+                version=2,
+                created_at=car.created_at,
+                updated_at=car.updated_at,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
+            self.assertEqual(expected, car)
             self.assertEqual(car, await Car.get_one(car.uuid, _broker=b, _repository=r, _snapshot=s))
 
             await car.update(doors=5)
-            self.assertEqual(Car(5, "red", uuid=car.uuid, version=3, _broker=b, _repository=r, _snapshot=s), car)
+            expected = Car(
+                5,
+                "red",
+                uuid=car.uuid,
+                version=3,
+                created_at=car.created_at,
+                updated_at=car.updated_at,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
+            self.assertEqual(expected, car)
             self.assertEqual(car, await Car.get_one(car.uuid, _broker=b, _repository=r, _snapshot=s))
 
     async def test_update_raises(self):
@@ -99,9 +131,35 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             await car2.update(color="red", _broker=b, _repository=r, _snapshot=s)
             await car2.update(doors=5, _broker=b, _repository=r, _snapshot=s)
 
-            self.assertEqual(Car(3, "blue", uuid=uuid, version=1, _broker=b, _repository=r, _snapshot=s), car)
+            self.assertEqual(
+                Car(
+                    3,
+                    "blue",
+                    uuid=uuid,
+                    version=1,
+                    created_at=car.created_at,
+                    updated_at=car.updated_at,
+                    _broker=b,
+                    _repository=r,
+                    _snapshot=s,
+                ),
+                car,
+            )
             await car.refresh()
-            self.assertEqual(Car(5, "red", uuid=uuid, version=3, _broker=b, _repository=r, _snapshot=s), car)
+            self.assertEqual(
+                Car(
+                    5,
+                    "red",
+                    uuid=uuid,
+                    version=3,
+                    created_at=car.created_at,
+                    updated_at=car.updated_at,
+                    _broker=b,
+                    _repository=r,
+                    _snapshot=s,
+                ),
+                car,
+            )
 
     async def test_save_create(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
@@ -113,7 +171,20 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 await car.refresh()
 
             await car.save()
-            self.assertEqual(Car(5, "red", uuid=car.uuid, version=1, _broker=b, _repository=r, _snapshot=s), car)
+            self.assertEqual(
+                Car(
+                    5,
+                    "red",
+                    uuid=car.uuid,
+                    version=1,
+                    created_at=car.created_at,
+                    updated_at=car.updated_at,
+                    _broker=b,
+                    _repository=r,
+                    _snapshot=s,
+                ),
+                car,
+            )
 
     async def test_save_update(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
@@ -124,16 +195,48 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             car.color = "red"
             car.doors = 5
 
+            expected = Car(
+                3,
+                "blue",
+                uuid=uuid,
+                version=1,
+                created_at=car.created_at,
+                updated_at=car.updated_at,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
             self.assertEqual(
-                Car(3, "blue", uuid=uuid, version=1, _broker=b, _repository=r, _snapshot=s),
-                await Car.get_one(uuid, _broker=b, _repository=r, _snapshot=s),
+                expected, await Car.get_one(uuid, _broker=b, _repository=r, _snapshot=s),
             )
 
             await car.save()
-            self.assertEqual(Car(5, "red", uuid=uuid, version=2, _broker=b, _repository=r, _snapshot=s), car)
+            expected = Car(
+                5,
+                "red",
+                uuid=uuid,
+                version=2,
+                created_at=car.created_at,
+                updated_at=car.updated_at,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
+            self.assertEqual(expected, car)
+
+            expected = Car(
+                5,
+                "red",
+                uuid=uuid,
+                version=2,
+                created_at=car.created_at,
+                updated_at=car.updated_at,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
             self.assertEqual(
-                Car(5, "red", uuid=uuid, version=2, _broker=b, _repository=r, _snapshot=s),
-                await Car.get_one(uuid, _broker=b, _repository=r, _snapshot=s),
+                expected, await Car.get_one(uuid, _broker=b, _repository=r, _snapshot=s),
             )
 
     async def test_save_raises(self):

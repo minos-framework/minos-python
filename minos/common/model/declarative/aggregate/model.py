@@ -285,20 +285,19 @@ class Aggregate(Entity):
                     f"The uuid must be computed internally on the repository. Obtained: {self.uuid}"
                 )
 
+        values = {
+            k: field.value
+            for k, field in self.fields.items()
+            if k not in {"uuid", "version", "created_at", "updated_at"}
+        }
         if is_creation:
             new = await self.create(
-                **{k: field.value for k, field in self.fields.items() if k not in ("uuid", "version")},
-                _broker=self._broker,
-                _repository=self._repository,
-                _snapshot=self._snapshot,
+                **values, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
             )
             self._fields |= new.fields
         else:
             await self.update(
-                **{k: field.value for k, field in self.fields.items() if k not in ("uuid", "version")},
-                _broker=self._broker,
-                _repository=self._repository,
-                _snapshot=self._snapshot,
+                **values, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot,
             )
 
     async def refresh(self) -> NoReturn:
