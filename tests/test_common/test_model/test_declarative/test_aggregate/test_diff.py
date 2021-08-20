@@ -56,17 +56,6 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
-    def test_fields_diff(self):
-        fields_diff = FieldDiffContainer(
-            [
-                FieldDiff("doors", int, 3),
-                FieldDiff("color", str, "blue"),
-                FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
-            ]
-        )
-        diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
-        self.assertEqual(fields_diff, diff.fields_diff)
-
     def test_from_aggregate(self):
         observed = AggregateDiff.from_aggregate(self.initial)
         self.assertEqual(self.diff, observed)
@@ -127,7 +116,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
 
-class TestAggregateDiffGet(unittest.TestCase):
+class TestAggregateDiffAccessors(unittest.TestCase):
     def setUp(self) -> None:
         self.diff = AggregateDiff(
             uuid=uuid4(),
@@ -142,6 +131,16 @@ class TestAggregateDiffGet(unittest.TestCase):
                 ]
             ),
         )
+
+    def test_fields_diff(self):
+        expected = FieldDiffContainer(
+            [
+                IncrementalFieldDiff("doors", int, 5, Action.CREATE),
+                IncrementalFieldDiff("doors", int, 3, Action.CREATE),
+                FieldDiff("color", str, "red"),
+            ]
+        )
+        self.assertEqual(expected, self.diff.fields_diff)
 
     def test_getattr_single(self):
         self.assertEqual("red", self.diff.color)
