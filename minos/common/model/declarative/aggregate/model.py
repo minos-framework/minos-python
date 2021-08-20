@@ -331,8 +331,9 @@ class Aggregate(Entity):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        values = {name: diff.value for name, diff in aggregate_diff.fields_diff.flatten_items()}
-        return cls(*args, uuid=aggregate_diff.uuid, version=aggregate_diff.version, **values, **kwargs)
+        return cls(
+            *args, uuid=aggregate_diff.uuid, version=aggregate_diff.version, **aggregate_diff.get_all(), **kwargs
+        )
 
 
 T = TypeVar("T", bound=Aggregate)
