@@ -281,5 +281,15 @@ class TestFieldDiffContainerAccessors(unittest.TestCase):
         self.assertEqual(expected, observed)
 
 
+class TestFieldDiffContainerRaises(unittest.IsolatedAsyncioTestCase):
+    def test_multiple_types(self):
+        with self.assertRaises(ValueError):
+            FieldDiffContainer([IncrementalFieldDiff("doors", int, 5, Action.CREATE), FieldDiff("doors", int, 3)])
+
+    def test_multiple_not_incremental(self):
+        with self.assertRaises(ValueError):
+            FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("doors", int, 3)])
+
+
 if __name__ == "__main__":
     unittest.main()

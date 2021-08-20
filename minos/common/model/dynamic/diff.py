@@ -238,10 +238,10 @@ def _build_mapper(fields: dict[str, Field]) -> dict[str, tuple[type, list[str]]]
     for k, names in mapper.items():
         types = {type(fields[name].value) for name in names}
         if len(types) > 1:
-            raise ValueError
+            raise ValueError(f"Multiple {FieldDiff.__name__!r} types have been provided to {k!r}: {types}")
         type_ = next(iter(types))
         if len(names) > 1 and not issubclass(type_, IncrementalFieldDiff):
-            raise ValueError
+            raise ValueError(f"Only {IncrementalFieldDiff.__name__!r} type allow multiple {k!r} values.")
         ans[k] = (type_, names)
 
     return ans
