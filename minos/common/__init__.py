@@ -55,8 +55,6 @@ from .exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosProtocolException,
     MinosRepositoryException,
-    MinosRepositoryManuallySetAggregateIdentifierException,
-    MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosReqAttributeException,
     MinosSagaManagerException,

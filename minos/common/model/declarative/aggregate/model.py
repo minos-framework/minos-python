@@ -36,8 +36,7 @@ from ....constants import (
 )
 from ....exceptions import (
     MinosBrokerNotProvidedException,
-    MinosRepositoryManuallySetAggregateIdentifierException,
-    MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
 )
@@ -178,20 +177,20 @@ class Aggregate(Entity):
         :return: A new ``Aggregate`` instance.
         """
         if "uuid" in kwargs:
-            raise MinosRepositoryManuallySetAggregateIdentifierException(
+            raise MinosRepositoryException(
                 f"The identifier must be computed internally on the repository. Obtained: {kwargs['uuid']}"
             )
 
         if "version" in kwargs:
-            raise MinosRepositoryManuallySetAggregateVersionException(
+            raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
         if "created_at" in kwargs:
-            raise MinosRepositoryManuallySetAggregateVersionException(
+            raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['created_at']}"
             )
         if "updated_at" in kwargs:
-            raise MinosRepositoryManuallySetAggregateVersionException(
+            raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
 
@@ -225,15 +224,15 @@ class Aggregate(Entity):
         """
 
         if "version" in kwargs:
-            raise MinosRepositoryManuallySetAggregateVersionException(
+            raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
         if "created_at" in kwargs:
-            raise MinosRepositoryManuallySetAggregateVersionException(
+            raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['created_at']}"
             )
         if "updated_at" in kwargs:
-            raise MinosRepositoryManuallySetAggregateVersionException(
+            raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
 
@@ -277,11 +276,11 @@ class Aggregate(Entity):
         is_creation = self.uuid == NULL_UUID
         if is_creation != (self.version == 0):
             if is_creation:
-                raise MinosRepositoryManuallySetAggregateVersionException(
+                raise MinosRepositoryException(
                     f"The version must be computed internally on the repository. Obtained: {self.version}"
                 )
             else:
-                raise MinosRepositoryManuallySetAggregateIdentifierException(
+                raise MinosRepositoryException(
                     f"The uuid must be computed internally on the repository. Obtained: {self.uuid}"
                 )
 

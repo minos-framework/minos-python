@@ -17,10 +17,10 @@ from minos.common import (
     NULL_UUID,
     InMemoryRepository,
     InMemorySnapshot,
-    MinosRepositoryManuallySetAggregateIdentifierException,
-    MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
+    current_datetime,
 )
 from tests.aggregate_classes import (
     Car,
@@ -49,10 +49,18 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
     async def test_create_raises(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
-            with self.assertRaises(MinosRepositoryManuallySetAggregateIdentifierException):
+            with self.assertRaises(MinosRepositoryException):
                 await Car.create(uuid=uuid4(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
-            with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
+            with self.assertRaises(MinosRepositoryException):
                 await Car.create(version=1, doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+            with self.assertRaises(MinosRepositoryException):
+                await Car.create(
+                    created_at=current_datetime(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s
+                )
+            with self.assertRaises(MinosRepositoryException):
+                await Car.create(
+                    created_at=current_datetime(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s
+                )
 
     async def test_classname(self):
         self.assertEqual("tests.aggregate_classes.Car", Car.classname)
@@ -119,8 +127,12 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
     async def test_update_raises(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
-            with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
-                await Car(3, "blue", id=1, version=1, _broker=b, _repository=r, _snapshot=s).update(version=1)
+            with self.assertRaises(MinosRepositoryException):
+                await Car(3, "blue", _broker=b, _repository=r, _snapshot=s).update(version=1)
+            with self.assertRaises(MinosRepositoryException):
+                await Car(3, "blue", _broker=b, _repository=r, _snapshot=s).update(created_at=current_datetime())
+            with self.assertRaises(MinosRepositoryException):
+                await Car(3, "blue", _broker=b, _repository=r, _snapshot=s).update(updated_at=current_datetime())
 
     async def test_refresh(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
@@ -241,9 +253,9 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
     async def test_save_raises(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
-            with self.assertRaises(MinosRepositoryManuallySetAggregateIdentifierException):
+            with self.assertRaises(MinosRepositoryException):
                 await Car(3, "blue", uuid=uuid4(), _broker=b, _repository=r, _snapshot=s).save()
-            with self.assertRaises(MinosRepositoryManuallySetAggregateVersionException):
+            with self.assertRaises(MinosRepositoryException):
                 await Car(3, "blue", version=1, _broker=b, _repository=r, _snapshot=s).save()
 
     async def test_delete(self):
