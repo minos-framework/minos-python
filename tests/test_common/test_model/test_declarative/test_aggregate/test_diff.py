@@ -131,7 +131,7 @@ class TestAggregateDiffGet(unittest.TestCase):
     def setUp(self) -> None:
         self.diff = AggregateDiff(
             uuid=uuid4(),
-            name=Car.classname,
+            name="src.domain.Car",
             version=1,
             action=Action.CREATE,
             fields_diff=FieldDiffContainer(
