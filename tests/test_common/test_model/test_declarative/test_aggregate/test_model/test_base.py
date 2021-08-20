@@ -59,7 +59,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 )
             with self.assertRaises(MinosRepositoryException):
                 await Car.create(
-                    created_at=current_datetime(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s
+                    updated_at=current_datetime(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s
                 )
 
     async def test_classname(self):
