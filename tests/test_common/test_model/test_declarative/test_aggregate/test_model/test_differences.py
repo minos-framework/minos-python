@@ -53,9 +53,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
-            fields_diff=FieldDiffContainer(
-                [FieldDiff("doors", int, 1), FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]
-            ),
+            fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         self.initial.apply_diff(diff)
         self.assertEqual(self.final, self.initial)

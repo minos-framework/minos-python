@@ -93,10 +93,7 @@ class FieldDiffContainer(BucketModel):
 
         super().__init__(fields, **kwargs)
 
-        mapper = defaultdict(list)
-        for name, field in self._fields.items():
-            mapper[field.value.name].append(name)
-        self._name_mapper = dict(mapper)
+        self._mapper = _build_mapper(self._fields)
 
     def __getattr__(self, item: str) -> Any:
         try:
@@ -119,7 +116,7 @@ class FieldDiffContainer(BucketModel):
 
         :return: An iterable of string values.
         """
-        yield from self._name_mapper.keys()
+        yield from self._mapper.keys()
 
     def get_one(self, name: str, return_diff: bool = True) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         """Get first field diff with given name.
@@ -129,8 +126,8 @@ class FieldDiffContainer(BucketModel):
             returned as value instances.
         :return: A ``FieldDiff`` instance.
         """
-        names = self._name_mapper[name]
-        if len(names) == 1:
+        type_, names = self._mapper[name]
+        if not issubclass(type_, IncrementalFieldDiff):
             return self._get_one(names[0], return_diff)
         return [self._get_one(name, return_diff) for name in names]
 
@@ -229,3 +226,22 @@ class FieldDiffContainer(BucketModel):
         :return: A random string value.
         """
         return str(uuid4())
+
+
+def _build_mapper(fields: dict[str, Field]) -> dict[str, tuple[type, list[str]]]:
+    mapper = defaultdict(list)
+    for name, field in fields.items():
+        mapper[field.value.name].append(name)
+    mapper = dict(mapper)
+
+    ans = dict()
+    for k, names in mapper.items():
+        types = {type(fields[name].value) for name in names}
+        if len(types) > 1:
+            raise ValueError
+        type_ = next(iter(types))
+        if len(names) > 1 and not issubclass(type_, IncrementalFieldDiff):
+            raise ValueError
+        ans[k] = (type_, names)
+
+    return ans
