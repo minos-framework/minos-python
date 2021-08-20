@@ -18,7 +18,8 @@ from minos.common import (
     AggregateDiff,
     FieldDiff,
     FieldDiffContainer,
-    ModelRef, current_datetime,
+    ModelRef,
+    current_datetime,
 )
 from tests.aggregate_classes import (
     Car,

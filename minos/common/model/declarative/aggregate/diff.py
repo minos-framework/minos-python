@@ -105,7 +105,12 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
         return cls(
-            aggregate.uuid, aggregate.classname, aggregate.version, action, aggregate.updated_at, FieldDiffContainer.empty(),
+            aggregate.uuid,
+            aggregate.classname,
+            aggregate.version,
+            action,
+            aggregate.updated_at,
+            FieldDiffContainer.empty(),
         )
 
     def decompose(self) -> list[AggregateDiff]:
