@@ -34,6 +34,7 @@ from minos.common import (
     MissingSentinel,
     ModelRef,
     ModelType,
+    current_datetime,
 )
 from tests.aggregate_classes import (
     Owner,
@@ -150,7 +151,7 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     def test_datetime(self):
         decoder = AvroDataDecoder("test", datetime)
-        value = datetime.now()
+        value = current_datetime()
         observed = decoder.build(value)
         self.assertEqual(value, observed)
 

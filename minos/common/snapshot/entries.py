@@ -87,7 +87,14 @@ class SnapshotEntry:
                 f"The {self.aggregate_uuid!r} id points to an already deleted aggregate."
             )
         cls = self.aggregate_cls
-        instance = cls.from_avro_bytes(self.data, id=self.aggregate_uuid, version=self.version, **kwargs)
+        instance = cls.from_avro_bytes(
+            self.data,
+            id=self.aggregate_uuid,
+            version=self.version,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+            **kwargs,
+        )
         return instance
 
     @property

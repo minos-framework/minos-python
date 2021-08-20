@@ -32,6 +32,9 @@ from .database import (
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
 )
+from .datetime import (
+    current_datetime,
+)
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
