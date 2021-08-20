@@ -7,6 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
+from datetime import (
+    datetime,
+)
 from typing import (
     Optional,
 )
@@ -108,6 +111,8 @@ class TestFieldsDiff(unittest.IsolatedAsyncioTestCase):
             [
                 FieldDiff("uuid", UUID, NULL_UUID),
                 FieldDiff("version", int, 2),
+                FieldDiff("created_at", datetime, datetime.max),
+                FieldDiff("updated_at", datetime, datetime.max),
                 FieldDiff("doors", int, 5),
                 FieldDiff("color", str, "red"),
                 FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),

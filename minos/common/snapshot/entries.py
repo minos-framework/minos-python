@@ -74,7 +74,14 @@ class SnapshotEntry:
         :return: A new ``MinosSnapshotEntry`` instance.
         """
         # noinspection PyTypeChecker
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, aggregate.avro_bytes)
+        return cls(
+            aggregate_uuid=aggregate.uuid,
+            aggregate_name=aggregate.classname,
+            version=aggregate.version,
+            data=aggregate.avro_bytes,
+            created_at=aggregate.created_at,
+            updated_at=aggregate.updated_at,
+        )
 
     def build_aggregate(self, **kwargs) -> Aggregate:
         """Rebuild the stored ``Aggregate`` object instance from the internal state.

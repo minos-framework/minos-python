@@ -357,6 +357,7 @@ class Aggregate(Entity):
             else:
                 setattr(self, diff.name, diff.value)
         self.version = aggregate_diff.version
+        self.updated_at = aggregate_diff.created_at
 
     @classmethod
     def from_diff(cls: Type[T], aggregate_diff: AggregateDiff, *args, **kwargs) -> T:

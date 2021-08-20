@@ -77,8 +77,8 @@ class TestSnapshotEntry(unittest.TestCase):
         self.assertEqual(car.classname, entry.aggregate_name)
         self.assertEqual(car.version, entry.version)
         self.assertIsInstance(entry.data, bytes)
-        self.assertEqual(None, entry.created_at)
-        self.assertEqual(None, entry.updated_at)
+        self.assertEqual(car.created_at, entry.created_at)
+        self.assertEqual(car.updated_at, entry.updated_at)
 
     def test_equals(self):
         a = SnapshotEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))

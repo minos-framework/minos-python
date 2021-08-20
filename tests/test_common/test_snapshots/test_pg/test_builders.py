@@ -37,6 +37,7 @@ from minos.common import (
     PostgreSqlSnapshotSetup,
     RepositoryEntry,
     SnapshotEntry,
+    current_datetime,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -130,9 +131,9 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         aggregate_name: str = Car.classname
 
         async def _fn(*args, **kwargs):
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE)
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE)
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE)
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
         async with await self._populate() as repository:
             with patch("minos.common.PostgreSqlRepository.select", _fn):

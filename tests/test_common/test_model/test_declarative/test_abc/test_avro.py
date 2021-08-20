@@ -176,10 +176,28 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
                 "doors": 5,
                 "uuid": str(car.uuid),
                 "owner": [
-                    {"age": None, "uuid": str(owners[0].uuid), "name": "Hello", "surname": "Good Bye", "version": 1},
-                    {"age": None, "uuid": str(owners[1].uuid), "name": "Foo", "surname": "Bar", "version": 1},
+                    {
+                        "age": None,
+                        "uuid": str(owners[0].uuid),
+                        "name": "Hello",
+                        "surname": "Good Bye",
+                        "version": 1,
+                        "created_at": 253402300799999999,
+                        "updated_at": 253402300799999999,
+                    },
+                    {
+                        "age": None,
+                        "uuid": str(owners[1].uuid),
+                        "name": "Foo",
+                        "surname": "Bar",
+                        "version": 1,
+                        "created_at": 253402300799999999,
+                        "updated_at": 253402300799999999,
+                    },
                 ],
                 "version": 1,
+                "created_at": 253402300799999999,
+                "updated_at": 253402300799999999,
             }
             self.assertEqual(expected, car.avro_data)
 
