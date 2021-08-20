@@ -1,4 +1,4 @@
-default_stages: [ commit ]
+default_stages: [ push ]
 repos:
     -   repo: local
         hooks:
