@@ -53,9 +53,16 @@ class AggregateDiff(DeclarativeModel):
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item != "fields_diff":
-                return getattr(self.fields_diff, item)[0].value
+            if item != "fields_diff" and item in self.fields_diff:
+                return self.fields_diff.get_one_value(item)
             raise exc
+
+    def get_one_value_dict(self) -> dict[str, Any]:
+        """Get a dictionary containing all names as keys and the first value of each one as values.
+
+        :return: A ``dict`` with ``str`` keys and ``Any`` values.
+        """
+        return self.fields_diff.get_one_value_dict()
 
     def get_one_value(self, name: str) -> Any:
         """Get first value with given name.
@@ -65,6 +72,13 @@ class AggregateDiff(DeclarativeModel):
         """
         return self.fields_diff.get_one_value(name)
 
+    def get_one_dict(self) -> dict[str, FieldDiff]:
+        """Get a dictionary containing all names as keys and the first field diff of each one as values.
+
+        :return: A ``dict`` with ``str`` keys and ``FieldDiff`` values.
+        """
+        return self.fields_diff.get_one_dict()
+
     def get_one(self, name: str) -> FieldDiff:
         """Get first field diff with given name.
 
@@ -73,6 +87,13 @@ class AggregateDiff(DeclarativeModel):
         """
         return self.fields_diff.get_one(name)
 
+    def get_all_values_dict(self) -> dict[str, list[Any]]:
+        """Get a dictionary containing all names as keys and all the values of each one as values.
+
+        :return: A ``dict`` with ``str`` keys and ``list[Any]`` values.
+        """
+        return self.fields_diff.get_all_values_dict()
+
     def get_all_values(self, name: str) -> list[Any]:
         """Get all values with given name.
 
@@ -80,6 +101,13 @@ class AggregateDiff(DeclarativeModel):
         :return: A list of ``object`` instances.
         """
         return self.fields_diff.get_all_values(name)
+
+    def get_all_dict(self) -> dict[str, list[FieldDiff]]:
+        """Get a dictionary containing all names as keys and all the field diffs of each one as values.
+
+        :return: A ``dict`` with ``str`` keys and ``list[Any]`` values.
+        """
+        return self.fields_diff.get_all_dict()
 
     def get_all(self, name: str) -> list[FieldDiff]:
         """Get all field diffs with given name.
