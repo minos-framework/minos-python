@@ -82,7 +82,7 @@ class AggregateDiff(DeclarativeModel):
 
         fields_diff = FieldDiffContainer.from_difference(a, b, ignore={"uuid", "version", "created_at", "updated_at"})
 
-        return cls(new.uuid, new.classname, new.version, action, datetime.max, fields_diff)
+        return cls(new.uuid, new.classname, new.version, action, new.updated_at, fields_diff)
 
     @classmethod
     def from_aggregate(cls, aggregate: Aggregate, action: Action = Action.CREATE) -> AggregateDiff:
@@ -94,7 +94,7 @@ class AggregateDiff(DeclarativeModel):
         """
 
         fields_diff = FieldDiffContainer.from_model(aggregate, ignore={"uuid", "version", "created_at", "updated_at"})
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, datetime.max, fields_diff)
+        return cls(aggregate.uuid, aggregate.classname, aggregate.version, action, aggregate.updated_at, fields_diff)
 
     @classmethod
     def from_deleted_aggregate(cls, aggregate: Aggregate, action: Action = Action.DELETE) -> AggregateDiff:
@@ -105,7 +105,7 @@ class AggregateDiff(DeclarativeModel):
         :return: An ``AggregateDiff`` instance.
         """
         return cls(
-            aggregate.uuid, aggregate.classname, aggregate.version, action, datetime.max, FieldDiffContainer.empty(),
+            aggregate.uuid, aggregate.classname, aggregate.version, action, aggregate.updated_at, FieldDiffContainer.empty(),
         )
 
     def decompose(self) -> list[AggregateDiff]:
