@@ -21,7 +21,7 @@ from uuid import (
     uuid4,
 )
 
-from ..constants import (
+from ..uuid import (
     NULL_UUID,
 )
 from .abc import (

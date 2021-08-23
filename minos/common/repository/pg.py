@@ -13,11 +13,11 @@ from uuid import (
     UUID,
 )
 
-from ..constants import (
-    NULL_UUID,
-)
 from ..database import (
     PostgreSqlMinosDatabase,
+)
+from ..uuid import (
+    NULL_UUID,
 )
 from .abc import (
     MinosRepository,

@@ -28,9 +28,6 @@ from dependency_injector.wiring import (
     Provide,
 )
 
-from ....constants import (
-    NULL_UUID,
-)
 from ....exceptions import (
     MinosBrokerNotProvidedException,
     MinosRepositoryManuallySetAggregateIdentifierException,
@@ -46,6 +43,9 @@ from ....repository import (
 )
 from ....snapshot import (
     MinosSnapshot,
+)
+from ....uuid import (
+    NULL_UUID,
 )
 from ...dynamic import (
     IncrementalFieldDiff,

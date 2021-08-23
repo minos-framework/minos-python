@@ -24,10 +24,6 @@ from .configuration import (
     MinosConfig,
     MinosConfigAbstract,
 )
-from .constants import (
-    NULL_UUID,
-    UUID_REGEX,
-)
 from .database import (
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
@@ -159,4 +155,8 @@ from .snapshot import (
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,
+)
+from .uuid import (
+    NULL_UUID,
+    UUID_REGEX,
 )
