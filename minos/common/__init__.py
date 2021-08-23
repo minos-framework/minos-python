@@ -6,7 +6,7 @@ This file is part of minos framework.
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
 
-__version__ = "0.1.9"
+__version__ = "0.1.10"
 
 from .configuration import (
     BROKER,
@@ -24,13 +24,13 @@ from .configuration import (
     MinosConfig,
     MinosConfigAbstract,
 )
-from .constants import (
-    NULL_UUID,
-    UUID_REGEX,
-)
 from .database import (
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
+)
+from .datetime import (
+    NULL_DATETIME,
+    current_datetime,
 )
 from .exceptions import (
     EmptyMinosModelSequenceException,
@@ -52,8 +52,6 @@ from .exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosProtocolException,
     MinosRepositoryException,
-    MinosRepositoryManuallySetAggregateIdentifierException,
-    MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosReqAttributeException,
     MinosSagaManagerException,
@@ -159,4 +157,8 @@ from .snapshot import (
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,
+)
+from .uuid import (
+    NULL_UUID,
+    UUID_REGEX,
 )

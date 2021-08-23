@@ -84,28 +84,81 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_get(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = {v async for v in snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3})}
+                iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3})
+                observed = [v async for v in iterable]
 
-        expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
+        expected = [
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_2,
+                version=2,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
+            ),
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_3,
+                version=1,
+                created_at=observed[1].created_at,
+                updated_at=observed[1].updated_at,
+            ),
+        ]
         self.assertEqual(expected, observed)
 
     async def test_get_streaming_true(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3}, streaming_mode=True)
-                observed = {v async for v in iterable}
+                observed = [v async for v in iterable]
 
-        expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
+        expected = [
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_2,
+                version=2,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
+            ),
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_3,
+                version=1,
+                created_at=observed[1].created_at,
+                updated_at=observed[1].updated_at,
+            ),
+        ]
         self.assertEqual(expected, observed)
 
     async def test_get_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = {v async for v in snapshot.get("tests.aggregate_classes.Car", uuids)}
+                iterable = snapshot.get("tests.aggregate_classes.Car", uuids)
+                observed = [v async for v in iterable]
 
-        expected = {Car(3, "blue", uuid=self.uuid_2, version=2), Car(3, "blue", uuid=self.uuid_3, version=1)}
-        self.assertEqual(expected, observed)
+            expected = [
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_2,
+                    version=2,
+                    created_at=observed[0].created_at,
+                    updated_at=observed[0].updated_at,
+                ),
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_3,
+                    version=1,
+                    created_at=observed[1].created_at,
+                    updated_at=observed[1].updated_at,
+                ),
+            ]
+            self.assertEqual(expected, observed)
 
     async def test_get_empty(self):
         async with await self._populate() as repository:
@@ -133,9 +186,27 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
 
         # noinspection PyTypeChecker
         expected = [
-            SnapshotEntry(1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(Car(3, "blue", uuid=self.uuid_2, version=2)),
-            SnapshotEntry.from_aggregate(Car(3, "blue", uuid=self.uuid_3, version=1)),
+            SnapshotEntry(self.uuid_1, Car.classname, 4),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_2,
+                    version=2,
+                    created_at=observed[1].created_at,
+                    updated_at=observed[1].updated_at,
+                )
+            ),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_3,
+                    version=1,
+                    created_at=observed[2].created_at,
+                    updated_at=observed[2].updated_at,
+                )
+            ),
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 

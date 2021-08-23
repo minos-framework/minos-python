@@ -5,9 +5,7 @@ This file is part of minos framework.
 
 Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
 """
-from datetime import (
-    datetime,
-)
+
 from pathlib import (
     Path,
 )
@@ -32,6 +30,7 @@ from minos.common import (
     MinosSagaManager,
     MinosSnapshot,
     RepositoryEntry,
+    current_datetime,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -51,7 +50,7 @@ class FakeRepository(MinosRepository):
         entry.id = self.id_counter
         entry.version += 1
         entry.aggregate_uuid = uuid4()
-        entry.created_at = datetime.now()
+        entry.created_at = current_datetime()
         return entry
 
     async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:

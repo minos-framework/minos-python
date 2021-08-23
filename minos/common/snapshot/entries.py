@@ -74,7 +74,14 @@ class SnapshotEntry:
         :return: A new ``MinosSnapshotEntry`` instance.
         """
         # noinspection PyTypeChecker
-        return cls(aggregate.uuid, aggregate.classname, aggregate.version, aggregate.avro_bytes)
+        return cls(
+            aggregate_uuid=aggregate.uuid,
+            aggregate_name=aggregate.classname,
+            version=aggregate.version,
+            data=aggregate.avro_bytes,
+            created_at=aggregate.created_at,
+            updated_at=aggregate.updated_at,
+        )
 
     def build_aggregate(self, **kwargs) -> Aggregate:
         """Rebuild the stored ``Aggregate`` object instance from the internal state.
@@ -87,7 +94,14 @@ class SnapshotEntry:
                 f"The {self.aggregate_uuid!r} id points to an already deleted aggregate."
             )
         cls = self.aggregate_cls
-        instance = cls.from_avro_bytes(self.data, id=self.aggregate_uuid, version=self.version, **kwargs)
+        instance = cls.from_avro_bytes(
+            self.data,
+            id=self.aggregate_uuid,
+            version=self.version,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+            **kwargs,
+        )
         return instance
 
     @property
