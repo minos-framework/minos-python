@@ -71,24 +71,6 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         async with self.manager as saga_manager:
             self.assertIsInstance(saga_manager, SagaManager)
 
-    async def test_run_returning_execution(self):
-        execution = await self.manager.run("AddOrder", broker=self.broker, return_execution=True)
-        self.assertIsInstance(execution, SagaExecution)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-    async def test_run_with_pause_on_disk(self):
-        uuid = await self.manager.run("AddOrder", broker=self.broker)
-        self.assertEqual(SagaStatus.Paused, self.manager.storage.load(uuid).status)
-
-        reply = CommandReply("AddOrderReply", [Foo("foo")], str(uuid), status=CommandStatus.SUCCESS)
-        await self.manager.run(reply=reply, broker=self.broker)
-        self.assertEqual(SagaStatus.Paused, self.manager.storage.load(uuid).status)
-
-        reply = CommandReply("AddOrderReply", [Foo("foo")], str(uuid), status=CommandStatus.SUCCESS)
-        await self.manager.run(reply=reply, broker=self.broker)
-        with self.assertRaises(MinosSagaExecutionNotFoundException):
-            self.manager.storage.load(uuid)
-
     async def test_run_with_pause_on_memory(self):
         Message = namedtuple("Message", ["data"])
         expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
@@ -100,40 +82,59 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
                 ]
             )
 
-            observed_uuid = await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=False)
-            self.assertEqual(expected_uuid, observed_uuid)
+            execution = await self.manager.run("AddOrder", broker=self.broker)
+            self.assertEqual(SagaStatus.Finished, execution.status)
             with self.assertRaises(MinosSagaExecutionNotFoundException):
-                self.manager.storage.load(observed_uuid)
+                self.manager.storage.load(execution.uuid)
 
     async def test_run_with_pause_on_memory_with_error(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
-        uuid = await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=False)
-        self.assertEqual(SagaStatus.Errored, self.manager.storage.load(uuid).status)
+        execution = await self.manager.run("AddOrder", broker=self.broker, raise_on_error=False)
+        self.assertEqual(SagaStatus.Errored, execution.status)
 
     async def test_run_with_pause_on_memory_with_error_raises(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
         with self.assertRaises(MinosSagaFailedExecutionException):
-            await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=False, raise_on_error=True)
+            await self.manager.run("AddOrder", broker=self.broker)
 
-    async def test_run_with_context(self):
+    async def test_run_with_pause_on_disk(self):
+        execution = await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = CommandReply("AddOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
+        execution = await self.manager.run(reply=reply, broker=self.broker, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        reply = CommandReply("AddOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
+        execution = await self.manager.run(reply=reply, broker=self.broker, pause_on_disk=True)
+        with self.assertRaises(MinosSagaExecutionNotFoundException):
+            self.manager.storage.load(execution.uuid)
+
+    async def test_run_with_pause_on_disk_returning_uuid(self):
+        uuid = await self.manager.run("AddOrder", broker=self.broker, return_execution=False, pause_on_disk=True)
+        execution = self.manager.storage.load(uuid)
+        self.assertIsInstance(execution, SagaExecution)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+    async def test_run_with_pause_on_disk_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")
 
-        uuid = await self.manager.run("AddOrder", broker=self.broker, context=context)
-        self.assertEqual(context, self.manager.storage.load(uuid).context)
+        execution = await self.manager.run("AddOrder", broker=self.broker, context=context, pause_on_disk=True)
+        self.assertEqual(context, execution.context)
 
-    async def test_run_with_error(self):
-        uuid = await self.manager.run("DeleteOrder", broker=self.broker)
-        self.assertEqual(SagaStatus.Paused, self.manager.storage.load(uuid).status)
+    async def test_run_with_pause_on_disk_with_error(self):
+        execution = await self.manager.run("DeleteOrder", broker=self.broker, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
 
-        reply = CommandReply("DeleteOrderReply", [Foo("foo")], str(uuid), status=CommandStatus.SUCCESS)
-        await self.manager.run(reply=reply, broker=self.broker)
-        self.assertEqual(SagaStatus.Paused, self.manager.storage.load(uuid).status)
+        reply = CommandReply("DeleteOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
+        execution = await self.manager.run(reply=reply, broker=self.broker, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
 
-        reply = CommandReply("DeleteOrderReply", [Foo("foo")], str(uuid), status=CommandStatus.SUCCESS)
-        await self.manager.run(reply=reply, broker=self.broker)
-        self.assertEqual(SagaStatus.Errored, self.manager.storage.load(uuid).status)
+        reply = CommandReply("DeleteOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
+        execution = await self.manager.run(reply=reply, broker=self.broker, pause_on_disk=True, raise_on_error=False)
+        self.assertEqual(SagaStatus.Errored, execution.status)
 
 
 if __name__ == "__main__":

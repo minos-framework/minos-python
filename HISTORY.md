@@ -56,3 +56,11 @@ History
 ------------------
 
 * Add flag to return SagaExecution instances directly from SagaManager
+
+0.0.10 (2021-08-23)
+------------------
+
+* Support latest `minos-microservice-common` release (`0.1.10`)
+* Change default `SagaManager` flags to (`pause_on_disk=False, raise_on_error=True, return_execution=True`)
+* Enrich failed `CommandReply` instances with exception message.
+* Add `SagaRequest` and `SagaResponse`.

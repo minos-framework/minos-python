@@ -12,7 +12,6 @@ from typing import (
 
 from minos.common import (
     BucketModel,
-    MinosModelException,
     ModelField,
     TypeHintBuilder,
 )
@@ -34,5 +33,5 @@ class SagaContext(BucketModel):
     def __setattr__(self, key: str, value: Any) -> NoReturn:
         try:
             super().__setattr__(key, value)
-        except MinosModelException:
+        except AttributeError:
             self._fields[key] = ModelField(key, TypeHintBuilder(value).build(), value)
