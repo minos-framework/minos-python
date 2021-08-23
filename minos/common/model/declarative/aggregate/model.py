@@ -238,6 +238,9 @@ class Aggregate(Entity):
             self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
         aggregate_diff = self.diff(previous)
+        if not len(aggregate_diff.fields_diff):
+            return self
+
         entry = await self._repository.update(aggregate_diff)
 
         self._update_from_repository_entry(entry)

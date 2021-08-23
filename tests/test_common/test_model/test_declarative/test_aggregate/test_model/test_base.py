@@ -125,6 +125,25 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(expected, car)
             self.assertEqual(car, await Car.get_one(car.uuid, _broker=b, _repository=r, _snapshot=s))
 
+    async def test_update_no_changes(self):
+        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
+            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+
+            await car.update(color="blue")
+            expected = Car(
+                3,
+                "blue",
+                uuid=car.uuid,
+                version=1,
+                created_at=car.created_at,
+                updated_at=car.updated_at,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
+            self.assertEqual(expected, car)
+            self.assertEqual(car, await Car.get_one(car.uuid, _broker=b, _repository=r, _snapshot=s))
+
     async def test_update_raises(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
             with self.assertRaises(MinosRepositoryException):
