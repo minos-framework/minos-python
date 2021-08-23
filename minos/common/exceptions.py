@@ -78,14 +78,6 @@ class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
 
-class MinosRepositoryManuallySetAggregateIdentifierException(MinosRepositoryException):
-    """Exception to be raised when some aggregate is trying to be created with a manually set id."""
-
-
-class MinosRepositoryManuallySetAggregateVersionException(MinosRepositoryException):
-    """Exception to be raised when some aggregate is trying to be created with a manually set version."""
-
-
 class MinosRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a repository is needed but none is set."""
 

@@ -19,6 +19,7 @@ from minos.common import (
     FieldDiff,
     FieldDiffContainer,
     ModelRef,
+    current_datetime,
 )
 from tests.aggregate_classes import (
     Car,
@@ -47,6 +48,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
+            created_at=current_datetime(),
             fields_diff=FieldDiffContainer(
                 [
                     FieldDiff("doors", int, 3),
@@ -63,6 +65,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
+            created_at=current_datetime(),
             fields_diff=FieldDiffContainer(
                 [
                     FieldDiff("doors", int, 3),
@@ -80,6 +83,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
+            created_at=current_datetime(),
             fields_diff=FieldDiffContainer(
                 [
                     FieldDiff("doors", int, 3),
@@ -96,6 +100,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
+            created_at=self.initial.updated_at,
             fields_diff=FieldDiffContainer(
                 [
                     FieldDiff("doors", int, 3),
@@ -109,7 +114,12 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
 
     def test_from_deleted_aggregate(self):
         expected = AggregateDiff(
-            uuid=self.uuid, name=Car.classname, version=1, action=Action.DELETE, fields_diff=FieldDiffContainer.empty(),
+            uuid=self.uuid,
+            name=Car.classname,
+            version=1,
+            action=Action.DELETE,
+            created_at=self.initial.updated_at,
+            fields_diff=FieldDiffContainer.empty(),
         )
         observed = AggregateDiff.from_deleted_aggregate(self.initial)
         self.assertEqual(expected, observed)
@@ -120,6 +130,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
+            created_at=self.final.updated_at,
             fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         observed = AggregateDiff.from_difference(self.final, self.initial)
@@ -135,6 +146,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=1,
             action=Action.CREATE,
+            created_at=current_datetime(),
             fields_diff=FieldDiffContainer(
                 [
                     FieldDiff("doors", int, 3),
@@ -151,12 +163,22 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(initial, deserialized)
 
     def test_decompose(self):
+        aggr = AggregateDiff(
+            uuid=self.uuid,
+            name=Car.classname,
+            version=3,
+            action=Action.UPDATE,
+            created_at=current_datetime(),
+            fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
+        )
+
         expected = [
             AggregateDiff(
                 uuid=self.uuid,
                 name=Car.classname,
                 version=3,
                 action=Action.UPDATE,
+                created_at=aggr.created_at,
                 fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5)]),
             ),
             AggregateDiff(
@@ -164,17 +186,11 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
                 name=Car.classname,
                 version=3,
                 action=Action.UPDATE,
+                created_at=aggr.created_at,
                 fields_diff=FieldDiffContainer([FieldDiff("color", str, "yellow")]),
             ),
         ]
 
-        aggr = AggregateDiff(
-            uuid=self.uuid,
-            name=Car.classname,
-            version=3,
-            action=Action.UPDATE,
-            fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
-        )
         observed = aggr.decompose()
         self.assertEqual(expected, observed)
 

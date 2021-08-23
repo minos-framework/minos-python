@@ -13,6 +13,9 @@ import logging
 from asyncio import (
     gather,
 )
+from datetime import (
+    datetime,
+)
 from typing import (
     AsyncIterator,
     NoReturn,
@@ -33,8 +36,7 @@ from ....constants import (
 )
 from ....exceptions import (
     MinosBrokerNotProvidedException,
-    MinosRepositoryManuallySetAggregateIdentifierException,
-    MinosRepositoryManuallySetAggregateVersionException,
+    MinosRepositoryException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
 )
@@ -43,6 +45,7 @@ from ....networks import (
 )
 from ....repository import (
     MinosRepository,
+    RepositoryEntry,
 )
 from ....snapshot import (
     MinosSnapshot,
@@ -64,6 +67,8 @@ class Aggregate(Entity):
     """Base aggregate class."""
 
     version: int
+    created_at: datetime
+    updated_at: datetime
 
     _broker: MinosBroker = Provide["event_broker"]
     _repository: MinosRepository = Provide["repository"]
@@ -74,13 +79,15 @@ class Aggregate(Entity):
         *args,
         uuid: UUID = NULL_UUID,
         version: int = 0,
+        created_at: datetime = datetime.max,
+        updated_at: datetime = datetime.max,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
         **kwargs,
     ):
 
-        super().__init__(version, *args, uuid=uuid, **kwargs)
+        super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
 
         if _broker is not None:
             self._broker = _broker
@@ -171,24 +178,32 @@ class Aggregate(Entity):
         :return: A new ``Aggregate`` instance.
         """
         if "uuid" in kwargs:
-            raise MinosRepositoryManuallySetAggregateIdentifierException(
+            raise MinosRepositoryException(
                 f"The identifier must be computed internally on the repository. Obtained: {kwargs['uuid']}"
             )
 
         if "version" in kwargs:
-            raise MinosRepositoryManuallySetAggregateVersionException(
+            raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
+            )
+        if "created_at" in kwargs:
+            raise MinosRepositoryException(
+                f"The version must be computed internally on the repository. Obtained: {kwargs['created_at']}"
+            )
+        if "updated_at" in kwargs:
+            raise MinosRepositoryException(
+                f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
 
         instance: T = cls(*args, _broker=_broker, _repository=_repository, **kwargs)
 
-        diff = AggregateDiff.from_aggregate(instance)
-        entry = await instance._repository.create(diff)
+        aggregate_diff = AggregateDiff.from_aggregate(instance)
+        entry = await instance._repository.create(aggregate_diff)
 
-        instance.uuid, instance.version = entry.aggregate_uuid, entry.version
-        diff.uuid, diff.version = entry.aggregate_uuid, entry.version
+        instance._update_from_repository_entry(entry)
+        aggregate_diff.update_from_repository_entry(entry)
 
-        await instance._broker.send(diff, topic=f"{type(instance).__name__}Created")
+        await instance._broker.send(aggregate_diff, topic=f"{type(instance).__name__}Created")
 
         return instance
 
@@ -201,8 +216,16 @@ class Aggregate(Entity):
         """
 
         if "version" in kwargs:
-            raise MinosRepositoryManuallySetAggregateVersionException(
+            raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
+            )
+        if "created_at" in kwargs:
+            raise MinosRepositoryException(
+                f"The version must be computed internally on the repository. Obtained: {kwargs['created_at']}"
+            )
+        if "updated_at" in kwargs:
+            raise MinosRepositoryException(
+                f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
 
         for key, value in kwargs.items():
@@ -211,11 +234,11 @@ class Aggregate(Entity):
         previous = await self.get_one(
             self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
-        aggregate_diff = AggregateDiff.from_difference(self, previous)
+        aggregate_diff = self.diff(previous)
         entry = await self._repository.update(aggregate_diff)
 
-        self.uuid, self.version = entry.aggregate_uuid, entry.version
-        aggregate_diff.uuid, aggregate_diff.version = entry.aggregate_uuid, entry.version
+        self._update_from_repository_entry(entry)
+        aggregate_diff.update_from_repository_entry(entry)
 
         await self._send_update_events(aggregate_diff)
 
@@ -241,28 +264,27 @@ class Aggregate(Entity):
         is_creation = self.uuid == NULL_UUID
         if is_creation != (self.version == 0):
             if is_creation:
-                raise MinosRepositoryManuallySetAggregateVersionException(
+                raise MinosRepositoryException(
                     f"The version must be computed internally on the repository. Obtained: {self.version}"
                 )
             else:
-                raise MinosRepositoryManuallySetAggregateIdentifierException(
+                raise MinosRepositoryException(
                     f"The uuid must be computed internally on the repository. Obtained: {self.uuid}"
                 )
 
+        values = {
+            k: field.value
+            for k, field in self.fields.items()
+            if k not in {"uuid", "version", "created_at", "updated_at"}
+        }
         if is_creation:
             new = await self.create(
-                **{k: field.value for k, field in self.fields.items() if k not in ("uuid", "version")},
-                _broker=self._broker,
-                _repository=self._repository,
-                _snapshot=self._snapshot,
+                **values, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
             )
             self._fields |= new.fields
         else:
             await self.update(
-                **{k: field.value for k, field in self.fields.items() if k not in ("uuid", "version")},
-                _broker=self._broker,
-                _repository=self._repository,
-                _snapshot=self._snapshot,
+                **values, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot,
             )
 
     async def refresh(self) -> NoReturn:
@@ -280,13 +302,20 @@ class Aggregate(Entity):
 
         :return: This method does not return anything.
         """
-        diff = AggregateDiff.from_deleted_aggregate(self)
-        entry = await self._repository.delete(diff)
+        aggregate_diff = AggregateDiff.from_deleted_aggregate(self)
+        entry = await self._repository.delete(aggregate_diff)
 
-        self.uuid, self.version = entry.aggregate_uuid, entry.version
-        diff.uuid, diff.version = entry.aggregate_uuid, entry.version
+        self._update_from_repository_entry(entry)
+        aggregate_diff.update_from_repository_entry(entry)
 
-        await self._broker.send(diff, topic=f"{type(self).__name__}Deleted")
+        await self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Deleted")
+
+    def _update_from_repository_entry(self, entry: RepositoryEntry) -> None:
+        self.uuid = entry.aggregate_uuid
+        self.version = entry.version
+        if entry.action.is_create:
+            self.created_at = entry.created_at
+        self.updated_at = entry.created_at
 
     def diff(self, another: Aggregate) -> AggregateDiff:
         """Compute the difference with another aggregate.
@@ -321,6 +350,7 @@ class Aggregate(Entity):
             else:
                 setattr(self, diff.name, diff.value)
         self.version = aggregate_diff.version
+        self.updated_at = aggregate_diff.created_at
 
     @classmethod
     def from_diff(cls: Type[T], aggregate_diff: AggregateDiff, *args, **kwargs) -> T:
@@ -332,7 +362,15 @@ class Aggregate(Entity):
         :return: A new ``Aggregate`` instance.
         """
         values = {diff.name: diff.value for diff in aggregate_diff.fields_diff.values()}
-        return cls(*args, uuid=aggregate_diff.uuid, version=aggregate_diff.version, **values, **kwargs)
+        return cls(
+            *args,
+            uuid=aggregate_diff.uuid,
+            version=aggregate_diff.version,
+            created_at=aggregate_diff.created_at,
+            updated_at=aggregate_diff.created_at,
+            **values,
+            **kwargs,
+        )
 
 
 T = TypeVar("T", bound=Aggregate)

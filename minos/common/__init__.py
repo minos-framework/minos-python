@@ -32,6 +32,9 @@ from .database import (
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
 )
+from .datetime import (
+    current_datetime,
+)
 from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
@@ -52,8 +55,6 @@ from .exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosProtocolException,
     MinosRepositoryException,
-    MinosRepositoryManuallySetAggregateIdentifierException,
-    MinosRepositoryManuallySetAggregateVersionException,
     MinosRepositoryNotProvidedException,
     MinosReqAttributeException,
     MinosSagaManagerException,
