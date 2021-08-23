@@ -45,6 +45,7 @@ from ....networks import (
 )
 from ....repository import (
     MinosRepository,
+    RepositoryEntry,
 )
 from ....snapshot import (
     MinosSnapshot,
@@ -199,17 +200,8 @@ class Aggregate(Entity):
         aggregate_diff = AggregateDiff.from_aggregate(instance)
         entry = await instance._repository.create(aggregate_diff)
 
-        instance.uuid, instance.version, instance.created_at, instance.updated_at = (
-            entry.aggregate_uuid,
-            entry.version,
-            entry.created_at,
-            entry.created_at,
-        )
-        aggregate_diff.uuid, aggregate_diff.version, aggregate_diff.created_at = (
-            entry.aggregate_uuid,
-            entry.version,
-            entry.created_at,
-        )
+        instance._update_from_repository_entry(entry)
+        aggregate_diff.update_from_repository_entry(entry)
 
         await instance._broker.send(aggregate_diff, topic=f"{type(instance).__name__}Created")
 
@@ -245,12 +237,8 @@ class Aggregate(Entity):
         aggregate_diff = self.diff(previous)
         entry = await self._repository.update(aggregate_diff)
 
-        self.uuid, self.version, self.updated_at = entry.aggregate_uuid, entry.version, entry.created_at
-        aggregate_diff.uuid, aggregate_diff.version, aggregate_diff.created_at = (
-            entry.aggregate_uuid,
-            entry.version,
-            entry.created_at,
-        )
+        self._update_from_repository_entry(entry)
+        aggregate_diff.update_from_repository_entry(entry)
 
         await self._send_update_events(aggregate_diff)
 
@@ -314,13 +302,20 @@ class Aggregate(Entity):
 
         :return: This method does not return anything.
         """
-        diff = AggregateDiff.from_deleted_aggregate(self)
-        entry = await self._repository.delete(diff)
+        aggregate_diff = AggregateDiff.from_deleted_aggregate(self)
+        entry = await self._repository.delete(aggregate_diff)
 
-        self.uuid, self.version, self.updated_at = entry.aggregate_uuid, entry.version, entry.created_at
-        diff.uuid, diff.version, diff.created_at = entry.aggregate_uuid, entry.version, entry.created_at
+        self._update_from_repository_entry(entry)
+        aggregate_diff.update_from_repository_entry(entry)
 
-        await self._broker.send(diff, topic=f"{type(self).__name__}Deleted")
+        await self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Deleted")
+
+    def _update_from_repository_entry(self, entry: RepositoryEntry) -> None:
+        self.uuid = entry.aggregate_uuid
+        self.version = entry.version
+        if entry.action.is_create:
+            self.created_at = entry.created_at
+        self.updated_at = entry.created_at
 
     def diff(self, another: Aggregate) -> AggregateDiff:
         """Compute the difference with another aggregate.
