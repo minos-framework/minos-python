@@ -8,7 +8,7 @@ Minos framework can not be copied and/or distributed without the express permiss
 
 import unittest
 from datetime import (
-    datetime,
+    timedelta,
 )
 from typing import (
     NoReturn,
@@ -27,6 +27,7 @@ from minos.common import (
     MinosRepository,
     PostgreSqlRepository,
     RepositoryEntry,
+    current_datetime,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -287,7 +288,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             self.assertEqual(e.data, o.data)
             self.assertEqual(e.id, o.id)
             self.assertEqual(e.action, o.action)
-            self.assertIsInstance(o.created_at, datetime)
+            self.assertAlmostEqual(current_datetime(), o.created_at, delta=timedelta(seconds=5))
 
 
 if __name__ == "__main__":

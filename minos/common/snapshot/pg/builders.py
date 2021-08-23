@@ -147,6 +147,8 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
             "aggregate_name": entry.aggregate_name,
             "version": entry.version,
             "data": None,
+            "created_at": entry.created_at,
+            "updated_at": entry.created_at,
         }
         await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params, **kwargs)
 
@@ -193,6 +195,8 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
             "aggregate_name": entry.aggregate_name,
             "version": entry.version,
             "data": entry.data,
+            "created_at": entry.created_at,
+            "updated_at": entry.updated_at,
         }
         response = await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params, **kwargs)
 
@@ -214,12 +218,12 @@ VALUES (
     %(aggregate_name)s,
     %(version)s,
     %(data)s,
-    default,
-    default
+    %(created_at)s,
+    %(updated_at)s
 )
 ON CONFLICT (aggregate_uuid, aggregate_name)
 DO
-   UPDATE SET version = %(version)s, data = %(data)s, updated_at = NOW()
+   UPDATE SET version = %(version)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;
 """.strip()
 

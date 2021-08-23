@@ -106,6 +106,7 @@ class RepositoryEntry:
             self.aggregate_name,
             self.version,
             self.action,
+            self.created_at,
             FieldDiffContainer.from_avro_bytes(self.data),
         )
 

@@ -15,6 +15,7 @@ from minos.common import (
     AggregateDiff,
     FieldDiff,
     FieldDiffContainer,
+    current_datetime,
 )
 from tests.aggregate_classes import (
     Car,
@@ -26,15 +27,49 @@ from tests.utils import (
 )
 
 
-class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
+class TestAggregateDifferences(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         self.uuid = uuid4()
         self.uuid_another = uuid4()
 
+        self.initial_datetime = current_datetime()
+        self.final_datetime = current_datetime()
+        self.another_datetime = current_datetime()
+
         async with FakeBroker() as b, FakeRepository() as r, FakeSnapshot() as s:
-            self.initial = Car(3, "blue", uuid=self.uuid, version=1, _broker=b, _repository=r, _snapshot=s)
-            self.final = Car(5, "yellow", uuid=self.uuid, version=3, _broker=b, _repository=r, _snapshot=s)
-            self.another = Car(3, "blue", uuid=self.uuid_another, version=1, _broker=b, _repository=r, _snapshot=s)
+            self.initial = Car(
+                3,
+                "blue",
+                uuid=self.uuid,
+                version=1,
+                created_at=self.initial_datetime,
+                updated_at=self.initial_datetime,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
+            self.final = Car(
+                5,
+                "yellow",
+                uuid=self.uuid,
+                version=3,
+                created_at=self.initial_datetime,
+                updated_at=self.final_datetime,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
+            self.another = Car(
+                3,
+                "blue",
+                uuid=self.uuid_another,
+                created_at=self.another_datetime,
+                updated_at=self.another_datetime,
+                version=1,
+                _broker=b,
+                _repository=r,
+                _snapshot=s,
+            )
 
     def test_diff(self):
         expected = AggregateDiff(
@@ -42,6 +77,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
+            created_at=self.final_datetime,
             fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         observed = self.final.diff(self.initial)
@@ -53,6 +89,7 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
+            created_at=self.final_datetime,
             fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         self.initial.apply_diff(diff)
@@ -64,27 +101,11 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             name=Car.classname,
             version=3,
             action=Action.UPDATE,
+            created_at=current_datetime(),
             fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")]),
         )
         with self.assertRaises(ValueError):
             self.initial.apply_diff(diff)
-
-    def test_get_attr(self):
-        diff = AggregateDiff(
-            uuid=self.uuid,
-            name=Car.classname,
-            version=3,
-            action=Action.UPDATE,
-            fields_diff=FieldDiffContainer([FieldDiff("doors", int, 5)]),
-        )
-        self.assertEqual(5, diff.doors)
-
-    def test_get_attr_raises(self):
-        diff = AggregateDiff(
-            uuid=self.uuid, name=Car.classname, version=3, action=Action.UPDATE, fields_diff=FieldDiffContainer.empty(),
-        )
-        with self.assertRaises(AttributeError):
-            diff.doors
 
 
 if __name__ == "__main__":

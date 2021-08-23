@@ -21,6 +21,9 @@ from uuid import (
     uuid4,
 )
 
+from ..datetime import (
+    current_datetime,
+)
 from ..uuid import (
     NULL_UUID,
 )
@@ -51,6 +54,7 @@ class InMemoryRepository(MinosRepository):
         entry.version = self._get_next_version_id(entry.aggregate_name, entry.aggregate_uuid)
         entry.id = self._generate_next_id()
         self._storage.append(entry)
+        entry.created_at = current_datetime()
         return entry
 
     def _generate_next_id(self) -> int:

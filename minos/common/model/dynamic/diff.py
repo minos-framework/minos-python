@@ -13,10 +13,14 @@ import logging
 from collections import (
     defaultdict,
 )
+from itertools import (
+    chain,
+)
 from typing import (
     Any,
     Generic,
     Iterable,
+    Iterator,
     Type,
     TypeVar,
     Union,
@@ -89,27 +93,22 @@ class FieldDiffContainer(BucketModel):
 
         super().__init__(fields, **kwargs)
 
-        mapper = defaultdict(list)
-        for name, field in self._fields.items():
-            mapper[field.value.name].append(name)
-        self._name_mapper = mapper
+        self._mapper = _build_mapper(self._fields)
 
     def __getattr__(self, item: str) -> Any:
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item in self._name_mapper:
-                values = [getattr(self, name) for name in self._name_mapper.get(item)]
-                if len(values) == 1:
-                    return values[0]
-                return values
-            raise exc
+            try:
+                return self.get_one(item)
+            except Exception:
+                raise exc
 
     def __eq__(self, other):
         return type(self) == type(other) and tuple(self.values()) == tuple(other.values())
 
     def __repr__(self) -> str:
-        fields_repr = ", ".join(f"{diff.name}={diff.value}" for diff in self.values())
+        fields_repr = ", ".join(f"{k}={v}" for k, v in self.items())
         return f"{type(self).__name__}({fields_repr})"
 
     def __iter__(self) -> Iterable[str]:
@@ -117,7 +116,50 @@ class FieldDiffContainer(BucketModel):
 
         :return: An iterable of string values.
         """
-        yield from self._name_mapper.keys()
+        yield from self._mapper.keys()
+
+    def get_one(self, name: str, return_diff: bool = True) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
+        """Get first field diff with given name.
+
+        :param name: The name of the field diff.
+        :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
+            returned as value instances.
+        :return: A ``FieldDiff`` instance.
+        """
+        type_, names = self._mapper[name]
+        if not issubclass(type_, IncrementalFieldDiff):
+            return self._get_one(names[0], return_diff)
+        return [self._get_one(name, return_diff) for name in names]
+
+    def _get_one(self, name: str, return_diff: bool) -> Union[FieldDiff, Any]:
+        diff = getattr(self, name)
+        if return_diff:
+            return diff
+        return diff.value
+
+    def get_all(self, return_diff: bool = True) -> dict[str, Union[FieldDiff, Any, list[FieldDiff], list[Any]]]:
+        """Get a dictionary containing all names as keys and all the values of each one as values.
+
+        :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
+            returned as value instances.
+        :return: A ``dict`` with ``str`` keys and ``list[Any]`` values.
+        """
+        return {key: self.get_one(key, return_diff) for key in self.keys()}
+
+    def flatten_items(self) -> Iterator[tuple[str, FieldDiff]]:
+        """Get the field differences in a flatten way.
+
+        :return: An ``Iterator`` of ``tuple[str, FieldDiff]`` instances.
+        """
+        return map(lambda diff: (diff.name, diff), self.flatten_values())
+
+    def flatten_values(self) -> Iterator[FieldDiff]:
+        """Get the field differences in a flatten way.
+
+        :return: An ``Iterator`` of ``FieldDiff`` instances.
+        """
+        iterable = (v if isinstance(v, list) else [v] for v in self.values())
+        return chain.from_iterable(iterable)
 
     @classmethod
     def from_difference(cls, a: Model, b: Model, ignore: set[str] = frozenset()) -> FieldDiffContainer:
@@ -184,3 +226,22 @@ class FieldDiffContainer(BucketModel):
         :return: A random string value.
         """
         return str(uuid4())
+
+
+def _build_mapper(fields: dict[str, Field]) -> dict[str, tuple[type, list[str]]]:
+    mapper = defaultdict(list)
+    for name, field in fields.items():
+        mapper[field.value.name].append(name)
+    mapper = dict(mapper)
+
+    ans = dict()
+    for k, names in mapper.items():
+        types = {type(fields[name].value) for name in names}
+        if len(types) > 1:
+            raise ValueError(f"Multiple {FieldDiff.__name__!r} types have been provided to {k!r}: {types}")
+        type_ = next(iter(types))
+        if len(names) > 1 and not issubclass(type_, IncrementalFieldDiff):
+            raise ValueError(f"Only {IncrementalFieldDiff.__name__!r} type allow multiple {k!r} values.")
+        ans[k] = (type_, names)
+
+    return ans

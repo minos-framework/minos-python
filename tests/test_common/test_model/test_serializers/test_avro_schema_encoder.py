@@ -105,6 +105,8 @@ class TestAvroSchemaEncoder(unittest.TestCase):
                     "fields": [
                         {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
                         {"name": "version", "type": "int"},
+                        {"name": "created_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
+                        {"name": "updated_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
                         {"name": "name", "type": "string"},
                         {"name": "surname", "type": "string"},
                         {"name": "age", "type": ["int", "null"]},

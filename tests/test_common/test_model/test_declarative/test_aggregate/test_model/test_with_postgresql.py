@@ -44,17 +44,23 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
             "_snapshot": self.snapshot,
         }
 
-    async def test_update(self):
+    async def test_create_update_delete(self):
         async with self.event_broker, self.repository, self.snapshot:
             car = await Car.create(doors=3, color="blue", **self.kwargs)
             uuid = car.uuid
 
             await car.update(color="red")
-            self.assertEqual(Car(3, "red", uuid=uuid, version=2, **self.kwargs), car)
+            expected = Car(
+                3, "red", uuid=uuid, version=2, created_at=car.created_at, updated_at=car.updated_at, **self.kwargs
+            )
+            self.assertEqual(expected, car)
             self.assertEqual(car, await Car.get_one(car.uuid, **self.kwargs))
 
             await car.update(doors=5)
-            self.assertEqual(Car(5, "red", uuid=uuid, version=3, **self.kwargs), car)
+            expected = Car(
+                5, "red", uuid=uuid, version=3, created_at=car.created_at, updated_at=car.updated_at, **self.kwargs
+            )
+            self.assertEqual(expected, car)
             self.assertEqual(car, await Car.get_one(car.uuid, **self.kwargs))
 
             await car.delete()
@@ -65,9 +71,10 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
             uuid = car.uuid
 
             await car.update(color="red")
-            self.assertEqual(
-                Car(3, "red", uuid=uuid, version=2, **self.kwargs), await Car.get_one(car.uuid, **self.kwargs)
+            expected = Car(
+                3, "red", uuid=uuid, version=2, created_at=car.created_at, updated_at=car.updated_at, **self.kwargs
             )
+            self.assertEqual(expected, await Car.get_one(car.uuid, **self.kwargs))
 
             await car.delete()
             with self.assertRaises(MinosSnapshotDeletedAggregateException):
