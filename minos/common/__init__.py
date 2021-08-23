@@ -33,6 +33,7 @@ from .database import (
     PostgreSqlPool,
 )
 from .datetime import (
+    NULL_DATETIME,
     current_datetime,
 )
 from .exceptions import (

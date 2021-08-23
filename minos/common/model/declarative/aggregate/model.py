@@ -34,6 +34,9 @@ from dependency_injector.wiring import (
 from ....constants import (
     NULL_UUID,
 )
+from ....datetime import (
+    NULL_DATETIME,
+)
 from ....exceptions import (
     MinosBrokerNotProvidedException,
     MinosRepositoryException,
@@ -79,8 +82,8 @@ class Aggregate(Entity):
         *args,
         uuid: UUID = NULL_UUID,
         version: int = 0,
-        created_at: datetime = datetime.max,
-        updated_at: datetime = datetime.max,
+        created_at: datetime = NULL_DATETIME,
+        updated_at: datetime = NULL_DATETIME,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
@@ -248,7 +251,7 @@ class Aggregate(Entity):
         futures = [self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Updated")]
 
         for decomposed_aggregate_diff in aggregate_diff.decompose():
-            diff = next(iter(decomposed_aggregate_diff.fields_diff.values()))
+            diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
             topic = f"{type(self).__name__}Updated.{diff.name}"
             if isinstance(diff, IncrementalFieldDiff):
                 topic += f".{diff.action.value}"
@@ -340,7 +343,7 @@ class Aggregate(Entity):
             )
 
         logger.debug(f"Applying {aggregate_diff!r} to {self!r}...")
-        for diff in aggregate_diff.fields_diff.values():
+        for diff in aggregate_diff.fields_diff.flatten_values():
             if isinstance(diff, IncrementalFieldDiff):
                 container = getattr(self, diff.name)
                 if diff.action.is_delete:
@@ -361,14 +364,13 @@ class Aggregate(Entity):
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
-        values = {diff.name: diff.value for diff in aggregate_diff.fields_diff.values()}
         return cls(
             *args,
             uuid=aggregate_diff.uuid,
             version=aggregate_diff.version,
             created_at=aggregate_diff.created_at,
             updated_at=aggregate_diff.created_at,
-            **values,
+            **aggregate_diff.get_all(),
             **kwargs,
         )
 

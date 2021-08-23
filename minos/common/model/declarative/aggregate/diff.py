@@ -19,6 +19,7 @@ from operator import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Union,
 )
 from uuid import (
     UUID,
@@ -28,6 +29,7 @@ from ...actions import (
     Action,
 )
 from ...dynamic import (
+    FieldDiff,
     FieldDiffContainer,
 )
 from ..abc import (
@@ -60,9 +62,29 @@ class AggregateDiff(DeclarativeModel):
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            if item != "fields_diff":
-                return getattr(self.fields_diff, item).value
-            raise exc
+            try:
+                return self.get_one(item)
+            except Exception:
+                raise exc
+
+    def get_one(self, name: str, return_diff: bool = False) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
+        """Get first field diff with given name.
+
+        :param name: The name of the field diff.
+        :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
+            returned as value instances.
+        :return: A ``FieldDiff`` instance.
+        """
+        return self.fields_diff.get_one(name, return_diff)
+
+    def get_all(self, return_diff: bool = False) -> dict[str, Union[FieldDiff, Any, list[FieldDiff], list[Any]]]:
+        """Get all field diffs with given name.
+
+        :param return_diff: If ``True`` the result is returned as field diff instances, otherwise the result is
+            returned as value instances.
+        :return: A list of ``FieldDiff`` instances.
+        """
+        return self.fields_diff.get_all(return_diff)
 
     def update_from_repository_entry(self, entry: RepositoryEntry) -> None:
         """Update metadata from a repository entry.
@@ -154,5 +176,5 @@ class AggregateDiff(DeclarativeModel):
                 created_at=self.created_at,
                 fields_diff=FieldDiffContainer([diff]),
             )
-            for diff in self.fields_diff.values()
+            for diff in self.fields_diff.flatten_values()
         ]

@@ -9,6 +9,7 @@ from time import (
 )
 
 from minos.common import (
+    NULL_DATETIME,
     current_datetime,
 )
 
@@ -25,6 +26,9 @@ class TestDatetime(unittest.TestCase):
     def test_current_datetime_now(self):
         observed = current_datetime()
         self.assertAlmostEqual(time(), observed.timestamp(), delta=5)
+
+    def test_null_datetime(self):
+        self.assertEqual(datetime.max.replace(tzinfo=timezone.utc), NULL_DATETIME)
 
 
 if __name__ == "__main__":
