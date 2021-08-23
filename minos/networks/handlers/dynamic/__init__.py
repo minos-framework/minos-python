@@ -12,3 +12,9 @@ from .handlers import (
 from .pools import (
     ReplyHandlerPool,
 )
+from .consumers import (
+    DynamicConsumer,
+)
+from .services import (
+    DynamicConsumerService,
+)

@@ -10,10 +10,12 @@ from __future__ import (
 )
 
 import logging
+from typing import Optional
 from uuid import (
     uuid4,
 )
 
+from dependency_injector.wiring import Provide
 from kafka import (
     KafkaAdminClient,
 )
@@ -26,6 +28,9 @@ from minos.common import (
     MinosPool,
 )
 
+from .consumers import (
+    DynamicConsumer,
+)
 from .handlers import (
     DynamicReplyHandler,
 )
@@ -36,25 +41,38 @@ logger = logging.getLogger(__name__)
 class ReplyHandlerPool(MinosPool):
     """Reply Handler Pool class."""
 
-    def __init__(self, config: MinosConfig, client: KafkaAdminClient, *args, **kwargs):
+    consumer: DynamicConsumer = Provide["dynamic_consumer"]
+
+    def __init__(
+        self, config: MinosConfig, client: KafkaAdminClient, consumer: Optional[DynamicConsumer] = None, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.config = config
         self.client = client
 
+        if consumer is not None:
+            self.consumer = consumer
+
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> ReplyHandlerPool:
         client = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
-        return cls(config, client)
+        return cls(config, client, **kwargs)
 
     async def _create_instance(self) -> DynamicReplyHandler:
         topic = str(uuid4())
         await self._create_reply_topic(topic)
+
+        self.consumer.add_topic(f"{topic}Reply")
+
         instance = DynamicReplyHandler.from_config(config=self.config, topic=topic)
         await instance.setup()
         return instance
 
     async def _destroy_instance(self, instance: DynamicReplyHandler):
         await instance.destroy()
+
+        self.consumer.remove_topic(f"{instance.topic}Reply")
+
         await self._delete_reply_topic(instance.topic)
 
     async def _create_reply_topic(self, topic: str):

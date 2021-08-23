@@ -48,6 +48,8 @@ from .handlers import (
     CommandReplyHandler,
     CommandReplyHandlerService,
     Consumer,
+    DynamicConsumer,
+    DynamicConsumerService,
     DynamicHandler,
     DynamicReplyHandler,
     EventConsumer,

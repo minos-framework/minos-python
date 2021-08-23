@@ -26,6 +26,8 @@ from .dynamic import (
     DynamicHandler,
     DynamicReplyHandler,
     ReplyHandlerPool,
+    DynamicConsumer,
+    DynamicConsumerService,
 )
 from .entries import (
     HandlerEntry,

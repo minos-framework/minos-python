@@ -15,7 +15,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    DynamicReplyHandler,
+    DynamicConsumer, DynamicReplyHandler,
     ReplyHandlerPool,
 )
 from tests.utils import (
@@ -28,7 +28,8 @@ class TestDynamicHandler(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.pool = ReplyHandlerPool.from_config(config=self.config)
+        self.consumer = DynamicConsumer.from_config(config=self.config)
+        self.pool = ReplyHandlerPool.from_config(config=self.config, consumer=self.consumer)
 
     async def test_config(self):
         self.assertEqual(self.config, self.pool.config)
