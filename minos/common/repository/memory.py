@@ -21,11 +21,11 @@ from uuid import (
     uuid4,
 )
 
-from ..constants import (
-    NULL_UUID,
-)
 from ..datetime import (
     current_datetime,
+)
+from ..uuid import (
+    NULL_UUID,
 )
 from .abc import (
     MinosRepository,
