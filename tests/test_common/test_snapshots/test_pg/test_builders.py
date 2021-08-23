@@ -37,6 +37,7 @@ from minos.common import (
     PostgreSqlSnapshotSetup,
     RepositoryEntry,
     SnapshotEntry,
+    current_datetime,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -105,8 +106,26 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(Car(3, "blue", uuid=self.uuid_2, version=2)),
-            SnapshotEntry.from_aggregate(Car(3, "blue", uuid=self.uuid_3, version=1)),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_2,
+                    version=2,
+                    created_at=observed[1].created_at,
+                    updated_at=observed[1].updated_at,
+                )
+            ),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_3,
+                    version=1,
+                    created_at=observed[2].created_at,
+                    updated_at=observed[2].updated_at,
+                )
+            ),
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 
@@ -130,9 +149,9 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         aggregate_name: str = Car.classname
 
         async def _fn(*args, **kwargs):
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE)
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE)
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE)
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
+            yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
         async with await self._populate() as repository:
             with patch("minos.common.PostgreSqlRepository.select", _fn):
@@ -145,7 +164,14 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 observed = [v async for v in snapshot.select()]
 
         expected = [
-            SnapshotEntry(self.uuid_1, aggregate_name, 3, Car(3, "blue", uuid=self.uuid_1, version=1).avro_bytes)
+            SnapshotEntry(
+                aggregate_uuid=self.uuid_1,
+                aggregate_name=aggregate_name,
+                version=3,
+                data=Car(3, "blue", uuid=self.uuid_1, version=1).avro_bytes,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
+            )
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 

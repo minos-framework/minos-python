@@ -7,6 +7,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 """
 
 import unittest
+from datetime import (
+    datetime,
+)
 from typing import (
     Optional,
 )
@@ -18,6 +21,7 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_DATETIME,
     NULL_UUID,
     Action,
     FieldDiff,
@@ -62,7 +66,9 @@ class TestFieldDiffContainer(unittest.IsolatedAsyncioTestCase):
 
     def test_from_difference_with_ignore(self):
         expected = FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "red")])
-        observed = FieldDiffContainer.from_difference(self.car_two, self.car_one, ignore={"uuid", "version"})
+        observed = FieldDiffContainer.from_difference(
+            self.car_two, self.car_one, ignore={"uuid", "version", "created_at", "updated_at"}
+        )
         self.assertEqual(expected, observed)
 
     def test_with_difference_not_hashable(self):
@@ -78,6 +84,8 @@ class TestFieldDiffContainer(unittest.IsolatedAsyncioTestCase):
             [
                 FieldDiff("uuid", UUID, NULL_UUID),
                 FieldDiff("version", int, 2),
+                FieldDiff("created_at", datetime, NULL_DATETIME),
+                FieldDiff("updated_at", datetime, NULL_DATETIME),
                 FieldDiff("doors", int, 5),
                 FieldDiff("color", str, "red"),
                 FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
@@ -94,7 +102,7 @@ class TestFieldDiffContainer(unittest.IsolatedAsyncioTestCase):
                 FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
             ]
         )
-        observed = FieldDiffContainer.from_model(self.car_two, ignore={"uuid", "version"})
+        observed = FieldDiffContainer.from_model(self.car_two, ignore={"uuid", "version", "created_at", "updated_at"})
         self.assertEqual(expected, observed)
 
     def test_avro_schema(self):

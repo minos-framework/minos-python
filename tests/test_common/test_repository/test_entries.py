@@ -19,6 +19,7 @@ from minos.common import (
     FieldDiff,
     FieldDiffContainer,
     RepositoryEntry,
+    current_datetime,
 )
 from tests.aggregate_classes import (
     Car,
@@ -59,7 +60,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
     async def test_from_aggregate_diff(self):
         fields_diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        aggregate_diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, fields_diff)
+        aggregate_diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, current_datetime(), fields_diff)
 
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
         self.assertEqual(self.uuid, entry.aggregate_uuid)
