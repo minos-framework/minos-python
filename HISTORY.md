@@ -152,3 +152,10 @@ History
 * Add support for `typing.Generic` and `typing.TypeVar`.
 * Bugfixes
 
+0.1.10 (2021-08-23)
+--------------------
+
+* Add `created_at` and `updated_at` to `Aggregate`.
+* Improve Fix `AggregateDiff` + `FieldDiffContainer` API.
+* Fix `Aggregate` bug that stored empty field differences instead of skipping them.
+* Fix bug from `Model` related with `getitem`, `setitem`, `getattr` and `setattr`.
