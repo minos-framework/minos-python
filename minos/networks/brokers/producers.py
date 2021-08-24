@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.networks.brokers.producers module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -12,10 +7,14 @@ from __future__ import (
 import logging
 from typing import (
     NoReturn,
+    Optional,
 )
 
 from aiokafka import (
     AIOKafkaProducer,
+)
+from aiopg import (
+    Cursor,
 )
 from psycopg2.sql import (
     SQL,
@@ -25,6 +24,9 @@ from minos.common import (
     MinosConfig,
 )
 
+from ..utils import (
+    consume_queue,
+)
 from .abc import (
     BrokerSetup,
 )
@@ -54,17 +56,33 @@ class Producer(BrokerSetup):
             **kwargs,
         )
 
-    async def dispatch(self) -> NoReturn:
-        """Dispatch the items in the publishing queue.
+    async def dispatch_forever(self) -> NoReturn:
+        """Dispatch the items in the publishing queue forever.
 
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
-            # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
-            await cursor.execute("BEGIN")
+            # noinspection PyTypeChecker
+            await cursor.execute(_LISTEN_QUERY)
+            try:
+                while True:
+                    await consume_queue(cursor.connection.notifies, self.records)
+                    await self.dispatch(cursor)
 
-            # Select records and lock them FOR UPDATE
+            finally:
+                # noinspection PyTypeChecker
+                await cursor.execute(_UNLISTEN_QUERY)
+
+    async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
+        """Dispatch the items in the publishing queue.
+
+        :return: This method does not return anything.
+        """
+        is_external_cursor = cursor is not None
+        if not is_external_cursor:
+            cursor = await self.cursor().__aenter__()
+
+        async with cursor.begin():
             # noinspection PyTypeChecker
             await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self.retry, self.records))
             result = await cursor.fetchall()
@@ -83,8 +101,8 @@ class Producer(BrokerSetup):
                         # noinspection PyTypeChecker
                         await cursor.execute(_UPDATE_NON_PROCESSED_QUERY, (row[0],))
 
-            # Manually commit
-            await cursor.execute("COMMIT")
+        if not is_external_cursor:
+            await cursor.__aexit__(None, None, None)
 
     async def publish(self, topic: str, message: bytes) -> bool:
         """Publish a new item in the broker (kafka).
@@ -122,6 +140,10 @@ _SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
     "SKIP LOCKED"
 )
 
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue " "WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue WHERE id = %s")
 
-_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE producer_queue " "SET retry = retry + 1 " "WHERE id = %s")
+_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE producer_queue SET retry = retry + 1 WHERE id = %s")
+
+_LISTEN_QUERY = SQL("LISTEN producer_queue")
+
+_UNLISTEN_QUERY = SQL("UNLISTEN producer_queue")

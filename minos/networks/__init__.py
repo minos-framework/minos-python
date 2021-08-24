@@ -81,6 +81,7 @@ from .snapshots import (
     SnapshotService,
 )
 from .utils import (
+    consume_queue,
     get_host_ip,
     get_host_name,
     get_ip,
