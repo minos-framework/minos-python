@@ -80,13 +80,15 @@ class Handler(HandlerSetup):
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            await cursor.execute(f"LISTEN {self.TABLE_NAME!s};")
+            # noinspection PyTypeChecker
+            await cursor.execute(self._queries["listen"])
             try:
                 while True:
                     await consume_queue(cursor.connection.notifies, self._records)
                     await self.dispatch(cursor)
             finally:
-                await cursor.execute(f"UNLISTEN {self.TABLE_NAME!s};")
+                # noinspection PyTypeChecker
+                await cursor.execute(self._queries["unlisten"])
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> NoReturn:
         """Event Queue Checker and dispatcher.
@@ -124,6 +126,8 @@ class Handler(HandlerSetup):
     @cached_property
     def _queries(self):
         return {
+            "listen": _LISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
+            "unlisten": _UNLISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
             "select_non_processed": _SELECT_NON_PROCESSED_ROWS_QUERY.format(Identifier(self.TABLE_NAME)),
             "delete_processed": _DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
             "update_non_processed": _UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
@@ -184,6 +188,10 @@ _SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
     "SELECT * FROM {} WHERE retry < %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
 )
 
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM {} " "WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM {} WHERE id = %s")
 
-_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE {} " "SET retry = retry + 1 " "WHERE id = %s")
+_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE {} SET retry = retry + 1 WHERE id = %s")
+
+_LISTEN_QUERY = SQL("LISTEN {}")
+
+_UNLISTEN_QUERY = SQL("UNLISTEN {}")

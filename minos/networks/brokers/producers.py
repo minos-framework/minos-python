@@ -62,14 +62,16 @@ class Producer(BrokerSetup):
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            await cursor.execute("LISTEN producer_queue;")
+            # noinspection PyTypeChecker
+            await cursor.execute(_LISTEN_QUERY)
             try:
                 while True:
                     await consume_queue(cursor.connection.notifies, self.records)
                     await self.dispatch(cursor)
 
             finally:
-                await cursor.execute("UNLISTEN producer_queue;")
+                # noinspection PyTypeChecker
+                await cursor.execute(_UNLISTEN_QUERY)
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
         """Dispatch the items in the publishing queue.
@@ -138,6 +140,10 @@ _SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
     "SKIP LOCKED"
 )
 
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue " "WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue WHERE id = %s")
 
-_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE producer_queue " "SET retry = retry + 1 " "WHERE id = %s")
+_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE producer_queue SET retry = retry + 1 WHERE id = %s")
+
+_LISTEN_QUERY = SQL("LISTEN producer_queue")
+
+_UNLISTEN_QUERY = SQL("UNLISTEN producer_queue")

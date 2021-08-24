@@ -126,7 +126,7 @@ class Consumer(HandlerSetup):
         queue_id = await self.submit_query_and_fetchone(
             _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary),
         )
-        await self.submit_query(f"NOTIFY {self.TABLE_NAME};")
+        await self.submit_query(_NOTIFY_QUERY.format(Identifier(self.TABLE_NAME)))
 
         return queue_id[0]
 
@@ -134,3 +134,5 @@ class Consumer(HandlerSetup):
 _INSERT_QUERY = SQL(
     "INSERT INTO {} (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, NOW()) RETURNING id"
 )
+
+_NOTIFY_QUERY = SQL("NOTIFY {}")

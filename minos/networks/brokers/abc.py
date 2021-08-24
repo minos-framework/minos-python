@@ -46,7 +46,7 @@ class Broker(MinosBroker, BrokerSetup, ABC):
         """
         params = (topic, raw, 0, self.ACTION)
         raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
-        await self.submit_query("NOTIFY producer_queue;")
+        await self.submit_query(_NOTIFY_QUERY)
         return raw[0]
 
 
@@ -66,3 +66,5 @@ _INSERT_ENTRY_QUERY = SQL(
     "VALUES (%s, %s, %s, %s, NOW(), NOW()) "
     "RETURNING id"
 )
+
+_NOTIFY_QUERY = SQL("NOTIFY producer_queue")
