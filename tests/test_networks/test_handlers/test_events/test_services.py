@@ -14,7 +14,6 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandHandlerService,
     EventConsumerService,
     EventHandler,
     EventHandlerService,
@@ -56,7 +55,7 @@ class TestEventHandlerService(PostgresAsyncTestCase):
         self.assertIsInstance(service, Service)
 
     def test_dispatcher(self):
-        service = CommandHandlerService(config=self.config)
+        service = EventHandlerService(config=self.config)
         self.assertIsInstance(service.dispatcher, EventHandler)
 
     async def test_start_stop(self):
