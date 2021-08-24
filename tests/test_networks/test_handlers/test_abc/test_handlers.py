@@ -1,19 +1,18 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.tests_networks.test_handlers.test_abc.test_handlers module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from asyncio import (
     gather,
+    sleep,
 )
 from collections import (
     namedtuple,
 )
 from typing import (
     NoReturn,
+)
+from unittest.mock import (
+    AsyncMock,
 )
 from uuid import (
     uuid4,
@@ -92,6 +91,16 @@ class TestHandler(PostgresAsyncTestCase):
             in str(context.exception)
         )
 
+    async def test_dispatch_forever(self):
+        mock = AsyncMock(side_effect=ValueError)
+        async with self.handler:
+            self.handler.dispatch = mock
+            try:
+                await gather(self.handler.dispatch_forever(), self._notify("fake"))
+            except ValueError:
+                pass
+        self.assertEqual(1, mock.call_count)
+
     async def test_dispatch(self):
         from minos.common import (
             Event,
@@ -147,6 +156,12 @@ class TestHandler(PostgresAsyncTestCase):
             await gather(*[self.handler.dispatch() for _ in range(0, 6)])
 
             self.assertEqual(25, await self._count())
+
+    async def _notify(self, name):
+        await sleep(0.2)
+        async with aiopg.connect(**self.broker_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(f"NOTIFY {name!s};")
 
     async def _insert_one(self, instance):
         async with aiopg.connect(**self.broker_queue_db) as connect:

@@ -1,5 +1,14 @@
+"""tests.test_networks.test_broker.test_producers module."""
+
 import asyncio
 import unittest
+from asyncio import (
+    gather,
+    sleep,
+)
+from unittest.mock import (
+    AsyncMock,
+)
 from uuid import (
     uuid4,
 )
@@ -36,6 +45,16 @@ class TestProducer(PostgresAsyncTestCase):
         dispatcher = Producer.from_config(config=self.config)
         response = await dispatcher.publish(topic="TestKafkaSend", message=bytes())
         assert response is True
+
+    async def test_dispatch_forever(self):
+        mock = AsyncMock(side_effect=ValueError)
+        async with Producer.from_config(config=self.config) as producer:
+            producer.dispatch = mock
+            try:
+                await gather(producer.dispatch_forever(), self._notify("producer_queue"))
+            except ValueError:
+                pass
+        self.assertEqual(1, mock.call_count)
 
     async def test_concurrency_dispatcher(self):
         model = FakeModel("foo")
@@ -121,6 +140,12 @@ class TestProducer(PostgresAsyncTestCase):
         assert records[0] == 2
         assert retry_1[0] > 0
         assert retry_2[0] > 0
+
+    async def _notify(self, name):
+        await sleep(0.2)
+        async with aiopg.connect(**self.broker_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(f"NOTIFY {name!s};")
 
 
 if __name__ == "__main__":
