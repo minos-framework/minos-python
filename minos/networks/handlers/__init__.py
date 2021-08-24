@@ -23,11 +23,11 @@ from .commands import (
     CommandHandlerService,
 )
 from .dynamic import (
+    DynamicConsumer,
+    DynamicConsumerService,
     DynamicHandler,
     DynamicReplyHandler,
     ReplyHandlerPool,
-    DynamicConsumer,
-    DynamicConsumerService,
 )
 from .entries import (
     HandlerEntry,

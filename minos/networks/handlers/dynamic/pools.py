@@ -10,12 +10,16 @@ from __future__ import (
 )
 
 import logging
-from typing import Optional
+from typing import (
+    Optional,
+)
 from uuid import (
     uuid4,
 )
 
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import (
+    Provide,
+)
 from kafka import (
     KafkaAdminClient,
 )

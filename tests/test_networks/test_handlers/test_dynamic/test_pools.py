@@ -15,7 +15,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    DynamicConsumer, DynamicReplyHandler,
+    DynamicConsumer,
+    DynamicReplyHandler,
     ReplyHandlerPool,
 )
 from tests.utils import (

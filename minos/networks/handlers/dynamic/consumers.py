@@ -39,4 +39,3 @@ class DynamicConsumer(Consumer):
         """
         self._topics.remove(topic)
         self._consumer.subscribe(topics=list(self._topics))
-
