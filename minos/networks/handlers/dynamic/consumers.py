@@ -38,4 +38,7 @@ class DynamicConsumer(Consumer):
         :return: TODO
         """
         self._topics.remove(topic)
-        self._consumer.subscribe(topics=list(self._topics))
+        if len(self._topics):
+            self._consumer.subscribe(topics=list(self._topics))
+        else:
+            self._consumer.unsubscribe()
