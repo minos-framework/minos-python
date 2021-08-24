@@ -1,4 +1,3 @@
-default_stages: [ push ]
 repos:
     -   repo: local
         hooks:
