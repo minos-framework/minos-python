@@ -1,9 +1,4 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
+"""minos.networks.abc.handlers module."""
 
 from __future__ import (
     annotations,
@@ -85,18 +80,26 @@ class Handler(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
+        async with self.pool.acquire() as connection:
+            cursor = await connection.cursor()
+            await cursor.execute(f"LISTEN {self.TABLE_NAME!s};")
 
-        async with self.cursor() as cursor:
-            async with cursor.begin():
-                await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
+            try:
+                while True:
+                    await connection.notifies.get()
 
-                result = await cursor.fetchall()
-                entries = self._build_entries(result)
-                await self._dispatch_entries(entries)
+                    async with cursor.begin():
+                        await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
 
-                for entry in entries:
-                    query_id = "delete_processed" if entry.success else "update_non_processed"
-                    await cursor.execute(self._queries[query_id], (entry.id,))
+                        result = await cursor.fetchall()
+                        entries = self._build_entries(result)
+                        await self._dispatch_entries(entries)
+
+                        for entry in entries:
+                            query_id = "delete_processed" if entry.success else "update_non_processed"
+                            await cursor.execute(self._queries[query_id], (entry.id,))
+            finally:
+                await cursor.execute(f"UNLISTEN {self.TABLE_NAME!s};")
 
     @cached_property
     def _queries(self):

@@ -1,17 +1,11 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.networks.command_replies.services module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import logging
 from typing import (
     Any,
 )
 
-from aiomisc.service.periodic import (
-    PeriodicService,
+from aiomisc import (
     Service,
 )
 from cached_property import (
@@ -62,7 +56,7 @@ class CommandReplyConsumerService(Service):
         return CommandReplyConsumer.from_config()
 
 
-class CommandReplyHandlerService(PeriodicService):
+class CommandReplyHandlerService(Service):
     """Minos QueueDispatcherService class."""
 
     def __init__(self, **kwargs):
@@ -75,13 +69,12 @@ class CommandReplyHandlerService(PeriodicService):
         :return: This method does not return anything.
         """
         await self.dispatcher.setup()
-        await super().start()
 
-    async def callback(self) -> None:
-        """Method to be called periodically by the internal ``aiomisc`` logic.
+        try:
+            self.start_event.set()
+        except RuntimeError:
+            logger.warning("Runtime is not properly setup.")
 
-        :return:This method does not return anything.
-        """
         await self.dispatcher.dispatch()
 
     async def stop(self, err: Exception = None) -> None:
@@ -90,7 +83,6 @@ class CommandReplyHandlerService(PeriodicService):
         :param err: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
-        await super().stop(err)
         await self.dispatcher.destroy()
 
     @cached_property

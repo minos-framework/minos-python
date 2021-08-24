@@ -1,9 +1,5 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
+"""minos.networks.abc.consumers module."""
+
 from __future__ import (
     annotations,
 )
@@ -130,6 +126,7 @@ class Consumer(HandlerSetup):
         queue_id = await self.submit_query_and_fetchone(
             _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary),
         )
+        await self.submit_query(f"NOTIFY {self.TABLE_NAME};")
 
         return queue_id[0]
 
