@@ -34,6 +34,9 @@ from minos.common import (
 from ...exceptions import (
     MinosActionNotFoundException,
 )
+from ...utils import (
+    consume_queue,
+)
 from ..entries import (
     HandlerEntry,
 )
@@ -80,15 +83,15 @@ class Handler(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        async with self.pool.acquire() as connection:
-            cursor = await connection.cursor()
+        async with self.cursor() as cursor:
             await cursor.execute(f"LISTEN {self.TABLE_NAME!s};")
 
             try:
                 while True:
-                    await connection.notifies.get()
+                    await consume_queue(cursor.connection.notifies, self._records)
 
                     async with cursor.begin():
+                        # noinspection PyTypeChecker
                         await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
 
                         result = await cursor.fetchall()
@@ -97,6 +100,7 @@ class Handler(HandlerSetup):
 
                         for entry in entries:
                             query_id = "delete_processed" if entry.success else "update_non_processed"
+                            # noinspection PyTypeChecker
                             await cursor.execute(self._queries[query_id], (entry.id,))
             finally:
                 await cursor.execute(f"UNLISTEN {self.TABLE_NAME!s};")

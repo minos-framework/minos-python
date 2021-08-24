@@ -46,6 +46,7 @@ class Broker(MinosBroker, BrokerSetup, ABC):
         """
         params = (topic, raw, 0, self.ACTION)
         raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
+        await self.submit_query("NOTIFY producer_queue;")
         return raw[0]
 
 

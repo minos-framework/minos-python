@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.networks.brokers.producers module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -25,6 +20,9 @@ from minos.common import (
     MinosConfig,
 )
 
+from ..utils import (
+    consume_queue,
+)
 from .abc import (
     BrokerSetup,
 )
@@ -60,31 +58,31 @@ class Producer(BrokerSetup):
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            # aiopg works in autocommit mode, meaning that you have to use transaction in manual mode.
-            # Read more details: https://aiopg.readthedocs.io/en/stable/core.html#transactions.
-            await cursor.execute("BEGIN")
+            await cursor.execute("LISTEN producer_queue;")
+            try:
+                while True:
+                    await consume_queue(cursor.connection.notifies, self.records)
 
-            # Select records and lock them FOR UPDATE
-            # noinspection PyTypeChecker
-            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self.retry, self.records))
-            result = await cursor.fetchall()
-
-            for row in result:
-                published = False
-                try:
-                    published = await self.publish(topic=row[1], message=row[2])
-                except Exception as exc:  # pragma: no cover
-                    logger.warning(f"Raised an exception while publishing a message: {exc!r}")
-                finally:
-                    if published:
+                    async with cursor.begin():
                         # noinspection PyTypeChecker
-                        await cursor.execute(_DELETE_PROCESSED_QUERY, (row[0],))
-                    else:
-                        # noinspection PyTypeChecker
-                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY, (row[0],))
+                        await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self.retry, self.records))
+                        result = await cursor.fetchall()
 
-            # Manually commit
-            await cursor.execute("COMMIT")
+                        for row in result:
+                            published = False
+                            try:
+                                published = await self.publish(topic=row[1], message=row[2])
+                            except Exception as exc:  # pragma: no cover
+                                logger.warning(f"Raised an exception while publishing a message: {exc!r}")
+                            finally:
+                                if published:
+                                    # noinspection PyTypeChecker
+                                    await cursor.execute(_DELETE_PROCESSED_QUERY, (row[0],))
+                                else:
+                                    # noinspection PyTypeChecker
+                                    await cursor.execute(_UPDATE_NON_PROCESSED_QUERY, (row[0],))
+            finally:
+                await cursor.execute("UNLISTEN producer_queue;")
 
     async def publish(self, topic: str, message: bytes) -> bool:
         """Publish a new item in the broker (kafka).
