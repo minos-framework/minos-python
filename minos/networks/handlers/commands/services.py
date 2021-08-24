@@ -75,7 +75,7 @@ class CommandHandlerService(Service):
         except RuntimeError:
             logger.warning("Runtime is not properly setup.")
 
-        await self.dispatcher.dispatch()
+        await self.dispatcher.dispatch_forever()
 
     async def stop(self, err: Exception = None) -> None:
         """Stop the service execution.

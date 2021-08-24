@@ -63,7 +63,7 @@ class TestProducer(PostgresAsyncTestCase):
         assert records[0] == 60
 
         async with Producer.from_config(config=self.config) as producer:
-            await asyncio.gather(*[producer.dispatch() for i in range(0, 6)])
+            await asyncio.gather(*(producer.dispatch() for _ in range(6)))
 
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:

@@ -19,6 +19,9 @@ from typing import (
     Type,
 )
 
+from aiopg import (
+    Cursor,
+)
 from cached_property import (
     cached_property,
 )
@@ -71,7 +74,21 @@ class Handler(HandlerSetup):
         """
         return self._handlers
 
-    async def dispatch(self) -> NoReturn:
+    async def dispatch_forever(self) -> NoReturn:
+        """Dispatch the items in the consuming queue forever.
+
+        :return: This method does not return anything.
+        """
+        async with self.cursor() as cursor:
+            await cursor.execute(f"LISTEN {self.TABLE_NAME!s};")
+            try:
+                while True:
+                    await consume_queue(cursor.connection.notifies, self._records)
+                    await self.dispatch(cursor)
+            finally:
+                await cursor.execute(f"UNLISTEN {self.TABLE_NAME!s};")
+
+    async def dispatch(self, cursor: Optional[Cursor] = None) -> NoReturn:
         """Event Queue Checker and dispatcher.
 
         It is in charge of querying the database and calling the action according to the topic.
@@ -83,27 +100,26 @@ class Handler(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        async with self.cursor() as cursor:
-            await cursor.execute(f"LISTEN {self.TABLE_NAME!s};")
 
-            try:
-                while True:
-                    await consume_queue(cursor.connection.notifies, self._records)
+        is_external_cursor = cursor is not None
+        if not is_external_cursor:
+            cursor = await self.cursor().__aenter__()
 
-                    async with cursor.begin():
-                        # noinspection PyTypeChecker
-                        await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
+        async with cursor.begin():
+            # noinspection PyTypeChecker
+            await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
 
-                        result = await cursor.fetchall()
-                        entries = self._build_entries(result)
-                        await self._dispatch_entries(entries)
+            result = await cursor.fetchall()
+            entries = self._build_entries(result)
+            await self._dispatch_entries(entries)
 
-                        for entry in entries:
-                            query_id = "delete_processed" if entry.success else "update_non_processed"
-                            # noinspection PyTypeChecker
-                            await cursor.execute(self._queries[query_id], (entry.id,))
-            finally:
-                await cursor.execute(f"UNLISTEN {self.TABLE_NAME!s};")
+            for entry in entries:
+                query_id = "delete_processed" if entry.success else "update_non_processed"
+                # noinspection PyTypeChecker
+                await cursor.execute(self._queries[query_id], (entry.id,))
+
+        if not is_external_cursor:
+            await cursor.__aexit__(None, None, None)
 
     @cached_property
     def _queries(self):
