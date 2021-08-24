@@ -33,17 +33,17 @@ def get_ip(name: str) -> str:
     return socket.gethostbyname(name)
 
 
-async def consume_queue(queue, count: int) -> None:
-    """TODO
+async def consume_queue(queue, max_count: int) -> None:
+    """Consume ``count`` at least ``1`` and at most ``max_count`` elements from the given queue.
 
-    :param queue: TODO
-    :param count: TODO
-    :return: TODO
+    :param queue: The queue to be consumed.
+    :param max_count: The max count of elements to be consumed.
+    :return: This function does not return anything.
     """
     await queue.get()
 
     c = 1
-    while c < count:
+    while c < max_count:
         c += 1
         try:
             queue.get_nowait()
