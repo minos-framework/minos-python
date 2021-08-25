@@ -63,7 +63,8 @@ class ReplyHandlerPool(MinosPool):
         return cls(config, client, **kwargs)
 
     async def _create_instance(self) -> DynamicReplyHandler:
-        topic = str(uuid4())
+        topic = str(uuid4()).replace("-", "")
+
         await self._create_reply_topic(topic)
 
         self.consumer.add_topic(f"{topic}Reply")
