@@ -11,6 +11,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timezone,
 )
 from typing import (
     Any,
@@ -158,7 +159,7 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
     def test_datetime_int(self):
         decoder = AvroDataDecoder("test", datetime)
         observed = decoder.build(1615584741000000)
-        self.assertEqual(datetime(2021, 3, 12, 21, 32, 21), observed)
+        self.assertEqual(datetime(2021, 3, 12, 21, 32, 21, tzinfo=timezone.utc), observed)
 
     def test_datetime_raises(self):
         decoder = AvroDataDecoder("test", datetime)

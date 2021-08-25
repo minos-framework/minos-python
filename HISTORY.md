@@ -159,3 +159,9 @@ History
 * Improve Fix `AggregateDiff` + `FieldDiffContainer` API.
 * Fix `Aggregate` bug that stored empty field differences instead of skipping them.
 * Fix bug from `Model` related with `getitem`, `setitem`, `getattr` and `setattr`.
+
+0.1.11 (2021-08-25)
+--------------------
+
+* Fix bug related with `datetime` serialization in `Field`.
+* Fix bug related with the `AggregateDiff.__getattr__` implementation.
