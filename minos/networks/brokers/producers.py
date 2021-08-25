@@ -5,6 +5,9 @@ from __future__ import (
 )
 
 import logging
+from asyncio import (
+    wait_for,
+)
 from typing import (
     NoReturn,
     Optional,
@@ -56,18 +59,23 @@ class Producer(BrokerSetup):
             **kwargs,
         )
 
-    async def dispatch_forever(self) -> NoReturn:
+    async def dispatch_forever(self, max_wait: Optional[float] = 15.0) -> NoReturn:
         """Dispatch the items in the publishing queue forever.
 
+        :param max_wait: Maximum seconds to wait for notifications. If ``None`` the wait is performed until infinity.
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
+            await self.dispatch(cursor)
+
             # noinspection PyTypeChecker
             await cursor.execute(_LISTEN_QUERY)
             try:
                 while True:
-                    await consume_queue(cursor.connection.notifies, self.records)
-                    await self.dispatch(cursor)
+                    try:
+                        await wait_for(consume_queue(cursor.connection.notifies, self.records), max_wait)
+                    finally:
+                        await self.dispatch(cursor)
 
             finally:
                 # noinspection PyTypeChecker
