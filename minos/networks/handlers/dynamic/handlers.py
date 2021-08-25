@@ -105,6 +105,8 @@ class DynamicReplyHandler(Handler):
                     while len(result) < count:
                         try:
                             await wait_for(consume_queue(cursor.connection.notifies, count - len(result)), max_wait)
+                        except TimeoutError:
+                            pass
                         finally:
                             result += await self._get(cursor, count - len(result))
                 finally:
