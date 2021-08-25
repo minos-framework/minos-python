@@ -127,6 +127,7 @@ class Consumer(HandlerSetup):
             _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary),
         )
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(self.TABLE_NAME)))
+        await self.submit_query(_NOTIFY_QUERY.format(Identifier(topic)))
 
         return queue_id[0]
 
