@@ -24,7 +24,7 @@ from tests.utils import (
 )
 
 
-class TestDynamicHandler(PostgresAsyncTestCase):
+class TestReplyHandlerPool(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
