@@ -24,9 +24,11 @@ from typing import (
     Union,
 )
 
-import aiopg
 from aiokafka import (
     AIOKafkaConsumer,
+)
+from aiopg import (
+    Cursor,
 )
 from psycopg2.sql import (
     SQL,
@@ -158,27 +160,6 @@ class DynamicReplyHandler(Handler):
         self.topic = topic
         self._real_topic = topic if topic.endswith("Reply") else f"{topic}Reply"
 
-        self._connection = None
-
-    async def _setup(self) -> None:
-        await super()._setup()
-
-        self._connection = await aiopg.connect(
-            database=self.database, user=self.user, password=self.password, host=self.host, port=self.port
-        )
-        async with self._connection.cursor() as cursor:
-            # noinspection PyTypeChecker
-            await cursor.execute(SQL("LISTEN {}").format(Identifier(self._real_topic)))
-
-    async def _destroy(self) -> None:
-        if self._connection is not None:
-            async with self._connection.cursor() as cursor:
-                await cursor.execute(SQL("UNLISTEN {}").format(Identifier(self._real_topic)))
-            self._connection.close()
-            self._connection = None
-
-        await super()._destroy()
-
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicReplyHandler:
         return cls(handlers=dict(), **config.broker.queue._asdict(), **kwargs)
@@ -200,7 +181,7 @@ class DynamicReplyHandler(Handler):
         :return: A list of ``HandlerEntry`` instances.
         """
         try:
-            entries = await wait_for(self._get_many(count), timeout=timeout)
+            entries = await wait_for(self._get_many(count, **kwargs), timeout=timeout)
         except TimeoutError:
             raise MinosHandlerNotFoundEnoughEntriesException(
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self._real_topic!r}."
@@ -210,18 +191,34 @@ class DynamicReplyHandler(Handler):
 
         return entries
 
-    async def _get_many(self, count: int) -> list[HandlerEntry]:
-        result = list()
-        async with self._connection.cursor() as cursor:
-            while len(result) < count:
-                await consume_queue(self._connection.notifies, count - len(result))
-                async with cursor.begin():
-                    await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self._real_topic, count - len(result)))
-                    for entry in self._build_entries(await cursor.fetchall()):
-                        await cursor.execute(self._queries["delete_processed"], (entry.id,))
-                        result.append(entry)
+    async def _get_many(self, count: int, max_wait: Optional[float] = 1.0) -> list[HandlerEntry]:
+        async with self.cursor() as cursor:
+            result = await self._get(cursor, count)
 
-        return result
+            if len(result) < count:
+                # noinspection PyTypeChecker
+                await cursor.execute(SQL("LISTEN {}").format(Identifier(self._real_topic)))
+                try:
+                    while len(result) < count:
+                        try:
+                            await wait_for(consume_queue(cursor.connection.notifies, count - len(result)), max_wait)
+                        finally:
+                            result += self._get(cursor, count - len(result))
+                finally:
+                    # noinspection PyTypeChecker
+                    await cursor.execute(SQL("UNLISTEN {}").format(Identifier(self._real_topic)))
+
+            return result
+
+    async def _get(self, cursor: Cursor, count) -> list[HandlerEntry]:
+        entries = list()
+        async with cursor.begin():
+            # noinspection PyTypeChecker
+            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self._real_topic, count))
+            for entry in self._build_entries(await cursor.fetchall()):
+                await cursor.execute(self._queries["delete_processed"], (entry.id,))
+                entries.append(entry)
+        return entries
 
 
 _SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
