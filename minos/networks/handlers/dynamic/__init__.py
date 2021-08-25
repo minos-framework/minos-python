@@ -9,7 +9,6 @@ from .consumers import (
     DynamicConsumer,
 )
 from .handlers import (
-    DynamicHandler,
     DynamicReplyHandler,
 )
 from .pools import (

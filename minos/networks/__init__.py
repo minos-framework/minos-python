@@ -50,7 +50,6 @@ from .handlers import (
     Consumer,
     DynamicConsumer,
     DynamicConsumerService,
-    DynamicHandler,
     DynamicReplyHandler,
     EventConsumer,
     EventConsumerService,

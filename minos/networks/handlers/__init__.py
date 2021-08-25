@@ -25,7 +25,6 @@ from .commands import (
 from .dynamic import (
     DynamicConsumer,
     DynamicConsumerService,
-    DynamicHandler,
     DynamicReplyHandler,
     ReplyHandlerPool,
 )
