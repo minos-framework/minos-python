@@ -10,6 +10,7 @@ from abc import (
 )
 from asyncio import (
     gather,
+    wait_for,
 )
 from typing import (
     Any,
@@ -74,21 +75,26 @@ class Handler(HandlerSetup):
         """
         return self._handlers
 
-    async def dispatch_forever(self) -> NoReturn:
+    async def dispatch_forever(self, max_wait: Optional[float] = 15.0) -> NoReturn:
         """Dispatch the items in the consuming queue forever.
 
+        :param max_wait: Maximum seconds to wait for notifications. If ``None`` the wait is performed until infinity.
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
+            await self.dispatch(cursor)
+
             await cursor.execute(self._queries["listen"])
             try:
                 while True:
-                    await consume_queue(cursor.connection.notifies, self._records)
-                    await self.dispatch(cursor)
+                    try:
+                        await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
+                    finally:
+                        await self.dispatch(cursor)
             finally:
                 await cursor.execute(self._queries["unlisten"])
 
-    async def dispatch(self, cursor: Optional[Cursor] = None) -> NoReturn:
+    async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
         """Event Queue Checker and dispatcher.
 
         It is in charge of querying the database and calling the action according to the topic.
