@@ -18,6 +18,7 @@ from datetime import (
     datetime,
     time,
     timedelta,
+    timezone,
 )
 from typing import (
     TYPE_CHECKING,
@@ -207,7 +208,7 @@ class AvroDataDecoder:
         if isinstance(data, datetime):
             return data
         if isinstance(data, int):
-            return datetime(1970, 1, 1) + data * timedelta(microseconds=1)
+            return datetime(1970, 1, 1, tzinfo=timezone.utc) + data * timedelta(microseconds=1)
         raise MinosTypeAttributeException(self.name, datetime, data)
 
     def _cast_uuid(self, data: Any) -> UUID:
