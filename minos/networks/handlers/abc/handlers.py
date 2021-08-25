@@ -80,14 +80,12 @@ class Handler(HandlerSetup):
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            # noinspection PyTypeChecker
             await cursor.execute(self._queries["listen"])
             try:
                 while True:
                     await consume_queue(cursor.connection.notifies, self._records)
                     await self.dispatch(cursor)
             finally:
-                # noinspection PyTypeChecker
                 await cursor.execute(self._queries["unlisten"])
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> NoReturn:
@@ -108,7 +106,6 @@ class Handler(HandlerSetup):
             cursor = await self.cursor().__aenter__()
 
         async with cursor.begin():
-            # noinspection PyTypeChecker
             await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
 
             result = await cursor.fetchall()
@@ -117,14 +114,14 @@ class Handler(HandlerSetup):
 
             for entry in entries:
                 query_id = "delete_processed" if entry.success else "update_non_processed"
-                # noinspection PyTypeChecker
                 await cursor.execute(self._queries[query_id], (entry.id,))
 
         if not is_external_cursor:
             await cursor.__aexit__(None, None, None)
 
     @cached_property
-    def _queries(self):
+    def _queries(self) -> dict[str, str]:
+        # noinspection PyTypeChecker
         return {
             "listen": _LISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
             "unlisten": _UNLISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
