@@ -15,6 +15,7 @@ from datetime import (
     datetime,
     time,
     timedelta,
+    timezone,
 )
 from decimal import (
     Decimal,
@@ -107,7 +108,7 @@ class AvroDataEncoder:
 
     @staticmethod
     def _datetime_to_avro_raw(value: datetime) -> int:
-        return (value - datetime(1970, 1, 1, tzinfo=value.tzinfo)) // timedelta(microseconds=1)
+        return (value.astimezone(timezone.utc) - datetime(1970, 1, 1, tzinfo=timezone.utc)) // timedelta(microseconds=1)
 
     @staticmethod
     def _uuid_to_avro_raw(value: UUID) -> str:

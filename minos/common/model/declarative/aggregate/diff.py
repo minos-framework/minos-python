@@ -62,10 +62,12 @@ class AggregateDiff(DeclarativeModel):
         try:
             return super().__getattr__(item)
         except AttributeError as exc:
-            try:
-                return self.get_one(item)
-            except Exception:
-                raise exc
+            if item != "fields_diff":
+                try:
+                    return self.get_one(item)
+                except Exception:
+                    raise exc
+            raise exc
 
     def get_one(self, name: str, return_diff: bool = False) -> Union[FieldDiff, Any, list[FieldDiff], list[Any]]:
         """Get first field diff with given name.
