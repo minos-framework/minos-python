@@ -7,6 +7,7 @@ from __future__ import (
 import logging
 from asyncio import (
     wait_for,
+    TimeoutError,
 )
 from typing import (
     NoReturn,
@@ -74,6 +75,8 @@ class Producer(BrokerSetup):
                 while True:
                     try:
                         await wait_for(consume_queue(cursor.connection.notifies, self.records), max_wait)
+                    except TimeoutError:
+                        pass
                     finally:
                         await self.dispatch(cursor)
 

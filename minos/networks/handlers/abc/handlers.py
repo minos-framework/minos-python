@@ -11,6 +11,7 @@ from abc import (
 from asyncio import (
     gather,
     wait_for,
+    TimeoutError,
 )
 from typing import (
     Any,
@@ -89,6 +90,8 @@ class Handler(HandlerSetup):
                 while True:
                     try:
                         await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
+                    except TimeoutError:
+                        pass
                     finally:
                         await self.dispatch(cursor)
             finally:
