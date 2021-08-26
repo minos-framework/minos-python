@@ -135,8 +135,8 @@ class DynamicReplyHandler(HandlerSetup):
                     return
 
     async def _get_count(self, cursor) -> int:
-        await cursor.execute(self._queries["count_not_processed"])
-        count = await cursor.fetchone()
+        await cursor.execute(self._queries["count_not_processed"], (self._real_topic,))
+        count = (await cursor.fetchone())[0]
         return count
 
     async def _get_entries(self, cursor: Cursor, count: int) -> list[HandlerEntry]:
@@ -170,7 +170,7 @@ _UNLISTEN_QUERY = SQL("UNLISTEN {}")
 
 # noinspection SqlDerivedTableAlias
 _COUNT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT COUNT(*) FROM (SELECT id FROM dynamic_queue WHERE retry < %s FOR UPDATE SKIP LOCKED) s"
+    "SELECT COUNT(*) FROM (SELECT id FROM dynamic_queue WHERE topic = %s FOR UPDATE SKIP LOCKED) s"
 )
 
 _SELECT_NOT_PROCESSED_ROWS_QUERY = SQL(
