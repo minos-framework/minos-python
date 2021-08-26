@@ -201,7 +201,8 @@ class Handler(HandlerSetup):
         return handler
 
 
-_COUNT_NOT_PROCESSED_QUERY = SQL("SELECT COUNT(*) FROM {} WHERE retry < %s")
+# noinspection SqlDerivedTableAlias
+_COUNT_NOT_PROCESSED_QUERY = SQL("SELECT COUNT(*) FROM (SELECT id FROM {} WHERE retry < %s FOR UPDATE SKIP LOCKED) s")
 
 _SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * FROM {} WHERE retry < %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"

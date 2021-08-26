@@ -157,7 +157,10 @@ class Producer(BrokerSetup):
         return published
 
 
-_COUNT_NOT_PROCESSED_QUERY = SQL("SELECT COUNT(*) FROM producer_queue WHERE retry < %s")
+# noinspection SqlDerivedTableAlias
+_COUNT_NOT_PROCESSED_QUERY = SQL(
+    "SELECT COUNT(*) FROM (SELECT id FROM producer_queue WHERE retry < %s FOR UPDATE SKIP LOCKED) s"
+)
 
 _SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * "
