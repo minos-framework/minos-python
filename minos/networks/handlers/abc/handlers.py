@@ -115,14 +115,14 @@ class Handler(HandlerSetup):
             cursor = await self.cursor().__aenter__()
 
         async with cursor.begin():
-            await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
+            await cursor.execute(self._queries["select_not_processed"], (self._retry, self._records))
 
             result = await cursor.fetchall()
             entries = self._build_entries(result)
             await self._dispatch_entries(entries)
 
             for entry in entries:
-                query_id = "delete_processed" if entry.success else "update_non_processed"
+                query_id = "delete_processed" if entry.success else "update_not_processed"
                 await cursor.execute(self._queries[query_id], (entry.id,))
 
         if not is_external_cursor:
@@ -134,9 +134,9 @@ class Handler(HandlerSetup):
         return {
             "listen": _LISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
             "unlisten": _UNLISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
-            "select_non_processed": _SELECT_NON_PROCESSED_ROWS_QUERY.format(Identifier(self.TABLE_NAME)),
+            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
             "delete_processed": _DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
-            "update_non_processed": _UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
+            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
         }
 
     def _build_entries(self, rows: list[tuple]) -> list[HandlerEntry]:
@@ -190,13 +190,13 @@ class Handler(HandlerSetup):
         return handler
 
 
-_SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
+_SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * FROM {} WHERE retry < %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
 )
 
 _DELETE_PROCESSED_QUERY = SQL("DELETE FROM {} WHERE id = %s")
 
-_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE {} SET retry = retry + 1 WHERE id = %s")
+_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE {} SET retry = retry + 1 WHERE id = %s")
 
 _LISTEN_QUERY = SQL("LISTEN {}")
 
