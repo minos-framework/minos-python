@@ -93,7 +93,7 @@ class Producer(BrokerSetup):
 
     async def _get_count(self, cursor) -> int:
         await cursor.execute(self._queries["count_not_processed"], (self.retry,))
-        count = await cursor.fetchone()
+        count = (await cursor.fetchone())[0]
         return count
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
