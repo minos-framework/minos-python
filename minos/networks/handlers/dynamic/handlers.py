@@ -115,21 +115,31 @@ class DynamicReplyHandler(HandlerSetup):
 
         return entries
 
-    async def _get_many(self, count: int, max_wait: Optional[float] = 1.0) -> list[HandlerEntry]:
+    async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[HandlerEntry]:
         result = list()
         async with self._connection.cursor() as cursor:
-            if len(result) < count:
-                while len(result) < count:
-                    try:
-                        await wait_for(consume_queue(self._connection.notifies, count - len(result)), max_wait)
-                    except TimeoutError:
-                        pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
+            while len(result) < count:
+                await self._wait_for_entries(cursor, count - len(result), max_wait)
+                result += await self._get_entries(cursor, count - len(result))
+        return result
 
-                    result += await self._get(cursor, count - len(result))
+    async def _wait_for_entries(self, cursor: Cursor, count: int, max_wait: Optional[float]) -> None:
+        if await self._get_count(cursor):
+            return
 
-            return result
+        while True:
+            try:
+                return await wait_for(consume_queue(cursor.connection.notifies, count), max_wait)
+            except TimeoutError:
+                if await self._get_count(cursor):
+                    return
 
-    async def _get(self, cursor: Cursor, count: int) -> list[HandlerEntry]:
+    async def _get_count(self, cursor) -> int:
+        await cursor.execute(self._queries["count_not_processed"])
+        count = await cursor.fetchone()
+        return count
+
+    async def _get_entries(self, cursor: Cursor, count: int) -> list[HandlerEntry]:
         entries = list()
         async with cursor.begin():
             await cursor.execute(self._queries["select_not_processed"], (self._real_topic, count))
@@ -144,6 +154,7 @@ class DynamicReplyHandler(HandlerSetup):
         return {
             "listen": _LISTEN_QUERY.format(Identifier(self._real_topic)),
             "unlisten": _UNLISTEN_QUERY.format(Identifier(self._real_topic)),
+            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
             "select_not_processed": _SELECT_NOT_PROCESSED_ROWS_QUERY,
             "delete_processed": _DELETE_PROCESSED_QUERY,
         }
@@ -156,6 +167,11 @@ class DynamicReplyHandler(HandlerSetup):
 _LISTEN_QUERY = SQL("LISTEN {}")
 
 _UNLISTEN_QUERY = SQL("UNLISTEN {}")
+
+# noinspection SqlDerivedTableAlias
+_COUNT_NOT_PROCESSED_QUERY = SQL(
+    "SELECT COUNT(*) FROM (SELECT id FROM dynamic_queue WHERE retry < %s FOR UPDATE SKIP LOCKED) s"
+)
 
 _SELECT_NOT_PROCESSED_ROWS_QUERY = SQL(
     "SELECT * FROM dynamic_queue WHERE topic = %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
