@@ -67,16 +67,17 @@ class ReplyHandlerPool(MinosPool):
 
         await self._create_reply_topic(topic)
 
-        self.consumer.add_topic(f"{topic}Reply")
-
         instance = DynamicReplyHandler.from_config(config=self.config, topic=topic)
         await instance.setup()
+
+        self.consumer.add_topic(f"{topic}Reply")
+
         return instance
 
     async def _destroy_instance(self, instance: DynamicReplyHandler):
-        await instance.destroy()
-
         self.consumer.remove_topic(f"{instance.topic}Reply")
+
+        await instance.destroy()
 
         await self._delete_reply_topic(instance.topic)
 

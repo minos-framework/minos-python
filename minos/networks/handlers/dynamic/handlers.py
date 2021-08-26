@@ -19,7 +19,9 @@ from typing import (
 )
 
 from aiopg import (
+    Connection,
     Cursor,
+    connect,
 )
 from cached_property import (
     cached_property,
@@ -59,11 +61,32 @@ class DynamicReplyHandler(HandlerSetup):
 
         self.topic = topic
         self._real_topic = topic if topic.endswith("Reply") else f"{topic}Reply"
+        self._connection = None
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicReplyHandler:
         # noinspection PyProtectedMember
         return cls(handlers=dict(), **config.broker.queue._asdict(), **kwargs)
+
+    async def _setup(self) -> None:
+        await super()._setup()
+        self._connection = await self._create_connection()
+
+    async def _create_connection(self) -> Connection:
+        connection = await connect(
+            host=self.host, port=self.port, user=self.user, password=self.password, database=self.database
+        )
+
+        async with connection.cursor() as cursor:
+            await cursor.execute(self._queries["listen"])
+
+        return connection
+
+    async def _destroy(self) -> None:
+        if self._connection is not None:
+            self._connection.close()
+
+        await super()._destroy()
 
     async def get_one(self, *args, **kwargs) -> HandlerEntry:
         """Get one handler entry from the given topics.
@@ -93,21 +116,16 @@ class DynamicReplyHandler(HandlerSetup):
         return entries
 
     async def _get_many(self, count: int, max_wait: Optional[float] = 1.0) -> list[HandlerEntry]:
-        async with self.cursor() as cursor:
-            result = await self._get(cursor, count)
-
+        result = list()
+        async with self._connection.cursor() as cursor:
             if len(result) < count:
-                await cursor.execute(self._queries["listen"])
-                try:
-                    while len(result) < count:
-                        try:
-                            await wait_for(consume_queue(cursor.connection.notifies, count - len(result)), max_wait)
-                        except TimeoutError:
-                            pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
+                while len(result) < count:
+                    try:
+                        await wait_for(consume_queue(self._connection.notifies, count - len(result)), max_wait)
+                    except TimeoutError:
+                        pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
 
-                        result += await self._get(cursor, count - len(result))
-                finally:
-                    await cursor.execute(self._queries["unlisten"])
+                    result += await self._get(cursor, count - len(result))
 
             return result
 
