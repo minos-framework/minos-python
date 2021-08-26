@@ -106,9 +106,9 @@ class DynamicReplyHandler(Handler):
                         try:
                             await wait_for(consume_queue(cursor.connection.notifies, count - len(result)), max_wait)
                         except TimeoutError:
-                            pass
-                        finally:
-                            result += await self._get(cursor, count - len(result))
+                            pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
+
+                        result += await self._get(cursor, count - len(result))
                 finally:
                     # noinspection PyTypeChecker
                     await cursor.execute(SQL("UNLISTEN {}").format(Identifier(self._real_topic)))
