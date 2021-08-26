@@ -38,17 +38,17 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_topics", "_broker", "__consumer"
+    __slots__ = "_topics", "_broker", "_client"
 
-    def __init__(self, topics: set[str], broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
+    def __init__(self, topics: set[str], broker: Optional[BROKER] = None, client: Optional[Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._topics = topics
         self._broker = broker
-        self.__consumer = consumer
+        self._client = client
 
     async def _setup(self) -> NoReturn:
         await super()._setup()
-        await self._consumer.start()
+        await self.client.start()
 
     @property
     def topics(self) -> set[str]:
@@ -59,15 +59,13 @@ class Consumer(HandlerSetup):
         return self._topics
 
     @property
-    def _consumer(self) -> AIOKafkaConsumer:
-        if self.__consumer is None:  # pragma: no cover
-            self.__consumer = AIOKafkaConsumer(
-                *self._topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}"
-            )
-        return self.__consumer
+    def client(self) -> AIOKafkaConsumer:
+        if self._client is None:  # pragma: no cover
+            self._client = AIOKafkaConsumer(*self._topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}")
+        return self._client
 
     async def _destroy(self) -> NoReturn:
-        await self._consumer.stop()
+        await self.client.stop()
         await super()._destroy()
 
     async def dispatch(self) -> NoReturn:
@@ -75,7 +73,7 @@ class Consumer(HandlerSetup):
 
         :return: This method does not return anything.
         """
-        await self.handle_message(self._consumer)
+        await self.handle_message(self.client)
 
     async def handle_message(self, consumer: Any) -> NoReturn:
         """Message consumer.

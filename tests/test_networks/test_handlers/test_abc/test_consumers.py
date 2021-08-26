@@ -39,11 +39,11 @@ class TestConsumer(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        consumer = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
+        client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
         self.consumer = _FakeConsumer(
-            topics=[f"{item.name}Reply" for item in self.config.saga.items],
+            topics={f"{item.name}Reply" for item in self.config.saga.items},
             broker=self.config.broker,
-            consumer=consumer,
+            client=client,
             **self.config.broker.queue._asdict(),
         )
 
@@ -54,7 +54,7 @@ class TestConsumer(PostgresAsyncTestCase):
             await self.consumer.dispatch()
 
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(self.consumer._consumer), mock.call_args)
+        self.assertEqual(call(self.consumer.client), mock.call_args)
 
     async def tests_handle_message(self):
         mock = MagicMock(side_effect=self.consumer.handle_single_message)
@@ -64,7 +64,7 @@ class TestConsumer(PostgresAsyncTestCase):
             await self.consumer.dispatch()
 
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(self.consumer._consumer.messages[0]), mock.call_args)
+        self.assertEqual(call(self.consumer.client.messages[0]), mock.call_args)
 
     async def test_handle_single_message(self):
         mock = MagicMock(side_effect=self.consumer.queue_add)
