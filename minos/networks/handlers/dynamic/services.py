@@ -3,6 +3,7 @@
 import logging
 from typing import (
     Any,
+    Optional,
 )
 
 from aiomisc import (
@@ -23,6 +24,12 @@ class DynamicConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
     dispatcher: DynamicConsumer = Provide["dynamic_consumer"]
+
+    def __init__(self, dispatcher: Optional[DynamicConsumer] = None, **kwargs):
+        super().__init__(**kwargs)
+
+        if dispatcher is not None:
+            self.dispatcher = dispatcher
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.

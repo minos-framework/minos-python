@@ -48,13 +48,13 @@ class TestConsumer(PostgresAsyncTestCase):
         )
 
     def test_topics(self):
-        self.assertEqual({'AddOrderReply', 'DeleteOrderReply'}, self.consumer.topics)
+        self.assertEqual({"AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
 
     def test_add_topic(self):
         mock = MagicMock()
         self.consumer._consumer.subscribe = mock
         self.consumer.add_topic("foo")
-        self.assertEqual({'foo', 'AddOrderReply', 'DeleteOrderReply'}, self.consumer.topics)
+        self.assertEqual({"foo", "AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(topics=list(self.consumer.topics)), mock.call_args)
 
@@ -64,7 +64,7 @@ class TestConsumer(PostgresAsyncTestCase):
 
         self.consumer.remove_topic("AddOrderReply")
 
-        self.assertEqual({'DeleteOrderReply'}, self.consumer.topics)
+        self.assertEqual({"DeleteOrderReply"}, self.consumer.topics)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(topics=list(self.consumer.topics)), mock.call_args)
 
