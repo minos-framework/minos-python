@@ -22,6 +22,7 @@ from typing import (
 from aiopg import (
     Cursor,
 )
+from cached_property import cached_property
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -65,6 +66,7 @@ class DynamicReplyHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicReplyHandler:
+        # noinspection PyProtectedMember
         return cls(handlers=dict(), **config.broker.queue._asdict(), **kwargs)
 
     async def get_one(self, *args, **kwargs) -> HandlerEntry:
@@ -99,8 +101,7 @@ class DynamicReplyHandler(Handler):
             result = await self._get(cursor, count)
 
             if len(result) < count:
-                # noinspection PyTypeChecker
-                await cursor.execute(SQL("LISTEN {}").format(Identifier(self._real_topic)))
+                await cursor.execute(self._queries["listen"])
                 try:
                     while len(result) < count:
                         try:
@@ -110,22 +111,32 @@ class DynamicReplyHandler(Handler):
 
                         result += await self._get(cursor, count - len(result))
                 finally:
-                    # noinspection PyTypeChecker
-                    await cursor.execute(SQL("UNLISTEN {}").format(Identifier(self._real_topic)))
+                    await cursor.execute(self._queries["unlisten"])
 
             return result
 
     async def _get(self, cursor: Cursor, count) -> list[HandlerEntry]:
         entries = list()
         async with cursor.begin():
-            # noinspection PyTypeChecker
-            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self._real_topic, count))
+            await cursor.execute(self._queries["select_non_processed"], (self._real_topic, count))
             for entry in self._build_entries(await cursor.fetchall()):
                 await cursor.execute(self._queries["delete_processed"], (entry.id,))
                 entries.append(entry)
         return entries
 
+    @cached_property
+    def _queries(self) -> dict[str, str]:
+        # noinspection PyTypeChecker
+        return {
+            "listen": SQL("LISTEN {}").format(Identifier(self._real_topic)),
+            "unlisten": SQL("UNLISTEN {}").format(Identifier(self._real_topic)),
+            "select_non_processed": _SELECT_NON_PROCESSED_ROWS_QUERY,
+            "delete_processed": _DELETE_PROCESSED_QUERY,
+        }
+
+
 
 _SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
     "SELECT * FROM dynamic_queue WHERE topic = %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
 )
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM dynamic_queue WHERE id = %s")
