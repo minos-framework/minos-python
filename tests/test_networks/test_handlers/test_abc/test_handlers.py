@@ -101,6 +101,19 @@ class TestHandler(PostgresAsyncTestCase):
                 pass
         self.assertEqual(1, mock.call_count)
 
+    async def test_dispatch_forever_without_notify(self):
+        mock_dispatch = AsyncMock(side_effect=[None, ValueError])
+        mock_count = AsyncMock(side_effect=[1, 0, 1])
+        async with self.handler:
+            self.handler.dispatch = mock_dispatch
+            self.handler._get_count = mock_count
+            try:
+                await self.handler.dispatch_forever(max_wait=0.01)
+            except ValueError:
+                pass
+        self.assertEqual(2, mock_dispatch.call_count)
+        self.assertEqual(3, mock_count.call_count)
+
     async def test_dispatch(self):
         from minos.common import (
             Event,
