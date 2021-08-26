@@ -15,7 +15,6 @@ from asyncio import (
     wait_for,
 )
 from typing import (
-    NoReturn,
     Optional,
 )
 
@@ -30,7 +29,6 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosConfig,
-    Model,
 )
 
 from ...exceptions import (
@@ -40,7 +38,7 @@ from ...utils import (
     consume_queue,
 )
 from ..abc import (
-    Handler,
+    HandlerSetup,
 )
 from ..entries import (
     HandlerEntry,
@@ -49,14 +47,10 @@ from ..entries import (
 logger = logging.getLogger(__name__)
 
 
-class DynamicReplyHandler(Handler):
+class DynamicReplyHandler(HandlerSetup):
     """Dynamic Reply Handler class."""
 
-    TABLE_NAME = "dynamic_queue"
-    ENTRY_MODEL_CLS = Model
-
-    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
-        pass
+    TABLE_NAME: str = "dynamic_queue"
 
     def __init__(self, topic, **kwargs):
         super().__init__(**kwargs)
@@ -115,10 +109,10 @@ class DynamicReplyHandler(Handler):
 
             return result
 
-    async def _get(self, cursor: Cursor, count) -> list[HandlerEntry]:
+    async def _get(self, cursor: Cursor, count: int) -> list[HandlerEntry]:
         entries = list()
         async with cursor.begin():
-            await cursor.execute(self._queries["select_non_processed"], (self._real_topic, count))
+            await cursor.execute(self._queries["select_not_processed"], (self._real_topic, count))
             for entry in self._build_entries(await cursor.fetchall()):
                 await cursor.execute(self._queries["delete_processed"], (entry.id,))
                 entries.append(entry)
@@ -128,15 +122,22 @@ class DynamicReplyHandler(Handler):
     def _queries(self) -> dict[str, str]:
         # noinspection PyTypeChecker
         return {
-            "listen": SQL("LISTEN {}").format(Identifier(self._real_topic)),
-            "unlisten": SQL("UNLISTEN {}").format(Identifier(self._real_topic)),
-            "select_non_processed": _SELECT_NON_PROCESSED_ROWS_QUERY,
+            "listen": _LISTEN_QUERY.format(Identifier(self._real_topic)),
+            "unlisten": _UNLISTEN_QUERY.format(Identifier(self._real_topic)),
+            "select_not_processed": _SELECT_NOT_PROCESSED_ROWS_QUERY,
             "delete_processed": _DELETE_PROCESSED_QUERY,
         }
 
+    @staticmethod
+    def _build_entries(rows: list[tuple]) -> list[HandlerEntry]:
+        return [HandlerEntry(*row) for row in rows]
 
 
-_SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
+_LISTEN_QUERY = SQL("LISTEN {}")
+
+_UNLISTEN_QUERY = SQL("UNLISTEN {}")
+
+_SELECT_NOT_PROCESSED_ROWS_QUERY = SQL(
     "SELECT * FROM dynamic_queue WHERE topic = %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
 )
 _DELETE_PROCESSED_QUERY = SQL("DELETE FROM dynamic_queue WHERE id = %s")
