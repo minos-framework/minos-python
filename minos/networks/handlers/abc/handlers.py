@@ -76,7 +76,7 @@ class Handler(HandlerSetup):
         """
         return self._handlers
 
-    async def dispatch_forever(self, max_wait: Optional[float] = 15.0) -> NoReturn:
+    async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
         """Dispatch the items in the consuming queue forever.
 
         :param max_wait: Maximum seconds to wait for notifications. If ``None`` the wait is performed until infinity.
@@ -104,7 +104,7 @@ class Handler(HandlerSetup):
 
     async def _get_count(self, cursor) -> int:
         await cursor.execute(self._queries["count_not_processed"], (self._retry,))
-        count = await cursor.fetchone()
+        count = (await cursor.fetchone())[0]
         return count
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
