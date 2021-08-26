@@ -20,6 +20,9 @@ from aiokafka import (
 from aiopg import (
     Cursor,
 )
+from cached_property import (
+    cached_property,
+)
 from psycopg2.sql import (
     SQL,
 )
@@ -68,7 +71,7 @@ class Producer(BrokerSetup):
         async with self.cursor() as cursor:
             await self.dispatch(cursor)
 
-            await cursor.execute(_LISTEN_QUERY)
+            await cursor.execute(self._queries["listen"])
             try:
                 while True:
                     try:
@@ -78,7 +81,7 @@ class Producer(BrokerSetup):
                     await self.dispatch(cursor)
 
             finally:
-                await cursor.execute(_UNLISTEN_QUERY)
+                await cursor.execute(self._queries["unlisten"])
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
         """Dispatch the items in the publishing queue.
@@ -90,7 +93,7 @@ class Producer(BrokerSetup):
             cursor = await self.cursor().__aenter__()
 
         async with cursor.begin():
-            await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self.retry, self.records))
+            await cursor.execute(self._queries["select_not_processed"], (self.retry, self.records))
             result = await cursor.fetchall()
 
             for row in result:
@@ -100,13 +103,22 @@ class Producer(BrokerSetup):
                 except Exception as exc:  # pragma: no cover
                     logger.warning(f"Raised an exception while publishing a message: {exc!r}")
                 finally:
-                    if published:
-                        await cursor.execute(_DELETE_PROCESSED_QUERY, (row[0],))
-                    else:
-                        await cursor.execute(_UPDATE_NON_PROCESSED_QUERY, (row[0],))
+                    query_id = "delete_processed" if published else "update_not_processed"
+                    await cursor.execute(self._queries[query_id], (row[0],))
 
         if not is_external_cursor:
             await cursor.__aexit__(None, None, None)
+
+    @cached_property
+    def _queries(self) -> dict[str, str]:
+        # noinspection PyTypeChecker
+        return {
+            "listen": _LISTEN_QUERY,
+            "unlisten": _UNLISTEN_QUERY,
+            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY,
+            "delete_processed": _DELETE_PROCESSED_QUERY,
+            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
+        }
 
     async def publish(self, topic: str, message: bytes) -> bool:
         """Publish a new item in the broker (kafka).
@@ -134,8 +146,7 @@ class Producer(BrokerSetup):
         return published
 
 
-# noinspection PyTypeChecker
-_SELECT_NON_PROCESSED_ROWS_QUERY: str = SQL(
+_SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * "
     "FROM producer_queue "
     "WHERE retry < %s "
@@ -145,14 +156,10 @@ _SELECT_NON_PROCESSED_ROWS_QUERY: str = SQL(
     "SKIP LOCKED"
 )
 
-# noinspection PyTypeChecker
-_DELETE_PROCESSED_QUERY: str = SQL("DELETE FROM producer_queue WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue WHERE id = %s")
 
-# noinspection PyTypeChecker
-_UPDATE_NON_PROCESSED_QUERY: str = SQL("UPDATE producer_queue SET retry = retry + 1 WHERE id = %s")
+_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE producer_queue SET retry = retry + 1 WHERE id = %s")
 
-# noinspection PyTypeChecker
-_LISTEN_QUERY: str = SQL("LISTEN producer_queue")
+_LISTEN_QUERY = SQL("LISTEN producer_queue")
 
-# noinspection PyTypeChecker
-_UNLISTEN_QUERY: str = SQL("UNLISTEN producer_queue")
+_UNLISTEN_QUERY = SQL("UNLISTEN producer_queue")
