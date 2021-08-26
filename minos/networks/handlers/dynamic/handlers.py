@@ -84,6 +84,9 @@ class DynamicReplyHandler(HandlerSetup):
 
     async def _destroy(self) -> None:
         if self._connection is not None:
+            async with self._connection.cursor() as cursor:
+                await cursor.execute(self._queries["unlisten"])
+
             self._connection.close()
 
         await super()._destroy()
