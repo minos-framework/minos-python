@@ -21,9 +21,13 @@ from psycopg2.sql import (
 
 from minos.common import (
     BROKER,
+    MinosConfig,
 )
 
-from .setups import (
+from ..decorators import (
+    EnrouteBuilder,
+)
+from .abc import (
     HandlerSetup,
 )
 
@@ -45,6 +49,28 @@ class Consumer(HandlerSetup):
         self._topics = set(topics)
         self._broker = broker
         self._client = client
+
+    @classmethod
+    def _from_config(cls, config: MinosConfig, **kwargs) -> Consumer:
+        topics = set()
+
+        # events
+        decorators = EnrouteBuilder(config.events.service).get_broker_event()
+        topics |= {decorator.topic for decorator in decorators.keys()}
+
+        # commands
+        decorators = EnrouteBuilder(config.commands.service).get_broker_command_query()
+        topics |= {decorator.topic for decorator in decorators.keys()}
+
+        # queries
+        decorators = EnrouteBuilder(config.queries.service).get_broker_command_query()
+        topics |= {decorator.topic for decorator in decorators.keys()}
+
+        # replies
+        topics |= {f"{item.name}Reply" for item in config.saga.items}
+        topics |= {f"{config.service.name}QueryReply", f"{config.service.name}Reply"}
+
+        return cls(topics=topics, broker=config.broker, **config.broker.queue._asdict(), **kwargs)
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -143,16 +169,18 @@ class Consumer(HandlerSetup):
             Exception: An error occurred inserting record.
         """
         queue_id = await self.submit_query_and_fetchone(
-            _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary),
+            _INSERT_QUERY, (topic, partition, binary),
         )
-        await self.submit_query(_NOTIFY_QUERY.format(Identifier(self.TABLE_NAME)))
+        await self.submit_query(_NOTIFY_QUERY.format(Identifier("consumer_queue")))
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(topic)))
 
         return queue_id[0]
 
 
 _INSERT_QUERY = SQL(
-    "INSERT INTO {} (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, NOW()) RETURNING id"
+    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
+    "VALUES (%s, %s, %s, NOW()) "
+    "RETURNING id"
 )
 
 _NOTIFY_QUERY = SQL("NOTIFY {}")
