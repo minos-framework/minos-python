@@ -47,14 +47,14 @@ class TestProducer(PostgresAsyncTestCase):
         assert response is True
 
     async def test_dispatch_forever(self):
-        mock = AsyncMock(side_effect=[None, ValueError])
+        mock = AsyncMock(side_effect=ValueError)
         async with Producer.from_config(config=self.config) as producer:
             producer.dispatch = mock
             try:
-                await gather(producer.dispatch_forever(max_wait=0.01), self._notify("producer_queue"))
+                await gather(producer.dispatch_forever(), self._notify("producer_queue"))
             except ValueError:
                 pass
-        self.assertEqual(2, mock.call_count)
+        self.assertEqual(1, mock.call_count)
 
     async def test_concurrency_dispatcher(self):
         model = FakeModel("foo")
