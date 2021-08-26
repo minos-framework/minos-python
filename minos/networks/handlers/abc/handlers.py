@@ -9,9 +9,9 @@ from abc import (
     abstractmethod,
 )
 from asyncio import (
+    TimeoutError,
     gather,
     wait_for,
-    TimeoutError,
 )
 from typing import (
     Any,

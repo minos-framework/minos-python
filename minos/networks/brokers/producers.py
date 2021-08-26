@@ -6,8 +6,8 @@ from __future__ import (
 
 import logging
 from asyncio import (
-    wait_for,
     TimeoutError,
+    wait_for,
 )
 from typing import (
     NoReturn,
