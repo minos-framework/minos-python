@@ -62,7 +62,7 @@ class Producer(BrokerSetup):
             **kwargs,
         )
 
-    async def dispatch_forever(self, max_wait: Optional[float] = 15.0) -> NoReturn:
+    async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
         """Dispatch the items in the publishing queue forever.
 
         :param max_wait: Maximum seconds to wait for notifications. If ``None`` the wait is performed until infinity.
