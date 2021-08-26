@@ -9,6 +9,7 @@ from abc import (
     abstractmethod,
 )
 from asyncio import (
+    TimeoutError,
     gather,
     wait_for,
 )
@@ -89,8 +90,10 @@ class Handler(HandlerSetup):
                 while True:
                     try:
                         await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
-                    finally:
-                        await self.dispatch(cursor)
+                    except TimeoutError:
+                        pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
+
+                    await self.dispatch(cursor)
             finally:
                 await cursor.execute(self._queries["unlisten"])
 
