@@ -76,26 +76,36 @@ class Handler(HandlerSetup):
         """
         return self._handlers
 
-    async def dispatch_forever(self, max_wait: Optional[float] = 15.0) -> NoReturn:
+    async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
         """Dispatch the items in the consuming queue forever.
 
         :param max_wait: Maximum seconds to wait for notifications. If ``None`` the wait is performed until infinity.
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            await self.dispatch(cursor)
-
             await cursor.execute(self._queries["listen"])
             try:
                 while True:
-                    try:
-                        await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
-                    except TimeoutError:
-                        pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
-
+                    await self._wait_for_entries(cursor, max_wait)
                     await self.dispatch(cursor)
             finally:
                 await cursor.execute(self._queries["unlisten"])
+
+    async def _wait_for_entries(self, cursor: Cursor, max_wait: Optional[float]) -> None:
+        if await self._get_count(cursor):
+            return
+
+        while True:
+            try:
+                return await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
+            except TimeoutError:
+                if await self._get_count(cursor):
+                    return
+
+    async def _get_count(self, cursor) -> int:
+        await cursor.execute(self._queries["count_not_processed"], (self._retry,))
+        count = await cursor.fetchone()
+        return count
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
         """Event Queue Checker and dispatcher.
@@ -134,6 +144,7 @@ class Handler(HandlerSetup):
         return {
             "listen": _LISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
             "unlisten": _UNLISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
+            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
             "select_not_processed": _SELECT_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
             "delete_processed": _DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
             "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
@@ -189,6 +200,9 @@ class Handler(HandlerSetup):
         logger.debug(f"Loaded {handler!r} action!")
         return handler
 
+
+# noinspection SqlDerivedTableAlias
+_COUNT_NOT_PROCESSED_QUERY = SQL("SELECT COUNT(*) FROM (SELECT id FROM {} WHERE retry < %s FOR UPDATE SKIP LOCKED) s")
 
 _SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * FROM {} WHERE retry < %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
