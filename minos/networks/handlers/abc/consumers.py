@@ -38,17 +38,17 @@ class Consumer(HandlerSetup):
 
     """
 
-    __slots__ = "_topics", "_broker", "__consumer"
+    __slots__ = "_topics", "_broker", "_client"
 
-    def __init__(self, topics: set[str], broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
+    def __init__(self, topics: set[str], broker: Optional[BROKER] = None, client: Optional[Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._topics = set(topics)
         self._broker = broker
-        self.__consumer = consumer
+        self._client = client
 
     async def _setup(self) -> None:
         await super()._setup()
-        await self._consumer.start()
+        await self.client.start()
 
     @property
     def topics(self) -> set[str]:
@@ -65,7 +65,7 @@ class Consumer(HandlerSetup):
         :return: This method does not return anything.
         """
         self._topics.add(topic)
-        self._consumer.subscribe(topics=list(self._topics))
+        self._client.subscribe(topics=list(self._topics))
 
     def remove_topic(self, topic: str) -> None:
         """Remove a topic from the consumer's subscribed topics.
@@ -75,20 +75,18 @@ class Consumer(HandlerSetup):
         """
         self._topics.remove(topic)
         if len(self._topics):
-            self._consumer.subscribe(topics=list(self._topics))
+            self._client.subscribe(topics=list(self._topics))
         else:
-            self._consumer.unsubscribe()
+            self._client.unsubscribe()
 
     @property
-    def _consumer(self) -> AIOKafkaConsumer:
-        if self.__consumer is None:  # pragma: no cover
-            self.__consumer = AIOKafkaConsumer(
-                *self._topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}"
-            )
-        return self.__consumer
+    def client(self) -> AIOKafkaConsumer:
+        if self._client is None:  # pragma: no cover
+            self._client = AIOKafkaConsumer(*self._topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}")
+        return self._client
 
     async def _destroy(self) -> None:
-        await self._consumer.stop()
+        await self._client.stop()
         await super()._destroy()
 
     async def dispatch(self) -> NoReturn:
@@ -96,7 +94,7 @@ class Consumer(HandlerSetup):
 
         :return: This method does not return anything.
         """
-        await self.handle_message(self._consumer)
+        await self.handle_message(self.client)
 
     async def handle_message(self, consumer: Any) -> None:
         """Message consumer.

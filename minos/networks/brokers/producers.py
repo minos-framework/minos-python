@@ -129,19 +129,16 @@ class Producer(BrokerSetup):
         """
         logger.debug(f"Producing message with {topic!s} topic...")
 
-        producer = AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
+        client = AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
         # noinspection PyBroadException
         try:
-            # Get cluster layout and initial topic/partition leadership information
-            await producer.start()
-            # Produce message
-            await producer.send_and_wait(topic, message)
+            await client.start()
+            await client.send_and_wait(topic, message)
             published = True
         except Exception:
             published = False
         finally:
-            # Wait for all pending messages to be delivered or expire.
-            await producer.stop()
+            await client.stop()
 
         return published
 
