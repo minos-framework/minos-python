@@ -41,9 +41,7 @@ logger = logging.getLogger(__name__)
 class Producer(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
-    # noinspection PyUnresolvedReferences
     def __init__(self, *args, broker_host: str, broker_port: int, retry: int, records: int, **kwargs):
-        # noinspection PyProtectedMember
         super().__init__(*args, **kwargs)
         self.broker_host = broker_host
         self.broker_port = broker_port
@@ -52,6 +50,7 @@ class Producer(BrokerSetup):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
+        # noinspection PyProtectedMember
         return cls(
             *args,
             broker_host=config.broker.host,
@@ -69,19 +68,16 @@ class Producer(BrokerSetup):
         async with self.cursor() as cursor:
             await self.dispatch(cursor)
 
-            # noinspection PyTypeChecker
             await cursor.execute(_LISTEN_QUERY)
             try:
                 while True:
                     try:
                         await wait_for(consume_queue(cursor.connection.notifies, self.records), max_wait)
                     except TimeoutError:
-                        pass
-                    finally:
-                        await self.dispatch(cursor)
+                        pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
+                    await self.dispatch(cursor)
 
             finally:
-                # noinspection PyTypeChecker
                 await cursor.execute(_UNLISTEN_QUERY)
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
@@ -94,7 +90,6 @@ class Producer(BrokerSetup):
             cursor = await self.cursor().__aenter__()
 
         async with cursor.begin():
-            # noinspection PyTypeChecker
             await cursor.execute(_SELECT_NON_PROCESSED_ROWS_QUERY, (self.retry, self.records))
             result = await cursor.fetchall()
 
@@ -106,10 +101,8 @@ class Producer(BrokerSetup):
                     logger.warning(f"Raised an exception while publishing a message: {exc!r}")
                 finally:
                     if published:
-                        # noinspection PyTypeChecker
                         await cursor.execute(_DELETE_PROCESSED_QUERY, (row[0],))
                     else:
-                        # noinspection PyTypeChecker
                         await cursor.execute(_UPDATE_NON_PROCESSED_QUERY, (row[0],))
 
         if not is_external_cursor:
@@ -141,7 +134,8 @@ class Producer(BrokerSetup):
         return published
 
 
-_SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
+# noinspection PyTypeChecker
+_SELECT_NON_PROCESSED_ROWS_QUERY: str = SQL(
     "SELECT * "
     "FROM producer_queue "
     "WHERE retry < %s "
@@ -151,10 +145,14 @@ _SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
     "SKIP LOCKED"
 )
 
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue WHERE id = %s")
+# noinspection PyTypeChecker
+_DELETE_PROCESSED_QUERY: str = SQL("DELETE FROM producer_queue WHERE id = %s")
 
-_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE producer_queue SET retry = retry + 1 WHERE id = %s")
+# noinspection PyTypeChecker
+_UPDATE_NON_PROCESSED_QUERY: str = SQL("UPDATE producer_queue SET retry = retry + 1 WHERE id = %s")
 
-_LISTEN_QUERY = SQL("LISTEN producer_queue")
+# noinspection PyTypeChecker
+_LISTEN_QUERY: str = SQL("LISTEN producer_queue")
 
-_UNLISTEN_QUERY = SQL("UNLISTEN producer_queue")
+# noinspection PyTypeChecker
+_UNLISTEN_QUERY: str = SQL("UNLISTEN producer_queue")

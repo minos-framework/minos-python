@@ -91,9 +91,9 @@ class Handler(HandlerSetup):
                     try:
                         await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
                     except TimeoutError:
-                        pass
-                    finally:
-                        await self.dispatch(cursor)
+                        pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
+
+                    await self.dispatch(cursor)
             finally:
                 await cursor.execute(self._queries["unlisten"])
 
