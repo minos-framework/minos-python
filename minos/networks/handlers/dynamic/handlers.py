@@ -21,7 +21,9 @@ from typing import (
 from aiopg import (
     Cursor,
 )
-from cached_property import cached_property
+from cached_property import (
+    cached_property,
+)
 from psycopg2.sql import (
     SQL,
     Identifier,
