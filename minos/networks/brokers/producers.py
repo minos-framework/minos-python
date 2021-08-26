@@ -74,14 +74,27 @@ class Producer(BrokerSetup):
             await cursor.execute(self._queries["listen"])
             try:
                 while True:
-                    try:
-                        await wait_for(consume_queue(cursor.connection.notifies, self.records), max_wait)
-                    except TimeoutError:
-                        pass  # Cannot be replace by try-finally because it raises ``asyncio`` warnings.
+                    await self._wait_for_entries(cursor, max_wait)
                     await self.dispatch(cursor)
 
             finally:
                 await cursor.execute(self._queries["unlisten"])
+
+    async def _wait_for_entries(self, cursor: Cursor, max_wait: Optional[float]) -> None:
+        if await self._get_count(cursor):
+            return
+
+        while True:
+            try:
+                return await wait_for(consume_queue(cursor.connection.notifies, self.records), max_wait)
+            except TimeoutError:
+                if await self._get_count(cursor):
+                    return
+
+    async def _get_count(self, cursor) -> int:
+        await cursor.execute(self._queries["count_not_processed"], (self.retry,))
+        count = await cursor.fetchone()
+        return count
 
     async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
         """Dispatch the items in the publishing queue.
@@ -115,6 +128,7 @@ class Producer(BrokerSetup):
         return {
             "listen": _LISTEN_QUERY,
             "unlisten": _UNLISTEN_QUERY,
+            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
             "select_not_processed": _SELECT_NOT_PROCESSED_QUERY,
             "delete_processed": _DELETE_PROCESSED_QUERY,
             "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
@@ -142,6 +156,8 @@ class Producer(BrokerSetup):
 
         return published
 
+
+_COUNT_NOT_PROCESSED_QUERY = SQL("SELECT COUNT(*) FROM producer_queue WHERE retry < %s")
 
 _SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * "
