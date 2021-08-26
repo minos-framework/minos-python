@@ -1,6 +1,10 @@
 """tests.test_networks.test_handlers.test_dynamic.test_handlers module."""
 
 import unittest
+from asyncio import (
+    gather,
+    sleep,
+)
 from datetime import (
     timedelta,
 )
@@ -60,13 +64,16 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
             HandlerEntry(3, "fooReply", 0, FakeModel("test3").avro_bytes),
             HandlerEntry(4, "fooReply", 0, FakeModel("test4").avro_bytes),
         ]
-        async with self.handler:
+
+        async def _fn():
             await self._insert_one(Message("foo", 0, FakeModel("test1").avro_bytes))
             await self._insert_one(Message("foo", 0, FakeModel("test2").avro_bytes))
+            await sleep(0.5)
             await self._insert_one(Message("foo", 0, FakeModel("test3").avro_bytes))
             await self._insert_one(Message("foo", 0, FakeModel("test4").avro_bytes))
 
-            observed = await self.handler.get_many(count=4)
+        async with self.handler:
+            observed, _ = await gather(self.handler.get_many(count=4, max_wait=0.1), _fn())
 
         self.assertEqual(len(expected), len(observed))
         for e, o in zip(expected, observed):
