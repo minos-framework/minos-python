@@ -69,14 +69,11 @@ class Producer(BrokerSetup):
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            await self.dispatch(cursor)
-
             await cursor.execute(self._queries["listen"])
             try:
                 while True:
                     await self._wait_for_entries(cursor, max_wait)
                     await self.dispatch(cursor)
-
             finally:
                 await cursor.execute(self._queries["unlisten"])
 
