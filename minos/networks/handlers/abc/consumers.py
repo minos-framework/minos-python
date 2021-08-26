@@ -42,11 +42,11 @@ class Consumer(HandlerSetup):
 
     def __init__(self, topics: set[str], broker: Optional[BROKER] = None, consumer: Optional[Any] = None, **kwargs):
         super().__init__(**kwargs)
-        self._topics = topics
+        self._topics = set(topics)
         self._broker = broker
         self.__consumer = consumer
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         await super()._setup()
         await self._consumer.start()
 
@@ -58,6 +58,27 @@ class Consumer(HandlerSetup):
         """
         return self._topics
 
+    def add_topic(self, topic: str) -> None:
+        """Add a topic to the consumer's subscribed topics.
+
+        :param topic: Name of the topic to be added.
+        :return: This method does not return anything.
+        """
+        self._topics.add(topic)
+        self._consumer.subscribe(topics=list(self._topics))
+
+    def remove_topic(self, topic: str) -> None:
+        """Remove a topic from the consumer's subscribed topics.
+
+        :param topic: Name of the topic to be removed.
+        :return: This method does not return anything.
+        """
+        self._topics.remove(topic)
+        if len(self._topics):
+            self._consumer.subscribe(topics=list(self._topics))
+        else:
+            self._consumer.unsubscribe()
+
     @property
     def _consumer(self) -> AIOKafkaConsumer:
         if self.__consumer is None:  # pragma: no cover
@@ -66,7 +87,7 @@ class Consumer(HandlerSetup):
             )
         return self.__consumer
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         await self._consumer.stop()
         await super()._destroy()
 
@@ -77,7 +98,7 @@ class Consumer(HandlerSetup):
         """
         await self.handle_message(self._consumer)
 
-    async def handle_message(self, consumer: Any) -> NoReturn:
+    async def handle_message(self, consumer: Any) -> None:
         """Message consumer.
 
         It consumes the messages and sends them for processing.
