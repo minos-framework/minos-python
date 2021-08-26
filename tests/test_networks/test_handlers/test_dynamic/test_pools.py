@@ -37,7 +37,7 @@ class TestReplyHandlerPool(PostgresAsyncTestCase):
 
     async def test_setup_destroy(self):
         self.assertTrue(self.pool.already_setup)
-        async with self.pool:
+        async with self.consumer, self.pool:
             self.assertTrue(self.pool.already_setup)
             async with self.pool.acquire():
                 pass
@@ -51,7 +51,7 @@ class TestReplyHandlerPool(PostgresAsyncTestCase):
 
     async def test_acquire(self):
         client = self.pool.client
-        async with self.pool:
+        async with self.consumer, self.pool:
             async with self.pool.acquire() as handler:
                 self.assertIsInstance(handler, DynamicReplyHandler)
                 topic = f"{handler.topic}Reply"
