@@ -2,14 +2,16 @@
 
 import logging
 from typing import (
-    Any, Optional,
+    Any,
+    Optional,
 )
 
 from aiomisc import (
     Service,
 )
-
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import (
+    Provide,
+)
 
 from .consumers import (
     Consumer,

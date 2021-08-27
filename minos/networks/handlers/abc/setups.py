@@ -1,17 +1,11 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.networks.handlers.abc.setups module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from typing import (
     NoReturn,
 )
 
 from psycopg2.sql import (
     SQL,
-    Identifier,
 )
 
 from minos.common import (

@@ -140,7 +140,7 @@ class Handler(HandlerSetup):
 
         async with cursor.begin():
             await cursor.execute(
-                self._queries["select_not_processed"], (self._retry,tuple(self.topics), self._records)
+                self._queries["select_not_processed"], (self._retry, tuple(self.topics), self._records)
             )
 
             result = await cursor.fetchall()
