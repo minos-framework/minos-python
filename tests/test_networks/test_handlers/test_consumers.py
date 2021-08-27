@@ -28,10 +28,6 @@ from tests.utils import (
 )
 
 
-class _FakeConsumer(Consumer):
-    TABLE_NAME = "fake"
-
-
 class TestConsumer(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
@@ -39,7 +35,7 @@ class TestConsumer(PostgresAsyncTestCase):
         super().setUp()
 
         client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
-        self.consumer = _FakeConsumer(
+        self.consumer = Consumer(
             topics={f"{item.name}Reply" for item in self.config.saga.items},
             broker=self.config.broker,
             client=client,
@@ -48,6 +44,30 @@ class TestConsumer(PostgresAsyncTestCase):
 
     def test_topics(self):
         self.assertEqual({"AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
+
+    def test_from_config(self):
+        expected_topics = {
+            "AddOrder",
+            "AddOrderReply",
+            "DeleteOrder",
+            "DeleteOrderReply",
+            "GetOrder",
+            "OrderQueryReply",
+            "OrderReply",
+            "TicketAdded",
+            "TicketDeleted",
+            "UpdateOrder",
+        }
+
+        consumer = Consumer.from_config(config=self.config)
+        self.assertIsInstance(consumer, Consumer)
+        self.assertEqual(expected_topics, consumer.topics)
+        self.assertEqual(self.config.broker, consumer._broker)
+        self.assertEqual(self.config.broker.queue.host, consumer.host)
+        self.assertEqual(self.config.broker.queue.port, consumer.port)
+        self.assertEqual(self.config.broker.queue.database, consumer.database)
+        self.assertEqual(self.config.broker.queue.user, consumer.user)
+        self.assertEqual(self.config.broker.queue.password, consumer.password)
 
     def test_add_topic(self):
         mock = MagicMock()
