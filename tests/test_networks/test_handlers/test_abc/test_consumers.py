@@ -13,7 +13,6 @@ from unittest.mock import (
 
 from psycopg2.sql import (
     SQL,
-    Identifier,
 )
 
 from minos.common.testing import (
@@ -110,8 +109,10 @@ class TestConsumer(PostgresAsyncTestCase):
 
     async def test_queue_add(self):
         query = SQL(
-            "INSERT INTO {} (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, NOW()) RETURNING id"
-        ).format(Identifier("fake"))
+            "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
+            "VALUES (%s, %s, %s, NOW()) "
+            "RETURNING id"
+        )
 
         mock = MagicMock(side_effect=self.consumer.submit_query_and_fetchone)
 

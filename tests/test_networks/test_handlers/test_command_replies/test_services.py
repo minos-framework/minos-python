@@ -3,7 +3,6 @@
 import unittest
 from unittest.mock import (
     AsyncMock,
-    patch,
 )
 
 from aiomisc import (
@@ -14,37 +13,12 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandReplyConsumerService,
     CommandReplyHandler,
     CommandReplyHandlerService,
 )
 from tests.utils import (
     BASE_PATH,
-    FakeDispatcher,
 )
-
-
-class TestCommandReplyConsumerService(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
-    @patch("minos.networks.CommandReplyConsumer.from_config")
-    async def test_start(self, mock):
-        instance = FakeDispatcher()
-        mock.return_value = instance
-
-        service = CommandReplyConsumerService(loop=None, config=self.config)
-
-        self.assertEqual(0, instance.setup_count)
-        self.assertEqual(0, instance.setup_dispatch)
-        self.assertEqual(0, instance.setup_destroy)
-        await service.start()
-        self.assertEqual(1, instance.setup_count)
-        self.assertEqual(1, instance.setup_dispatch)
-        self.assertEqual(0, instance.setup_destroy)
-        await service.stop()
-        self.assertEqual(1, instance.setup_count)
-        self.assertEqual(1, instance.setup_dispatch)
-        self.assertEqual(1, instance.setup_destroy)
 
 
 class TestCommandReplyHandlerService(PostgresAsyncTestCase):

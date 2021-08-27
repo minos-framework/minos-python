@@ -88,7 +88,7 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO dynamic_queue (topic, partition_id, binary_data, creation_date) "
+                    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
                     "VALUES (%s, %s, %s, NOW()) "
                     "RETURNING id;",
                     (f"{instance.topic}Reply", 0, instance.value),
