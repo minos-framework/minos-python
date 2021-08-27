@@ -17,7 +17,6 @@ import aiopg
 
 from minos.common import (
     CommandStatus,
-    MinosConfig,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -42,9 +41,9 @@ class TestProducer(PostgresAsyncTestCase):
         self.assertIsInstance(Producer.from_config(config=self.config), Producer)
 
     async def test_send_to_kafka_ok(self):
-        dispatcher = Producer.from_config(config=self.config)
-        response = await dispatcher.publish(topic="TestKafkaSend", message=bytes())
-        assert response is True
+        async with Producer.from_config(config=self.config) as producer:
+            ok = await producer.publish(topic="TestKafkaSend", message=bytes())
+            self.assertTrue(ok)
 
     async def test_dispatch_forever(self):
         mock = AsyncMock(side_effect=ValueError)
@@ -129,12 +128,8 @@ class TestProducer(PostgresAsyncTestCase):
             queue_id_1 = await broker.send(model, "TestDeleteOrder", saga, CommandStatus.SUCCESS)
             queue_id_2 = await broker.send(model, "TestDeleteOrder", saga, CommandStatus.SUCCESS)
 
-        config = MinosConfig(
-            path=BASE_PATH / "wrong_test_config.yml",
-            broker_queue_database=self.config.broker.queue.database,
-            broker_queue_user=self.config.broker.queue.user,
-        )
-        async with Producer.from_config(config=config) as producer:
+        async with Producer.from_config(config=self.config) as producer:
+            producer.publish = AsyncMock(return_value=False)
             await producer.dispatch()
 
         async with aiopg.connect(**self.broker_queue_db) as connection:
