@@ -64,29 +64,29 @@ class ReplyHandlerPool(MinosPool):
 
     async def _create_instance(self) -> DynamicReplyHandler:
         topic = str(uuid4()).replace("-", "")
-
         await self._create_reply_topic(topic)
-
+        await self._subscribe_reply_topic(topic)
         instance = DynamicReplyHandler.from_config(config=self.config, topic=topic)
         await instance.setup()
-
-        await self.consumer.add_topic(f"{topic}Reply")
-
         return instance
 
     async def _destroy_instance(self, instance: DynamicReplyHandler):
-        await self.consumer.remove_topic(f"{instance.topic}Reply")
-
         await instance.destroy()
-
+        await self._unsubscribe_reply_topic(instance.topic)
         await self._delete_reply_topic(instance.topic)
 
-    async def _create_reply_topic(self, topic: str):
+    async def _create_reply_topic(self, topic: str) -> None:
         name = f"{topic}Reply"
         logger.info(f"Creating {name!r} topic...")
         self.client.create_topics([NewTopic(name=name, num_partitions=1, replication_factor=1)])
 
-    async def _delete_reply_topic(self, topic: str):
+    async def _delete_reply_topic(self, topic: str) -> None:
         name = f"{topic}Reply"
         logger.info(f"Deleting {name!r} topic...")
         self.client.delete_topics([name])
+
+    async def _subscribe_reply_topic(self, topic: str) -> None:
+        await self.consumer.add_topic(f"{topic}Reply")
+
+    async def _unsubscribe_reply_topic(self, topic: str) -> None:
+        await self.consumer.remove_topic(f"{topic}Reply")
