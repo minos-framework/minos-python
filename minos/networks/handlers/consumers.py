@@ -192,7 +192,6 @@ class Consumer(HandlerSetup):
             Exception: An error occurred inserting record.
         """
         row = await self.submit_query_and_fetchone(_INSERT_QUERY, (topic, partition, binary))
-        await self.submit_query(_NOTIFY_QUERY.format(Identifier("consumer_queue")))
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(topic)))
 
         return row[0]
