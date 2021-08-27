@@ -76,6 +76,10 @@ class Consumer(HandlerSetup):
         await super()._setup()
         await self.client.start()
 
+    async def _destroy(self) -> None:
+        await self.client.stop()
+        await super()._destroy()
+
     @property
     def topics(self) -> set[str]:
         """Topics getter.
@@ -91,7 +95,7 @@ class Consumer(HandlerSetup):
         :return: This method does not return anything.
         """
         self._topics.add(topic)
-        self._client.subscribe(topics=list(self._topics))
+        self.client.subscribe(topics=list(self._topics))
 
     def remove_topic(self, topic: str) -> None:
         """Remove a topic from the consumer's subscribed topics.
@@ -101,19 +105,15 @@ class Consumer(HandlerSetup):
         """
         self._topics.remove(topic)
         if len(self._topics):
-            self._client.subscribe(topics=list(self._topics))
+            self.client.subscribe(topics=list(self._topics))
         else:
-            self._client.unsubscribe()
+            self.client.unsubscribe()
 
     @property
     def client(self) -> AIOKafkaConsumer:
         if self._client is None:  # pragma: no cover
             self._client = AIOKafkaConsumer(*self._topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}")
         return self._client
-
-    async def _destroy(self) -> None:
-        await self._client.stop()
-        await super()._destroy()
 
     async def dispatch(self) -> NoReturn:
         """Perform a dispatching step.
