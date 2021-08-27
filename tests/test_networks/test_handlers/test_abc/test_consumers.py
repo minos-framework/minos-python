@@ -39,13 +39,17 @@ class TestConsumer(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
+        self.client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
         self.consumer = _FakeConsumer(
             topics={f"{item.name}Reply" for item in self.config.saga.items},
             broker=self.config.broker,
-            client=client,
+            client=self.client,
             **self.config.broker.queue._asdict(),
         )
+
+    def test_empty_topics(self):
+        consumer = _FakeConsumer(broker=self.config.broker, client=self.client, **self.config.broker.queue._asdict())
+        self.assertEqual(set(), consumer.topics)
 
     def test_topics(self):
         self.assertEqual({"AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
