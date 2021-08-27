@@ -34,11 +34,11 @@ class TestConsumer(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
+        self.client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
         self.consumer = Consumer(
             topics={f"{item.name}Reply" for item in self.config.saga.items},
             broker=self.config.broker,
-            client=client,
+            client=self.client,
             **self.config.broker.queue._asdict(),
         )
 
@@ -65,6 +65,10 @@ class TestConsumer(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.database, consumer.database)
         self.assertEqual(self.config.broker.queue.user, consumer.user)
         self.assertEqual(self.config.broker.queue.password, consumer.password)
+
+    def test_empty_topics(self):
+        consumer = Consumer(broker=self.config.broker, client=self.client, **self.config.broker.queue._asdict())
+        self.assertEqual(set(), consumer.topics)
 
     def test_topics(self):
         self.assertEqual({"AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
