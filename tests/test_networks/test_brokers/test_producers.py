@@ -40,10 +40,16 @@ class TestProducer(PostgresAsyncTestCase):
     def test_from_config_default(self):
         self.assertIsInstance(Producer.from_config(config=self.config), Producer)
 
-    async def test_send_to_kafka_ok(self):
+    async def test_publish_true(self):
         async with Producer.from_config(config=self.config) as producer:
             ok = await producer.publish(topic="TestKafkaSend", message=bytes())
             self.assertTrue(ok)
+
+    async def test_publish_false(self):
+        async with Producer.from_config(config=self.config) as producer:
+            producer.client.send_and_wait = AsyncMock(side_effect=ValueError)
+            ok = await producer.publish(topic="TestKafkaSend", message=bytes())
+            self.assertFalse(ok)
 
     async def test_dispatch_forever(self):
         mock = AsyncMock(side_effect=ValueError)
