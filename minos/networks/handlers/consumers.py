@@ -88,7 +88,7 @@ class Consumer(HandlerSetup):
         """
         return self._topics
 
-    def add_topic(self, topic: str) -> None:
+    async def add_topic(self, topic: str) -> None:
         """Add a topic to the consumer's subscribed topics.
 
         :param topic: Name of the topic to be added.
@@ -97,7 +97,11 @@ class Consumer(HandlerSetup):
         self._topics.add(topic)
         self.client.subscribe(topics=list(self._topics))
 
-    def remove_topic(self, topic: str) -> None:
+        # FIXME: Improve the way how are waited for subscription update.
+        if hasattr(self.client, "_wait_topics"):
+            await self.client._wait_topics()
+
+    async def remove_topic(self, topic: str) -> None:
         """Remove a topic from the consumer's subscribed topics.
 
         :param topic: Name of the topic to be removed.
@@ -108,6 +112,10 @@ class Consumer(HandlerSetup):
             self.client.subscribe(topics=list(self._topics))
         else:
             self.client.unsubscribe()
+
+        # FIXME: Improve the way how are waited for subscription update.
+        if hasattr(self.client, "_wait_topics"):  # pragma: no cover
+            await self.client._wait_topics()
 
     @property
     def client(self) -> AIOKafkaConsumer:

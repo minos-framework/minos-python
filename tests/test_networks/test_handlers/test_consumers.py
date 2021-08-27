@@ -42,9 +42,6 @@ class TestConsumer(PostgresAsyncTestCase):
             **self.config.broker.queue._asdict(),
         )
 
-    def test_topics(self):
-        self.assertEqual({"AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
-
     def test_from_config(self):
         expected_topics = {
             "AddOrder",
@@ -69,30 +66,33 @@ class TestConsumer(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.user, consumer.user)
         self.assertEqual(self.config.broker.queue.password, consumer.password)
 
-    def test_add_topic(self):
+    def test_topics(self):
+        self.assertEqual({"AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
+
+    async def test_add_topic(self):
         mock = MagicMock()
         self.consumer.client.subscribe = mock
-        self.consumer.add_topic("foo")
+        await self.consumer.add_topic("foo")
         self.assertEqual({"foo", "AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(topics=list(self.consumer.topics)), mock.call_args)
 
-    def test_remove_topic(self):
+    async def test_remove_topic(self):
         mock = MagicMock()
         self.consumer.client.subscribe = mock
 
-        self.consumer.remove_topic("AddOrderReply")
+        await self.consumer.remove_topic("AddOrderReply")
 
         self.assertEqual({"DeleteOrderReply"}, self.consumer.topics)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(topics=list(self.consumer.topics)), mock.call_args)
 
-    def test_remove_all_topics(self):
+    async def test_remove_all_topics(self):
         mock = MagicMock()
         self.consumer.client.unsubscribe = mock
 
-        self.consumer.remove_topic("AddOrderReply")
-        self.consumer.remove_topic("DeleteOrderReply")
+        await self.consumer.remove_topic("AddOrderReply")
+        await self.consumer.remove_topic("DeleteOrderReply")
         self.assertEqual(set(), self.consumer.topics)
 
         self.assertEqual(1, mock.call_count)
