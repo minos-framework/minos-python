@@ -14,6 +14,9 @@ from typing import (
 from aiokafka import (
     AIOKafkaConsumer,
 )
+from kafka.errors import (
+    KafkaError,
+)
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -89,7 +92,10 @@ class Consumer(HandlerSetup):
         await self.client.start()
 
     async def _destroy(self) -> None:
-        await self.client.stop()
+        try:
+            await self.client.stop()
+        except KafkaError:  # pragma: no cover
+            pass
         await super()._destroy()
 
     @property
