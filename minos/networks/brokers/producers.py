@@ -1,42 +1,27 @@
 """minos.networks.brokers.producers module."""
 
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
 from asyncio import (
     TimeoutError,
     wait_for,
+    gather,
 )
 from typing import (
     NoReturn,
     Optional,
 )
 
-from aiokafka import (
-    AIOKafkaProducer,
-)
-from aiopg import (
-    Cursor,
-)
-from cached_property import (
-    cached_property,
-)
-from psycopg2.sql import (
-    SQL,
-)
+from aiokafka import AIOKafkaProducer
+from aiopg import Cursor
+from cached_property import cached_property
+from psycopg2.sql import SQL
 
-from minos.common import (
-    MinosConfig,
-)
+from minos.common import MinosConfig
 
-from ..utils import (
-    consume_queue,
-)
-from .abc import (
-    BrokerSetup,
-)
+from ..utils import consume_queue
+from .abc import BrokerSetup
 
 logger = logging.getLogger(__name__)
 
@@ -44,12 +29,22 @@ logger = logging.getLogger(__name__)
 class Producer(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
-    def __init__(self, *args, broker_host: str, broker_port: int, retry: int, records: int, **kwargs):
+    def __init__(
+        self,
+        *args,
+        broker_host: str,
+        broker_port: int,
+        retry: int,
+        records: int,
+        client: Optional[AIOKafkaProducer] = None,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.broker_host = broker_host
         self.broker_port = broker_port
         self.retry = retry
         self.records = records
+        self._client = client
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
@@ -61,6 +56,14 @@ class Producer(BrokerSetup):
             **config.broker.queue._asdict(),
             **kwargs,
         )
+
+    async def _setup(self) -> None:
+        await super()._setup()
+        await self.client.start()
+
+    async def _destroy(self) -> None:
+        await self.client.stop()
+        await super()._destroy()
 
     async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
         """Dispatch the items in the publishing queue forever.
@@ -104,17 +107,14 @@ class Producer(BrokerSetup):
 
         async with cursor.begin():
             await cursor.execute(self._queries["select_not_processed"], (self.retry, self.records))
-            result = await cursor.fetchall()
 
-            for row in result:
-                published = False
-                try:
-                    published = await self.publish(topic=row[1], message=row[2])
-                except Exception as exc:  # pragma: no cover
-                    logger.warning(f"Raised an exception while publishing a message: {exc!r}")
-                finally:
-                    query_id = "delete_processed" if published else "update_not_processed"
-                    await cursor.execute(self._queries[query_id], (row[0],))
+            rows = await cursor.fetchall()
+            futures = (self.publish(topic=row[1], message=row[2]) for row in rows)
+            result = zip(await gather(*futures), rows)
+
+            for (published, row) in result:
+                query_id = "delete_processed" if published else "update_not_processed"
+                await cursor.execute(self._queries[query_id], (row[0],))
 
         if not is_external_cursor:
             await cursor.__aexit__(None, None, None)
@@ -140,18 +140,18 @@ class Producer(BrokerSetup):
         """
         logger.debug(f"Producing message with {topic!s} topic...")
 
-        client = AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
         # noinspection PyBroadException
         try:
-            await client.start()
-            await client.send_and_wait(topic, message)
-            published = True
+            await self.client.send_and_wait(topic, message)
+            return True
         except Exception:
-            published = False
-        finally:
-            await client.stop()
+            return False
 
-        return published
+    @property
+    def client(self) -> AIOKafkaProducer:
+        if self._client is None:  # pragma: no cover
+            self._client = AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
+        return self._client
 
 
 # noinspection SqlDerivedTableAlias
