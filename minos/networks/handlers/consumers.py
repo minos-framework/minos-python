@@ -80,7 +80,9 @@ class Consumer(HandlerSetup):
         topics |= {f"{item.name}Reply" for item in config.saga.items}
         topics |= {f"{config.service.name}QueryReply", f"{config.service.name}Reply"}
 
-        return cls(topics=topics, broker=config.broker, **config.broker.queue._asdict(), **kwargs)
+        return cls(
+            topics=topics, broker=config.broker, group_id=config.service.name, **config.broker.queue._asdict(), **kwargs
+        )
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -183,11 +185,11 @@ class Consumer(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        queue_id = await self.submit_query_and_fetchone(_INSERT_QUERY, (topic, partition, binary),)
+        row = await self.submit_query_and_fetchone(_INSERT_QUERY, (topic, partition, binary))
         await self.submit_query(_NOTIFY_QUERY.format(Identifier("consumer_queue")))
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(topic)))
 
-        return queue_id[0]
+        return row[0]
 
 
 _INSERT_QUERY = SQL(
