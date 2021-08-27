@@ -1,12 +1,10 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.networks.utils module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import re
 import socket
+from asyncio import (
+    QueueEmpty,
+)
 
 
 def get_host_ip() -> str:
@@ -33,3 +31,21 @@ def get_ip(name: str) -> str:
     :return: A string value.
     """
     return socket.gethostbyname(name)
+
+
+async def consume_queue(queue, max_count: int) -> None:
+    """Consume ``count`` at least ``1`` and at most ``max_count`` elements from the given queue.
+
+    :param queue: The queue to be consumed.
+    :param max_count: The max count of elements to be consumed.
+    :return: This function does not return anything.
+    """
+    await queue.get()
+
+    c = 1
+    while c < max_count:
+        c += 1
+        try:
+            queue.get_nowait()
+        except QueueEmpty:
+            break

@@ -1,9 +1,4 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
+"""minos.networks.abc.handlers module."""
 
 from __future__ import (
     annotations,
@@ -14,7 +9,9 @@ from abc import (
     abstractmethod,
 )
 from asyncio import (
+    TimeoutError,
     gather,
+    wait_for,
 )
 from typing import (
     Any,
@@ -24,6 +21,9 @@ from typing import (
     Type,
 )
 
+from aiopg import (
+    Cursor,
+)
 from cached_property import (
     cached_property,
 )
@@ -38,6 +38,9 @@ from minos.common import (
 
 from ...exceptions import (
     MinosActionNotFoundException,
+)
+from ...utils import (
+    consume_queue,
 )
 from ..entries import (
     HandlerEntry,
@@ -73,7 +76,38 @@ class Handler(HandlerSetup):
         """
         return self._handlers
 
-    async def dispatch(self) -> NoReturn:
+    async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
+        """Dispatch the items in the consuming queue forever.
+
+        :param max_wait: Maximum seconds to wait for notifications. If ``None`` the wait is performed until infinity.
+        :return: This method does not return anything.
+        """
+        async with self.cursor() as cursor:
+            await cursor.execute(self._queries["listen"])
+            try:
+                while True:
+                    await self._wait_for_entries(cursor, max_wait)
+                    await self.dispatch(cursor)
+            finally:
+                await cursor.execute(self._queries["unlisten"])
+
+    async def _wait_for_entries(self, cursor: Cursor, max_wait: Optional[float]) -> None:
+        if await self._get_count(cursor):
+            return
+
+        while True:
+            try:
+                return await wait_for(consume_queue(cursor.connection.notifies, self._records), max_wait)
+            except TimeoutError:
+                if await self._get_count(cursor):
+                    return
+
+    async def _get_count(self, cursor) -> int:
+        await cursor.execute(self._queries["count_not_processed"], (self._retry,))
+        count = (await cursor.fetchone())[0]
+        return count
+
+    async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
         """Event Queue Checker and dispatcher.
 
         It is in charge of querying the database and calling the action according to the topic.
@@ -86,24 +120,34 @@ class Handler(HandlerSetup):
             Exception: An error occurred inserting record.
         """
 
-        async with self.cursor() as cursor:
-            async with cursor.begin():
-                await cursor.execute(self._queries["select_non_processed"], (self._retry, self._records))
+        is_external_cursor = cursor is not None
+        if not is_external_cursor:
+            cursor = await self.cursor().__aenter__()
 
-                result = await cursor.fetchall()
-                entries = self._build_entries(result)
-                await self._dispatch_entries(entries)
+        async with cursor.begin():
+            await cursor.execute(self._queries["select_not_processed"], (self._retry, self._records))
 
-                for entry in entries:
-                    query_id = "delete_processed" if entry.success else "update_non_processed"
-                    await cursor.execute(self._queries[query_id], (entry.id,))
+            result = await cursor.fetchall()
+            entries = self._build_entries(result)
+            await self._dispatch_entries(entries)
+
+            for entry in entries:
+                query_id = "delete_processed" if entry.success else "update_not_processed"
+                await cursor.execute(self._queries[query_id], (entry.id,))
+
+        if not is_external_cursor:
+            await cursor.__aexit__(None, None, None)
 
     @cached_property
-    def _queries(self):
+    def _queries(self) -> dict[str, str]:
+        # noinspection PyTypeChecker
         return {
-            "select_non_processed": _SELECT_NON_PROCESSED_ROWS_QUERY.format(Identifier(self.TABLE_NAME)),
+            "listen": _LISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
+            "unlisten": _UNLISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
+            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
+            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
             "delete_processed": _DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
-            "update_non_processed": _UPDATE_NON_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
+            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
         }
 
     def _build_entries(self, rows: list[tuple]) -> list[HandlerEntry]:
@@ -157,10 +201,17 @@ class Handler(HandlerSetup):
         return handler
 
 
-_SELECT_NON_PROCESSED_ROWS_QUERY = SQL(
+# noinspection SqlDerivedTableAlias
+_COUNT_NOT_PROCESSED_QUERY = SQL("SELECT COUNT(*) FROM (SELECT id FROM {} WHERE retry < %s FOR UPDATE SKIP LOCKED) s")
+
+_SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * FROM {} WHERE retry < %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
 )
 
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM {} " "WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM {} WHERE id = %s")
 
-_UPDATE_NON_PROCESSED_QUERY = SQL("UPDATE {} " "SET retry = retry + 1 " "WHERE id = %s")
+_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE {} SET retry = retry + 1 WHERE id = %s")
+
+_LISTEN_QUERY = SQL("LISTEN {}")
+
+_UNLISTEN_QUERY = SQL("UNLISTEN {}")

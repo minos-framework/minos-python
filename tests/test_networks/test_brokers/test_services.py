@@ -1,22 +1,14 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.test_networks.test_brokers.test_services module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from unittest.mock import (
-    MagicMock,
+    AsyncMock,
 )
 
-from aiomisc.service.periodic import (
-    PeriodicService,
+from aiomisc import (
+    Service,
 )
 
-from minos.common import (
-    MinosConfigException,
-)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -33,35 +25,39 @@ class TestProducerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
-        service = ProducerService(interval=0.1, config=self.config)
-        self.assertIsInstance(service, PeriodicService)
+        service = ProducerService(config=self.config)
+        self.assertIsInstance(service, Service)
 
-    def test_dispatcher_empty(self):
-        service = ProducerService(interval=0.1)
-        with self.assertRaises(MinosConfigException):
-            # noinspection PyStatementEffect
-            service.dispatcher
+    def test_dispatcher(self):
+        service = ProducerService(config=self.config)
+        self.assertIsInstance(service.dispatcher, Producer)
 
-    def test_dispatcher_config(self):
-        service = ProducerService(interval=0.1, config=self.config)
-        dispatcher = service.dispatcher
-        self.assertIsInstance(dispatcher, Producer)
-        self.assertFalse(dispatcher.already_setup)
+    async def test_start_stop(self):
+        service = ProducerService(config=self.config)
 
-    async def test_start(self):
-        service = ProducerService(interval=0.1, loop=None, config=self.config)
-        service.dispatcher.setup = MagicMock(side_effect=service.dispatcher.setup)
+        setup_mock = AsyncMock()
+        destroy_mock = AsyncMock()
+        dispatch_forever_mock = AsyncMock()
+
+        service.dispatcher.setup = setup_mock
+        service.dispatcher.destroy = destroy_mock
+        service.dispatcher.dispatch_forever = dispatch_forever_mock
+
         await service.start()
-        self.assertTrue(1, service.dispatcher.setup.call_count)
+
+        self.assertEqual(1, setup_mock.call_count)
+        self.assertEqual(1, dispatch_forever_mock.call_count)
+        self.assertEqual(0, destroy_mock.call_count)
+
+        setup_mock.reset_mock()
+        destroy_mock.reset_mock()
+        dispatch_forever_mock.reset_mock()
+
         await service.stop()
 
-    async def test_callback(self):
-        service = ProducerService(interval=0.1, loop=None, config=self.config)
-        await service.dispatcher.setup()
-        service.dispatcher.dispatch = MagicMock(side_effect=service.dispatcher.dispatch)
-        await service.callback()
-        self.assertEqual(1, service.dispatcher.dispatch.call_count)
-        await service.dispatcher.destroy()
+        self.assertEqual(0, setup_mock.call_count)
+        self.assertEqual(0, dispatch_forever_mock.call_count)
+        self.assertEqual(1, destroy_mock.call_count)
 
 
 if __name__ == "__main__":
