@@ -1,10 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""minos.common.saga module."""
 from __future__ import (
     annotations,
 )
@@ -14,10 +8,9 @@ from abc import (
     abstractmethod,
 )
 from typing import (
+    Generic,
     Optional,
-)
-from uuid import (
-    UUID,
+    TypeVar,
 )
 
 from .model import (
@@ -27,11 +20,13 @@ from .setup import (
     MinosSetup,
 )
 
+T = TypeVar("T")
 
-class MinosSagaManager(ABC, MinosSetup):
+
+class MinosSagaManager(ABC, MinosSetup, Generic[T]):
     """Base class for saga manager implementations."""
 
-    async def run(self, *args, reply: Optional[CommandReply] = None, **kwargs) -> UUID:
+    async def run(self, *args, reply: Optional[CommandReply] = None, **kwargs) -> T:
         """Perform a run of a ``Saga``.
 
         The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
@@ -47,9 +42,9 @@ class MinosSagaManager(ABC, MinosSetup):
         return await self._run_new(*args, **kwargs)
 
     @abstractmethod
-    async def _run_new(self, *args, **kwargs) -> UUID:
+    async def _run_new(self, *args, **kwargs) -> T:
         raise NotImplementedError
 
     @abstractmethod
-    async def _load_and_run(self, *args, reply: CommandReply, **kwargs) -> UUID:
+    async def _load_and_run(self, *args, reply: CommandReply, **kwargs) -> T:
         raise NotImplementedError
