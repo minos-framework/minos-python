@@ -24,6 +24,9 @@ from aiopg import (
 from cached_property import (
     cached_property,
 )
+from dependency_injector.wiring import (
+    Provide,
+)
 from psycopg2.sql import (
     SQL,
 )
@@ -32,6 +35,9 @@ from minos.common import (
     MinosConfig,
 )
 
+from ..handlers import (
+    Consumer,
+)
 from ..utils import (
     consume_queue,
 )
@@ -45,6 +51,8 @@ logger = logging.getLogger(__name__)
 class Producer(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
+    consumer: Consumer = Provide["consumer"]
+
     def __init__(
         self,
         *args,
@@ -53,6 +61,7 @@ class Producer(BrokerSetup):
         retry: int,
         records: int,
         client: Optional[AIOKafkaProducer] = None,
+        consumer: Optional[Consumer] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -61,6 +70,9 @@ class Producer(BrokerSetup):
         self.retry = retry
         self.records = records
         self._client = client
+
+        if consumer is not None:
+            self.consumer = consumer
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
@@ -125,7 +137,7 @@ class Producer(BrokerSetup):
             await cursor.execute(self._queries["select_not_processed"], (self.retry, self.records))
 
             rows = await cursor.fetchall()
-            futures = (self.publish(topic=row[1], message=row[2]) for row in rows)
+            futures = (self._dispatch_one(row) for row in rows)
             result = zip(await gather(*futures), rows)
 
             for (published, row) in result:
@@ -134,6 +146,15 @@ class Producer(BrokerSetup):
 
         if not is_external_cursor:
             await cursor.__aexit__(None, None, None)
+
+    async def _dispatch_one(self, row: tuple) -> bool:
+        topic, message, action = row[1], row[2], row[4]
+
+        if action != "event" and topic in self.consumer.topics:
+            await self.consumer.queue_add(topic, -1, message)
+            return True
+
+        return await self.publish(topic, message)
 
     @cached_property
     def _queries(self) -> dict[str, str]:
