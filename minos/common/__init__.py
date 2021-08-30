@@ -11,7 +11,6 @@ __version__ = "0.1.11"
 from .configuration import (
     BROKER,
     COMMANDS,
-    CONTROLLER,
     DISCOVERY,
     EVENTS,
     QUEUE,

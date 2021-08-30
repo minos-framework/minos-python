@@ -9,7 +9,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 from .config import (
     BROKER,
     COMMANDS,
-    CONTROLLER,
     DISCOVERY,
     EVENTS,
     QUEUE,
