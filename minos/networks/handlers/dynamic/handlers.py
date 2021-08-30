@@ -14,28 +14,35 @@ from asyncio import (
     TimeoutError,
     wait_for,
 )
-from datetime import (
-    datetime,
-)
 from typing import (
-    Any,
-    NoReturn,
     Optional,
-    Union,
 )
 
-from aiokafka import (
-    AIOKafkaConsumer,
+from aiopg import (
+    Connection,
+    Cursor,
+    connect,
+)
+from cached_property import (
+    cached_property,
+)
+from psycopg2.sql import (
+    SQL,
+    Identifier,
 )
 
 from minos.common import (
-    BROKER,
     MinosConfig,
-    MinosHandler,
 )
 
 from ...exceptions import (
     MinosHandlerNotFoundEnoughEntriesException,
+)
+from ...utils import (
+    consume_queue,
+)
+from ..abc import (
+    HandlerSetup,
 )
 from ..entries import (
     HandlerEntry,
@@ -44,130 +51,45 @@ from ..entries import (
 logger = logging.getLogger(__name__)
 
 
-class DynamicHandler(MinosHandler):
-    """Dynamic Handler class.`"""
-
-    __slots__ = "_broker"
-
-    def __init__(self, broker: Optional[BROKER] = None, **kwargs):
-        super().__init__(**kwargs)
-        self._broker = broker
-
-    @property
-    def broker_host(self) -> str:
-        """Broker host getter.
-
-        :return: A string value.
-        """
-        return self._broker.host
-
-    @property
-    def broker_port(self) -> int:
-        """Broker port getter.
-
-        :return: An integer value.
-        """
-        return self._broker.port
-
-    @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
-        return cls(broker=config.broker, **kwargs)
-
-    async def get_one(self, *args, **kwargs) -> HandlerEntry:
-        """Get one handler entry from the given topics.
-
-        :param args: Additional positional parameters to be passed to get_many.
-        :param kwargs: Additional named parameters to be passed to get_many.
-        :return: A ``HandlerEntry`` instance.
-        """
-        return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
-
-    async def get_many(
-        self, topics: Union[str, list[str]], count: int, timeout: float = 60, **kwargs,
-    ) -> list[HandlerEntry]:
-        """Get multiple handler entries from the given topics.
-
-        :param topics: The list of topics to be watched.
-        :param timeout: Maximum time in seconds to wait for messages.
-        :param count: Number of entries to be collected.
-        :return: A list of ``HandlerEntry`` instances.
-        """
-
-        try:
-            raw = await wait_for(self._get_many(topics, count), timeout=timeout)
-        except TimeoutError:
-            raise MinosHandlerNotFoundEnoughEntriesException(
-                f"Timeout exceeded while trying to fetch {count!r} entries from {topics!r}."
-            )
-
-        def _fn(message: Any) -> HandlerEntry:
-            message = self._build_tuple(message)
-            return HandlerEntry(*message)
-
-        entries = [_fn(message) for message in raw]
-
-        logger.info(f"Obtained {entries!r} entries...")
-
-        return entries
-
-    async def _get_many(self, topics: Union[str, list[str]], count: int) -> list[Any]:
-        if isinstance(topics, str):
-            topics = [topics]
-
-        consumer = AIOKafkaConsumer(*topics, bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
-
-        raw = list()
-        try:
-            await consumer.start()
-            while len(raw) < count:
-                raw.append(await consumer.getone())
-        finally:
-            await consumer.stop()
-
-        return raw
-
-    @staticmethod
-    def _build_tuple(record: Any) -> tuple[int, str, int, bytes, int, datetime]:
-        return 0, record.topic, record.partition, record.value, 0, datetime.now()
-
-
-class DynamicReplyHandler(MinosHandler):
+class DynamicReplyHandler(HandlerSetup):
     """Dynamic Reply Handler class."""
 
-    def __init__(self, topic, broker: Optional[BROKER] = None, **kwargs):
+    TABLE_NAME: str = "dynamic_queue"
+
+    def __init__(self, topic, **kwargs):
         super().__init__(**kwargs)
-        self._broker = broker
 
         self.topic = topic
-
         self._real_topic = topic if topic.endswith("Reply") else f"{topic}Reply"
-        self.consumer = AIOKafkaConsumer(self._real_topic, bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
-
-    @property
-    def broker_host(self) -> str:
-        """Broker host getter.
-
-        :return: A string value.
-        """
-        return self._broker.host
-
-    @property
-    def broker_port(self) -> int:
-        """Broker port getter.
-
-        :return: An integer value.
-        """
-        return self._broker.port
+        self._connection = None
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicReplyHandler:
-        return cls(broker=config.broker, **kwargs)
+        # noinspection PyProtectedMember
+        return cls(handlers=dict(), **config.broker.queue._asdict(), **kwargs)
 
-    async def _setup(self) -> NoReturn:
-        await self.consumer.start()
+    async def _setup(self) -> None:
+        await super()._setup()
+        self._connection = await self._create_connection()
 
-    async def _destroy(self) -> NoReturn:
-        await self.consumer.stop()
+    async def _create_connection(self) -> Connection:
+        connection = await connect(
+            host=self.host, port=self.port, user=self.user, password=self.password, database=self.database
+        )
+
+        async with connection.cursor() as cursor:
+            await cursor.execute(self._queries["listen"])
+
+        return connection
+
+    async def _destroy(self) -> None:
+        if self._connection is not None:
+            async with self._connection.cursor() as cursor:
+                await cursor.execute(self._queries["unlisten"])
+
+            self._connection.close()
+
+        await super()._destroy()
 
     async def get_one(self, *args, **kwargs) -> HandlerEntry:
         """Get one handler entry from the given topics.
@@ -186,22 +108,75 @@ class DynamicReplyHandler(MinosHandler):
         :return: A list of ``HandlerEntry`` instances.
         """
         try:
-            raw = await wait_for(self._get_many(count), timeout=timeout)
+            entries = await wait_for(self._get_many(count, **kwargs), timeout=timeout)
         except TimeoutError:
             raise MinosHandlerNotFoundEnoughEntriesException(
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self._real_topic!r}."
             )
 
-        entries = [HandlerEntry(0, record.topic, record.partition, record.value) for record in raw]
-
         logger.info(f"Dispatching '{entries if count > 1 else entries[0]!s}'...")
 
         return entries
 
-    async def _get_many(self, count: int) -> list[Any]:
+    async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[HandlerEntry]:
+        result = list()
+        async with self._connection.cursor() as cursor:
+            while len(result) < count:
+                await self._wait_for_entries(cursor, count - len(result), max_wait)
+                result += await self._get_entries(cursor, count - len(result))
+        return result
 
-        raw = list()
-        while len(raw) < count:
-            raw.append(await self.consumer.getone())
+    async def _wait_for_entries(self, cursor: Cursor, count: int, max_wait: Optional[float]) -> None:
+        if await self._get_count(cursor):
+            return
 
-        return raw
+        while True:
+            try:
+                return await wait_for(consume_queue(cursor.connection.notifies, count), max_wait)
+            except TimeoutError:
+                if await self._get_count(cursor):
+                    return
+
+    async def _get_count(self, cursor) -> int:
+        await cursor.execute(self._queries["count_not_processed"], (self._real_topic,))
+        count = (await cursor.fetchone())[0]
+        return count
+
+    async def _get_entries(self, cursor: Cursor, count: int) -> list[HandlerEntry]:
+        entries = list()
+        async with cursor.begin():
+            await cursor.execute(self._queries["select_not_processed"], (self._real_topic, count))
+            for entry in self._build_entries(await cursor.fetchall()):
+                await cursor.execute(self._queries["delete_processed"], (entry.id,))
+                entries.append(entry)
+        return entries
+
+    @cached_property
+    def _queries(self) -> dict[str, str]:
+        # noinspection PyTypeChecker
+        return {
+            "listen": _LISTEN_QUERY.format(Identifier(self._real_topic)),
+            "unlisten": _UNLISTEN_QUERY.format(Identifier(self._real_topic)),
+            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
+            "select_not_processed": _SELECT_NOT_PROCESSED_ROWS_QUERY,
+            "delete_processed": _DELETE_PROCESSED_QUERY,
+        }
+
+    @staticmethod
+    def _build_entries(rows: list[tuple]) -> list[HandlerEntry]:
+        return [HandlerEntry(*row) for row in rows]
+
+
+_LISTEN_QUERY = SQL("LISTEN {}")
+
+_UNLISTEN_QUERY = SQL("UNLISTEN {}")
+
+# noinspection SqlDerivedTableAlias
+_COUNT_NOT_PROCESSED_QUERY = SQL(
+    "SELECT COUNT(*) FROM (SELECT id FROM dynamic_queue WHERE topic = %s FOR UPDATE SKIP LOCKED) s"
+)
+
+_SELECT_NOT_PROCESSED_ROWS_QUERY = SQL(
+    "SELECT * FROM dynamic_queue WHERE topic = %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
+)
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM dynamic_queue WHERE id = %s")

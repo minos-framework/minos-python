@@ -40,15 +40,29 @@ class Consumer(HandlerSetup):
 
     __slots__ = "_topics", "_broker", "_client"
 
-    def __init__(self, topics: set[str], broker: Optional[BROKER] = None, client: Optional[Any] = None, **kwargs):
+    def __init__(
+        self,
+        topics: set[str] = None,
+        broker: Optional[BROKER] = None,
+        client: Optional[AIOKafkaConsumer] = None,
+        group_id: Optional[str] = "default",
+        **kwargs,
+    ):
         super().__init__(**kwargs)
-        self._topics = topics
+        if topics is None:
+            topics = set()
+        self._topics = set(topics)
         self._broker = broker
         self._client = client
+        self._group_id = group_id
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         await super()._setup()
         await self.client.start()
+
+    async def _destroy(self) -> None:
+        await self.client.stop()
+        await super()._destroy()
 
     @property
     def topics(self) -> set[str]:
@@ -58,15 +72,37 @@ class Consumer(HandlerSetup):
         """
         return self._topics
 
+    async def add_topic(self, topic: str) -> None:
+        """Add a topic to the consumer's subscribed topics.
+
+        :param topic: Name of the topic to be added.
+        :return: This method does not return anything.
+        """
+        self._topics.add(topic)
+        self.client.subscribe(topics=list(self._topics))
+
+    async def remove_topic(self, topic: str) -> None:
+        """Remove a topic from the consumer's subscribed topics.
+
+        :param topic: Name of the topic to be removed.
+        :return: This method does not return anything.
+        """
+        self._topics.remove(topic)
+        if len(self._topics):
+            self.client.subscribe(topics=list(self._topics))
+        else:
+            self.client.unsubscribe()
+
     @property
     def client(self) -> AIOKafkaConsumer:
         if self._client is None:  # pragma: no cover
-            self._client = AIOKafkaConsumer(*self._topics, bootstrap_servers=f"{self._broker.host}:{self._broker.port}")
+            self._client = AIOKafkaConsumer(
+                *self._topics,
+                bootstrap_servers=f"{self._broker.host}:{self._broker.port}",
+                group_id=self._group_id,
+                auto_offset_reset="earliest",
+            )
         return self._client
-
-    async def _destroy(self) -> NoReturn:
-        await self.client.stop()
-        await super()._destroy()
 
     async def dispatch(self) -> NoReturn:
         """Perform a dispatching step.
@@ -75,7 +111,7 @@ class Consumer(HandlerSetup):
         """
         await self.handle_message(self.client)
 
-    async def handle_message(self, consumer: Any) -> NoReturn:
+    async def handle_message(self, consumer: Any) -> None:
         """Message consumer.
 
         It consumes the messages and sends them for processing.
@@ -125,6 +161,7 @@ class Consumer(HandlerSetup):
             _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary),
         )
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(self.TABLE_NAME)))
+        await self.submit_query(_NOTIFY_QUERY.format(Identifier(topic)))
 
         return queue_id[0]
 

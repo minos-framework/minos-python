@@ -39,13 +39,49 @@ class TestConsumer(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
+        self.client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
         self.consumer = _FakeConsumer(
             topics={f"{item.name}Reply" for item in self.config.saga.items},
             broker=self.config.broker,
-            client=client,
+            client=self.client,
             **self.config.broker.queue._asdict(),
         )
+
+    def test_empty_topics(self):
+        consumer = _FakeConsumer(broker=self.config.broker, client=self.client, **self.config.broker.queue._asdict())
+        self.assertEqual(set(), consumer.topics)
+
+    def test_topics(self):
+        self.assertEqual({"AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
+
+    async def test_add_topic(self):
+        mock = MagicMock()
+        self.consumer.client.subscribe = mock
+        await self.consumer.add_topic("foo")
+        self.assertEqual({"foo", "AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(topics=list(self.consumer.topics)), mock.call_args)
+
+    async def test_remove_topic(self):
+        mock = MagicMock()
+        self.consumer.client.subscribe = mock
+
+        await self.consumer.remove_topic("AddOrderReply")
+
+        self.assertEqual({"DeleteOrderReply"}, self.consumer.topics)
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(topics=list(self.consumer.topics)), mock.call_args)
+
+    async def test_remove_all_topics(self):
+        mock = MagicMock()
+        self.consumer.client.unsubscribe = mock
+
+        await self.consumer.remove_topic("AddOrderReply")
+        await self.consumer.remove_topic("DeleteOrderReply")
+        self.assertEqual(set(), self.consumer.topics)
+
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(), mock.call_args)
 
     async def test_dispatch(self):
         mock = MagicMock(side_effect=self.consumer.handle_message)

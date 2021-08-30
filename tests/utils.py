@@ -29,7 +29,6 @@ from minos.common import (
     AggregateDiff,
     CommandReply,
     CommandStatus,
-    Field,
     FieldDiff,
     FieldDiffContainer,
     MinosBroker,
@@ -71,6 +70,12 @@ class FakeConsumer:
         """For testing purposes."""
 
     async def stop(self):
+        """For testing purposes."""
+
+    def subscribe(self, *args, **kwargs):
+        """For testing purposes."""
+
+    def unsubscribe(self):
         """For testing purposes."""
 
     async def getmany(self, *args, **kwargs):
