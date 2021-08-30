@@ -172,8 +172,8 @@ class Producer(BrokerSetup):
             if action != "event" and topic in self.consumer.topics:
                 await self.consumer.queue_add(topic, -1, message)
                 return True
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(f"There was a problem while trying to use the consumer: {exc!r}")
 
         return await self.publish(topic, message)
 

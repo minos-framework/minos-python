@@ -60,8 +60,7 @@ class TestProducer(PostgresAsyncTestCase):
         self.assertEqual(call("GetOrder", -1, bytes()), mock.call_args)
 
     async def test_dispatch_one_internal_false(self):
-        consumer_mock = AsyncMock(side_effect=ValueError)
-        self.producer.consumer = consumer_mock
+        self.producer.consumer = None
 
         publish_mock = AsyncMock()
         self.producer.publish = publish_mock
