@@ -137,7 +137,7 @@ class Producer(BrokerSetup):
             await cursor.execute(self._queries["select_not_processed"], (self.retry, self.records))
 
             rows = await cursor.fetchall()
-            futures = (self._dispatch_one(row) for row in rows)
+            futures = (self.dispatch_one(row) for row in rows)
             result = zip(await gather(*futures), rows)
 
             for (published, row) in result:
@@ -146,15 +146,6 @@ class Producer(BrokerSetup):
 
         if not is_external_cursor:
             await cursor.__aexit__(None, None, None)
-
-    async def _dispatch_one(self, row: tuple) -> bool:
-        topic, message, action = row[1], row[2], row[4]
-
-        if action != "event" and topic in self.consumer.topics:
-            await self.consumer.queue_add(topic, -1, message)
-            return True
-
-        return await self.publish(topic, message)
 
     @cached_property
     def _queries(self) -> dict[str, str]:
@@ -167,6 +158,24 @@ class Producer(BrokerSetup):
             "delete_processed": _DELETE_PROCESSED_QUERY,
             "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
         }
+
+    async def dispatch_one(self, row: tuple) -> bool:
+        """Dispatch one row.
+
+        :param row: A row containing the message information.
+        :return: ``True`` if everything was fine or ``False`` otherwise.
+        """
+        topic, message, action = row[1], row[2], row[4]
+
+        # noinspection PyBroadException
+        try:
+            if action != "event" and topic in self.consumer.topics:
+                await self.consumer.queue_add(topic, -1, message)
+                return True
+        except Exception:
+            pass
+
+        return await self.publish(topic, message)
 
     async def publish(self, topic: str, message: bytes) -> bool:
         """Publish a new item in the broker (kafka).

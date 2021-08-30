@@ -8,6 +8,7 @@ from asyncio import (
 )
 from unittest.mock import (
     AsyncMock,
+    call,
 )
 from uuid import (
     uuid4,
@@ -46,6 +47,57 @@ class TestProducer(PostgresAsyncTestCase):
 
     def test_from_config_default(self):
         self.assertIsInstance(self.producer, Producer)
+
+    async def test_dispatch_one_internal_true(self):
+        mock = AsyncMock()
+        self.consumer.queue_add = mock
+
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "command"))
+            self.assertTrue(ok)
+
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call("GetOrder", -1, bytes()), mock.call_args)
+
+    async def test_dispatch_one_internal_false(self):
+        consumer_mock = AsyncMock(side_effect=ValueError)
+        self.producer.consumer = consumer_mock
+
+        publish_mock = AsyncMock()
+        self.producer.publish = publish_mock
+
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "command"))
+            self.assertTrue(ok)
+
+        self.assertEqual(1, publish_mock.call_count)
+        self.assertEqual(call("GetOrder", bytes()), publish_mock.call_args)
+
+    async def test_dispatch_one_external_true(self):
+        mock = AsyncMock()
+        self.producer.publish = mock
+
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "GetProduct", bytes(), 0, "command"))
+            self.assertTrue(ok)
+
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call("GetProduct", bytes()), mock.call_args)
+
+    async def test_dispatch_one_external_true_event(self):
+        mock = AsyncMock()
+        self.producer.publish = mock
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "TicketAdded", bytes(), 0, "event"))
+            self.assertTrue(ok)
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call("TicketAdded", bytes()), mock.call_args)
+
+    async def test_dispatch_one_external_false(self):
+        self.producer.publish = AsyncMock(return_value=False)
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "event"))
+            self.assertFalse(ok)
 
     async def test_publish_true(self):
         async with self.producer:
