@@ -43,7 +43,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         saga = uuid4()
 
         async with CommandBroker.from_config(config=self.config) as broker:
-            broker.send_bytes = mock
+            broker.enqueue = mock
             identifier = await broker.send(FakeModel("foo"), "fake", saga, "ekaf")
 
         self.assertEqual(56, identifier)

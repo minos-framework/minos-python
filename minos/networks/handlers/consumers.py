@@ -171,10 +171,10 @@ class Consumer(HandlerSetup):
         """
         logger.debug(f"Consuming message with {message.topic!s} topic...")
 
-        return await self.queue_add(message.topic, message.partition, message.value)
+        return await self.enqueue(message.topic, message.partition, message.value)
 
-    async def queue_add(self, topic: str, partition: int, binary: bytes) -> int:
-        """Insert row to event_queue table.
+    async def enqueue(self, topic: str, partition: int, binary: bytes) -> int:
+        """Insert row into queue table.
 
         Retrieves number of affected rows and row ID.
 

@@ -37,7 +37,7 @@ class Broker(MinosBroker, BrokerSetup, ABC):
 
     ACTION: str
 
-    async def send_bytes(self, topic: str, raw: bytes) -> int:
+    async def enqueue(self, topic: str, raw: bytes) -> int:
         """Send a sequence of bytes to the given topic.
 
         :param topic: Topic in which the bytes will be send.
