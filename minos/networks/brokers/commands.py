@@ -13,6 +13,9 @@ import logging
 from typing import (
     Any,
 )
+from uuid import (
+    UUID,
+)
 
 from minos.common import (
     Command,
@@ -36,7 +39,7 @@ class CommandBroker(Broker):
         return cls(*args, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding
-    async def send(self, data: Any, topic: str, saga: str, reply_topic: str, **kwargs) -> int:
+    async def send(self, data: Any, topic: str, saga: UUID, reply_topic: str, **kwargs) -> int:
         """Send a ``Command``.
 
         :param data: The data to be send.
