@@ -24,6 +24,9 @@ from aiopg import (
 from cached_property import (
     cached_property,
 )
+from dependency_injector.wiring import (
+    Provide,
+)
 from psycopg2.sql import (
     SQL,
 )
@@ -32,6 +35,9 @@ from minos.common import (
     MinosConfig,
 )
 
+from ..handlers import (
+    Consumer,
+)
 from ..utils import (
     consume_queue,
 )
@@ -45,6 +51,8 @@ logger = logging.getLogger(__name__)
 class Producer(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
+    consumer: Consumer = Provide["consumer"]
+
     def __init__(
         self,
         *args,
@@ -53,6 +61,7 @@ class Producer(BrokerSetup):
         retry: int,
         records: int,
         client: Optional[AIOKafkaProducer] = None,
+        consumer: Optional[Consumer] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -61,6 +70,9 @@ class Producer(BrokerSetup):
         self.retry = retry
         self.records = records
         self._client = client
+
+        if consumer is not None:
+            self.consumer = consumer
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
@@ -125,7 +137,7 @@ class Producer(BrokerSetup):
             await cursor.execute(self._queries["select_not_processed"], (self.retry, self.records))
 
             rows = await cursor.fetchall()
-            futures = (self.publish(topic=row[1], message=row[2]) for row in rows)
+            futures = (self.dispatch_one(row) for row in rows)
             result = zip(await gather(*futures), rows)
 
             for (published, row) in result:
@@ -146,6 +158,24 @@ class Producer(BrokerSetup):
             "delete_processed": _DELETE_PROCESSED_QUERY,
             "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
         }
+
+    async def dispatch_one(self, row: tuple) -> bool:
+        """Dispatch one row.
+
+        :param row: A row containing the message information.
+        :return: ``True`` if everything was fine or ``False`` otherwise.
+        """
+        topic, message, action = row[1], row[2], row[4]
+
+        # noinspection PyBroadException
+        try:
+            if action != "event" and topic in self.consumer.topics:
+                await self.consumer.queue_add(topic, -1, message)
+                return True
+        except Exception as exc:
+            logger.warning(f"There was a problem while trying to use the consumer: {exc!r}")
+
+        return await self.publish(topic, message)
 
     async def publish(self, topic: str, message: bytes) -> bool:
         """Publish a new item in the broker (kafka).
