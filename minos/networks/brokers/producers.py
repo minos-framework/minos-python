@@ -170,7 +170,7 @@ class Producer(BrokerSetup):
         # noinspection PyBroadException
         try:
             if action != "event" and topic in self.consumer.topics:
-                await self.consumer.queue_add(topic, -1, message)
+                await self.consumer.enqueue(topic, -1, message)
                 return True
         except Exception as exc:
             logger.warning(f"There was a problem while trying to use the consumer: {exc!r}")

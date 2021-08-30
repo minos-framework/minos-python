@@ -50,4 +50,4 @@ class CommandBroker(Broker):
         """
         command = Command(topic, data, saga, reply_topic)
         logger.info(f"Sending '{command!s}'...")
-        return await self.send_bytes(command.topic, command.avro_bytes)
+        return await self.enqueue(command.topic, command.avro_bytes)

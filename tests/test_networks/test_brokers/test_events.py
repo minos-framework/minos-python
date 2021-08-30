@@ -37,7 +37,7 @@ class TestEventBroker(PostgresAsyncTestCase):
     async def test_send(self):
         mock = AsyncMock(return_value=56)
         async with EventBroker.from_config(config=self.config) as broker:
-            broker.send_bytes = mock
+            broker.enqueue = mock
             identifier = await broker.send(FAKE_AGGREGATE_DIFF, topic="fake")
 
         self.assertEqual(56, identifier)

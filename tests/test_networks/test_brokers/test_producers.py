@@ -50,7 +50,7 @@ class TestProducer(PostgresAsyncTestCase):
 
     async def test_dispatch_one_internal_true(self):
         mock = AsyncMock()
-        self.consumer.queue_add = mock
+        self.consumer.enqueue = mock
 
         async with self.producer:
             ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "command"))

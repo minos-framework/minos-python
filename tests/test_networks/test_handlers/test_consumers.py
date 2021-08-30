@@ -122,16 +122,16 @@ class TestConsumer(PostgresAsyncTestCase):
         self.assertEqual(call(self.consumer.client.messages[0]), mock.call_args)
 
     async def test_handle_single_message(self):
-        mock = MagicMock(side_effect=self.consumer.queue_add)
+        mock = MagicMock(side_effect=self.consumer.enqueue)
 
-        self.consumer.queue_add = mock
+        self.consumer.enqueue = mock
         async with self.consumer:
             await self.consumer.handle_single_message(Message(topic="AddOrder", partition=0, value=b"test"))
 
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("AddOrder", 0, b"test"), mock.call_args)
 
-    async def test_queue_add(self):
+    async def test_enqueue(self):
         query = SQL(
             "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
             "VALUES (%s, %s, %s, NOW()) "
@@ -142,7 +142,7 @@ class TestConsumer(PostgresAsyncTestCase):
 
         self.consumer.submit_query_and_fetchone = mock
         async with self.consumer:
-            await self.consumer.queue_add("AddOrder", 0, b"test")
+            await self.consumer.enqueue("AddOrder", 0, b"test")
 
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(query, ("AddOrder", 0, b"test")), mock.call_args)
