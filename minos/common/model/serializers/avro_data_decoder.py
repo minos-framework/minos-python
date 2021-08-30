@@ -240,7 +240,7 @@ class AvroDataDecoder:
         if hasattr(data, "model_type"):
             if isinstance(data, MutableSet) and isinstance(data, type_.model_cls) and not len(data):
                 return data
-            if ModelType.from_model(data) == type_:
+            if ModelType.from_model(data) >= type_:
                 return data
 
         raise MinosTypeAttributeException(self.name, type_, data)

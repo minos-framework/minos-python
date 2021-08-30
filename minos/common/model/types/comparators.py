@@ -103,8 +103,12 @@ class TypeHintComparator:
         if first == second:
             return True
 
-        if is_type_subclass(first) and is_type_subclass(second) and issubclass(first, second):
-            return True
+        if is_type_subclass(first) and is_type_subclass(second):
+            if issubclass(first, second):
+                return True
+
+            if issubclass(first, ModelType) and issubclass(second, ModelType) and first <= second:
+                return True
 
         first_origin, second_origin = get_origin(first), get_origin(second)
         if first_origin is not None and self._compare(first_origin, second_origin):
