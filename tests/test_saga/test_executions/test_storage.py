@@ -38,7 +38,7 @@ class TestMinosLocalState(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         self.broker = NaiveBroker()
         self.saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)

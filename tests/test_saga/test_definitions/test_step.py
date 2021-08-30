@@ -41,7 +41,7 @@ class TestSagaStep(unittest.TestCase):
             SagaStep().on_reply("foo").on_reply("foo")
 
     def test_step_validates(self):
-        step = SagaStep(Saga("SagaTest"))
+        step = SagaStep(Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
         step.step()
@@ -52,7 +52,7 @@ class TestSagaStep(unittest.TestCase):
             SagaStep().invoke_participant("FooAdded", foo_fn).step()
 
     def test_commit(self):
-        saga = Saga("SagaTest")
+        saga = Saga()
         step = SagaStep(saga).invoke_participant("FoodAdd", foo_fn)
         mock = MagicMock(return_value=True)
         saga.commit = mock
@@ -61,14 +61,14 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(call(foo_fn), mock.call_args)
 
     def test_commit_validates(self):
-        step = SagaStep(Saga("SagaTest"))
+        step = SagaStep(Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
         step.commit()
         self.assertEqual(1, mock.call_count)
 
     def test_submit(self):
-        expected = Saga("SagaTest")
+        expected = Saga()
         observed = SagaStep(expected).invoke_participant("FoodAdd", foo_fn).commit()
         self.assertEqual(expected, observed)
 

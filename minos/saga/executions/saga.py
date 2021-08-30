@@ -162,8 +162,6 @@ class SagaExecution(object):
             return self.context
 
         self.status = SagaStatus.Running
-        if reply_topic is None:
-            reply_topic = self.definition_name
         if self.paused_step is not None:
             try:
                 await self._execute_one(self.paused_step, reply=reply, reply_topic=reply_topic, *args, **kwargs)
@@ -216,9 +214,6 @@ class SagaExecution(object):
         if self.already_rollback:
             raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
 
-        if reply_topic is None:
-            reply_topic = self.definition_name
-
         raised_exception = False
         for execution_step in reversed(self.executed_steps):
             try:
@@ -257,14 +252,6 @@ class SagaExecution(object):
             "context": self.context.avro_str,
             "already_rollback": self.already_rollback,
         }
-
-    @property
-    def definition_name(self) -> str:
-        """Get the ``Saga``` Definition name.
-
-        :return: An ``str`` instance.
-        """
-        return self.definition.name
 
     def __eq__(self, other: SagaStep) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

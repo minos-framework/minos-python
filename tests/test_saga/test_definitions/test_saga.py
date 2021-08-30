@@ -38,40 +38,40 @@ class TestSaga(unittest.TestCase):
         rmtree(self.DB_PATH, ignore_errors=True)
 
     def test_commit(self):
-        saga = Saga("AddOrder")
+        saga = Saga()
         observed = saga.commit()
         self.assertEqual(saga, observed)
         self.assertEqual(SagaOperation(identity_fn), saga.commit_operation)
 
     def test_commit_define_callback(self):
-        saga = Saga("AddOrder")
+        saga = Saga()
         observed = saga.commit(foo_fn)
         self.assertEqual(saga, observed)
         self.assertEqual(SagaOperation(foo_fn), saga.commit_operation)
 
     def test_commit_raises(self):
-        saga = Saga("AddOrder").commit()
+        saga = Saga().commit()
         with self.assertRaises(MinosSagaAlreadyCommittedException):
             saga.commit()
 
     def test_committed_true(self):
-        saga = Saga("AddOrder")
+        saga = Saga()
         saga.commit_operation = SagaOperation(identity_fn)
         self.assertTrue(saga.committed)
 
     def test_committed_false(self):
-        saga = Saga("AddOrder")
+        saga = Saga()
         self.assertFalse(saga.committed)
 
     def test_step_raises(self):
-        saga = Saga("AddOrder").commit()
+        saga = Saga().commit()
         with self.assertRaises(MinosSagaAlreadyCommittedException):
             saga.step()
 
     def test_empty_step_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:
             (
-                Saga("OrdersAdd2")
+                Saga()
                 .step()
                 .invoke_participant("CreateOrder", foo_fn)
                 .with_compensation("DeleteOrder", foo_fn)
@@ -90,7 +90,7 @@ class TestSaga(unittest.TestCase):
     def test_wrong_step_action_must_throw_exception(self):
         with self.assertRaises(MinosSagaException) as exc:
             (
-                Saga("OrdersAdd3")
+                Saga()
                 .step()
                 .invoke_participant("CreateOrder", foo_fn)
                 .with_compensation("DeleteOrder", foo_fn)
@@ -105,30 +105,24 @@ class TestSaga(unittest.TestCase):
             self.assertEqual("A 'SagaStep' can only define one 'with_compensation' method.", str(exc))
 
     def test_build_execution(self):
-        saga = (
-            Saga("OrdersAdd3")
-            .step()
-            .invoke_participant("CreateOrder", foo_fn)
-            .with_compensation("DeleteOrder", foo_fn)
-            .commit()
-        )
+        saga = Saga().step().invoke_participant("CreateOrder", foo_fn).with_compensation("DeleteOrder", foo_fn).commit()
         execution = SagaExecution.from_saga(saga)
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):
         step = SagaStep().invoke_participant("CreateOrder", foo_fn)
-        saga = Saga("OrdersAdd3").step(step).commit()
+        saga = Saga().step(step).commit()
 
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
-        step = SagaStep(Saga("FooTest")).invoke_participant("CreateOrder", foo_fn)
+        step = SagaStep(Saga()).invoke_participant("CreateOrder", foo_fn)
         with self.assertRaises(MinosAlreadyOnSagaException):
-            Saga("BarAdd").step(step)
+            Saga().step(step)
 
     def test_raw(self):
         saga = (
-            Saga("CreateShipment")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", foo_fn)
             .with_compensation("DeleteOrder", foo_fn)
@@ -140,7 +134,6 @@ class TestSaga(unittest.TestCase):
             .commit()
         )
         expected = {
-            "name": "CreateShipment",
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
@@ -185,7 +178,7 @@ class TestSaga(unittest.TestCase):
             ],
         }
         expected = (
-            Saga("CreateShipment")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", foo_fn)
             .with_compensation("DeleteOrder", foo_fn)
@@ -200,7 +193,7 @@ class TestSaga(unittest.TestCase):
 
     def test_from_raw_already(self):
         expected = (
-            Saga("CreateShipment")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", foo_fn)
             .with_compensation("DeleteOrder", foo_fn)

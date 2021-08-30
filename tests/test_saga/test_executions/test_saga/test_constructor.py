@@ -33,7 +33,7 @@ class TestSagaExecutionConstructor(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -56,7 +56,7 @@ class TestSagaExecutionConstructor(unittest.IsolatedAsyncioTestCase):
 
     def test_from_saga_raises(self):
         with self.assertRaises(MinosSagaNotCommittedException):
-            SagaExecution.from_saga(Saga("AddOrder"))
+            SagaExecution.from_saga(Saga())
 
     def test_from_saga_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")

@@ -41,7 +41,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -74,7 +74,6 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "already_rollback": False,
             "context": SagaContext().avro_str,
             "definition": {
-                "name": "OrdersAdd",
                 "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
