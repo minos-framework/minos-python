@@ -20,3 +20,7 @@ class MinosQueryServiceException(MinosCqrsException):
 
 class MinosIllegalHandlingException(MinosException):
     """Exception to be raised when a service is trying to be used to handle improper message types."""
+
+
+class MinosNotAnyMissingReferenceException(MinosQueryServiceException):
+    """Exception to be raised when an aggregate diff does not have any missing reference."""

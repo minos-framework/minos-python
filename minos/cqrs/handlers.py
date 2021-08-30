@@ -25,6 +25,7 @@ from minos.saga import (
 )
 
 from .exceptions import (
+    MinosNotAnyMissingReferenceException,
     MinosQueryServiceException,
 )
 
@@ -40,10 +41,12 @@ class PreEventHandler:
         :param saga_manager: The saga manager to be used to compute the queries to another microservices.
         :return: The recomposed aggregate difference.
         """
-        definition = cls.build_saga(diff)
-        execution = await saga_manager.run(
-            definition=definition, pause_on_disk=False, return_execution=True, raise_on_error=True
-        )
+        try:
+            definition = cls.build_saga(diff)
+        except MinosNotAnyMissingReferenceException:
+            return diff
+
+        execution = await saga_manager.run(definition=definition)
         if not isinstance(execution, SagaExecution) or execution.status != SagaStatus.Finished:
             raise MinosQueryServiceException("The saga execution could not finish.")
         return execution.context["diff"]
@@ -56,6 +59,9 @@ class PreEventHandler:
         :return: A saga instance.
         """
         missing = ModelRefExtractor(diff.fields_diff).build()
+
+        if not len(missing):
+            raise MinosNotAnyMissingReferenceException("The diff does not have any missing reference.")
 
         saga = Saga("")
         for name, uuids in missing.items():

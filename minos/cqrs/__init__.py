@@ -13,6 +13,7 @@ __version__ = "0.0.1"
 from .exceptions import (
     MinosCqrsException,
     MinosIllegalHandlingException,
+    MinosNotAnyMissingReferenceException,
     MinosQueryServiceException,
 )
 from .handlers import (
