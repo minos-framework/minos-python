@@ -1,4 +1,4 @@
-"""minos.networks.handlers.dynamic.services module."""
+"""minos.networks.handlers.services module."""
 
 import logging
 from typing import (
@@ -14,18 +14,18 @@ from dependency_injector.wiring import (
 )
 
 from .consumers import (
-    DynamicConsumer,
+    Consumer,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicConsumerService(Service):
+class ConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
-    dispatcher: DynamicConsumer = Provide["dynamic_consumer"]
+    dispatcher: Consumer = Provide["consumer"]
 
-    def __init__(self, dispatcher: Optional[DynamicConsumer] = None, **kwargs):
+    def __init__(self, dispatcher: Optional[Consumer] = None, **kwargs):
         super().__init__(**kwargs)
 
         if dispatcher is not None:

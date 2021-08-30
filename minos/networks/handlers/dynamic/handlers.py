@@ -54,8 +54,6 @@ logger = logging.getLogger(__name__)
 class DynamicReplyHandler(HandlerSetup):
     """Dynamic Reply Handler class."""
 
-    TABLE_NAME: str = "dynamic_queue"
-
     def __init__(self, topic, **kwargs):
         super().__init__(**kwargs)
 
@@ -173,10 +171,10 @@ _UNLISTEN_QUERY = SQL("UNLISTEN {}")
 
 # noinspection SqlDerivedTableAlias
 _COUNT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT COUNT(*) FROM (SELECT id FROM dynamic_queue WHERE topic = %s FOR UPDATE SKIP LOCKED) s"
+    "SELECT COUNT(*) FROM (SELECT id FROM consumer_queue WHERE topic = %s FOR UPDATE SKIP LOCKED) s"
 )
 
 _SELECT_NOT_PROCESSED_ROWS_QUERY = SQL(
-    "SELECT * FROM dynamic_queue WHERE topic = %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
+    "SELECT * FROM consumer_queue WHERE topic = %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
 )
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM dynamic_queue WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM consumer_queue WHERE id = %s")

@@ -13,7 +13,6 @@ from unittest.mock import (
 
 from psycopg2.sql import (
     SQL,
-    Identifier,
 )
 
 from minos.common.testing import (
@@ -29,10 +28,6 @@ from tests.utils import (
 )
 
 
-class _FakeConsumer(Consumer):
-    TABLE_NAME = "fake"
-
-
 class TestConsumer(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
@@ -40,15 +35,39 @@ class TestConsumer(PostgresAsyncTestCase):
         super().setUp()
 
         self.client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
-        self.consumer = _FakeConsumer(
+        self.consumer = Consumer(
             topics={f"{item.name}Reply" for item in self.config.saga.items},
             broker=self.config.broker,
             client=self.client,
             **self.config.broker.queue._asdict(),
         )
 
+    def test_from_config(self):
+        expected_topics = {
+            "AddOrder",
+            "AddOrderReply",
+            "DeleteOrder",
+            "DeleteOrderReply",
+            "GetOrder",
+            "OrderQueryReply",
+            "OrderReply",
+            "TicketAdded",
+            "TicketDeleted",
+            "UpdateOrder",
+        }
+
+        consumer = Consumer.from_config(config=self.config)
+        self.assertIsInstance(consumer, Consumer)
+        self.assertEqual(expected_topics, consumer.topics)
+        self.assertEqual(self.config.broker, consumer._broker)
+        self.assertEqual(self.config.broker.queue.host, consumer.host)
+        self.assertEqual(self.config.broker.queue.port, consumer.port)
+        self.assertEqual(self.config.broker.queue.database, consumer.database)
+        self.assertEqual(self.config.broker.queue.user, consumer.user)
+        self.assertEqual(self.config.broker.queue.password, consumer.password)
+
     def test_empty_topics(self):
-        consumer = _FakeConsumer(broker=self.config.broker, client=self.client, **self.config.broker.queue._asdict())
+        consumer = Consumer(broker=self.config.broker, client=self.client, **self.config.broker.queue._asdict())
         self.assertEqual(set(), consumer.topics)
 
     def test_topics(self):
@@ -114,8 +133,10 @@ class TestConsumer(PostgresAsyncTestCase):
 
     async def test_queue_add(self):
         query = SQL(
-            "INSERT INTO {} (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, NOW()) RETURNING id"
-        ).format(Identifier("fake"))
+            "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
+            "VALUES (%s, %s, %s, NOW()) "
+            "RETURNING id"
+        )
 
         mock = MagicMock(side_effect=self.consumer.submit_query_and_fetchone)
 

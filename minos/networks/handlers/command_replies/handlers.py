@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 class CommandReplyHandler(Handler):
     """Command Reply Handler class."""
 
-    TABLE_NAME = "command_reply_queue"
     ENTRY_MODEL_CLS = CommandReply
 
     saga_manager: MinosSagaManager = Provide["saga_manager"]

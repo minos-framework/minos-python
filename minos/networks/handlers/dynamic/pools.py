@@ -32,8 +32,8 @@ from minos.common import (
     MinosPool,
 )
 
-from .consumers import (
-    DynamicConsumer,
+from ..consumers import (
+    Consumer,
 )
 from .handlers import (
     DynamicReplyHandler,
@@ -45,10 +45,10 @@ logger = logging.getLogger(__name__)
 class ReplyHandlerPool(MinosPool):
     """Reply Handler Pool class."""
 
-    consumer: DynamicConsumer = Provide["dynamic_consumer"]
+    consumer: Consumer = Provide["consumer"]
 
     def __init__(
-        self, config: MinosConfig, client: KafkaAdminClient, consumer: Optional[DynamicConsumer] = None, *args, **kwargs
+        self, config: MinosConfig, client: KafkaAdminClient, consumer: Optional[Consumer] = None, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.config = config

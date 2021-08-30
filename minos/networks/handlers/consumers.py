@@ -14,6 +14,9 @@ from typing import (
 from aiokafka import (
     AIOKafkaConsumer,
 )
+from kafka.errors import (
+    KafkaError,
+)
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -21,9 +24,13 @@ from psycopg2.sql import (
 
 from minos.common import (
     BROKER,
+    MinosConfig,
 )
 
-from .setups import (
+from ..decorators import (
+    EnrouteBuilder,
+)
+from .abc import (
     HandlerSetup,
 )
 
@@ -56,12 +63,39 @@ class Consumer(HandlerSetup):
         self._client = client
         self._group_id = group_id
 
+    @classmethod
+    def _from_config(cls, config: MinosConfig, **kwargs) -> Consumer:
+        topics = set()
+
+        # events
+        decorators = EnrouteBuilder(config.events.service).get_broker_event()
+        topics |= {decorator.topic for decorator in decorators.keys()}
+
+        # commands
+        decorators = EnrouteBuilder(config.commands.service).get_broker_command_query()
+        topics |= {decorator.topic for decorator in decorators.keys()}
+
+        # queries
+        decorators = EnrouteBuilder(config.queries.service).get_broker_command_query()
+        topics |= {decorator.topic for decorator in decorators.keys()}
+
+        # replies
+        topics |= {f"{item.name}Reply" for item in config.saga.items}
+        topics |= {f"{config.service.name}QueryReply", f"{config.service.name}Reply"}
+
+        return cls(
+            topics=topics, broker=config.broker, group_id=config.service.name, **config.broker.queue._asdict(), **kwargs
+        )
+
     async def _setup(self) -> None:
         await super()._setup()
         await self.client.start()
 
     async def _destroy(self) -> None:
-        await self.client.stop()
+        try:
+            await self.client.stop()
+        except KafkaError:  # pragma: no cover
+            pass
         await super()._destroy()
 
     @property
@@ -157,17 +191,16 @@ class Consumer(HandlerSetup):
         Raises:
             Exception: An error occurred inserting record.
         """
-        queue_id = await self.submit_query_and_fetchone(
-            _INSERT_QUERY.format(Identifier(self.TABLE_NAME)), (topic, partition, binary),
-        )
-        await self.submit_query(_NOTIFY_QUERY.format(Identifier(self.TABLE_NAME)))
+        row = await self.submit_query_and_fetchone(_INSERT_QUERY, (topic, partition, binary))
         await self.submit_query(_NOTIFY_QUERY.format(Identifier(topic)))
 
-        return queue_id[0]
+        return row[0]
 
 
 _INSERT_QUERY = SQL(
-    "INSERT INTO {} (topic, partition_id, binary_data, creation_date) VALUES (%s, %s, %s, NOW()) RETURNING id"
+    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
+    "VALUES (%s, %s, %s, NOW()) "
+    "RETURNING id"
 )
 
 _NOTIFY_QUERY = SQL("NOTIFY {}")

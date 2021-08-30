@@ -76,6 +76,10 @@ class Handler(HandlerSetup):
         """
         return self._handlers
 
+    @property
+    def topics(self):
+        return self.handlers.keys()
+
     async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
         """Dispatch the items in the consuming queue forever.
 
@@ -83,13 +87,23 @@ class Handler(HandlerSetup):
         :return: This method does not return anything.
         """
         async with self.cursor() as cursor:
-            await cursor.execute(self._queries["listen"])
+            await self._listen_entries(cursor)
             try:
                 while True:
                     await self._wait_for_entries(cursor, max_wait)
                     await self.dispatch(cursor)
             finally:
-                await cursor.execute(self._queries["unlisten"])
+                await self._unlisten_entries(cursor)
+
+    async def _listen_entries(self, cursor: Cursor):
+        for topic in self.topics:
+            # noinspection PyTypeChecker
+            await cursor.execute(_LISTEN_QUERY.format(Identifier(topic)))
+
+    async def _unlisten_entries(self, cursor: Cursor) -> None:
+        for topic in self.topics:
+            # noinspection PyTypeChecker
+            await cursor.execute(_UNLISTEN_QUERY.format(Identifier(topic)))
 
     async def _wait_for_entries(self, cursor: Cursor, max_wait: Optional[float]) -> None:
         if await self._get_count(cursor):
@@ -103,7 +117,7 @@ class Handler(HandlerSetup):
                     return
 
     async def _get_count(self, cursor) -> int:
-        await cursor.execute(self._queries["count_not_processed"], (self._retry,))
+        await cursor.execute(self._queries["count_not_processed"], (self._retry, tuple(self.topics)))
         count = (await cursor.fetchone())[0]
         return count
 
@@ -125,7 +139,9 @@ class Handler(HandlerSetup):
             cursor = await self.cursor().__aenter__()
 
         async with cursor.begin():
-            await cursor.execute(self._queries["select_not_processed"], (self._retry, self._records))
+            await cursor.execute(
+                self._queries["select_not_processed"], (self._retry, tuple(self.topics), self._records)
+            )
 
             result = await cursor.fetchall()
             entries = self._build_entries(result)
@@ -142,12 +158,10 @@ class Handler(HandlerSetup):
     def _queries(self) -> dict[str, str]:
         # noinspection PyTypeChecker
         return {
-            "listen": _LISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
-            "unlisten": _UNLISTEN_QUERY.format(Identifier(self.TABLE_NAME)),
-            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
-            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
-            "delete_processed": _DELETE_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
-            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY.format(Identifier(self.TABLE_NAME)),
+            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
+            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY,
+            "delete_processed": _DELETE_PROCESSED_QUERY,
+            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
         }
 
     def _build_entries(self, rows: list[tuple]) -> list[HandlerEntry]:
@@ -202,15 +216,22 @@ class Handler(HandlerSetup):
 
 
 # noinspection SqlDerivedTableAlias
-_COUNT_NOT_PROCESSED_QUERY = SQL("SELECT COUNT(*) FROM (SELECT id FROM {} WHERE retry < %s FOR UPDATE SKIP LOCKED) s")
-
-_SELECT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT * FROM {} WHERE retry < %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
+_COUNT_NOT_PROCESSED_QUERY = SQL(
+    "SELECT COUNT(*) FROM (SELECT id FROM consumer_queue WHERE retry < %s AND topic IN %s FOR UPDATE SKIP LOCKED) s"
 )
 
-_DELETE_PROCESSED_QUERY = SQL("DELETE FROM {} WHERE id = %s")
+_SELECT_NOT_PROCESSED_QUERY = SQL(
+    "SELECT * "
+    "FROM consumer_queue "
+    "WHERE retry < %s AND topic IN %s "
+    "ORDER BY creation_date "
+    "LIMIT %s "
+    "FOR UPDATE SKIP LOCKED"
+)
 
-_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE {} SET retry = retry + 1 WHERE id = %s")
+_DELETE_PROCESSED_QUERY = SQL("DELETE FROM consumer_queue WHERE id = %s")
+
+_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE consumer_queue SET retry = retry + 1 WHERE id = %s")
 
 _LISTEN_QUERY = SQL("LISTEN {}")
 

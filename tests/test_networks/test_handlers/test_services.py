@@ -6,7 +6,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    DynamicConsumerService,
+    ConsumerService,
 )
 from tests.utils import (
     BASE_PATH,
@@ -14,7 +14,7 @@ from tests.utils import (
 )
 
 
-class TestDynamicConsumerService(PostgresAsyncTestCase):
+class TestConsumerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -23,7 +23,7 @@ class TestDynamicConsumerService(PostgresAsyncTestCase):
 
     async def test_start(self):
         # noinspection PyTypeChecker
-        service = DynamicConsumerService(config=self.config, dispatcher=self.dispatcher)
+        service = ConsumerService(config=self.config, dispatcher=self.dispatcher)
 
         self.assertEqual(0, self.dispatcher.setup_count)
         self.assertEqual(0, self.dispatcher.setup_dispatch)

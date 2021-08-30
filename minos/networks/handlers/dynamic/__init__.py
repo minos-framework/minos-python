@@ -1,19 +1,7 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
-from .consumers import (
-    DynamicConsumer,
-)
+"""minos.networks.handlers.dynamic module."""
 from .handlers import (
     DynamicReplyHandler,
 )
 from .pools import (
     ReplyHandlerPool,
-)
-from .services import (
-    DynamicConsumerService,
 )

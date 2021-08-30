@@ -43,7 +43,6 @@ from tests.utils import (
 
 
 class _FakeHandler(Handler):
-    TABLE_NAME = "fake"
     ENTRY_MODEL_CLS = DataTransferObject
 
     def __init__(self, *args, **kwargs):
@@ -96,7 +95,7 @@ class TestHandler(PostgresAsyncTestCase):
         async with self.handler:
             self.handler.dispatch = mock
             try:
-                await gather(self.handler.dispatch_forever(), self._notify("fake"))
+                await gather(self.handler.dispatch_forever(), self._notify("empty"))
             except ValueError:
                 pass
         self.assertEqual(1, mock.call_count)
@@ -180,7 +179,7 @@ class TestHandler(PostgresAsyncTestCase):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO fake (topic, partition_id, binary_data, creation_date) "
+                    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
                     "VALUES (%s, %s, %s, NOW()) "
                     "RETURNING id;",
                     (instance.topic, 0, instance.avro_bytes),
@@ -190,13 +189,13 @@ class TestHandler(PostgresAsyncTestCase):
     async def _count(self):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM fake")
+                await cur.execute("SELECT COUNT(*) FROM consumer_queue")
                 return (await cur.fetchone())[0]
 
     async def _is_processed(self, queue_id):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM fake WHERE id=%d" % (queue_id,))
+                await cur.execute("SELECT COUNT(*) FROM consumer_queue WHERE id=%d" % (queue_id,))
                 return (await cur.fetchone())[0] == 0
 
 

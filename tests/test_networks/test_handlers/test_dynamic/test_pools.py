@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.test_networks.test_handlers.test_dynamic.test_pools module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 
 from kafka import (
@@ -15,7 +10,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    DynamicConsumer,
+    Consumer,
     DynamicReplyHandler,
     ReplyHandlerPool,
 )
@@ -29,7 +24,7 @@ class TestReplyHandlerPool(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.consumer = DynamicConsumer.from_config(config=self.config)
+        self.consumer = Consumer.from_config(config=self.config)
         self.pool = ReplyHandlerPool.from_config(config=self.config, consumer=self.consumer)
 
     async def test_config(self):
@@ -39,8 +34,6 @@ class TestReplyHandlerPool(PostgresAsyncTestCase):
         self.assertTrue(self.pool.already_setup)
         async with self.consumer, self.pool:
             self.assertTrue(self.pool.already_setup)
-            async with self.pool.acquire():
-                pass
         self.assertTrue(self.pool.already_destroyed)
 
     async def test_client(self):
@@ -50,12 +43,11 @@ class TestReplyHandlerPool(PostgresAsyncTestCase):
         self.assertEqual(expected, client.config["bootstrap_servers"])
 
     async def test_acquire(self):
-        client = self.pool.client
         async with self.consumer, self.pool:
             async with self.pool.acquire() as handler:
                 self.assertIsInstance(handler, DynamicReplyHandler)
                 topic = f"{handler.topic}Reply"
-                self.assertIn(topic, client.list_topics())
+                self.assertIn(topic, self.pool.client.list_topics())
 
 
 if __name__ == "__main__":
