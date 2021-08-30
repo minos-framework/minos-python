@@ -22,6 +22,7 @@ from minos.common import (
     ModelRef,
 )
 from minos.cqrs import (
+    MinosNotAnyMissingReferenceException,
     MinosQueryServiceException,
     PreEventHandler,
 )
@@ -69,6 +70,12 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         expected = AggregateDiff(self.uuid, "Foo", 1, FieldsDiff([Field("bars", list[ModelRef[Bar]], self.bars)]))
         self.assertEqual(expected, observed)
 
+    async def test_handle_empty_missing(self):
+        with patch("minos.cqrs.PreEventHandler.build_saga") as mock:
+            mock.side_effect = MinosNotAnyMissingReferenceException("")
+            observed = await PreEventHandler.handle(self.diff, self.saga_manager)
+            self.assertEqual(self.diff, observed)
+
     async def test_handle_raises(self):
         execution = SagaExecution.from_saga(
             (
@@ -102,6 +109,11 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             .commit(PreEventHandler.commit_callback, SagaContext(diff=self.diff))
         )
         self.assertEqual(expected, observed)
+
+    def test_build_saga_empty_missing(self):
+        diff = AggregateDiff(self.uuid, "Foo", 1, FieldsDiff.empty())
+        with self.assertRaises(MinosNotAnyMissingReferenceException):
+            PreEventHandler.build_saga(diff)
 
     def test_invoke_callback(self):
         context = SagaContext()
