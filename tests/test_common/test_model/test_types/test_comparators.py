@@ -114,6 +114,11 @@ class TestTypeHintComparator(unittest.TestCase):
         self.assertTrue(TypeHintComparator(list[Car.model_type], list[Aggregate]).match())
         self.assertTrue(TypeHintComparator(list[Aggregate], list[Car.model_type]).match())
 
+    def test_model_type_inequality(self):
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        self.assertFalse(TypeHintComparator(one, two).match())
+
     def test_equal_optional(self):
         one = ModelType.build("Foo", {"text": int}, namespace_="bar")
         two = ModelType.build("Foo", {"text": int}, namespace_="bar")

@@ -53,6 +53,30 @@ class TestModelType(unittest.TestCase):
         model_type = ModelType.build("Foo", {"text": int}, namespace_="bar")
         self.assertIsInstance(hash(model_type), int)
 
+    def test_lt(self):
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        self.assertLess(one, two)
+
+    def test_le(self):
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        three = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        self.assertLessEqual(one, two)
+        self.assertLessEqual(two, three)
+
+    def test_gt(self):
+        one = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        self.assertGreater(one, two)
+
+    def test_ge(self):
+        one = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        three = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        self.assertGreaterEqual(one, two)
+        self.assertGreaterEqual(two, three)
+
     def test_equal(self):
         one = ModelType.build("Foo", {"text": int}, namespace_="bar")
         two = ModelType.build("Foo", {"text": int}, namespace_="bar")
