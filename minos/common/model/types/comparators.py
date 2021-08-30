@@ -104,10 +104,10 @@ class TypeHintComparator:
             return True
 
         if is_type_subclass(first) and is_type_subclass(second):
-            if issubclass(first, second):
-                return True
-
-            if issubclass(first, ModelType) and issubclass(second, ModelType) and first <= second:
+            if isinstance(first, ModelType) and isinstance(second, ModelType):
+                if first <= second:
+                    return True
+            elif issubclass(first, second):
                 return True
 
         first_origin, second_origin = get_origin(first), get_origin(second)
