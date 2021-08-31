@@ -53,7 +53,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.broker = NaiveBroker()
         self.handler = FakeHandler("TheReplyTopic")
         self.pool = FakePool(self.handler)
-        self.manager = SagaManager.from_config(reply_pool=self.pool, config=self.config)
+        self.manager = SagaManager.from_config(dynamic_handler_pool=self.pool, config=self.config)
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
