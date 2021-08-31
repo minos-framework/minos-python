@@ -48,9 +48,15 @@ class DynamicHandlerPool(MinosPool):
     consumer: Consumer = Provide["consumer"]
 
     def __init__(
-        self, config: MinosConfig, client: KafkaAdminClient, consumer: Optional[Consumer] = None, *args, **kwargs
+        self,
+        config: MinosConfig,
+        client: KafkaAdminClient,
+        maxsize: int = 5,
+        consumer: Optional[Consumer] = None,
+        *args,
+        **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(maxsize=maxsize, *args, **kwargs)
         self.config = config
         self.client = client
 
