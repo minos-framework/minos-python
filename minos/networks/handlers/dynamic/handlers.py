@@ -51,8 +51,8 @@ from ..entries import (
 logger = logging.getLogger(__name__)
 
 
-class DynamicReplyHandler(HandlerSetup):
-    """Dynamic Reply Handler class."""
+class DynamicHandler(HandlerSetup):
+    """Dynamic Handler class."""
 
     def __init__(self, topic, **kwargs):
         super().__init__(**kwargs)
@@ -61,7 +61,7 @@ class DynamicReplyHandler(HandlerSetup):
         self._connection = None
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicReplyHandler:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
         # noinspection PyProtectedMember
         return cls(handlers=dict(), **config.broker.queue._asdict(), **kwargs)
 

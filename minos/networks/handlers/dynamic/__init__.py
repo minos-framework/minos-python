@@ -1,7 +1,7 @@
 """minos.networks.handlers.dynamic module."""
 from .handlers import (
-    DynamicReplyHandler,
+    DynamicHandler,
 )
 from .pools import (
-    ReplyHandlerPool,
+    DynamicHandlerPool,
 )

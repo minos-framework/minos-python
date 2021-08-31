@@ -15,7 +15,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    DynamicReplyHandler,
+    DynamicHandler,
     HandlerEntry,
     HandlerSetup,
     MinosHandlerNotFoundEnoughEntriesException,
@@ -27,7 +27,7 @@ from tests.utils import (
 )
 
 
-class TestDynamicReplyHandler(PostgresAsyncTestCase):
+class TestDynamicHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -36,7 +36,7 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.handler = DynamicReplyHandler.from_config(config=self.config, topic=self.topic)
+        self.handler = DynamicHandler.from_config(config=self.config, topic=self.topic)
 
     async def test_setup_destroy(self):
         self.assertFalse(self.handler.already_setup)

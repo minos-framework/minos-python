@@ -45,7 +45,8 @@ from .handlers import (
     CommandReplyHandlerService,
     Consumer,
     ConsumerService,
-    DynamicReplyHandler,
+    DynamicHandler,
+    DynamicHandlerPool,
     EventHandler,
     EventHandlerService,
     Handler,
@@ -54,7 +55,6 @@ from .handlers import (
     HandlerResponse,
     HandlerResponseException,
     HandlerSetup,
-    ReplyHandlerPool,
 )
 from .messages import (
     Request,
