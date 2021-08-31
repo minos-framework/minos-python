@@ -15,8 +15,8 @@ from .consumers import (
     Consumer,
 )
 from .dynamic import (
-    DynamicReplyHandler,
-    ReplyHandlerPool,
+    DynamicHandler,
+    DynamicHandlerPool,
 )
 from .entries import (
     HandlerEntry,

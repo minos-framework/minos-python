@@ -35,7 +35,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
 
     def test_default_reply_topic(self):
         broker = CommandBroker.from_config(config=self.config)
-        self.assertEqual("Order", broker.default_reply_topic)
+        self.assertEqual("OrderReply", broker.default_reply_topic)
 
     async def test_send(self):
         mock = AsyncMock(return_value=56)
@@ -65,7 +65,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(Command("fake", FakeModel("foo"), saga, "Order"), Command.from_avro_bytes(args[1]))
+        self.assertEqual(Command("fake", FakeModel("foo"), saga, "OrderReply"), Command.from_avro_bytes(args[1]))
 
 
 if __name__ == "__main__":

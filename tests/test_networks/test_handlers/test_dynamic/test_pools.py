@@ -11,21 +11,21 @@ from minos.common.testing import (
 )
 from minos.networks import (
     Consumer,
-    DynamicReplyHandler,
-    ReplyHandlerPool,
+    DynamicHandler,
+    DynamicHandlerPool,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class TestReplyHandlerPool(PostgresAsyncTestCase):
+class TestDynamicHandlerPool(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
         self.consumer = Consumer.from_config(config=self.config)
-        self.pool = ReplyHandlerPool.from_config(config=self.config, consumer=self.consumer)
+        self.pool = DynamicHandlerPool.from_config(config=self.config, consumer=self.consumer)
 
     async def test_config(self):
         self.assertEqual(self.config, self.pool.config)
@@ -45,9 +45,8 @@ class TestReplyHandlerPool(PostgresAsyncTestCase):
     async def test_acquire(self):
         async with self.consumer, self.pool:
             async with self.pool.acquire() as handler:
-                self.assertIsInstance(handler, DynamicReplyHandler)
-                topic = f"{handler.topic}Reply"
-                self.assertIn(topic, self.pool.client.list_topics())
+                self.assertIsInstance(handler, DynamicHandler)
+                self.assertIn(handler.topic, self.pool.client.list_topics())
 
 
 if __name__ == "__main__":

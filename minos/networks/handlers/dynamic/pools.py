@@ -36,14 +36,14 @@ from ..consumers import (
     Consumer,
 )
 from .handlers import (
-    DynamicReplyHandler,
+    DynamicHandler,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class ReplyHandlerPool(MinosPool):
-    """Reply Handler Pool class."""
+class DynamicHandlerPool(MinosPool):
+    """Dynamic Handler Pool class."""
 
     consumer: Consumer = Provide["consumer"]
 
@@ -58,35 +58,33 @@ class ReplyHandlerPool(MinosPool):
             self.consumer = consumer
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> ReplyHandlerPool:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandlerPool:
         client = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
         return cls(config, client, **kwargs)
 
-    async def _create_instance(self) -> DynamicReplyHandler:
+    async def _create_instance(self) -> DynamicHandler:
         topic = str(uuid4()).replace("-", "")
         await self._create_reply_topic(topic)
         await self._subscribe_reply_topic(topic)
-        instance = DynamicReplyHandler.from_config(config=self.config, topic=topic)
+        instance = DynamicHandler.from_config(config=self.config, topic=topic)
         await instance.setup()
         return instance
 
-    async def _destroy_instance(self, instance: DynamicReplyHandler):
+    async def _destroy_instance(self, instance: DynamicHandler):
         await instance.destroy()
         await self._unsubscribe_reply_topic(instance.topic)
         await self._delete_reply_topic(instance.topic)
 
     async def _create_reply_topic(self, topic: str) -> None:
-        name = f"{topic}Reply"
-        logger.info(f"Creating {name!r} topic...")
-        self.client.create_topics([NewTopic(name=name, num_partitions=1, replication_factor=1)])
+        logger.info(f"Creating {topic!r} topic...")
+        self.client.create_topics([NewTopic(name=topic, num_partitions=1, replication_factor=1)])
 
     async def _delete_reply_topic(self, topic: str) -> None:
-        name = f"{topic}Reply"
-        logger.info(f"Deleting {name!r} topic...")
-        self.client.delete_topics([name])
+        logger.info(f"Deleting {topic!r} topic...")
+        self.client.delete_topics([topic])
 
     async def _subscribe_reply_topic(self, topic: str) -> None:
-        await self.consumer.add_topic(f"{topic}Reply")
+        await self.consumer.add_topic(topic)
 
     async def _unsubscribe_reply_topic(self, topic: str) -> None:
-        await self.consumer.remove_topic(f"{topic}Reply")
+        await self.consumer.remove_topic(topic)

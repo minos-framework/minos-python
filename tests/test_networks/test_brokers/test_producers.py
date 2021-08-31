@@ -189,8 +189,8 @@ class TestProducer(PostgresAsyncTestCase):
         saga = uuid4()
 
         async with CommandReplyBroker.from_config(config=self.config) as broker:
-            queue_id_1 = await broker.send(model, "TestDeleteOrder", saga, CommandStatus.SUCCESS)
-            queue_id_2 = await broker.send(model, "TestDeleteOrder", saga, CommandStatus.SUCCESS)
+            queue_id_1 = await broker.send(model, "TestDeleteOrderReply", saga, CommandStatus.SUCCESS)
+            queue_id_2 = await broker.send(model, "TestDeleteOrderReply", saga, CommandStatus.SUCCESS)
 
         async with self.producer:
             self.producer.publish = AsyncMock(return_value=False)

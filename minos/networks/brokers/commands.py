@@ -36,7 +36,7 @@ class CommandBroker(Broker):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandBroker:
-        default_reply_topic = f"{config.service.name}"
+        default_reply_topic = f"{config.service.name}Reply"
         return cls(*args, **config.broker.queue._asdict(), default_reply_topic=default_reply_topic, **kwargs)
 
     # noinspection PyMethodOverriding
