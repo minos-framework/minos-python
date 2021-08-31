@@ -61,18 +61,22 @@ class SagaManager(MinosSagaManager):
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    reply_pool: MinosPool[MinosHandler] = Provide["reply_pool"]
+    dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"]
 
     def __init__(
-        self, storage: SagaExecutionStorage, reply_pool: Optional[MinosPool[MinosHandler]] = None, *args, **kwargs,
+        self,
+        storage: SagaExecutionStorage,
+        dynamic_handler_pool: Optional[MinosPool[MinosHandler]] = None,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
 
-        if reply_pool is not None:
-            self.reply_pool = reply_pool
+        if dynamic_handler_pool is not None:
+            self.dynamic_handler_pool = dynamic_handler_pool
 
-        if self.reply_pool is None or isinstance(self.reply_pool, Provide):
+        if self.dynamic_handler_pool is None or isinstance(self.dynamic_handler_pool, Provide):
             raise MinosHandlerNotProvidedException("A handler pool instance is required.")
 
     @classmethod
@@ -136,7 +140,7 @@ class SagaManager(MinosSagaManager):
     ) -> NoReturn:
 
         # noinspection PyUnresolvedReferences
-        async with self.reply_pool.acquire() as handler:
+        async with self.dynamic_handler_pool.acquire() as handler:
             while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                 try:
                     await execution.execute(reply=reply, **(kwargs | {"reply_topic": handler.topic}))
