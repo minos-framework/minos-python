@@ -79,7 +79,6 @@ class EntrypointLauncher(MinosSetup):
         config: MinosConfig,
         injections: dict[str, Union[MinosSetup, Type[MinosSetup], str]],
         services: list[Union[Service, Type[Service], str]],
-        interval: float = 0.1,
         log_level: Union[int, str] = logging.INFO,
         log_format: Union[str, LogFormat] = "color",
         log_date_format: Union[str, DateFormat] = DateFormat["color"],
@@ -96,7 +95,6 @@ class EntrypointLauncher(MinosSetup):
             log_date_format = log_date_format.value
 
         self.config = config
-        self.interval = interval
 
         self._log_level = log_level
         self._log_format = log_format
@@ -135,7 +133,7 @@ class EntrypointLauncher(MinosSetup):
         finally:
             self.graceful_shutdown()
 
-    def graceful_shutdown(self, err: Exception = None) -> NoReturn:
+    def graceful_shutdown(self, err: Exception = None) -> None:
         """Shutdown the services execution gracefully.
 
         :return: This method does not return anything.
@@ -175,18 +173,17 @@ class EntrypointLauncher(MinosSetup):
 
         :return: A list of ``Service`` instances.
         """
-        kwargs = {"config": self.config, "interval": self.interval}
 
         def _fn(raw: Union[Service, Type[Service], str]) -> Service:
             if isinstance(raw, str):
                 raw = import_module(raw)
             if isinstance(raw, type):
-                return raw(**kwargs)
+                return raw(config=self.config)
             return raw
 
         return [_fn(raw) for raw in self._raw_services]
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         """Wire the dependencies and setup it.
 
         :return: This method does not return anything.
@@ -232,7 +229,7 @@ class EntrypointLauncher(MinosSetup):
 
         return modules
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         """Unwire the injected dependencies and destroys it.
 
         :return: This method does not return anything.
