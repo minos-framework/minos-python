@@ -117,6 +117,8 @@ class Handler(HandlerSetup):
                     return
 
     async def _get_count(self, cursor) -> int:
+        if not len(self.topics):
+            return 0
         await cursor.execute(self._queries["count_not_processed"], (self._retry, tuple(self.topics)))
         count = (await cursor.fetchone())[0]
         return count
