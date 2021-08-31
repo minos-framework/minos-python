@@ -21,8 +21,8 @@ from minos.common import (
 class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, interval: int = 60, **kwargs):
+        super().__init__(interval=interval, **kwargs)
         self._init_kwargs = kwargs
 
     async def start(self) -> None:
