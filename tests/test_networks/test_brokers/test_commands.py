@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.test_networks.test_brokers.test_commands module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from unittest.mock import (
     AsyncMock,
@@ -38,6 +33,10 @@ class TestCommandBroker(PostgresAsyncTestCase):
     def test_action(self):
         self.assertEqual("command", CommandBroker.ACTION)
 
+    def test_default_reply_topic(self):
+        broker = CommandBroker.from_config(config=self.config)
+        self.assertEqual("Order", broker.default_reply_topic)
+
     async def test_send(self):
         mock = AsyncMock(return_value=56)
         saga = uuid4()
@@ -52,6 +51,21 @@ class TestCommandBroker(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(Command("fake", FakeModel("foo"), saga, "ekaf"), Command.from_avro_bytes(args[1]))
+
+    async def test_send_with_default_reply_topic(self):
+        mock = AsyncMock(return_value=56)
+        saga = uuid4()
+
+        async with CommandBroker.from_config(config=self.config) as broker:
+            broker.enqueue = mock
+            identifier = await broker.send(FakeModel("foo"), "fake", saga)
+
+        self.assertEqual(56, identifier)
+        self.assertEqual(1, mock.call_count)
+
+        args = mock.call_args.args
+        self.assertEqual("fake", args[0])
+        self.assertEqual(Command("fake", FakeModel("foo"), saga, "Order"), Command.from_avro_bytes(args[1]))
 
 
 if __name__ == "__main__":

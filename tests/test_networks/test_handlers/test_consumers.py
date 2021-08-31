@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.test_networks.tests_handlers.test_consumers module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from unittest.mock import (
     MagicMock,
@@ -36,7 +31,7 @@ class TestConsumer(PostgresAsyncTestCase):
 
         self.client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
         self.consumer = Consumer(
-            topics={f"{item.name}Reply" for item in self.config.saga.items},
+            topics={f"{self.config.service.name}Reply"},
             broker=self.config.broker,
             client=self.client,
             **self.config.broker.queue._asdict(),
@@ -45,11 +40,8 @@ class TestConsumer(PostgresAsyncTestCase):
     def test_from_config(self):
         expected_topics = {
             "AddOrder",
-            "AddOrderReply",
             "DeleteOrder",
-            "DeleteOrderReply",
             "GetOrder",
-            "OrderQueryReply",
             "OrderReply",
             "TicketAdded",
             "TicketDeleted",
@@ -71,13 +63,13 @@ class TestConsumer(PostgresAsyncTestCase):
         self.assertEqual(set(), consumer.topics)
 
     def test_topics(self):
-        self.assertEqual({"AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
+        self.assertEqual({"OrderReply"}, self.consumer.topics)
 
     async def test_add_topic(self):
         mock = MagicMock()
         self.consumer.client.subscribe = mock
         await self.consumer.add_topic("foo")
-        self.assertEqual({"foo", "AddOrderReply", "DeleteOrderReply"}, self.consumer.topics)
+        self.assertEqual({"foo", "OrderReply"}, self.consumer.topics)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(topics=list(self.consumer.topics)), mock.call_args)
 
@@ -85,9 +77,12 @@ class TestConsumer(PostgresAsyncTestCase):
         mock = MagicMock()
         self.consumer.client.subscribe = mock
 
-        await self.consumer.remove_topic("AddOrderReply")
+        await self.consumer.add_topic("AddOrder")
+        mock.reset_mock()
 
-        self.assertEqual({"DeleteOrderReply"}, self.consumer.topics)
+        await self.consumer.remove_topic("AddOrder")
+
+        self.assertEqual({"OrderReply"}, self.consumer.topics)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(topics=list(self.consumer.topics)), mock.call_args)
 
@@ -95,8 +90,7 @@ class TestConsumer(PostgresAsyncTestCase):
         mock = MagicMock()
         self.consumer.client.unsubscribe = mock
 
-        await self.consumer.remove_topic("AddOrderReply")
-        await self.consumer.remove_topic("DeleteOrderReply")
+        await self.consumer.remove_topic("OrderReply")
         self.assertEqual(set(), self.consumer.topics)
 
         self.assertEqual(1, mock.call_count)

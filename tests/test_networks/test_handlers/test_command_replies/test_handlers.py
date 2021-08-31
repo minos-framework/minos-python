@@ -34,7 +34,7 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         saga_manager = FakeSagaManager()
         handler = CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager)
         self.assertIsInstance(handler, CommandReplyHandler)
-        handlers = {"AddOrderReply": None, "DeleteOrderReply": None, "OrderQueryReply": None}
+        handlers = {"OrderReply": None}
         self.assertEqual(handlers, handler.handlers)
         self.assertEqual(self.config.broker.queue.records, handler._records)
         self.assertEqual(self.config.broker.queue.retry, handler._retry)

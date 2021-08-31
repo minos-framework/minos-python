@@ -80,8 +80,7 @@ class Consumer(HandlerSetup):
         topics |= {decorator.topic for decorator in decorators.keys()}
 
         # replies
-        topics |= {f"{item.name}Reply" for item in config.saga.items}
-        topics |= {f"{config.service.name}QueryReply", f"{config.service.name}Reply"}
+        topics |= {f"{config.service.name}Reply"}
 
         return cls(
             topics=topics, broker=config.broker, group_id=config.service.name, **config.broker.queue._asdict(), **kwargs
