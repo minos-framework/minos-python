@@ -9,6 +9,7 @@ from shutil import (
 )
 from unittest.mock import (
     AsyncMock,
+    call,
     patch,
 )
 from uuid import (
@@ -70,6 +71,9 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
             self.assertIsInstance(saga_manager, SagaManager)
 
     async def test_run_with_pause_on_memory(self):
+        send_mock = AsyncMock()
+        self.broker.send = send_mock
+
         Message = namedtuple("Message", ["data"])
         expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
         with patch("uuid.uuid4", return_value=expected_uuid):
@@ -85,6 +89,15 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(MinosSagaExecutionNotFoundException):
                 self.manager.storage.load(execution.uuid)
 
+        self.assertEqual(2, send_mock.call_count)
+        self.assertEqual(
+            [
+                call(topic="CreateProduct", data=Foo("hello"), saga=expected_uuid, reply_topic="AddOrder"),
+                call(topic="CreateTicket", data=Foo("hello"), saga=expected_uuid, reply_topic="AddOrder"),
+            ],
+            send_mock.call_args_list,
+        )
+
     async def test_run_with_pause_on_memory_with_error(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
@@ -98,6 +111,9 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
             await self.manager.run(ADD_ORDER, broker=self.broker)
 
     async def test_run_with_pause_on_disk(self):
+        send_mock = AsyncMock()
+        self.broker.send = send_mock
+
         execution = await self.manager.run(ADD_ORDER, broker=self.broker, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
@@ -109,6 +125,15 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         execution = await self.manager.run(reply=reply, broker=self.broker, pause_on_disk=True)
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             self.manager.storage.load(execution.uuid)
+
+        self.assertEqual(2, send_mock.call_count)
+        self.assertEqual(
+            [
+                call(topic="CreateProduct", data=Foo("hello"), saga=execution.uuid, reply_topic=None),
+                call(topic="CreateTicket", data=Foo("hello"), saga=execution.uuid, reply_topic=None),
+            ],
+            send_mock.call_args_list,
+        )
 
     async def test_run_with_pause_on_disk_returning_uuid(self):
         uuid = await self.manager.run(ADD_ORDER, broker=self.broker, return_execution=False, pause_on_disk=True)
