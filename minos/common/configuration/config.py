@@ -4,8 +4,10 @@ from __future__ import (
 )
 
 import abc
-import collections
 import os
+from collections import (
+    namedtuple,
+)
 from pathlib import (
     Path,
 )
@@ -21,19 +23,19 @@ from ..exceptions import (
     MinosConfigException,
 )
 
-BROKER = collections.namedtuple("Broker", "host port queue")
-QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
-SERVICE = collections.namedtuple("Service", "name injections services")
-STORAGE = collections.namedtuple("Storage", "path")
+BROKER = namedtuple("Broker", "host port queue")
+QUEUE = namedtuple("Queue", "database user password host port records retry")
+SERVICE = namedtuple("Service", "name aggregate injections services")
+STORAGE = namedtuple("Storage", "path")
 
-EVENTS = collections.namedtuple("Events", "service")
-COMMANDS = collections.namedtuple("Commands", "service")
-QUERIES = collections.namedtuple("Queries", "service")
-SAGA = collections.namedtuple("Saga", "storage")
-REST = collections.namedtuple("Rest", "host port")
-REPOSITORY = collections.namedtuple("Repository", "database user password host port")
-SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
-DISCOVERY = collections.namedtuple("Discovery", "host port")
+EVENTS = namedtuple("Events", "service")
+COMMANDS = namedtuple("Commands", "service")
+QUERIES = namedtuple("Queries", "service")
+SAGA = namedtuple("Saga", "storage")
+REST = namedtuple("Rest", "host port")
+REPOSITORY = namedtuple("Repository", "database user password host port")
+SNAPSHOT = namedtuple("Snapshot", "database user password host port")
+DISCOVERY = namedtuple("Discovery", "host port")
 
 _ENVIRONMENT_MAPPER = {
     "service.name": "MINOS_SERVICE_NAME",
@@ -159,7 +161,10 @@ class MinosConfig(MinosConfigAbstract):
 
             return _fn(following, part)
 
-        return _fn(key, self._data)
+        try:
+            return _fn(key, self._data)
+        except Exception:
+            raise MinosConfigException(f"{key!r} field is not defined on the configuration!")
 
     @property
     def service(self) -> SERVICE:
@@ -168,21 +173,24 @@ class MinosConfig(MinosConfigAbstract):
         :return: A ``SERVICE`` NamedTuple instance.
         """
         return SERVICE(
-            name=self._get("service.name"), injections=self._service_injections, services=self._service_services
+            name=self._get("service.name"),
+            aggregate=self._get("service.aggregate"),
+            injections=self._service_injections,
+            services=self._service_services,
         )
 
     @property
     def _service_injections(self) -> dict[str, str]:
         try:
             return self._get("service.injections")
-        except KeyError:
+        except MinosConfigException:
             return dict()
 
     @property
     def _service_services(self) -> list[str]:
         try:
             return self._get("service.services")
-        except KeyError:
+        except MinosConfigException:
             return list()
 
     @property
