@@ -139,7 +139,7 @@ class SagaManager(MinosSagaManager):
         async with self.reply_pool.acquire() as handler:
             while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                 try:
-                    await execution.execute(reply=reply, reply_topic=handler.topic, **kwargs)
+                    await execution.execute(reply=reply, **(kwargs | {"reply_topic": handler.topic}))
                 except MinosSagaPausedExecutionStepException:
                     reply = await self._get_reply(handler, execution, **kwargs)
                 self.storage.store(execution)
