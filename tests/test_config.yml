@@ -35,13 +35,7 @@ queries:
 saga:
     storage:
         path: "./order.lmdb"
-    items:
-        -   name: AddOrder
-            controller: tests.services.sagas.SagaService
-            action: add_order
-        -   name: DeleteOrder
-            controller: tests.services.sagas.SagaService
-            action: delete_order
+    items: [] # FIXME: remove parameter.
 discovery:
     host: discovery-service
     port: 8080
