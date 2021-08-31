@@ -58,7 +58,6 @@ class DynamicReplyHandler(HandlerSetup):
         super().__init__(**kwargs)
 
         self.topic = topic
-        self._real_topic = topic if topic.endswith("Reply") else f"{topic}Reply"
         self._connection = None
 
     @classmethod
@@ -109,7 +108,7 @@ class DynamicReplyHandler(HandlerSetup):
             entries = await wait_for(self._get_many(count, **kwargs), timeout=timeout)
         except TimeoutError:
             raise MinosHandlerNotFoundEnoughEntriesException(
-                f"Timeout exceeded while trying to fetch {count!r} entries from {self._real_topic!r}."
+                f"Timeout exceeded while trying to fetch {count!r} entries from {self.topic!r}."
             )
 
         logger.info(f"Dispatching '{entries if count > 1 else entries[0]!s}'...")
@@ -136,14 +135,14 @@ class DynamicReplyHandler(HandlerSetup):
                     return
 
     async def _get_count(self, cursor) -> int:
-        await cursor.execute(self._queries["count_not_processed"], (self._real_topic,))
+        await cursor.execute(self._queries["count_not_processed"], (self.topic,))
         count = (await cursor.fetchone())[0]
         return count
 
     async def _get_entries(self, cursor: Cursor, count: int) -> list[HandlerEntry]:
         entries = list()
         async with cursor.begin():
-            await cursor.execute(self._queries["select_not_processed"], (self._real_topic, count))
+            await cursor.execute(self._queries["select_not_processed"], (self.topic, count))
             for entry in self._build_entries(await cursor.fetchall()):
                 await cursor.execute(self._queries["delete_processed"], (entry.id,))
                 entries.append(entry)
@@ -153,8 +152,8 @@ class DynamicReplyHandler(HandlerSetup):
     def _queries(self) -> dict[str, str]:
         # noinspection PyTypeChecker
         return {
-            "listen": _LISTEN_QUERY.format(Identifier(self._real_topic)),
-            "unlisten": _UNLISTEN_QUERY.format(Identifier(self._real_topic)),
+            "listen": _LISTEN_QUERY.format(Identifier(self.topic)),
+            "unlisten": _UNLISTEN_QUERY.format(Identifier(self.topic)),
             "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
             "select_not_processed": _SELECT_NOT_PROCESSED_ROWS_QUERY,
             "delete_processed": _DELETE_PROCESSED_QUERY,

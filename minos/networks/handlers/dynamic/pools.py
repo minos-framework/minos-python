@@ -76,17 +76,15 @@ class ReplyHandlerPool(MinosPool):
         await self._delete_reply_topic(instance.topic)
 
     async def _create_reply_topic(self, topic: str) -> None:
-        name = f"{topic}Reply"
-        logger.info(f"Creating {name!r} topic...")
-        self.client.create_topics([NewTopic(name=name, num_partitions=1, replication_factor=1)])
+        logger.info(f"Creating {topic!r} topic...")
+        self.client.create_topics([NewTopic(name=topic, num_partitions=1, replication_factor=1)])
 
     async def _delete_reply_topic(self, topic: str) -> None:
-        name = f"{topic}Reply"
-        logger.info(f"Deleting {name!r} topic...")
-        self.client.delete_topics([name])
+        logger.info(f"Deleting {topic!r} topic...")
+        self.client.delete_topics([topic])
 
     async def _subscribe_reply_topic(self, topic: str) -> None:
-        await self.consumer.add_topic(f"{topic}Reply")
+        await self.consumer.add_topic(topic)
 
     async def _unsubscribe_reply_topic(self, topic: str) -> None:
-        await self.consumer.remove_topic(f"{topic}Reply")
+        await self.consumer.remove_topic(topic)

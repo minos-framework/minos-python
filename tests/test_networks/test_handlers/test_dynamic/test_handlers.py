@@ -32,7 +32,7 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.topic = "foo"
+        self.topic = "fooReply"
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -50,8 +50,8 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
     async def test_get_one(self):
         expected = HandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)
         async with self.handler:
-            await self._insert_one(Message("foo", 0, FakeModel("test1").avro_bytes))
-            await self._insert_one(Message("foo", 0, FakeModel("test2").avro_bytes))
+            await self._insert_one(Message("fooReply", 0, FakeModel("test1").avro_bytes))
+            await self._insert_one(Message("fooReply", 0, FakeModel("test2").avro_bytes))
 
             observed = await self.handler.get_one()
 
@@ -66,11 +66,11 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
         ]
 
         async def _fn():
-            await self._insert_one(Message("foo", 0, FakeModel("test1").avro_bytes))
-            await self._insert_one(Message("foo", 0, FakeModel("test2").avro_bytes))
+            await self._insert_one(Message("fooReply", 0, FakeModel("test1").avro_bytes))
+            await self._insert_one(Message("fooReply", 0, FakeModel("test2").avro_bytes))
             await sleep(0.5)
-            await self._insert_one(Message("foo", 0, FakeModel("test3").avro_bytes))
-            await self._insert_one(Message("foo", 0, FakeModel("test4").avro_bytes))
+            await self._insert_one(Message("fooReply", 0, FakeModel("test3").avro_bytes))
+            await self._insert_one(Message("fooReply", 0, FakeModel("test4").avro_bytes))
 
         async with self.handler:
             observed, _ = await gather(self.handler.get_many(count=4, max_wait=0.1), _fn())
@@ -91,7 +91,7 @@ class TestDynamicReplyHandler(PostgresAsyncTestCase):
                     "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
                     "VALUES (%s, %s, %s, NOW()) "
                     "RETURNING id;",
-                    (f"{instance.topic}Reply", 0, instance.value),
+                    (instance.topic, 0, instance.value),
                 )
                 return (await cur.fetchone())[0]
 

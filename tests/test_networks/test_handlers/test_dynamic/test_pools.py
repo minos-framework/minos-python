@@ -46,8 +46,7 @@ class TestReplyHandlerPool(PostgresAsyncTestCase):
         async with self.consumer, self.pool:
             async with self.pool.acquire() as handler:
                 self.assertIsInstance(handler, DynamicReplyHandler)
-                topic = f"{handler.topic}Reply"
-                self.assertIn(topic, self.pool.client.list_topics())
+                self.assertIn(handler.topic, self.pool.client.list_topics())
 
 
 if __name__ == "__main__":
