@@ -7,6 +7,7 @@ from __future__ import (
 from typing import (
     Any,
     NoReturn,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -47,7 +48,7 @@ class PublishExecutor(LocalExecutor):
     broker: MinosBroker = Provide["command_broker"]
 
     def __init__(
-        self, *args, execution_uuid: UUID, reply_topic: str, broker: MinosBroker = None, **kwargs,
+        self, *args, execution_uuid: UUID, reply_topic: Optional[str], broker: MinosBroker = None, **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
