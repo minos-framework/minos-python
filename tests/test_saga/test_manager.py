@@ -37,6 +37,10 @@ from minos.saga import (
     SagaManager,
     SagaStatus,
 )
+from tests.sagas import (
+    ADD_ORDER,
+    DELETE_ORDER,
+)
 from tests.utils import (
     BASE_PATH,
     FakeHandler,
@@ -82,7 +86,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
                 ]
             )
 
-            execution = await self.manager.run("AddOrder", broker=self.broker)
+            execution = await self.manager.run(ADD_ORDER, broker=self.broker)
             self.assertEqual(SagaStatus.Finished, execution.status)
             with self.assertRaises(MinosSagaExecutionNotFoundException):
                 self.manager.storage.load(execution.uuid)
@@ -90,17 +94,17 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     async def test_run_with_pause_on_memory_with_error(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
-        execution = await self.manager.run("AddOrder", broker=self.broker, raise_on_error=False)
+        execution = await self.manager.run(ADD_ORDER, broker=self.broker, raise_on_error=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
 
     async def test_run_with_pause_on_memory_with_error_raises(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
         with self.assertRaises(MinosSagaFailedExecutionException):
-            await self.manager.run("AddOrder", broker=self.broker)
+            await self.manager.run(ADD_ORDER, broker=self.broker)
 
     async def test_run_with_pause_on_disk(self):
-        execution = await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=True)
+        execution = await self.manager.run(ADD_ORDER, broker=self.broker, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = CommandReply("AddOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
@@ -113,7 +117,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
             self.manager.storage.load(execution.uuid)
 
     async def test_run_with_pause_on_disk_returning_uuid(self):
-        uuid = await self.manager.run("AddOrder", broker=self.broker, return_execution=False, pause_on_disk=True)
+        uuid = await self.manager.run(ADD_ORDER, broker=self.broker, return_execution=False, pause_on_disk=True)
         execution = self.manager.storage.load(uuid)
         self.assertIsInstance(execution, SagaExecution)
         self.assertEqual(SagaStatus.Paused, execution.status)
@@ -121,11 +125,11 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     async def test_run_with_pause_on_disk_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")
 
-        execution = await self.manager.run("AddOrder", broker=self.broker, context=context, pause_on_disk=True)
+        execution = await self.manager.run(ADD_ORDER, broker=self.broker, context=context, pause_on_disk=True)
         self.assertEqual(context, execution.context)
 
     async def test_run_with_pause_on_disk_with_error(self):
-        execution = await self.manager.run("DeleteOrder", broker=self.broker, pause_on_disk=True)
+        execution = await self.manager.run(DELETE_ORDER, broker=self.broker, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = CommandReply("DeleteOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)

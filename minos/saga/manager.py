@@ -69,16 +69,10 @@ class SagaManager(MinosSagaManager):
     reply_pool: MinosPool[MinosHandler] = Provide["reply_pool"]
 
     def __init__(
-        self,
-        storage: SagaExecutionStorage,
-        definitions: dict[str, Saga],
-        reply_pool: Optional[MinosPool[MinosHandler]] = None,
-        *args,
-        **kwargs,
+        self, storage: SagaExecutionStorage, reply_pool: Optional[MinosPool[MinosHandler]] = None, *args, **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
-        self.definitions = definitions
 
         if reply_pool is not None:
             self.reply_pool = reply_pool
@@ -93,21 +87,14 @@ class SagaManager(MinosSagaManager):
         :param args: Additional positional arguments.
         :param config: Config instance.
         :param kwargs: Additional named arguments.
-        :return: A new ``classmethod`` instance.
+        :return: A new ``SagaManager`` instance.
         """
         storage = SagaExecutionStorage.from_config(config=config, **kwargs)
-        definitions = _build_definitions(config.saga.items)
-        return cls(*args, storage=storage, definitions=definitions, **kwargs)
+        return cls(*args, storage=storage, **kwargs)
 
     async def _run_new(
-        self,
-        name: Optional[str] = None,
-        context: Optional[SagaContext] = None,
-        definition: Optional[Saga] = None,
-        **kwargs,
+        self, definition: Saga, context: Optional[SagaContext] = None, **kwargs,
     ) -> Union[UUID, SagaExecution]:
-        if definition is None:
-            definition = self.definitions.get(name)
         execution = SagaExecution.from_saga(definition, context=context)
         return await self._run(execution, **kwargs)
 

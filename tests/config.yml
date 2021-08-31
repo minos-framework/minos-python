@@ -3,10 +3,4 @@ service:
 saga:
     storage:
         path: "./order.lmdb"
-    items:
-        - name: AddOrder
-          controller: tests.order.SagaService
-          action: ADD_ORDER
-        - name: DeleteOrder
-          controller: tests.order.SagaService
-          action: DELETE_ORDER
+    items: [] # FIXME: remove parameter.
