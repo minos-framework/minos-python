@@ -16,7 +16,7 @@ from tests.utils import (
 
 class SagaService(object):
     ADD_ORDER = (
-        Saga("AddOrder")
+        Saga()
         .step()
         .invoke_participant("CreateProduct", foo_fn)
         .with_compensation("DeleteProduct", foo_fn)
@@ -29,7 +29,7 @@ class SagaService(object):
     )
 
     DELETE_ORDER = (
-        Saga("DeleteOrder")
+        Saga()
         .step()
         .invoke_participant("DeleteProduct", foo_fn)
         .on_reply("order1")

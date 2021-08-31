@@ -1,10 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""minos.saga.definitions.saga module."""
 
 from __future__ import (
     annotations,
@@ -36,19 +30,17 @@ from .types import (
 )
 
 
-class Saga(object):
+class Saga:
     """Saga class.
 
     The purpose of this class is to define a sequence of operations among microservices.
     """
 
-    def __init__(
-        self, name: str, steps: list[SagaStep] = None, commit_operation: Optional[SagaOperation] = None,
-    ):
+    # noinspection PyUnusedLocal
+    def __init__(self, *args, steps: list[SagaStep] = None, commit_operation: Optional[SagaOperation] = None, **kwargs):
         if steps is None:
             steps = list()
 
-        self.name = name
         self.steps = steps
         self.commit_operation = commit_operation
 
@@ -102,7 +94,6 @@ class Saga(object):
         :return: A ``dict`` instance.
         """
         ans = {
-            "name": self.name,
             "steps": [step.raw for step in self.steps],
             "commit": None if self.commit_operation is None else self.commit_operation.raw,
         }
@@ -113,7 +104,6 @@ class Saga(object):
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.name,
             self.steps,
             self.commit_operation,
         )
