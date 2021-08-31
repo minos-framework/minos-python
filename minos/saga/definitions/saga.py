@@ -10,7 +10,6 @@ from __future__ import (
     annotations,
 )
 
-import warnings
 from typing import (
     Any,
     Iterable,
@@ -43,12 +42,8 @@ class Saga:
     The purpose of this class is to define a sequence of operations among microservices.
     """
 
-    def __init__(
-        self, name: str = None, steps: list[SagaStep] = None, commit_operation: Optional[SagaOperation] = None,
-    ):
-        if name is not None:
-            warnings.warn("'name' is deprecated and will be removed in future releases.", DeprecationWarning)
-
+    # noinspection PyUnusedLocal
+    def __init__(self, *args, steps: list[SagaStep] = None, commit_operation: Optional[SagaOperation] = None, **kwargs):
         if steps is None:
             steps = list()
 
