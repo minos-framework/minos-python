@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.cqrs.exceptions module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from minos.common import (
     MinosException,
 )
@@ -20,3 +15,7 @@ class MinosQueryServiceException(MinosCqrsException):
 
 class MinosIllegalHandlingException(MinosException):
     """Exception to be raised when a service is trying to be used to handle improper message types."""
+
+
+class MinosNotAnyMissingReferenceException(MinosQueryServiceException):
+    """Exception to be raised when an aggregate diff does not have any missing reference."""
