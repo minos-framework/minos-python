@@ -19,9 +19,7 @@ from typing import (
 )
 
 from aiopg import (
-    Connection,
     Cursor,
-    connect,
 )
 from cached_property import (
     cached_property,
@@ -58,7 +56,6 @@ class DynamicHandler(HandlerSetup):
         super().__init__(**kwargs)
 
         self.topic = topic
-        self._connection = None
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
@@ -67,25 +64,8 @@ class DynamicHandler(HandlerSetup):
 
     async def _setup(self) -> None:
         await super()._setup()
-        self._connection = await self._create_connection()
-
-    async def _create_connection(self) -> Connection:
-        connection = await connect(
-            host=self.host, port=self.port, user=self.user, password=self.password, database=self.database
-        )
-
-        async with connection.cursor() as cursor:
-            await cursor.execute(self._queries["listen"])
-
-        return connection
 
     async def _destroy(self) -> None:
-        if self._connection is not None:
-            async with self._connection.cursor() as cursor:
-                await cursor.execute(self._queries["unlisten"])
-
-            self._connection.close()
-
         await super()._destroy()
 
     async def get_one(self, *args, **kwargs) -> HandlerEntry:
@@ -117,10 +97,16 @@ class DynamicHandler(HandlerSetup):
 
     async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[HandlerEntry]:
         result = list()
-        async with self._connection.cursor() as cursor:
-            while len(result) < count:
-                await self._wait_for_entries(cursor, count - len(result), max_wait)
-                result += await self._get_entries(cursor, count - len(result))
+        async with self.cursor() as cursor:
+
+            await cursor.execute(self._queries["listen"])
+            try:
+                while len(result) < count:
+                    await self._wait_for_entries(cursor, count - len(result), max_wait)
+                    result += await self._get_entries(cursor, count - len(result))
+            finally:
+                await cursor.execute(self._queries["unlisten"])
+
         return result
 
     async def _wait_for_entries(self, cursor: Cursor, count: int, max_wait: Optional[float]) -> None:
