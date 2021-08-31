@@ -32,6 +32,7 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_service(self):
         service = self.config.service
         self.assertEqual("Order", service.name)
+        self.assertEqual("src.aggregates.Order", service.aggregate)
         self.assertEqual(dict(), service.injections)
         self.assertEqual(list(), service.services)
 

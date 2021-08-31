@@ -1,5 +1,6 @@
 service:
     name: Order
+    aggregate: src.aggregates.Order
 repository:
     database: order_db
     user: minos
