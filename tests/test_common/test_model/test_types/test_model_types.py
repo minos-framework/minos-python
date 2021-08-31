@@ -1,10 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""tests.test_common.test_model.test_types.test_model_types module."""
 
 import unittest
 from typing import (
@@ -52,6 +46,30 @@ class TestModelType(unittest.TestCase):
     def test_hash(self):
         model_type = ModelType.build("Foo", {"text": int}, namespace_="bar")
         self.assertIsInstance(hash(model_type), int)
+
+    def test_lt(self):
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        self.assertLess(one, two)
+
+    def test_le(self):
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        three = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        self.assertLessEqual(one, two)
+        self.assertLessEqual(two, three)
+
+    def test_gt(self):
+        one = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        self.assertGreater(one, two)
+
+    def test_ge(self):
+        one = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        three = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        self.assertGreaterEqual(one, two)
+        self.assertGreaterEqual(two, three)
 
     def test_equal(self):
         one = ModelType.build("Foo", {"text": int}, namespace_="bar")

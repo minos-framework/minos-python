@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.model.serializers.avro_data_decoder module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -240,7 +235,7 @@ class AvroDataDecoder:
         if hasattr(data, "model_type"):
             if isinstance(data, MutableSet) and isinstance(data, type_.model_cls) and not len(data):
                 return data
-            if ModelType.from_model(data) == type_:
+            if ModelType.from_model(data) >= type_:
                 return data
 
         raise MinosTypeAttributeException(self.name, type_, data)
