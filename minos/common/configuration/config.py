@@ -1,10 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""minos.common.configuration.config module."""
 from __future__ import (
     annotations,
 )
@@ -30,13 +24,12 @@ from ..exceptions import (
 BROKER = collections.namedtuple("Broker", "host port queue")
 QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
 SERVICE = collections.namedtuple("Service", "name injections services")
-CONTROLLER = collections.namedtuple("Controller", "name controller action")
 STORAGE = collections.namedtuple("Storage", "path")
 
 EVENTS = collections.namedtuple("Events", "service")
 COMMANDS = collections.namedtuple("Commands", "service")
 QUERIES = collections.namedtuple("Queries", "service")
-SAGA = collections.namedtuple("Saga", "items storage")
+SAGA = collections.namedtuple("Saga", "storage")
 REST = collections.namedtuple("Rest", "host port")
 REPOSITORY = collections.namedtuple("Repository", "database user password host port")
 SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
@@ -254,9 +247,8 @@ class MinosConfig(MinosConfigAbstract):
         :return: A ``SAGAS`` NamedTuple instance.
         """
 
-        sagas = self._saga_items
         storage = self._saga_storage
-        return SAGA(items=sagas, storage=storage)
+        return SAGA(storage=storage)
 
     @property
     def _saga_storage(self) -> STORAGE:
@@ -265,16 +257,6 @@ class MinosConfig(MinosConfigAbstract):
 
         queue = STORAGE(path=path)
         return queue
-
-    @property
-    def _saga_items(self) -> list[CONTROLLER]:
-        info = self._get("saga.items")
-        sagas = [self._sagas_items_entry(saga) for saga in info]
-        return sagas
-
-    @staticmethod
-    def _sagas_items_entry(saga: dict[str, Any]) -> CONTROLLER:
-        return CONTROLLER(name=saga["name"], controller=saga["controller"], action=saga["action"])
 
     @property
     def repository(self) -> REPOSITORY:

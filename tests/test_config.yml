@@ -35,13 +35,6 @@ queries:
 saga:
     storage:
         path: "./order.lmdb"
-    items:
-        - name: AddOrder
-          controller: tests.services.SagaTestService.SagaService
-          action: add_order
-        - name: DeleteOrder
-          controller: tests.services.SagaTestService.SagaService
-          action: delete_order
 discovery:
     host: localhost
     port: 8080
