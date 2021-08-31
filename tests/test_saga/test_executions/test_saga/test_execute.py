@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.test_saga.test_executions.test_saga.test_execute module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from unittest.mock import (
     MagicMock,
