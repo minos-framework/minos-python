@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.model.types.model_types module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -15,7 +10,6 @@ from typing import (
     Iterable,
     Optional,
     Type,
-    Union,
 )
 
 from ...exceptions import (
@@ -119,11 +113,43 @@ class ModelType(type):
 
         :return: An string object.
         """
-        if len(cls.namespace) == 0:
+        if not len(cls.namespace):
             return cls.name
         return f"{cls.namespace}.{cls.name}"
 
-    def __eq__(cls, other: Union[ModelType, Type[Model]]) -> bool:
+    def __le__(cls, other: Any) -> bool:
+        return type(cls).__eq__(cls, other) or type(cls).__lt__(cls, other)
+
+    def __lt__(cls, other: Any) -> bool:
+        from .comparators import (
+            TypeHintComparator,
+        )
+
+        return (
+            type(cls) == type(other)
+            and cls.name == other.name
+            and cls.namespace == other.namespace
+            and set(cls.type_hints.keys()) < set(other.type_hints.keys())
+            and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
+        )
+
+    def __ge__(cls, other: Any) -> bool:
+        return type(cls).__eq__(cls, other) or type(cls).__gt__(cls, other)
+
+    def __gt__(cls, other: Any) -> bool:
+        from .comparators import (
+            TypeHintComparator,
+        )
+
+        return (
+            type(cls) == type(other)
+            and cls.name == other.name
+            and cls.namespace == other.namespace
+            and set(cls.type_hints.keys()) > set(other.type_hints.keys())
+            and all(TypeHintComparator(v, cls.type_hints[k]).match() for k, v in other.type_hints.items())
+        )
+
+    def __eq__(cls, other: Any) -> bool:
         conditions = (
             cls._equal_with_model_type,
             cls._equal_with_model,

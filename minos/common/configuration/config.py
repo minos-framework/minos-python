@@ -1,17 +1,13 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""minos.common.configuration.config module."""
 from __future__ import (
     annotations,
 )
 
 import abc
-import collections
 import os
+from collections import (
+    namedtuple,
+)
 from pathlib import (
     Path,
 )
@@ -27,20 +23,19 @@ from ..exceptions import (
     MinosConfigException,
 )
 
-BROKER = collections.namedtuple("Broker", "host port queue")
-QUEUE = collections.namedtuple("Queue", "database user password host port records retry")
-SERVICE = collections.namedtuple("Service", "name injections services")
-CONTROLLER = collections.namedtuple("Controller", "name controller action")
-STORAGE = collections.namedtuple("Storage", "path")
+BROKER = namedtuple("Broker", "host port queue")
+QUEUE = namedtuple("Queue", "database user password host port records retry")
+SERVICE = namedtuple("Service", "name aggregate injections services")
+STORAGE = namedtuple("Storage", "path")
 
-EVENTS = collections.namedtuple("Events", "service")
-COMMANDS = collections.namedtuple("Commands", "service")
-QUERIES = collections.namedtuple("Queries", "service")
-SAGA = collections.namedtuple("Saga", "items storage")
-REST = collections.namedtuple("Rest", "host port")
-REPOSITORY = collections.namedtuple("Repository", "database user password host port")
-SNAPSHOT = collections.namedtuple("Snapshot", "database user password host port")
-DISCOVERY = collections.namedtuple("Discovery", "host port")
+EVENTS = namedtuple("Events", "service")
+COMMANDS = namedtuple("Commands", "service")
+QUERIES = namedtuple("Queries", "service")
+SAGA = namedtuple("Saga", "storage")
+REST = namedtuple("Rest", "host port")
+REPOSITORY = namedtuple("Repository", "database user password host port")
+SNAPSHOT = namedtuple("Snapshot", "database user password host port")
+DISCOVERY = namedtuple("Discovery", "host port")
 
 _ENVIRONMENT_MAPPER = {
     "service.name": "MINOS_SERVICE_NAME",
@@ -166,7 +161,10 @@ class MinosConfig(MinosConfigAbstract):
 
             return _fn(following, part)
 
-        return _fn(key, self._data)
+        try:
+            return _fn(key, self._data)
+        except Exception:
+            raise MinosConfigException(f"{key!r} field is not defined on the configuration!")
 
     @property
     def service(self) -> SERVICE:
@@ -175,21 +173,24 @@ class MinosConfig(MinosConfigAbstract):
         :return: A ``SERVICE`` NamedTuple instance.
         """
         return SERVICE(
-            name=self._get("service.name"), injections=self._service_injections, services=self._service_services
+            name=self._get("service.name"),
+            aggregate=self._get("service.aggregate"),
+            injections=self._service_injections,
+            services=self._service_services,
         )
 
     @property
     def _service_injections(self) -> dict[str, str]:
         try:
             return self._get("service.injections")
-        except KeyError:
+        except MinosConfigException:
             return dict()
 
     @property
     def _service_services(self) -> list[str]:
         try:
             return self._get("service.services")
-        except KeyError:
+        except MinosConfigException:
             return list()
 
     @property
@@ -254,9 +255,8 @@ class MinosConfig(MinosConfigAbstract):
         :return: A ``SAGAS`` NamedTuple instance.
         """
 
-        sagas = self._saga_items
         storage = self._saga_storage
-        return SAGA(items=sagas, storage=storage)
+        return SAGA(storage=storage)
 
     @property
     def _saga_storage(self) -> STORAGE:
@@ -265,16 +265,6 @@ class MinosConfig(MinosConfigAbstract):
 
         queue = STORAGE(path=path)
         return queue
-
-    @property
-    def _saga_items(self) -> list[CONTROLLER]:
-        info = self._get("saga.items")
-        sagas = [self._sagas_items_entry(saga) for saga in info]
-        return sagas
-
-    @staticmethod
-    def _sagas_items_entry(saga: dict[str, Any]) -> CONTROLLER:
-        return CONTROLLER(name=saga["name"], controller=saga["controller"], action=saga["action"])
 
     @property
     def repository(self) -> REPOSITORY:

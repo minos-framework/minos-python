@@ -23,6 +23,7 @@ from uuid import (
 )
 
 from .comparators import (
+    TypeHintComparator,
     is_aggregate_type,
     is_model_type,
     is_type_subclass,
@@ -76,7 +77,7 @@ class TypeHintBuilder:
             if get_origin(type_) is Union:
                 dynamic = self._build(value, None)
                 options = tuple(
-                    (dynamic if not len(get_args(static)) and issubclass(dynamic, static) else static)
+                    (dynamic if not len(get_args(static)) and TypeHintComparator(dynamic, static).match() else static)
                     for static in get_args(type_)
                 )
                 return build_union(options)

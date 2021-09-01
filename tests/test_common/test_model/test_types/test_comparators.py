@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.test_common.test_model.test_types.test_comparators module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from typing import (
     Any,
@@ -113,6 +108,16 @@ class TestTypeHintComparator(unittest.TestCase):
 
         self.assertTrue(TypeHintComparator(list[Car.model_type], list[Aggregate]).match())
         self.assertTrue(TypeHintComparator(list[Aggregate], list[Car.model_type]).match())
+
+    def test_model_type_inequality_true(self):
+        one = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        self.assertTrue(TypeHintComparator(one, two).match())
+
+    def test_model_type_inequality_false(self):
+        one = ModelType.build("Foo", {"text": int, "number": int}, namespace_="bar")
+        two = ModelType.build("Foo", {"text": int}, namespace_="bar")
+        self.assertFalse(TypeHintComparator(one, two).match())
 
     def test_equal_optional(self):
         one = ModelType.build("Foo", {"text": int}, namespace_="bar")

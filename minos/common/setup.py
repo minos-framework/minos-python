@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.setup module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -15,7 +10,6 @@ from pathlib import (
     Path,
 )
 from typing import (
-    NoReturn,
     Optional,
     Type,
     TypeVar,
@@ -87,7 +81,7 @@ class MinosSetup:
         await self.setup()
         return self
 
-    async def setup(self) -> NoReturn:
+    async def setup(self) -> None:
         """Setup miscellaneous repository things.
 
         :return: This method does not return anything.
@@ -97,13 +91,13 @@ class MinosSetup:
             await self._setup()
             self._already_setup = True
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         return
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
         await self.destroy()
 
-    async def destroy(self) -> NoReturn:
+    async def destroy(self) -> None:
         """Destroy miscellaneous repository things.
 
         :return: This method does not return anything.
@@ -113,7 +107,7 @@ class MinosSetup:
             await self._destroy()
             self._already_setup = False
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         """Destroy miscellaneous repository things."""
 
     def __del__(self):

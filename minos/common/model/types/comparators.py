@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.model.types.comparators module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -103,8 +98,12 @@ class TypeHintComparator:
         if first == second:
             return True
 
-        if is_type_subclass(first) and is_type_subclass(second) and issubclass(first, second):
-            return True
+        if is_type_subclass(first) and is_type_subclass(second):
+            if isinstance(first, ModelType) and isinstance(second, ModelType):
+                if first <= second:
+                    return True
+            elif issubclass(first, second):
+                return True
 
         first_origin, second_origin = get_origin(first), get_origin(second)
         if first_origin is not None and self._compare(first_origin, second_origin):

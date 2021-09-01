@@ -59,6 +59,11 @@ class TestTypeHintBuilder(unittest.TestCase):
         observed = TypeHintBuilder([uuid4(), uuid4()], list[ModelRef[CartItem]]).build()
         self.assertEqual(expected, observed)
 
+    def test_union_any(self):
+        expected = list[int]
+        observed = TypeHintBuilder([123], list[Union[int, Any]]).build()
+        self.assertEqual(expected, observed)
+
 
 if __name__ == "__main__":
     unittest.main()
