@@ -64,7 +64,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
     def test_services(self):
         self.assertEqual([1, 2], self.launcher.services[:2])
         self.assertIsInstance(self.launcher.services[2], Foo)
-        self.assertEqual({"config": self.config, "interval": 0.1}, self.launcher.services[2].kwargs)
+        self.assertEqual({"config": self.config}, self.launcher.services[2].kwargs)
 
     async def test_entrypoint(self):
         mock_setup = AsyncMock()
