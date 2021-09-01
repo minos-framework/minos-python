@@ -64,3 +64,10 @@ History
 * Change default `SagaManager` flags to (`pause_on_disk=False, raise_on_error=True, return_execution=True`)
 * Enrich failed `CommandReply` instances with exception message.
 * Add `SagaRequest` and `SagaResponse`.
+
+0.0.11 (2021-09-01)
+------------------
+
+* Deprecate `SagaManager.run` by `Saga` names (the new approach is to directly pass the `Saga` instance).
+* Remove `name` from `Saga` class.
+* Minor improvements.
