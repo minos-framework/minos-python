@@ -15,11 +15,13 @@ from uuid import (
 )
 
 from minos.common import (
+    Action,
     AggregateDiff,
     DataTransferObject,
-    Field,
-    FieldsDiff,
+    FieldDiff,
+    FieldDiffContainer,
     ModelRef,
+    current_datetime,
 )
 from minos.cqrs import (
     MinosNotAnyMissingReferenceException,
@@ -42,8 +44,14 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.uuid = uuid4()
         self.bars = [Bar(uuid4(), 1, "hello"), Bar(uuid4(), 1, "world")]
+        self.now = current_datetime()
         self.diff = AggregateDiff(
-            self.uuid, "Foo", 1, FieldsDiff([Field("bars", list[ModelRef[Bar]], [b.uuid for b in self.bars])])
+            self.uuid,
+            "Foo",
+            1,
+            Action.CREATE,
+            self.now,
+            FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], [b.uuid for b in self.bars])]),
         )
         self.saga_manager = FakeSagaManager()
 
@@ -53,13 +61,20 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
                 Saga("")
                 .step()
                 .invoke_participant(
-                    "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars]))
+                    "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars])),
                 )
                 .commit(PreEventHandler.commit_callback, SagaContext(diff=self.diff))
             ),
             status=SagaStatus.Finished,
             context=SagaContext(
-                diff=AggregateDiff(self.uuid, "Foo", 1, FieldsDiff([Field("bars", list[ModelRef[Bar]], self.bars)]))
+                diff=AggregateDiff(
+                    self.uuid,
+                    "Foo",
+                    1,
+                    Action.CREATE,
+                    self.now,
+                    FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], self.bars)]),
+                )
             ),
         )
         mock = AsyncMock(return_value=execution)
@@ -67,7 +82,14 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.saga_manager.run = mock
         observed = await PreEventHandler.handle(self.diff, self.saga_manager)
 
-        expected = AggregateDiff(self.uuid, "Foo", 1, FieldsDiff([Field("bars", list[ModelRef[Bar]], self.bars)]))
+        expected = AggregateDiff(
+            self.uuid,
+            "Foo",
+            1,
+            Action.CREATE,
+            self.now,
+            FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], self.bars)]),
+        )
         self.assertEqual(expected, observed)
 
     async def test_handle_empty_missing(self):
@@ -111,7 +133,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     def test_build_saga_empty_missing(self):
-        diff = AggregateDiff(self.uuid, "Foo", 1, FieldsDiff.empty())
+        diff = AggregateDiff(self.uuid, "Foo", 1, Action.CREATE, self.now, FieldDiffContainer.empty())
         with self.assertRaises(MinosNotAnyMissingReferenceException):
             PreEventHandler.build_saga(diff)
 
@@ -126,7 +148,14 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         observed = PreEventHandler.commit_callback(SagaContext(bars=self.bars), self.diff)
 
         expected = SagaContext(
-            diff=AggregateDiff(self.uuid, "Foo", 1, FieldsDiff([Field("bars", list[ModelRef[Bar]], self.bars)]))
+            diff=AggregateDiff(
+                self.uuid,
+                "Foo",
+                1,
+                Action.CREATE,
+                self.now,
+                FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], self.bars)]),
+            )
         )
         self.assertEqual(expected, observed)
 

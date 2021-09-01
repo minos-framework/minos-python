@@ -10,8 +10,16 @@ from __future__ import (
 from pathlib import (
     Path,
 )
+from typing import (
+    Optional,
+)
 from uuid import (
     UUID,
+    uuid4,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (
@@ -61,6 +69,10 @@ class FakeRequest(Request):
     def __init__(self, content):
         super().__init__()
         self._content = content
+
+    @cached_property
+    def user(self) -> Optional[UUID]:
+        return uuid4()
 
     async def content(self, **kwargs):
         """For testing purposes"""
