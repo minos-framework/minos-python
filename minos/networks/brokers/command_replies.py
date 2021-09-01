@@ -50,6 +50,6 @@ class CommandReplyBroker(Broker):
         :return: This method does not return anything.
         """
 
-        command_reply = CommandReply(f"{topic}Reply", data, saga, status)
+        command_reply = CommandReply(topic, data, saga, status)
         logger.info(f"Sending '{command_reply!s}'...")
-        return await self.send_bytes(command_reply.topic, command_reply.avro_bytes)
+        return await self.enqueue(command_reply.topic, command_reply.avro_bytes)

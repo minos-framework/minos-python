@@ -60,7 +60,6 @@ logger = logging.getLogger(__name__)
 class CommandHandler(Handler):
     """Command Handler class."""
 
-    TABLE_NAME = "command_queue"
     ENTRY_MODEL_CLS = Command
 
     broker: MinosBroker = Provide["command_reply_broker"]

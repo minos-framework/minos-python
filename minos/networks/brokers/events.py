@@ -43,4 +43,4 @@ class EventBroker(Broker):
         """
         event = Event(topic, data)
         logger.info(f"Sending '{event!s}'...")
-        return await self.send_bytes(event.topic, event.avro_bytes)
+        return await self.enqueue(event.topic, event.avro_bytes)

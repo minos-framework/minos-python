@@ -1,27 +1,35 @@
-"""minos.networks.handlers.commands.services module."""
+"""minos.networks.handlers.services module."""
 
 import logging
+from typing import (
+    Any,
+    Optional,
+)
 
 from aiomisc import (
     Service,
 )
-from cached_property import (
-    cached_property,
+from dependency_injector.wiring import (
+    Provide,
 )
 
-from .handlers import (
-    CommandHandler,
+from .consumers import (
+    Consumer,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class CommandHandlerService(Service):
+class ConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
-    def __init__(self, **kwargs):
+    dispatcher: Consumer = Provide["consumer"]
+
+    def __init__(self, dispatcher: Optional[Consumer] = None, **kwargs):
         super().__init__(**kwargs)
-        self._init_kwargs = kwargs
+
+        if dispatcher is not None:
+            self.dispatcher = dispatcher
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.
@@ -35,20 +43,12 @@ class CommandHandlerService(Service):
         except RuntimeError:
             logger.warning("Runtime is not properly setup.")
 
-        await self.dispatcher.dispatch_forever()
+        await self.dispatcher.dispatch()
 
-    async def stop(self, err: Exception = None) -> None:
+    async def stop(self, exception: Exception = None) -> Any:
         """Stop the service execution.
 
-        :param err: Optional exception that stopped the execution.
+        :param exception: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
         await self.dispatcher.destroy()
-
-    @cached_property
-    def dispatcher(self) -> CommandHandler:
-        """Get the service dispatcher.
-
-        :return: A ``CommandHandler`` instance.
-        """
-        return CommandHandler.from_config(**self._init_kwargs)

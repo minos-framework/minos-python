@@ -42,17 +42,18 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
     async def test_send(self):
         mock = AsyncMock(return_value=56)
         saga = uuid4()
+        reply_topic = "fakeReply"
         async with CommandReplyBroker.from_config(config=self.config) as broker:
-            broker.send_bytes = mock
-            identifier = await broker.send(FakeModel("foo"), saga=saga, topic="fake", status=CommandStatus.SUCCESS)
+            broker.enqueue = mock
+            identifier = await broker.send(FakeModel("foo"), saga=saga, topic=reply_topic, status=CommandStatus.SUCCESS)
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
-        self.assertEqual("fakeReply", args[0])
+        self.assertEqual(reply_topic, args[0])
 
-        expected = CommandReply("fakeReply", FakeModel("foo"), saga, CommandStatus.SUCCESS)
+        expected = CommandReply(reply_topic, FakeModel("foo"), saga, CommandStatus.SUCCESS)
         observed = CommandReply.from_avro_bytes(args[1])
         self.assertEqual(expected, observed)
 

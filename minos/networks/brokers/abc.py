@@ -37,7 +37,7 @@ class Broker(MinosBroker, BrokerSetup, ABC):
 
     ACTION: str
 
-    async def send_bytes(self, topic: str, raw: bytes) -> int:
+    async def enqueue(self, topic: str, raw: bytes) -> int:
         """Send a sequence of bytes to the given topic.
 
         :param topic: Topic in which the bytes will be send.
@@ -46,6 +46,7 @@ class Broker(MinosBroker, BrokerSetup, ABC):
         """
         params = (topic, raw, 0, self.ACTION)
         raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
+        await self.submit_query(_NOTIFY_QUERY)
         return raw[0]
 
 
@@ -65,3 +66,5 @@ _INSERT_ENTRY_QUERY = SQL(
     "VALUES (%s, %s, %s, %s, NOW(), NOW()) "
     "RETURNING id"
 )
+
+_NOTIFY_QUERY = SQL("NOTIFY producer_queue")

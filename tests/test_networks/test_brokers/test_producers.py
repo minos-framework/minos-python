@@ -1,5 +1,15 @@
+"""tests.test_networks.test_broker.test_producers module."""
+
 import asyncio
 import unittest
+from asyncio import (
+    gather,
+    sleep,
+)
+from unittest.mock import (
+    AsyncMock,
+    call,
+)
 from uuid import (
     uuid4,
 )
@@ -8,7 +18,6 @@ import aiopg
 
 from minos.common import (
     CommandStatus,
-    MinosConfig,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -16,6 +25,7 @@ from minos.common.testing import (
 from minos.networks import (
     CommandBroker,
     CommandReplyBroker,
+    Consumer,
     EventBroker,
     Producer,
 )
@@ -29,13 +39,98 @@ from tests.utils import (
 class TestProducer(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
-    def test_from_config_default(self):
-        self.assertIsInstance(Producer.from_config(config=self.config), Producer)
+    def setUp(self) -> None:
+        super().setUp()
 
-    async def test_send_to_kafka_ok(self):
-        dispatcher = Producer.from_config(config=self.config)
-        response = await dispatcher.publish(topic="TestKafkaSend", message=bytes())
-        assert response is True
+        self.consumer = Consumer.from_config(config=self.config)
+        self.producer = Producer.from_config(config=self.config, consumer=self.consumer)
+
+    def test_from_config_default(self):
+        self.assertIsInstance(self.producer, Producer)
+
+    async def test_dispatch_one_internal_true(self):
+        mock = AsyncMock()
+        self.consumer.enqueue = mock
+
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "command"))
+            self.assertTrue(ok)
+
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call("GetOrder", -1, bytes()), mock.call_args)
+
+    async def test_dispatch_one_internal_false(self):
+        self.producer.consumer = None
+
+        publish_mock = AsyncMock()
+        self.producer.publish = publish_mock
+
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "command"))
+            self.assertTrue(ok)
+
+        self.assertEqual(1, publish_mock.call_count)
+        self.assertEqual(call("GetOrder", bytes()), publish_mock.call_args)
+
+    async def test_dispatch_one_external_true(self):
+        mock = AsyncMock()
+        self.producer.publish = mock
+
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "GetProduct", bytes(), 0, "command"))
+            self.assertTrue(ok)
+
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call("GetProduct", bytes()), mock.call_args)
+
+    async def test_dispatch_one_external_true_event(self):
+        mock = AsyncMock()
+        self.producer.publish = mock
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "TicketAdded", bytes(), 0, "event"))
+            self.assertTrue(ok)
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call("TicketAdded", bytes()), mock.call_args)
+
+    async def test_dispatch_one_external_false(self):
+        self.producer.publish = AsyncMock(return_value=False)
+        async with self.producer:
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "event"))
+            self.assertFalse(ok)
+
+    async def test_publish_true(self):
+        async with self.producer:
+            ok = await self.producer.publish(topic="TestKafkaSend", message=bytes())
+            self.assertTrue(ok)
+
+    async def test_publish_false(self):
+        async with self.producer:
+            self.producer.client.send_and_wait = AsyncMock(side_effect=ValueError)
+            ok = await self.producer.publish(topic="TestKafkaSend", message=bytes())
+            self.assertFalse(ok)
+
+    async def test_dispatch_forever(self):
+        mock = AsyncMock(side_effect=ValueError)
+        async with self.producer:
+            self.producer.dispatch = mock
+            try:
+                await gather(self.producer.dispatch_forever(), self._notify("producer_queue"))
+            except ValueError:
+                pass
+        self.assertEqual(1, mock.call_count)
+
+    async def test_dispatch_forever_without_notify(self):
+        mock_dispatch = AsyncMock(side_effect=[None, ValueError])
+        mock_count = AsyncMock(side_effect=[1, 0, 1])
+        async with self.producer:
+            self.producer.dispatch = mock_dispatch
+            self.producer._get_count = mock_count
+            try:
+                await self.producer.dispatch_forever(max_wait=0.01)
+            except ValueError:
+                pass
+        self.assertEqual(2, mock_dispatch.call_count)
+        self.assertEqual(3, mock_count.call_count)
 
     async def test_concurrency_dispatcher(self):
         model = FakeModel("foo")
@@ -62,8 +157,8 @@ class TestProducer(PostgresAsyncTestCase):
 
         assert records[0] == 60
 
-        async with Producer.from_config(config=self.config) as producer:
-            await asyncio.gather(*[producer.dispatch() for i in range(0, 6)])
+        async with self.producer:
+            await asyncio.gather(*(self.producer.dispatch() for _ in range(6)))
 
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -77,8 +172,8 @@ class TestProducer(PostgresAsyncTestCase):
             queue_id_1 = await broker.send(FAKE_AGGREGATE_DIFF, "TestDeleteReply")
             queue_id_2 = await broker.send(FAKE_AGGREGATE_DIFF, "TestDeleteReply")
 
-        async with Producer.from_config(config=self.config) as producer:
-            await producer.dispatch()
+        async with self.producer:
+            await self.producer.dispatch()
 
         async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:
@@ -94,16 +189,12 @@ class TestProducer(PostgresAsyncTestCase):
         saga = uuid4()
 
         async with CommandReplyBroker.from_config(config=self.config) as broker:
-            queue_id_1 = await broker.send(model, "TestDeleteOrder", saga, CommandStatus.SUCCESS)
-            queue_id_2 = await broker.send(model, "TestDeleteOrder", saga, CommandStatus.SUCCESS)
+            queue_id_1 = await broker.send(model, "TestDeleteOrderReply", saga, CommandStatus.SUCCESS)
+            queue_id_2 = await broker.send(model, "TestDeleteOrderReply", saga, CommandStatus.SUCCESS)
 
-        config = MinosConfig(
-            path=BASE_PATH / "wrong_test_config.yml",
-            broker_queue_database=self.config.broker.queue.database,
-            broker_queue_user=self.config.broker.queue.user,
-        )
-        async with Producer.from_config(config=config) as producer:
-            await producer.dispatch()
+        async with self.producer:
+            self.producer.publish = AsyncMock(return_value=False)
+            await self.producer.dispatch()
 
         async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:
@@ -121,6 +212,12 @@ class TestProducer(PostgresAsyncTestCase):
         assert records[0] == 2
         assert retry_1[0] > 0
         assert retry_2[0] > 0
+
+    async def _notify(self, name):
+        await sleep(0.2)
+        async with aiopg.connect(**self.broker_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(f"NOTIFY {name!s};")
 
 
 if __name__ == "__main__":

@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 class CommandReplyHandler(Handler):
     """Command Reply Handler class."""
 
-    TABLE_NAME = "command_reply_queue"
     ENTRY_MODEL_CLS = CommandReply
 
     saga_manager: MinosSagaManager = Provide["saga_manager"]
@@ -46,8 +45,7 @@ class CommandReplyHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
-        handlers = {f"{item.name}Reply": None for item in config.saga.items}
-        handlers[f"{config.service.name}QueryReply"] = None
+        handlers = {f"{config.service.name}Reply": None}
         return cls(*args, handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry[CommandReply]) -> NoReturn:

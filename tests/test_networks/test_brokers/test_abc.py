@@ -74,7 +74,7 @@ class TestBroker(PostgresAsyncTestCase):
         super().setUp()
         self.broker = _FakeBroker(**self.broker_queue_db)
 
-    async def test_send_bytes(self):
+    async def test_enqueue(self):
         query = SQL(
             "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) "
             "VALUES (%s, %s, %s, %s, NOW(), NOW()) "
@@ -86,7 +86,7 @@ class TestBroker(PostgresAsyncTestCase):
         async with self.broker:
             self.broker.submit_query_and_fetchone = mock
 
-            identifier = await self.broker.send_bytes("test_topic", b"test")
+            identifier = await self.broker.enqueue("test_topic", b"test")
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)

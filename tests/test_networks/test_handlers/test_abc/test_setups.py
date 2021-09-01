@@ -36,7 +36,7 @@ class TestHandlerSetup(PostgresAsyncTestCase):
                 await cur.execute(
                     "SELECT 1 "
                     "FROM information_schema.tables "
-                    "WHERE table_schema = 'public' AND table_name = 'fake';"
+                    "WHERE table_schema = 'public' AND table_name = 'consumer_queue';"
                 )
                 ret = []
                 async for row in cur:

@@ -1,19 +1,20 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.tests_networks.test_handlers.test_abc.test_handlers module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from asyncio import (
+    TimeoutError,
     gather,
+    sleep,
+    wait_for,
 )
 from collections import (
     namedtuple,
 )
 from typing import (
     NoReturn,
+)
+from unittest.mock import (
+    AsyncMock,
 )
 from uuid import (
     uuid4,
@@ -44,7 +45,6 @@ from tests.utils import (
 
 
 class _FakeHandler(Handler):
-    TABLE_NAME = "fake"
     ENTRY_MODEL_CLS = DataTransferObject
 
     def __init__(self, *args, **kwargs):
@@ -91,6 +91,40 @@ class TestHandler(PostgresAsyncTestCase):
             "topic NotExisting have no controller/action configured, please review th configuration file"
             in str(context.exception)
         )
+
+    async def test_dispatch_forever(self):
+        mock = AsyncMock(side_effect=ValueError)
+        async with self.handler:
+            self.handler.dispatch = mock
+            try:
+                await gather(self.handler.dispatch_forever(), self._notify("empty"))
+            except ValueError:
+                pass
+        self.assertEqual(1, mock.call_count)
+
+    async def test_dispatch_forever_without_notify(self):
+        mock_dispatch = AsyncMock(side_effect=[None, ValueError])
+        mock_count = AsyncMock(side_effect=[1, 0, 1])
+        async with self.handler:
+            self.handler.dispatch = mock_dispatch
+            self.handler._get_count = mock_count
+            try:
+                await self.handler.dispatch_forever(max_wait=0.01)
+            except ValueError:
+                pass
+        self.assertEqual(2, mock_dispatch.call_count)
+        self.assertEqual(3, mock_count.call_count)
+
+    async def test_dispatch_forever_without_topics(self):
+        handler = _FakeHandler(handlers=dict(), **self.config.broker.queue._asdict())
+        mock = AsyncMock()
+        async with handler:
+            handler.dispatch = mock
+            try:
+                await wait_for(handler.dispatch_forever(max_wait=0.1), 0.5)
+            except TimeoutError:
+                pass
+        self.assertEqual(0, mock.call_count)
 
     async def test_dispatch(self):
         from minos.common import (
@@ -148,11 +182,17 @@ class TestHandler(PostgresAsyncTestCase):
 
             self.assertEqual(25, await self._count())
 
+    async def _notify(self, name):
+        await sleep(0.2)
+        async with aiopg.connect(**self.broker_queue_db) as connect:
+            async with connect.cursor() as cur:
+                await cur.execute(f"NOTIFY {name!s};")
+
     async def _insert_one(self, instance):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO fake (topic, partition_id, binary_data, creation_date) "
+                    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
                     "VALUES (%s, %s, %s, NOW()) "
                     "RETURNING id;",
                     (instance.topic, 0, instance.avro_bytes),
@@ -162,13 +202,13 @@ class TestHandler(PostgresAsyncTestCase):
     async def _count(self):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM fake")
+                await cur.execute("SELECT COUNT(*) FROM consumer_queue")
                 return (await cur.fetchone())[0]
 
     async def _is_processed(self, queue_id):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
-                await cur.execute("SELECT COUNT(*) FROM fake WHERE id=%d" % (queue_id,))
+                await cur.execute("SELECT COUNT(*) FROM consumer_queue WHERE id=%d" % (queue_id,))
                 return (await cur.fetchone())[0] == 0
 
 

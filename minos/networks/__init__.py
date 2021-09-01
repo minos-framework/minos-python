@@ -1,6 +1,6 @@
 """minos.networks module."""
 
-__version__ = "0.0.13"
+__version__ = "0.0.14"
 
 from .brokers import (
     Broker,
@@ -39,19 +39,14 @@ from .exceptions import (
     MinosRedefinedEnrouteDecoratorException,
 )
 from .handlers import (
-    CommandConsumer,
-    CommandConsumerService,
     CommandHandler,
     CommandHandlerService,
-    CommandReplyConsumer,
-    CommandReplyConsumerService,
     CommandReplyHandler,
     CommandReplyHandlerService,
     Consumer,
+    ConsumerService,
     DynamicHandler,
-    DynamicReplyHandler,
-    EventConsumer,
-    EventConsumerService,
+    DynamicHandlerPool,
     EventHandler,
     EventHandlerService,
     Handler,
@@ -60,7 +55,6 @@ from .handlers import (
     HandlerResponse,
     HandlerResponseException,
     HandlerSetup,
-    ReplyHandlerPool,
 )
 from .messages import (
     Request,
@@ -79,6 +73,7 @@ from .snapshots import (
     SnapshotService,
 )
 from .utils import (
+    consume_queue,
     get_host_ip,
     get_host_name,
     get_ip,

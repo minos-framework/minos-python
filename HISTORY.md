@@ -76,3 +76,12 @@ History
 * Rename `RestBuilder` as `RestHandler`.
 * Refactor `HandlerEntry`
 
+0.0.14 (2021-09-01)
+------------------
+
+* Unify consumer queues into a single one `consumer_queue`.
+* Replace periodic checking (active waiting) by a `LISTEN/NOTIFY` approach (reactive) on consumer and producer queue.
+* Use single reply topic based on microservice name to handle `CommandReply` messages of sagas paused on disk.
+* Refactor `ReplyPool` and `DynamicReplyHandler` as `DynamicHandlerPool` and `DynamicHandler` and integrate them into the consumer queue.
+* Improve `Producer` performance keeping kafka connection open between publishing calls.
+* Implement direct message transferring between `Producer` and `Consumer` for messages send to the same microservice.

@@ -1,4 +1,3 @@
-default_stages: [ commit ]
 repos:
     -   repo: local
         hooks:

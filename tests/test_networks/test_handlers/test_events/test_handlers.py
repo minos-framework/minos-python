@@ -129,8 +129,8 @@ class TestEventHandler(PostgresAsyncTestCase):
         for i in range(1, 6):
             events.extend(
                 [
-                    Event("AddOrder", AggregateDiff(uuid1, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
-                    Event("AddOrder", AggregateDiff(uuid2, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
+                    Event("TicketAdded", AggregateDiff(uuid1, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
+                    Event("TicketAdded", AggregateDiff(uuid2, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
                 ]
             )
         shuffle(events)
@@ -148,7 +148,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO event_queue (topic, partition_id, binary_data, creation_date) "
+                    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
                     "VALUES (%s, %s, %s, NOW()) "
                     "RETURNING id;",
                     (instance.topic, 0, instance.avro_bytes),

@@ -57,7 +57,6 @@ version_getter = attrgetter("data.data.version")
 class EventHandler(Handler):
     """Event Handler class."""
 
-    TABLE_NAME = "event_queue"
     ENTRY_MODEL_CLS = Event
 
     @classmethod

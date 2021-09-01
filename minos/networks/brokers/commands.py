@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.networks.brokers.commands module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -12,6 +7,10 @@ from __future__ import (
 import logging
 from typing import (
     Any,
+    Optional,
+)
+from uuid import (
+    UUID,
 )
 
 from minos.common import (
@@ -31,12 +30,17 @@ class CommandBroker(Broker):
 
     ACTION = "command"
 
+    def __init__(self, *args, default_reply_topic: str, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.default_reply_topic = default_reply_topic
+
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandBroker:
-        return cls(*args, **config.broker.queue._asdict(), **kwargs)
+        default_reply_topic = f"{config.service.name}Reply"
+        return cls(*args, **config.broker.queue._asdict(), default_reply_topic=default_reply_topic, **kwargs)
 
     # noinspection PyMethodOverriding
-    async def send(self, data: Any, topic: str, saga: str, reply_topic: str, **kwargs) -> int:
+    async def send(self, data: Any, topic: str, saga: UUID, reply_topic: Optional[str] = None, **kwargs) -> int:
         """Send a ``Command``.
 
         :param data: The data to be send.
@@ -45,6 +49,8 @@ class CommandBroker(Broker):
         :param reply_topic: Topic name in which the reply will be published.
         :return: This method does not return anything.
         """
+        if reply_topic is None:
+            reply_topic = self.default_reply_topic
         command = Command(topic, data, saga, reply_topic)
         logger.info(f"Sending '{command!s}'...")
-        return await self.send_bytes(command.topic, command.avro_bytes)
+        return await self.enqueue(command.topic, command.avro_bytes)
