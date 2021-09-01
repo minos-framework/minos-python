@@ -6,7 +6,6 @@ from __future__ import (
 
 import logging
 from typing import (
-    NoReturn,
     Optional,
     Union,
 )
@@ -25,7 +24,6 @@ from minos.common import (
     MinosHandlerNotProvidedException,
     MinosPool,
     MinosSagaManager,
-    import_module,
 )
 
 from .context import (
@@ -47,15 +45,7 @@ from .executions import (
 logger = logging.getLogger(__name__)
 
 
-def _build_definitions(items) -> dict[str, Saga]:
-    def _fn(item) -> Saga:
-        controller = import_module(item.controller)
-        return getattr(controller, item.action)
-
-    return {item.name: _fn(item) for item in items}
-
-
-class SagaManager(MinosSagaManager):
+class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     """Saga Manager implementation class.
 
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
@@ -128,16 +118,15 @@ class SagaManager(MinosSagaManager):
 
         return execution.uuid
 
-    async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> NoReturn:
+    async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> None:
         try:
             await execution.execute(**kwargs)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
-            return execution.uuid
 
     async def _run_with_pause_on_memory(
         self, execution: SagaExecution, reply: Optional[CommandReply] = None, **kwargs
-    ) -> NoReturn:
+    ) -> None:
 
         # noinspection PyUnresolvedReferences
         async with self.dynamic_handler_pool.acquire() as handler:
