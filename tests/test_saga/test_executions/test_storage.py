@@ -1,10 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""tests.test_saga.test_executions.test_storage module."""
 
 import unittest
 from shutil import (
@@ -38,7 +32,7 @@ class TestMinosLocalState(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         self.broker = NaiveBroker()
         self.saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)

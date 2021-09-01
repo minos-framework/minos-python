@@ -1,10 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""tests.test_saga.test_manager module."""
 
 import unittest
 from collections import (
@@ -15,6 +9,7 @@ from shutil import (
 )
 from unittest.mock import (
     AsyncMock,
+    call,
     patch,
 )
 from uuid import (
@@ -37,6 +32,10 @@ from minos.saga import (
     SagaManager,
     SagaStatus,
 )
+from tests.sagas import (
+    ADD_ORDER,
+    DELETE_ORDER,
+)
 from tests.utils import (
     BASE_PATH,
     FakeHandler,
@@ -52,9 +51,9 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config = MinosConfig(BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
-        self.handler = FakeHandler("AddOrder")
+        self.handler = FakeHandler("TheReplyTopic")
         self.pool = FakePool(self.handler)
-        self.manager = SagaManager.from_config(reply_pool=self.pool, config=self.config)
+        self.manager = SagaManager.from_config(dynamic_handler_pool=self.pool, config=self.config)
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
@@ -72,35 +71,52 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
             self.assertIsInstance(saga_manager, SagaManager)
 
     async def test_run_with_pause_on_memory(self):
+        send_mock = AsyncMock()
+        self.broker.send = send_mock
+
+        reply_topic = "TheReplyTopic"
+
         Message = namedtuple("Message", ["data"])
         expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
         with patch("uuid.uuid4", return_value=expected_uuid):
             self.handler.get_one = AsyncMock(
                 side_effect=[
-                    Message(CommandReply("AddOrderReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
-                    Message(CommandReply("AddOrderReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
+                    Message(CommandReply(reply_topic, [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
+                    Message(CommandReply(reply_topic, [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
                 ]
             )
 
-            execution = await self.manager.run("AddOrder", broker=self.broker)
+            execution = await self.manager.run(ADD_ORDER, broker=self.broker)
             self.assertEqual(SagaStatus.Finished, execution.status)
             with self.assertRaises(MinosSagaExecutionNotFoundException):
                 self.manager.storage.load(execution.uuid)
 
+        self.assertEqual(2, send_mock.call_count)
+        self.assertEqual(
+            [
+                call(topic="CreateProduct", data=Foo("hello"), saga=expected_uuid, reply_topic=reply_topic),
+                call(topic="CreateTicket", data=Foo("hello"), saga=expected_uuid, reply_topic=reply_topic),
+            ],
+            send_mock.call_args_list,
+        )
+
     async def test_run_with_pause_on_memory_with_error(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
-        execution = await self.manager.run("AddOrder", broker=self.broker, raise_on_error=False)
+        execution = await self.manager.run(ADD_ORDER, broker=self.broker, raise_on_error=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
 
     async def test_run_with_pause_on_memory_with_error_raises(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
         with self.assertRaises(MinosSagaFailedExecutionException):
-            await self.manager.run("AddOrder", broker=self.broker)
+            await self.manager.run(ADD_ORDER, broker=self.broker)
 
     async def test_run_with_pause_on_disk(self):
-        execution = await self.manager.run("AddOrder", broker=self.broker, pause_on_disk=True)
+        send_mock = AsyncMock()
+        self.broker.send = send_mock
+
+        execution = await self.manager.run(ADD_ORDER, broker=self.broker, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = CommandReply("AddOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
@@ -112,8 +128,17 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosSagaExecutionNotFoundException):
             self.manager.storage.load(execution.uuid)
 
+        self.assertEqual(2, send_mock.call_count)
+        self.assertEqual(
+            [
+                call(topic="CreateProduct", data=Foo("hello"), saga=execution.uuid, reply_topic=None),
+                call(topic="CreateTicket", data=Foo("hello"), saga=execution.uuid, reply_topic=None),
+            ],
+            send_mock.call_args_list,
+        )
+
     async def test_run_with_pause_on_disk_returning_uuid(self):
-        uuid = await self.manager.run("AddOrder", broker=self.broker, return_execution=False, pause_on_disk=True)
+        uuid = await self.manager.run(ADD_ORDER, broker=self.broker, return_execution=False, pause_on_disk=True)
         execution = self.manager.storage.load(uuid)
         self.assertIsInstance(execution, SagaExecution)
         self.assertEqual(SagaStatus.Paused, execution.status)
@@ -121,11 +146,11 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     async def test_run_with_pause_on_disk_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")
 
-        execution = await self.manager.run("AddOrder", broker=self.broker, context=context, pause_on_disk=True)
+        execution = await self.manager.run(ADD_ORDER, broker=self.broker, context=context, pause_on_disk=True)
         self.assertEqual(context, execution.context)
 
     async def test_run_with_pause_on_disk_with_error(self):
-        execution = await self.manager.run("DeleteOrder", broker=self.broker, pause_on_disk=True)
+        execution = await self.manager.run(DELETE_ORDER, broker=self.broker, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = CommandReply("DeleteOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)

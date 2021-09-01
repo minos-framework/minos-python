@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""tests.test_saga.test_executions.test_saga.test_execute module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from unittest.mock import (
     MagicMock,
@@ -51,7 +46,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_execute(self):
         saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -91,7 +86,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_execute_failure(self):
         saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -128,7 +123,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_execute_commit(self):
         saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -166,7 +161,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_execute_commit_raises(self):
         saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -204,7 +199,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_rollback(self):
         saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)
@@ -228,7 +223,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_rollback_raises(self):
         saga = (
-            Saga("OrdersAdd")
+            Saga()
             .step()
             .invoke_participant("CreateOrder", create_order_callback)
             .with_compensation("DeleteOrder", delete_order_callback)

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_saga"
-version = "0.0.10"
+version = "0.0.11"
 description = "Saga Library for MinOS project."
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_saga"
@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.1.10"
+minos-microservice-common = "^0.1.12"
 dependency-injector = "^4.32.2"
 
 [tool.poetry.dev-dependencies]

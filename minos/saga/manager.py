@@ -1,17 +1,11 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.saga.manager module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
 
 import logging
 from typing import (
-    NoReturn,
     Optional,
     Union,
 )
@@ -30,7 +24,6 @@ from minos.common import (
     MinosHandlerNotProvidedException,
     MinosPool,
     MinosSagaManager,
-    import_module,
 )
 
 from .context import (
@@ -52,38 +45,28 @@ from .executions import (
 logger = logging.getLogger(__name__)
 
 
-def _build_definitions(items) -> dict[str, Saga]:
-    def _fn(item) -> Saga:
-        controller = import_module(item.controller)
-        return getattr(controller, item.action)
-
-    return {item.name: _fn(item) for item in items}
-
-
-class SagaManager(MinosSagaManager):
+class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     """Saga Manager implementation class.
 
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    reply_pool: MinosPool[MinosHandler] = Provide["reply_pool"]
+    dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"]
 
     def __init__(
         self,
         storage: SagaExecutionStorage,
-        definitions: dict[str, Saga],
-        reply_pool: Optional[MinosPool[MinosHandler]] = None,
+        dynamic_handler_pool: Optional[MinosPool[MinosHandler]] = None,
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
-        self.definitions = definitions
 
-        if reply_pool is not None:
-            self.reply_pool = reply_pool
+        if dynamic_handler_pool is not None:
+            self.dynamic_handler_pool = dynamic_handler_pool
 
-        if self.reply_pool is None or isinstance(self.reply_pool, Provide):
+        if self.dynamic_handler_pool is None or isinstance(self.dynamic_handler_pool, Provide):
             raise MinosHandlerNotProvidedException("A handler pool instance is required.")
 
     @classmethod
@@ -93,21 +76,14 @@ class SagaManager(MinosSagaManager):
         :param args: Additional positional arguments.
         :param config: Config instance.
         :param kwargs: Additional named arguments.
-        :return: A new ``classmethod`` instance.
+        :return: A new ``SagaManager`` instance.
         """
         storage = SagaExecutionStorage.from_config(config=config, **kwargs)
-        definitions = _build_definitions(config.saga.items)
-        return cls(*args, storage=storage, definitions=definitions, **kwargs)
+        return cls(*args, storage=storage, **kwargs)
 
     async def _run_new(
-        self,
-        name: Optional[str] = None,
-        context: Optional[SagaContext] = None,
-        definition: Optional[Saga] = None,
-        **kwargs,
+        self, definition: Saga, context: Optional[SagaContext] = None, **kwargs,
     ) -> Union[UUID, SagaExecution]:
-        if definition is None:
-            definition = self.definitions.get(name)
         execution = SagaExecution.from_saga(definition, context=context)
         return await self._run(execution, **kwargs)
 
@@ -142,22 +118,21 @@ class SagaManager(MinosSagaManager):
 
         return execution.uuid
 
-    async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> NoReturn:
+    async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> None:
         try:
             await execution.execute(**kwargs)
         except MinosSagaPausedExecutionStepException:
             self.storage.store(execution)
-            return execution.uuid
 
     async def _run_with_pause_on_memory(
         self, execution: SagaExecution, reply: Optional[CommandReply] = None, **kwargs
-    ) -> NoReturn:
+    ) -> None:
 
         # noinspection PyUnresolvedReferences
-        async with self.reply_pool.acquire() as handler:
+        async with self.dynamic_handler_pool.acquire() as handler:
             while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                 try:
-                    await execution.execute(reply=reply, reply_topic=handler.topic, **kwargs)
+                    await execution.execute(reply=reply, **(kwargs | {"reply_topic": handler.topic}))
                 except MinosSagaPausedExecutionStepException:
                     reply = await self._get_reply(handler, execution, **kwargs)
                 self.storage.store(execution)
