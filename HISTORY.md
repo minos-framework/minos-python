@@ -165,3 +165,13 @@ History
 
 * Fix bug related with `datetime` serialization in `Field`.
 * Fix bug related with the `AggregateDiff.__getattr__` implementation.
+
+0.1.12 (2021-09-01)
+--------------------
+
+* Add generics to `MinosSagaManager` interface.
+* Remove `saga.items` from `MinosConfig`.
+* Add `service.aggregate` to `MinosConfig`.
+* Remove `interval` from `EntrypointLauncher` (must be setup at service level).
+* Fix bug related with `TypeHintBuilder` and `Any`.
+* Fix bug related with `ModelType` comparisons.
