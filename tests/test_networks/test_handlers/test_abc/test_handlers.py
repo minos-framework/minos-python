@@ -2,8 +2,10 @@
 
 import unittest
 from asyncio import (
+    TimeoutError,
     gather,
     sleep,
+    wait_for,
 )
 from collections import (
     namedtuple,
@@ -112,6 +114,17 @@ class TestHandler(PostgresAsyncTestCase):
                 pass
         self.assertEqual(2, mock_dispatch.call_count)
         self.assertEqual(3, mock_count.call_count)
+
+    async def test_dispatch_forever_without_topics(self):
+        handler = _FakeHandler(handlers=dict(), **self.config.broker.queue._asdict())
+        mock = AsyncMock()
+        async with handler:
+            handler.dispatch = mock
+            try:
+                await wait_for(handler.dispatch_forever(max_wait=0.1), 0.5)
+            except TimeoutError:
+                pass
+        self.assertEqual(0, mock.call_count)
 
     async def test_dispatch(self):
         from minos.common import (
