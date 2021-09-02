@@ -77,7 +77,7 @@ class EnrouteAnalyzer:
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
         fn: Callable = getattr(self.decorated, "__get_enroute__", self._get_all)
-        return fn(self.config)
+        return fn(config=self.config)
 
     # noinspection PyUnusedLocal
     def _get_all(self, *args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
