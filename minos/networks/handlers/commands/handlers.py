@@ -72,8 +72,8 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        command_decorators = EnrouteBuilder(config.commands.service).get_broker_command_query()
-        query_decorators = EnrouteBuilder(config.queries.service).get_broker_command_query()
+        command_decorators = EnrouteBuilder(config.commands.service, config).get_broker_command_query()
+        query_decorators = EnrouteBuilder(config.queries.service, config).get_broker_command_query()
 
         handlers = {
             decorator.topic: fn for decorator, fn in chain(command_decorators.items(), query_decorators.items())

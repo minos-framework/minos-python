@@ -20,6 +20,7 @@ from minos.networks import (
 )
 from tests.utils import (
     FakeService,
+    FakeServiceWithGetEnroute,
 )
 
 
@@ -80,6 +81,14 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         observed = analyzer.get_broker_event()
         expected = {"ticket_added": {BrokerEventEnrouteDecorator("TicketAdded")}}
+
+        self.assertEqual(expected, observed)
+
+    def test_with_get_enroute(self):
+        analyzer = EnrouteAnalyzer(FakeServiceWithGetEnroute)
+
+        observed = analyzer.get_all()
+        expected = {"create_foo": {BrokerCommandEnrouteDecorator("CreateFoo")}}
 
         self.assertEqual(expected, observed)
 

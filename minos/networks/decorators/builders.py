@@ -40,12 +40,12 @@ from .definitions import (
 class EnrouteBuilder:
     """Enroute builder class."""
 
-    def __init__(self, decorated: Union[str, Type]):
+    def __init__(self, decorated: Union[str, Type], *args, **kwargs):
         if isinstance(decorated, str):
             decorated = import_module(decorated)
 
         self.decorated = decorated
-        self.analyzer = EnrouteAnalyzer(decorated)
+        self.analyzer = EnrouteAnalyzer(decorated, *args, **kwargs)
 
     def get_rest_command_query(self) -> dict[RestEnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
         """Get the rest handlers for commands and queries.
