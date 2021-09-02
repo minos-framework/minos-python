@@ -6,8 +6,8 @@ from uuid import (
 
 from minos.common import (
     AggregateDiff,
-    DataTransferObject,
     MinosSagaManager,
+    Model,
     ModelRefExtractor,
     ModelRefInjector,
     ModelType,
@@ -58,7 +58,7 @@ class PreEventHandler:
         if not len(missing):
             raise MinosNotAnyMissingReferenceException("The diff does not have any missing reference.")
 
-        saga = Saga("")
+        saga = Saga()
         for name, uuids in missing.items():
             saga = (
                 saga.step()
@@ -71,7 +71,7 @@ class PreEventHandler:
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def invoke_callback(context: SagaContext, uuids: list[UUID]) -> DataTransferObject:
+    def invoke_callback(context: SagaContext, uuids: list[UUID]) -> Model:
         """Callback to prepare data before invoking participants.
 
         :param context: The saga context (ignored).
