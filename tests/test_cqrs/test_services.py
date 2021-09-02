@@ -117,7 +117,7 @@ class TestQueryService(PostgresAsyncTestCase):
         with patch("tests.utils.FakeRequest.content", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_aggregates__(FakeRequest(None))
-        with patch("minos.common.Aggregate.get", return_value=AsyncIter([])):
+        with patch("minos.common.Aggregate.get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_aggregates__(FakeRequest({"uuids": [uuid4()]}))
 
