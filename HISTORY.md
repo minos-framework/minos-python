@@ -85,3 +85,9 @@ History
 * Refactor `ReplyPool` and `DynamicReplyHandler` as `DynamicHandlerPool` and `DynamicHandler` and integrate them into the consumer queue.
 * Improve `Producer` performance keeping kafka connection open between publishing calls.
 * Implement direct message transferring between `Producer` and `Consumer` for messages send to the same microservice.
+
+
+0.0.15 (2021-09-02)
+------------------
+
+* Add support for `__get_enroute__` method by `EnrouteAnalyzer`.
