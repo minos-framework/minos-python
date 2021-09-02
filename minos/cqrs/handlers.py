@@ -1,18 +1,13 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.cqrs.handlers module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from uuid import (
     UUID,
 )
 
 from minos.common import (
     AggregateDiff,
-    DataTransferObject,
     MinosSagaManager,
+    Model,
     ModelRefExtractor,
     ModelRefInjector,
     ModelType,
@@ -25,6 +20,7 @@ from minos.saga import (
 )
 
 from .exceptions import (
+    MinosNotAnyMissingReferenceException,
     MinosQueryServiceException,
 )
 
@@ -40,10 +36,12 @@ class PreEventHandler:
         :param saga_manager: The saga manager to be used to compute the queries to another microservices.
         :return: The recomposed aggregate difference.
         """
-        definition = cls.build_saga(diff)
-        execution = await saga_manager.run(
-            definition=definition, pause_on_disk=False, return_execution=True, raise_on_error=True
-        )
+        try:
+            definition = cls.build_saga(diff)
+        except MinosNotAnyMissingReferenceException:
+            return diff
+
+        execution = await saga_manager.run(definition=definition)
         if not isinstance(execution, SagaExecution) or execution.status != SagaStatus.Finished:
             raise MinosQueryServiceException("The saga execution could not finish.")
         return execution.context["diff"]
@@ -57,7 +55,10 @@ class PreEventHandler:
         """
         missing = ModelRefExtractor(diff.fields_diff).build()
 
-        saga = Saga("")
+        if not len(missing):
+            raise MinosNotAnyMissingReferenceException("The diff does not have any missing reference.")
+
+        saga = Saga()
         for name, uuids in missing.items():
             saga = (
                 saga.step()
@@ -70,7 +71,7 @@ class PreEventHandler:
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def invoke_callback(context: SagaContext, uuids: list[UUID]) -> DataTransferObject:
+    def invoke_callback(context: SagaContext, uuids: list[UUID]) -> Model:
         """Callback to prepare data before invoking participants.
 
         :param context: The saga context (ignored).
