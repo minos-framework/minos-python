@@ -86,7 +86,6 @@ History
 * Improve `Producer` performance keeping kafka connection open between publishing calls.
 * Implement direct message transferring between `Producer` and `Consumer` for messages send to the same microservice.
 
-
 0.0.15 (2021-09-02)
 ------------------
 
