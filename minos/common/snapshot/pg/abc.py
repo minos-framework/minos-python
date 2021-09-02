@@ -10,7 +10,7 @@ class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
 
     async def _setup(self) -> None:
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("snapshot"))
-        await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock=hash("snapshot"))
+        await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock=hash("snapshot_aux_offset"))
 
 
 _CREATE_TABLE_QUERY = """

@@ -82,22 +82,14 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         :return: This method does not return anything.
         """
         offset = await self._load_offset(**kwargs)
+        iterable = self._repository.select(id_gt=offset, **kwargs)
 
-        ids = set()
-
-        def _update_offset(e: RepositoryEntry, o: int):
-            ids.add(e.id)
-            while o + 1 in ids:
-                o += 1
-                ids.remove(o)
-            return o
-
-        async for entry in self._repository.select(id_gt=offset, **kwargs):
+        async for entry in iterable:
             try:
                 await self._dispatch_one(entry, **kwargs)
             except MinosPreviousVersionSnapshotException:
                 pass
-            offset = _update_offset(entry, offset)
+            offset = max(entry.id, offset)
 
         await self._store_offset(offset)
 
@@ -110,7 +102,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
             return 0
 
     async def _store_offset(self, offset: int) -> None:
-        await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset})
+        await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset}, lock=hash("insert_snapshot_aux_offset"))
 
     async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> Optional[SnapshotEntry]:
         if event_entry.action.is_delete:
@@ -215,5 +207,5 @@ _INSERT_OFFSET_QUERY = """
 INSERT INTO snapshot_aux_offset (id, value)
 VALUES (TRUE, %(value)s)
 ON CONFLICT (id)
-DO UPDATE SET value = %(value)s;
+DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
 """.strip()
