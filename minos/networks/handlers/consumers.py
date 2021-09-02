@@ -68,15 +68,15 @@ class Consumer(HandlerSetup):
         topics = set()
 
         # events
-        decorators = EnrouteBuilder(config.events.service).get_broker_event()
+        decorators = EnrouteBuilder(config.events.service, config).get_broker_event()
         topics |= {decorator.topic for decorator in decorators.keys()}
 
         # commands
-        decorators = EnrouteBuilder(config.commands.service).get_broker_command_query()
+        decorators = EnrouteBuilder(config.commands.service, config).get_broker_command_query()
         topics |= {decorator.topic for decorator in decorators.keys()}
 
         # queries
-        decorators = EnrouteBuilder(config.queries.service).get_broker_command_query()
+        decorators = EnrouteBuilder(config.queries.service, config).get_broker_command_query()
         topics |= {decorator.topic for decorator in decorators.keys()}
 
         # replies

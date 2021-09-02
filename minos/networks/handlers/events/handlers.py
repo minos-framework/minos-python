@@ -61,7 +61,7 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        decorators = EnrouteBuilder(config.events.service).get_broker_event()
+        decorators = EnrouteBuilder(config.events.service, config).get_broker_event()
 
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
 

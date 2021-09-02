@@ -38,6 +38,7 @@ from minos.common import (
     RepositoryEntry,
 )
 from minos.networks import (
+    EnrouteDecorator,
     Request,
     Response,
     WrappedRequest,
@@ -215,6 +216,15 @@ class FakeService:
     def bar(self, request: Request):
         """For testing purposes."""
         return Response("bar")
+
+
+class FakeServiceWithGetEnroute:
+    @staticmethod
+    def __get_enroute__(*args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
+        return {"create_foo": {enroute.broker.command(topic="CreateFoo")}}
+
+    def create_foo(self, request: Request) -> Response:
+        """For testing purposes."""
 
 
 class FakeRequest(Request):
