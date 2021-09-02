@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.snapshot.pg.snapshot module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -13,7 +8,6 @@ import logging
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
-    NoReturn,
 )
 from uuid import (
     UUID,
@@ -40,7 +34,6 @@ from .builders import (
 )
 
 if TYPE_CHECKING:
-
     from ...model import (
         Aggregate,
     )
@@ -58,15 +51,15 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         self.builder = builder
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshot:
-        builder = PostgreSqlSnapshotBuilder.from_config(*args, config=config, **kwargs)
-        return cls(*args, builder=builder, **config.snapshot._asdict(), **kwargs)
+    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshot:
+        builder = PostgreSqlSnapshotBuilder.from_config(config=config, **kwargs)
+        return cls(builder=builder, **config.snapshot._asdict(), **kwargs)
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         await self.builder.setup()
         await super()._setup()
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         await super()._destroy()
         await self.builder.destroy()
 

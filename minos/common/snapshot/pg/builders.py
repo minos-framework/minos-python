@@ -1,17 +1,11 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.snapshot.pg.builders module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
 
 from typing import (
     TYPE_CHECKING,
-    NoReturn,
     Optional,
     Type,
 )
@@ -98,7 +92,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         except StopAsyncIteration:
             return True
 
-    async def dispatch(self, **kwargs) -> NoReturn:
+    async def dispatch(self, **kwargs) -> None:
         """Perform a dispatching step, based on the sequence of non already processed ``RepositoryEntry`` objects.
 
         :return: This method does not return anything.
@@ -131,7 +125,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         except Exception:
             return 0
 
-    async def _store_offset(self, offset: int) -> NoReturn:
+    async def _store_offset(self, offset: int) -> None:
         await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset})
 
     async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> Optional[SnapshotEntry]:
@@ -141,7 +135,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         instance = await self._build_instance(event_entry, **kwargs)
         return await self._submit_instance(instance, **kwargs)
 
-    async def _submit_delete(self, entry: RepositoryEntry, **kwargs) -> NoReturn:
+    async def _submit_delete(self, entry: RepositoryEntry, **kwargs) -> None:
         params = {
             "aggregate_uuid": entry.aggregate_uuid,
             "aggregate_name": entry.aggregate_name,

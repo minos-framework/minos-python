@@ -1,13 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
-from typing import (
-    NoReturn,
-)
+"""minos.common.snapshot.pg.abc module."""
 
 from ...database import (
     PostgreSqlMinosDatabase,
@@ -17,7 +8,7 @@ from ...database import (
 class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
     """Minos Snapshot Setup Class"""
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("snapshot"))
         await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock=hash("snapshot"))
 
