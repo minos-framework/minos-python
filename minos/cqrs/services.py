@@ -22,6 +22,9 @@ from uuid import (
     UUID,
 )
 
+from cached_property import (
+    cached_property,
+)
 from dependency_injector.wiring import (
     Provide,
 )
@@ -126,10 +129,7 @@ class QueryService(Service, ABC):
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            # noinspection PyTypeChecker
-            cls: Type[Aggregate] = import_module(self.config.service.aggregate)
-
-            product = await cls.get_one(content["uuid"])
+            product = await self.__aggregate_cls__.get_one(content["uuid"])
         except Exception as exc:
             raise ResponseException(f"There was a problem while getting the product: {exc!r}")
 
@@ -147,13 +147,15 @@ class QueryService(Service, ABC):
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            # noinspection PyTypeChecker
-            cls: Type[Aggregate] = import_module(self.config.service.aggregate)
-
-            iterable = cls.get(uuids=content["uuids"])
+            iterable = self.__aggregate_cls__.get(uuids=content["uuids"])
             values = {v.uuid: v async for v in iterable}
             products = [values[uuid] for uuid in content["uuids"]]
         except Exception as exc:
             raise ResponseException(f"There was a problem while getting products: {exc!r}")
 
         return Response(products)
+
+    @cached_property
+    def __aggregate_cls__(self) -> Type[Aggregate]:
+        # noinspection PyTypeChecker
+        return import_module(self.config.service.aggregate)

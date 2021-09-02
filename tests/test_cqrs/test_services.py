@@ -33,6 +33,7 @@ from tests.utils import (
     FakeRequest,
     FakeSagaManager,
     FakeService,
+    Foo,
 )
 
 
@@ -119,6 +120,9 @@ class TestQueryService(PostgresAsyncTestCase):
         with patch("minos.common.Aggregate.get", return_value=AsyncIter([])):
             with self.assertRaises(ResponseException):
                 await self.service.__get_aggregates__(FakeRequest({"uuids": [uuid4()]}))
+
+    def test_aggregate_cls(self):
+        self.assertEqual(Foo, self.service.__aggregate_cls__)
 
 
 class TestCommandService(PostgresAsyncTestCase):
