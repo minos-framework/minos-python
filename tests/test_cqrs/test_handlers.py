@@ -58,7 +58,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
     async def test_handle(self):
         execution = SagaExecution.from_saga(
             (
-                Saga("")
+                Saga()
                 .step()
                 .invoke_participant(
                     "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars])),
@@ -101,7 +101,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
     async def test_handle_raises(self):
         execution = SagaExecution.from_saga(
             (
-                Saga("")
+                Saga()
                 .step()
                 .invoke_participant(
                     "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars]))
@@ -122,7 +122,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             observed = PreEventHandler.build_saga(self.diff)
 
         expected = (
-            Saga("")
+            Saga()
             .step()
             .invoke_participant(
                 "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=[b.uuid for b in self.bars])
