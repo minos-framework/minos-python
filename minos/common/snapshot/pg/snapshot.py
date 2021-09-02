@@ -71,8 +71,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
-        # noinspection PyShadowingBuiltins
-        if not await self.builder.are_synced(aggregate_name, uuids, **kwargs):
+        if not await self.builder.is_synced(aggregate_name, **kwargs):
             await self.builder.dispatch(**kwargs)
 
         async for item in self._get(aggregate_name, uuids, **kwargs):

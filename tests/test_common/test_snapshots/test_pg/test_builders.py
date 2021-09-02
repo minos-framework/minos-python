@@ -129,19 +129,12 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 
-    async def test_are_synced(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
-                self.assertFalse(await dispatcher.are_synced("tests.aggregate_classes.Car", [self.uuid_1, self.uuid_2]))
-                await dispatcher.dispatch()
-                self.assertTrue(await dispatcher.are_synced("tests.aggregate_classes.Car", [self.uuid_1, self.uuid_2]))
-
     async def test_is_synced(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
-                self.assertFalse(await dispatcher.is_synced("tests.aggregate_classes.Car", self.uuid_1))
+                self.assertFalse(await dispatcher.is_synced("tests.aggregate_classes.Car"))
                 await dispatcher.dispatch()
-                self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car", self.uuid_1))
+                self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car"))
 
     async def test_dispatch_ignore_previous_version(self):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])

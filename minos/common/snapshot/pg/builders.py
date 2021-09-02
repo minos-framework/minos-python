@@ -62,30 +62,14 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotBuilder:
         return cls(*args, **config.snapshot._asdict(), **kwargs)
 
-    async def are_synced(self, aggregate_name: str, aggregate_uuids: set[UUID], **kwargs) -> bool:
-        """Check if the snapshot has the latest version of a list of aggregates.
-
-        :param aggregate_name: Class name of the ``Aggregate`` to be checked.
-        :param aggregate_uuids: List of aggregate identifiers to be checked.
-
-        :return: ``True`` if has the latest version for all the identifiers or ``False`` otherwise.
-        """
-        for aggregate_uuid in aggregate_uuids:
-            if not await self.is_synced(aggregate_name, aggregate_uuid, **kwargs):
-                return False
-        return True
-
-    async def is_synced(self, aggregate_name: str, aggregate_uuid: UUID, **kwargs) -> bool:
+    async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
         """Check if the snapshot has the latest version of an ``Aggregate`` instance.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be checked.
-        :param aggregate_uuid: Identifier of the ``Aggregate`` instance to be checked.
         :return: ``True`` if has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset(**kwargs)
-        iterable = self._repository.select(
-            id_ge=offset, aggregate_name=aggregate_name, aggregate_uuid=aggregate_uuid, **kwargs
-        )
+        iterable = self._repository.select(id_gt=offset, aggregate_name=aggregate_name, **kwargs)
         try:
             await iterable.__anext__()
             return False
