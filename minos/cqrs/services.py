@@ -109,10 +109,31 @@ class QueryService(Service, ABC):
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
         aggregate_name = config.service.aggregate.rsplit(".", 1)[-1]
         additional = {
-            cls.__get_aggregates__.__name__: {enroute.broker.query(f"Get{aggregate_name}s")},
             cls.__get_aggregate__.__name__: {enroute.broker.query(f"Get{aggregate_name}")},
+            cls.__get_aggregates__.__name__: {enroute.broker.query(f"Get{aggregate_name}s")},
         }
         return super().__get_enroute__(config) | additional
+
+    async def __get_aggregate__(self, request: Request) -> Response:
+        """Get product.
+
+        :param request: The ``Request`` instance that contains the product identifier.
+        :return: A ``Response`` instance containing the requested product.
+        """
+        try:
+            content = await request.content(model_type=ModelType.build("Query", {"uuid": UUID}))
+        except Exception as exc:
+            raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
+
+        try:
+            # noinspection PyTypeChecker
+            cls: Type[Aggregate] = import_module(self.config.service.aggregate)
+
+            product = await cls.get_one(content["uuid"])
+        except Exception as exc:
+            raise ResponseException(f"There was a problem while getting the product: {exc!r}")
+
+        return Response(product)
 
     async def __get_aggregates__(self, request: Request) -> Response:
         """Get products.
@@ -136,24 +157,3 @@ class QueryService(Service, ABC):
             raise ResponseException(f"There was a problem while getting products: {exc!r}")
 
         return Response(products)
-
-    async def __get_aggregate__(self, request: Request) -> Response:
-        """Get product.
-
-        :param request: The ``Request`` instance that contains the product identifier.
-        :return: A ``Response`` instance containing the requested product.
-        """
-        try:
-            content = await request.content(model_type=ModelType.build("Query", {"uuid": UUID}))
-        except Exception as exc:
-            raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
-
-        try:
-            # noinspection PyTypeChecker
-            cls: Type[Aggregate] = import_module(self.config.service.aggregate)
-
-            product = await cls.get_one(content["uuid"])
-        except Exception as exc:
-            raise ResponseException(f"There was a problem while getting the product: {exc!r}")
-
-        return Response(product)

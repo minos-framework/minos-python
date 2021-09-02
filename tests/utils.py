@@ -36,6 +36,8 @@ from minos.cqrs import (
 )
 from minos.networks import (
     Request,
+    Response,
+    enroute,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -48,9 +50,17 @@ class FakeService(Service):
 class FakeQueryService(QueryService):
     """For testing purposes."""
 
+    @enroute.broker.query("FindFoo")
+    def find_foo(self, request: Request) -> Response:
+        """For testing purpose"""
+
 
 class FakeCommandService(CommandService):
     """For testing purposes."""
+
+    @enroute.broker.command("CreateFoo")
+    def create_foo(self, request: Request) -> Response:
+        """For testing purpose"""
 
 
 class FakeSagaManager(MinosSagaManager):
@@ -83,6 +93,15 @@ class FakeRequest(Request):
 
     def __repr__(self) -> str:
         return f"FakeRequest({self._content!r})"
+
+
+class AsyncIter:
+    def __init__(self, items):
+        self.items = items
+
+    async def __aiter__(self):
+        for item in self.items:
+            yield item
 
 
 class Foo(Aggregate):
