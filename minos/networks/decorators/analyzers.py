@@ -11,11 +11,14 @@ from inspect import (
     ismethod,
 )
 from typing import (
+    Callable,
+    Optional,
     Type,
     Union,
 )
 
 from minos.common import (
+    MinosConfig,
     import_module,
 )
 
@@ -32,11 +35,12 @@ from .definitions import (
 class EnrouteAnalyzer:
     """Search decorators in specified class"""
 
-    def __init__(self, decorated: Union[str, Type]):
+    def __init__(self, decorated: Union[str, Type], config: Optional[MinosConfig] = None):
         if isinstance(decorated, str):
             decorated = import_module(decorated)
 
         self.decorated = decorated
+        self.config = config
 
     def get_rest_command_query(self) -> dict[str, set[EnrouteDecorator]]:
         """Returns rest values.
@@ -72,6 +76,11 @@ class EnrouteAnalyzer:
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
+        fn: Callable = getattr(self.decorated, "__get_enroute__", self._get_all)
+        return fn(self.config)
+
+    # noinspection PyUnusedLocal
+    def _get_all(self, *args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
         result = dict()
         for name, fn in getmembers(self.decorated, predicate=lambda x: ismethod(x) or isfunction(x)):
             if not hasattr(fn, "__decorators__"):
