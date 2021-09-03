@@ -95,6 +95,10 @@ class SnapshotEntry:
         :param kwargs: Additional named arguments.
         :return: A ``Aggregate`` instance.
         """
+        from ..model import (
+            Aggregate,
+        )
+
         if self.data is None:
             raise MinosSnapshotDeletedAggregateException(
                 f"The {self.aggregate_uuid!r} id points to an already deleted aggregate."
