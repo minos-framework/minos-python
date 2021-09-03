@@ -170,7 +170,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
             base += " AND aggregate_uuid IN %s"
 
         for filter_ in filters:
-            base += f"and (indices#>'{{{filter_[0]}}}') {filter_[1]} %s::jsonb"
+            base += f"AND (indices#>'{{{filter_[0]}}}') {filter_[1]} %s::jsonb"
 
         if ordering:
             base += " ORDER BY updated_at"
