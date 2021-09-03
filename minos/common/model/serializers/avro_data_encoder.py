@@ -21,7 +21,6 @@ from decimal import (
     Decimal,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
 )
 from uuid import (
@@ -32,11 +31,6 @@ from ...exceptions import (
     MinosMalformedAttributeException,
 )
 
-if TYPE_CHECKING:
-    from ..fields import (
-        Field,
-    )
-
 logger = logging.getLogger(__name__)
 
 
@@ -45,15 +39,6 @@ class AvroDataEncoder:
 
     def __init__(self, value: Any):
         self.value = value
-
-    @classmethod
-    def from_field(cls, field: Field) -> AvroDataEncoder:
-        """Build a new instance from a ``Field``.
-
-        :param field: The model field.
-        :return: A new avro schema builder instance.
-        """
-        return cls(field.value)
 
     def build(self) -> Any:
         """Build a avro data representation based on the content of the given field.
@@ -93,8 +78,12 @@ class AvroDataEncoder:
         if isinstance(value, dict):
             return {k: self._to_avro_raw(v) for k, v in value.items()}
 
-        if hasattr(value, "avro_data"):
-            return value.avro_data
+        from ..abc import (
+            Model,
+        )
+
+        if isinstance(value, Model):
+            return {name: field.avro_data for name, field in value.fields.items()}
 
         raise MinosMalformedAttributeException(f"Given type is not supported: {type(value)!r} ({value!r})")
 
