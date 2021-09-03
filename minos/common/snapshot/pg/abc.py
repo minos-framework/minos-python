@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS snapshot (
     aggregate_uuid UUID NOT NULL,
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
-    schema JSONB,
+    schema BYTEA,
     data JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

@@ -4,7 +4,6 @@ from __future__ import (
     annotations,
 )
 
-import json
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -162,12 +161,16 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         return snapshot_entry
 
     async def _submit_update_or_create(self, entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
+        from ...protocol import (
+            MinosJsonBinaryProtocol,
+        )
+
         params = {
             "aggregate_uuid": entry.aggregate_uuid,
             "aggregate_name": entry.aggregate_name,
             "version": entry.version,
-            "schema": json.dumps(entry.schema),
-            "data": json.dumps(entry.data),
+            "schema": MinosJsonBinaryProtocol.encode(entry.schema),
+            "data": entry.data,
             "created_at": entry.created_at,
             "updated_at": entry.updated_at,
         }

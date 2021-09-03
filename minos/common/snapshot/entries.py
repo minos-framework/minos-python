@@ -59,6 +59,15 @@ class SnapshotEntry:
         if isinstance(data, memoryview):
             data = data.tobytes()
 
+        if isinstance(schema, memoryview):
+            schema = schema.tobytes()
+        if isinstance(schema, bytes):
+            from ..protocol import (
+                MinosJsonBinaryProtocol,
+            )
+
+            schema = MinosJsonBinaryProtocol.decode(schema)
+
         self.aggregate_uuid = aggregate_uuid
         self.aggregate_name = aggregate_name
         self.version = version
