@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS snapshot (
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
     data BYTEA,
+    indices JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (aggregate_uuid, aggregate_name)

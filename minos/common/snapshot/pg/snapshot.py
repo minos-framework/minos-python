@@ -7,7 +7,9 @@ from __future__ import (
 import logging
 from typing import (
     TYPE_CHECKING,
+    Any,
     AsyncIterator,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -16,10 +18,10 @@ from uuid import (
 from ...configuration import (
     MinosConfig,
 )
-from ...exceptions import (
-    MinosSnapshotAggregateNotFoundException,
-    MinosSnapshotDeletedAggregateException,
-)
+# from ...exceptions import (
+#     MinosSnapshotAggregateNotFoundException,
+#     MinosSnapshotDeletedAggregateException,
+# )
 from ..abc import (
     MinosSnapshot,
 )
@@ -63,7 +65,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         await super()._destroy()
         await self.builder.destroy()
 
-    async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
+    async def get(self, aggregate_name: str, uuids: Optional[set[UUID]] = None, **kwargs) -> AsyncIterator[Aggregate]:
         """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
@@ -78,39 +80,58 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
             yield item.build_aggregate(**kwargs)
 
     async def _get(
-        self, aggregate_name: str, uuids: set[UUID], streaming_mode: bool = False, **kwargs,
+        self,
+        aggregate_name: str,
+        uuids: Optional[set[UUID]] = None,
+        filters=None,
+        streaming_mode: bool = False,
+        **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
-        uniques = set(uuids)
+        # uniques = set(uuids)
+        # if not len(uniques):
+        #     return
+        #
+        # if len(uniques) != len(uuids):
+        #     seen = set()
+        #     duplicated = {x for x in uuids if x in seen or seen.add(x)}
+        #     logger.warning(f"Duplicated identifiers will be ignored: {duplicated!r}")
 
-        if not len(uniques):
-            return
+        # parameters = (aggregate_name, tuple(uniques))
 
-        if len(uniques) != len(uuids):
-            seen = set()
-            duplicated = {x for x in uuids if x in seen or seen.add(x)}
-            logger.warning(f"Duplicated identifiers will be ignored: {duplicated!r}")
+        parameters = [aggregate_name]
+        if uuids is not None:
+            parameters += [tuple(uuids)]
+        if filters is not None:
+            import json
 
-        parameters = (aggregate_name, tuple(uniques))
+            for filter_ in filters:
+                parameters += [json.dumps(filter_[2])]
 
         async with self.cursor() as cursor:
             async with cursor.begin():
 
-                await cursor.execute(_CHECK_MULTIPLE_ENTRIES_QUERY, parameters)
+                query = self._query_builder(
+                    _CHECK_MULTIPLE_ENTRIES_QUERY, aggregate_uuid=uuids is not None, filters=filters
+                )
+                await cursor.execute(query, parameters)
                 total_count, not_null_count = await cursor.fetchone()
 
-                await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters)
+                query = self._query_builder(
+                    _SELECT_MULTIPLE_ENTRIES_QUERY, aggregate_uuid=uuids is not None, filters=filters, ordering=True
+                )
+                await cursor.execute(query, parameters)
 
-                if total_count != len(uniques):
-                    # noinspection PyUnresolvedReferences
-                    found = {row[0] async for row in cursor}
-                    missing = uniques - found
-                    raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
-
-                if not_null_count != len(uniques):
-                    # noinspection PyUnresolvedReferences
-                    found = {row[0] async for row in cursor if row[3]}
-                    missing = uniques - found
-                    raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
+                # if total_count != len(uniques):
+                #     # noinspection PyUnresolvedReferences
+                #     found = {row[0] async for row in cursor}
+                #     missing = uniques - found
+                #     raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
+                #
+                # if not_null_count != len(uniques):
+                #     # noinspection PyUnresolvedReferences
+                #     found = {row[0] async for row in cursor if row[3]}
+                #     missing = uniques - found
+                #     raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
 
                 if streaming_mode:
                     async for row in cursor:
@@ -134,22 +155,43 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY, **kwargs):
             yield SnapshotEntry(*row)
 
+    def _query_builder(
+        self,
+        base: str,
+        aggregate_uuid: bool = True,
+        filters: Optional[list[tuple[str, str, Any]]] = None,
+        ordering: bool = False,
+    ):
+        if filters is None:
+            filters = list()
+        base = str(base)
+
+        if aggregate_uuid:
+            base += " AND aggregate_uuid IN %s"
+
+        for filter_ in filters:
+            base += f"and (indices#>'{{{filter_[0]}}}') {filter_[1]} %s::jsonb"
+
+        if ordering:
+            base += " ORDER BY updated_at"
+
+        return base
+
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, created_at, updated_at
+SELECT aggregate_uuid, aggregate_name, version, data, indices, created_at, updated_at
 FROM snapshot
-ORDER BY updated_at;
+ORDER BY updated_at
 """.strip()
 
 _SELECT_MULTIPLE_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, created_at, updated_at
+SELECT aggregate_uuid, aggregate_name, version, data, indices, created_at, updated_at
 FROM snapshot
-WHERE aggregate_name = %s AND aggregate_uuid IN %s
-ORDER BY updated_at;
+WHERE aggregate_name = %s
 """.strip()
 
 _CHECK_MULTIPLE_ENTRIES_QUERY = """
 SELECT COUNT(*) as total_count, COUNT(data) as not_null_count
 FROM snapshot
-WHERE aggregate_name = %s AND aggregate_uuid IN %s;
+WHERE aggregate_name = %s
 """.strip()

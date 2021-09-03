@@ -4,6 +4,7 @@ from __future__ import (
     annotations,
 )
 
+import json
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -117,6 +118,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
             "aggregate_name": entry.aggregate_name,
             "version": entry.version,
             "data": None,
+            "indices": None,
             "created_at": entry.created_at,
             "updated_at": entry.created_at,
         }
@@ -165,6 +167,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
             "aggregate_name": entry.aggregate_name,
             "version": entry.version,
             "data": entry.data,
+            "indices": json.dumps(entry.indices),
             "created_at": entry.created_at,
             "updated_at": entry.updated_at,
         }
@@ -176,24 +179,25 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
 
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
-SELECT version, data, created_at, updated_at
+SELECT version, data, indices, created_at, updated_at
 FROM snapshot
 WHERE aggregate_uuid = %s and aggregate_name = %s;
 """.strip()
 
 _INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """
-INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, data, created_at, updated_at)
+INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, data, indices, created_at, updated_at)
 VALUES (
     %(aggregate_uuid)s,
     %(aggregate_name)s,
     %(version)s,
     %(data)s,
+    %(indices)s,
     %(created_at)s,
     %(updated_at)s
 )
 ON CONFLICT (aggregate_uuid, aggregate_name)
 DO
-   UPDATE SET version = %(version)s, data = %(data)s, updated_at = %(updated_at)s
+   UPDATE SET version = %(version)s, data = %(data)s, indices = %(indices)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;
 """.strip()
 

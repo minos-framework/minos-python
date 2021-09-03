@@ -16,7 +16,11 @@ from asyncio import (
 from datetime import (
     datetime,
 )
+from operator import (
+    attrgetter,
+)
 from typing import (
+    Any,
     AsyncIterator,
     NoReturn,
     Optional,
@@ -73,6 +77,8 @@ class Aggregate(Entity):
     created_at: datetime
     updated_at: datetime
 
+    __indices__: Optional[list[str]]
+
     _broker: MinosBroker = Provide["event_broker"]
     _repository: MinosRepository = Provide["repository"]
     _snapshot: MinosSnapshot = Provide["snapshot"]
@@ -109,7 +115,8 @@ class Aggregate(Entity):
     @classmethod
     async def get(
         cls: Type[T],
-        uuids: set[UUID],
+        uuids: set[UUID] = None,
+        filters=None,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
@@ -139,7 +146,9 @@ class Aggregate(Entity):
                 raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
         # noinspection PyTypeChecker
-        iterable = _snapshot.get(cls.classname, uuids, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
+        iterable = _snapshot.get(
+            cls.classname, uuids, filters=filters, _broker=_broker, _repository=_repository, _snapshot=_snapshot
+        )
 
         # noinspection PyTypeChecker
         async for aggregate in iterable:
@@ -376,6 +385,14 @@ class Aggregate(Entity):
             **aggregate_diff.get_all(),
             **kwargs,
         )
+
+    @property
+    def indices(self) -> dict[str, Any]:
+        result = dict()
+        for index in getattr(self, "__indices__", list()):
+            result[index] = attrgetter(index)(self)
+
+        return result
 
 
 T = TypeVar("T", bound=Aggregate)

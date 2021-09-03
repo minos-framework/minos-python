@@ -15,6 +15,7 @@ from datetime import (
 )
 from typing import (
     TYPE_CHECKING,
+    Any,
     Iterable,
     Optional,
     Type,
@@ -43,7 +44,7 @@ class SnapshotEntry:
     Is the python object representation of a row in the ``snapshot`` storage system.
     """
 
-    __slots__ = "aggregate_uuid", "aggregate_name", "version", "data", "created_at", "updated_at"
+    __slots__ = "aggregate_uuid", "aggregate_name", "version", "data", "indices", "created_at", "updated_at"
 
     # noinspection PyShadowingBuiltins
     def __init__(
@@ -52,6 +53,7 @@ class SnapshotEntry:
         aggregate_name: str,
         version: int,
         data: Union[bytes, memoryview, None] = None,
+        indices: Optional[dict[str, Any]] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
     ):
@@ -62,6 +64,7 @@ class SnapshotEntry:
         self.aggregate_name = aggregate_name
         self.version = version
         self.data = data
+        self.indices = indices
 
         self.created_at = created_at
         self.updated_at = updated_at
@@ -79,6 +82,7 @@ class SnapshotEntry:
             aggregate_name=aggregate.classname,
             version=aggregate.version,
             data=aggregate.avro_bytes,
+            indices=aggregate.indices,
             created_at=aggregate.created_at,
             updated_at=aggregate.updated_at,
         )
