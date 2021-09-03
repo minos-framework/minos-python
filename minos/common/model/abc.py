@@ -46,6 +46,7 @@ from .fields import (
 )
 from .serializers import (
     AvroDataDecoder,
+    AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
 )
@@ -253,7 +254,7 @@ class Model(Mapping):
 
         :return: A dictionary object.
         """
-        return {name: field.avro_data for name, field in self.fields.items()}
+        return AvroDataEncoder(self).build()
 
     @property
     def avro_str(self) -> str:
