@@ -16,11 +16,7 @@ from asyncio import (
 from datetime import (
     datetime,
 )
-from operator import (
-    attrgetter,
-)
 from typing import (
-    Any,
     AsyncIterator,
     NoReturn,
     Optional,
@@ -385,14 +381,6 @@ class Aggregate(Entity):
             **aggregate_diff.get_all(),
             **kwargs,
         )
-
-    @property
-    def indices(self) -> dict[str, Any]:
-        result = dict()
-        for index in getattr(self, "__indices__", list()):
-            result[index] = attrgetter(index)(self)
-
-        return result
 
 
 T = TypeVar("T", bound=Aggregate)

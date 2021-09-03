@@ -170,7 +170,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
             base += " AND aggregate_uuid IN %s"
 
         for filter_ in filters:
-            base += f"AND (indices#>'{{{filter_[0]}}}') {filter_[1]} %s::jsonb"
+            base += f"AND (data#>'{{{filter_[0].replace('.', ',')}}}') {filter_[1]} %s::jsonb"
 
         if ordering:
             base += " ORDER BY updated_at"
@@ -179,13 +179,13 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, indices, created_at, updated_at
+SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at
 FROM snapshot
 ORDER BY updated_at
 """.strip()
 
 _SELECT_MULTIPLE_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, indices, created_at, updated_at
+SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at
 FROM snapshot
 WHERE aggregate_name = %s
 """.strip()
