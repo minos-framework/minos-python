@@ -16,7 +16,6 @@ from datetime import (
     timezone,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
     Iterable,
     Mapping,
@@ -46,10 +45,6 @@ from ..types import (
     unpack_typevar,
 )
 
-if TYPE_CHECKING:
-    from ..fields import (
-        Field,
-    )
 logger = logging.getLogger(__name__)
 
 
@@ -59,15 +54,6 @@ class AvroDataDecoder:
     def __init__(self, name: str, type_: type):
         self.name = name
         self.type_ = type_
-
-    @classmethod
-    def from_field(cls, field: Field) -> AvroDataDecoder:
-        """Build a new instance from a ``Field``.
-
-        :param field: The model field.
-        :return: A new avro schema builder instance.
-        """
-        return cls(field.name, field.type)
 
     def build(self, data: Any) -> Any:
         """Cast data type according to the field definition..

@@ -16,8 +16,8 @@ from datetime import (
     time,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
+    Optional,
     Union,
     get_args,
     get_origin,
@@ -49,37 +49,26 @@ from .constants import (
     AVRO_UUID,
 )
 
-if TYPE_CHECKING:
-    from ..fields import (
-        Field,
-    )
-
 logger = logging.getLogger(__name__)
 
 
 class AvroSchemaEncoder:
     """Avro Schema Encoder class."""
 
-    def __init__(self, name: str, type_: type):
-        self.name = name
+    def __init__(self, type_: type, name: Optional[str] = None):
         self.type_ = type_
+        self.name = name
 
-    @classmethod
-    def from_field(cls, field: Field) -> AvroSchemaEncoder:
-        """Build a new instance from a ``Field``.
-
-        :param field: The model field.
-        :return: A new avro schema builder instance.
-        """
-        return cls(field.name, field.type)
-
-    def build(self) -> dict[str, Any]:
+    def build(self) -> Union[dict, list, str]:
         """Build the avro schema for the given field.
 
         :return: A dictionary object.
         """
+        type_ = self._build_schema(self.type_)
 
-        return {"name": self.name, "type": self._build_schema(self.type_)}
+        if self.name is None:
+            return type_
+        return {"name": self.name, "type": type_}
 
     def _build_schema(self, type_: type) -> Any:
         origin = get_origin(type_)
@@ -153,7 +142,7 @@ class AvroSchemaEncoder:
             "name": type_.name,
             "namespace": namespace,
             "type": "record",
-            "fields": [AvroSchemaEncoder(k, v).build() for k, v in type_.type_hints.items()],
+            "fields": [type(self)(name=k, type_=v).build() for k, v in type_.type_hints.items()],
         }
         return schema
 

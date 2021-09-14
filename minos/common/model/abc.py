@@ -243,7 +243,7 @@ class Model(Mapping):
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder("", ModelType.from_model(self_or_cls)).build()["type"]]
+        return [AvroSchemaEncoder(ModelType.from_model(self_or_cls)).build()]
 
     @property
     def avro_data(self) -> dict[str, Any]:
