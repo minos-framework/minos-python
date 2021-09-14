@@ -73,15 +73,15 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
-        if not await self.builder.is_synced(aggregate_name, **kwargs):
-            await self.builder.dispatch(**kwargs)
-
         async for snapshot_entry in self.get_entries(aggregate_name, uuids, **kwargs):
             yield snapshot_entry.build_aggregate(**kwargs)
 
     async def get_entries(
         self, aggregate_name: str, uuids: set[UUID], streaming_mode: bool = False, **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
+        if not await self.builder.is_synced(aggregate_name, **kwargs):
+            await self.builder.dispatch(**kwargs)
+
         uniques = set(uuids)
 
         if not len(uniques):
@@ -132,9 +132,6 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
-        if not await self.builder.is_synced(aggregate_name, **kwargs):
-            await self.builder.dispatch(**kwargs)
-
         async for snapshot_entry in self.find_entries(aggregate_name, filters, **kwargs):
             yield snapshot_entry.build_aggregate(**kwargs)
 
@@ -155,6 +152,8 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :param kwargs: TODO
         :return: TODO
         """
+        if not await self.builder.is_synced(aggregate_name, **kwargs):
+            await self.builder.dispatch(**kwargs)
 
         parameters = [aggregate_name]
         import json
