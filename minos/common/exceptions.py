@@ -190,3 +190,24 @@ class MinosAttributeValidationException(MinosModelAttributeException):
         self.name = name
         self.value = value
         super().__init__(f"{repr(value)} value does not pass the {repr(name)} field validation.")
+
+
+class DataDecoderException(MinosModelException):
+    pass
+
+
+class DataDecoderMalformedTypeException(DataDecoderException):
+    pass
+
+
+class DataDecoderRequiredValueException(DataDecoderException):
+    pass
+
+
+class DataDecoderTypeException(DataDecoderException):
+    def __init__(self, target_type: Type, value: Any):
+        self.target_type = target_type
+        self.value = value
+        super().__init__(
+            f"The {target_type!r} expected type does not match the given data type: {type(value)!r} ({value!r})"
+        )

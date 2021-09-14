@@ -130,7 +130,7 @@ class Model(Mapping):
         if isinstance(schema, list):
             schema = schema[-1]
         model_type = AvroSchemaDecoder(schema).build()
-        return AvroDataDecoder("", model_type).build(data)
+        return AvroDataDecoder(model_type).build(data)
 
     @classmethod
     def to_avro_str(cls: Type[T], models: list[T]) -> str:
