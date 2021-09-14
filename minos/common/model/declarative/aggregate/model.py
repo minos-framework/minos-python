@@ -73,8 +73,6 @@ class Aggregate(Entity):
     created_at: datetime
     updated_at: datetime
 
-    __indices__: Optional[list[str]]
-
     _broker: MinosBroker = Provide["event_broker"]
     _repository: MinosRepository = Provide["repository"]
     _snapshot: MinosSnapshot = Provide["snapshot"]
