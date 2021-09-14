@@ -102,7 +102,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
 
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 observed = [
-                    v async for v in snapshot.get_entries(Car.classname, {self.uuid_1, self.uuid_2, self.uuid_3})
+                    v async for v in snapshot.find_entries(Car.classname, [])
                 ]
 
         # noinspection PyTypeChecker
