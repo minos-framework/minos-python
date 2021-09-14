@@ -84,12 +84,12 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         offset = await self._load_offset(**kwargs)
         iterable = self._repository.select(id_gt=offset, **kwargs)
 
-        async for entry in iterable:
+        async for event_entry in iterable:
             try:
-                await self._dispatch_one(entry, **kwargs)
+                await self._dispatch_one(event_entry, **kwargs)
             except MinosPreviousVersionSnapshotException:
                 pass
-            offset = max(entry.id, offset)
+            offset = max(event_entry.id, offset)
 
         await self._store_offset(offset)
 
@@ -104,24 +104,23 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
     async def _store_offset(self, offset: int) -> None:
         await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset}, lock=hash("insert_snapshot_aux_offset"))
 
-    async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> Optional[SnapshotEntry]:
+    async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:
             return await self._submit_delete(event_entry, **kwargs)
 
-        instance = await self._build_instance(event_entry, **kwargs)
-        return await self._submit_instance(instance, **kwargs)
+        return await self._submit_update_or_create(event_entry, **kwargs)
 
-    async def _submit_delete(self, entry: RepositoryEntry, **kwargs) -> None:
-        params = {
-            "aggregate_uuid": entry.aggregate_uuid,
-            "aggregate_name": entry.aggregate_name,
-            "version": entry.version,
-            "schema": None,
-            "data": None,
-            "created_at": entry.created_at,
-            "updated_at": entry.created_at,
-        }
-        await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params, **kwargs)
+    async def _submit_delete(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
+        snapshot_entry = SnapshotEntry.from_delete_event(event_entry)
+        snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
+        return snapshot_entry
+
+    async def _submit_update_or_create(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
+        aggregate = await self._build_instance(event_entry, **kwargs)
+
+        snapshot_entry = SnapshotEntry.from_aggregate(aggregate)
+        snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
+        return snapshot_entry
 
     async def _build_instance(self, event_entry: RepositoryEntry, **kwargs) -> Aggregate:
         # noinspection PyTypeChecker
@@ -155,30 +154,13 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         )
         return SnapshotEntry(aggregate_uuid, aggregate_name, *raw)
 
-    async def _submit_instance(self, aggregate: Aggregate, **kwargs) -> SnapshotEntry:
-        snapshot_entry = SnapshotEntry.from_aggregate(aggregate)
-        snapshot_entry = await self._submit_update_or_create(snapshot_entry, **kwargs)
-        return snapshot_entry
-
-    async def _submit_update_or_create(self, entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
-        from ...protocol import (
-            MinosJsonBinaryProtocol,
-        )
-
-        params = {
-            "aggregate_uuid": entry.aggregate_uuid,
-            "aggregate_name": entry.aggregate_name,
-            "version": entry.version,
-            "schema": MinosJsonBinaryProtocol.encode(entry.schema),
-            "data": entry.data,
-            "created_at": entry.created_at,
-            "updated_at": entry.updated_at,
-        }
+    async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
+        params = snapshot_entry.as_raw()
         response = await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params, **kwargs)
 
-        entry.created_at, entry.updated_at = response
+        snapshot_entry.created_at, snapshot_entry.updated_at = response
 
-        return entry
+        return snapshot_entry
 
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """

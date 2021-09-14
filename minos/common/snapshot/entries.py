@@ -10,6 +10,7 @@ from __future__ import (
     annotations,
 )
 
+import json
 from datetime import (
     datetime,
 )
@@ -29,6 +30,12 @@ from ..exceptions import (
 )
 from ..importlib import (
     import_module,
+)
+from ..protocol import (
+    MinosJsonBinaryProtocol,
+)
+from ..repository import (
+    RepositoryEntry,
 )
 
 if TYPE_CHECKING:
@@ -62,10 +69,6 @@ class SnapshotEntry:
         if isinstance(schema, memoryview):
             schema = schema.tobytes()
         if isinstance(schema, bytes):
-            from ..protocol import (
-                MinosJsonBinaryProtocol,
-            )
-
             schema = MinosJsonBinaryProtocol.decode(schema)
 
         self.aggregate_uuid = aggregate_uuid
@@ -85,18 +88,65 @@ class SnapshotEntry:
         :param aggregate: The aggregate instance.
         :return: A new ``MinosSnapshotEntry`` instance.
         """
+        data = {
+            k: v for k, v in aggregate.avro_data.items() if k not in {"uuid", "version", "created_at", "updated_at"}
+        }
+
         # noinspection PyTypeChecker
         return cls(
             aggregate_uuid=aggregate.uuid,
             aggregate_name=aggregate.classname,
             version=aggregate.version,
             schema=aggregate.avro_schema,
-            data={
-                k: v for k, v in aggregate.avro_data.items() if k not in {"uuid", "version", "created_at", "updated_at"}
-            },
+            data=data,
             created_at=aggregate.created_at,
             updated_at=aggregate.updated_at,
         )
+
+    @classmethod
+    def from_delete_event(cls, entry: RepositoryEntry) -> SnapshotEntry:
+        return cls(
+            aggregate_uuid=entry.aggregate_uuid,
+            aggregate_name=entry.aggregate_name,
+            version=entry.version,
+            schema=None,
+            data=None,
+            created_at=entry.created_at,
+            updated_at=entry.created_at,
+        )
+
+    def as_raw(self) -> dict[str, Any]:
+        return {
+            "aggregate_uuid": self.aggregate_uuid,
+            "aggregate_name": self.aggregate_name,
+            "version": self.version,
+            "schema": self.encoded_schema,
+            "data": self.encoded_data,
+            "created_at": self.created_at,
+            "updated_at": self.created_at,
+        }
+
+    @property
+    def encoded_schema(self) -> Optional[bytes]:
+        """TODO
+
+        :return: TODO
+        """
+        if self.schema is None:
+            return None
+
+        return MinosJsonBinaryProtocol.encode(self.schema)
+
+    @property
+    def encoded_data(self) -> Optional[str]:
+        """ TODO
+
+        :return: TODO
+        """
+        if self.data is None:
+            return None
+
+        return json.dumps(self.data)
 
     def build_aggregate(self, **kwargs) -> Aggregate:
         """Rebuild the stored ``Aggregate`` object instance from the internal state.
