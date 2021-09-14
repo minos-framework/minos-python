@@ -15,8 +15,6 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    AvroDataDecoder,
-    AvroSchemaEncoder,
     Field,
     MinosAttributeValidationException,
 )
@@ -33,17 +31,11 @@ class TestField(unittest.IsolatedAsyncioTestCase):
 
     def test_value_setter(self):
         field = Field("test", int, 3)
-        with patch(
-            "minos.common.AvroDataDecoder.from_field", side_effect=AvroDataDecoder.from_field
-        ) as mock_from_field:
-            with patch("minos.common.AvroDataDecoder.build", return_value=56) as mock_build:
-                field.value = 3
+        with patch("minos.common.AvroDataDecoder.build", return_value=56) as mock_build:
+            field.value = 3
 
-                self.assertEqual(1, mock_build.call_count)
-                self.assertEqual(call(3), mock_build.call_args)
-
-            self.assertEqual(1, mock_from_field.call_count)
-            self.assertEqual(call(field), mock_from_field.call_args)
+            self.assertEqual(1, mock_build.call_count)
+            self.assertEqual(call(3), mock_build.call_args)
 
         self.assertEqual(56, field.value)
 
@@ -65,26 +57,11 @@ class TestField(unittest.IsolatedAsyncioTestCase):
 
     def test_avro_schema(self):
         field = Field("test", int, 1)
-
-        with patch(
-            "minos.common.AvroSchemaEncoder.from_field", side_effect=AvroSchemaEncoder.from_field
-        ) as mock_from_field:
-            with patch("minos.common.AvroSchemaEncoder.build", return_value=56) as mock_build:
-                self.assertEqual(56, field.avro_schema)
-
-                self.assertEqual(1, mock_build.call_count)
-                self.assertEqual(call(), mock_build.call_args)
-
-            self.assertEqual(1, mock_from_field.call_count)
-            self.assertEqual(call(field), mock_from_field.call_args)
+        self.assertEqual({"name": "test", "type": "int"}, field.avro_schema)
 
     def test_avro_data(self):
         field = Field("test", int, 1)
-
-        with patch("minos.common.AvroDataEncoder.build", return_value=56) as mock:
-            self.assertEqual(56, field.avro_data)
-            self.assertEqual(1, mock.call_count)
-            self.assertEqual(call(), mock.call_args)
+        self.assertEqual(1, field.avro_data)
 
     def test_optional_type(self):
         field = Field("test", Optional[int])

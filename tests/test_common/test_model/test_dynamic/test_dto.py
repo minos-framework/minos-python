@@ -9,6 +9,9 @@ import unittest
 from typing import (
     TypedDict,
 )
+from unittest.mock import (
+    patch,
+)
 
 from minos.common import (
     DataTransferObject,
@@ -128,10 +131,17 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
 
     def test_from_avro_with_namespace(self):
         schema = [
-            {"fields": [{"name": "price", "type": "int"}], "name": "Order", "namespace": "example", "type": "record"}
+            {
+                "fields": [{"name": "price", "type": "int"}],
+                "name": "Order",
+                "namespace": "example.hello",
+                "type": "record",
+            }
         ]
         dto = DataTransferObject.from_avro(schema, {"price": 120})
-        self.assertEqual(schema, dto.avro_schema)
+
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello"]):
+            self.assertEqual(schema, dto.avro_schema)
 
     def test_classname(self):
         dto = DataTransferObject("Order", {}, namespace="example")
