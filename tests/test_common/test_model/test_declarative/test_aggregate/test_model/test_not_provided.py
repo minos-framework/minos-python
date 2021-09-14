@@ -34,15 +34,15 @@ class TestAggregateNotProvided(unittest.IsolatedAsyncioTestCase):
 
     async def test_get_one_raises(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
-            await Car.get_one(1)
+            await Car.get(1)
 
         async with FakeBroker() as broker:
             with self.assertRaises(MinosRepositoryNotProvidedException):
-                await Car.get_one(1, _broker=broker)
+                await Car.get(1, _broker=broker)
 
         async with FakeBroker() as broker, FakeRepository() as repository:
             with self.assertRaises(MinosSnapshotNotProvidedException):
-                await Car.get_one(1, _broker=broker, _repository=repository)
+                await Car.get(1, _broker=broker, _repository=repository)
 
 
 if __name__ == "__main__":

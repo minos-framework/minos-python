@@ -30,6 +30,8 @@ from minos.common import (
     PostgreSqlSnapshotBuilder,
     PostgreSqlSnapshotSetup,
     RepositoryEntry,
+    SimpleCondition,
+    SimpleOperator,
     SnapshotEntry,
 )
 from minos.common.testing import (
@@ -81,10 +83,11 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         with self.assertRaises(MinosConfigException):
             PostgreSqlSnapshot.from_config()
 
-    async def test_get(self):
+    async def test_find_by_uuid(self):
+        condition = SimpleCondition("uuid", SimpleOperator.IN, {self.uuid_2, self.uuid_3})
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3})
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering="updated_at")
                 observed = [v async for v in iterable]
 
         expected = [
@@ -107,10 +110,14 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         ]
         self.assertEqual(expected, observed)
 
-    async def test_get_streaming_true(self):
+    async def test_find_streaming_true(self):
+        condition = SimpleCondition("uuid", SimpleOperator.IN, {self.uuid_2, self.uuid_3})
+
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3}, streaming_mode=True)
+                iterable = snapshot.find(
+                    "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering="updated_at"
+                )
                 observed = [v async for v in iterable]
 
         expected = [
@@ -135,9 +142,10 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
 
     async def test_get_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
+        condition = SimpleCondition("uuid", SimpleOperator.IN, uuids)
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.get("tests.aggregate_classes.Car", uuids)
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering="updated_at")
                 observed = [v async for v in iterable]
 
             expected = [
@@ -160,10 +168,11 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             ]
             self.assertEqual(expected, observed)
 
-    async def test_get_empty(self):
+    async def test_find_empty(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = {v async for v in snapshot.get("tests.aggregate_classes.Car", set())}
+                condition = SimpleCondition("uuid", SimpleOperator.IN, set())
+                observed = {v async for v in snapshot.find("tests.aggregate_classes.Car", condition)}
 
         expected = set()
         self.assertEqual(expected, observed)
@@ -172,16 +181,15 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 with self.assertRaises(MinosSnapshotDeletedAggregateException):
-                    # noinspection PyStatementEffect
-                    {v async for v in snapshot.get("tests.aggregate_classes.Car", {self.uuid_1})}
+                    await snapshot.get("tests.aggregate_classes.Car", self.uuid_1)
                 with self.assertRaises(MinosSnapshotAggregateNotFoundException):
-                    # noinspection PyStatementEffect
-                    {v async for v in snapshot.get("tests.aggregate_classes.Car", {uuid4()})}
+                    await snapshot.get("tests.aggregate_classes.Car", uuid4())
 
     async def test_find(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.find("tests.aggregate_classes.Car", [("color", "=", "blue")])
+                condition = SimpleCondition("color", SimpleOperator.EQUAL, "blue")
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition)
                 observed = [v async for v in iterable]
 
         expected = [

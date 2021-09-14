@@ -24,6 +24,9 @@ from uuid import (
 from ..setup import (
     MinosSetup,
 )
+from .conditions import (
+    Condition,
+)
 
 if TYPE_CHECKING:
     from ..model import (
@@ -35,11 +38,21 @@ class MinosSnapshot(ABC, MinosSetup):
     """Base Snapshot class."""
 
     @abstractmethod
-    async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
-        """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
+    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+        """TODO
 
         :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param uuids: Set of identifiers to be retrieved.
+        :param uuid: Set of identifiers to be retrieved.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
+        """
+
+    @abstractmethod
+    async def find(self, aggregate_name: str, condition: Condition, **kwargs) -> AsyncIterator[Aggregate]:
+        """TODO
+
+        :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
+        :param condition: TODO
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """

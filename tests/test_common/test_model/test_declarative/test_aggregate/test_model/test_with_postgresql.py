@@ -54,18 +54,18 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
                 3, "red", uuid=uuid, version=2, created_at=car.created_at, updated_at=car.updated_at, **self.kwargs
             )
             self.assertEqual(expected, car)
-            self.assertEqual(car, await Car.get_one(car.uuid, **self.kwargs))
+            self.assertEqual(car, await Car.get(car.uuid, **self.kwargs))
 
             await car.update(doors=5)
             expected = Car(
                 5, "red", uuid=uuid, version=3, created_at=car.created_at, updated_at=car.updated_at, **self.kwargs
             )
             self.assertEqual(expected, car)
-            self.assertEqual(car, await Car.get_one(car.uuid, **self.kwargs))
+            self.assertEqual(car, await Car.get(car.uuid, **self.kwargs))
 
             await car.delete()
             with self.assertRaises(MinosSnapshotDeletedAggregateException):
-                await Car.get_one(car.uuid, **self.kwargs)
+                await Car.get(car.uuid, **self.kwargs)
 
             car = await Car.create(doors=3, color="blue", **self.kwargs)
             uuid = car.uuid
@@ -74,11 +74,11 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
             expected = Car(
                 3, "red", uuid=uuid, version=2, created_at=car.created_at, updated_at=car.updated_at, **self.kwargs
             )
-            self.assertEqual(expected, await Car.get_one(car.uuid, **self.kwargs))
+            self.assertEqual(expected, await Car.get(car.uuid, **self.kwargs))
 
             await car.delete()
             with self.assertRaises(MinosSnapshotDeletedAggregateException):
-                await Car.get_one(car.uuid, **self.kwargs)
+                await Car.get(car.uuid, **self.kwargs)
 
     async def test_entity_set_value_object_set(self):
         async with self.event_broker, self.repository, self.snapshot:
@@ -88,32 +88,32 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
 
             await order.save()
 
-            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            recovered = await Order.get(order.uuid, **self.kwargs)
             self.assertEqual(order, recovered)
 
             item.amount = 36
             order.products.add(item)
             await order.save()
 
-            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            recovered = await Order.get(order.uuid, **self.kwargs)
             self.assertEqual(order, recovered)
 
             order.products.remove(item)
             await order.save()
 
-            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            recovered = await Order.get(order.uuid, **self.kwargs)
             self.assertEqual(order, recovered)
 
             order.reviews.add(Review("GoodReview"))
             await order.save()
 
-            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            recovered = await Order.get(order.uuid, **self.kwargs)
             self.assertEqual(order, recovered)
 
             order.reviews.discard(Review("GoodReview"))
             await order.save()
 
-            recovered = await Order.get_one(order.uuid, **self.kwargs)
+            recovered = await Order.get(order.uuid, **self.kwargs)
             self.assertEqual(order, recovered)
 
 

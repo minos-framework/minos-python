@@ -77,7 +77,7 @@ class MinosSetup:
     def _from_config(cls: Type[T], config: MinosConfig, **kwargs) -> T:
         return cls(**kwargs)
 
-    async def __aenter__(self) -> T:
+    async def __aenter__(self: T) -> T:
         await self.setup()
         return self
 

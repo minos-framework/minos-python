@@ -36,7 +36,10 @@ from minos.common import (
     PostgreSqlSnapshotBuilder,
     PostgreSqlSnapshotSetup,
     RepositoryEntry,
+    SimpleCondition,
+    SimpleOperator,
     SnapshotEntry,
+    TRUECondition,
     current_datetime,
 )
 from minos.common.testing import (
@@ -101,9 +104,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [
-                    v async for v in snapshot.find_entries(Car.classname, [])
-                ]
+                observed = [v async for v in snapshot.find_entries(Car.classname, TRUECondition())]
 
         # noinspection PyTypeChecker
         expected = [
@@ -142,21 +143,19 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
+        condition = SimpleCondition("uuid", SimpleOperator.EQUAL, self.uuid_1)
 
         async def _fn(*args, **kwargs):
             yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
             yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
             yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
-        async with await self._populate() as repository:
+        async with PostgreSqlRepository.from_config(config=self.config) as r:
             with patch("minos.common.PostgreSqlRepository.select", _fn):
-                async with PostgreSqlSnapshotBuilder.from_config(
-                    config=self.config, repository=repository
-                ) as dispatcher:
+                async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=r) as dispatcher:
                     await dispatcher.dispatch()
-
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.get_entries(aggregate_name, {self.uuid_1})]
+            async with PostgreSqlSnapshot.from_config(config=self.config, repository=r) as snapshot:
+                observed = [v async for v in snapshot.find_entries(aggregate_name, condition)]
 
         # noinspection PyTypeChecker
         expected = [

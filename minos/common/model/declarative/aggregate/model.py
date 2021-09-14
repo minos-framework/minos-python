@@ -48,6 +48,7 @@ from ....repository import (
     RepositoryEntry,
 )
 from ....snapshot import (
+    Condition,
     MinosSnapshot,
 )
 from ....uuid import (
@@ -109,15 +110,14 @@ class Aggregate(Entity):
     @classmethod
     async def get(
         cls: Type[T],
-        uuids: set[UUID] = None,
-        filters=None,
+        uuid: UUID,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
-    ) -> AsyncIterator[T]:
+    ) -> T:
         """Get a sequence of aggregates based on a list of identifiers.
 
-        :param uuids: set of identifiers.
+        :param uuid: TODO
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
@@ -140,32 +140,47 @@ class Aggregate(Entity):
                 raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
         # noinspection PyTypeChecker
-        iterable = _snapshot.get(
-            cls.classname, uuids, filters=filters, _broker=_broker, _repository=_repository, _snapshot=_snapshot
-        )
-
-        # noinspection PyTypeChecker
-        async for aggregate in iterable:
-            yield aggregate
+        return await _snapshot.get(cls.classname, uuid, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
 
     @classmethod
-    async def get_one(
+    async def find(
         cls: Type[T],
-        uuid: UUID,
+        condition: Condition,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
-    ) -> T:
+    ) -> AsyncIterator[T]:
         """Get one aggregate based on an identifier.
 
-        :param uuid: Identifier of the aggregate.
+        :param condition: TODO.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
-        return await cls.get({uuid}, _broker=_broker, _repository=_repository, _snapshot=_snapshot).__anext__()
+        if _broker is None:
+            _broker = cls._broker
+            if isinstance(_broker, Provide):
+                raise MinosBrokerNotProvidedException("A broker instance is required.")
+
+        if _repository is None:
+            _repository = cls._repository
+            if isinstance(_repository, Provide):
+                raise MinosRepositoryNotProvidedException("A repository instance is required.")
+
+        if _snapshot is None:
+            _snapshot = cls._snapshot
+            if isinstance(_snapshot, Provide):
+                raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
+
+        # noinspection PyTypeChecker
+        iterable = _snapshot.find(
+            cls.classname, condition, _broker=_broker, _repository=_repository, _snapshot=_snapshot
+        )
+        # noinspection PyTypeChecker
+        async for aggregate in iterable:
+            yield aggregate
 
     @classmethod
     async def create(
@@ -237,7 +252,7 @@ class Aggregate(Entity):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        previous = await self.get_one(
+        previous = await self.get(
             self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
         aggregate_diff = self.diff(previous)
@@ -301,7 +316,7 @@ class Aggregate(Entity):
 
         :return: This method does not return anything.
         """
-        new = await type(self).get_one(
+        new = await type(self).get(
             self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
         self._fields |= new.fields
