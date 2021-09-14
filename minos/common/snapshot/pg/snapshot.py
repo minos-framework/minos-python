@@ -76,10 +76,10 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         if not await self.builder.is_synced(aggregate_name, **kwargs):
             await self.builder.dispatch(**kwargs)
 
-        async for item in self._get(aggregate_name, uuids, **kwargs):
+        async for item in self.get_entries(aggregate_name, uuids, **kwargs):
             yield item.build_aggregate(**kwargs)
 
-    async def _get(
+    async def get_entries(
         self,
         aggregate_name: str,
         uuids: Optional[set[UUID]] = None,
@@ -87,6 +87,16 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         streaming_mode: bool = False,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
+        """TODO
+
+        :param aggregate_name: TODO
+        :param uuids: TODO
+        :param filters: TODO
+        :param streaming_mode: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+
         # uniques = set(uuids)
         # if not len(uniques):
         #     return
@@ -142,17 +152,6 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
                 rows = await cursor.fetchall()
 
         for row in rows:
-            yield SnapshotEntry(*row)
-
-    # noinspection PyUnusedLocal
-    async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
-        """Select a sequence of ``MinosSnapshotEntry`` objects.
-
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: A sequence of ``MinosSnapshotEntry`` objects.
-        """
-        async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY, **kwargs):
             yield SnapshotEntry(*row)
 
     def _query_builder(

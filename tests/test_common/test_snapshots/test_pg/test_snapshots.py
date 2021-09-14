@@ -178,38 +178,6 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
                     # noinspection PyStatementEffect
                     {v async for v in snapshot.get("tests.aggregate_classes.Car", {uuid4()})}
 
-    async def test_select(self):
-        await self._populate()
-
-        async with PostgreSqlSnapshot.from_config(config=self.config) as snapshot:
-            observed = [v async for v in snapshot.select()]
-
-        # noinspection PyTypeChecker
-        expected = [
-            SnapshotEntry(self.uuid_1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(
-                Car(
-                    3,
-                    "blue",
-                    uuid=self.uuid_2,
-                    version=2,
-                    created_at=observed[1].created_at,
-                    updated_at=observed[1].updated_at,
-                )
-            ),
-            SnapshotEntry.from_aggregate(
-                Car(
-                    3,
-                    "blue",
-                    uuid=self.uuid_3,
-                    version=1,
-                    created_at=observed[2].created_at,
-                    updated_at=observed[2].updated_at,
-                )
-            ),
-        ]
-        self._assert_equal_snapshot_entries(expected, observed)
-
     def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):

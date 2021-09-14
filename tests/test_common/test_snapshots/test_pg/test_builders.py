@@ -95,13 +95,15 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         with self.assertRaises(MinosConfigException):
             PostgreSqlSnapshotBuilder.from_config()
 
-    async def test_dispatch_select(self):
+    async def test_dispatch(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.select()]
+                observed = [
+                    v async for v in snapshot.get_entries(Car.classname, {self.uuid_1, self.uuid_2, self.uuid_3})
+                ]
 
         # noinspection PyTypeChecker
         expected = [
@@ -154,7 +156,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                     await dispatcher.dispatch()
 
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.select()]
+                observed = [v async for v in snapshot.get_entries(aggregate_name, {self.uuid_1})]
 
         # noinspection PyTypeChecker
         expected = [
