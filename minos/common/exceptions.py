@@ -193,18 +193,20 @@ class MinosAttributeValidationException(MinosModelAttributeException):
 
 
 class DataDecoderException(MinosModelException):
-    pass
+    """Base data decoder exception."""
 
 
 class DataDecoderMalformedTypeException(DataDecoderException):
-    pass
+    """Exception to be raised when malformed types are provided."""
 
 
 class DataDecoderRequiredValueException(DataDecoderException):
-    pass
+    """Exception to be raised when required values are not provided."""
 
 
 class DataDecoderTypeException(DataDecoderException):
+    """Exception to be raised when expected and provided types do not match."""
+
     def __init__(self, target_type: Type, value: Any):
         self.target_type = target_type
         self.value = value
