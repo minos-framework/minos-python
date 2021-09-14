@@ -177,12 +177,6 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         return base
 
 
-_SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at
-FROM snapshot
-ORDER BY updated_at
-""".strip()
-
 _SELECT_MULTIPLE_ENTRIES_QUERY = """
 SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at
 FROM snapshot
