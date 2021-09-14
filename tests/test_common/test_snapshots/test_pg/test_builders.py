@@ -156,12 +156,14 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 observed = [v async for v in snapshot.select()]
 
+        # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(
                 aggregate_uuid=self.uuid_1,
                 aggregate_name=aggregate_name,
                 version=3,
-                data=Car(3, "blue", uuid=self.uuid_1, version=1).avro_bytes,
+                schema=Car.avro_schema,
+                data=Car(3, "blue", uuid=self.uuid_1, version=1).avro_data,
                 created_at=observed[0].created_at,
                 updated_at=observed[0].updated_at,
             )

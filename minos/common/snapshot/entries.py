@@ -20,6 +20,7 @@ from typing import (
     Iterable,
     Optional,
     Type,
+    Union,
 )
 from uuid import (
     UUID,
@@ -58,7 +59,7 @@ class SnapshotEntry:
         aggregate_uuid: UUID,
         aggregate_name: str,
         version: int,
-        schema: Optional[dict[str, Any]] = None,
+        schema: Optional[Union[list[dict[str, Any]], dict[str, Any]]] = None,
         data: Optional[dict[str, Any]] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
@@ -185,17 +186,14 @@ class SnapshotEntry:
     def __eq__(self, other: SnapshotEntry) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
-    def __hash__(self) -> int:
-        return hash(tuple(self))
-
     def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
-        yield from (self.aggregate_name, self.version, self.data, self.created_at, self.updated_at)
+        yield from (self.aggregate_name, self.version, self.schema, self.data, self.created_at, self.updated_at)
 
     def __repr__(self):
         name = type(self).__name__
         return (
             f"{name}(aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
-            f"version={self.version!r}, data={self.data!r}, "
+            f"version={self.version!r}, schema={self.schema!r}, data={self.data!r}, "
             f"created_at={self.created_at!r}, updated_at={self.updated_at!r})"
         )
