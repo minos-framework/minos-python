@@ -93,9 +93,6 @@ class Model(Mapping):
         schema = MinosAvroProtocol.decode_schema(raw)
         decoded = MinosAvroProtocol.decode(raw)
 
-        # FIXME: Extend implementation of the `AvroDataDecoder` to avoid this fix.
-        schema["name"] = "{}.fake.{}".format(*schema["name"].rsplit(".", 1))
-
         if isinstance(decoded, list):
             return [cls.from_avro(schema, d | kwargs) for d in decoded]
         return cls.from_avro(schema, decoded | kwargs)

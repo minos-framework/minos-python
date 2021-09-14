@@ -147,7 +147,7 @@ class AvroSchemaEncoder:
 
     def _build_model_type_schema(self, type_: ModelType) -> Any:
         namespace = type_.namespace
-        if len(namespace) > 0 and len(self.name) > 0:
+        if len(namespace) > 0:
             namespace = f"{type_.namespace}.{self.generate_random_str()}"
         schema = {
             "name": type_.name,
