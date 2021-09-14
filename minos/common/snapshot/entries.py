@@ -123,7 +123,7 @@ class SnapshotEntry:
             "schema": self.encoded_schema,
             "data": self.encoded_data,
             "created_at": self.created_at,
-            "updated_at": self.created_at,
+            "updated_at": self.updated_at,
         }
 
     @property
