@@ -92,22 +92,19 @@ class PostgreSqlSnapshotQueryBuilder:
             return self._build_condition_not(condition)
         if isinstance(condition, _ComposedCondition):
             return self._build_condition_composed(condition)
-        elif isinstance(condition, _SimpleCondition):
+        if isinstance(condition, _SimpleCondition):
             return self._build_condition_simple(condition)
-        elif isinstance(condition, _TrueCondition):
+        if isinstance(condition, _TrueCondition):
             return SQL("TRUE")
-        elif isinstance(condition, _FalseCondition):
+        if isinstance(condition, _FalseCondition):
             return SQL("FALSE")
-        else:
-            raise Exception
+
+        raise ValueError(f"Given condition is not supported. Obtained: {condition}")
 
     def _build_condition_not(self, condition: _NotCondition) -> Composable:
         return SQL("(NOT {})").format(self._build_condition(condition.inner))
 
     def _build_condition_composed(self, condition: _ComposedCondition) -> Composable:
-        if not len(condition.parts):
-            return self._build_condition(_FALSE_CONDITION)
-
         # noinspection PyTypeChecker
         operator = _COMPOSED_MAPPER[type(condition)]
         parts = (self._build_condition(c) for c in condition)
@@ -120,9 +117,9 @@ class PostgreSqlSnapshotQueryBuilder:
 
         value = condition.value
         if isinstance(value, (list, tuple, set)):
-            value = tuple(value)
-            if value == tuple():
+            if not len(value):
                 return self._build_condition(_FALSE_CONDITION)
+            value = tuple(value)
 
         if field in _FIXED_FIELDS_MAPPER:
             name = self.generate_random_str()

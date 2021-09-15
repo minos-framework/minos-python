@@ -38,6 +38,11 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(Ordering.ASC("name"), qb.ordering)
         self.assertEqual(10, qb.limit)
 
+    def test_build_raises(self):
+        with self.assertRaises(ValueError):
+            # noinspection PyTypeChecker
+            PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", True).build()
+
     async def test_build_true(self):
         condition = Condition.TRUE
         observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
@@ -220,6 +225,21 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' IN %(hello)s::jsonb))"
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": (1, 2, 3)}
+
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
+
+    async def test_build_in_empty(self):
+        condition = Condition.IN("age", set())
+        with patch("minos.common.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
+            observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
+
+        expected_query = (
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "FROM snapshot "
+            "WHERE (aggregate_name = %(aggregate_name)s) AND (FALSE)"
+        )
+        expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
         self.assertEqual(expected_query, await self._flatten_query(observed[0]))
         self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
