@@ -55,7 +55,7 @@ def _build_query(parameters: dict[str, Any], condition: Condition) -> str:
 
 def _build_composed_query(parameters: dict[str, Any], condition: ComposedCondition) -> str:
     parts = (_build_query(parameters, c) for c in condition.conditions)
-    operator = composed_mapper[condition.operator]
+    operator = _COMPOSED_MAPPER[condition.operator]
 
     return "(" + f" {operator} ".join(parts) + ")"
 
@@ -63,7 +63,7 @@ def _build_composed_query(parameters: dict[str, Any], condition: ComposedConditi
 def _build_simple_query(parameters: dict[str, Any], condition: SimpleCondition) -> str:
 
     field = condition.field.replace(".", ",")
-    operator = simple_mapper[condition.operator]
+    operator = _SIMPLE_MAPPER[condition.operator]
 
     value = condition.value
     if isinstance(value, (list, tuple, set)):
@@ -71,18 +71,18 @@ def _build_simple_query(parameters: dict[str, Any], condition: SimpleCondition) 
         if value == tuple():
             return _build_query(parameters, FALSECondition())
 
-    if field in direct_fields:
+    if field in _DIRECT_FIELDS_MAPPER:
         parameters[field] = value
-        return f"({direct_fields[field]} {operator} %({field})s)"
+        return f"({_DIRECT_FIELDS_MAPPER[field]} {operator} %({field})s)"
+    else:
+        name = str(uuid4())
+        parameters[name] = json.dumps(value)
+        return f"((data#>'{{{field}}}') {operator} %({name})s::jsonb)"
 
-    name = str(uuid4())
-    parameters[name] = json.dumps(value)
-    return f"((data#>'{{{field}}}') {operator} %({name})s::jsonb)"
 
+_COMPOSED_MAPPER = {ComposedOperator.AND: "AND", ComposedOperator.OR: "OR"}
 
-composed_mapper = {ComposedOperator.AND: "AND", ComposedOperator.OR: "OR"}
-
-simple_mapper = {
+_SIMPLE_MAPPER = {
     SimpleOperator.LOWER: "<",
     SimpleOperator.LOWER_EQUAL: "<=",
     SimpleOperator.GREATER: ">",
@@ -92,7 +92,7 @@ simple_mapper = {
     SimpleOperator.IN: "IN",
 }
 
-direct_fields = {
+_DIRECT_FIELDS_MAPPER = {
     "uuid": "aggregate_uuid",
     "version": "version",
     "created_at": "created_at",
