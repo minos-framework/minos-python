@@ -88,7 +88,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
 
             self.assertEqual(original, recovered)
 
-    async def test_get_one_raises(self):
+    async def test_get_raises(self):
         async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot() as s:
             with self.assertRaises(MinosSnapshotAggregateNotFoundException):
                 await Car.get(NULL_UUID, _broker=b, _repository=r, _snapshot=s)
