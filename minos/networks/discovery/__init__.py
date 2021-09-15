@@ -1,2 +1,7 @@
-from .clients import DiscoveryClient, MinosDiscoveryClient
-from .connectors import DiscoveryConnector
+from .clients import (
+    DiscoveryClient,
+    MinosDiscoveryClient,
+)
+from .connectors import (
+    DiscoveryConnector,
+)
