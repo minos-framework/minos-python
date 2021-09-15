@@ -4,6 +4,9 @@ from unittest.mock import (
 )
 
 import aiopg
+from psycopg2.extras import (
+    Json,
+)
 
 from minos.common import (
     Condition,
@@ -45,8 +48,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_false(self):
         condition = Condition.FALSE
@@ -57,8 +60,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_fixed_uuid(self):
         condition = Condition.EQUAL("uuid", 1)
@@ -71,8 +74,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_fixed_version(self):
         condition = Condition.EQUAL("version", 1)
@@ -85,8 +88,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_fixed_created_at(self):
         condition = Condition.EQUAL("created_at", 1)
@@ -99,8 +102,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_fixed_updated_at(self):
         condition = Condition.EQUAL("updated_at", 1)
@@ -113,8 +116,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_lower(self):
         condition = Condition.LOWER("age", 1)
@@ -126,10 +129,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' < %(hello)s::jsonb))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_lower_equal(self):
         condition = Condition.LOWER_EQUAL("age", 1)
@@ -141,10 +144,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' <= %(hello)s::jsonb))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_greater(self):
         condition = Condition.GREATER("age", 1)
@@ -156,10 +159,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' > %(hello)s::jsonb))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_greater_equal(self):
         condition = Condition.GREATER_EQUAL("age", 1)
@@ -171,10 +174,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' >= %(hello)s::jsonb))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_equal(self):
         condition = Condition.EQUAL("age", 1)
@@ -186,10 +189,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' = %(hello)s::jsonb))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_not_equal(self):
         condition = Condition.NOT_EQUAL("age", 1)
@@ -201,10 +204,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' <> %(hello)s::jsonb))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_in(self):
         condition = Condition.IN("age", {1, 2, 3})
@@ -216,10 +219,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' IN %(hello)s::jsonb))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "[1, 2, 3]"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": (1, 2, 3)}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_not(self):
         condition = Condition.NOT(Condition.LOWER("age", 1))
@@ -231,10 +234,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((NOT (data#>'{age}' < %(hello)s::jsonb)))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_and(self):
         condition = Condition.AND(Condition.LOWER("age", 1), Condition.LOWER("level", 3))
@@ -247,10 +250,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "WHERE (aggregate_name = %(aggregate_name)s) AND "
             "(((data#>'{age}' < %(hello)s::jsonb) AND (data#>'{level}' < %(goodbye)s::jsonb)))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1", "goodbye": "3"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1, "goodbye": 3}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_or(self):
         condition = Condition.OR(Condition.LOWER("age", 1), Condition.LOWER("level", 3))
@@ -263,10 +266,10 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "WHERE (aggregate_name = %(aggregate_name)s) AND "
             "(((data#>'{age}' < %(hello)s::jsonb) OR (data#>'{level}' < %(goodbye)s::jsonb)))"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": "1", "goodbye": "3"}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1, "goodbye": 3}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_fixed_ordering_asc(self):
         ordering = Ordering.ASC("created_at")
@@ -281,8 +284,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_fixed_ordering_desc(self):
         ordering = Ordering.DESC("created_at")
@@ -296,8 +299,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_ordering_asc(self):
         ordering = Ordering.ASC("name")
@@ -312,8 +315,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_ordering_desc(self):
         ordering = Ordering.DESC("name")
@@ -327,8 +330,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_limit(self):
         observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, limit=10).build()
@@ -341,8 +344,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_complex(self):
         condition = Condition.AND(
@@ -366,14 +369,18 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             'ORDER BY "updated_at" DESC '
             "LIMIT 100"
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "one": "0", "three": 1, "two": '"Fanta Zero"'}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "one": 0, "three": 1, "two": "Fanta Zero"}
 
-        self.assertEqual(expected_query, await self._flatten(observed[0]))
-        self.assertEqual(expected_parameters, observed[1])
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
-    async def _flatten(self, query) -> str:
+    async def _flatten_query(self, query) -> str:
         async with aiopg.connect(**self.snapshot_db) as connection:
             return query.as_string(connection.raw)
+
+    @staticmethod
+    def _flatten_parameters(parameters) -> dict:
+        return {k: (v if not isinstance(v, Json) else v.adapted) for k, v in parameters.items()}
 
 
 if __name__ == "__main__":

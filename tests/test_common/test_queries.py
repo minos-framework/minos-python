@@ -7,7 +7,6 @@ from minos.common import (
 
 
 class TestCondition(unittest.TestCase):
-
     def test_hash(self):
         self.assertIsInstance(hash(Condition.EQUAL("foo", 3)), int)
 
@@ -62,9 +61,8 @@ class TestCondition(unittest.TestCase):
 
 
 class TestOrdering(unittest.TestCase):
-
     def test_hash(self):
-        self.assertIsInstance(hash(Condition.EQUAL("foo", 3)), int)
+        self.assertIsInstance(hash(Ordering.ASC("foo")), int)
 
     def test_eq(self):
         self.assertEqual(Ordering.ASC("foo"), Ordering.ASC("foo"))
@@ -78,5 +76,5 @@ class TestOrdering(unittest.TestCase):
         self.assertEqual("_Ordering('foo', True)", repr(Ordering.DESC("foo")))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

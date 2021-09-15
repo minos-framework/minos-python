@@ -4,7 +4,6 @@ from __future__ import (
     annotations,
 )
 
-import json
 from typing import (
     Any,
     Optional,
@@ -13,6 +12,9 @@ from uuid import (
     uuid4,
 )
 
+from psycopg2.extras import (
+    Json,
+)
 from psycopg2.sql import (
     SQL,
     Composable,
@@ -125,15 +127,17 @@ class PostgreSqlSnapshotQueryBuilder:
         if field in _FIXED_FIELDS_MAPPER:
             name = self.generate_random_str()
             self._parameters[name] = value
-            return SQL("({field} {operator} {name})").format(
-                field=_FIXED_FIELDS_MAPPER[field], operator=operator, name=Placeholder(name)
-            )
+
+            field = _FIXED_FIELDS_MAPPER[field]
+            name = Placeholder(name)
+            return SQL("({field} {operator} {name})").format(field=field, operator=operator, name=name)
         else:
             name = self.generate_random_str()
-            self._parameters[name] = json.dumps(value)
-            return SQL("(data#>{field} {operator} {name}::jsonb)").format(
-                field=Literal("{{{}}}".format(field.replace(".", ","))), operator=operator, name=Placeholder(name)
-            )
+            self._parameters[name] = Json(value)
+
+            field = Literal("{{{}}}".format(field.replace(".", ",")))
+            name = Placeholder(name)
+            return SQL("(data#>{field} {operator} {name}::jsonb)").format(field=field, operator=operator, name=name)
 
     @staticmethod
     def _build_ordering(ordering: _Ordering) -> Composable:

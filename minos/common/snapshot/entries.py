@@ -64,9 +64,6 @@ class SnapshotEntry:
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
     ):
-        if isinstance(data, memoryview):
-            data = data.tobytes()
-
         if isinstance(schema, memoryview):
             schema = schema.tobytes()
         if isinstance(schema, bytes):

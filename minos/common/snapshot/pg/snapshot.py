@@ -141,6 +141,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         query, parameters = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit).build()
 
         async with self.cursor() as cursor:
+            # noinspection PyTypeChecker
             await cursor.execute(query, parameters)
             if streaming_mode:
                 async for row in cursor:
