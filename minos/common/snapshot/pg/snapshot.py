@@ -83,8 +83,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         return aggregate
 
     async def get_entry(self, aggregate_name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
-        if not await self.builder.is_synced(aggregate_name, **kwargs):
-            await self.builder.dispatch(**kwargs)
+        await self.builder.dispatch(**kwargs)
 
         parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid}
 
@@ -135,8 +134,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :param kwargs: TODO
         :return: TODO
         """
-        if not await self.builder.is_synced(aggregate_name, **kwargs):
-            await self.builder.dispatch(**kwargs)
+        await self.builder.dispatch(**kwargs)
 
         query, parameters = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit).build()
 
