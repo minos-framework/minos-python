@@ -14,6 +14,7 @@ from dependency_injector import (
 )
 
 from minos.common import (
+    Condition,
     FieldDiff,
     FieldDiffContainer,
     MinosConfigException,
@@ -25,8 +26,6 @@ from minos.common import (
     PostgreSqlSnapshotBuilder,
     PostgreSqlSnapshotSetup,
     RepositoryEntry,
-    SimpleCondition,
-    SimpleOperator,
     SnapshotEntry,
 )
 from minos.common.testing import (
@@ -79,10 +78,10 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             PostgreSqlSnapshot.from_config()
 
     async def test_find_by_uuid(self):
-        condition = SimpleCondition("uuid", SimpleOperator.IN, {self.uuid_2, self.uuid_3})
+        condition = Condition.IN("uuid", {self.uuid_2, self.uuid_3})
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering("updated_at"))
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
                 observed = [v async for v in iterable]
 
         expected = [
@@ -106,12 +105,12 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
     async def test_find_streaming_true(self):
-        condition = SimpleCondition("uuid", SimpleOperator.IN, {self.uuid_2, self.uuid_3})
+        condition = Condition.IN("uuid", {self.uuid_2, self.uuid_3})
 
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 iterable = snapshot.find(
-                    "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering=Ordering("updated_at")
+                    "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering=Ordering.ASC("updated_at")
                 )
                 observed = [v async for v in iterable]
 
@@ -137,10 +136,10 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
 
     async def test_get_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
-        condition = SimpleCondition("uuid", SimpleOperator.IN, uuids)
+        condition = Condition.IN("uuid", uuids)
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering("updated_at"))
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
                 observed = [v async for v in iterable]
 
             expected = [
@@ -166,8 +165,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_find_empty(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                condition = SimpleCondition("uuid", SimpleOperator.IN, set())
-                observed = {v async for v in snapshot.find("tests.aggregate_classes.Car", condition)}
+                observed = {v async for v in snapshot.find("tests.aggregate_classes.Car", Condition.FALSE)}
 
         expected = set()
         self.assertEqual(expected, observed)
@@ -183,7 +181,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_find(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                condition = SimpleCondition("color", SimpleOperator.EQUAL, "blue")
+                condition = Condition.EQUAL("color", "blue")
                 iterable = snapshot.find("tests.aggregate_classes.Car", condition)
                 observed = [v async for v in iterable]
 

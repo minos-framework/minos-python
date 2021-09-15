@@ -42,10 +42,11 @@ from ....repository import (
     MinosRepository,
     RepositoryEntry,
 )
+# noinspection PyProtectedMember
 from ....snapshot import (
-    Condition,
     MinosSnapshot,
-    Ordering,
+    _Condition,
+    _Ordering,
 )
 from ....uuid import (
     NULL_UUID,
@@ -119,7 +120,6 @@ class Aggregate(Entity):
         :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         """
-
         if _broker is None:
             _broker = cls._broker
             if isinstance(_broker, Provide):
@@ -139,8 +139,8 @@ class Aggregate(Entity):
     @classmethod
     async def find(
         cls: Type[T],
-        condition: Condition,
-        ordering: Optional[Ordering] = None,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,

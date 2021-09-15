@@ -26,6 +26,7 @@ from dependency_injector import (
 
 from minos.common import (
     Action,
+    Condition,
     FieldDiff,
     FieldDiffContainer,
     MinosConfigException,
@@ -36,10 +37,7 @@ from minos.common import (
     PostgreSqlSnapshotBuilder,
     PostgreSqlSnapshotSetup,
     RepositoryEntry,
-    SimpleCondition,
-    SimpleOperator,
     SnapshotEntry,
-    TRUECondition,
     current_datetime,
 )
 from minos.common.testing import (
@@ -104,7 +102,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.find_entries(Car.classname, TRUECondition())]
+                observed = [v async for v in snapshot.find_entries(Car.classname, Condition.TRUE)]
 
         # noinspection PyTypeChecker
         expected = [
@@ -143,7 +141,7 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
-        condition = SimpleCondition("uuid", SimpleOperator.EQUAL, self.uuid_1)
+        condition = Condition.EQUAL("uuid", self.uuid_1)
 
         async def _fn(*args, **kwargs):
             yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())

@@ -22,21 +22,30 @@ from psycopg2.sql import (
 )
 
 from ..queries import (
-    ComposedCondition,
-    ComposedOperator,
-    Condition,
-    FALSECondition,
-    Ordering,
-    SimpleCondition,
-    SimpleOperator,
-    TRUECondition,
+    _FALSE_CONDITION,
+    AndCondition,
+    EqualCondition,
+    FalseCondition,
+    GreaterCondition,
+    GreaterEqualCondition,
+    InCondition,
+    LowerCondition,
+    LowerEqualCondition,
+    NotCondition,
+    NotEqualCondition,
+    OrCondition,
+    TrueCondition,
+    _ComposedCondition,
+    _Condition,
+    _Ordering,
+    _SimpleCondition,
 )
 
 
 class PostgreSqlSnapshotQueryBuilder:
     """TODO"""
 
-    def __init__(self, aggregate_name: str, condition: Condition, ordering: Optional[Ordering], limit: Optional[int]):
+    def __init__(self, aggregate_name: str, condition: _Condition, ordering: Optional[_Ordering], limit: Optional[int]):
         self.aggregate_name = aggregate_name
         self.condition = condition
         self.ordering = ordering
@@ -62,7 +71,7 @@ class PostgreSqlSnapshotQueryBuilder:
 
         if self.ordering is not None:
             order_by = SQL("ORDER BY {key} {direction}").format(
-                key=Identifier(self.ordering.key), direction=_ORDERING_MAPPER[self.ordering.reverse]
+                key=Identifier(self.ordering.by), direction=_ORDERING_MAPPER[self.ordering.reverse]
             )
             query = SQL(" ").join([query, order_by])
 
@@ -72,33 +81,42 @@ class PostgreSqlSnapshotQueryBuilder:
 
         return query
 
-    def _build_query(self, condition: Condition) -> Composable:
-        if isinstance(condition, ComposedCondition):
+    def _build_query(self, condition: _Condition) -> Composable:
+        if isinstance(condition, NotCondition):
+            return self._build_not_query(condition)
+        if isinstance(condition, _ComposedCondition):
             return self._build_composed_query(condition)
-        elif isinstance(condition, SimpleCondition):
+        elif isinstance(condition, _SimpleCondition):
             return self._build_simple_query(condition)
-        elif isinstance(condition, TRUECondition):
+        elif isinstance(condition, TrueCondition):
             return SQL("TRUE")
-        elif isinstance(condition, FALSECondition):
+        elif isinstance(condition, FalseCondition):
             return SQL("FALSE")
         else:
             raise Exception
 
-    def _build_composed_query(self, condition: ComposedCondition) -> Composable:
-        parts = (self._build_query(c) for c in condition.conditions)
-        operator = _COMPOSED_MAPPER[condition.operator]
+    def _build_not_query(self, condition: NotCondition) -> Composable:
+        return SQL("(NOT {})").format(self._build_query(condition.inner))
 
+    def _build_composed_query(self, condition: _ComposedCondition) -> Composable:
+        if not len(condition.parts):
+            return self._build_query(_FALSE_CONDITION)
+
+        # noinspection PyTypeChecker
+        operator = _COMPOSED_MAPPER[type(condition)]
+        parts = (self._build_query(c) for c in condition)
         return SQL("({composed})").format(composed=operator.join(parts))
 
-    def _build_simple_query(self, condition: SimpleCondition) -> Composable:
+    def _build_simple_query(self, condition: _SimpleCondition) -> Composable:
         field = condition.field
-        operator = _SIMPLE_MAPPER[condition.operator]
+        # noinspection PyTypeChecker
+        operator = _SIMPLE_MAPPER[type(condition)]
 
         value = condition.value
         if isinstance(value, (list, tuple, set)):
             value = tuple(value)
             if value == tuple():
-                return self._build_query(FALSECondition())
+                return self._build_query(_FALSE_CONDITION)
 
         if field in _DIRECT_FIELDS_MAPPER:
             self._parameters[field] = value
@@ -113,16 +131,16 @@ class PostgreSqlSnapshotQueryBuilder:
             )
 
 
-_COMPOSED_MAPPER = {ComposedOperator.AND: SQL(" AND "), ComposedOperator.OR: SQL(" OR ")}
+_COMPOSED_MAPPER = {AndCondition: SQL(" AND "), OrCondition: SQL(" OR ")}
 
 _SIMPLE_MAPPER = {
-    SimpleOperator.LOWER: SQL("<"),
-    SimpleOperator.LOWER_EQUAL: SQL("<="),
-    SimpleOperator.GREATER: SQL(">"),
-    SimpleOperator.GREATER_EQUAL: SQL(">="),
-    SimpleOperator.EQUAL: SQL("="),
-    SimpleOperator.NOT_EQUAL: SQL("<>"),
-    SimpleOperator.IN: SQL("IN"),
+    LowerCondition: SQL("<"),
+    LowerEqualCondition: SQL("<="),
+    GreaterCondition: SQL(">"),
+    GreaterEqualCondition: SQL(">="),
+    EqualCondition: SQL("="),
+    NotEqualCondition: SQL("<>"),
+    InCondition: SQL("IN"),
 }
 
 _DIRECT_FIELDS_MAPPER = {

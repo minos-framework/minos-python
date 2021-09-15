@@ -27,14 +27,21 @@ from .abc import (
     MinosSnapshot,
 )
 from .queries import (
-    ComposedCondition,
-    ComposedOperator,
-    Condition,
-    FALSECondition,
-    Ordering,
-    SimpleCondition,
-    SimpleOperator,
-    TRUECondition,
+    AndCondition,
+    EqualCondition,
+    FalseCondition,
+    GreaterCondition,
+    GreaterEqualCondition,
+    InCondition,
+    LowerCondition,
+    LowerEqualCondition,
+    NotCondition,
+    NotEqualCondition,
+    OrCondition,
+    TrueCondition,
+    _Condition,
+    _Ordering,
+    _SimpleCondition,
 )
 
 if TYPE_CHECKING:
@@ -50,8 +57,8 @@ class InMemorySnapshot(MinosSnapshot):
     async def find(
         self,
         aggregate_name: str,
-        condition: Condition,
-        ordering: Optional[Ordering] = None,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         _repository: MinosRepository = None,
         **kwargs,
@@ -75,7 +82,7 @@ class InMemorySnapshot(MinosSnapshot):
                 aggregates.append(aggregate)
 
         if ordering is not None:
-            aggregates.sort(key=attrgetter(ordering.key), reverse=ordering.reverse)
+            aggregates.sort(key=attrgetter(ordering.by), reverse=ordering.reverse)
 
         if limit is not None:
             aggregates = aggregates[:limit]
@@ -110,32 +117,33 @@ class InMemorySnapshot(MinosSnapshot):
 
         return instance
 
-    def _matches_condition(self, aggregate: Aggregate, condition: Condition) -> bool:
-        if isinstance(condition, TRUECondition):
+    def _matches_condition(self, aggregate: Aggregate, condition: _Condition) -> bool:
+        if isinstance(condition, NotCondition):
+            return not self._matches_condition(aggregate, condition.inner)
+        if isinstance(condition, TrueCondition):
             return True
-        if isinstance(condition, FALSECondition):
+        if isinstance(condition, FalseCondition):
             return False
-        if isinstance(condition, ComposedCondition):
-            if condition.operator == ComposedOperator.AND:
-                return all(self._matches_condition(aggregate, c) for c in condition.conditions)
-            if condition.operator == ComposedOperator.OR:
-                return any(self._matches_condition(aggregate, c) for c in condition.conditions)
-        if isinstance(condition, SimpleCondition):
+        if isinstance(condition, AndCondition):
+            return all(self._matches_condition(aggregate, c) for c in condition)
+        if isinstance(condition, OrCondition):
+            return any(self._matches_condition(aggregate, c) for c in condition)
+        if isinstance(condition, _SimpleCondition):
             field = attrgetter(condition.field)(aggregate)
             value = condition.value
-            if condition.operator == SimpleOperator.LOWER:
+            if isinstance(condition, LowerCondition):
                 return field < value
-            if condition.operator == SimpleOperator.LOWER_EQUAL:
+            if isinstance(condition, LowerEqualCondition):
                 return field <= value
-            if condition.operator == SimpleOperator.GREATER:
+            if isinstance(condition, GreaterCondition):
                 return field > value
-            if condition.operator == SimpleOperator.GREATER_EQUAL:
+            if isinstance(condition, GreaterEqualCondition):
                 return field >= value
-            if condition.operator == SimpleOperator.EQUAL:
+            if isinstance(condition, EqualCondition):
                 return field == value
-            if condition.operator == SimpleOperator.NOT_EQUAL:
+            if isinstance(condition, NotEqualCondition):
                 return field != value
-            if condition.operator == SimpleOperator.IN:
+            if isinstance(condition, InCondition):
                 return field in value
 
         raise Exception

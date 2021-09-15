@@ -144,20 +144,14 @@ from .setup import (
     MinosSetup,
 )
 from .snapshot import (
-    ComposedCondition,
-    ComposedOperator,
     Condition,
-    FALSECondition,
     InMemorySnapshot,
     MinosSnapshot,
     Ordering,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
     PostgreSqlSnapshotSetup,
-    SimpleCondition,
-    SimpleOperator,
     SnapshotEntry,
-    TRUECondition,
 )
 from .storage import (
     MinosStorage,

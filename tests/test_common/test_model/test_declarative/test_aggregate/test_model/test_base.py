@@ -15,13 +15,12 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
+    Condition,
     InMemoryRepository,
     InMemorySnapshot,
     MinosRepositoryException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
-    SimpleCondition,
-    SimpleOperator,
     current_datetime,
 )
 from tests.aggregate_classes import (
@@ -76,7 +75,7 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                     Car.create(doors=5, color="blue", _broker=b, _repository=r, _snapshot=s),
                 )
             )
-            condition = SimpleCondition("uuid", SimpleOperator.IN, {o.uuid for o in originals})
+            condition = Condition.IN("uuid", {o.uuid for o in originals})
             iterable = Car.find(condition, _broker=b, _repository=r, _snapshot=s)
             recovered = {v async for v in iterable}
 

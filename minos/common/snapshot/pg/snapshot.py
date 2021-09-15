@@ -27,8 +27,8 @@ from ..entries import (
     SnapshotEntry,
 )
 from ..queries import (
-    Condition,
-    Ordering,
+    _Condition,
+    _Ordering,
 )
 from .abc import (
     PostgreSqlSnapshotSetup,
@@ -99,8 +99,8 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
     async def find(
         self,
         aggregate_name: str,
-        condition: Condition,
-        ordering: Optional[Ordering] = None,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
@@ -119,8 +119,8 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
     async def find_entries(
         self,
         aggregate_name: str,
-        condition: Condition,
-        ordering: Optional[Ordering] = None,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
         **kwargs,

@@ -20,8 +20,8 @@ from ..setup import (
     MinosSetup,
 )
 from .queries import (
-    Condition,
-    Ordering,
+    _Condition,
+    _Ordering,
 )
 
 if TYPE_CHECKING:
@@ -47,8 +47,8 @@ class MinosSnapshot(ABC, MinosSetup):
     async def find(
         self,
         aggregate_name: str,
-        condition: Condition,
-        ordering: Optional[Ordering] = None,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         **kwargs
     ) -> AsyncIterator[Aggregate]:

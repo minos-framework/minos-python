@@ -15,12 +15,8 @@ from .pg import (
     PostgreSqlSnapshotSetup,
 )
 from .queries import (
-    ComposedCondition,
-    ComposedOperator,
     Condition,
-    FALSECondition,
     Ordering,
-    SimpleCondition,
-    SimpleOperator,
-    TRUECondition,
+    _Condition,
+    _Ordering,
 )

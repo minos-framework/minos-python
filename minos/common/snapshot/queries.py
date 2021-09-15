@@ -7,66 +7,113 @@ from __future__ import (
 from abc import (
     ABC,
 )
-from enum import (
-    Enum,
-    auto,
+from functools import (
+    partial,
 )
 from typing import (
     Any,
+    Iterable,
 )
 
 
-class Ordering:
+class _Ordering:
     """TODO"""
 
-    def __init__(self, key: str, reverse: bool = False):
-        self.key = key
+    def __init__(self, by: str, reverse: bool):
+        self.by = by
         self.reverse = reverse
 
 
-class Condition(ABC):
+class _Condition(ABC):
     """TODO"""
 
 
-class TRUECondition(Condition):
+class TrueCondition(_Condition):
     """TODO"""
 
 
-class FALSECondition(Condition):
+class FalseCondition(_Condition):
     """TODO"""
 
 
-class ComposedCondition(Condition):
+class _ComposedCondition(_Condition, ABC):
     """TODO"""
 
-    def __init__(self, operator: ComposedOperator, conditions: set[Condition]):
-        self.operator = operator
-        self.conditions = conditions
+    def __init__(self, *parts: Iterable[_Condition]):
+        self.parts = set(parts)
+
+    def __iter__(self):
+        yield from self.parts
 
 
-class SimpleCondition(Condition):
+class AndCondition(_ComposedCondition):
     """TODO"""
 
-    def __init__(self, field: Any, operator: SimpleOperator, value: Any):
+
+class OrCondition(_ComposedCondition):
+    """TODO"""
+
+
+class NotCondition(_Condition):
+    def __init__(self, inner: _Condition):
+        self.inner = inner
+
+
+class _SimpleCondition(_Condition, ABC):
+    """TODO"""
+
+    def __init__(self, field: Any, value: Any):
         self.field = field
-        self.operator = operator
         self.value = value
 
 
-class ComposedOperator(Enum):
+class LowerCondition(_SimpleCondition):
     """TODO"""
 
-    AND = auto()
-    OR = auto()
 
-
-class SimpleOperator(Enum):
+class LowerEqualCondition(_SimpleCondition):
     """TODO"""
 
-    LOWER = auto()
-    LOWER_EQUAL = auto()
-    GREATER = auto()
-    GREATER_EQUAL = auto()
-    EQUAL = auto()
-    NOT_EQUAL = auto()
-    IN = auto()
+
+class GreaterCondition(_SimpleCondition):
+    """TODO"""
+
+
+class GreaterEqualCondition(_SimpleCondition):
+    """TODO"""
+
+
+class EqualCondition(_SimpleCondition):
+    """TODO"""
+
+
+class NotEqualCondition(_SimpleCondition):
+    """TODO"""
+
+
+class InCondition(_SimpleCondition):
+    """TODO"""
+
+
+_TRUE_CONDITION = TrueCondition()
+_FALSE_CONDITION = FalseCondition()
+
+
+class Ordering:
+    ASC = partial(_Ordering, reverse=False)
+    DESC = partial(_Ordering, reverse=True)
+
+
+class Condition:
+    TRUE = _TRUE_CONDITION
+    FALSE = _FALSE_CONDITION
+    AND = AndCondition
+    OR = OrCondition
+    NOT = NotCondition
+    LOWER = LowerCondition
+    LOWER_EQUAL = LowerEqualCondition
+    GREATER = GreaterCondition
+    GREATER_EQUAL = GreaterEqualCondition
+    EQUAL = EqualCondition
+    NOT_EQUAL = NotEqualCondition
+    IN = InCondition
