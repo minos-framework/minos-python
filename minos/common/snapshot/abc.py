@@ -16,12 +16,12 @@ from uuid import (
     UUID,
 )
 
-from ..setup import (
-    MinosSetup,
-)
-from .queries import (
+from ..queries import (
     _Condition,
     _Ordering,
+)
+from ..setup import (
+    MinosSetup,
 )
 
 if TYPE_CHECKING:

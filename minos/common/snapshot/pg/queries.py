@@ -21,24 +21,24 @@ from psycopg2.sql import (
     Placeholder,
 )
 
-from ..queries import (
+from ...queries import (
     _FALSE_CONDITION,
-    AndCondition,
-    EqualCondition,
-    FalseCondition,
-    GreaterCondition,
-    GreaterEqualCondition,
-    InCondition,
-    LowerCondition,
-    LowerEqualCondition,
-    NotCondition,
-    NotEqualCondition,
-    OrCondition,
-    TrueCondition,
+    _AndCondition,
     _ComposedCondition,
     _Condition,
+    _EqualCondition,
+    _FalseCondition,
+    _GreaterCondition,
+    _GreaterEqualCondition,
+    _InCondition,
+    _LowerCondition,
+    _LowerEqualCondition,
+    _NotCondition,
+    _NotEqualCondition,
+    _OrCondition,
     _Ordering,
     _SimpleCondition,
+    _TrueCondition,
 )
 
 
@@ -82,20 +82,20 @@ class PostgreSqlSnapshotQueryBuilder:
         return query
 
     def _build_query(self, condition: _Condition) -> Composable:
-        if isinstance(condition, NotCondition):
+        if isinstance(condition, _NotCondition):
             return self._build_not_query(condition)
         if isinstance(condition, _ComposedCondition):
             return self._build_composed_query(condition)
         elif isinstance(condition, _SimpleCondition):
             return self._build_simple_query(condition)
-        elif isinstance(condition, TrueCondition):
+        elif isinstance(condition, _TrueCondition):
             return SQL("TRUE")
-        elif isinstance(condition, FalseCondition):
+        elif isinstance(condition, _FalseCondition):
             return SQL("FALSE")
         else:
             raise Exception
 
-    def _build_not_query(self, condition: NotCondition) -> Composable:
+    def _build_not_query(self, condition: _NotCondition) -> Composable:
         return SQL("(NOT {})").format(self._build_query(condition.inner))
 
     def _build_composed_query(self, condition: _ComposedCondition) -> Composable:
@@ -131,16 +131,16 @@ class PostgreSqlSnapshotQueryBuilder:
             )
 
 
-_COMPOSED_MAPPER = {AndCondition: SQL(" AND "), OrCondition: SQL(" OR ")}
+_COMPOSED_MAPPER = {_AndCondition: SQL(" AND "), _OrCondition: SQL(" OR ")}
 
 _SIMPLE_MAPPER = {
-    LowerCondition: SQL("<"),
-    LowerEqualCondition: SQL("<="),
-    GreaterCondition: SQL(">"),
-    GreaterEqualCondition: SQL(">="),
-    EqualCondition: SQL("="),
-    NotEqualCondition: SQL("<>"),
-    InCondition: SQL("IN"),
+    _LowerCondition: SQL("<"),
+    _LowerEqualCondition: SQL("<="),
+    _GreaterCondition: SQL(">"),
+    _GreaterEqualCondition: SQL(">="),
+    _EqualCondition: SQL("="),
+    _NotEqualCondition: SQL("<>"),
+    _InCondition: SQL("IN"),
 }
 
 _DIRECT_FIELDS_MAPPER = {

@@ -38,15 +38,16 @@ from ....exceptions import (
 from ....networks import (
     MinosBroker,
 )
+from ....queries import (
+    _Condition,
+    _Ordering,
+)
 from ....repository import (
     MinosRepository,
     RepositoryEntry,
 )
-# noinspection PyProtectedMember
 from ....snapshot import (
     MinosSnapshot,
-    _Condition,
-    _Ordering,
 )
 from ....uuid import (
     NULL_UUID,

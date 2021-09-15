@@ -20,28 +20,28 @@ from ..exceptions import (
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
 )
+from ..queries import (
+    _AndCondition,
+    _Condition,
+    _EqualCondition,
+    _FalseCondition,
+    _GreaterCondition,
+    _GreaterEqualCondition,
+    _InCondition,
+    _LowerCondition,
+    _LowerEqualCondition,
+    _NotCondition,
+    _NotEqualCondition,
+    _OrCondition,
+    _Ordering,
+    _SimpleCondition,
+    _TrueCondition,
+)
 from ..repository import (
     MinosRepository,
 )
 from .abc import (
     MinosSnapshot,
-)
-from .queries import (
-    AndCondition,
-    EqualCondition,
-    FalseCondition,
-    GreaterCondition,
-    GreaterEqualCondition,
-    InCondition,
-    LowerCondition,
-    LowerEqualCondition,
-    NotCondition,
-    NotEqualCondition,
-    OrCondition,
-    TrueCondition,
-    _Condition,
-    _Ordering,
-    _SimpleCondition,
 )
 
 if TYPE_CHECKING:
@@ -118,32 +118,32 @@ class InMemorySnapshot(MinosSnapshot):
         return instance
 
     def _matches_condition(self, aggregate: Aggregate, condition: _Condition) -> bool:
-        if isinstance(condition, NotCondition):
+        if isinstance(condition, _NotCondition):
             return not self._matches_condition(aggregate, condition.inner)
-        if isinstance(condition, TrueCondition):
+        if isinstance(condition, _TrueCondition):
             return True
-        if isinstance(condition, FalseCondition):
+        if isinstance(condition, _FalseCondition):
             return False
-        if isinstance(condition, AndCondition):
+        if isinstance(condition, _AndCondition):
             return all(self._matches_condition(aggregate, c) for c in condition)
-        if isinstance(condition, OrCondition):
+        if isinstance(condition, _OrCondition):
             return any(self._matches_condition(aggregate, c) for c in condition)
         if isinstance(condition, _SimpleCondition):
             field = attrgetter(condition.field)(aggregate)
             value = condition.value
-            if isinstance(condition, LowerCondition):
+            if isinstance(condition, _LowerCondition):
                 return field < value
-            if isinstance(condition, LowerEqualCondition):
+            if isinstance(condition, _LowerEqualCondition):
                 return field <= value
-            if isinstance(condition, GreaterCondition):
+            if isinstance(condition, _GreaterCondition):
                 return field > value
-            if isinstance(condition, GreaterEqualCondition):
+            if isinstance(condition, _GreaterEqualCondition):
                 return field >= value
-            if isinstance(condition, EqualCondition):
+            if isinstance(condition, _EqualCondition):
                 return field == value
-            if isinstance(condition, NotEqualCondition):
+            if isinstance(condition, _NotEqualCondition):
                 return field != value
-            if isinstance(condition, InCondition):
+            if isinstance(condition, _InCondition):
                 return field in value
 
         raise Exception

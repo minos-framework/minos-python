@@ -20,15 +20,15 @@ from ...configuration import (
 from ...exceptions import (
     MinosSnapshotAggregateNotFoundException,
 )
+from ...queries import (
+    _Condition,
+    _Ordering,
+)
 from ..abc import (
     MinosSnapshot,
 )
 from ..entries import (
     SnapshotEntry,
-)
-from ..queries import (
-    _Condition,
-    _Ordering,
 )
 from .abc import (
     PostgreSqlSnapshotSetup,
