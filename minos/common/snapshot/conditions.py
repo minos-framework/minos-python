@@ -44,7 +44,7 @@ class ORCondition(ComposedCondition):
 
 class SimpleCondition(Condition):
     def __init__(self, field: Any, operator: SimpleOperator, value: Any):
-        self.first = field
+        self.field = field
         self.operator = operator
         self.value = value
 

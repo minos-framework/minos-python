@@ -97,7 +97,7 @@ class InMemorySnapshot(MinosSnapshot):
         if isinstance(condition, ORCondition):
             return any(self._matches_condition(aggregate, c) for c in condition.conditions)
         if isinstance(condition, SimpleCondition):
-            field = attrgetter(condition.first)(aggregate)
+            field = attrgetter(condition.field)(aggregate)
             value = condition.value
             if condition.operator == SimpleOperator.LOWER:
                 return field < value

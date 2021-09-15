@@ -62,7 +62,7 @@ def _build_composed_query(parameters: dict[str, Any], condition: ComposedConditi
 
 def _build_simple_query(parameters: dict[str, Any], condition: SimpleCondition) -> str:
 
-    field = condition.first.replace(".", ",")
+    field = condition.field.replace(".", ",")
     operator = simple_mapper[condition.operator]
 
     value = condition.value
