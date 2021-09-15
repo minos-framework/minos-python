@@ -1,4 +1,6 @@
-from .abc import DiscoveryClient
+from .abc import (
+    DiscoveryClient,
+)
 
 
 class KongDiscovery(DiscoveryClient):
@@ -9,7 +11,7 @@ class KongDiscovery(DiscoveryClient):
         name: str,
         endpoints: list[dict[str, str]],
         retry_tries: int = 3,
-        retry_delay: float = 5
+        retry_delay: float = 5,
     ) -> None:
         endpoint = f"{self.route}/services"
         service_metadata = {

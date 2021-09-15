@@ -1,6 +1,6 @@
 from .clients import (
     DiscoveryClient,
-    MinosDiscoveryClient
+    MinosDiscoveryClient,
 )
 from .connectors import (
     DiscoveryConnector,

@@ -1,5 +1,5 @@
 from .abc import (
-    DiscoveryClient
+    DiscoveryClient,
 )
 from .minos_discovery import (
     MinosDiscoveryClient,
