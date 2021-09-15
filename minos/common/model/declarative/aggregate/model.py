@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.model.declarative.aggregate.model module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -129,12 +124,10 @@ class Aggregate(Entity):
             _broker = cls._broker
             if isinstance(_broker, Provide):
                 raise MinosBrokerNotProvidedException("A broker instance is required.")
-
         if _repository is None:
             _repository = cls._repository
             if isinstance(_repository, Provide):
                 raise MinosRepositoryNotProvidedException("A repository instance is required.")
-
         if _snapshot is None:
             _snapshot = cls._snapshot
             if isinstance(_snapshot, Provide):
@@ -168,12 +161,10 @@ class Aggregate(Entity):
             _broker = cls._broker
             if isinstance(_broker, Provide):
                 raise MinosBrokerNotProvidedException("A broker instance is required.")
-
         if _repository is None:
             _repository = cls._repository
             if isinstance(_repository, Provide):
                 raise MinosRepositoryNotProvidedException("A repository instance is required.")
-
         if _snapshot is None:
             _snapshot = cls._snapshot
             if isinstance(_snapshot, Provide):
@@ -207,7 +198,6 @@ class Aggregate(Entity):
             raise MinosRepositoryException(
                 f"The identifier must be computed internally on the repository. Obtained: {kwargs['uuid']}"
             )
-
         if "version" in kwargs:
             raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"

@@ -27,10 +27,10 @@ from .abc import (
     MinosSnapshot,
 )
 from .queries import (
-    ANDCondition,
+    ComposedCondition,
+    ComposedOperator,
     Condition,
     FALSECondition,
-    ORCondition,
     Ordering,
     SimpleCondition,
     SimpleOperator,
@@ -115,10 +115,11 @@ class InMemorySnapshot(MinosSnapshot):
             return True
         if isinstance(condition, FALSECondition):
             return False
-        if isinstance(condition, ANDCondition):
-            return all(self._matches_condition(aggregate, c) for c in condition.conditions)
-        if isinstance(condition, ORCondition):
-            return any(self._matches_condition(aggregate, c) for c in condition.conditions)
+        if isinstance(condition, ComposedCondition):
+            if condition.operator == ComposedOperator.AND:
+                return all(self._matches_condition(aggregate, c) for c in condition.conditions)
+            if condition.operator == ComposedOperator.OR:
+                return any(self._matches_condition(aggregate, c) for c in condition.conditions)
         if isinstance(condition, SimpleCondition):
             field = attrgetter(condition.field)(aggregate)
             value = condition.value

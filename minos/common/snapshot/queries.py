@@ -44,20 +44,6 @@ class ComposedCondition(Condition):
         self.conditions = conditions
 
 
-class ANDCondition(ComposedCondition):
-    """TODO"""
-
-    def __init__(self, conditions: set[Condition]):
-        super().__init__(ComposedOperator.AND, conditions)
-
-
-class ORCondition(ComposedCondition):
-    """TODO"""
-
-    def __init__(self, conditions: set[Condition]):
-        super().__init__(ComposedOperator.AND, conditions)
-
-
 class SimpleCondition(Condition):
     """TODO"""
 

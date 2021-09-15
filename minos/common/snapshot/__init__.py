@@ -1,4 +1,5 @@
 """minos.common.snapshot module."""
+
 from .abc import (
     MinosSnapshot,
 )
@@ -14,12 +15,10 @@ from .pg import (
     PostgreSqlSnapshotSetup,
 )
 from .queries import (
-    ANDCondition,
     ComposedCondition,
     ComposedOperator,
     Condition,
     FALSECondition,
-    ORCondition,
     Ordering,
     SimpleCondition,
     SimpleOperator,
