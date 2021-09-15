@@ -152,6 +152,7 @@ from .snapshot import (
     MinosSnapshot,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotSetup,
     SnapshotEntry,
 )

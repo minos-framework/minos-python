@@ -45,14 +45,20 @@ from ...queries import (
 class PostgreSqlSnapshotQueryBuilder:
     """TODO"""
 
-    def __init__(self, aggregate_name: str, condition: _Condition, ordering: Optional[_Ordering], limit: Optional[int]):
+    def __init__(
+        self,
+        aggregate_name: str,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
+        limit: Optional[int] = None,
+    ):
         self.aggregate_name = aggregate_name
         self.condition = condition
         self.ordering = ordering
         self.limit = limit
         self._parameters = None
 
-    def build(self) -> tuple[str, dict[str, Any]]:
+    def build(self) -> tuple[Composable, dict[str, Any]]:
         """TODO
 
         :return: TODO
@@ -64,30 +70,28 @@ class PostgreSqlSnapshotQueryBuilder:
 
         return query, parameters
 
-    def _build(self) -> str:
+    def _build(self) -> Composable:
         self._parameters["aggregate_name"] = self.aggregate_name
 
-        query = SQL(" AND ").join([_SELECT_MULTIPLE_ENTRIES_QUERY, self._build_query(self.condition)])
+        query = SQL(" AND ").join(
+            [_SELECT_MULTIPLE_ENTRIES_QUERY, SQL("({})").format(self._build_condition(self.condition))]
+        )
 
         if self.ordering is not None:
-            order_by = SQL("ORDER BY {key} {direction}").format(
-                key=Identifier(self.ordering.by), direction=_ORDERING_MAPPER[self.ordering.reverse]
-            )
-            query = SQL(" ").join([query, order_by])
+            query = SQL(" ").join([query, self._build_ordering(self.ordering)])
 
         if self.limit is not None:
-            limit = SQL(" LIMIT {limit}").format(limit=Literal(self.limit))
-            query = SQL(" ").join([query, limit])
+            query = SQL(" ").join([query, self._build_limit(self.limit)])
 
         return query
 
-    def _build_query(self, condition: _Condition) -> Composable:
+    def _build_condition(self, condition: _Condition) -> Composable:
         if isinstance(condition, _NotCondition):
-            return self._build_not_query(condition)
+            return self._build_condition_not(condition)
         if isinstance(condition, _ComposedCondition):
-            return self._build_composed_query(condition)
+            return self._build_condition_composed(condition)
         elif isinstance(condition, _SimpleCondition):
-            return self._build_simple_query(condition)
+            return self._build_condition_simple(condition)
         elif isinstance(condition, _TrueCondition):
             return SQL("TRUE")
         elif isinstance(condition, _FalseCondition):
@@ -95,19 +99,19 @@ class PostgreSqlSnapshotQueryBuilder:
         else:
             raise Exception
 
-    def _build_not_query(self, condition: _NotCondition) -> Composable:
-        return SQL("(NOT {})").format(self._build_query(condition.inner))
+    def _build_condition_not(self, condition: _NotCondition) -> Composable:
+        return SQL("(NOT {})").format(self._build_condition(condition.inner))
 
-    def _build_composed_query(self, condition: _ComposedCondition) -> Composable:
+    def _build_condition_composed(self, condition: _ComposedCondition) -> Composable:
         if not len(condition.parts):
-            return self._build_query(_FALSE_CONDITION)
+            return self._build_condition(_FALSE_CONDITION)
 
         # noinspection PyTypeChecker
         operator = _COMPOSED_MAPPER[type(condition)]
-        parts = (self._build_query(c) for c in condition)
+        parts = (self._build_condition(c) for c in condition)
         return SQL("({composed})").format(composed=operator.join(parts))
 
-    def _build_simple_query(self, condition: _SimpleCondition) -> Composable:
+    def _build_condition_simple(self, condition: _SimpleCondition) -> Composable:
         field = condition.field
         # noinspection PyTypeChecker
         operator = _SIMPLE_MAPPER[type(condition)]
@@ -116,19 +120,47 @@ class PostgreSqlSnapshotQueryBuilder:
         if isinstance(value, (list, tuple, set)):
             value = tuple(value)
             if value == tuple():
-                return self._build_query(_FALSE_CONDITION)
+                return self._build_condition(_FALSE_CONDITION)
 
-        if field in _DIRECT_FIELDS_MAPPER:
-            self._parameters[field] = value
+        if field in _FIXED_FIELDS_MAPPER:
+            name = self.generate_random_str()
+            self._parameters[name] = value
             return SQL("({field} {operator} {name})").format(
-                field=_DIRECT_FIELDS_MAPPER[field], operator=operator, name=Placeholder(field)
+                field=_FIXED_FIELDS_MAPPER[field], operator=operator, name=Placeholder(name)
             )
         else:
-            name = str(uuid4())
+            name = self.generate_random_str()
             self._parameters[name] = json.dumps(value)
-            return SQL("((data#>{field}) {operator} {name}::jsonb)").format(
+            return SQL("(data#>{field} {operator} {name}::jsonb)").format(
                 field=Literal("{{{}}}".format(field.replace(".", ","))), operator=operator, name=Placeholder(name)
             )
+
+    @staticmethod
+    def _build_ordering(ordering: _Ordering) -> Composable:
+        field = ordering.by
+        direction = _ORDERING_MAPPER[ordering.reverse]
+
+        if field in _FIXED_FIELDS_MAPPER:
+            field = Identifier(field)
+            order_by = SQL("ORDER BY {field} {direction}").format(field=field, direction=direction)
+        else:
+            field = Literal("{{{}}}".format(field.replace(".", ",")))
+            order_by = SQL("ORDER BY data#>{field} {direction}").format(field=field, direction=direction)
+
+        return order_by
+
+    @staticmethod
+    def _build_limit(value: int) -> Composable:
+        limit = SQL("LIMIT {limit}").format(limit=Literal(value))
+        return limit
+
+    @staticmethod
+    def generate_random_str() -> str:
+        """Generate a random string
+
+        :return: A random string value.
+        """
+        return str(uuid4())
 
 
 _COMPOSED_MAPPER = {_AndCondition: SQL(" AND "), _OrCondition: SQL(" OR ")}
@@ -143,7 +175,7 @@ _SIMPLE_MAPPER = {
     _InCondition: SQL("IN"),
 }
 
-_DIRECT_FIELDS_MAPPER = {
+_FIXED_FIELDS_MAPPER = {
     "uuid": Identifier("aggregate_uuid"),
     "version": Identifier("version"),
     "created_at": Identifier("created_at"),
@@ -156,9 +188,7 @@ _ORDERING_MAPPER = {
 }
 
 _SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
-    """
-SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at
-FROM snapshot
-WHERE aggregate_name = %(aggregate_name)s
-    """.strip()
+    "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+    "FROM snapshot "
+    "WHERE (aggregate_name = %(aggregate_name)s)"
 )
