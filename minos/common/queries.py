@@ -16,27 +16,6 @@ from typing import (
 )
 
 
-class _Ordering:
-    def __init__(self, by: str, reverse: bool):
-        self.by = by
-        self.reverse = reverse
-
-    def __eq__(self, other) -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
-
-    def __hash__(self) -> int:
-        return hash(tuple(self))
-
-    def __iter__(self) -> Iterable[Any]:
-        yield from (
-            self.by,
-            self.reverse,
-        )
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({', '.join(map(str, self))})"
-
-
 class _Condition(ABC):
     def __eq__(self, other) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -131,11 +110,6 @@ _TRUE_CONDITION = _TrueCondition()
 _FALSE_CONDITION = _FalseCondition()
 
 
-class Ordering:
-    ASC = partial(_Ordering, reverse=False)
-    DESC = partial(_Ordering, reverse=True)
-
-
 class Condition:
     TRUE = _TRUE_CONDITION
     FALSE = _FALSE_CONDITION
@@ -149,3 +123,29 @@ class Condition:
     EQUAL = _EqualCondition
     NOT_EQUAL = _NotEqualCondition
     IN = _InCondition
+
+
+class _Ordering:
+    def __init__(self, by: str, reverse: bool):
+        self.by = by
+        self.reverse = reverse
+
+    def __eq__(self, other) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> Iterable[Any]:
+        yield from (
+            self.by,
+            self.reverse,
+        )
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({', '.join(map(str, self))})"
+
+
+class Ordering:
+    ASC = partial(_Ordering, reverse=False)
+    DESC = partial(_Ordering, reverse=True)
