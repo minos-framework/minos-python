@@ -27,7 +27,7 @@ class _Condition(ABC):
         yield from tuple()
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}()"
+        return f"{type(self).__name__}({', '.join(map(repr, self))})"
 
 
 class _TrueCondition(_Condition):
@@ -143,7 +143,7 @@ class _Ordering:
         )
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({', '.join(map(str, self))})"
+        return f"{type(self).__name__}({', '.join(map(repr, self))})"
 
 
 class Ordering:
