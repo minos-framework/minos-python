@@ -23,11 +23,12 @@ from ...exceptions import (
 from ..abc import (
     MinosSnapshot,
 )
-from ..conditions import (
-    Condition,
-)
 from ..entries import (
     SnapshotEntry,
+)
+from ..queries import (
+    Condition,
+    Ordering,
 )
 from .abc import (
     PostgreSqlSnapshotSetup,
@@ -35,7 +36,7 @@ from .abc import (
 from .builders import (
     PostgreSqlSnapshotBuilder,
 )
-from .conditions import (
+from .queries import (
     PostgreSqlSnapshotQueryBuilder,
 )
 
@@ -95,22 +96,31 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
 
             return SnapshotEntry(*row)
 
-    async def find(self, aggregate_name: str, condition: Condition, **kwargs) -> AsyncIterator[Aggregate]:
+    async def find(
+        self,
+        aggregate_name: str,
+        condition: Condition,
+        ordering: Optional[Ordering] = None,
+        limit: Optional[int] = None,
+        **kwargs,
+    ) -> AsyncIterator[Aggregate]:
         """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
         :param condition: TODO.
+        :param ordering: TODO.
+        :param limit: TODO.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
-        async for snapshot_entry in self.find_entries(aggregate_name, condition, **kwargs):
+        async for snapshot_entry in self.find_entries(aggregate_name, condition, ordering, limit, **kwargs):
             yield snapshot_entry.build_aggregate(**kwargs)
 
     async def find_entries(
         self,
         aggregate_name: str,
         condition: Condition,
-        ordering: Optional[str] = None,
+        ordering: Optional[Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
         **kwargs,

@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.snapshot.memory module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -15,6 +10,7 @@ from operator import (
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -30,11 +26,12 @@ from ..repository import (
 from .abc import (
     MinosSnapshot,
 )
-from .conditions import (
+from .queries import (
     ANDCondition,
     Condition,
     FALSECondition,
     ORCondition,
+    Ordering,
     SimpleCondition,
     SimpleOperator,
     TRUECondition,
@@ -51,14 +48,40 @@ class InMemorySnapshot(MinosSnapshot):
 
     # noinspection PyMethodOverriding
     async def find(
-        self, aggregate_name: str, condition: Condition, _repository: MinosRepository, **kwargs,
+        self,
+        aggregate_name: str,
+        condition: Condition,
+        ordering: Optional[Ordering] = None,
+        limit: Optional[int] = None,
+        _repository: MinosRepository = None,
+        **kwargs,
     ) -> AsyncIterator[Aggregate]:
+        """TODO
+
+        :param aggregate_name: TODO
+        :param condition: TODO
+        :param ordering: TODO
+        :param limit: TODO
+        :param _repository: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
         uuids = {v.aggregate_uuid async for v in _repository.select(aggregate_name=aggregate_name)}
 
+        aggregates = list()
         for uuid in uuids:
             aggregate = await self.get(aggregate_name, uuid, _repository, **kwargs)
             if self._matches_condition(aggregate, condition):
-                yield aggregate
+                aggregates.append(aggregate)
+
+        if ordering is not None:
+            aggregates.sort(key=attrgetter(ordering.key), reverse=ordering.reverse)
+
+        if limit is not None:
+            aggregates = aggregates[:limit]
+
+        for aggregate in aggregates:
+            yield aggregate
 
     # noinspection PyMethodOverriding
     async def get(self, aggregate_name: str, uuid: UUID, _repository: MinosRepository, **kwargs) -> Aggregate:

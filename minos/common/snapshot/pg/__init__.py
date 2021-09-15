@@ -6,6 +6,9 @@ from .abc import (
 from .builders import (
     PostgreSqlSnapshotBuilder,
 )
+from .queries import (
+    PostgreSqlSnapshotQueryBuilder,
+)
 from .snapshot import (
     PostgreSqlSnapshot,
 )

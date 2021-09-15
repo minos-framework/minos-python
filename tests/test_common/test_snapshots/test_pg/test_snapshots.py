@@ -1,10 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""tests.test_common.test_snapshots.test_pg.test_snapshots module."""
 import sys
 import unittest
 from datetime import (
@@ -25,6 +19,7 @@ from minos.common import (
     MinosConfigException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
+    Ordering,
     PostgreSqlRepository,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
@@ -87,7 +82,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         condition = SimpleCondition("uuid", SimpleOperator.IN, {self.uuid_2, self.uuid_3})
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering="updated_at")
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering("updated_at"))
                 observed = [v async for v in iterable]
 
         expected = [
@@ -116,7 +111,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
                 iterable = snapshot.find(
-                    "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering="updated_at"
+                    "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering=Ordering("updated_at")
                 )
                 observed = [v async for v in iterable]
 
@@ -145,7 +140,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         condition = SimpleCondition("uuid", SimpleOperator.IN, uuids)
         async with await self._populate() as repository:
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering="updated_at")
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering("updated_at"))
                 observed = [v async for v in iterable]
 
             expected = [

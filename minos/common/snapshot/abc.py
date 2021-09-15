@@ -1,10 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+"""minos.common.snapshot.abc module."""
 from __future__ import (
     annotations,
 )
@@ -16,6 +10,7 @@ from abc import (
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -24,8 +19,9 @@ from uuid import (
 from ..setup import (
     MinosSetup,
 )
-from .conditions import (
+from .queries import (
     Condition,
+    Ordering,
 )
 
 if TYPE_CHECKING:
@@ -48,11 +44,20 @@ class MinosSnapshot(ABC, MinosSetup):
         """
 
     @abstractmethod
-    async def find(self, aggregate_name: str, condition: Condition, **kwargs) -> AsyncIterator[Aggregate]:
+    async def find(
+        self,
+        aggregate_name: str,
+        condition: Condition,
+        ordering: Optional[Ordering] = None,
+        limit: Optional[int] = None,
+        **kwargs
+    ) -> AsyncIterator[Aggregate]:
         """TODO
 
         :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
         :param condition: TODO
+        :param ordering: TODO
+        :param limit: TODO
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """

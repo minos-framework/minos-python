@@ -152,6 +152,7 @@ from .snapshot import (
     InMemorySnapshot,
     MinosSnapshot,
     ORCondition,
+    Ordering,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
     PostgreSqlSnapshotSetup,
