@@ -115,22 +115,22 @@ class PostgreSqlSnapshotQueryBuilder:
         # noinspection PyTypeChecker
         operator = _SIMPLE_MAPPER[type(condition)]
 
-        value = condition.value
-        if isinstance(value, (list, tuple, set)):
-            if not len(value):
+        parameter = condition.parameter
+        if isinstance(parameter, (list, tuple, set)):
+            if not len(parameter):
                 return self._build_condition(_FALSE_CONDITION)
-            value = tuple(value)
+            parameter = tuple(parameter)
 
         if field in _FIXED_FIELDS_MAPPER:
             name = self.generate_random_str()
-            self._parameters[name] = value
+            self._parameters[name] = parameter
 
             field = _FIXED_FIELDS_MAPPER[field]
             name = Placeholder(name)
             return SQL("({field} {operator} {name})").format(field=field, operator=operator, name=name)
         else:
             name = self.generate_random_str()
-            self._parameters[name] = Json(value)
+            self._parameters[name] = Json(parameter)
 
             field = Literal("{{{}}}".format(field.replace(".", ",")))
             name = Placeholder(name)

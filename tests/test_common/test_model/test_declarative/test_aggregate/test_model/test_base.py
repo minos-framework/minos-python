@@ -21,6 +21,7 @@ from minos.common import (
     MinosRepositoryException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
+    Ordering,
     current_datetime,
 )
 from tests.aggregate_classes import (
@@ -76,7 +77,9 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 )
             )
             condition = Condition.IN("uuid", {o.uuid for o in originals})
-            iterable = Car.find(condition, _broker=b, _repository=r, _snapshot=s)
+            ordering = Ordering.ASC("doors")
+            limit = 10
+            iterable = Car.find(condition, ordering, limit, _broker=b, _repository=r, _snapshot=s)
             recovered = {v async for v in iterable}
 
             self.assertEqual(originals, recovered)

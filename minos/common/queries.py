@@ -6,17 +6,40 @@ from __future__ import (
 
 from abc import (
     ABC,
+    abstractmethod,
 )
 from functools import (
     partial,
 )
+from operator import (
+    attrgetter,
+)
 from typing import (
+    TYPE_CHECKING,
     Any,
+    Callable,
     Iterable,
 )
 
+if TYPE_CHECKING:
+    from .model import (
+        Model,
+    )
+
 
 class _Condition(ABC):
+    def evaluate(self, value: Model) -> bool:
+        """
+
+        :param value:
+        :return:
+        """
+        return self._evaluate(value)
+
+    @abstractmethod
+    def _evaluate(self, value: Model) -> bool:
+        """TODO"""
+
     def __eq__(self, other) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
@@ -31,17 +54,17 @@ class _Condition(ABC):
 
 
 class _TrueCondition(_Condition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return True
 
 
 class _FalseCondition(_Condition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return False
 
 
 class _ComposedCondition(_Condition, ABC):
-    pass
-
-    def __init__(self, *parts: Iterable[_Condition]):
+    def __init__(self, *parts: _Condition):
         self.parts = tuple(parts)
 
     def __iter__(self):
@@ -49,61 +72,75 @@ class _ComposedCondition(_Condition, ABC):
 
 
 class _AndCondition(_ComposedCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return all(c.evaluate(value) for c in self.parts)
 
 
 class _OrCondition(_ComposedCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return any(c.evaluate(value) for c in self.parts)
 
 
 class _NotCondition(_Condition):
     def __init__(self, inner: _Condition):
         self.inner = inner
 
+    def _evaluate(self, value: Model) -> bool:
+        return not self.inner.evaluate(value)
+
     def __iter__(self) -> Iterable[Any]:
         yield from (self.inner,)
 
 
 class _SimpleCondition(_Condition, ABC):
-    pass
-
-    def __init__(self, field: str, value: Any):
+    def __init__(self, field: str, value: Model):
         self.field = field
-        self.value = value
+        self.parameter = value
 
     def __iter__(self) -> Iterable[Any]:
         yield from (
             self.field,
-            self.value,
+            self.parameter,
         )
+
+    @property
+    def _get_field(self) -> Callable[[Any], Any]:
+        return attrgetter(self.field)
 
 
 class _LowerCondition(_SimpleCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return self._get_field(value) < self.parameter
 
 
 class _LowerEqualCondition(_SimpleCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return self._get_field(value) <= self.parameter
 
 
 class _GreaterCondition(_SimpleCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return self._get_field(value) > self.parameter
 
 
 class _GreaterEqualCondition(_SimpleCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return self._get_field(value) >= self.parameter
 
 
 class _EqualCondition(_SimpleCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return self._get_field(value) == self.parameter
 
 
 class _NotEqualCondition(_SimpleCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return self._get_field(value) != self.parameter
 
 
 class _InCondition(_SimpleCondition):
-    pass
+    def _evaluate(self, value: Model) -> bool:
+        return self._get_field(value) in self.parameter
 
 
 _TRUE_CONDITION = _TrueCondition()

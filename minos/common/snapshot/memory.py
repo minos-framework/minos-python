@@ -21,21 +21,8 @@ from ..exceptions import (
     MinosSnapshotDeletedAggregateException,
 )
 from ..queries import (
-    _AndCondition,
     _Condition,
-    _EqualCondition,
-    _FalseCondition,
-    _GreaterCondition,
-    _GreaterEqualCondition,
-    _InCondition,
-    _LowerCondition,
-    _LowerEqualCondition,
-    _NotCondition,
-    _NotEqualCondition,
-    _OrCondition,
     _Ordering,
-    _SimpleCondition,
-    _TrueCondition,
 )
 from ..repository import (
     MinosRepository,
@@ -78,7 +65,7 @@ class InMemorySnapshot(MinosSnapshot):
         aggregates = list()
         for uuid in uuids:
             aggregate = await self.get(aggregate_name, uuid, _repository, **kwargs)
-            if self._matches_condition(aggregate, condition):
+            if condition.evaluate(aggregate):
                 aggregates.append(aggregate)
 
         if ordering is not None:
@@ -116,34 +103,3 @@ class InMemorySnapshot(MinosSnapshot):
             instance.apply_diff(entry.aggregate_diff)
 
         return instance
-
-    def _matches_condition(self, aggregate: Aggregate, condition: _Condition) -> bool:
-        if isinstance(condition, _NotCondition):
-            return not self._matches_condition(aggregate, condition.inner)
-        if isinstance(condition, _TrueCondition):
-            return True
-        if isinstance(condition, _FalseCondition):
-            return False
-        if isinstance(condition, _AndCondition):
-            return all(self._matches_condition(aggregate, c) for c in condition)
-        if isinstance(condition, _OrCondition):
-            return any(self._matches_condition(aggregate, c) for c in condition)
-        if isinstance(condition, _SimpleCondition):
-            field = attrgetter(condition.field)(aggregate)
-            value = condition.value
-            if isinstance(condition, _LowerCondition):
-                return field < value
-            if isinstance(condition, _LowerEqualCondition):
-                return field <= value
-            if isinstance(condition, _GreaterCondition):
-                return field > value
-            if isinstance(condition, _GreaterEqualCondition):
-                return field >= value
-            if isinstance(condition, _EqualCondition):
-                return field == value
-            if isinstance(condition, _NotEqualCondition):
-                return field != value
-            if isinstance(condition, _InCondition):
-                return field in value
-
-        raise Exception
