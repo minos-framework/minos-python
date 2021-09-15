@@ -22,62 +22,71 @@ from ..conditions import (
 )
 
 
-def build_query(
-    aggregate_name: str, condition: Condition, ordering: Optional[str], limit: Optional[int]
-) -> tuple[str, dict[str, Any]]:
+class PostgreSqlSnapshotQueryBuilder:
+    def __init__(self, aggregate_name: str, condition: Condition, ordering: Optional[str], limit: Optional[int]):
+        self.aggregate_name = aggregate_name
+        self.condition = condition
+        self.ordering = ordering
+        self.limit = limit
+        self._parameters = None
 
-    parameters = {"aggregate_name": aggregate_name}
-    query = f"{_SELECT_MULTIPLE_ENTRIES_QUERY} AND "
+    def build(self) -> tuple[str, dict[str, Any]]:
+        self._parameters = dict()
 
-    query += _build_query(parameters, condition)
+        query = self._build()
+        parameters = self._parameters
 
-    if ordering is not None:
-        query += f" ORDER BY {ordering}"
+        return query, parameters
 
-    if limit is not None:
-        query += f" LIMIT {limit}"
+    def _build(self) -> str:
+        self._parameters["aggregate_name"] = self.aggregate_name
+        query = f"{_SELECT_MULTIPLE_ENTRIES_QUERY} AND "
 
-    return query, parameters
+        query += self._build_query(self.condition)
 
+        if self.ordering is not None:
+            query += f" ORDER BY {self.ordering}"
 
-def _build_query(parameters: dict[str, Any], condition: Condition) -> str:
-    if isinstance(condition, ComposedCondition):
-        return _build_composed_query(parameters, condition)
-    elif isinstance(condition, SimpleCondition):
-        return _build_simple_query(parameters, condition)
-    elif isinstance(condition, TRUECondition):
-        return "TRUE"
-    elif isinstance(condition, FALSECondition):
-        return "FALSE"
-    else:
-        raise Exception
+        if self.limit is not None:
+            query += f" LIMIT {self.limit}"
 
+        return query
 
-def _build_composed_query(parameters: dict[str, Any], condition: ComposedCondition) -> str:
-    parts = (_build_query(parameters, c) for c in condition.conditions)
-    operator = _COMPOSED_MAPPER[condition.operator]
+    def _build_query(self, condition: Condition) -> str:
+        if isinstance(condition, ComposedCondition):
+            return self._build_composed_query(condition)
+        elif isinstance(condition, SimpleCondition):
+            return self._build_simple_query(condition)
+        elif isinstance(condition, TRUECondition):
+            return "TRUE"
+        elif isinstance(condition, FALSECondition):
+            return "FALSE"
+        else:
+            raise Exception
 
-    return "(" + f" {operator} ".join(parts) + ")"
+    def _build_composed_query(self, condition: ComposedCondition) -> str:
+        parts = (self._build_query(c) for c in condition.conditions)
+        operator = _COMPOSED_MAPPER[condition.operator]
 
+        return "(" + f" {operator} ".join(parts) + ")"
 
-def _build_simple_query(parameters: dict[str, Any], condition: SimpleCondition) -> str:
+    def _build_simple_query(self, condition: SimpleCondition) -> str:
+        field = condition.field.replace(".", ",")
+        operator = _SIMPLE_MAPPER[condition.operator]
 
-    field = condition.field.replace(".", ",")
-    operator = _SIMPLE_MAPPER[condition.operator]
+        value = condition.value
+        if isinstance(value, (list, tuple, set)):
+            value = tuple(value)
+            if value == tuple():
+                return self._build_query(FALSECondition())
 
-    value = condition.value
-    if isinstance(value, (list, tuple, set)):
-        value = tuple(value)
-        if value == tuple():
-            return _build_query(parameters, FALSECondition())
-
-    if field in _DIRECT_FIELDS_MAPPER:
-        parameters[field] = value
-        return f"({_DIRECT_FIELDS_MAPPER[field]} {operator} %({field})s)"
-    else:
-        name = str(uuid4())
-        parameters[name] = json.dumps(value)
-        return f"((data#>'{{{field}}}') {operator} %({name})s::jsonb)"
+        if field in _DIRECT_FIELDS_MAPPER:
+            self._parameters[field] = value
+            return f"({_DIRECT_FIELDS_MAPPER[field]} {operator} %({field})s)"
+        else:
+            name = str(uuid4())
+            self._parameters[name] = json.dumps(value)
+            return f"((data#>'{{{field}}}') {operator} %({name})s::jsonb)"
 
 
 _COMPOSED_MAPPER = {ComposedOperator.AND: "AND", ComposedOperator.OR: "OR"}
@@ -98,7 +107,6 @@ _DIRECT_FIELDS_MAPPER = {
     "created_at": "created_at",
     "updated_at": "updated_at",
 }
-
 
 _SELECT_MULTIPLE_ENTRIES_QUERY = """
 SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at

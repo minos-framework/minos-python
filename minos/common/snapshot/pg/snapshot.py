@@ -36,7 +36,7 @@ from .builders import (
     PostgreSqlSnapshotBuilder,
 )
 from .conditions import (
-    build_query,
+    PostgreSqlSnapshotQueryBuilder,
 )
 
 if TYPE_CHECKING:
@@ -128,7 +128,7 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         if not await self.builder.is_synced(aggregate_name, **kwargs):
             await self.builder.dispatch(**kwargs)
 
-        query, parameters = build_query(aggregate_name, condition, ordering, limit)
+        query, parameters = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit).build()
 
         async with self.cursor() as cursor:
             await cursor.execute(query, parameters)
