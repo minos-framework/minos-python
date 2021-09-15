@@ -1,19 +1,13 @@
 """minos.networks.discovery.clients module."""
 
 import logging
-from asyncio import (
-    sleep,
-)
-from typing import (
-    NoReturn,
-)
+from asyncio import sleep
+from typing import NoReturn
 
 import aiohttp
 
 from .abc import DiscoveryClient
-from ...exceptions import (
-    MinosDiscoveryConnectorException,
-)
+from ...exceptions import MinosDiscoveryConnectorException
 
 logger = logging.getLogger(__name__)
 
