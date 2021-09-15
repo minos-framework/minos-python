@@ -1,4 +1,6 @@
-from .abc import DiscoveryClient
+from .abc import (
+    DiscoveryClient,
+)
 
 
 class KongDiscovery(DiscoveryClient):
@@ -9,7 +11,7 @@ class KongDiscovery(DiscoveryClient):
         name: str,
         endpoints: list[dict[str, str]],
         retry_tries: int = 3,
-        retry_delay: float = 5
+        retry_delay: float = 5,
     ) -> None:
         endpoint = f"{self.route}/services"
         service_metadata = {
@@ -20,7 +22,7 @@ class KongDiscovery(DiscoveryClient):
 
         endpoint = f"{self.route}/{name}/routes"
         service_metadata = {
-            "paths[]": ",".join([endpoint['url'] for endpoint in endpoints]),
+            "paths[]": ",".join([endpoint["url"] for endpoint in endpoints]),
         }
         await self._rest_subscribe(endpoint, service_metadata, host, port, name, endpoints, retry_tries, retry_delay)
 

@@ -10,9 +10,11 @@ from typing import (
 
 import aiohttp
 
-from .abc import DiscoveryClient
 from ...exceptions import (
     MinosDiscoveryConnectorException,
+)
+from .abc import (
+    DiscoveryClient,
 )
 
 logger = logging.getLogger(__name__)

@@ -1,10 +1,17 @@
 import logging
-from abc import ABC, abstractmethod
-from asyncio import sleep
+from abc import (
+    ABC,
+    abstractmethod,
+)
+from asyncio import (
+    sleep,
+)
 
 import aiohttp
 
-from ...exceptions import MinosDiscoveryConnectorException
+from ...exceptions import (
+    MinosDiscoveryConnectorException,
+)
 
 logger = logging.getLogger(__name__)
 
