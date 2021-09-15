@@ -50,6 +50,7 @@ from ....repository import (
 from ....snapshot import (
     Condition,
     MinosSnapshot,
+    Ordering,
 )
 from ....uuid import (
     NULL_UUID,
@@ -146,6 +147,8 @@ class Aggregate(Entity):
     async def find(
         cls: Type[T],
         condition: Condition,
+        ordering: Optional[Ordering] = None,
+        limit: Optional[int] = None,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
@@ -153,6 +156,8 @@ class Aggregate(Entity):
         """Get one aggregate based on an identifier.
 
         :param condition: TODO.
+        :param ordering: TODO.
+        :param limit: TODO.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
@@ -176,7 +181,7 @@ class Aggregate(Entity):
 
         # noinspection PyTypeChecker
         iterable = _snapshot.find(
-            cls.classname, condition, _broker=_broker, _repository=_repository, _snapshot=_snapshot
+            cls.classname, condition, ordering, limit, _broker=_broker, _repository=_repository, _snapshot=_snapshot
         )
         # noinspection PyTypeChecker
         async for aggregate in iterable:
