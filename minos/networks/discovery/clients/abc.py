@@ -40,7 +40,16 @@ class DiscoveryClient(ABC):
         retry_tries: int = 3,
         retry_delay: float = 5,
     ) -> None:
-        pass
+         """Perform a subscription query.
+         
+        :param host: The ip of the microservice to be subscribed.
+        :param port: The port of the microservice to be subscribed.
+        :param name: The name of the microservice to be subscribed.
+        :param endpoints: List of endpoints exposed by the microservice.
+        :param retry_tries: Number of attempts before raising a failure exception.
+        :param retry_delay: Seconds to wait between attempts.
+        :return: This method does not return anything.
+        """
 
     async def _rest_subscribe(
         self,
@@ -71,7 +80,13 @@ class DiscoveryClient(ABC):
 
     @abstractmethod
     async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
-        pass
+        """Perform an unsubscribe query.
+        
+        :param name: The name of the microservice to be unsubscribed.
+        :param retry_tries: Number of attempts before raising a failure exception.
+        :param retry_delay: Seconds to wait between attempts.
+        :return: This method does not return anything.
+        """
 
     async def _rest_unsubscribe(self, endpoint: str, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
         logger.debug(f"Unsubscribing into {endpoint!r}...")
