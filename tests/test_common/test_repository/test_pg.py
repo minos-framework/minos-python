@@ -2,9 +2,6 @@ import unittest
 from datetime import (
     timedelta,
 )
-from typing import (
-    NoReturn,
-)
 from uuid import (
     UUID,
     uuid4,
@@ -269,7 +266,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             await repository.create(RepositoryEntry(self.uuid_1, "example.MotorCycle", 1, bytes("one", "utf-8")))
             return repository
 
-    def _assert_equal_entries(self, expected: list[RepositoryEntry], observed: list[RepositoryEntry]) -> NoReturn:
+    def _assert_equal_entries(self, expected: list[RepositoryEntry], observed: list[RepositoryEntry]) -> None:
         self.assertEqual(len(expected), len(observed))
 
         for e, o in zip(expected, observed):

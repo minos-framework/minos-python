@@ -12,7 +12,6 @@ from pathlib import (
 )
 from typing import (
     Any,
-    NoReturn,
     Union,
 )
 
@@ -139,7 +138,7 @@ class MinosConfig(MinosConfigAbstract):
         self._with_environment = with_environment
         self._parameterized = kwargs
 
-    def _load(self, path: Path) -> NoReturn:
+    def _load(self, path: Path) -> None:
         if not path.exists():
             raise MinosConfigException(f"Check if this path: {path} is correct")
 

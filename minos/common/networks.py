@@ -8,7 +8,6 @@ from abc import (
 )
 from typing import (
     Any,
-    NoReturn,
 )
 
 from .setup import (
@@ -20,7 +19,7 @@ class MinosBroker(ABC, MinosSetup):
     """Base Broker class."""
 
     @abstractmethod
-    async def send(self, data: Any, **kwargs) -> NoReturn:
+    async def send(self, data: Any, **kwargs) -> None:
         """Send a list of ``Aggregate`` instances.
 
         :param data: The data to be send.

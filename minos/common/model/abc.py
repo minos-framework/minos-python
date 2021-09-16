@@ -17,7 +17,6 @@ from typing import (
     Any,
     Iterable,
     Iterator,
-    NoReturn,
     Type,
     TypedDict,
     TypeVar,
@@ -207,19 +206,19 @@ class Model(Mapping):
         """Fields getter"""
         return self._fields
 
-    def __setitem__(self, key: str, value: Any) -> NoReturn:
+    def __setitem__(self, key: str, value: Any) -> None:
         try:
             setattr(self, key, value)
         except AttributeError as exc:
-            raise KeyError(exc)
+            raise KeyError(str(exc))
 
     def __getitem__(self, item: str) -> Any:
         try:
             return getattr(self, item)
         except AttributeError as exc:
-            raise KeyError(exc)
+            raise KeyError(str(exc))
 
-    def __setattr__(self, key: str, value: Any) -> NoReturn:
+    def __setattr__(self, key: str, value: Any) -> None:
         if key.startswith("_"):
             super().__setattr__(key, value)
         elif key in self._fields:

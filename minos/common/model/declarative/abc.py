@@ -9,7 +9,6 @@ from itertools import (
 from typing import (
     Any,
     Iterator,
-    NoReturn,
     Type,
     TypeVar,
     get_type_hints,
@@ -55,7 +54,7 @@ class DeclarativeModel(Model):
         """
         return cls(*args, **kwargs)
 
-    def _build_fields(self, *args, **kwargs) -> NoReturn:
+    def _build_fields(self, *args, **kwargs) -> None:
         for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
             if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
