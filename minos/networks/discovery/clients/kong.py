@@ -13,6 +13,16 @@ class KongDiscovery(DiscoveryClient):
         retry_tries: int = 3,
         retry_delay: float = 5,
     ) -> None:
+        """Perform a subscription query.
+
+        :param host: The ip of the microservice to be subscribed.
+        :param port: The port of the microservice to be subscribed.
+        :param name: The name of the microservice to be subscribed.
+        :param endpoints: List of endpoints exposed by the microservice.
+        :param retry_tries: Number of attempts before raising a failure exception.
+        :param retry_delay: Seconds to wait between attempts.
+        :return: This method does not return anything.
+        """
         endpoint = f"{self.route}/services"
         service_metadata = {
             "name": name,
