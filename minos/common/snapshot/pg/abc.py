@@ -1,5 +1,3 @@
-"""minos.common.snapshot.pg.abc module."""
-
 from ...database import (
     PostgreSqlMinosDatabase,
 )

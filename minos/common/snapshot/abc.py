@@ -1,5 +1,3 @@
-"""minos.common.snapshot.abc module."""
-
 from __future__ import (
     annotations,
 )

@@ -1,5 +1,3 @@
-"""minos.common.model.types.model_types module."""
-
 from __future__ import (
     annotations,
 )

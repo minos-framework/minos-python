@@ -1,4 +1,3 @@
-"""minos.common.configuration.config module."""
 from __future__ import (
     annotations,
 )

@@ -1,4 +1,3 @@
-"""tests.test_common.test_snapshots.test_pg.test_snapshots module."""
 import sys
 import unittest
 from datetime import (

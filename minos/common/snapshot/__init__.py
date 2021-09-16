@@ -1,5 +1,3 @@
-"""minos.common.snapshot module."""
-
 from .abc import (
     MinosSnapshot,
 )
