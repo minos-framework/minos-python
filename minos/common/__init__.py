@@ -1,6 +1,4 @@
-"""minos.common module."""
-
-__version__ = "0.1.12"
+__version__ = "0.1.13"
 
 from .configuration import (
     BROKER,
@@ -26,6 +24,10 @@ from .datetime import (
     current_datetime,
 )
 from .exceptions import (
+    DataDecoderException,
+    DataDecoderMalformedTypeException,
+    DataDecoderRequiredValueException,
+    DataDecoderTypeException,
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
     MinosBrokerException,
@@ -127,6 +129,10 @@ from .protocol import (
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
 )
+from .queries import (
+    Condition,
+    Ordering,
+)
 from .repository import (
     InMemoryRepository,
     MinosRepository,
@@ -143,8 +149,10 @@ from .snapshot import (
     InMemorySnapshot,
     MinosSnapshot,
     PostgreSqlSnapshot,
-    PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotQueryBuilder,
+    PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
+    PostgreSqlSnapshotWriter,
     SnapshotEntry,
 )
 from .storage import (

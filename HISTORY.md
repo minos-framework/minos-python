@@ -175,3 +175,14 @@ History
 * Remove `interval` from `EntrypointLauncher` (must be setup at service level).
 * Fix bug related with `TypeHintBuilder` and `Any`.
 * Fix bug related with `ModelType` comparisons.
+
+0.1.13 (2021-09-16)
+--------------------
+
+* Add `discovery.client` into `MinosConfig` allowing to setup custom Discovery clients.
+* Add `minos.common.queries` module, containing `Condition` and `Ordering` classes.
+* Refactor `PostgreSqlSnapshot` to store `Aggregate`s following a `schema` (bytes) + `data` (json) strategy supporting queries over the `data` column.
+* Fix troubles related with `avro`'s `record` collisions with full patching by `AvroSchemaEncoder`.
+* Refactor `AvroDataEncoder` to be more consistent with `Model` and `Field` responsibilities.
+* Remove file headers.
+* Stop using `NoReturn` everywhere.

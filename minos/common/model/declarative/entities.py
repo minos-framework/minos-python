@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -16,7 +9,6 @@ from typing import (
     Generic,
     Iterable,
     Iterator,
-    NoReturn,
     Optional,
     TypeVar,
     Union,
@@ -66,7 +58,7 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
             data = {str(entity.uuid): entity for entity in data}
         super().__init__(data, *args, **kwargs)
 
-    def add(self, entity: T) -> NoReturn:
+    def add(self, entity: T) -> None:
         """Add an entity.
 
         :param entity: The entity to be added.
@@ -74,7 +66,7 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
         """
         self.data[str(entity.uuid)] = entity
 
-    def discard(self, entity: T) -> NoReturn:
+    def discard(self, entity: T) -> None:
         """Discard an entity.
 
         :param entity: The entity to be discarded.

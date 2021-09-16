@@ -1,15 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
-
 import unittest
-from typing import (
-    NoReturn,
-)
 
 from minos.common import (
     MinosConfig,
@@ -89,10 +78,10 @@ class _MinosSetupMock(MinosSetup):
         self.setup_calls = 0
         self.destroy_calls = 0
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         self.setup_calls += 1
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         self.destroy_calls += 1
 
 

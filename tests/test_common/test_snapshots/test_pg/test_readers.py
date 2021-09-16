@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import sys
 import unittest
 from datetime import (
@@ -20,15 +13,16 @@ from dependency_injector import (
 )
 
 from minos.common import (
+    Condition,
     FieldDiff,
     FieldDiffContainer,
-    MinosConfigException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
+    Ordering,
     PostgreSqlRepository,
-    PostgreSqlSnapshot,
-    PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
+    PostgreSqlSnapshotWriter,
     RepositoryEntry,
     SnapshotEntry,
 )
@@ -46,7 +40,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
+class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -67,24 +61,21 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         super().tearDown()
 
     def test_type(self):
-        self.assertTrue(issubclass(PostgreSqlSnapshot, PostgreSqlSnapshotSetup))
+        self.assertTrue(issubclass(PostgreSqlSnapshotReader, PostgreSqlSnapshotSetup))
 
     def test_from_config(self):
-        reader = PostgreSqlSnapshot.from_config(config=self.config)
+        reader = PostgreSqlSnapshotReader.from_config(config=self.config)
         self.assertEqual(self.config.snapshot.host, reader.host)
         self.assertEqual(self.config.snapshot.port, reader.port)
         self.assertEqual(self.config.snapshot.database, reader.database)
         self.assertEqual(self.config.snapshot.user, reader.user)
         self.assertEqual(self.config.snapshot.password, reader.password)
 
-    def test_from_config_raises(self):
-        with self.assertRaises(MinosConfigException):
-            PostgreSqlSnapshot.from_config()
-
-    async def test_get(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3})
+    async def test_find_by_uuid(self):
+        condition = Condition.IN("uuid", {self.uuid_2, self.uuid_3})
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
                 observed = [v async for v in iterable]
 
         expected = [
@@ -107,10 +98,14 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         ]
         self.assertEqual(expected, observed)
 
-    async def test_get_streaming_true(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.get("tests.aggregate_classes.Car", {self.uuid_2, self.uuid_3}, streaming_mode=True)
+    async def test_find_streaming_true(self):
+        condition = Condition.IN("uuid", {self.uuid_2, self.uuid_3})
+
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
+                iterable = snapshot.find(
+                    "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering=Ordering.ASC("updated_at")
+                )
                 observed = [v async for v in iterable]
 
         expected = [
@@ -135,9 +130,10 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
 
     async def test_get_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                iterable = snapshot.get("tests.aggregate_classes.Car", uuids)
+        condition = Condition.IN("uuid", uuids)
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
                 observed = [v async for v in iterable]
 
             expected = [
@@ -160,55 +156,48 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             ]
             self.assertEqual(expected, observed)
 
-    async def test_get_empty(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = {v async for v in snapshot.get("tests.aggregate_classes.Car", set())}
+    async def test_find_empty(self):
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
+                observed = {v async for v in snapshot.find("tests.aggregate_classes.Car", Condition.FALSE)}
 
         expected = set()
         self.assertEqual(expected, observed)
 
     async def test_get_raises(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 with self.assertRaises(MinosSnapshotDeletedAggregateException):
-                    # noinspection PyStatementEffect
-                    {v async for v in snapshot.get("tests.aggregate_classes.Car", {self.uuid_1})}
+                    await snapshot.get("tests.aggregate_classes.Car", self.uuid_1)
                 with self.assertRaises(MinosSnapshotAggregateNotFoundException):
-                    # noinspection PyStatementEffect
-                    {v async for v in snapshot.get("tests.aggregate_classes.Car", {uuid4()})}
+                    await snapshot.get("tests.aggregate_classes.Car", uuid4())
 
-    async def test_select(self):
-        await self._populate()
+    async def test_find(self):
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
+                condition = Condition.EQUAL("color", "blue")
+                iterable = snapshot.find("tests.aggregate_classes.Car", condition)
+                observed = [v async for v in iterable]
 
-        async with PostgreSqlSnapshot.from_config(config=self.config) as snapshot:
-            observed = [v async for v in snapshot.select()]
-
-        # noinspection PyTypeChecker
         expected = [
-            SnapshotEntry(self.uuid_1, Car.classname, 4),
-            SnapshotEntry.from_aggregate(
-                Car(
-                    3,
-                    "blue",
-                    uuid=self.uuid_2,
-                    version=2,
-                    created_at=observed[1].created_at,
-                    updated_at=observed[1].updated_at,
-                )
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_2,
+                version=2,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
             ),
-            SnapshotEntry.from_aggregate(
-                Car(
-                    3,
-                    "blue",
-                    uuid=self.uuid_3,
-                    version=1,
-                    created_at=observed[2].created_at,
-                    updated_at=observed[2].updated_at,
-                )
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_3,
+                version=1,
+                created_at=observed[1].created_at,
+                updated_at=observed[1].updated_at,
             ),
         ]
-        self._assert_equal_snapshot_entries(expected, observed)
+        self.assertEqual(expected, observed)
 
     def _assert_equal_snapshot_entries(self, expected: list[SnapshotEntry], observed: list[SnapshotEntry]):
         self.assertEqual(len(expected), len(observed))
@@ -234,7 +223,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             await repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
             await repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
             await repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
-            async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
+            async with PostgreSqlSnapshotWriter.from_config(config=self.config, repository=repository) as dispatcher:
                 await dispatcher.dispatch()
             return repository
 

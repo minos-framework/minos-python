@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -17,7 +10,6 @@ from typing import (
     Any,
     Generic,
     Iterable,
-    NoReturn,
     Optional,
     TypeVar,
     get_args,
@@ -65,7 +57,7 @@ class ModelRefExtractor:
         self._build(self.value, self.type_, ans)
         return ans
 
-    def _build(self, value: Any, type_: type, ans: dict[str, set[UUID]]) -> NoReturn:
+    def _build(self, value: Any, type_: type, ans: dict[str, set[UUID]]) -> None:
         if isinstance(value, (tuple, list, set)):
             self._build_iterable(value, get_args(type_)[0], ans)
 
@@ -82,7 +74,7 @@ class ModelRefExtractor:
             name = cls.__name__
             ans[name].add(value)
 
-    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[UUID]]) -> NoReturn:
+    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[UUID]]) -> None:
         for sub_value in value:
             self._build(sub_value, value_, ans)
 
@@ -101,7 +93,7 @@ class ModelRefInjector:
         """
         return self._build(self.value)
 
-    def _build(self, value: Any) -> NoReturn:
+    def _build(self, value: Any) -> None:
         if isinstance(value, (tuple, list, set)):
             return type(value)(self._build(v) for v in value)
 

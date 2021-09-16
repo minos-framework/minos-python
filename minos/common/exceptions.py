@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -190,3 +183,26 @@ class MinosAttributeValidationException(MinosModelAttributeException):
         self.name = name
         self.value = value
         super().__init__(f"{repr(value)} value does not pass the {repr(name)} field validation.")
+
+
+class DataDecoderException(MinosModelException):
+    """Base data decoder exception."""
+
+
+class DataDecoderMalformedTypeException(DataDecoderException):
+    """Exception to be raised when malformed types are provided."""
+
+
+class DataDecoderRequiredValueException(DataDecoderException):
+    """Exception to be raised when required values are not provided."""
+
+
+class DataDecoderTypeException(DataDecoderException):
+    """Exception to be raised when expected and provided types do not match."""
+
+    def __init__(self, target_type: Type, value: Any):
+        self.target_type = target_type
+        self.value = value
+        super().__init__(
+            f"The {target_type!r} expected type does not match the given data type: {type(value)!r} ({value!r})"
+        )

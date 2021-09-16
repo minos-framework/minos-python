@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -15,13 +8,18 @@ from typing import (
     Any,
     Callable,
     Iterable,
-    NoReturn,
     Optional,
 )
 
 from ..exceptions import (
+    DataDecoderMalformedTypeException,
+    DataDecoderRequiredValueException,
+    DataDecoderTypeException,
     MinosAttributeValidationException,
+    MinosMalformedAttributeException,
     MinosParseAttributeException,
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
 )
 from .serializers import (
     AvroDataDecoder,
@@ -49,7 +47,7 @@ class Field:
         type_: type,
         value: Any = MissingSentinel,
         parser: Optional[Callable[[Any], Any]] = None,
-        validator: Optional[Callable[[Any], bool]] = None,
+        validator: Optional[Callable[[Any], Any]] = None,
     ):
         self._name = name
         self._type = type_
@@ -106,7 +104,7 @@ class Field:
         return self._value
 
     @value.setter
-    def value(self, data: Any) -> NoReturn:
+    def value(self, data: Any) -> None:
         """Check if the given value is correct and stores it if ``True``, otherwise raises an exception.
 
         :param data: new value.
@@ -120,7 +118,14 @@ class Field:
             except Exception as exc:
                 raise MinosParseAttributeException(self.name, data, exc)
 
-        value = AvroDataDecoder.from_field(self).build(data)
+        try:
+            value = AvroDataDecoder(self.type).build(data)
+        except DataDecoderMalformedTypeException as exc:
+            raise MinosMalformedAttributeException(f"{self.name!r} field is malformed. {exc}")
+        except DataDecoderRequiredValueException as exc:
+            raise MinosReqAttributeException(f"{self.name!r} field is required. {exc}")
+        except DataDecoderTypeException:
+            raise MinosTypeAttributeException(self.name, self.type, data)
 
         if self.validator is not None and value is not None and not self.validator(value):
             raise MinosAttributeValidationException(self.name, value)
@@ -133,7 +138,7 @@ class Field:
 
         :return: A dictionary object.
         """
-        return AvroSchemaEncoder.from_field(self).build()
+        return AvroSchemaEncoder(self.type, self.name).build()
 
     @property
     def avro_data(self):
@@ -141,7 +146,7 @@ class Field:
 
         :return: A dictionary object.
         """
-        return AvroDataEncoder.from_field(self).build()
+        return AvroDataEncoder(self.value).build()
 
     @classmethod
     def from_avro(cls, schema: dict, value: Any) -> Field:

@@ -1,11 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
-
 import unittest
 from datetime import (
     datetime,
@@ -129,13 +121,13 @@ class TestFieldDiffContainer(unittest.IsolatedAsyncioTestCase):
                     },
                 ],
                 "name": "FieldDiffContainer",
-                "namespace": "minos.common.model.dynamic.diff",
+                "namespace": "minos.common.model.dynamic.diff.uno",
                 "type": "record",
             }
         ]
         with patch("minos.common.FieldDiffContainer.generate_random_str", side_effect=["hello", "goodbye"]):
             diff = FieldDiffContainer([FieldDiff("doors", int, 5), FieldDiff("color", str, "yellow")])
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hola", "adios"]):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["uno", "hola", "adios"]):
             self.assertEqual(expected, diff.avro_schema)
 
     def test_avro_data(self):

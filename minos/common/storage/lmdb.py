@@ -1,11 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
-
 from __future__ import (
     annotations,
 )
@@ -15,7 +7,6 @@ from pathlib import (
 )
 from typing import (
     Any,
-    NoReturn,
     Optional,
     Type,
     Union,
@@ -45,7 +36,7 @@ class MinosStorageLmdb(MinosStorage):
         self._protocol = protocol
         self._tables = {}
 
-    def add(self, table: str, key: str, value: Any) -> NoReturn:
+    def add(self, table: str, key: str, value: Any) -> None:
         """Store a value.
 
         :param table: Table in which the data is stored.
@@ -73,7 +64,7 @@ class MinosStorageLmdb(MinosStorage):
                 return self._protocol.decode(value_binary)
             return None
 
-    def delete(self, table: str, key: str) -> NoReturn:
+    def delete(self, table: str, key: str) -> None:
         """Delete the stored value.
 
         :param table: Table in which the data is stored.
@@ -84,7 +75,7 @@ class MinosStorageLmdb(MinosStorage):
         with self._env.begin(write=True, db=db_instance) as txn:
             txn.delete(key.encode())
 
-    def update(self, table: str, key: str, value: Any) -> NoReturn:
+    def update(self, table: str, key: str, value: Any) -> None:
         """Update the stored value.
 
         :param table: Table in which the data is stored.

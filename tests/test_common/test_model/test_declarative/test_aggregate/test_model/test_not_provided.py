@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 
 from minos.common import (
@@ -32,17 +25,32 @@ class TestAggregateNotProvided(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(MinosSnapshotNotProvidedException):
                 await Car.create(doors=3, color="blue", _broker=broker, _repository=repository)
 
-    async def test_get_one_raises(self):
+    async def test_get_raises(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
-            await Car.get_one(1)
+            await Car.get(1)
 
         async with FakeBroker() as broker:
             with self.assertRaises(MinosRepositoryNotProvidedException):
-                await Car.get_one(1, _broker=broker)
+                await Car.get(1, _broker=broker)
 
         async with FakeBroker() as broker, FakeRepository() as repository:
             with self.assertRaises(MinosSnapshotNotProvidedException):
-                await Car.get_one(1, _broker=broker, _repository=repository)
+                await Car.get(1, _broker=broker, _repository=repository)
+
+    async def test_find_raises(self):
+        with self.assertRaises(MinosBrokerNotProvidedException):
+            # noinspection PyStatementEffect
+            [c async for c in Car.find(1)]
+
+        async with FakeBroker() as broker:
+            with self.assertRaises(MinosRepositoryNotProvidedException):
+                # noinspection PyStatementEffect
+                [c async for c in Car.find(1, _broker=broker)]
+
+        async with FakeBroker() as broker, FakeRepository() as repository:
+            with self.assertRaises(MinosSnapshotNotProvidedException):
+                # noinspection PyStatementEffect
+                [c async for c in Car.find(1, _broker=broker, _repository=repository)]
 
 
 if __name__ == "__main__":

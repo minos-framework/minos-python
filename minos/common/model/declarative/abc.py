@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -16,7 +9,6 @@ from itertools import (
 from typing import (
     Any,
     Iterator,
-    NoReturn,
     Type,
     TypeVar,
     get_type_hints,
@@ -62,7 +54,7 @@ class DeclarativeModel(Model):
         """
         return cls(*args, **kwargs)
 
-    def _build_fields(self, *args, **kwargs) -> NoReturn:
+    def _build_fields(self, *args, **kwargs) -> None:
         for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
             if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")

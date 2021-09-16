@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 from itertools import (
     starmap,
@@ -14,7 +7,6 @@ from pathlib import (
 )
 from typing import (
     Any,
-    NoReturn,
 )
 from uuid import (
     uuid4,
@@ -69,7 +61,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         for meta, test in pairs:
             await self._setup_database(dict(meta), dict(test))
 
-    async def _setup_database(self, meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
+    async def _setup_database(self, meta: dict[str, Any], test: dict[str, Any]) -> None:
         await self._teardown_database(meta, test)
 
         async with aiopg.connect(**meta) as connection:
@@ -101,7 +93,7 @@ class PostgresAsyncTestCase(unittest.IsolatedAsyncioTestCase):
         return items
 
     @staticmethod
-    async def _teardown_database(meta: dict[str, Any], test: dict[str, Any]) -> NoReturn:
+    async def _teardown_database(meta: dict[str, Any], test: dict[str, Any]) -> None:
         async with aiopg.connect(**meta) as connection:
             async with connection.cursor() as cursor:
                 template = "DROP DATABASE IF EXISTS {database}"

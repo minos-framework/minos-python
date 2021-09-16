@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import os
 import unittest
 from unittest import (
@@ -53,9 +46,11 @@ class TestMinosConfigWithEnvironment(unittest.TestCase):
 
         self.assertEqual("src.Test", events.service)
 
+    @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_CLIENT": "some-type"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_HOST": "some-host"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_PORT": "333"})
     def test_config_discovery(self):
         discovery = self.config.discovery
+        self.assertEqual("some-type", discovery.client)
         self.assertEqual("some-host", discovery.host)
         self.assertEqual("333", discovery.port)

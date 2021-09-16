@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -18,7 +11,6 @@ from datetime import (
 )
 from typing import (
     AsyncIterator,
-    NoReturn,
     Optional,
     Type,
     TypeVar,
@@ -42,6 +34,10 @@ from ....exceptions import (
 )
 from ....networks import (
     MinosBroker,
+)
+from ....queries import (
+    _Condition,
+    _Ordering,
 )
 from ....repository import (
     MinosRepository,
@@ -109,60 +105,78 @@ class Aggregate(Entity):
     @classmethod
     async def get(
         cls: Type[T],
-        uuids: set[UUID],
+        uuid: UUID,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
-    ) -> AsyncIterator[T]:
-        """Get a sequence of aggregates based on a list of identifiers.
+    ) -> T:
+        """Get one instance from the database based on its identifier.
 
-        :param uuids: set of identifiers.
+        :param uuid: The identifier of the instance.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         """
-
         if _broker is None:
             _broker = cls._broker
             if isinstance(_broker, Provide):
                 raise MinosBrokerNotProvidedException("A broker instance is required.")
-
         if _repository is None:
             _repository = cls._repository
             if isinstance(_repository, Provide):
                 raise MinosRepositoryNotProvidedException("A repository instance is required.")
-
         if _snapshot is None:
             _snapshot = cls._snapshot
             if isinstance(_snapshot, Provide):
                 raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
         # noinspection PyTypeChecker
-        iterable = _snapshot.get(cls.classname, uuids, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
-
-        # noinspection PyTypeChecker
-        async for aggregate in iterable:
-            yield aggregate
+        return await _snapshot.get(cls.classname, uuid, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
 
     @classmethod
-    async def get_one(
+    async def find(
         cls: Type[T],
-        uuid: UUID,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
+        limit: Optional[int] = None,
         _broker: Optional[MinosBroker] = None,
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
-    ) -> T:
-        """Get one aggregate based on an identifier.
+    ) -> AsyncIterator[T]:
+        """Find a collection of instances based on a given ``Condition``.
 
-        :param uuid: Identifier of the aggregate.
+        :param condition: The ``Condition`` that must be satisfied by all the instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
-        return await cls.get({uuid}, _broker=_broker, _repository=_repository, _snapshot=_snapshot).__anext__()
+        if _broker is None:
+            _broker = cls._broker
+            if isinstance(_broker, Provide):
+                raise MinosBrokerNotProvidedException("A broker instance is required.")
+        if _repository is None:
+            _repository = cls._repository
+            if isinstance(_repository, Provide):
+                raise MinosRepositoryNotProvidedException("A repository instance is required.")
+        if _snapshot is None:
+            _snapshot = cls._snapshot
+            if isinstance(_snapshot, Provide):
+                raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
+
+        # noinspection PyTypeChecker
+        iterable = _snapshot.find(
+            cls.classname, condition, ordering, limit, _broker=_broker, _repository=_repository, _snapshot=_snapshot
+        )
+        # noinspection PyTypeChecker
+        async for aggregate in iterable:
+            yield aggregate
 
     @classmethod
     async def create(
@@ -184,7 +198,6 @@ class Aggregate(Entity):
             raise MinosRepositoryException(
                 f"The identifier must be computed internally on the repository. Obtained: {kwargs['uuid']}"
             )
-
         if "version" in kwargs:
             raise MinosRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
@@ -234,7 +247,7 @@ class Aggregate(Entity):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        previous = await self.get_one(
+        previous = await self.get(
             self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
         aggregate_diff = self.diff(previous)
@@ -262,7 +275,7 @@ class Aggregate(Entity):
 
         await gather(*futures)
 
-    async def save(self) -> NoReturn:
+    async def save(self) -> None:
         """Store the current instance on the repository.
 
         If didn't exist previously creates a new one, otherwise updates the existing one.
@@ -293,17 +306,17 @@ class Aggregate(Entity):
                 **values, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot,
             )
 
-    async def refresh(self) -> NoReturn:
+    async def refresh(self) -> None:
         """Refresh the state of the given instance.
 
         :return: This method does not return anything.
         """
-        new = await type(self).get_one(
+        new = await type(self).get(
             self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
         )
         self._fields |= new.fields
 
-    async def delete(self) -> NoReturn:
+    async def delete(self) -> None:
         """Delete the given aggregate instance.
 
         :return: This method does not return anything.
@@ -333,7 +346,7 @@ class Aggregate(Entity):
         """
         return AggregateDiff.from_difference(self, another)
 
-    def apply_diff(self, aggregate_diff: AggregateDiff) -> NoReturn:
+    def apply_diff(self, aggregate_diff: AggregateDiff) -> None:
         """Apply the differences over the instance.
 
         :param aggregate_diff: The ``FieldDiffContainer`` containing the values to be set.

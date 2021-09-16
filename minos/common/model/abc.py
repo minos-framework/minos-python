@@ -1,5 +1,3 @@
-"""minos.common.model.abc module."""
-
 from __future__ import (
     annotations,
 )
@@ -19,7 +17,6 @@ from typing import (
     Any,
     Iterable,
     Iterator,
-    NoReturn,
     Type,
     TypedDict,
     TypeVar,
@@ -46,6 +43,7 @@ from .fields import (
 )
 from .serializers import (
     AvroDataDecoder,
+    AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
 )
@@ -92,9 +90,6 @@ class Model(Mapping):
         schema = MinosAvroProtocol.decode_schema(raw)
         decoded = MinosAvroProtocol.decode(raw)
 
-        # FIXME: Extend implementation of the `AvroDataDecoder` to avoid this fix.
-        schema["name"] = "{}.fake.{}".format(*schema["name"].rsplit(".", 1))
-
         if isinstance(decoded, list):
             return [cls.from_avro(schema, d | kwargs) for d in decoded]
         return cls.from_avro(schema, decoded | kwargs)
@@ -132,7 +127,7 @@ class Model(Mapping):
         if isinstance(schema, list):
             schema = schema[-1]
         model_type = AvroSchemaDecoder(schema).build()
-        return AvroDataDecoder("", model_type).build(data)
+        return AvroDataDecoder(model_type).build(data)
 
     @classmethod
     def to_avro_str(cls: Type[T], models: list[T]) -> str:
@@ -211,19 +206,19 @@ class Model(Mapping):
         """Fields getter"""
         return self._fields
 
-    def __setitem__(self, key: str, value: Any) -> NoReturn:
+    def __setitem__(self, key: str, value: Any) -> None:
         try:
             setattr(self, key, value)
         except AttributeError as exc:
-            raise KeyError(exc)
+            raise KeyError(str(exc))
 
     def __getitem__(self, item: str) -> Any:
         try:
             return getattr(self, item)
         except AttributeError as exc:
-            raise KeyError(exc)
+            raise KeyError(str(exc))
 
-    def __setattr__(self, key: str, value: Any) -> NoReturn:
+    def __setattr__(self, key: str, value: Any) -> None:
         if key.startswith("_"):
             super().__setattr__(key, value)
         elif key in self._fields:
@@ -245,7 +240,7 @@ class Model(Mapping):
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder("", ModelType.from_model(self_or_cls)).build()["type"]]
+        return [AvroSchemaEncoder(ModelType.from_model(self_or_cls)).build()]
 
     @property
     def avro_data(self) -> dict[str, Any]:
@@ -253,7 +248,7 @@ class Model(Mapping):
 
         :return: A dictionary object.
         """
-        return {name: field.avro_data for name, field in self.fields.items()}
+        return AvroDataEncoder(self).build()
 
     @property
     def avro_str(self) -> str:

@@ -1,5 +1,3 @@
-"""minos.common.model.serializers.avro_data_decoder module."""
-
 from __future__ import (
     annotations,
 )
@@ -16,10 +14,8 @@ from datetime import (
     timezone,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
     Iterable,
-    Mapping,
     TypeVar,
     Union,
     get_args,
@@ -30,9 +26,9 @@ from uuid import (
 )
 
 from ...exceptions import (
-    MinosMalformedAttributeException,
-    MinosReqAttributeException,
-    MinosTypeAttributeException,
+    DataDecoderMalformedTypeException,
+    DataDecoderRequiredValueException,
+    DataDecoderTypeException,
 )
 from ..types import (
     MissingSentinel,
@@ -46,28 +42,14 @@ from ..types import (
     unpack_typevar,
 )
 
-if TYPE_CHECKING:
-    from ..fields import (
-        Field,
-    )
 logger = logging.getLogger(__name__)
 
 
 class AvroDataDecoder:
     """Avro Data Decoder class."""
 
-    def __init__(self, name: str, type_: type):
-        self.name = name
+    def __init__(self, type_: type):
         self.type_ = type_
-
-    @classmethod
-    def from_field(cls, field: Field) -> AvroDataDecoder:
-        """Build a new instance from a ``Field``.
-
-        :param field: The model field.
-        :return: A new avro schema builder instance.
-        """
-        return cls(field.name, field.type)
 
     def build(self, data: Any) -> Any:
         """Cast data type according to the field definition..
@@ -90,17 +72,17 @@ class AvroDataDecoder:
         for alternative_type in alternatives:
             try:
                 return self._cast_single_value(alternative_type, data)
-            except (MinosTypeAttributeException, MinosReqAttributeException):
+            except (DataDecoderTypeException, DataDecoderRequiredValueException):
                 pass
 
         if type_ is not NoneType:
             if data is None:
-                raise MinosReqAttributeException(f"{self.name!r} field is {None!r}.")
+                raise DataDecoderRequiredValueException(f"Value is {None!r}.")
 
             if data is MissingSentinel:
-                raise MinosReqAttributeException(f"{self.name!r} field is missing.")
+                raise DataDecoderRequiredValueException("Value is missing.")
 
-        raise MinosTypeAttributeException(self.name, type_, data)
+        raise DataDecoderTypeException(type_, data)
 
     def _cast_single_value(self, type_: type, data: Any) -> Any:
         if isinstance(type_, TypeVar):
@@ -111,10 +93,10 @@ class AvroDataDecoder:
             return self._cast_none_value(type_, data)
 
         if data is None:
-            raise MinosReqAttributeException(f"{self.name!r} field is '{None!r}'.")
+            raise DataDecoderRequiredValueException(f"Value is {None!r}.")
 
         if data is MissingSentinel:
-            raise MinosReqAttributeException(f"{self.name!r} field is missing.")
+            raise DataDecoderRequiredValueException("Value is missing.")
 
         if is_type_subclass(type_):
             if issubclass(type_, bool):
@@ -152,61 +134,71 @@ class AvroDataDecoder:
 
         return self._cast_composed_value(type_, data)
 
-    def _cast_none_value(self, type_: type, data: Any) -> Any:
+    @staticmethod
+    def _cast_none_value(type_: type, data: Any) -> Any:
         if data is None or data is MissingSentinel:
             return None
 
-        raise MinosTypeAttributeException(self.name, type_, data)
+        raise DataDecoderTypeException(type_, data)
 
-    def _cast_int(self, type_, data: Any) -> int:
+    @staticmethod
+    def _cast_int(type_, data: Any) -> int:
         try:
             return type_(data)
         except (ValueError, TypeError):
-            raise MinosTypeAttributeException(self.name, type_, data)
+            raise DataDecoderTypeException(type_, data)
 
-    def _cast_float(self, data: Any) -> float:
+    @staticmethod
+    def _cast_float(data: Any) -> float:
         try:
             return float(data)
         except (ValueError, TypeError):
-            raise MinosTypeAttributeException(self.name, float, data)
+            raise DataDecoderTypeException(float, data)
 
-    def _cast_bool(self, data: Any) -> bool:
+    @staticmethod
+    def _cast_bool(data: Any) -> bool:
         if not isinstance(data, bool):
-            raise MinosTypeAttributeException(self.name, bool, data)
+            raise DataDecoderTypeException(bool, data)
         return data
 
-    def _cast_string(self, type_, data: Any) -> str:
+    @staticmethod
+    def _cast_string(type_, data: Any) -> str:
         if not isinstance(data, str):
-            raise MinosTypeAttributeException(self.name, str, data)
+            raise DataDecoderTypeException(str, data)
         return type_(data)
 
-    def _cast_bytes(self, data: Any) -> bytes:
+    @staticmethod
+    def _cast_bytes(data: Any) -> bytes:
         if not isinstance(data, bytes):
-            raise MinosTypeAttributeException(self.name, bytes, data)
+            raise DataDecoderTypeException(bytes, data)
         return data
 
-    def _cast_date(self, data: Any) -> date:
+    @staticmethod
+    def _cast_date(data: Any) -> date:
         if isinstance(data, date):
             return data
         elif isinstance(data, int):
             return date(1970, 1, 1) + timedelta(days=data)
-        raise MinosTypeAttributeException(self.name, date, data)
+        raise DataDecoderTypeException(date, data)
 
-    def _cast_time(self, data: Any) -> time:
+    @staticmethod
+    def _cast_time(data: Any) -> time:
         if isinstance(data, time):
             return data
         if isinstance(data, int):
             return (datetime(1, 1, 1) + timedelta(microseconds=data)).time()
-        raise MinosTypeAttributeException(self.name, time, data)
+        raise DataDecoderTypeException(time, data)
 
-    def _cast_datetime(self, data: Any) -> datetime:
+    @staticmethod
+    def _cast_datetime(data: Any) -> datetime:
         if isinstance(data, datetime):
             return data
         if isinstance(data, int):
             return datetime(1970, 1, 1, tzinfo=timezone.utc) + data * timedelta(microseconds=1)
-        raise MinosTypeAttributeException(self.name, datetime, data)
+        raise DataDecoderTypeException(datetime, data)
 
-    def _cast_uuid(self, data: Any) -> UUID:
+    @staticmethod
+    def _cast_uuid(data: Any) -> UUID:
         if isinstance(data, UUID):
             return data
         elif isinstance(data, str):
@@ -219,7 +211,7 @@ class AvroDataDecoder:
                 return UUID(bytes=data)
             except ValueError:
                 pass
-        raise MinosTypeAttributeException(self.name, UUID, data)
+        raise DataDecoderTypeException(UUID, data)
 
     def _cast_model(self, type_: type, data: Any) -> Any:
         if is_type_subclass(type_) and isinstance(data, type_):
@@ -238,61 +230,51 @@ class AvroDataDecoder:
             if ModelType.from_model(data) >= type_:
                 return data
 
-        raise MinosTypeAttributeException(self.name, type_, data)
+        raise DataDecoderTypeException(type_, data)
 
     def _cast_composed_value(self, type_: type, data: Any) -> Any:
         origin_type = get_origin(type_)
         if origin_type is None:
-            raise MinosMalformedAttributeException(f"{self.name!r} field is malformed. Type: '{type_}'.")
+            raise DataDecoderMalformedTypeException(f"Type is malformed. Obtained: '{type_}'.")
 
         if origin_type is list:
-            return self._convert_list(data, type_)
+            return self._cast_list(data, type_)
 
         if origin_type is dict:
-            return self._convert_dict(data, type_)
+            return self._cast_dict(data, type_)
 
         if origin_type is ModelRef:
-            return self._convert_model_ref(data, type_)
+            return self._cast_model_ref(data, type_)
 
-        raise MinosTypeAttributeException(self.name, type_, data)
+        raise DataDecoderTypeException(type_, data)
 
-    def _convert_list(self, data: list, type_values: Any) -> list[Any]:
+    def _cast_list(self, data: list, type_values: Any) -> list[Any]:
         type_values = get_args(type_values)[0]
         if not isinstance(data, list):
-            raise MinosTypeAttributeException(self.name, list, data)
+            raise DataDecoderTypeException(list, data)
 
-        return self._convert_list_params(data, type_values)
+        return list(self._cast_iterable(data, type_values))
 
-    def _convert_dict(self, data: list, type_: type) -> dict[str, Any]:
+    def _cast_dict(self, data: dict, type_: type) -> dict[str, Any]:
         type_keys, type_values = get_args(type_)
         if not isinstance(data, dict):
-            raise MinosTypeAttributeException(self.name, dict, data)
+            raise DataDecoderTypeException(dict, data)
 
         if type_keys is not str:
-            raise MinosMalformedAttributeException(f"dictionary keys must be {str!r}. Obtained: {type_keys!r}")
+            raise DataDecoderMalformedTypeException(f"dictionary keys must be {str!r}. Obtained: {type_keys!r}")
 
-        return self._convert_dict_params(data, type_keys, type_values)
-
-    def _convert_dict_params(self, data: Mapping, type_keys: type, type_values: type) -> dict[Any, Any]:
-        keys = self._convert_list_params(data.keys(), type_keys)
-        values = self._convert_list_params(data.values(), type_values)
+        keys = self._cast_iterable(data.keys(), type_keys)
+        values = self._cast_iterable(data.values(), type_values)
         return dict(zip(keys, values))
 
-    def _convert_model_ref(self, data: Any, type_: type) -> Any:
+    def _cast_iterable(self, data: Iterable, type_params: type) -> Iterable:
+        return (self._cast_value(type_params, item) for item in data)
+
+    def _cast_model_ref(self, data: Any, type_: type) -> Any:
         inner_type = get_args(type_)[0]
         if not is_aggregate_type(inner_type):
-            raise MinosMalformedAttributeException(
+            raise DataDecoderMalformedTypeException(
                 f"'ModelRef[T]' T type must follow the 'Aggregate' protocol. Obtained: {inner_type!r}"
             )
 
         return self._cast_value(Union[inner_type, UUID], data)
-
-    def _convert_list_params(self, data: Iterable, type_params: type) -> list[Any]:
-        """
-        check if the parameters list are equal to @type_params type
-        """
-        converted = list()
-        for item in data:
-            value = self._cast_value(type_params, item)
-            converted.append(value)
-        return converted

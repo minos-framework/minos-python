@@ -1,16 +1,8 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from abc import (
     ABC,
 )
 from typing import (
     Generic,
-    NoReturn,
     Optional,
     TypeVar,
 )
@@ -40,7 +32,7 @@ class MinosPool(MinosSetup, PoolBase, Generic[T], ABC):
         """
         return super().acquire()
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         await self.close()
 
     async def _check_instance(self, instance: T) -> bool:
