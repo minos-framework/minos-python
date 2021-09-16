@@ -1,5 +1,3 @@
-"""minos.common.configuration module."""
-
 from .config import (
     BROKER,
     COMMANDS,

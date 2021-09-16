@@ -1,5 +1,3 @@
-"""minos.common.model.types.comparators module."""
-
 from __future__ import (
     annotations,
 )

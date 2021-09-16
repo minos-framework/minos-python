@@ -1,5 +1,3 @@
-"""minos.common.model.serializers.avro_data_decoder module."""
-
 from __future__ import (
     annotations,
 )
