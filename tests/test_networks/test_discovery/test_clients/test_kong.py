@@ -1,4 +1,3 @@
-"""tests.test_networks.test_discovery.test_clients module."""
 
 import unittest
 from collections import (
