@@ -50,7 +50,13 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual("test", events.service)
 
     def test_config_discovery(self):
-        config = MinosConfig(path=self.config_file_path, minos_discovery_host="some-host", minos_discovery_port=333,)
+        config = MinosConfig(
+            path=self.config_file_path,
+            minos_discovery_client="some-type",
+            minos_discovery_host="some-host",
+            minos_discovery_port=333,
+        )
         discovery = config.discovery
+        self.assertEqual("some-type", discovery.client)
         self.assertEqual("some-host", discovery.host)
         self.assertEqual(333, discovery.port)

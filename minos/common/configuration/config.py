@@ -35,7 +35,7 @@ SAGA = namedtuple("Saga", "storage")
 REST = namedtuple("Rest", "host port")
 REPOSITORY = namedtuple("Repository", "database user password host port")
 SNAPSHOT = namedtuple("Snapshot", "database user password host port")
-DISCOVERY = namedtuple("Discovery", "host port")
+DISCOVERY = namedtuple("Discovery", "client host port")
 
 _ENVIRONMENT_MAPPER = {
     "service.name": "MINOS_SERVICE_NAME",
@@ -61,6 +61,7 @@ _ENVIRONMENT_MAPPER = {
     "snapshot.database": "MINOS_SNAPSHOT_DATABASE",
     "snapshot.user": "MINOS_SNAPSHOT_USER",
     "snapshot.password": "MINOS_SNAPSHOT_PASSWORD",
+    "discovery.client": "MINOS_DISCOVERY_CLIENT",
     "discovery.host": "MINOS_DISCOVERY_HOST",
     "discovery.port": "MINOS_DISCOVERY_PORT",
 }
@@ -91,6 +92,7 @@ _PARAMETERIZED_MAPPER = {
     "snapshot.database": "snapshot_database",
     "snapshot.user": "snapshot_user",
     "snapshot.password": "snapshot_password",
+    "discovery.client": "minos_discovery_client",
     "discovery.host": "minos_discovery_host",
     "discovery.port": "minos_discovery_port",
 }
@@ -300,6 +302,7 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A ``DISCOVERY`` NamedTuple instance.
         """
+        client = self._get("discovery.client")
         host = self._get("discovery.host")
         port = self._get("discovery.port")
-        return DISCOVERY(host=host, port=port)
+        return DISCOVERY(client=client, host=host, port=port)
