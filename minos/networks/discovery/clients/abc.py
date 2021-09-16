@@ -40,7 +40,7 @@ class DiscoveryClient(ABC):
         retry_tries: int = 3,
         retry_delay: float = 5,
     ) -> None:
-         """Perform a subscription query.
+        """Perform a subscription query.
          
         :param host: The ip of the microservice to be subscribed.
         :param port: The port of the microservice to be subscribed.
