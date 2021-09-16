@@ -57,7 +57,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotReader:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotWriter:
         return cls(*args, **config.snapshot._asdict(), **kwargs)
 
     async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
