@@ -1,5 +1,3 @@
-"""tests.test_common.test_model.test_types.test_comparators module."""
-
 import unittest
 from typing import (
     Any,

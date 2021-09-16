@@ -1,5 +1,3 @@
-"""tests.test_common.test_model.test_declarative.test_abc.test_common module."""
-
 import unittest
 from typing import (
     Optional,

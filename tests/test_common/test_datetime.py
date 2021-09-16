@@ -1,4 +1,3 @@
-"""tests.test_common.test_datetime module."""
 import unittest
 from datetime import (
     datetime,
