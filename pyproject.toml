@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_common"
-version = "0.1.12"
+version = "0.1.13"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_common"
