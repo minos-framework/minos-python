@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.snapshot module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from .abc import (
     MinosSnapshot,
 )
@@ -17,5 +12,6 @@ from .memory import (
 from .pg import (
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotSetup,
 )

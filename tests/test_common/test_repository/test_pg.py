@@ -85,7 +85,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             await car.update(color="red")
             await car.update(doors=5)
 
-            another = await Car.get_one(car.uuid, _broker=broker, _repository=repository, _snapshot=snapshot)
+            another = await Car.get(car.uuid, _broker=broker, _repository=repository, _snapshot=snapshot)
             self.assertEqual(car, another)
 
             await car.delete()

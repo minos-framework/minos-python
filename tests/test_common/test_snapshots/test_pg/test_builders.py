@@ -26,6 +26,7 @@ from dependency_injector import (
 
 from minos.common import (
     Action,
+    Condition,
     FieldDiff,
     FieldDiffContainer,
     MinosConfigException,
@@ -95,13 +96,13 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         with self.assertRaises(MinosConfigException):
             PostgreSqlSnapshotBuilder.from_config()
 
-    async def test_dispatch_select(self):
+    async def test_dispatch(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.select()]
+                observed = [v async for v in snapshot.find_entries(Car.classname, Condition.TRUE)]
 
         # noinspection PyTypeChecker
         expected = [
@@ -129,46 +130,39 @@ class TestPostgreSqlSnapshotBuilder(PostgresAsyncTestCase):
         ]
         self._assert_equal_snapshot_entries(expected, observed)
 
-    async def test_are_synced(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
-                self.assertFalse(await dispatcher.are_synced("tests.aggregate_classes.Car", [self.uuid_1, self.uuid_2]))
-                await dispatcher.dispatch()
-                self.assertTrue(await dispatcher.are_synced("tests.aggregate_classes.Car", [self.uuid_1, self.uuid_2]))
-
     async def test_is_synced(self):
         async with await self._populate() as repository:
             async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
-                self.assertFalse(await dispatcher.is_synced("tests.aggregate_classes.Car", self.uuid_1))
+                self.assertFalse(await dispatcher.is_synced("tests.aggregate_classes.Car"))
                 await dispatcher.dispatch()
-                self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car", self.uuid_1))
+                self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car"))
 
     async def test_dispatch_ignore_previous_version(self):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
+        condition = Condition.EQUAL("uuid", self.uuid_1)
 
         async def _fn(*args, **kwargs):
             yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
             yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
             yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
-        async with await self._populate() as repository:
+        async with PostgreSqlRepository.from_config(config=self.config) as r:
             with patch("minos.common.PostgreSqlRepository.select", _fn):
-                async with PostgreSqlSnapshotBuilder.from_config(
-                    config=self.config, repository=repository
-                ) as dispatcher:
+                async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=r) as dispatcher:
                     await dispatcher.dispatch()
+            async with PostgreSqlSnapshot.from_config(config=self.config, repository=r) as snapshot:
+                observed = [v async for v in snapshot.find_entries(aggregate_name, condition)]
 
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.select()]
-
+        # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(
                 aggregate_uuid=self.uuid_1,
                 aggregate_name=aggregate_name,
                 version=3,
-                data=Car(3, "blue", uuid=self.uuid_1, version=1).avro_bytes,
+                schema=Car.avro_schema,
+                data=Car(3, "blue", uuid=self.uuid_1, version=1).avro_data,
                 created_at=observed[0].created_at,
                 updated_at=observed[0].updated_at,
             )

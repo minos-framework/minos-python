@@ -1,17 +1,11 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.snapshot.pg.builders module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
 
 from typing import (
     TYPE_CHECKING,
-    NoReturn,
     Optional,
     Type,
 )
@@ -68,58 +62,34 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotBuilder:
         return cls(*args, **config.snapshot._asdict(), **kwargs)
 
-    async def are_synced(self, aggregate_name: str, aggregate_uuids: set[UUID], **kwargs) -> bool:
-        """Check if the snapshot has the latest version of a list of aggregates.
-
-        :param aggregate_name: Class name of the ``Aggregate`` to be checked.
-        :param aggregate_uuids: List of aggregate identifiers to be checked.
-
-        :return: ``True`` if has the latest version for all the identifiers or ``False`` otherwise.
-        """
-        for aggregate_uuid in aggregate_uuids:
-            if not await self.is_synced(aggregate_name, aggregate_uuid, **kwargs):
-                return False
-        return True
-
-    async def is_synced(self, aggregate_name: str, aggregate_uuid: UUID, **kwargs) -> bool:
+    async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
         """Check if the snapshot has the latest version of an ``Aggregate`` instance.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be checked.
-        :param aggregate_uuid: Identifier of the ``Aggregate`` instance to be checked.
         :return: ``True`` if has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset(**kwargs)
-        iterable = self._repository.select(
-            id_ge=offset, aggregate_name=aggregate_name, aggregate_uuid=aggregate_uuid, **kwargs
-        )
+        iterable = self._repository.select(id_gt=offset, aggregate_name=aggregate_name, **kwargs)
         try:
             await iterable.__anext__()
             return False
         except StopAsyncIteration:
             return True
 
-    async def dispatch(self, **kwargs) -> NoReturn:
+    async def dispatch(self, **kwargs) -> None:
         """Perform a dispatching step, based on the sequence of non already processed ``RepositoryEntry`` objects.
 
         :return: This method does not return anything.
         """
         offset = await self._load_offset(**kwargs)
+        iterable = self._repository.select(id_gt=offset, **kwargs)
 
-        ids = set()
-
-        def _update_offset(e: RepositoryEntry, o: int):
-            ids.add(e.id)
-            while o + 1 in ids:
-                o += 1
-                ids.remove(o)
-            return o
-
-        async for entry in self._repository.select(id_gt=offset, **kwargs):
+        async for event_entry in iterable:
             try:
-                await self._dispatch_one(entry, **kwargs)
+                await self._dispatch_one(event_entry, **kwargs)
             except MinosPreviousVersionSnapshotException:
                 pass
-            offset = _update_offset(entry, offset)
+            offset = max(event_entry.id, offset)
 
         await self._store_offset(offset)
 
@@ -131,29 +101,28 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         except Exception:
             return 0
 
-    async def _store_offset(self, offset: int) -> NoReturn:
-        await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset})
+    async def _store_offset(self, offset: int) -> None:
+        await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset}, lock=hash("insert_snapshot_aux_offset"))
 
-    async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> Optional[SnapshotEntry]:
+    async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:
             return await self._submit_delete(event_entry, **kwargs)
 
-        instance = await self._build_instance(event_entry, **kwargs)
-        return await self._submit_instance(instance, **kwargs)
+        return await self._submit_update_or_create(event_entry, **kwargs)
 
-    async def _submit_delete(self, entry: RepositoryEntry, **kwargs) -> NoReturn:
-        params = {
-            "aggregate_uuid": entry.aggregate_uuid,
-            "aggregate_name": entry.aggregate_name,
-            "version": entry.version,
-            "data": None,
-            "created_at": entry.created_at,
-            "updated_at": entry.created_at,
-        }
-        await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params, **kwargs)
+    async def _submit_delete(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
+        snapshot_entry = SnapshotEntry.from_event_entry(event_entry)
+        snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
+        return snapshot_entry
+
+    async def _submit_update_or_create(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
+        aggregate = await self._build_instance(event_entry, **kwargs)
+
+        snapshot_entry = SnapshotEntry.from_aggregate(aggregate)
+        snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
+        return snapshot_entry
 
     async def _build_instance(self, event_entry: RepositoryEntry, **kwargs) -> Aggregate:
-        # noinspection PyTypeChecker
         diff = event_entry.aggregate_diff
         instance = await self._update_if_exists(diff, **kwargs)
         return instance
@@ -184,46 +153,35 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         )
         return SnapshotEntry(aggregate_uuid, aggregate_name, *raw)
 
-    async def _submit_instance(self, aggregate: Aggregate, **kwargs) -> SnapshotEntry:
-        snapshot_entry = SnapshotEntry.from_aggregate(aggregate)
-        snapshot_entry = await self._submit_update_or_create(snapshot_entry, **kwargs)
-        return snapshot_entry
-
-    async def _submit_update_or_create(self, entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
-        params = {
-            "aggregate_uuid": entry.aggregate_uuid,
-            "aggregate_name": entry.aggregate_name,
-            "version": entry.version,
-            "data": entry.data,
-            "created_at": entry.created_at,
-            "updated_at": entry.updated_at,
-        }
+    async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
+        params = snapshot_entry.as_raw()
         response = await self.submit_query_and_fetchone(_INSERT_ONE_SNAPSHOT_ENTRY_QUERY, params, **kwargs)
 
-        entry.created_at, entry.updated_at = response
+        snapshot_entry.created_at, snapshot_entry.updated_at = response
 
-        return entry
+        return snapshot_entry
 
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
-SELECT version, data, created_at, updated_at
+SELECT version, schema, data, created_at, updated_at
 FROM snapshot
 WHERE aggregate_uuid = %s and aggregate_name = %s;
 """.strip()
 
 _INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """
-INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, data, created_at, updated_at)
+INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at)
 VALUES (
     %(aggregate_uuid)s,
     %(aggregate_name)s,
     %(version)s,
+    %(schema)s,
     %(data)s,
     %(created_at)s,
     %(updated_at)s
 )
 ON CONFLICT (aggregate_uuid, aggregate_name)
 DO
-   UPDATE SET version = %(version)s, data = %(data)s, updated_at = %(updated_at)s
+   UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;
 """.strip()
 
@@ -237,5 +195,5 @@ _INSERT_OFFSET_QUERY = """
 INSERT INTO snapshot_aux_offset (id, value)
 VALUES (TRUE, %(value)s)
 ON CONFLICT (id)
-DO UPDATE SET value = %(value)s;
+DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
 """.strip()

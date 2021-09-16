@@ -131,6 +131,10 @@ from .protocol import (
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
 )
+from .queries import (
+    Condition,
+    Ordering,
+)
 from .repository import (
     InMemoryRepository,
     MinosRepository,
@@ -148,6 +152,7 @@ from .snapshot import (
     MinosSnapshot,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotSetup,
     SnapshotEntry,
 )

@@ -1,10 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
+"""minos.common.snapshot.pg.snapshot module."""
 
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -13,7 +8,7 @@ import logging
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
-    NoReturn,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -24,7 +19,10 @@ from ...configuration import (
 )
 from ...exceptions import (
     MinosSnapshotAggregateNotFoundException,
-    MinosSnapshotDeletedAggregateException,
+)
+from ...queries import (
+    _Condition,
+    _Ordering,
 )
 from ..abc import (
     MinosSnapshot,
@@ -38,9 +36,11 @@ from .abc import (
 from .builders import (
     PostgreSqlSnapshotBuilder,
 )
+from .queries import (
+    PostgreSqlSnapshotQueryBuilder,
+)
 
 if TYPE_CHECKING:
-
     from ...model import (
         Aggregate,
     )
@@ -49,7 +49,10 @@ logger = logging.getLogger(__name__)
 
 
 class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
-    """Minos Snapshot Reader class."""
+    """PostgreSQL Snapshot class.
+
+   The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    """
 
     builder: PostgreSqlSnapshotBuilder
 
@@ -58,106 +61,119 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         self.builder = builder
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshot:
-        builder = PostgreSqlSnapshotBuilder.from_config(*args, config=config, **kwargs)
-        return cls(*args, builder=builder, **config.snapshot._asdict(), **kwargs)
+    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshot:
+        builder = PostgreSqlSnapshotBuilder.from_config(config=config, **kwargs)
+        return cls(builder=builder, **config.snapshot._asdict(), **kwargs)
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         await self.builder.setup()
         await super()._setup()
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         await super()._destroy()
         await self.builder.destroy()
 
-    async def get(self, aggregate_name: str, uuids: set[UUID], **kwargs) -> AsyncIterator[Aggregate]:
-        """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
+    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+        """Get an aggregate instance from its identifier.
 
-        :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param uuids: Set of identifiers to be retrieved.
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param uuid: Identifier of the ``Aggregate``.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
+        :return: The ``Aggregate`` instance.
         """
-        # noinspection PyShadowingBuiltins
-        if not await self.builder.are_synced(aggregate_name, uuids, **kwargs):
-            await self.builder.dispatch(**kwargs)
+        snapshot_entry = await self.get_entry(aggregate_name, uuid, **kwargs)
+        aggregate = snapshot_entry.build_aggregate(**kwargs)
+        return aggregate
 
-        async for item in self._get(aggregate_name, uuids, **kwargs):
-            yield item.build_aggregate(**kwargs)
+    async def get_entry(self, aggregate_name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
+        """Get an ``SnapshotEntry`` from its identifier.
 
-    async def _get(
-        self, aggregate_name: str, uuids: set[UUID], streaming_mode: bool = False, **kwargs,
-    ) -> AsyncIterator[SnapshotEntry]:
-        uniques = set(uuids)
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param uuid: Identifier of the ``Aggregate``.
+        :param kwargs: Additional named arguments.
+        :return: The ``Aggregate`` instance.
+        """
+        await self.builder.dispatch(**kwargs)
 
-        if not len(uniques):
-            return
-
-        if len(uniques) != len(uuids):
-            seen = set()
-            duplicated = {x for x in uuids if x in seen or seen.add(x)}
-            logger.warning(f"Duplicated identifiers will be ignored: {duplicated!r}")
-
-        parameters = (aggregate_name, tuple(uniques))
+        parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid}
 
         async with self.cursor() as cursor:
-            async with cursor.begin():
+            await cursor.execute(_SELECT_ENTRY_BY_UUID_QUERY, parameters)
+            row = await cursor.fetchone()
+            if row is None:
+                raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
 
-                await cursor.execute(_CHECK_MULTIPLE_ENTRIES_QUERY, parameters)
-                total_count, not_null_count = await cursor.fetchone()
+            return SnapshotEntry(*row)
 
-                await cursor.execute(_SELECT_MULTIPLE_ENTRIES_QUERY, parameters)
+    async def find(
+        self,
+        aggregate_name: str,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
+        limit: Optional[int] = None,
+        streaming_mode: bool = False,
+        **kwargs,
+    ) -> AsyncIterator[Aggregate]:
+        """Find a collection of ``Aggregate`` instances based on a ``Condition``.
 
-                if total_count != len(uniques):
-                    # noinspection PyUnresolvedReferences
-                    found = {row[0] async for row in cursor}
-                    missing = uniques - found
-                    raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {missing!r}")
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
+            database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
+        """
+        async for snapshot_entry in self.find_entries(
+            aggregate_name, condition, ordering, limit, streaming_mode, **kwargs
+        ):
+            yield snapshot_entry.build_aggregate(**kwargs)
 
-                if not_null_count != len(uniques):
-                    # noinspection PyUnresolvedReferences
-                    found = {row[0] async for row in cursor if row[3]}
-                    missing = uniques - found
-                    raise MinosSnapshotDeletedAggregateException(f"Some aggregates are already deleted: {missing!r}")
+    async def find_entries(
+        self,
+        aggregate_name: str,
+        condition: _Condition,
+        ordering: Optional[_Ordering] = None,
+        limit: Optional[int] = None,
+        streaming_mode: bool = False,
+        **kwargs,
+    ) -> AsyncIterator[SnapshotEntry]:
+        """Find a collection of ``SnapshotEntry`` instances based on a ``Condition``.
 
-                if streaming_mode:
-                    async for row in cursor:
-                        # noinspection PyArgumentList
-                        yield SnapshotEntry(*row)
-                    return
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
+            database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
+        """
+        await self.builder.dispatch(**kwargs)
 
+        query, parameters = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit).build()
+
+        async with self.cursor() as cursor:
+            # noinspection PyTypeChecker
+            await cursor.execute(query, parameters)
+            if streaming_mode:
+                async for row in cursor:
+                    # noinspection PyArgumentList
+                    yield SnapshotEntry(*row)
+                return
+            else:
                 rows = await cursor.fetchall()
-
         for row in rows:
             yield SnapshotEntry(*row)
 
-    # noinspection PyUnusedLocal
-    async def select(self, *args, **kwargs) -> AsyncIterator[SnapshotEntry]:
-        """Select a sequence of ``MinosSnapshotEntry`` objects.
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: A sequence of ``MinosSnapshotEntry`` objects.
-        """
-        async for row in self.submit_query_and_iter(_SELECT_ALL_ENTRIES_QUERY, **kwargs):
-            yield SnapshotEntry(*row)
-
-
-_SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, created_at, updated_at
+_SELECT_ENTRY_BY_UUID_QUERY = """
+SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at
 FROM snapshot
-ORDER BY updated_at;
-""".strip()
-
-_SELECT_MULTIPLE_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, created_at, updated_at
-FROM snapshot
-WHERE aggregate_name = %s AND aggregate_uuid IN %s
-ORDER BY updated_at;
-""".strip()
-
-_CHECK_MULTIPLE_ENTRIES_QUERY = """
-SELECT COUNT(*) as total_count, COUNT(data) as not_null_count
-FROM snapshot
-WHERE aggregate_name = %s AND aggregate_uuid IN %s;
+WHERE aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s
 """.strip()
