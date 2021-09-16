@@ -13,8 +13,14 @@ from typing import (
 )
 
 from ..exceptions import (
+    DataDecoderMalformedTypeException,
+    DataDecoderRequiredValueException,
+    DataDecoderTypeException,
     MinosAttributeValidationException,
+    MinosMalformedAttributeException,
     MinosParseAttributeException,
+    MinosReqAttributeException,
+    MinosTypeAttributeException,
 )
 from .serializers import (
     AvroDataDecoder,
@@ -42,7 +48,7 @@ class Field:
         type_: type,
         value: Any = MissingSentinel,
         parser: Optional[Callable[[Any], Any]] = None,
-        validator: Optional[Callable[[Any], bool]] = None,
+        validator: Optional[Callable[[Any], Any]] = None,
     ):
         self._name = name
         self._type = type_
@@ -113,7 +119,14 @@ class Field:
             except Exception as exc:
                 raise MinosParseAttributeException(self.name, data, exc)
 
-        value = AvroDataDecoder.from_field(self).build(data)
+        try:
+            value = AvroDataDecoder(self.type).build(data)
+        except DataDecoderMalformedTypeException as exc:
+            raise MinosMalformedAttributeException(f"{self.name!r} field is malformed. {exc}")
+        except DataDecoderRequiredValueException as exc:
+            raise MinosReqAttributeException(f"{self.name!r} field is required. {exc}")
+        except DataDecoderTypeException:
+            raise MinosTypeAttributeException(self.name, self.type, data)
 
         if self.validator is not None and value is not None and not self.validator(value):
             raise MinosAttributeValidationException(self.name, value)
@@ -126,7 +139,7 @@ class Field:
 
         :return: A dictionary object.
         """
-        return AvroSchemaEncoder.from_field(self).build()
+        return AvroSchemaEncoder(self.type, self.name).build()
 
     @property
     def avro_data(self):

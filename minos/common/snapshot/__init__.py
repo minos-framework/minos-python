@@ -10,5 +10,6 @@ from .memory import (
 from .pg import (
     PostgreSqlSnapshot,
     PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotSetup,
 )

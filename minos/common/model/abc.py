@@ -91,9 +91,6 @@ class Model(Mapping):
         schema = MinosAvroProtocol.decode_schema(raw)
         decoded = MinosAvroProtocol.decode(raw)
 
-        # FIXME: Extend implementation of the `AvroDataDecoder` to avoid this fix.
-        schema["name"] = "{}.fake.{}".format(*schema["name"].rsplit(".", 1))
-
         if isinstance(decoded, list):
             return [cls.from_avro(schema, d | kwargs) for d in decoded]
         return cls.from_avro(schema, decoded | kwargs)
@@ -131,7 +128,7 @@ class Model(Mapping):
         if isinstance(schema, list):
             schema = schema[-1]
         model_type = AvroSchemaDecoder(schema).build()
-        return AvroDataDecoder("", model_type).build(data)
+        return AvroDataDecoder(model_type).build(data)
 
     @classmethod
     def to_avro_str(cls: Type[T], models: list[T]) -> str:
@@ -244,7 +241,7 @@ class Model(Mapping):
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder("", ModelType.from_model(self_or_cls)).build()["type"]]
+        return [AvroSchemaEncoder(ModelType.from_model(self_or_cls)).build()]
 
     @property
     def avro_data(self) -> dict[str, Any]:
