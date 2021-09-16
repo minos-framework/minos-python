@@ -45,7 +45,10 @@ from ...queries import (
 
 
 class PostgreSqlSnapshotQueryBuilder:
-    """TODO"""
+    """PostgreSQL Snapshot Query Builder class.
+
+    This class build postgres-compatible database queries over fields based on a condition, ordering, etc.
+    """
 
     def __init__(
         self,
@@ -61,9 +64,10 @@ class PostgreSqlSnapshotQueryBuilder:
         self._parameters = None
 
     def build(self) -> tuple[Composable, dict[str, Any]]:
-        """TODO
+        """Build a query.
 
-        :return: TODO
+        :return: A tuple in which the first value is the sql sentence and the second one is a dictionary containing the
+            query parameters.
         """
         self._parameters = dict()
 

@@ -29,16 +29,16 @@ if TYPE_CHECKING:
 
 class _Condition(ABC):
     def evaluate(self, value: Model) -> bool:
-        """
+        """Evaluate if given value satisfied this condition.
 
-        :param value:
-        :return:
+        :param value: The value to be evaluated.
+        :return: A boolean value.
         """
         return self._evaluate(value)
 
     @abstractmethod
     def _evaluate(self, value: Model) -> bool:
-        """TODO"""
+        pass
 
     def __eq__(self, other) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -93,9 +93,9 @@ class _NotCondition(_Condition):
 
 
 class _SimpleCondition(_Condition, ABC):
-    def __init__(self, field: str, value: Model):
+    def __init__(self, field: str, parameter: Model):
         self.field = field
-        self.parameter = value
+        self.parameter = parameter
 
     def __iter__(self) -> Iterable[Any]:
         yield from (
@@ -148,6 +148,37 @@ _FALSE_CONDITION = _FalseCondition()
 
 
 class Condition:
+    """Condition class.
+
+    This class provides the way to create filtering conditions for ``Model`` instances based on the following operators:
+
+    * `TRUE`: Always evaluates as `True`.
+    * `FALSE`: Always evaluates as `True`.
+    * `AND`: Only evaluates as `True` if all the given conditions are evaluated as `True`.
+    * `OR`: Evaluates as `True` if at least one of the given conditions are evaluated as `True`.
+    * `NOT`: Evaluates as `True` only if the inner condition is evaluated as `False`.
+    * `LOWER`: Evaluates as `True` only if the field of the given model is lower (<) than the parameter.
+    * `LOWER_EQUAL`: Evaluates as `True` only if the field of the given model is lower or equal (<=) to the parameter.
+    * `GREATER`: Evaluates as `True` only if the field of the given model is greater (>) than the parameter.
+    * `GREATER_EQUAL`: Evaluates as `True` only if the field of the given model is greater or equal (>=) to the
+    parameter.
+    * `EQUAL`: Evaluates as `True` only if the field of the given model is equal (==) to the parameter.
+    * `NOT_EQUAL`: Evaluates as `True` only if the field of the given model is not equal (!=) to the parameter.
+    * `IN`: Evaluates as `True` only if the field of the given model belongs (in) to the parameter (which must be a
+    collection).
+
+    For example, to define a condition in which the `year` must be between `1994` and `2003` or the `color` must be
+    `blue`, the condition can be writen as:
+
+    .. code-block::
+
+        Condition.OR(
+            Condition.AND(Condition.GREATER_EQUAL("year", 1994), Condition.LOWER("year", 2003)),
+            Condition.EQUAL("color", "blue")
+        )
+
+    """
+
     TRUE = _TRUE_CONDITION
     FALSE = _FALSE_CONDITION
     AND = _AndCondition
@@ -184,5 +215,18 @@ class _Ordering:
 
 
 class Ordering:
+    """Ordering class.
+
+    This class provides the way to define ordering strategies for ``Model`` instances through the ``ASC`` and ``DESC``
+    class methods, which retrieves instances containing the given information.
+
+    For example, to define a descending ordering strategy by the `name` field:
+
+    .. code-block::
+
+        Ordering.DESC("name")
+
+    """
+
     ASC = partial(_Ordering, reverse=False)
     DESC = partial(_Ordering, reverse=True)

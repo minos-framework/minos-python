@@ -113,9 +113,9 @@ class Aggregate(Entity):
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
     ) -> T:
-        """Get a sequence of aggregates based on a list of identifiers.
+        """Get one instance from the database based on its identifier.
 
-        :param uuid: TODO
+        :param uuid: The identifier of the instance.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
@@ -147,11 +147,13 @@ class Aggregate(Entity):
         _repository: Optional[MinosRepository] = None,
         _snapshot: Optional[MinosSnapshot] = None,
     ) -> AsyncIterator[T]:
-        """Get one aggregate based on an identifier.
+        """Find a collection of instances based on a given ``Condition``.
 
-        :param condition: TODO.
-        :param ordering: TODO.
-        :param limit: TODO.
+        :param condition: The ``Condition`` that must be satisfied by all the instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
         :param _broker: Broker to be set to the aggregates.
         :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.

@@ -38,7 +38,10 @@ if TYPE_CHECKING:
 
 
 class InMemorySnapshot(MinosSnapshot):
-    """In Memory Snapshot class."""
+    """InMemory Snapshot class.
+
+    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    """
 
     # noinspection PyMethodOverriding
     async def find(
@@ -47,24 +50,28 @@ class InMemorySnapshot(MinosSnapshot):
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
-        _repository: MinosRepository = None,
+        *,
+        _repository: MinosRepository,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
-        """TODO
+        """Find a collection of ``Aggregate`` instances based on a ``Condition``.
 
-        :param aggregate_name: TODO
-        :param condition: TODO
-        :param ordering: TODO
-        :param limit: TODO
-        :param _repository: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param _repository: The event's ``Repository`` instance that provides access to the aggregate events needed to
+            reconstruct the target aggregates.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
         uuids = {v.aggregate_uuid async for v in _repository.select(aggregate_name=aggregate_name)}
 
         aggregates = list()
         for uuid in uuids:
-            aggregate = await self.get(aggregate_name, uuid, _repository, **kwargs)
+            aggregate = await self.get(aggregate_name, uuid, _repository=_repository, **kwargs)
             if condition.evaluate(aggregate):
                 aggregates.append(aggregate)
 
@@ -78,16 +85,16 @@ class InMemorySnapshot(MinosSnapshot):
             yield aggregate
 
     # noinspection PyMethodOverriding
-    async def get(self, aggregate_name: str, uuid: UUID, _repository: MinosRepository, **kwargs) -> Aggregate:
-        """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
+    async def get(self, aggregate_name: str, uuid: UUID, *, _repository: MinosRepository, **kwargs) -> Aggregate:
+        """Get an aggregate instance from its identifier.
 
-        :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param uuid: Set of identifiers to be retrieved.
-        :param _repository: TODO
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param uuid: Identifier of the ``Aggregate``.
+        :param _repository: The event's ``Repository`` instance that provides access to the aggregate events needed to
+            reconstruct the target aggregates.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
+        :return: The ``Aggregate`` instance.
         """
-        # noinspection PyTypeChecker
         entries = [v async for v in _repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)]
         if not len(entries):
             raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")

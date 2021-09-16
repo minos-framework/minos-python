@@ -111,7 +111,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         return await self._submit_update_or_create(event_entry, **kwargs)
 
     async def _submit_delete(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
-        snapshot_entry = SnapshotEntry.from_delete_event(event_entry)
+        snapshot_entry = SnapshotEntry.from_event_entry(event_entry)
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
@@ -123,7 +123,6 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
         return snapshot_entry
 
     async def _build_instance(self, event_entry: RepositoryEntry, **kwargs) -> Aggregate:
-        # noinspection PyTypeChecker
         diff = event_entry.aggregate_diff
         instance = await self._update_if_exists(diff, **kwargs)
         return instance

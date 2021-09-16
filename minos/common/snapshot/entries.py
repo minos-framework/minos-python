@@ -102,18 +102,25 @@ class SnapshotEntry:
         )
 
     @classmethod
-    def from_delete_event(cls, entry: RepositoryEntry) -> SnapshotEntry:
+    def from_event_entry(cls, entry: RepositoryEntry) -> SnapshotEntry:
+        """Build a new ``SnapshotEntry`` from a deletion event.
+
+        :param entry: The repository entry containing the delete information.
+        :return: A new ``SnapshotEntry`` instance.
+        """
         return cls(
             aggregate_uuid=entry.aggregate_uuid,
             aggregate_name=entry.aggregate_name,
             version=entry.version,
-            schema=None,
-            data=None,
             created_at=entry.created_at,
             updated_at=entry.created_at,
         )
 
     def as_raw(self) -> dict[str, Any]:
+        """Get a raw representation of the instance.
+
+        :return: A dictionary in which the keys are attribute names and values the attribute contents.
+        """
         return {
             "aggregate_uuid": self.aggregate_uuid,
             "aggregate_name": self.aggregate_name,
@@ -126,9 +133,9 @@ class SnapshotEntry:
 
     @property
     def encoded_schema(self) -> Optional[bytes]:
-        """TODO
+        """Get the encoded schema if available.
 
-        :return: TODO
+        :return: A ``bytes`` instance or ``None``.
         """
         if self.schema is None:
             return None
@@ -137,9 +144,9 @@ class SnapshotEntry:
 
     @property
     def encoded_data(self) -> Optional[str]:
-        """ TODO
+        """ Get the encoded data if available.
 
-        :return: TODO
+        :return: A ``str`` instance or ``None``.
         """
         if self.data is None:
             return None

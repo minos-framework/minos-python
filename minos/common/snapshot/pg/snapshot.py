@@ -49,7 +49,10 @@ logger = logging.getLogger(__name__)
 
 
 class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
-    """Minos Snapshot Reader class."""
+    """PostgreSQL Snapshot class.
+
+   The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
+    """
 
     builder: PostgreSqlSnapshotBuilder
 
@@ -71,18 +74,25 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         await self.builder.destroy()
 
     async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
-        """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
+        """Get an aggregate instance from its identifier.
 
-        :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param uuid: Set of identifiers to be retrieved.
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param uuid: Identifier of the ``Aggregate``.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
+        :return: The ``Aggregate`` instance.
         """
         snapshot_entry = await self.get_entry(aggregate_name, uuid, **kwargs)
         aggregate = snapshot_entry.build_aggregate(**kwargs)
         return aggregate
 
     async def get_entry(self, aggregate_name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
+        """Get an ``SnapshotEntry`` from its identifier.
+
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param uuid: Identifier of the ``Aggregate``.
+        :param kwargs: Additional named arguments.
+        :return: The ``Aggregate`` instance.
+        """
         await self.builder.dispatch(**kwargs)
 
         parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid}
@@ -101,18 +111,25 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
+        streaming_mode: bool = False,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
-        """Retrieve an asynchronous iterator that provides the requested ``Aggregate`` instances.
+        """Find a collection of ``Aggregate`` instances based on a ``Condition``.
 
-        :param aggregate_name: Class name of the ``Aggregate`` to be retrieved.
-        :param condition: TODO.
-        :param ordering: TODO.
-        :param limit: TODO.
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
+            database connection), otherwise preloads the full set of values on memory and then retrieves them.
         :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
+        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
-        async for snapshot_entry in self.find_entries(aggregate_name, condition, ordering, limit, **kwargs):
+        async for snapshot_entry in self.find_entries(
+            aggregate_name, condition, ordering, limit, streaming_mode, **kwargs
+        ):
             yield snapshot_entry.build_aggregate(**kwargs)
 
     async def find_entries(
@@ -124,15 +141,18 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         streaming_mode: bool = False,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
-        """TODO
+        """Find a collection of ``SnapshotEntry`` instances based on a ``Condition``.
 
-        :param aggregate_name: TODO
-        :param condition: TODO
-        :param ordering: TODO
-        :param limit: TODO
-        :param streaming_mode: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param aggregate_name: Class name of the ``Aggregate``.
+        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
+        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
+            is to retrieve them without any order pattern.
+        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
+            instances that meet the given condition.
+        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
+            database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
         await self.builder.dispatch(**kwargs)
 
