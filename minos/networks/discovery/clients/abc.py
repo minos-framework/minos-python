@@ -3,15 +3,11 @@ from abc import (
     ABC,
     abstractmethod,
 )
-from asyncio import (
-    sleep,
-)
+from asyncio import sleep
 
 import aiohttp
 
-from ...exceptions import (
-    MinosDiscoveryConnectorException,
-)
+from ...exceptions import MinosDiscoveryConnectorException
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +36,7 @@ class DiscoveryClient(ABC):
         retry_tries: int = 3,
         retry_delay: float = 5,
     ) -> None:
-         """Perform a subscription query.
+        """Perform a subscription query.
          
         :param host: The ip of the microservice to be subscribed.
         :param port: The port of the microservice to be subscribed.

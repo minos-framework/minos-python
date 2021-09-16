@@ -1,6 +1,2 @@
-from .abc import (
-    DiscoveryClient,
-)
-from .minos import (
-    MinosDiscoveryClient,
-)
+from .abc import DiscoveryClient
+from .minos import MinosDiscoveryClient
