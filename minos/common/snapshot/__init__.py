@@ -1,5 +1,3 @@
-"""minos.common.snapshot module."""
-
 from .abc import (
     MinosSnapshot,
 )
@@ -11,7 +9,8 @@ from .memory import (
 )
 from .pg import (
     PostgreSqlSnapshot,
-    PostgreSqlSnapshotBuilder,
     PostgreSqlSnapshotQueryBuilder,
+    PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
+    PostgreSqlSnapshotWriter,
 )

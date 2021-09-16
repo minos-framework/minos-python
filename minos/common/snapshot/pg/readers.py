@@ -1,5 +1,3 @@
-"""minos.common.snapshot.pg.snapshot module."""
-
 from __future__ import (
     annotations,
 )
@@ -24,17 +22,11 @@ from ...queries import (
     _Condition,
     _Ordering,
 )
-from ..abc import (
-    MinosSnapshot,
-)
 from ..entries import (
     SnapshotEntry,
 )
 from .abc import (
     PostgreSqlSnapshotSetup,
-)
-from .builders import (
-    PostgreSqlSnapshotBuilder,
 )
 from .queries import (
     PostgreSqlSnapshotQueryBuilder,
@@ -48,30 +40,15 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
+class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
     """PostgreSQL Snapshot class.
 
    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
     """
 
-    builder: PostgreSqlSnapshotBuilder
-
-    def __init__(self, *args, builder: PostgreSqlSnapshotBuilder, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.builder = builder
-
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshot:
-        builder = PostgreSqlSnapshotBuilder.from_config(config=config, **kwargs)
-        return cls(builder=builder, **config.snapshot._asdict(), **kwargs)
-
-    async def _setup(self) -> None:
-        await self.builder.setup()
-        await super()._setup()
-
-    async def _destroy(self) -> None:
-        await super()._destroy()
-        await self.builder.destroy()
+    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotReader:
+        return cls(**config.snapshot._asdict(), **kwargs)
 
     async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
         """Get an aggregate instance from its identifier.
@@ -93,8 +70,6 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
-        await self.builder.dispatch(**kwargs)
-
         parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid}
 
         async with self.cursor() as cursor:
@@ -154,8 +129,6 @@ class PostgreSqlSnapshot(PostgreSqlSnapshotSetup, MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
-        await self.builder.dispatch(**kwargs)
-
         query, parameters = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit).build()
 
         async with self.cursor() as cursor:

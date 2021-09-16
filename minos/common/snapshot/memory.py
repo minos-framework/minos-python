@@ -1,5 +1,3 @@
-"""minos.common.snapshot.memory module."""
-
 from __future__ import (
     annotations,
 )
@@ -110,3 +108,11 @@ class InMemorySnapshot(MinosSnapshot):
             instance.apply_diff(entry.aggregate_diff)
 
         return instance
+
+    # noinspection PyMethodOverriding
+    async def synchronize(self, **kwargs) -> None:
+        """Synchronize the snapshot to the latest available version.
+
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """

@@ -1,5 +1,3 @@
-"""minos.common module."""
-
 __version__ = "0.1.12"
 
 from .configuration import (
@@ -151,9 +149,10 @@ from .snapshot import (
     InMemorySnapshot,
     MinosSnapshot,
     PostgreSqlSnapshot,
-    PostgreSqlSnapshotBuilder,
     PostgreSqlSnapshotQueryBuilder,
+    PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
+    PostgreSqlSnapshotWriter,
     SnapshotEntry,
 )
 from .storage import (

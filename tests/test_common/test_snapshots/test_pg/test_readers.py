@@ -1,4 +1,3 @@
-"""tests.test_common.test_snapshots.test_pg.test_snapshots module."""
 import sys
 import unittest
 from datetime import (
@@ -17,14 +16,13 @@ from minos.common import (
     Condition,
     FieldDiff,
     FieldDiffContainer,
-    MinosConfigException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
     Ordering,
     PostgreSqlRepository,
-    PostgreSqlSnapshot,
-    PostgreSqlSnapshotBuilder,
+    PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
+    PostgreSqlSnapshotWriter,
     RepositoryEntry,
     SnapshotEntry,
 )
@@ -42,7 +40,7 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
+class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -63,24 +61,20 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         super().tearDown()
 
     def test_type(self):
-        self.assertTrue(issubclass(PostgreSqlSnapshot, PostgreSqlSnapshotSetup))
+        self.assertTrue(issubclass(PostgreSqlSnapshotReader, PostgreSqlSnapshotSetup))
 
     def test_from_config(self):
-        reader = PostgreSqlSnapshot.from_config(config=self.config)
+        reader = PostgreSqlSnapshotReader.from_config(config=self.config)
         self.assertEqual(self.config.snapshot.host, reader.host)
         self.assertEqual(self.config.snapshot.port, reader.port)
         self.assertEqual(self.config.snapshot.database, reader.database)
         self.assertEqual(self.config.snapshot.user, reader.user)
         self.assertEqual(self.config.snapshot.password, reader.password)
 
-    def test_from_config_raises(self):
-        with self.assertRaises(MinosConfigException):
-            PostgreSqlSnapshot.from_config()
-
     async def test_find_by_uuid(self):
         condition = Condition.IN("uuid", {self.uuid_2, self.uuid_3})
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
                 observed = [v async for v in iterable]
 
@@ -107,8 +101,8 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_find_streaming_true(self):
         condition = Condition.IN("uuid", {self.uuid_2, self.uuid_3})
 
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 iterable = snapshot.find(
                     "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering=Ordering.ASC("updated_at")
                 )
@@ -137,8 +131,8 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     async def test_get_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
         condition = Condition.IN("uuid", uuids)
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
                 observed = [v async for v in iterable]
 
@@ -163,24 +157,24 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             self.assertEqual(expected, observed)
 
     async def test_find_empty(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 observed = {v async for v in snapshot.find("tests.aggregate_classes.Car", Condition.FALSE)}
 
         expected = set()
         self.assertEqual(expected, observed)
 
     async def test_get_raises(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 with self.assertRaises(MinosSnapshotDeletedAggregateException):
                     await snapshot.get("tests.aggregate_classes.Car", self.uuid_1)
                 with self.assertRaises(MinosSnapshotAggregateNotFoundException):
                     await snapshot.get("tests.aggregate_classes.Car", uuid4())
 
     async def test_find(self):
-        async with await self._populate() as repository:
-            async with PostgreSqlSnapshot.from_config(config=self.config, repository=repository) as snapshot:
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 condition = Condition.EQUAL("color", "blue")
                 iterable = snapshot.find("tests.aggregate_classes.Car", condition)
                 observed = [v async for v in iterable]
@@ -229,7 +223,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             await repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
             await repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
             await repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
-            async with PostgreSqlSnapshotBuilder.from_config(config=self.config, repository=repository) as dispatcher:
+            async with PostgreSqlSnapshotWriter.from_config(config=self.config, repository=repository) as dispatcher:
                 await dispatcher.dispatch()
             return repository
 
