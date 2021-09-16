@@ -28,4 +28,6 @@ class KongDiscovery(DiscoveryClient):
         await self._rest_subscribe(endpoint, service_metadata, host, port, name, endpoints, retry_tries, retry_delay)
 
     async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
-        pass
+        endpoint = f"{self.route}/services/{name}"
+
+        await self._rest_unsubscribe(endpoint, name, retry_tries, retry_delay)

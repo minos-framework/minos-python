@@ -84,7 +84,7 @@ class TestKong(unittest.IsolatedAsyncioTestCase):
         await self.client.unsubscribe("test")
         self.assertEqual(1, mock.call_count)
         # noinspection HttpUrlsUsage
-        self.assertEqual(call("http://123.456.123.1:1234/microservices/test"), mock.call_args)
+        self.assertEqual(call("http://123.456.123.1:1234/services/test"), mock.call_args)
 
     @patch("aiohttp.ClientSession.delete")
     async def test_unsubscribe_raises_failure(self, mock):
