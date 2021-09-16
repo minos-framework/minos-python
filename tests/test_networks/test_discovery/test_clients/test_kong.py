@@ -13,7 +13,7 @@ from minos.networks import (
     MinosDiscoveryConnectorException,
 )
 from minos.networks.discovery.clients.kong import (
-    KongDiscovery,
+    KongDiscoveryClient,
 )
 
 _Response = namedtuple("Response", ["ok"])
@@ -33,7 +33,7 @@ async def _fn_raises(*args, **kwargs):
 
 class TestKong(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.client = KongDiscovery("123.456.123.1", 1234)
+        self.client = KongDiscoveryClient("123.456.123.1", 1234)
 
     def test_route(self):
         # noinspection HttpUrlsUsage

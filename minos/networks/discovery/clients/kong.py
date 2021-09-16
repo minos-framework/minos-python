@@ -3,7 +3,7 @@ from .abc import (
 )
 
 
-class KongDiscovery(DiscoveryClient):
+class KongDiscoveryClient(DiscoveryClient):
     async def subscribe(
         self,
         host: str,
