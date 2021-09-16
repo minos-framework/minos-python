@@ -11,7 +11,6 @@ from datetime import (
 )
 from typing import (
     AsyncIterator,
-    NoReturn,
     Optional,
     Type,
     TypeVar,
@@ -276,7 +275,7 @@ class Aggregate(Entity):
 
         await gather(*futures)
 
-    async def save(self) -> NoReturn:
+    async def save(self) -> None:
         """Store the current instance on the repository.
 
         If didn't exist previously creates a new one, otherwise updates the existing one.
@@ -307,7 +306,7 @@ class Aggregate(Entity):
                 **values, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot,
             )
 
-    async def refresh(self) -> NoReturn:
+    async def refresh(self) -> None:
         """Refresh the state of the given instance.
 
         :return: This method does not return anything.
@@ -317,7 +316,7 @@ class Aggregate(Entity):
         )
         self._fields |= new.fields
 
-    async def delete(self) -> NoReturn:
+    async def delete(self) -> None:
         """Delete the given aggregate instance.
 
         :return: This method does not return anything.
@@ -347,7 +346,7 @@ class Aggregate(Entity):
         """
         return AggregateDiff.from_difference(self, another)
 
-    def apply_diff(self, aggregate_diff: AggregateDiff) -> NoReturn:
+    def apply_diff(self, aggregate_diff: AggregateDiff) -> None:
         """Apply the differences over the instance.
 
         :param aggregate_diff: The ``FieldDiffContainer`` containing the values to be set.

@@ -3,7 +3,6 @@ from abc import (
 )
 from typing import (
     Generic,
-    NoReturn,
     Optional,
     TypeVar,
 )
@@ -33,7 +32,7 @@ class MinosPool(MinosSetup, PoolBase, Generic[T], ABC):
         """
         return super().acquire()
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         await self.close()
 
     async def _check_instance(self, instance: T) -> bool:

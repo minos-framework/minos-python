@@ -4,7 +4,6 @@ from pathlib import (
 from typing import (
     Any,
     AsyncIterator,
-    NoReturn,
     Optional,
 )
 from uuid import (
@@ -58,7 +57,7 @@ class FakeBroker(MinosBroker):
         self.call_count = 0
         self.calls_kwargs = list()
 
-    async def send(self, data: Any, **kwargs) -> NoReturn:
+    async def send(self, data: Any, **kwargs) -> None:
         """For testing purposes."""
         self.call_count += 1
         self.calls_kwargs.append({"data": data} | kwargs)

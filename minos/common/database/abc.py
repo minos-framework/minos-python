@@ -5,7 +5,6 @@ from typing import (
     Any,
     AsyncContextManager,
     AsyncIterator,
-    NoReturn,
     Optional,
 )
 
@@ -39,7 +38,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
 
         self._owned_pool = False
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         if self._owned_pool:
             await self._pool.destroy()
             self._pool = None
@@ -106,7 +105,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         timeout: Optional[float] = None,
         lock: Optional[int] = None,
         **kwargs,
-    ) -> NoReturn:
+    ) -> None:
         """Submit a SQL query.
 
         :param operation: Query to be executed.

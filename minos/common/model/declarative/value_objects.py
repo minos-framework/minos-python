@@ -10,7 +10,6 @@ from typing import (
     Generic,
     Iterable,
     Iterator,
-    NoReturn,
     Optional,
     TypeVar,
 )
@@ -57,14 +56,14 @@ class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
             data = {str(hash(value_obj)): value_obj for value_obj in data}
         super().__init__(data, *args, **kwargs)
 
-    def add(self, value_object: T) -> NoReturn:
+    def add(self, value_object: T) -> None:
         """Add an value object.
         :param value_object: The value object to be added.
         :return: This method does not return anything.
         """
         self.data[str(hash(value_object))] = value_object
 
-    def discard(self, value_object: T) -> NoReturn:
+    def discard(self, value_object: T) -> None:
         """Remove an value object.
         :param value_object: The value object to be added.
         :return: This method does not return anything.

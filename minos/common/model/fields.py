@@ -8,7 +8,6 @@ from typing import (
     Any,
     Callable,
     Iterable,
-    NoReturn,
     Optional,
 )
 
@@ -105,7 +104,7 @@ class Field:
         return self._value
 
     @value.setter
-    def value(self, data: Any) -> NoReturn:
+    def value(self, data: Any) -> None:
         """Check if the given value is correct and stores it if ``True``, otherwise raises an exception.
 
         :param data: new value.

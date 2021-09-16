@@ -2,19 +2,21 @@ from __future__ import (
     annotations,
 )
 
-import abc
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from typing import (
     Any,
-    NoReturn,
     Optional,
 )
 
 
-class MinosStorage(abc.ABC):
+class MinosStorage(ABC):
     """Minos Storage interface."""
 
-    @abc.abstractmethod
-    def add(self, **kwargs) -> NoReturn:
+    @abstractmethod
+    def add(self, **kwargs) -> None:
         """Store a value.
 
         :param kwargs: Additional named arguments.
@@ -22,7 +24,7 @@ class MinosStorage(abc.ABC):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
+    @abstractmethod
     def get(self, **kwargs) -> Optional[Any]:
         """Get the stored value..
 
@@ -31,8 +33,8 @@ class MinosStorage(abc.ABC):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def delete(self, **kwargs) -> NoReturn:
+    @abstractmethod
+    def delete(self, **kwargs) -> None:
         """Delete the stored value.
 
         :param kwargs:
@@ -40,8 +42,8 @@ class MinosStorage(abc.ABC):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def update(self, **kwargs) -> NoReturn:
+    @abstractmethod
+    def update(self, **kwargs) -> None:
         """Update the stored value.
 
         :param kwargs: Additional named arguments.
@@ -50,7 +52,7 @@ class MinosStorage(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    @abc.abstractmethod
+    @abstractmethod
     def build(cls, **kwargs) -> MinosStorage:
         """Build a new instance.
 

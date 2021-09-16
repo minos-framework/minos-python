@@ -6,7 +6,6 @@ from asyncio import (
     gather,
 )
 from typing import (
-    NoReturn,
     Type,
     Union,
 )
@@ -58,7 +57,7 @@ class DependencyInjector:
 
         return injections
 
-    async def wire(self, *args, **kwargs) -> NoReturn:
+    async def wire(self, *args, **kwargs) -> None:
         """Connect the configuration.
 
         :return: This method does not return anything.
@@ -67,7 +66,7 @@ class DependencyInjector:
 
         await gather(*(injection.setup() for injection in self.injections.values()))
 
-    async def unwire(self) -> NoReturn:
+    async def unwire(self) -> None:
         """Disconnect the configuration.
 
         :return: This method does not return anything.
