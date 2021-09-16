@@ -22,7 +22,7 @@ class KongDiscovery(DiscoveryClient):
 
         endpoint = f"{self.route}/{name}/routes"
         service_metadata = {
-            "paths": [endpoint['url'] for endpoint in endpoints],
+            "paths": [endpoint["url"] for endpoint in endpoints],
         }
         # TODO Should we use _rest_subscribe here?
         await self._rest_subscribe(endpoint, service_metadata, host, port, name, endpoints, retry_tries, retry_delay)
