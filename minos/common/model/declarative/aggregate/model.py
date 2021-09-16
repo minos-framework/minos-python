@@ -1,5 +1,3 @@
-"""minos.common.model.declarative.aggregate.model module."""
-
 from __future__ import (
     annotations,
 )

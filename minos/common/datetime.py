@@ -1,5 +1,3 @@
-"""minos.common.datetime module."""
-
 from datetime import (
     datetime,
     timezone,

@@ -1,4 +1,3 @@
-"""minos.common.saga module."""
 from __future__ import (
     annotations,
 )

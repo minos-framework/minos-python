@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import unittest
 
 from minos.common import (
@@ -93,6 +86,7 @@ class TestMinosConfig(unittest.TestCase):
     def test_config_discovery(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         discovery = config.discovery
+        self.assertEqual("minos", discovery.client)
         self.assertEqual("localhost", discovery.host)
         self.assertEqual(8080, discovery.port)
 

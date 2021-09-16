@@ -1,5 +1,3 @@
-"""tests.test_common.test_model.test_types.test_model_types module."""
-
 import unittest
 from typing import (
     TypedDict,
