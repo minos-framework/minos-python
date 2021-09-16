@@ -40,8 +40,8 @@ class DiscoveryClient(ABC):
         retry_tries: int = 3,
         retry_delay: float = 5,
     ) -> None:
-        """Perform a subscription query.
-         
+        """ Perform a subscription query.
+
         :param host: The ip of the microservice to be subscribed.
         :param port: The port of the microservice to be subscribed.
         :param name: The name of the microservice to be subscribed.
@@ -80,8 +80,8 @@ class DiscoveryClient(ABC):
 
     @abstractmethod
     async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
-        """Perform an unsubscribe query.
-        
+        """ Perform an unsubscribe query.
+
         :param name: The name of the microservice to be unsubscribed.
         :param retry_tries: Number of attempts before raising a failure exception.
         :param retry_delay: Seconds to wait between attempts.
