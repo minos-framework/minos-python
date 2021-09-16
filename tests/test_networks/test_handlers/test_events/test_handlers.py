@@ -21,6 +21,7 @@ from minos.common import (
     AggregateDiff,
     Event,
     FieldDiffContainer,
+    current_datetime,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -129,8 +130,14 @@ class TestEventHandler(PostgresAsyncTestCase):
         for i in range(1, 6):
             events.extend(
                 [
-                    Event("TicketAdded", AggregateDiff(uuid1, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
-                    Event("TicketAdded", AggregateDiff(uuid2, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
+                    Event(
+                        "TicketAdded",
+                        AggregateDiff(uuid1, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
+                    ),
+                    Event(
+                        "TicketAdded",
+                        AggregateDiff(uuid2, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
+                    ),
                 ]
             )
         shuffle(events)
