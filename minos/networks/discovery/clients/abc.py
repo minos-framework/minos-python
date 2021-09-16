@@ -72,3 +72,21 @@ class DiscoveryClient(ABC):
     @abstractmethod
     async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
         pass
+
+    async def _rest_unsubscribe(self, endpoint: str, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
+        logger.debug(f"Unsubscribing into {endpoint!r}...")
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.delete(endpoint) as response:
+                    success = response.ok
+        except Exception as exc:
+            logger.warning(f"An exception was raised while trying to unsubscribe: {exc!r}")
+            success = False
+
+        if not success:
+            if retry_tries > 1:
+                await sleep(retry_delay)
+                return await self.unsubscribe(name, retry_tries - 1, retry_delay)
+            else:
+                raise MinosDiscoveryConnectorException("There was a problem while trying to unsubscribe.")

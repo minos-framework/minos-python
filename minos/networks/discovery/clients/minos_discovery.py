@@ -1,18 +1,7 @@
 """minos.networks.discovery.clients module."""
 
 import logging
-from asyncio import (
-    sleep,
-)
-from typing import (
-    NoReturn,
-)
 
-import aiohttp
-
-from ...exceptions import (
-    MinosDiscoveryConnectorException,
-)
 from .abc import (
     DiscoveryClient,
 )
@@ -51,7 +40,7 @@ class MinosDiscoveryClient(DiscoveryClient):
 
         await self._rest_subscribe(endpoint, service_metadata, host, port, name, endpoints, retry_tries, retry_delay)
 
-    async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> NoReturn:
+    async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
         """Perform an unsubscribe query.
 
         :param name: The name of the microservice to be unsubscribed.
@@ -61,18 +50,4 @@ class MinosDiscoveryClient(DiscoveryClient):
         """
         endpoint = f"{self.route}/microservices/{name}"
 
-        logger.debug(f"Unsubscribing into {endpoint!r}...")
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.delete(endpoint) as response:
-                    success = response.ok
-        except Exception as exc:
-            logger.warning(f"An exception was raised while trying to unsubscribe: {exc!r}")
-            success = False
-
-        if not success:
-            if retry_tries > 1:
-                await sleep(retry_delay)
-                return await self.unsubscribe(name, retry_tries - 1, retry_delay)
-            else:
-                raise MinosDiscoveryConnectorException("There was a problem while trying to unsubscribe.")
+        await self._rest_unsubscribe(endpoint, name, retry_tries, retry_delay)
