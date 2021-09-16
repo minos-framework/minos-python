@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     )
 
 
-class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
+class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     """Minos Snapshot Dispatcher class."""
 
     _repository: MinosRepository = Provide["repository"]
@@ -57,7 +57,7 @@ class PostgreSqlSnapshotBuilder(PostgreSqlSnapshotSetup):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotBuilder:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotWriter:
         return cls(*args, **config.snapshot._asdict(), **kwargs)
 
     async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
@@ -195,3 +195,5 @@ VALUES (TRUE, %(value)s)
 ON CONFLICT (id)
 DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
 """.strip()
+
+PostgreSqlSnapshotReader = PostgreSqlSnapshotWriter

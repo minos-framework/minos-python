@@ -65,3 +65,11 @@ class MinosSnapshot(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
+
+    @abstractmethod
+    async def synchronize(self, **kwargs) -> None:
+        """Synchronize the snapshot to the latest available version.
+
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """

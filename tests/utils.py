@@ -130,8 +130,27 @@ class FakeSnapshot(MinosSnapshot):
     async def find(self, aggregate_name: str, condition: Condition, **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""
 
+    async def synchronize(self, **kwargs) -> None:
+        """For testing purposes."""
+
 
 class FakeEntity(Entity):
     """For testing purposes."""
 
     name: str
+
+
+class FakeAsyncIterator:
+    """For testing purposes."""
+
+    def __init__(self, seq):
+        self.iter = iter(seq)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self.iter)
+        except StopIteration:
+            raise StopAsyncIteration
