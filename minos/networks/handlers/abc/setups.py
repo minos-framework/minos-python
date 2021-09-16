@@ -1,5 +1,3 @@
-"""minos.networks.handlers.abc.setups module."""
-
 from typing import (
     NoReturn,
 )

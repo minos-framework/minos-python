@@ -1,5 +1,3 @@
-"""tests.tests_networks.test_handlers.test_abc.test_handlers module."""
-
 import unittest
 from asyncio import (
     TimeoutError,

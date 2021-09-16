@@ -1,5 +1,3 @@
-"""tests.test_networks.test_handlers.test_events.test_services module."""
-
 import unittest
 from unittest.mock import (
     AsyncMock,

@@ -1,5 +1,3 @@
-"""tests.utils module."""
-
 import uuid
 from collections import (
     namedtuple,
