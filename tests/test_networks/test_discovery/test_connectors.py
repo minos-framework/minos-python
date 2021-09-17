@@ -1,9 +1,9 @@
 """tests.test_networks.test_discovery.test_connectors module."""
-
+import os
 import unittest
 from unittest.mock import (
     AsyncMock,
-    call,
+    call, patch,
 )
 
 from minos.common import (
@@ -14,6 +14,7 @@ from minos.networks import (
     MinosDiscoveryClient,
     get_host_ip,
 )
+from minos.networks.exceptions import MinosInvalidDiscoveryClient
 from tests.utils import (
     BASE_PATH,
 )
@@ -26,6 +27,11 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
         self.config = MinosConfig(self.CONFIG_FILE_PATH)
         self.ip = get_host_ip()
         self.discovery = DiscoveryConnector.from_config(config=self.config)
+
+    def test_config_minos_client_does_not_exist(self):
+        self.config = MinosConfig(self.CONFIG_FILE_PATH, minos_discovery_client="wrong-client")
+        with self.assertRaises(MinosInvalidDiscoveryClient):
+            self.discovery = DiscoveryConnector.from_config(config=self.config)
 
     def test_client(self):
         self.assertIsInstance(self.discovery.client, MinosDiscoveryClient)
