@@ -4,9 +4,6 @@ import logging
 from asyncio import (
     sleep,
 )
-from typing import (
-    NoReturn,
-)
 
 import aiohttp
 
@@ -41,7 +38,7 @@ class MinosDiscoveryClient:
         endpoints: list[dict[str, str]],
         retry_tries: int = 3,
         retry_delay: float = 5,
-    ) -> NoReturn:
+    ) -> None:
         """Perform a subscription query.
 
         :param host: The ip of the microservice to be subscribed.
@@ -75,7 +72,7 @@ class MinosDiscoveryClient:
             else:
                 raise MinosDiscoveryConnectorException("There was a problem while trying to subscribe.")
 
-    async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> NoReturn:
+    async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
         """Perform an unsubscribe query.
 
         :param name: The name of the microservice to be unsubscribed.

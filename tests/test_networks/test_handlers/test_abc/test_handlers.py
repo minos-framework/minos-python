@@ -10,9 +10,6 @@ from asyncio import (
 from collections import (
     namedtuple,
 )
-from typing import (
-    NoReturn,
-)
 from unittest.mock import (
     AsyncMock,
 )
@@ -52,7 +49,7 @@ class _FakeHandler(Handler):
         self.call_count = 0
         self.call_args = None
 
-    async def dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry) -> None:
         """For testing purposes."""
         self.call_count += 1
         self.call_args = (entry,)

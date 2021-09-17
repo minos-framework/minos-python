@@ -8,9 +8,6 @@ Minos framework can not be copied and/or distributed without the express permiss
 from abc import (
     ABC,
 )
-from typing import (
-    NoReturn,
-)
 
 from psycopg2.sql import (
     SQL,
@@ -25,10 +22,10 @@ from minos.common import (
 class BrokerSetup(PostgreSqlMinosDatabase):
     """Minos Broker Setup Class"""
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         await self._create_broker_table()
 
-    async def _create_broker_table(self) -> NoReturn:
+    async def _create_broker_table(self) -> None:
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("producer_queue"))
 
 
