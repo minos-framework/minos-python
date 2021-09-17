@@ -81,11 +81,42 @@ class TestQueryService(PostgresAsyncTestCase):
 
     def test_get_enroute(self):
         expected = {
-            "__get_aggregate__": {BrokerQueryEnrouteDecorator("GetFoo")},
-            "__get_aggregates__": {BrokerQueryEnrouteDecorator("GetFoos")},
             "find_foo": {BrokerQueryEnrouteDecorator("FindFoo")},
         }
         observed = FakeQueryService.__get_enroute__(self.config)
+        self.assertEqual(expected, observed)
+
+
+class TestCommandService(PostgresAsyncTestCase):
+    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.saga_manager = FakeSagaManager()
+        self.service = FakeCommandService(config=self.config, saga_manager=self.saga_manager)
+
+    def test_base(self):
+        self.assertIsInstance(self.service, Service)
+
+    def test_pre_command(self):
+        request = FakeRequest("foo")
+        self.assertEqual(request, self.service._pre_command_handle(request))
+
+    def test_pre_query(self):
+        with self.assertRaises(MinosIllegalHandlingException):
+            self.service._pre_query_handle(FakeRequest("foo"))
+
+    def test_pre_event(self):
+        with self.assertRaises(MinosIllegalHandlingException):
+            self.service._pre_event_handle(FakeRequest("foo"))
+
+    def test_get_enroute(self):
+        expected = {
+            "__get_aggregate__": {BrokerCommandEnrouteDecorator("GetFoo")},
+            "__get_aggregates__": {BrokerCommandEnrouteDecorator("GetFoos")},
+            "create_foo": {BrokerCommandEnrouteDecorator("CreateFoo")},
+        }
+        observed = FakeCommandService.__get_enroute__(self.config)
         self.assertEqual(expected, observed)
 
     async def test_get_aggregate(self):
@@ -123,35 +154,6 @@ class TestQueryService(PostgresAsyncTestCase):
 
     def test_aggregate_cls(self):
         self.assertEqual(Foo, self.service.__aggregate_cls__)
-
-
-class TestCommandService(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
-    def setUp(self) -> None:
-        super().setUp()
-        self.saga_manager = FakeSagaManager()
-        self.service = FakeCommandService(config=self.config, saga_manager=self.saga_manager)
-
-    def test_base(self):
-        self.assertIsInstance(self.service, Service)
-
-    def test_pre_command(self):
-        request = FakeRequest("foo")
-        self.assertEqual(request, self.service._pre_command_handle(request))
-
-    def test_pre_query(self):
-        with self.assertRaises(MinosIllegalHandlingException):
-            self.service._pre_query_handle(FakeRequest("foo"))
-
-    def test_pre_event(self):
-        with self.assertRaises(MinosIllegalHandlingException):
-            self.service._pre_event_handle(FakeRequest("foo"))
-
-    def test_get_enroute(self):
-        expected = {"create_foo": {BrokerCommandEnrouteDecorator("CreateFoo")}}
-        observed = FakeCommandService.__get_enroute__(self.config)
-        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
