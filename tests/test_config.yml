@@ -36,7 +36,6 @@ queries:
 saga:
     storage:
         path: "./order.lmdb"
-    items: [] # FIXME: remove parameter.
 discovery:
     client: minos
     host: discovery-service
