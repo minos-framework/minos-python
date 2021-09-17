@@ -3,7 +3,8 @@ import os
 import unittest
 from unittest.mock import (
     AsyncMock,
-    call, patch,
+    call,
+    patch,
 )
 
 from minos.common import (
@@ -14,7 +15,9 @@ from minos.networks import (
     MinosDiscoveryClient,
     get_host_ip,
 )
-from minos.networks.exceptions import MinosInvalidDiscoveryClient
+from minos.networks.exceptions import (
+    MinosInvalidDiscoveryClient,
+)
 from tests.utils import (
     BASE_PATH,
 )
