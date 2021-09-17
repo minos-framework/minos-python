@@ -196,6 +196,6 @@ class Consumer(HandlerSetup):
         return row[0]
 
 
-_INSERT_QUERY = SQL("INSERT INTO consumer_queue (topic, partition_id, binary_data) VALUES (%s, %s, %s) RETURNING id")
+_INSERT_QUERY = SQL("INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id")
 
 _NOTIFY_QUERY = SQL("NOTIFY {}")

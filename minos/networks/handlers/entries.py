@@ -42,7 +42,7 @@ class HandlerEntry(Generic[T]):
         self,
         id: int,
         topic: str,
-        partition_id: int,
+        partition: int,
         data_bytes: bytes,
         retry: int = 0,
         created_at: Optional[datetime] = None,
@@ -60,7 +60,7 @@ class HandlerEntry(Generic[T]):
 
         self.id = id
         self.topic = topic
-        self.partition_id = partition_id
+        self.partition = partition
         self.data_bytes = data_bytes
         self.data_cls = data_cls
         self.retry = retry

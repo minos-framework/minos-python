@@ -165,7 +165,7 @@ class Producer(BrokerSetup):
         :param row: A row containing the message information.
         :return: ``True`` if everything was fine or ``False`` otherwise.
         """
-        topic, message, action = row[1], row[2], row[4]
+        topic, message, action = row[1], row[2], row[3]
 
         # noinspection PyBroadException
         try:

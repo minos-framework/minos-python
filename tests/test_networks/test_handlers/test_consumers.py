@@ -126,9 +126,7 @@ class TestConsumer(PostgresAsyncTestCase):
         self.assertEqual(call("AddOrder", 0, b"test"), mock.call_args)
 
     async def test_enqueue(self):
-        query = SQL(
-            "INSERT INTO consumer_queue (topic, partition_id, binary_data) " "VALUES (%s, %s, %s) " "RETURNING id"
-        )
+        query = SQL("INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id")
 
         mock = MagicMock(side_effect=self.consumer.submit_query_and_fetchone)
 
