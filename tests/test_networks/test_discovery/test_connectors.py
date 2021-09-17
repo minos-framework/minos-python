@@ -7,14 +7,20 @@ from unittest.mock import (
     patch,
 )
 
-from minos.common import MinosConfig
+from minos.common import (
+    MinosConfig,
+)
 from minos.networks import (
     DiscoveryConnector,
     MinosDiscoveryClient,
     get_host_ip,
 )
-from minos.networks.exceptions import MinosInvalidDiscoveryClient
-from tests.utils import BASE_PATH
+from minos.networks.exceptions import (
+    MinosInvalidDiscoveryClient,
+)
+from tests.utils import (
+    BASE_PATH,
+)
 
 
 class TestDiscovery(unittest.IsolatedAsyncioTestCase):

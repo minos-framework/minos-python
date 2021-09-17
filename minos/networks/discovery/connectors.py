@@ -1,10 +1,16 @@
 """minos.networks.discovery.connectors module."""
 
-from __future__ import annotations
+from __future__ import (
+    annotations,
+)
 
 import logging
-from itertools import chain
-from operator import itemgetter
+from itertools import (
+    chain,
+)
+from operator import (
+    itemgetter,
+)
 from typing import (
     Any,
     NoReturn,
@@ -15,12 +21,24 @@ from minos.common import (
     MinosSetup,
 )
 
-from ..decorators import EnrouteAnalyzer
-from ..exceptions import MinosInvalidDiscoveryClient
-from ..utils import get_host_ip
-from . import DiscoveryClient
-from .clients import MinosDiscoveryClient
-from .clients.kong import KongDiscoveryClient
+from ..decorators import (
+    EnrouteAnalyzer,
+)
+from ..exceptions import (
+    MinosInvalidDiscoveryClient,
+)
+from ..utils import (
+    get_host_ip,
+)
+from . import (
+    DiscoveryClient,
+)
+from .clients import (
+    MinosDiscoveryClient,
+)
+from .clients.kong import (
+    KongDiscoveryClient,
+)
 
 logger = logging.getLogger(__name__)
 
