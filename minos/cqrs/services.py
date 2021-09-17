@@ -92,28 +92,12 @@ class CommandService(Service, ABC):
     def _pre_event_handle(request: Request) -> Request:
         raise MinosIllegalHandlingException("Events cannot be handled by `CommandService` inherited classes.")
 
-
-class QueryService(Service, ABC):
-    """Query Service class"""
-
-    @staticmethod
-    def _pre_command_handle(request: Request) -> Request:
-        raise MinosIllegalHandlingException("Commands cannot be handled by `QueryService` inherited classes.")
-
-    @staticmethod
-    def _pre_query_handle(request: Request) -> Request:
-        return request
-
-    def _pre_event_handle(self, request: Request) -> Request:
-        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager)
-        return WrappedRequest(request, fn)
-
     @classmethod
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
         aggregate_name = config.service.aggregate.rsplit(".", 1)[-1]
         additional = {
-            cls.__get_aggregate__.__name__: {enroute.broker.query(f"Get{aggregate_name}")},
-            cls.__get_aggregates__.__name__: {enroute.broker.query(f"Get{aggregate_name}s")},
+            cls.__get_aggregate__.__name__: {enroute.broker.command(f"Get{aggregate_name}")},
+            cls.__get_aggregates__.__name__: {enroute.broker.command(f"Get{aggregate_name}s")},
         }
         return super().__get_enroute__(config) | additional
 
@@ -159,3 +143,19 @@ class QueryService(Service, ABC):
     def __aggregate_cls__(self) -> Type[Aggregate]:
         # noinspection PyTypeChecker
         return import_module(self.config.service.aggregate)
+
+
+class QueryService(Service, ABC):
+    """Query Service class"""
+
+    @staticmethod
+    def _pre_command_handle(request: Request) -> Request:
+        raise MinosIllegalHandlingException("Commands cannot be handled by `QueryService` inherited classes.")
+
+    @staticmethod
+    def _pre_query_handle(request: Request) -> Request:
+        return request
+
+    def _pre_event_handle(self, request: Request) -> Request:
+        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager)
+        return WrappedRequest(request, fn)
