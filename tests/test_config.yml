@@ -1,5 +1,6 @@
 service:
     name: Order
+    aggregate: tests.utils.Order
 rest:
     host: localhost
     port: 8080

@@ -26,6 +26,7 @@ from cached_property import (
 
 from minos.common import (
     Action,
+    Aggregate,
     AggregateDiff,
     CommandReply,
     CommandStatus,
@@ -36,6 +37,7 @@ from minos.common import (
     MinosRepository,
     MinosSagaManager,
     RepositoryEntry,
+    current_datetime,
 )
 from minos.networks import (
     EnrouteDecorator,
@@ -47,7 +49,9 @@ from minos.networks import (
 
 BASE_PATH = Path(__file__).parent
 
-FAKE_AGGREGATE_DIFF = AggregateDiff(uuid4(), "Foo", 3, Action.CREATE, FieldDiffContainer({FieldDiff("doors", int, 5)}))
+FAKE_AGGREGATE_DIFF = AggregateDiff(
+    uuid4(), "Foo", 3, Action.CREATE, current_datetime(), FieldDiffContainer({FieldDiff("doors", int, 5)})
+)
 
 
 class FakeModel(MinosModel):
@@ -247,3 +251,7 @@ class FakeRequest(Request):
 
     def __repr__(self) -> str:
         return f"FakeRequest({self._content!r})"
+
+
+class Order(Aggregate):
+    """For testing purposes"""
