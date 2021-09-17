@@ -18,6 +18,10 @@ class MinosDiscoveryConnectorException(MinosNetworkException):
     """Exception to be raised when there is a failure while communicating with the discovery."""
 
 
+class MinosInvalidDiscoveryClient(MinosNetworkException):
+    """Exception raised when the configured Discovery Client does not implement de DiscoveryClient interface"""
+
+
 class MinosHandlerException(MinosNetworkException):
     """Base handler exception."""
 
