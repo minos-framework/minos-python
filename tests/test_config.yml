@@ -36,7 +36,7 @@ queries:
 saga:
     storage:
         path: "./order.lmdb"
-    items: [] # FIXME: remove parameter.
 discovery:
+    client: ""
     host: discovery-service
     port: 8080
