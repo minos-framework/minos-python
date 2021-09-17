@@ -2,6 +2,4 @@ from .clients import (
     DiscoveryClient,
     MinosDiscoveryClient,
 )
-from .connectors import (
-    DiscoveryConnector,
-)
+from .connectors import DiscoveryConnector
