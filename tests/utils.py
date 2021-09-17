@@ -1,6 +1,5 @@
 """tests.utils module."""
 
-import uuid
 from collections import (
     namedtuple,
 )
@@ -30,12 +29,14 @@ from minos.common import (
     AggregateDiff,
     CommandReply,
     CommandStatus,
+    Condition,
     FieldDiff,
     FieldDiffContainer,
     MinosBroker,
     MinosModel,
     MinosRepository,
     MinosSagaManager,
+    MinosSnapshot,
     RepositoryEntry,
     current_datetime,
 )
@@ -240,7 +241,7 @@ class FakeRequest(Request):
 
     @cached_property
     def user(self) -> Optional[UUID]:
-        return uuid.uuid4()
+        return uuid4()
 
     async def content(self, **kwargs):
         """For testing purposes"""
@@ -251,6 +252,19 @@ class FakeRequest(Request):
 
     def __repr__(self) -> str:
         return f"FakeRequest({self._content!r})"
+
+
+class FakeSnapshot(MinosSnapshot):
+    """For testing purposes."""
+
+    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+        """For testing purposes."""
+
+    async def find(self, aggregate_name: str, condition: Condition, **kwargs) -> AsyncIterator[Aggregate]:
+        """For testing purposes."""
+
+    async def synchronize(self, **kwargs) -> None:
+        """For testing purposes."""
 
 
 class Order(Aggregate):
