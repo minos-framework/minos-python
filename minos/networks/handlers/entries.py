@@ -28,6 +28,7 @@ from cached_property import (
 from minos.common import (
     MinosException,
     Model,
+    current_datetime,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,12 +46,17 @@ class HandlerEntry(Generic[T]):
         data_bytes: bytes,
         retry: int = 0,
         created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
         data_cls: Type[Model] = Model,
         callback_lookup: Optional[Callable] = None,
         exception: Optional[Exception] = None,
     ):
-        if created_at is None:
-            created_at = datetime.now()
+        if created_at is None or updated_at is None:
+            now = current_datetime()
+            if created_at is None:
+                created_at = now
+            if updated_at is None:
+                updated_at = now
 
         self.id = id
         self.topic = topic
@@ -59,6 +65,7 @@ class HandlerEntry(Generic[T]):
         self.data_cls = data_cls
         self.retry = retry
         self.created_at = created_at
+        self.updated_at = updated_at
         self.callback_lookup = callback_lookup
         self.exception = exception
 

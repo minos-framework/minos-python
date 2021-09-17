@@ -57,14 +57,12 @@ _CREATE_TABLE_QUERY = SQL(
     "model BYTEA NOT NULL, "
     "retry INTEGER NOT NULL, "
     "action VARCHAR(255) NOT NULL, "
-    "creation_date TIMESTAMP NOT NULL, "
-    "update_date TIMESTAMP NOT NULL)"
+    "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), "
+    "updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"
 )
 
 _INSERT_ENTRY_QUERY = SQL(
-    "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) "
-    "VALUES (%s, %s, %s, %s, NOW(), NOW()) "
-    "RETURNING id"
+    "INSERT INTO producer_queue (topic, model, retry, action) " "VALUES (%s, %s, %s, %s) " "RETURNING id"
 )
 
 _NOTIFY_QUERY = SQL("NOTIFY producer_queue")

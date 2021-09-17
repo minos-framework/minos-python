@@ -30,6 +30,7 @@ class HandlerSetup(PostgreSqlMinosDatabase):
             '"partition_id" INTEGER,'
             '"binary_data" BYTEA NOT NULL, '
             '"retry" INTEGER NOT NULL DEFAULT 0,'
-            '"creation_date" TIMESTAMP NOT NULL)'
+            '"created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(), '
+            '"updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW())'
         )
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("consumer_queue"))

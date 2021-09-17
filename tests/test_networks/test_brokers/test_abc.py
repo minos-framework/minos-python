@@ -76,9 +76,7 @@ class TestBroker(PostgresAsyncTestCase):
 
     async def test_enqueue(self):
         query = SQL(
-            "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) "
-            "VALUES (%s, %s, %s, %s, NOW(), NOW()) "
-            "RETURNING id"
+            "INSERT INTO producer_queue (topic, model, retry, action) " "VALUES (%s, %s, %s, %s) " "RETURNING id"
         )
 
         mock = AsyncMock(return_value=(56,))

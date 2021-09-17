@@ -127,9 +127,7 @@ class TestConsumer(PostgresAsyncTestCase):
 
     async def test_enqueue(self):
         query = SQL(
-            "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
-            "VALUES (%s, %s, %s, NOW()) "
-            "RETURNING id"
+            "INSERT INTO consumer_queue (topic, partition_id, binary_data) " "VALUES (%s, %s, %s) " "RETURNING id"
         )
 
         mock = MagicMock(side_effect=self.consumer.submit_query_and_fetchone)
