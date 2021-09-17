@@ -57,7 +57,7 @@ class DiscoveryConnector(MinosSetup):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DiscoveryConnector:
-        client_cls = discovery_client_mapper["config.discovery.client"]
+        client_cls = discovery_client_mapper[config.discovery.client]
         if not issubclass(client_cls, DiscoveryClient):
             raise MinosInvalidDiscoveryClient
 
