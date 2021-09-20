@@ -8,10 +8,8 @@ from unittest.mock import (
 )
 
 from minos.networks import (
-    MinosDiscoveryConnectorException,
-)
-from minos.networks.discovery.clients.kong import (
     KongDiscoveryClient,
+    MinosDiscoveryConnectorException,
 )
 
 _Response = namedtuple("Response", ["ok"])

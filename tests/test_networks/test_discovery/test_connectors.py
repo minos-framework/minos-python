@@ -10,10 +10,8 @@ from minos.common import (
 from minos.networks import (
     DiscoveryConnector,
     MinosDiscoveryClient,
-    get_host_ip,
-)
-from minos.networks.exceptions import (
     MinosInvalidDiscoveryClient,
+    get_host_ip,
 )
 from tests.utils import (
     BASE_PATH,

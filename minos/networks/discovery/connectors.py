@@ -28,10 +28,8 @@ from ..utils import (
     get_host_ip,
 )
 from .clients import (
-    MinosDiscoveryClient,
-)
-from .clients.kong import (
     KongDiscoveryClient,
+    MinosDiscoveryClient,
 )
 
 logger = logging.getLogger(__name__)
