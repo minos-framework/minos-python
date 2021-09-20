@@ -86,9 +86,7 @@ class TestDynamicHandler(PostgresAsyncTestCase):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
-                    "VALUES (%s, %s, %s, NOW()) "
-                    "RETURNING id;",
+                    "INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id;",
                     (instance.topic, 0, instance.value),
                 )
                 return (await cur.fetchone())[0]
@@ -97,7 +95,7 @@ class TestDynamicHandler(PostgresAsyncTestCase):
         self.assertEqual(expected.id, observed.id)
         self.assertEqual(expected.topic, observed.topic)
         self.assertEqual(expected.callback, observed.callback)
-        self.assertEqual(expected.partition_id, observed.partition_id)
+        self.assertEqual(expected.partition, observed.partition)
         self.assertEqual(expected.data, observed.data)
         self.assertEqual(expected.retry, observed.retry)
         self.assertAlmostEqual(expected.created_at, observed.created_at, delta=timedelta(seconds=2))

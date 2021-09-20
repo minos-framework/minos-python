@@ -51,7 +51,7 @@ class TestProducer(PostgresAsyncTestCase):
         self.consumer.enqueue = mock
 
         async with self.producer:
-            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "command"))
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), "command"))
             self.assertTrue(ok)
 
         self.assertEqual(1, mock.call_count)
@@ -64,7 +64,7 @@ class TestProducer(PostgresAsyncTestCase):
         self.producer.publish = publish_mock
 
         async with self.producer:
-            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "command"))
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), "command"))
             self.assertTrue(ok)
 
         self.assertEqual(1, publish_mock.call_count)
@@ -75,7 +75,7 @@ class TestProducer(PostgresAsyncTestCase):
         self.producer.publish = mock
 
         async with self.producer:
-            ok = await self.producer.dispatch_one((0, "GetProduct", bytes(), 0, "command"))
+            ok = await self.producer.dispatch_one((0, "GetProduct", bytes(), "command"))
             self.assertTrue(ok)
 
         self.assertEqual(1, mock.call_count)
@@ -85,7 +85,7 @@ class TestProducer(PostgresAsyncTestCase):
         mock = AsyncMock()
         self.producer.publish = mock
         async with self.producer:
-            ok = await self.producer.dispatch_one((0, "TicketAdded", bytes(), 0, "event"))
+            ok = await self.producer.dispatch_one((0, "TicketAdded", bytes(), "event"))
             self.assertTrue(ok)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("TicketAdded", bytes()), mock.call_args)
@@ -93,7 +93,7 @@ class TestProducer(PostgresAsyncTestCase):
     async def test_dispatch_one_external_false(self):
         self.producer.publish = AsyncMock(return_value=False)
         async with self.producer:
-            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), 0, "event"))
+            ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), "event"))
             self.assertFalse(ok)
 
     async def test_publish_true(self):

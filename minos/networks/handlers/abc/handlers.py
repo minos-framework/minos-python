@@ -229,14 +229,14 @@ _SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * "
     "FROM consumer_queue "
     "WHERE retry < %s AND topic IN %s "
-    "ORDER BY creation_date "
+    "ORDER BY created_at "
     "LIMIT %s "
     "FOR UPDATE SKIP LOCKED"
 )
 
 _DELETE_PROCESSED_QUERY = SQL("DELETE FROM consumer_queue WHERE id = %s")
 
-_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE consumer_queue SET retry = retry + 1 WHERE id = %s")
+_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE consumer_queue SET retry = retry + 1, updated_at = NOW() WHERE id = %s")
 
 _LISTEN_QUERY = SQL("LISTEN {}")
 

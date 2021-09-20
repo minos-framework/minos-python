@@ -8,6 +8,9 @@ from asyncio import (
 from collections import (
     namedtuple,
 )
+from inspect import (
+    isawaitable,
+)
 from unittest.mock import (
     AsyncMock,
 )
@@ -53,7 +56,9 @@ class _FakeHandler(Handler):
         self.call_args = (entry,)
         if entry.topic == "DeleteOrder":
             raise ValueError()
-        entry.callback(entry.data)
+        result = entry.callback(entry.data)
+        if isawaitable(result):
+            await result
 
 
 class TestHandler(PostgresAsyncTestCase):
@@ -187,9 +192,7 @@ class TestHandler(PostgresAsyncTestCase):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
-                    "VALUES (%s, %s, %s, NOW()) "
-                    "RETURNING id;",
+                    "INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id;",
                     (instance.topic, 0, instance.avro_bytes),
                 )
                 return (await cur.fetchone())[0]

@@ -1,9 +1,6 @@
 from collections import (
     namedtuple,
 )
-from datetime import (
-    datetime,
-)
 from pathlib import (
     Path,
 )
@@ -165,7 +162,7 @@ class FakeRepository(MinosRepository):
         entry.id = self.id_counter
         entry.version += 1
         entry.aggregate_uuid = 9999
-        entry.created_at = datetime.now()
+        entry.created_at = current_datetime()
 
         return entry
 
