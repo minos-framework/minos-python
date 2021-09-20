@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from inspect import (
+    isclass,
+)
 from itertools import (
     chain,
 )
@@ -11,11 +14,14 @@ from operator import (
 )
 from typing import (
     Any,
+    Type,
 )
 
 from minos.common import (
     MinosConfig,
+    MinosImportException,
     MinosSetup,
+    import_module,
 )
 
 from ..decorators import (
@@ -28,16 +34,10 @@ from ..utils import (
     get_host_ip,
 )
 from .clients import (
-    KongDiscoveryClient,
-    MinosDiscoveryClient,
+    DiscoveryClient,
 )
 
 logger = logging.getLogger(__name__)
-
-discovery_client_mapper = {
-    "minos": MinosDiscoveryClient,
-    "kong": KongDiscoveryClient,
-}
 
 
 class DiscoveryConnector(MinosSetup):
@@ -55,11 +55,7 @@ class DiscoveryConnector(MinosSetup):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DiscoveryConnector:
-        try:
-            client_cls = discovery_client_mapper[config.discovery.client]
-        except KeyError:
-            raise MinosInvalidDiscoveryClient(f"{config.discovery.client} not supported.")
-
+        client_cls = cls._client_cls_from_config(config)
         client = client_cls(host=config.discovery.host, port=config.discovery.port)
         port = config.rest.port
         name = config.service.name
@@ -67,6 +63,18 @@ class DiscoveryConnector(MinosSetup):
         endpoints = cls._endpoints_from_config(config)
 
         return cls(client, name, host, port, endpoints, *args, **kwargs)
+
+    @staticmethod
+    def _client_cls_from_config(config: MinosConfig) -> Type[DiscoveryClient]:
+        try:
+            # noinspection PyTypeChecker
+            client_cls: type = import_module(config.discovery.client)
+        except MinosImportException:
+            raise MinosInvalidDiscoveryClient(f"{config.discovery.client} could not be imported.")
+
+        if not isclass(client_cls) or not issubclass(client_cls, DiscoveryClient):
+            raise MinosInvalidDiscoveryClient(f"{config.discovery.client} not supported.")
+        return client_cls
 
     @staticmethod
     def _endpoints_from_config(config: MinosConfig) -> list[dict[str, Any]]:

@@ -27,9 +27,14 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
         self.discovery = DiscoveryConnector.from_config(config=self.config)
 
     def test_config_minos_client_does_not_exist(self):
-        self.config = MinosConfig(self.CONFIG_FILE_PATH, minos_discovery_client="wrong-client")
+        config = MinosConfig(self.CONFIG_FILE_PATH, minos_discovery_client="wrong-client")
         with self.assertRaises(MinosInvalidDiscoveryClient):
-            self.discovery = DiscoveryConnector.from_config(config=self.config)
+            DiscoveryConnector.from_config(config=config)
+
+    def test_config_minos_client_not_supported(self):
+        config = MinosConfig(self.CONFIG_FILE_PATH, minos_discovery_client="minos.common.Aggregate")
+        with self.assertRaises(MinosInvalidDiscoveryClient):
+            DiscoveryConnector.from_config(config)
 
     def test_client(self):
         self.assertIsInstance(self.discovery.client, MinosDiscoveryClient)
