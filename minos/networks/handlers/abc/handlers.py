@@ -1,5 +1,3 @@
-"""minos.networks.abc.handlers module."""
-
 from __future__ import (
     annotations,
 )
@@ -16,6 +14,7 @@ from asyncio import (
 from typing import (
     Any,
     Callable,
+    KeysView,
     NoReturn,
     Optional,
     Type,
@@ -77,7 +76,11 @@ class Handler(HandlerSetup):
         return self._handlers
 
     @property
-    def topics(self):
+    def topics(self) -> KeysView[str]:
+        """Get an iterable containing the topic names.
+
+        :return: An ``Iterable`` of ``str``.
+        """
         return self.handlers.keys()
 
     async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
@@ -170,11 +173,11 @@ class Handler(HandlerSetup):
         kwargs = {"callback_lookup": self.get_action, "data_cls": self.ENTRY_MODEL_CLS}
         return [HandlerEntry(*row, **kwargs) for row in rows]
 
-    async def _dispatch_entries(self, entries: list[HandlerEntry]) -> NoReturn:
+    async def _dispatch_entries(self, entries: list[HandlerEntry]) -> None:
         futures = (self._dispatch_one(entry) for entry in entries)
         await gather(*futures)
 
-    async def _dispatch_one(self, entry: HandlerEntry) -> NoReturn:
+    async def _dispatch_one(self, entry: HandlerEntry) -> None:
         logger.debug(f"Dispatching '{entry!r}'...")
         try:
             await self.dispatch_one(entry)
@@ -183,7 +186,7 @@ class Handler(HandlerSetup):
             entry.exception = exc
 
     @abstractmethod
-    async def dispatch_one(self, entry: HandlerEntry[ENTRY_MODEL_CLS]) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry[ENTRY_MODEL_CLS]) -> None:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.
@@ -226,14 +229,14 @@ _SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * "
     "FROM consumer_queue "
     "WHERE retry < %s AND topic IN %s "
-    "ORDER BY creation_date "
+    "ORDER BY created_at "
     "LIMIT %s "
     "FOR UPDATE SKIP LOCKED"
 )
 
 _DELETE_PROCESSED_QUERY = SQL("DELETE FROM consumer_queue WHERE id = %s")
 
-_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE consumer_queue SET retry = retry + 1 WHERE id = %s")
+_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE consumer_queue SET retry = retry + 1, updated_at = NOW() WHERE id = %s")
 
 _LISTEN_QUERY = SQL("LISTEN {}")
 

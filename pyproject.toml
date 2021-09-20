@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_networks"
-version = "0.0.15"
+version = "0.0.16"
 description = "Python Package with the common network classes and utilities used in Minos Microservice."
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_network"
@@ -36,7 +36,7 @@ aiomisc = "^14.0.3"
 aiopg = "^1.2.1"
 aiohttp = "^3.7.4"
 dependency-injector = "^4.32.2"
-minos-microservice-common = "^0.1.8"
+minos-microservice-common = "^0.1.13"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"

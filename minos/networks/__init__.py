@@ -1,6 +1,4 @@
-"""minos.networks module."""
-
-__version__ = "0.0.15"
+__version__ = "0.0.16"
 
 from .brokers import (
     Broker,
@@ -26,7 +24,9 @@ from .decorators import (
     enroute,
 )
 from .discovery import (
+    DiscoveryClient,
     DiscoveryConnector,
+    KongDiscoveryClient,
     MinosDiscoveryClient,
 )
 from .exceptions import (
@@ -34,6 +34,7 @@ from .exceptions import (
     MinosDiscoveryConnectorException,
     MinosHandlerException,
     MinosHandlerNotFoundEnoughEntriesException,
+    MinosInvalidDiscoveryClient,
     MinosMultipleEnrouteDecoratorKindsException,
     MinosNetworkException,
     MinosRedefinedEnrouteDecoratorException,

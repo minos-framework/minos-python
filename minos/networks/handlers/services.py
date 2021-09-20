@@ -1,5 +1,3 @@
-"""minos.networks.handlers.services module."""
-
 import logging
 from typing import (
     Any,

@@ -1,5 +1,6 @@
 service:
     name: Order
+    aggregate: tests.utils.Order
 rest:
     host: localhost
     port: 8080
@@ -35,7 +36,7 @@ queries:
 saga:
     storage:
         path: "./order.lmdb"
-    items: [] # FIXME: remove parameter.
 discovery:
+    client: minos.networks.MinosDiscoveryClient
     host: discovery-service
     port: 8080

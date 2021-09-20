@@ -1,5 +1,3 @@
-"""tests.test_networks.test_brokers.test_commands module."""
-
 import unittest
 from unittest.mock import (
     AsyncMock,

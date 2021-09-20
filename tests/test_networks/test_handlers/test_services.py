@@ -1,5 +1,3 @@
-"""tests.test_networks.test_handlers.test_dynamic.test_services module."""
-
 import unittest
 
 from minos.common.testing import (

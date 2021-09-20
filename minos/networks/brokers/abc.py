@@ -1,15 +1,5 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from abc import (
     ABC,
-)
-from typing import (
-    NoReturn,
 )
 
 from psycopg2.sql import (
@@ -25,10 +15,10 @@ from minos.common import (
 class BrokerSetup(PostgreSqlMinosDatabase):
     """Minos Broker Setup Class"""
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         await self._create_broker_table()
 
-    async def _create_broker_table(self) -> NoReturn:
+    async def _create_broker_table(self) -> None:
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("producer_queue"))
 
 
@@ -44,7 +34,7 @@ class Broker(MinosBroker, BrokerSetup, ABC):
         :param raw: Bytes sequence to be send.
         :return: The identifier of the message in the queue.
         """
-        params = (topic, raw, 0, self.ACTION)
+        params = (topic, raw, self.ACTION)
         raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY)
         return raw[0]
@@ -54,17 +44,13 @@ _CREATE_TABLE_QUERY = SQL(
     "CREATE TABLE IF NOT EXISTS producer_queue ("
     "id BIGSERIAL NOT NULL PRIMARY KEY, "
     "topic VARCHAR(255) NOT NULL, "
-    "model BYTEA NOT NULL, "
-    "retry INTEGER NOT NULL, "
+    "data BYTEA NOT NULL, "
     "action VARCHAR(255) NOT NULL, "
-    "creation_date TIMESTAMP NOT NULL, "
-    "update_date TIMESTAMP NOT NULL)"
+    "retry INTEGER NOT NULL DEFAULT 0, "
+    "created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), "
+    "updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"
 )
 
-_INSERT_ENTRY_QUERY = SQL(
-    "INSERT INTO producer_queue (topic, model, retry, action, creation_date, update_date) "
-    "VALUES (%s, %s, %s, %s, NOW(), NOW()) "
-    "RETURNING id"
-)
+_INSERT_ENTRY_QUERY = SQL("INSERT INTO producer_queue (topic, data, action) VALUES (%s, %s, %s) RETURNING id")
 
 _NOTIFY_QUERY = SQL("NOTIFY producer_queue")

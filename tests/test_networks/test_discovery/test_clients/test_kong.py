@@ -1,5 +1,3 @@
-"""tests.test_networks.test_discovery.test_clients module."""
-
 import unittest
 from collections import (
     namedtuple,
@@ -10,7 +8,7 @@ from unittest.mock import (
 )
 
 from minos.networks import (
-    MinosDiscoveryClient,
+    KongDiscoveryClient,
     MinosDiscoveryConnectorException,
 )
 
@@ -29,9 +27,9 @@ async def _fn_raises(*args, **kwargs):
     raise ValueError
 
 
-class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
+class TestKong(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.client = MinosDiscoveryClient("123.456.123.1", 1234)
+        self.client = KongDiscoveryClient("123.456.123.1", 1234)
 
     def test_route(self):
         # noinspection HttpUrlsUsage
@@ -45,13 +43,17 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
             "56.56.56.56", 56, "test", [{"url": "/foo", "method": "POST"}, {"url": "/bar", "method": "GET"}]
         )
 
-        self.assertEqual(1, mock.call_count)
+        self.assertEqual(2, mock.call_count)
+
         # noinspection HttpUrlsUsage
-        expected = call(
-            "http://123.456.123.1:1234/microservices/test",
-            json={"address": "56.56.56.56", "port": 56, "endpoints": [["POST", "/foo"], ["GET", "/bar"]]},
+        expected_service = call(
+            "http://123.456.123.1:1234/services", json={"name": "test", "url": "http://56.56.56.56:56"},
         )
-        self.assertEqual(expected, mock.call_args)
+        self.assertEqual(expected_service, mock.call_args_list[0])
+
+        # noinspection HttpUrlsUsage
+        expected_paths = call("http://123.456.123.1:1234/test/routes", json={"paths": ["/foo", "/bar"]},)
+        self.assertEqual(expected_paths, mock.call_args_list[1])
 
     @patch("aiohttp.ClientSession.post")
     async def test_subscribe_raises_failure(self, mock):
@@ -75,7 +77,7 @@ class TestMinosDiscoveryClient(unittest.IsolatedAsyncioTestCase):
         await self.client.unsubscribe("test")
         self.assertEqual(1, mock.call_count)
         # noinspection HttpUrlsUsage
-        self.assertEqual(call("http://123.456.123.1:1234/microservices/test"), mock.call_args)
+        self.assertEqual(call("http://123.456.123.1:1234/services/test"), mock.call_args)
 
     @patch("aiohttp.ClientSession.delete")
     async def test_unsubscribe_raises_failure(self, mock):

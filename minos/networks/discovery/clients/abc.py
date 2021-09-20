@@ -1,23 +1,22 @@
-"""minos.networks.discovery.clients module."""
-
 import logging
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from asyncio import (
     sleep,
-)
-from typing import (
-    NoReturn,
 )
 
 import aiohttp
 
-from ..exceptions import (
+from ...exceptions import (
     MinosDiscoveryConnectorException,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class MinosDiscoveryClient:
+class DiscoveryClient(ABC):
     """Minos Discovery Client class."""
 
     def __init__(self, host: str, port: int):
@@ -33,6 +32,7 @@ class MinosDiscoveryClient:
         # noinspection HttpUrlsUsage
         return f"http://{self.host}:{self.port}"
 
+    @abstractmethod
     async def subscribe(
         self,
         host: str,
@@ -41,8 +41,8 @@ class MinosDiscoveryClient:
         endpoints: list[dict[str, str]],
         retry_tries: int = 3,
         retry_delay: float = 5,
-    ) -> NoReturn:
-        """Perform a subscription query.
+    ) -> None:
+        """ Perform a subscription query.
 
         :param host: The ip of the microservice to be subscribed.
         :param port: The port of the microservice to be subscribed.
@@ -52,13 +52,18 @@ class MinosDiscoveryClient:
         :param retry_delay: Seconds to wait between attempts.
         :return: This method does not return anything.
         """
-        endpoint = f"{self.route}/microservices/{name}"
-        service_metadata = {
-            "address": host,
-            "port": port,
-            "endpoints": [[endpoint["method"], endpoint["url"]] for endpoint in endpoints],
-        }
 
+    async def _rest_subscribe(
+        self,
+        endpoint: str,
+        service_metadata: dict[str, str],
+        host: str,
+        port: int,
+        name: str,
+        endpoints: list[dict[str, str]],
+        retry_tries: int = 3,
+        retry_delay: float = 5,
+    ) -> None:
         logger.debug(f"Subscribing into {endpoint!r}...")
         try:
             async with aiohttp.ClientSession() as session:
@@ -75,17 +80,19 @@ class MinosDiscoveryClient:
             else:
                 raise MinosDiscoveryConnectorException("There was a problem while trying to subscribe.")
 
-    async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> NoReturn:
-        """Perform an unsubscribe query.
+    @abstractmethod
+    async def unsubscribe(self, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
+        """ Perform an unsubscribe query.
 
         :param name: The name of the microservice to be unsubscribed.
         :param retry_tries: Number of attempts before raising a failure exception.
         :param retry_delay: Seconds to wait between attempts.
         :return: This method does not return anything.
         """
-        endpoint = f"{self.route}/microservices/{name}"
 
+    async def _rest_unsubscribe(self, endpoint: str, name: str, retry_tries: int = 3, retry_delay: float = 5) -> None:
         logger.debug(f"Unsubscribing into {endpoint!r}...")
+
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.delete(endpoint) as response:

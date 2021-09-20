@@ -1,36 +1,36 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
+from typing import (
+    Optional,
+)
 
 from aiomisc.service.periodic import (
     PeriodicService,
 )
-from cached_property import (
-    cached_property,
+from dependency_injector.wiring import (
+    Provide,
 )
 
 from minos.common import (
-    PostgreSqlSnapshotBuilder,
+    MinosSnapshot,
 )
 
 
 class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
-    def __init__(self, interval: int = 60, **kwargs):
+    snapshot: MinosSnapshot = Provide["snapshot"]
+
+    def __init__(self, snapshot: Optional[MinosSnapshot] = None, interval: float = 60, **kwargs):
         super().__init__(interval=interval, **kwargs)
-        self._init_kwargs = kwargs
+
+        if snapshot is not None:
+            self.snapshot = snapshot
 
     async def start(self) -> None:
         """Start the service execution.
 
         :return: This method does not return anything.
         """
-        await self.dispatcher.setup()
+        await self.snapshot.setup()
         await super().start()
 
     async def callback(self) -> None:
@@ -38,7 +38,7 @@ class SnapshotService(PeriodicService):
 
         :return: This method does not return anything.
         """
-        await self.dispatcher.dispatch()
+        await self.snapshot.synchronize()
 
     async def stop(self, err: Exception = None) -> None:
         """Stop the service execution.
@@ -47,12 +47,4 @@ class SnapshotService(PeriodicService):
         :return: This method does not return anything.
         """
         await super().stop(err)
-        await self.dispatcher.destroy()
-
-    @cached_property
-    def dispatcher(self) -> PostgreSqlSnapshotBuilder:
-        """Get the service dispatcher.
-
-        :return: A ``PostgreSqlSnapshotBuilder`` instance.
-        """
-        return PostgreSqlSnapshotBuilder.from_config(**self._init_kwargs)
+        await self.snapshot.destroy()

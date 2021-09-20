@@ -90,3 +90,10 @@ History
 ------------------
 
 * Add support for `__get_enroute__` method by `EnrouteAnalyzer`.
+
+0.0.16 (2021-09-20)
+------------------
+
+* Add support for `Kong` discovery.
+* Add support for `minos-microservice-common>=0.1.13`.
+* Fix bug related with database queues and plain dates (without timezones).

@@ -1,5 +1,3 @@
-"""tests.test_networks.tests_handlers.test_consumers module."""
-
 import unittest
 from unittest.mock import (
     MagicMock,
@@ -126,11 +124,7 @@ class TestConsumer(PostgresAsyncTestCase):
         self.assertEqual(call("AddOrder", 0, b"test"), mock.call_args)
 
     async def test_enqueue(self):
-        query = SQL(
-            "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
-            "VALUES (%s, %s, %s, NOW()) "
-            "RETURNING id"
-        )
+        query = SQL("INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id")
 
         mock = MagicMock(side_effect=self.consumer.submit_query_and_fetchone)
 

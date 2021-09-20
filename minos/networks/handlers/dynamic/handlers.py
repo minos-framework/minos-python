@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -160,6 +153,6 @@ _COUNT_NOT_PROCESSED_QUERY = SQL(
 )
 
 _SELECT_NOT_PROCESSED_ROWS_QUERY = SQL(
-    "SELECT * FROM consumer_queue WHERE topic = %s ORDER BY creation_date LIMIT %s FOR UPDATE SKIP LOCKED"
+    "SELECT * FROM consumer_queue WHERE topic = %s ORDER BY created_at LIMIT %s FOR UPDATE SKIP LOCKED"
 )
 _DELETE_PROCESSED_QUERY = SQL("DELETE FROM consumer_queue WHERE id = %s")

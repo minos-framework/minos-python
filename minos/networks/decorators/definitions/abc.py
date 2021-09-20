@@ -1,9 +1,3 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
 from __future__ import (
     annotations,
 )
@@ -20,7 +14,6 @@ from typing import (
     Callable,
     Final,
     Iterable,
-    NoReturn,
     Optional,
     Union,
 )
@@ -36,7 +29,7 @@ from .kinds import (
     EnrouteDecoratorKind,
 )
 
-Adapter = Callable[[Request], Union[Response, NoReturn, None, Awaitable[Union[Response, NoReturn, None]]]]
+Adapter = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
 class EnrouteDecorator(ABC):

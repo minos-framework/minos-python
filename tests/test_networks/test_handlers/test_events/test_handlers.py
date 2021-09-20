@@ -21,6 +21,7 @@ from minos.common import (
     AggregateDiff,
     Event,
     FieldDiffContainer,
+    current_datetime,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -129,8 +130,14 @@ class TestEventHandler(PostgresAsyncTestCase):
         for i in range(1, 6):
             events.extend(
                 [
-                    Event("TicketAdded", AggregateDiff(uuid1, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
-                    Event("TicketAdded", AggregateDiff(uuid2, "Foo", i, Action.CREATE, FieldDiffContainer.empty())),
+                    Event(
+                        "TicketAdded",
+                        AggregateDiff(uuid1, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
+                    ),
+                    Event(
+                        "TicketAdded",
+                        AggregateDiff(uuid2, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
+                    ),
                 ]
             )
         shuffle(events)
@@ -148,9 +155,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
-                    "VALUES (%s, %s, %s, NOW()) "
-                    "RETURNING id;",
+                    "INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id;",
                     (instance.topic, 0, instance.avro_bytes),
                 )
                 return (await cur.fetchone())[0]
