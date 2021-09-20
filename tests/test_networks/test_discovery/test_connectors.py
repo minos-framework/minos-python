@@ -10,6 +10,7 @@ from minos.common import (
 from minos.networks import (
     DiscoveryConnector,
     MinosDiscoveryClient,
+    MinosInvalidDiscoveryClient,
     get_host_ip,
 )
 from tests.utils import (
@@ -24,6 +25,11 @@ class TestDiscovery(unittest.IsolatedAsyncioTestCase):
         self.config = MinosConfig(self.CONFIG_FILE_PATH)
         self.ip = get_host_ip()
         self.discovery = DiscoveryConnector.from_config(config=self.config)
+
+    def test_config_minos_client_does_not_exist(self):
+        self.config = MinosConfig(self.CONFIG_FILE_PATH, minos_discovery_client="wrong-client")
+        with self.assertRaises(MinosInvalidDiscoveryClient):
+            self.discovery = DiscoveryConnector.from_config(config=self.config)
 
     def test_client(self):
         self.assertIsInstance(self.discovery.client, MinosDiscoveryClient)

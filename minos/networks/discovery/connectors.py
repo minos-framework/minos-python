@@ -21,14 +21,23 @@ from minos.common import (
 from ..decorators import (
     EnrouteAnalyzer,
 )
+from ..exceptions import (
+    MinosInvalidDiscoveryClient,
+)
 from ..utils import (
     get_host_ip,
 )
 from .clients import (
+    KongDiscoveryClient,
     MinosDiscoveryClient,
 )
 
 logger = logging.getLogger(__name__)
+
+discovery_client_mapper = {
+    "minos": MinosDiscoveryClient,
+    "kong": KongDiscoveryClient,
+}
 
 
 class DiscoveryConnector(MinosSetup):
@@ -46,7 +55,12 @@ class DiscoveryConnector(MinosSetup):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DiscoveryConnector:
-        client = MinosDiscoveryClient(host=config.discovery.host, port=config.discovery.port)
+        try:
+            client_cls = discovery_client_mapper[config.discovery.client]
+        except KeyError:
+            raise MinosInvalidDiscoveryClient(f"{config.discovery.client} not supported.")
+
+        client = client_cls(host=config.discovery.host, port=config.discovery.port)
         port = config.rest.port
         name = config.service.name
         host = get_host_ip()

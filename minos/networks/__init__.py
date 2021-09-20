@@ -24,7 +24,9 @@ from .decorators import (
     enroute,
 )
 from .discovery import (
+    DiscoveryClient,
     DiscoveryConnector,
+    KongDiscoveryClient,
     MinosDiscoveryClient,
 )
 from .exceptions import (
@@ -32,6 +34,7 @@ from .exceptions import (
     MinosDiscoveryConnectorException,
     MinosHandlerException,
     MinosHandlerNotFoundEnoughEntriesException,
+    MinosInvalidDiscoveryClient,
     MinosMultipleEnrouteDecoratorKindsException,
     MinosNetworkException,
     MinosRedefinedEnrouteDecoratorException,
