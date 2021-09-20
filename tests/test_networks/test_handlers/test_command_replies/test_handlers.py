@@ -1,5 +1,3 @@
-"""tests.test_networks.test_handlers.test_command_replies.test_handlers module."""
-
 import unittest
 from unittest.mock import (
     AsyncMock,

@@ -1,5 +1,3 @@
-"""minos.networks.abc.consumers module."""
-
 from __future__ import (
     annotations,
 )
@@ -82,6 +80,7 @@ class Consumer(HandlerSetup):
         # replies
         topics |= {f"{config.service.name}Reply"}
 
+        # noinspection PyProtectedMember
         return cls(
             topics=topics, broker=config.broker, group_id=config.service.name, **config.broker.queue._asdict(), **kwargs
         )
@@ -128,6 +127,10 @@ class Consumer(HandlerSetup):
 
     @property
     def client(self) -> AIOKafkaConsumer:
+        """Get the kafka consumer client.
+
+        :return: An ``AIOKafkaConsumer`` instance.
+        """
         if self._client is None:  # pragma: no cover
             self._client = AIOKafkaConsumer(
                 *self._topics,
@@ -196,10 +199,6 @@ class Consumer(HandlerSetup):
         return row[0]
 
 
-_INSERT_QUERY = SQL(
-    "INSERT INTO consumer_queue (topic, partition_id, binary_data, creation_date) "
-    "VALUES (%s, %s, %s, NOW()) "
-    "RETURNING id"
-)
+_INSERT_QUERY = SQL("INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id")
 
 _NOTIFY_QUERY = SQL("NOTIFY {}")

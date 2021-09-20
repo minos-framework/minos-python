@@ -1,5 +1,3 @@
-"""minos.networks.handlers.commands.services module."""
-
 import logging
 
 from aiomisc import (

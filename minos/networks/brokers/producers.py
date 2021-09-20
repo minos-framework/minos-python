@@ -1,5 +1,3 @@
-"""minos.networks.brokers.producers module."""
-
 from __future__ import (
     annotations,
 )
@@ -165,7 +163,7 @@ class Producer(BrokerSetup):
         :param row: A row containing the message information.
         :return: ``True`` if everything was fine or ``False`` otherwise.
         """
-        topic, message, action = row[1], row[2], row[4]
+        topic, message, action = row[1], row[2], row[3]
 
         # noinspection PyBroadException
         try:
@@ -209,7 +207,7 @@ _SELECT_NOT_PROCESSED_QUERY = SQL(
     "SELECT * "
     "FROM producer_queue "
     "WHERE retry < %s "
-    "ORDER BY creation_date "
+    "ORDER BY created_at "
     "LIMIT %s "
     "FOR UPDATE "
     "SKIP LOCKED"
@@ -217,7 +215,7 @@ _SELECT_NOT_PROCESSED_QUERY = SQL(
 
 _DELETE_PROCESSED_QUERY = SQL("DELETE FROM producer_queue WHERE id = %s")
 
-_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE producer_queue SET retry = retry + 1 WHERE id = %s")
+_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE producer_queue SET retry = retry + 1, updated_at = NOW() WHERE id = %s")
 
 _LISTEN_QUERY = SQL("LISTEN producer_queue")
 

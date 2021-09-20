@@ -1,17 +1,11 @@
-"""tests.utils module."""
-
 from collections import (
     namedtuple,
-)
-from datetime import (
-    datetime,
 )
 from pathlib import (
     Path,
 )
 from typing import (
     AsyncIterator,
-    NoReturn,
     Optional,
 )
 from uuid import (
@@ -116,10 +110,10 @@ class FakeDispatcher:
 class FakeSagaManager(MinosSagaManager):
     """For testing purposes."""
 
-    async def _run_new(self, name: str, **kwargs) -> NoReturn:
+    async def _run_new(self, name: str, **kwargs) -> None:
         """For testing purposes."""
 
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> NoReturn:
+    async def _load_and_run(self, reply: CommandReply, **kwargs) -> None:
         """For testing purposes."""
 
 
@@ -143,7 +137,7 @@ class FakeBroker(MinosBroker):
         reply_topic: str = None,
         status: CommandStatus = None,
         **kwargs,
-    ) -> NoReturn:
+    ) -> None:
         """For testing purposes."""
         self.call_count += 1
         self.items = items
@@ -168,7 +162,7 @@ class FakeRepository(MinosRepository):
         entry.id = self.id_counter
         entry.version += 1
         entry.aggregate_uuid = 9999
-        entry.created_at = datetime.now()
+        entry.created_at = current_datetime()
 
         return entry
 
@@ -201,7 +195,7 @@ class FakeService:
     @classmethod
     @enroute.rest.command(url="orders/", method="DELETE")
     @enroute.broker.command(topic="DeleteTicket")
-    def delete_ticket(cls, request: Request) -> NoReturn:
+    def delete_ticket(cls, request: Request) -> None:
         """For testing purposes."""
         return
 

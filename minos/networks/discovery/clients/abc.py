@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 class DiscoveryClient(ABC):
+    """Minos Discovery Client class."""
+
     def __init__(self, host: str, port: int):
         self.host = host
         self.port = port

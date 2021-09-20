@@ -1,4 +1,3 @@
-"""minos.networks.handlers.abc module."""
 from .handlers import (
     Handler,
 )

@@ -1,5 +1,3 @@
-"""minos.networks.handlers.command_replies.handlers module."""
-
 from __future__ import (
     annotations,
 )
@@ -7,7 +5,6 @@ from __future__ import (
 import logging
 from typing import (
     Any,
-    NoReturn,
 )
 
 from dependency_injector.wiring import (
@@ -46,9 +43,10 @@ class CommandReplyHandler(Handler):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
         handlers = {f"{config.service.name}Reply": None}
+        # noinspection PyProtectedMember
         return cls(*args, handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, entry: HandlerEntry[CommandReply]) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry[CommandReply]) -> None:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.

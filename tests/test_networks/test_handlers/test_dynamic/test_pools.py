@@ -1,5 +1,3 @@
-"""tests.test_networks.test_handlers.test_dynamic.test_pools module."""
-
 import unittest
 
 from kafka import (

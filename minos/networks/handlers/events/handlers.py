@@ -1,9 +1,3 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
 from __future__ import (
     annotations,
 )
@@ -24,8 +18,7 @@ from operator import (
 from typing import (
     Awaitable,
     Callable,
-    NoReturn,
-    Union,
+    Optional,
 )
 
 from minos.common import (
@@ -65,9 +58,10 @@ class EventHandler(Handler):
 
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
 
+        # noinspection PyProtectedMember
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
-    async def _dispatch_entries(self, entries: list[HandlerEntry[Event]]) -> NoReturn:
+    async def _dispatch_entries(self, entries: list[HandlerEntry[Event]]) -> None:
         grouped = defaultdict(list)
         for entry in entries:
             grouped[uuid_getter(entry)].append(entry)
@@ -82,7 +76,7 @@ class EventHandler(Handler):
         for entry in entries:
             await self._dispatch_one(entry)
 
-    async def dispatch_one(self, entry: HandlerEntry[Event]) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry[Event]) -> None:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.
@@ -94,16 +88,14 @@ class EventHandler(Handler):
         await fn(entry.data)
 
     @staticmethod
-    def get_callback(
-        fn: Callable[[HandlerRequest], Union[NoReturn, Awaitable[NoReturn]]]
-    ) -> Callable[[Event], Awaitable[NoReturn]]:
+    def get_callback(fn: Callable[[HandlerRequest], Optional[Awaitable[None]]]) -> Callable[[Event], Awaitable[None]]:
         """Get the handler function to be used by the Event Handler.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the Event Handler API.
         """
 
-        async def _fn(event: Event) -> NoReturn:
+        async def _fn(event: Event) -> None:
             try:
                 request = HandlerRequest(event)
                 response = fn(request)

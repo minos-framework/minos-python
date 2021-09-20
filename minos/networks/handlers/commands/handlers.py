@@ -1,9 +1,3 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
 from __future__ import (
     annotations,
 )
@@ -19,7 +13,6 @@ from typing import (
     Any,
     Awaitable,
     Callable,
-    NoReturn,
     Optional,
     Tuple,
     Union,
@@ -79,9 +72,10 @@ class CommandHandler(Handler):
             decorator.topic: fn for decorator, fn in chain(command_decorators.items(), query_decorators.items())
         }
 
+        # noinspection PyProtectedMember
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, entry: HandlerEntry[Command]) -> NoReturn:
+    async def dispatch_one(self, entry: HandlerEntry[Command]) -> None:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.

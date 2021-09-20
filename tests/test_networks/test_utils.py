@@ -1,5 +1,3 @@
-"""tests.test_networks.test_utils module."""
-
 import unittest
 from asyncio import (
     Queue,

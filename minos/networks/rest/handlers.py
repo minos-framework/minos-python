@@ -1,9 +1,3 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
 from __future__ import (
     annotations,
 )
@@ -21,7 +15,6 @@ from itertools import (
 from typing import (
     Awaitable,
     Callable,
-    NoReturn,
     Optional,
     Union,
 )
@@ -122,7 +115,7 @@ class RestHandler(MinosSetup):
         # Load default routes
         self._mount_system_health(app)
 
-    def _mount_one_route(self, method: str, url: str, action: Callable, app: web.Application) -> NoReturn:
+    def _mount_one_route(self, method: str, url: str, action: Callable, app: web.Application) -> None:
         handler = self.get_callback(action)
         app.router.add_route(method, url, handler)
 
@@ -172,4 +165,4 @@ class RestHandler(MinosSetup):
         :return: A `web.json_response` response.
         """
         logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")
-        return web.json_response({"host": request.host}, status=200)
+        return web.json_response({"host": request.host})

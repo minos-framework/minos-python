@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -28,6 +21,7 @@ from cached_property import (
 from minos.common import (
     MinosException,
     Model,
+    current_datetime,
 )
 
 logger = logging.getLogger(__name__)
@@ -41,24 +35,30 @@ class HandlerEntry(Generic[T]):
         self,
         id: int,
         topic: str,
-        partition_id: int,
+        partition: int,
         data_bytes: bytes,
         retry: int = 0,
         created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
         data_cls: Type[Model] = Model,
         callback_lookup: Optional[Callable] = None,
         exception: Optional[Exception] = None,
     ):
-        if created_at is None:
-            created_at = datetime.now()
+        if created_at is None or updated_at is None:
+            now = current_datetime()
+            if created_at is None:
+                created_at = now
+            if updated_at is None:
+                updated_at = now
 
         self.id = id
         self.topic = topic
-        self.partition_id = partition_id
+        self.partition = partition
         self.data_bytes = data_bytes
         self.data_cls = data_cls
         self.retry = retry
         self.created_at = created_at
+        self.updated_at = updated_at
         self.callback_lookup = callback_lookup
         self.exception = exception
 
