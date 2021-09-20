@@ -1,7 +1,4 @@
 import unittest
-from typing import (
-    NoReturn,
-)
 from unittest.mock import (
     AsyncMock,
     call,
@@ -30,7 +27,7 @@ from tests.utils import (
 class _FakeBroker(Broker):
     ACTION = "fake"
 
-    async def send(self, items: list[Model], **kwargs) -> NoReturn:
+    async def send(self, items: list[Model], **kwargs) -> None:
         """For testing purposes"""
 
 

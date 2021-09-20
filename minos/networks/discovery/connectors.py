@@ -11,7 +11,6 @@ from operator import (
 )
 from typing import (
     Any,
-    NoReturn,
 )
 
 from minos.common import (
@@ -66,10 +65,10 @@ class DiscoveryConnector(MinosSetup):
         endpoints.sort(key=itemgetter("url", "method"))
         return endpoints
 
-    async def _setup(self) -> NoReturn:
+    async def _setup(self) -> None:
         await self.subscribe()
 
-    async def subscribe(self) -> NoReturn:
+    async def subscribe(self) -> None:
         """Send a subscribe operation to the discovery.
 
         :return: This method does not return anything.
@@ -77,10 +76,10 @@ class DiscoveryConnector(MinosSetup):
         logger.info("Performing discovery subscription...")
         await self.client.subscribe(self.host, self.port, self.name, self.endpoints)
 
-    async def _destroy(self) -> NoReturn:
+    async def _destroy(self) -> None:
         await self.unsubscribe()
 
-    async def unsubscribe(self) -> NoReturn:
+    async def unsubscribe(self) -> None:
         """Send an unsubscribe operation to the discovery.
 
         :return: This method does not return anything.

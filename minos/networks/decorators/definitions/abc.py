@@ -14,7 +14,6 @@ from typing import (
     Callable,
     Final,
     Iterable,
-    NoReturn,
     Optional,
     Union,
 )
@@ -30,7 +29,7 @@ from .kinds import (
     EnrouteDecoratorKind,
 )
 
-Adapter = Callable[[Request], Union[Response, NoReturn, None, Awaitable[Union[Response, NoReturn, None]]]]
+Adapter = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
 class EnrouteDecorator(ABC):
