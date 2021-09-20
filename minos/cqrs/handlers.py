@@ -1,5 +1,3 @@
-"""minos.cqrs.handlers module."""
-
 from uuid import (
     UUID,
 )

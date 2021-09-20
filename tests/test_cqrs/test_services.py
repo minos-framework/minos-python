@@ -27,7 +27,6 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    AsyncIter,
     FakeCommandService,
     FakeQueryService,
     FakeRequest,
@@ -81,48 +80,10 @@ class TestQueryService(PostgresAsyncTestCase):
 
     def test_get_enroute(self):
         expected = {
-            "__get_aggregate__": {BrokerQueryEnrouteDecorator("GetFoo")},
-            "__get_aggregates__": {BrokerQueryEnrouteDecorator("GetFoos")},
             "find_foo": {BrokerQueryEnrouteDecorator("FindFoo")},
         }
         observed = FakeQueryService.__get_enroute__(self.config)
         self.assertEqual(expected, observed)
-
-    async def test_get_aggregate(self):
-        uuid = uuid4()
-        Agg = ModelType.build("Agg", {"uuid": UUID})
-        expected = Agg(uuid)
-        with patch("minos.common.Aggregate.get_one", return_value=expected):
-            response = await self.service.__get_aggregate__(FakeRequest({"uuid": uuid}))
-        self.assertEqual(expected, await response.content())
-
-    async def test_get_aggregate_raises(self):
-        with patch("tests.utils.FakeRequest.content", side_effect=ValueError):
-            with self.assertRaises(ResponseException):
-                await self.service.__get_aggregate__(FakeRequest(None))
-        with patch("minos.common.Aggregate.get_one", side_effect=ValueError):
-            with self.assertRaises(ResponseException):
-                await self.service.__get_aggregate__(FakeRequest({"uuid": uuid4()}))
-
-    async def test_get_aggregates(self):
-        uuids = [uuid4(), uuid4()]
-        Agg = ModelType.build("Agg", {"uuid": UUID})
-
-        expected = [Agg(u) for u in uuids]
-        with patch("minos.common.Aggregate.get", return_value=AsyncIter(expected)):
-            response = await self.service.__get_aggregates__(FakeRequest({"uuids": uuids}))
-        self.assertEqual(expected, await response.content())
-
-    async def test_get_aggregates_raises(self):
-        with patch("tests.utils.FakeRequest.content", side_effect=ValueError):
-            with self.assertRaises(ResponseException):
-                await self.service.__get_aggregates__(FakeRequest(None))
-        with patch("minos.common.Aggregate.get", side_effect=ValueError):
-            with self.assertRaises(ResponseException):
-                await self.service.__get_aggregates__(FakeRequest({"uuids": [uuid4()]}))
-
-    def test_aggregate_cls(self):
-        self.assertEqual(Foo, self.service.__aggregate_cls__)
 
 
 class TestCommandService(PostgresAsyncTestCase):
@@ -149,9 +110,49 @@ class TestCommandService(PostgresAsyncTestCase):
             self.service._pre_event_handle(FakeRequest("foo"))
 
     def test_get_enroute(self):
-        expected = {"create_foo": {BrokerCommandEnrouteDecorator("CreateFoo")}}
+        expected = {
+            "__get_aggregate__": {BrokerCommandEnrouteDecorator("GetFoo")},
+            "__get_aggregates__": {BrokerCommandEnrouteDecorator("GetFoos")},
+            "create_foo": {BrokerCommandEnrouteDecorator("CreateFoo")},
+        }
         observed = FakeCommandService.__get_enroute__(self.config)
         self.assertEqual(expected, observed)
+
+    async def test_get_aggregate(self):
+        uuid = uuid4()
+        Agg = ModelType.build("Agg", {"uuid": UUID})
+        expected = Agg(uuid)
+        with patch("minos.common.Aggregate.get", return_value=expected):
+            response = await self.service.__get_aggregate__(FakeRequest({"uuid": uuid}))
+        self.assertEqual(expected, await response.content())
+
+    async def test_get_aggregate_raises(self):
+        with patch("tests.utils.FakeRequest.content", side_effect=ValueError):
+            with self.assertRaises(ResponseException):
+                await self.service.__get_aggregate__(FakeRequest(None))
+        with patch("minos.common.Aggregate.get", side_effect=ValueError):
+            with self.assertRaises(ResponseException):
+                await self.service.__get_aggregate__(FakeRequest({"uuid": uuid4()}))
+
+    async def test_get_aggregates(self):
+        uuids = [uuid4(), uuid4()]
+        Agg = ModelType.build("Agg", {"uuid": UUID})
+
+        expected = [Agg(u) for u in uuids]
+        with patch("minos.common.Aggregate.get", side_effect=expected):
+            response = await self.service.__get_aggregates__(FakeRequest({"uuids": uuids}))
+        self.assertEqual(expected, await response.content())
+
+    async def test_get_aggregates_raises(self):
+        with patch("tests.utils.FakeRequest.content", side_effect=ValueError):
+            with self.assertRaises(ResponseException):
+                await self.service.__get_aggregates__(FakeRequest(None))
+        with patch("minos.common.Aggregate.get", side_effect=ValueError):
+            with self.assertRaises(ResponseException):
+                await self.service.__get_aggregates__(FakeRequest({"uuids": [uuid4()]}))
+
+    def test_aggregate_cls(self):
+        self.assertEqual(Foo, self.service.__aggregate_cls__)
 
 
 if __name__ == "__main__":
