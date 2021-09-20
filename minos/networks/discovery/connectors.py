@@ -1,5 +1,3 @@
-"""minos.networks.discovery.connectors module."""
-
 from __future__ import (
     annotations,
 )

@@ -1,5 +1,3 @@
-"""tests.test_networks.test_broker.test_producers module."""
-
 import asyncio
 import unittest
 from asyncio import (

@@ -1,5 +1,3 @@
-"""minos.networks.handlers.command_replies.handlers module."""
-
 from __future__ import (
     annotations,
 )

@@ -1,5 +1,3 @@
-"""tests.utils module."""
-
 from collections import (
     namedtuple,
 )

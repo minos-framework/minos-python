@@ -1,5 +1,3 @@
-"""minos.networks.utils module."""
-
 import re
 import socket
 from asyncio import (

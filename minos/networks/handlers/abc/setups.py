@@ -1,5 +1,3 @@
-"""minos.networks.handlers.abc.setups module."""
-
 from psycopg2.sql import (
     SQL,
 )

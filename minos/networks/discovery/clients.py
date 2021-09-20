@@ -1,5 +1,3 @@
-"""minos.networks.discovery.clients module."""
-
 import logging
 from asyncio import (
     sleep,

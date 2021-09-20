@@ -1,5 +1,3 @@
-"""minos.networks.abc.handlers module."""
-
 from __future__ import (
     annotations,
 )

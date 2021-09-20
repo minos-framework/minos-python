@@ -1,5 +1,3 @@
-"""tests.test_networks.tests_handlers.test_consumers module."""
-
 import unittest
 from unittest.mock import (
     MagicMock,
