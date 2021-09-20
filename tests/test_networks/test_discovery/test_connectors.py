@@ -1,5 +1,3 @@
-"""tests.test_networks.test_discovery.test_connectors module."""
-
 import unittest
 from unittest.mock import (
     AsyncMock,

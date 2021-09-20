@@ -1,15 +1,4 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
-
 import unittest
-from typing import (
-    NoReturn,
-)
 from unittest.mock import (
     AsyncMock,
     call,
@@ -38,7 +27,7 @@ from tests.utils import (
 class _FakeBroker(Broker):
     ACTION = "fake"
 
-    async def send(self, items: list[Model], **kwargs) -> NoReturn:
+    async def send(self, items: list[Model], **kwargs) -> None:
         """For testing purposes"""
 
 

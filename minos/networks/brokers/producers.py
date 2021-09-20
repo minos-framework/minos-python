@@ -1,5 +1,3 @@
-"""minos.networks.brokers.producers module."""
-
 from __future__ import (
     annotations,
 )
