@@ -1,20 +1,22 @@
 """tests.test_networks.test_discovery.test_connectors module."""
-import os
 import unittest
 from unittest.mock import (
     AsyncMock,
-    call, patch,
+    call,
 )
 
 from minos.common import (
     MinosConfig,
 )
+
 from minos.networks import (
     DiscoveryConnector,
     MinosDiscoveryClient,
     get_host_ip,
 )
-from minos.networks.exceptions import MinosInvalidDiscoveryClient
+from minos.networks.exceptions import (
+    MinosInvalidDiscoveryClient,
+)
 from tests.utils import (
     BASE_PATH,
 )

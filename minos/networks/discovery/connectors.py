@@ -21,6 +21,12 @@ from minos.common import (
     MinosSetup,
 )
 
+from .clients import (
+    MinosDiscoveryClient,
+)
+from .clients.kong import (
+    KongDiscoveryClient,
+)
 from ..decorators import (
     EnrouteAnalyzer,
 )
@@ -29,15 +35,6 @@ from ..exceptions import (
 )
 from ..utils import (
     get_host_ip,
-)
-from . import (
-    DiscoveryClient,
-)
-from .clients import (
-    MinosDiscoveryClient,
-)
-from .clients.kong import (
-    KongDiscoveryClient,
 )
 
 logger = logging.getLogger(__name__)
