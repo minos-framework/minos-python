@@ -27,7 +27,6 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    AsyncIter,
     FakeCommandService,
     FakeQueryService,
     FakeRequest,
@@ -123,7 +122,7 @@ class TestCommandService(PostgresAsyncTestCase):
         uuid = uuid4()
         Agg = ModelType.build("Agg", {"uuid": UUID})
         expected = Agg(uuid)
-        with patch("minos.common.Aggregate.get_one", return_value=expected):
+        with patch("minos.common.Aggregate.get", return_value=expected):
             response = await self.service.__get_aggregate__(FakeRequest({"uuid": uuid}))
         self.assertEqual(expected, await response.content())
 
@@ -131,7 +130,7 @@ class TestCommandService(PostgresAsyncTestCase):
         with patch("tests.utils.FakeRequest.content", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_aggregate__(FakeRequest(None))
-        with patch("minos.common.Aggregate.get_one", side_effect=ValueError):
+        with patch("minos.common.Aggregate.get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_aggregate__(FakeRequest({"uuid": uuid4()}))
 
@@ -140,7 +139,7 @@ class TestCommandService(PostgresAsyncTestCase):
         Agg = ModelType.build("Agg", {"uuid": UUID})
 
         expected = [Agg(u) for u in uuids]
-        with patch("minos.common.Aggregate.get", return_value=AsyncIter(expected)):
+        with patch("minos.common.Aggregate.get", side_effect=expected):
             response = await self.service.__get_aggregates__(FakeRequest({"uuids": uuids}))
         self.assertEqual(expected, await response.content())
 

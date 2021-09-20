@@ -95,15 +95,6 @@ class FakeRequest(Request):
         return f"FakeRequest({self._content!r})"
 
 
-class AsyncIter:
-    def __init__(self, items):
-        self.items = items
-
-    async def __aiter__(self):
-        for item in self.items:
-            yield item
-
-
 class Foo(Aggregate):
     """For testing purposes"""
 

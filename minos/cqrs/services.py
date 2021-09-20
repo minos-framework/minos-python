@@ -6,6 +6,9 @@ Minos framework can not be copied and/or distributed without the express permiss
 from abc import (
     ABC,
 )
+from asyncio import (
+    gather,
+)
 from functools import (
     partial,
 )
@@ -102,10 +105,10 @@ class CommandService(Service, ABC):
         return super().__get_enroute__(config) | additional
 
     async def __get_aggregate__(self, request: Request) -> Response:
-        """Get product.
+        """Get aggregate.
 
-        :param request: The ``Request`` instance that contains the product identifier.
-        :return: A ``Response`` instance containing the requested product.
+        :param request: The ``Request`` instance that contains the aggregate identifier.
+        :return: A ``Response`` instance containing the requested aggregate.
         """
         try:
             content = await request.content(model_type=ModelType.build("Query", {"uuid": UUID}))
@@ -113,17 +116,17 @@ class CommandService(Service, ABC):
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            product = await self.__aggregate_cls__.get_one(content["uuid"])
+            aggregate = await self.__aggregate_cls__.get(content["uuid"])
         except Exception as exc:
-            raise ResponseException(f"There was a problem while getting the product: {exc!r}")
+            raise ResponseException(f"There was a problem while getting the aggregate: {exc!r}")
 
-        return Response(product)
+        return Response(aggregate)
 
     async def __get_aggregates__(self, request: Request) -> Response:
-        """Get products.
+        """Get aggregates.
 
         :param request: The ``Request`` instance that contains the product identifiers.
-        :return: A ``Response`` instance containing the requested products.
+        :return: A ``Response`` instance containing the requested aggregates.
         """
         try:
             content = await request.content(model_type=ModelType.build("Query", {"uuids": list[UUID]}))
@@ -131,13 +134,11 @@ class CommandService(Service, ABC):
             raise ResponseException(f"There was a problem while parsing the given request: {exc!r}")
 
         try:
-            iterable = self.__aggregate_cls__.get(uuids=content["uuids"])
-            values = {v.uuid: v async for v in iterable}
-            products = [values[uuid] for uuid in content["uuids"]]
+            aggregates = await gather(*(self.__aggregate_cls__.get(uuid) for uuid in content["uuids"]))
         except Exception as exc:
-            raise ResponseException(f"There was a problem while getting products: {exc!r}")
+            raise ResponseException(f"There was a problem while getting aggregates: {exc!r}")
 
-        return Response(products)
+        return Response(aggregates)
 
     @cached_property
     def __aggregate_cls__(self) -> Type[Aggregate]:
