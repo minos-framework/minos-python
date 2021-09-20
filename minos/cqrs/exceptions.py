@@ -1,5 +1,3 @@
-"""minos.cqrs.exceptions module."""
-
 from minos.common import (
     MinosException,
 )
