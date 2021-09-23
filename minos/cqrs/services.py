@@ -13,7 +13,6 @@ from inspect import (
     ismethod,
 )
 from typing import (
-    Optional,
     Type,
 )
 from uuid import (
@@ -25,6 +24,7 @@ from cached_property import (
 )
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from minos.common import (
@@ -54,16 +54,16 @@ from .handlers import (
 class Service(ABC):
     """Base Service class"""
 
-    config: MinosConfig = Provide["config"]
-    saga_manager: MinosSagaManager = Provide["saga_manager"]
-
+    @inject
     def __init__(
-        self, *args, config: Optional[MinosConfig] = None, saga_manager: Optional[MinosSagaManager] = None, **kwargs,
+        self,
+        *args,
+        config: MinosConfig = Provide["config"],
+        saga_manager: MinosSagaManager = Provide["saga_manager"],
+        **kwargs,
     ):
-        if config is not None:
-            self.config = config
-        if saga_manager is not None:
-            self.saga_manager = saga_manager
+        self.config = config
+        self.saga_manager = saga_manager
 
     @classmethod
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
