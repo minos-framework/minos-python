@@ -24,7 +24,6 @@ from cached_property import (
 )
 from dependency_injector.wiring import (
     Provide,
-    inject,
 )
 from psycopg2.sql import (
     SQL,
@@ -50,7 +49,8 @@ logger = logging.getLogger(__name__)
 class Producer(BrokerSetup):
     """Minos Queue Dispatcher Class."""
 
-    @inject
+    consumer: Consumer = Provide["consumer"]
+
     def __init__(
         self,
         *args,
@@ -59,7 +59,7 @@ class Producer(BrokerSetup):
         retry: int,
         records: int,
         client: Optional[AIOKafkaProducer] = None,
-        consumer: Consumer = Provide["consumer"],
+        consumer: Optional[Consumer] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -68,7 +68,9 @@ class Producer(BrokerSetup):
         self.retry = retry
         self.records = records
         self._client = client
-        self.consumer = consumer
+
+        if consumer is not None:
+            self.consumer = consumer
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:

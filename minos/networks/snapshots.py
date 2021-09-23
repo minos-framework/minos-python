@@ -1,9 +1,12 @@
+from typing import (
+    Optional,
+)
+
 from aiomisc.service.periodic import (
     PeriodicService,
 )
 from dependency_injector.wiring import (
     Provide,
-    inject,
 )
 
 from minos.common import (
@@ -14,11 +17,13 @@ from minos.common import (
 class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
-    @inject
-    def __init__(self, snapshot: MinosSnapshot = Provide["snapshot"], interval: float = 60, **kwargs):
+    snapshot: MinosSnapshot = Provide["snapshot"]
+
+    def __init__(self, snapshot: Optional[MinosSnapshot] = None, interval: float = 60, **kwargs):
         super().__init__(interval=interval, **kwargs)
 
-        self.snapshot = snapshot
+        if snapshot is not None:
+            self.snapshot = snapshot
 
     async def start(self) -> None:
         """Start the service execution.

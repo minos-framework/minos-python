@@ -3,13 +3,15 @@ from __future__ import (
 )
 
 import logging
+from typing import (
+    Optional,
+)
 from uuid import (
     uuid4,
 )
 
 from dependency_injector.wiring import (
     Provide,
-    inject,
 )
 from kafka import (
     KafkaAdminClient,
@@ -36,20 +38,23 @@ logger = logging.getLogger(__name__)
 class DynamicHandlerPool(MinosPool):
     """Dynamic Handler Pool class."""
 
-    @inject
+    consumer: Consumer = Provide["consumer"]
+
     def __init__(
         self,
         config: MinosConfig,
         client: KafkaAdminClient,
         maxsize: int = 5,
-        consumer: Consumer = Provide["consumer"],
+        consumer: Optional[Consumer] = None,
         *args,
         **kwargs,
     ):
         super().__init__(maxsize=maxsize, *args, **kwargs)
         self.config = config
         self.client = client
-        self.consumer = consumer
+
+        if consumer is not None:
+            self.consumer = consumer
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandlerPool:

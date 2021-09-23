@@ -20,7 +20,6 @@ from typing import (
 
 from dependency_injector.wiring import (
     Provide,
-    inject,
 )
 
 from minos.common import (
@@ -56,10 +55,13 @@ class CommandHandler(Handler):
 
     ENTRY_MODEL_CLS = Command
 
-    @inject
-    def __init__(self, broker: MinosBroker = Provide["command_reply_broker"], **kwargs: Any):
+    broker: MinosBroker = Provide["command_reply_broker"]
+
+    def __init__(self, broker: MinosBroker = None, **kwargs: Any):
         super().__init__(**kwargs)
-        self.broker = broker
+
+        if broker is not None:
+            self.broker = broker
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
