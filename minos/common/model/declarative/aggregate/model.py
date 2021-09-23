@@ -21,6 +21,7 @@ from uuid import (
 
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from ....datetime import (
@@ -69,10 +70,7 @@ class Aggregate(Entity):
     created_at: datetime
     updated_at: datetime
 
-    _broker: MinosBroker = Provide["event_broker"]
-    _repository: MinosRepository = Provide["repository"]
-    _snapshot: MinosSnapshot = Provide["snapshot"]
-
+    @inject
     def __init__(
         self,
         *args,
@@ -80,69 +78,49 @@ class Aggregate(Entity):
         version: int = 0,
         created_at: datetime = NULL_DATETIME,
         updated_at: datetime = NULL_DATETIME,
-        _broker: Optional[MinosBroker] = None,
-        _repository: Optional[MinosRepository] = None,
-        _snapshot: Optional[MinosSnapshot] = None,
+        _broker: MinosBroker = Provide["event_broker"],
+        _repository: MinosRepository = Provide["repository"],
+        _snapshot: MinosSnapshot = Provide["snapshot"],
         **kwargs,
     ):
 
         super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
 
-        if _broker is not None:
-            self._broker = _broker
-        if _repository is not None:
-            self._repository = _repository
-        if _snapshot is not None:
-            self._snapshot = _snapshot
-
-        if self._broker is None or isinstance(self._broker, Provide):
+        if _broker is None or isinstance(_broker, Provide):
             raise MinosBrokerNotProvidedException("A broker instance is required.")
-        if self._repository is None or isinstance(self._repository, Provide):
+        if _repository is None or isinstance(_repository, Provide):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
-        if self._snapshot is None or isinstance(self._snapshot, Provide):
+        if _snapshot is None or isinstance(_snapshot, Provide):
             raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
+        self._broker = _broker
+        self._repository = _repository
+        self._snapshot = _snapshot
+
     @classmethod
-    async def get(
-        cls: Type[T],
-        uuid: UUID,
-        _broker: Optional[MinosBroker] = None,
-        _repository: Optional[MinosRepository] = None,
-        _snapshot: Optional[MinosSnapshot] = None,
-    ) -> T:
+    @inject
+    async def get(cls: Type[T], uuid: UUID, _snapshot: MinosSnapshot = Provide["snapshot"], **kwargs) -> T:
         """Get one instance from the database based on its identifier.
 
         :param uuid: The identifier of the instance.
-        :param _broker: Broker to be set to the aggregates.
-        :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         """
-        if _broker is None:
-            _broker = cls._broker
-            if isinstance(_broker, Provide):
-                raise MinosBrokerNotProvidedException("A broker instance is required.")
-        if _repository is None:
-            _repository = cls._repository
-            if isinstance(_repository, Provide):
-                raise MinosRepositoryNotProvidedException("A repository instance is required.")
-        if _snapshot is None:
-            _snapshot = cls._snapshot
-            if isinstance(_snapshot, Provide):
-                raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
+        if _snapshot is None or isinstance(_snapshot, Provide):
+            raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
         # noinspection PyTypeChecker
-        return await _snapshot.get(cls.classname, uuid, _broker=_broker, _repository=_repository, _snapshot=_snapshot)
+        return await _snapshot.get(cls.classname, uuid, _snapshot=_snapshot, **kwargs)
 
     @classmethod
+    @inject
     async def find(
         cls: Type[T],
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
-        _broker: Optional[MinosBroker] = None,
-        _repository: Optional[MinosRepository] = None,
-        _snapshot: Optional[MinosSnapshot] = None,
+        _snapshot: MinosSnapshot = Provide["snapshot"],
+        **kwargs,
     ) -> AsyncIterator[T]:
         """Find a collection of instances based on a given ``Condition``.
 
@@ -151,46 +129,23 @@ class Aggregate(Entity):
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :param _broker: Broker to be set to the aggregates.
-        :param _repository: Repository to be set to the aggregate.
         :param _snapshot: Snapshot to be set to the aggregate.
         :return: A list of aggregate instances.
         :return: An aggregate instance.
         """
-        if _broker is None:
-            _broker = cls._broker
-            if isinstance(_broker, Provide):
-                raise MinosBrokerNotProvidedException("A broker instance is required.")
-        if _repository is None:
-            _repository = cls._repository
-            if isinstance(_repository, Provide):
-                raise MinosRepositoryNotProvidedException("A repository instance is required.")
-        if _snapshot is None:
-            _snapshot = cls._snapshot
-            if isinstance(_snapshot, Provide):
-                raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
-
+        if _snapshot is None or isinstance(_snapshot, Provide):
+            raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
         # noinspection PyTypeChecker
-        iterable = _snapshot.find(
-            cls.classname, condition, ordering, limit, _broker=_broker, _repository=_repository, _snapshot=_snapshot
-        )
+        iterable = _snapshot.find(cls.classname, condition, ordering, limit, _snapshot=_snapshot, **kwargs)
         # noinspection PyTypeChecker
         async for aggregate in iterable:
             yield aggregate
 
     @classmethod
-    async def create(
-        cls: Type[T],
-        *args,
-        _broker: Optional[MinosBroker] = None,
-        _repository: Optional[MinosRepository] = None,
-        **kwargs,
-    ) -> T:
+    async def create(cls: Type[T], *args, **kwargs,) -> T:
         """Create a new ``Aggregate`` instance.
 
         :param args: Additional positional arguments.
-        :param _broker: Broker to be set to the aggregates.
-        :param _repository: Repository to be set to the aggregate.
         :param kwargs: Additional named arguments.
         :return: A new ``Aggregate`` instance.
         """
@@ -211,7 +166,7 @@ class Aggregate(Entity):
                 f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
 
-        instance: T = cls(*args, _broker=_broker, _repository=_repository, **kwargs)
+        instance: T = cls(*args, **kwargs)
 
         aggregate_diff = AggregateDiff.from_aggregate(instance)
         entry = await instance._repository.create(aggregate_diff)

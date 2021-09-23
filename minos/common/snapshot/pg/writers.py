@@ -4,7 +4,6 @@ from __future__ import (
 
 from typing import (
     TYPE_CHECKING,
-    Optional,
     Type,
 )
 from uuid import (
@@ -15,9 +14,6 @@ from dependency_injector.wiring import (
     Provide,
 )
 
-from ...configuration import (
-    MinosConfig,
-)
 from ...exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosRepositoryNotProvidedException,
@@ -46,19 +42,13 @@ if TYPE_CHECKING:
 class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     """Minos Snapshot Dispatcher class."""
 
-    _repository: MinosRepository = Provide["repository"]
-
-    def __init__(self, *args, repository: Optional[MinosRepository] = None, **kwargs):
+    def __init__(self, *args, repository: MinosRepository = Provide["repository"], **kwargs):
         super().__init__(*args, **kwargs)
-        if repository is not None:
-            self._repository = repository
 
-        if self._repository is None or isinstance(self._repository, Provide):
+        if repository is None or isinstance(repository, Provide):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
-    @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotWriter:
-        return cls(*args, **config.snapshot._asdict(), **kwargs)
+        self._repository = repository
 
     async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
         """Check if the snapshot has the latest version of an ``Aggregate`` instance.

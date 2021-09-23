@@ -16,6 +16,7 @@ from typing import (
 
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from .configuration import (
@@ -30,8 +31,6 @@ logger = logging.getLogger(__name__)
 
 class MinosSetup:
     """Minos setup base class."""
-
-    _config: MinosConfig = Provide["config"]
 
     def __init__(self, *args, already_setup: bool = False, **kwargs):
         self._already_setup = already_setup
@@ -61,15 +60,19 @@ class MinosSetup:
         :return: A instance of the called class.
         """
         if config is None:
-            config = cls._config
-            if isinstance(config, Provide):
-                raise MinosConfigNotProvidedException("The config object must be provided.")
-
-        if isinstance(config, Path):
+            config = cls._get_config()
+        elif isinstance(config, Path):
             config = MinosConfig(config)
 
         logger.info(f"Building a {cls.__name__!r} instance from config...")
         return cls._from_config(config=config, **kwargs)
+
+    @staticmethod
+    @inject
+    def _get_config(config: MinosConfig = Provide["config"]) -> MinosConfig:
+        if isinstance(config, Provide):
+            raise MinosConfigNotProvidedException("The config object must be provided.")
+        return config
 
     @classmethod
     def _from_config(cls: Type[T], config: MinosConfig, **kwargs) -> T:

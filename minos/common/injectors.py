@@ -71,8 +71,9 @@ class DependencyInjector:
 
         :return: This method does not return anything.
         """
-        self.container.unwire()
         await gather(*(injection.destroy() for injection in self.injections.values()))
+
+        self.container.unwire()
 
     @cached_property
     def container(self) -> containers.Container:

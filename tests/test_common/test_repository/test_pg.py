@@ -67,14 +67,12 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
         self.assertTrue(response)
 
     async def test_aggregate(self):
-        async with FakeBroker() as broker, PostgreSqlRepository(
-            **self.repository_db
-        ) as repository, InMemorySnapshot() as snapshot:
-            car = await Car.create(doors=3, color="blue", _broker=broker, _repository=repository, _snapshot=snapshot)
+        async with FakeBroker() as b, PostgreSqlRepository(**self.repository_db) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
             await car.update(color="red")
             await car.update(doors=5)
 
-            another = await Car.get(car.uuid, _broker=broker, _repository=repository, _snapshot=snapshot)
+            another = await Car.get(car.uuid, _broker=b, _repository=r, _snapshot=s)
             self.assertEqual(car, another)
 
             await car.delete()

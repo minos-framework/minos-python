@@ -1,3 +1,15 @@
+from __future__ import (
+    annotations,
+)
+
+from typing import (
+    Type,
+    TypeVar,
+)
+
+from ...configuration import (
+    MinosConfig,
+)
 from ...database import (
     PostgreSqlMinosDatabase,
 )
@@ -6,10 +18,16 @@ from ...database import (
 class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
     """Minos Snapshot Setup Class"""
 
+    @classmethod
+    def _from_config(cls: Type[T], config: MinosConfig, **kwargs) -> T:
+        return cls(**config.snapshot._asdict(), **kwargs)
+
     async def _setup(self) -> None:
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("snapshot"))
         await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock=hash("snapshot_aux_offset"))
 
+
+T = TypeVar("T")
 
 _CREATE_TABLE_QUERY = """
 CREATE TABLE IF NOT EXISTS snapshot (

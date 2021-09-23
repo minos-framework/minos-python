@@ -21,7 +21,6 @@ from typing import (
 
 from aiomisc import (
     Service,
-    receiver,
 )
 from aiomisc.entrypoint import (
     Entrypoint,
@@ -118,6 +117,7 @@ class EntrypointLauncher(MinosSetup):
         logger.info("Starting microservice...")
 
         try:
+            self.loop.run_until_complete(self.setup())
             self.loop.run_until_complete(self.entrypoint.__aenter__())
             logger.info("Microservice is up and running!")
             self.loop.run_forever()
@@ -132,6 +132,7 @@ class EntrypointLauncher(MinosSetup):
         :return: This method does not return anything.
         """
         self.loop.run_until_complete(self.entrypoint.graceful_shutdown(err))
+        self.loop.run_until_complete(self.destroy())
 
     @cached_property
     def entrypoint(self) -> Entrypoint:
@@ -139,17 +140,6 @@ class EntrypointLauncher(MinosSetup):
 
         :return: An ``Entrypoint`` instance.
         """
-
-        # noinspection PyUnusedLocal
-        @receiver(Entrypoint.PRE_START)
-        async def _start(*args, **kwargs):
-            await self.setup()
-
-        # noinspection PyUnusedLocal
-        @receiver(Entrypoint.POST_STOP)
-        async def _stop(*args, **kwargs):
-            await self.destroy()
-
         return _create_entrypoint(*self.services, loop=self.loop, log_config=False)
 
     @cached_property

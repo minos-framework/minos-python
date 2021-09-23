@@ -12,9 +12,6 @@ from uuid import (
     UUID,
 )
 
-from ...configuration import (
-    MinosConfig,
-)
 from ...exceptions import (
     MinosSnapshotAggregateNotFoundException,
 )
@@ -45,10 +42,6 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
 
    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
     """
-
-    @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotReader:
-        return cls(**config.snapshot._asdict(), **kwargs)
 
     async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
         """Get an aggregate instance from its identifier.
