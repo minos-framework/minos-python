@@ -27,7 +27,7 @@ class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
         await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock=hash("snapshot_aux_offset"))
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=PostgreSqlSnapshotSetup)
 
 _CREATE_TABLE_QUERY = """
 CREATE TABLE IF NOT EXISTS snapshot (
