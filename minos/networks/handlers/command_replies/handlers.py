@@ -9,6 +9,7 @@ from typing import (
 
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from minos.common import (
@@ -32,13 +33,11 @@ class CommandReplyHandler(Handler):
 
     ENTRY_MODEL_CLS = CommandReply
 
-    saga_manager: MinosSagaManager = Provide["saga_manager"]
-
-    def __init__(self, saga_manager: MinosSagaManager = None, **kwargs: Any):
+    @inject
+    def __init__(self, saga_manager: MinosSagaManager = Provide["saga_manager"], **kwargs: Any):
         super().__init__(**kwargs)
 
-        if saga_manager is not None:
-            self.saga_manager = saga_manager
+        self.saga_manager = saga_manager
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
