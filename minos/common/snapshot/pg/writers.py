@@ -12,6 +12,7 @@ from uuid import (
 
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from ...exceptions import (
@@ -42,6 +43,7 @@ if TYPE_CHECKING:
 class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     """Minos Snapshot Dispatcher class."""
 
+    @inject
     def __init__(self, *args, repository: MinosRepository = Provide["repository"], **kwargs):
         super().__init__(*args, **kwargs)
 
