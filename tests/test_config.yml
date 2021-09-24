@@ -27,8 +27,6 @@ broker:
     port: 5432
     records: 10
     retry: 2
-events:
-    service: minos.services.CQRSService
 commands:
     service: minos.services.OrderService
 queries:

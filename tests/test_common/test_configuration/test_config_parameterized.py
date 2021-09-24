@@ -37,11 +37,6 @@ class MyTestCase(unittest.TestCase):
         commands = config.commands
         self.assertEqual("test", commands.service)
 
-    def test_events_service(self):
-        config = MinosConfig(path=self.config_file_path, events_service="test")
-        events = config.events
-        self.assertEqual("test", events.service)
-
     def test_config_discovery(self):
         config = MinosConfig(
             path=self.config_file_path,
