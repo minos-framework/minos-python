@@ -17,10 +17,12 @@ from minos.common import (
 
 from .definitions import (
     BrokerCommandEnrouteDecorator,
+    BrokerEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     EnrouteDecorator,
     RestCommandEnrouteDecorator,
+    RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )
 
@@ -35,25 +37,38 @@ class EnrouteAnalyzer:
         self.decorated = decorated
         self.config = config
 
-    def get_rest_command_query(self) -> dict[str, set[EnrouteDecorator]]:
-        """Returns rest values.
+    def get_rest_command_query(self) -> dict[str, set[RestEnrouteDecorator]]:
+        """Returns rest's command and query values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
+        # noinspection PyTypeChecker
         return self._get_items({RestCommandEnrouteDecorator, RestQueryEnrouteDecorator})
 
-    def get_broker_command_query(self) -> dict[str, set[EnrouteDecorator]]:
-        """Returns command values.
+    def get_broker_command_query_event(self) -> dict[str, set[BrokerEnrouteDecorator]]:
+        """Returns broker's command, query and event values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
+        # noinspection PyTypeChecker
+        return self._get_items(
+            {BrokerCommandEnrouteDecorator, BrokerQueryEnrouteDecorator, BrokerEventEnrouteDecorator}
+        )
+
+    def get_broker_command_query(self) -> dict[str, set[BrokerEnrouteDecorator]]:
+        """Returns broker's command and query values.
+
+        :return: A mapping with functions as keys and a sets of decorators as values.
+        """
+        # noinspection PyTypeChecker
         return self._get_items({BrokerCommandEnrouteDecorator, BrokerQueryEnrouteDecorator})
 
-    def get_broker_event(self) -> dict[str, set[EnrouteDecorator]]:
-        """Returns event values.
+    def get_broker_event(self) -> dict[str, set[BrokerEnrouteDecorator]]:
+        """Returns broker's event values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
         """
+        # noinspection PyTypeChecker
         return self._get_items({BrokerEventEnrouteDecorator})
 
     def _get_items(self, expected_types: set[Type[EnrouteDecorator]]) -> dict[str, set[EnrouteDecorator]]:

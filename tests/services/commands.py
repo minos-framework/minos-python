@@ -6,7 +6,7 @@ from minos.networks import (
 )
 
 
-class CommandService(object):
+class CommandService:
     @enroute.rest.command(url="/order", method="GET")
     def get_order_rest(self, request: Request) -> Response:
         return Response("get_order")
@@ -26,3 +26,7 @@ class CommandService(object):
     @enroute.broker.command("UpdateOrder")
     def update_order(self, request: Request) -> Response:
         return HandlerResponse("update_order")
+
+    @enroute.broker.event("TicketAdded")
+    def ticket_added(self, request: Request):
+        return "command_service_ticket_added"

@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from itertools import (
+    chain,
+)
 from typing import (
     Any,
     NoReturn,
@@ -26,7 +29,7 @@ from minos.common import (
 )
 
 from ..decorators import (
-    EnrouteBuilder,
+    EnrouteAnalyzer,
 )
 from .abc import (
     HandlerSetup,
@@ -65,17 +68,13 @@ class Consumer(HandlerSetup):
     def _from_config(cls, config: MinosConfig, **kwargs) -> Consumer:
         topics = set()
 
-        # events
-        decorators = EnrouteBuilder(config.events.service, config).get_broker_event()
-        topics |= {decorator.topic for decorator in decorators.keys()}
-
         # commands
-        decorators = EnrouteBuilder(config.commands.service, config).get_broker_command_query()
-        topics |= {decorator.topic for decorator in decorators.keys()}
+        decorators = EnrouteAnalyzer(config.commands.service, config).get_broker_command_query_event()
+        topics |= {decorator.topic for decorator in chain(*decorators.values())}
 
         # queries
-        decorators = EnrouteBuilder(config.queries.service, config).get_broker_command_query()
-        topics |= {decorator.topic for decorator in decorators.keys()}
+        decorators = EnrouteAnalyzer(config.queries.service, config).get_broker_command_query_event()
+        topics |= {decorator.topic for decorator in chain(*decorators.values())}
 
         # replies
         topics |= {f"{config.service.name}Reply"}
