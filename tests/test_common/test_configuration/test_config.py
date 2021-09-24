@@ -35,10 +35,6 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual("localhost", rest.host)
         self.assertEqual(8900, rest.port)
 
-    def test_config_events_service(self):
-        events = self.config.events
-        self.assertEqual("minos.services.CQRSService", events.service)
-
     def test_config_events_queue_database(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         broker = config.broker

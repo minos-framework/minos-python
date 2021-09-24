@@ -26,7 +26,6 @@ QUEUE = namedtuple("Queue", "database user password host port records retry")
 SERVICE = namedtuple("Service", "name aggregate injections services")
 STORAGE = namedtuple("Storage", "path")
 
-EVENTS = namedtuple("Events", "service")
 COMMANDS = namedtuple("Commands", "service")
 QUERIES = namedtuple("Queries", "service")
 SAGA = namedtuple("Saga", "storage")
@@ -48,7 +47,6 @@ _ENVIRONMENT_MAPPER = {
     "broker.queue.password": "MINOS_BROKER_QUEUE_PASSWORD",
     "commands.service": "MINOS_COMMANDS_SERVICE",
     "queries.service": "MINOS_QUERIES_SERVICE",
-    "events.service": "MINOS_EVENTS_SERVICE",
     "repository.host": "MINOS_REPOSITORY_HOST",
     "repository.port": "MINOS_REPOSITORY_PORT",
     "repository.database": "MINOS_REPOSITORY_DATABASE",
@@ -79,7 +77,6 @@ _PARAMETERIZED_MAPPER = {
     "queries.service": "queries_service",
     "saga.broker": "saga_broker",
     "saga.port": "saga_port",
-    "events.service": "events_service",
     "repository.host": "repository_host",
     "repository.port": "repository_port",
     "repository.database": "repository_database",
@@ -209,15 +206,6 @@ class MinosConfig(MinosConfigAbstract):
         """
         queue = self._broker_queue
         return BROKER(host=self._get("broker.host"), port=self._get("broker.port"), queue=queue)
-
-    @property
-    def events(self) -> EVENTS:
-        """Get the events config.
-
-        :return: A ``EVENTS`` NamedTuple instance.
-        """
-        service = self._get("events.service")
-        return EVENTS(service=service)
 
     @property
     def _broker_queue(self) -> QUEUE:

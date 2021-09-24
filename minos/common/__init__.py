@@ -4,7 +4,6 @@ from .configuration import (
     BROKER,
     COMMANDS,
     DISCOVERY,
-    EVENTS,
     QUEUE,
     REPOSITORY,
     REST,
