@@ -1,6 +1,7 @@
 import unittest
 from typing import (
     Generic,
+    Optional,
 )
 from uuid import (
     UUID,
@@ -72,6 +73,15 @@ class TestModelRefExtractor(unittest.TestCase):
 
         expected = ModelRefExtractor(value, mt_foo).build()
         observed = ModelRefExtractor(value).build()
+
+        self.assertEqual(expected, observed)
+
+    def test_optional(self):
+        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
+        value = uuid4()
+
+        expected = {"Foo": {value}}
+        observed = ModelRefExtractor(value, Optional[ModelRef[mt_foo]]).build()
 
         self.assertEqual(expected, observed)
 

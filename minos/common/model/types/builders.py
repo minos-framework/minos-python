@@ -37,13 +37,12 @@ def build_union(options: tuple[type, ...]) -> type:
     :param options: A tuple of types.
     :return: The union of types.
     """
-    if (
-        len(options) == 2
-        and is_aggregate_type(options[0])
-        and is_type_subclass(options[1])
-        and issubclass(options[1], UUID)
-    ):
-        return ModelRef[options[0]]
+    aggregate_type = next(filter(is_aggregate_type, options), None)
+    uuid_type = next(filter(lambda option: is_type_subclass(option) and issubclass(option, UUID), options), None)
+
+    if aggregate_type is not None and uuid_type is not None:
+        another = tuple(option for option in options if option not in (aggregate_type, uuid_type))
+        return Union[(ModelRef[aggregate_type],) + another]
 
     return Union[options]
 
