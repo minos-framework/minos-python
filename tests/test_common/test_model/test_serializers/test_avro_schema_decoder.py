@@ -3,6 +3,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
 )
 from typing import (
     Union,
@@ -83,6 +84,11 @@ class TestAvroSchemaDecoder(unittest.TestCase):
     def test_datetime(self):
         expected = datetime
         observed = AvroSchemaDecoder({"name": "id", "type": "long", "logicalType": "timestamp-micros"}).build()
+        self.assertEqual(expected, observed)
+
+    def test_timedelta(self):
+        expected = timedelta
+        observed = AvroSchemaDecoder({"name": "id", "type": "long", "logicalType": "timedelta-micros"}).build()
         self.assertEqual(expected, observed)
 
     def test_uuid(self):

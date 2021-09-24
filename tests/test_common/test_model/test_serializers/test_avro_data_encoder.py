@@ -3,6 +3,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
     timezone,
 )
 from decimal import (
@@ -76,6 +77,10 @@ class TestAvroDataEncoder(unittest.TestCase):
     def test_avro_data_datetime(self):
         observed = AvroDataEncoder(datetime(2021, 3, 12, 21, 32, 21, tzinfo=timezone.utc)).build()
         self.assertEqual(1615584741000000, observed)
+
+    def test_avro_data_timedelta(self):
+        observed = AvroDataEncoder(timedelta(days=23, hours=12, seconds=1, microseconds=23)).build()
+        self.assertEqual(2030401000023, observed)
 
     def test_avro_data_uuid(self):
         value = uuid4()

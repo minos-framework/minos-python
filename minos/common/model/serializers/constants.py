@@ -16,4 +16,5 @@ AVRO_DECIMAL = "decimal"
 AVRO_DATE = {"type": AVRO_INT, "logicalType": "date"}
 AVRO_TIME = {"type": AVRO_INT, "logicalType": "time-micros"}
 AVRO_TIMESTAMP = {"type": AVRO_LONG, "logicalType": "timestamp-micros"}
+AVRO_TIMEDELTA = {"type": AVRO_LONG, "logicalType": "timedelta-micros"}
 AVRO_UUID = {"type": AVRO_STRING, "logicalType": "uuid"}

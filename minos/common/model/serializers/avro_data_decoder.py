@@ -117,6 +117,9 @@ class AvroDataDecoder:
             if issubclass(type_, datetime):
                 return self._cast_datetime(data)
 
+            if issubclass(type_, timedelta):
+                return self._cast_timedelta(data)
+
             if issubclass(type_, date):
                 return self._cast_date(data)
 
@@ -196,6 +199,14 @@ class AvroDataDecoder:
         if isinstance(data, int):
             return datetime(1970, 1, 1, tzinfo=timezone.utc) + data * timedelta(microseconds=1)
         raise DataDecoderTypeException(datetime, data)
+
+    @staticmethod
+    def _cast_timedelta(data: Any) -> timedelta:
+        if isinstance(data, timedelta):
+            return data
+        if isinstance(data, int):
+            return timedelta(microseconds=data)
+        raise DataDecoderTypeException(timedelta, data)
 
     @staticmethod
     def _cast_uuid(data: Any) -> UUID:
