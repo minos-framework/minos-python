@@ -159,7 +159,7 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(expected, Auth.avro_schema)
 
     async def test_avro_data_model_ref(self):
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot() as s:
+        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
             owners = [
                 Owner("Hello", "Good Bye", uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s),
                 Owner("Foo", "Bar", uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s),
@@ -196,12 +196,12 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(expected, car.avro_data)
 
     async def test_avro_bytes_model_ref(self):
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
+        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
             owners = [
-                Owner("Hello", "Good Bye", _broker=broker, _repository=repository, _snapshot=snapshot),
-                Owner("Foo", "Bar", _broker=broker, _repository=repository, _snapshot=snapshot),
+                Owner("Hello", "Good Bye", _broker=b, _repository=r, _snapshot=s),
+                Owner("Foo", "Bar", _broker=b, _repository=r, _snapshot=s),
             ]
-            car = Car(5, "blue", owners, _broker=broker, _repository=repository, _snapshot=snapshot)
+            car = Car(5, "blue", owners, _broker=b, _repository=r, _snapshot=s)
             self.assertIsInstance(car.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):

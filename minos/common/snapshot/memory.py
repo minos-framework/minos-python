@@ -14,6 +14,11 @@ from uuid import (
     UUID,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
 from ..exceptions import (
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
@@ -41,6 +46,11 @@ class InMemorySnapshot(MinosSnapshot):
     The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
     """
 
+    @inject
+    def __init__(self, repository: MinosRepository = Provide["repository"], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._repository = repository
+
     # noinspection PyMethodOverriding
     async def find(
         self,
@@ -48,8 +58,6 @@ class InMemorySnapshot(MinosSnapshot):
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
-        *,
-        _repository: MinosRepository,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -65,11 +73,11 @@ class InMemorySnapshot(MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
-        uuids = {v.aggregate_uuid async for v in _repository.select(aggregate_name=aggregate_name)}
+        uuids = {v.aggregate_uuid async for v in self._repository.select(aggregate_name=aggregate_name)}
 
         aggregates = list()
         for uuid in uuids:
-            aggregate = await self.get(aggregate_name, uuid, _repository=_repository, **kwargs)
+            aggregate = await self.get(aggregate_name, uuid, **kwargs)
             if condition.evaluate(aggregate):
                 aggregates.append(aggregate)
 
@@ -83,7 +91,7 @@ class InMemorySnapshot(MinosSnapshot):
             yield aggregate
 
     # noinspection PyMethodOverriding
-    async def get(self, aggregate_name: str, uuid: UUID, *, _repository: MinosRepository, **kwargs) -> Aggregate:
+    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
@@ -93,7 +101,7 @@ class InMemorySnapshot(MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
-        entries = [v async for v in _repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)]
+        entries = [v async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)]
         if not len(entries):
             raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
 
@@ -103,7 +111,7 @@ class InMemorySnapshot(MinosSnapshot):
             raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
 
         cls = entries[0].aggregate_cls
-        instance: Aggregate = cls.from_diff(entries[0].aggregate_diff, _repository=_repository, **kwargs)
+        instance: Aggregate = cls.from_diff(entries[0].aggregate_diff, **kwargs)
         for entry in entries[1:]:
             instance.apply_diff(entry.aggregate_diff)
 

@@ -1,6 +1,3 @@
-from abc import (
-    ABC,
-)
 from typing import (
     Any,
     AsyncContextManager,
@@ -13,6 +10,7 @@ from aiopg import (
 )
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from ..setup import (
@@ -23,10 +21,8 @@ from .pool import (
 )
 
 
-class PostgreSqlMinosDatabase(ABC, MinosSetup):
+class PostgreSqlMinosDatabase(MinosSetup):
     """PostgreSql Minos Database base class."""
-
-    _pool: Optional[PostgreSqlPool] = Provide["postgresql_pool"]
 
     def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -36,6 +32,7 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
         self.user = user
         self.password = password
 
+        self._pool = None
         self._owned_pool = False
 
     async def _destroy(self) -> None:
@@ -140,9 +137,16 @@ class PostgreSqlMinosDatabase(ABC, MinosSetup):
 
         :return: A ``Pool`` object.
         """
-        if self._pool is None or isinstance(self._pool, Provide):
-            self._pool = PostgreSqlPool(
-                host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
-            )
-            self._owned_pool = True
+        if self._pool is None:
+            self._pool, self._owned_pool = self._build_pool()
         return self._pool
+
+    @inject
+    def _build_pool(self, pool: PostgreSqlPool = Provide["postgresql_pool"]) -> tuple[PostgreSqlPool, bool]:
+        if not isinstance(pool, Provide):
+            return pool, False
+
+        pool = PostgreSqlPool(
+            host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
+        )
+        return pool, True
