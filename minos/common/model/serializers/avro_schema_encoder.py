@@ -7,6 +7,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
 )
 from typing import (
     Any,
@@ -38,6 +39,7 @@ from .constants import (
     AVRO_NULL,
     AVRO_STRING,
     AVRO_TIME,
+    AVRO_TIMEDELTA,
     AVRO_TIMESTAMP,
     AVRO_UUID,
 )
@@ -106,6 +108,9 @@ class AvroSchemaEncoder:
 
             if issubclass(type_, datetime):
                 return AVRO_TIMESTAMP
+
+            if issubclass(type_, timedelta):
+                return AVRO_TIMEDELTA
 
             if issubclass(type_, date):
                 return AVRO_DATE

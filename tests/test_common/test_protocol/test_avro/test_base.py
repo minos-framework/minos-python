@@ -73,6 +73,17 @@ class TestMinosAvroProtocol(unittest.TestCase):
         deserialized = MinosAvroProtocol.decode(serialized)
         self.assertEqual(data, deserialized)
 
+    def test_timedelta(self):
+        schema = {
+            "type": "record",
+            "name": "tests.model_classes.ShoppingList",
+            "fields": [{"type": "long", "name": "foo", "logicalType": "timedelta-micros"}],
+        }
+        data = {"foo": 2030401000023}
+        serialized = MinosAvroProtocol.encode(data, schema)
+        deserialized = MinosAvroProtocol.decode(serialized)
+        self.assertEqual(data, deserialized)
+
 
 if __name__ == "__main__":
     unittest.main()

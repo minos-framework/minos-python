@@ -3,6 +3,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
     timezone,
 )
 from typing import (
@@ -155,6 +156,22 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     def test_datetime_raises(self):
         decoder = AvroDataDecoder(datetime)
+        with self.assertRaises(DataDecoderTypeException):
+            decoder.build("2342342")
+
+    def test_timedelta(self):
+        decoder = AvroDataDecoder(timedelta)
+        value = timedelta(days=23, hours=12, seconds=1, microseconds=23)
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
+
+    def test_timedelta_int(self):
+        decoder = AvroDataDecoder(timedelta)
+        observed = decoder.build(2030401000023)
+        self.assertEqual(timedelta(days=23, hours=12, seconds=1, microseconds=23), observed)
+
+    def test_timedelta_raises(self):
+        decoder = AvroDataDecoder(timedelta)
         with self.assertRaises(DataDecoderTypeException):
             decoder.build("2342342")
 

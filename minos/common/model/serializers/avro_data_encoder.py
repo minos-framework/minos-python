@@ -56,6 +56,9 @@ class AvroDataEncoder:
         if isinstance(value, datetime):
             return self._datetime_to_avro_raw(value)
 
+        if isinstance(value, timedelta):
+            return self._timedelta_to_avro_raw(value)
+
         if isinstance(value, date):
             return self._date_to_avro_raw(value)
 
@@ -91,6 +94,10 @@ class AvroDataEncoder:
     @staticmethod
     def _datetime_to_avro_raw(value: datetime) -> int:
         return (value.astimezone(timezone.utc) - datetime(1970, 1, 1, tzinfo=timezone.utc)) // timedelta(microseconds=1)
+
+    @staticmethod
+    def _timedelta_to_avro_raw(value: timedelta) -> int:
+        return value // timedelta(microseconds=1)
 
     @staticmethod
     def _uuid_to_avro_raw(value: UUID) -> str:
