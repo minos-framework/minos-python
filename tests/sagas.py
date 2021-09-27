@@ -1,5 +1,3 @@
-"""tests.sagas module."""
-
 from minos.saga import (
     Saga,
 )

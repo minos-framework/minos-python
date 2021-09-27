@@ -1,12 +1,9 @@
-"""minos.sga.executions.executors.publish module."""
-
 from __future__ import (
     annotations,
 )
 
 from typing import (
     Any,
-    NoReturn,
     Optional,
 )
 from uuid import (
@@ -15,6 +12,7 @@ from uuid import (
 
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from minos.common import (
@@ -45,21 +43,24 @@ class PublishExecutor(LocalExecutor):
     This class has the responsibility to publish command on the corresponding broker's queue.
     """
 
-    broker: MinosBroker = Provide["command_broker"]
-
+    @inject
     def __init__(
-        self, *args, execution_uuid: UUID, reply_topic: Optional[str], broker: MinosBroker = None, **kwargs,
+        self,
+        *args,
+        execution_uuid: UUID,
+        reply_topic: Optional[str],
+        broker: MinosBroker = Provide["command_broker"],
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
         self.execution_uuid = execution_uuid
         self.reply_topic = reply_topic
 
-        if broker is not None:
-            self.broker = broker
-
-        if self.broker is None or isinstance(self.broker, Provide):
+        if broker is None or isinstance(broker, Provide):
             raise MinosBrokerNotProvidedException("A broker instance is required.")
+
+        self.broker = broker
 
     async def exec(self, operation: SagaOperation, context: SagaContext) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
@@ -78,7 +79,7 @@ class PublishExecutor(LocalExecutor):
             raise MinosSagaFailedExecutionStepException(exc.exception)
         return context
 
-    async def _publish(self, operation: SagaOperation, data: Any) -> NoReturn:
+    async def _publish(self, operation: SagaOperation, data: Any) -> None:
         fn = self.broker.send
         topic = operation.name
         saga = self.execution_uuid

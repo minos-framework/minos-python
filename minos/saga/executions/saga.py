@@ -1,5 +1,3 @@
-"""minos.saga.executions.saga module."""
-
 from __future__ import (
     annotations,
 )
@@ -8,7 +6,6 @@ import logging
 from typing import (
     Any,
     Iterable,
-    NoReturn,
     Optional,
     Union,
 )
@@ -171,7 +168,7 @@ class SagaExecution(object):
         self.status = SagaStatus.Finished
         return self.context
 
-    async def _execute_one(self, execution_step: SagaExecutionStep, *args, **kwargs) -> NoReturn:
+    async def _execute_one(self, execution_step: SagaExecutionStep, *args, **kwargs) -> None:
         try:
             self.context = await execution_step.execute(self.context, execution_uuid=self.uuid, *args, **kwargs)
             self._add_executed(execution_step)
@@ -184,7 +181,7 @@ class SagaExecution(object):
             self.status = SagaStatus.Paused
             raise exc
 
-    async def _execute_commit(self, *args, **kwargs) -> NoReturn:
+    async def _execute_commit(self, *args, **kwargs) -> None:
         executor = LocalExecutor(*args, **kwargs)
 
         try:
@@ -197,7 +194,7 @@ class SagaExecution(object):
         if new_context is not None:
             self.context = new_context
 
-    async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> NoReturn:
+    async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> None:
         """Revert the invoke participant operation with a with compensation operation.
 
         :param reply_topic: The topic in which to receive the future replies.
@@ -229,7 +226,7 @@ class SagaExecution(object):
         offset = len(self.executed_steps)
         return self.definition.steps[offset:]
 
-    def _add_executed(self, executed_step: SagaExecutionStep) -> NoReturn:
+    def _add_executed(self, executed_step: SagaExecutionStep) -> None:
         self.executed_steps.append(executed_step)
 
     @property

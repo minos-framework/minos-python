@@ -1,5 +1,3 @@
-"""minos.saga.manager module."""
-
 from __future__ import (
     annotations,
 )
@@ -15,6 +13,7 @@ from uuid import (
 
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from minos.common import (
@@ -51,23 +50,21 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
     """
 
-    dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"]
-
+    @inject
     def __init__(
         self,
         storage: SagaExecutionStorage,
-        dynamic_handler_pool: Optional[MinosPool[MinosHandler]] = None,
+        dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"],
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
 
-        if dynamic_handler_pool is not None:
-            self.dynamic_handler_pool = dynamic_handler_pool
-
-        if self.dynamic_handler_pool is None or isinstance(self.dynamic_handler_pool, Provide):
+        if dynamic_handler_pool is None or isinstance(dynamic_handler_pool, Provide):
             raise MinosHandlerNotProvidedException("A handler pool instance is required.")
+
+        self.dynamic_handler_pool = dynamic_handler_pool
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:

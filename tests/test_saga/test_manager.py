@@ -1,5 +1,3 @@
-"""tests.test_saga.test_manager module."""
-
 import unittest
 from collections import (
     namedtuple,

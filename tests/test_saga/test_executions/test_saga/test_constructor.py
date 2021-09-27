@@ -1,5 +1,3 @@
-"""tests.test_saga.test_executions.test_saga.test_constructor module."""
-
 import unittest
 from uuid import (
     UUID,

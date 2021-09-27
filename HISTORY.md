@@ -71,3 +71,10 @@ History
 * Deprecate `SagaManager.run` by `Saga` names (the new approach is to directly pass the `Saga` instance).
 * Remove `name` from `Saga` class.
 * Minor improvements.
+
+0.0.12 (2021-09-27)
+------------------
+
+* Fix troubles related with dependency injections.
+* Remove file headers.
+* Stop using `NoReturn` everywhere.

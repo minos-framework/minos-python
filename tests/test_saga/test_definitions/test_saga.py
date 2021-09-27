@@ -1,5 +1,3 @@
-"""tests.test_saga.test_definitions.test_saga module."""
-
 import unittest
 from shutil import (
     rmtree,
