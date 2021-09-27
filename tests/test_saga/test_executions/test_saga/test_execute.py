@@ -1,5 +1,3 @@
-"""tests.test_saga.test_executions.test_saga.test_execute module."""
-
 import unittest
 from unittest.mock import (
     MagicMock,

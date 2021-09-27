@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -12,7 +5,6 @@ from __future__ import (
 from typing import (
     Any,
     Iterable,
-    NoReturn,
     Optional,
     Union,
 )
@@ -83,7 +75,7 @@ class SagaExecutionStep(object):
         self.status = SagaStepStatus.Finished
         return context
 
-    async def _execute_invoke_participant(self, context: SagaContext, *args, **kwargs) -> NoReturn:
+    async def _execute_invoke_participant(self, context: SagaContext, *args, **kwargs) -> None:
         if self.status != SagaStepStatus.Created:
             return
 

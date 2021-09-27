@@ -1,17 +1,9 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 import typing as t
 from pathlib import (
     Path,
 )
 from typing import (
     Any,
-    NoReturn,
     Optional,
 )
 from uuid import (
@@ -77,7 +69,7 @@ def fake_reply(
 class NaiveBroker(MinosBroker):
     """For testing purposes."""
 
-    async def send(self, data: Any, **kwargs) -> NoReturn:
+    async def send(self, data: Any, **kwargs) -> None:
         """For testing purposes."""
 
 

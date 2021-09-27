@@ -1,12 +1,9 @@
-"""minos.sga.executions.executors.publish module."""
-
 from __future__ import (
     annotations,
 )
 
 from typing import (
     Any,
-    NoReturn,
     Optional,
 )
 from uuid import (
@@ -82,7 +79,7 @@ class PublishExecutor(LocalExecutor):
             raise MinosSagaFailedExecutionStepException(exc.exception)
         return context
 
-    async def _publish(self, operation: SagaOperation, data: Any) -> NoReturn:
+    async def _publish(self, operation: SagaOperation, data: Any) -> None:
         fn = self.broker.send
         topic = operation.name
         saga = self.execution_uuid
