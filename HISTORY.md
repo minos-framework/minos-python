@@ -186,3 +186,11 @@ History
 * Refactor `AvroDataEncoder` to be more consistent with `Model` and `Field` responsibilities.
 * Remove file headers.
 * Stop using `NoReturn` everywhere.
+
+0.1.14 (2021-09-27)
+--------------------
+
+* Add support for `timedelta`.
+* Fix `Optional[ModelRef[T]]` behaviour.
+* Remove `events` section from `MinosConfig`.
+* Fix troubles related with dependency injections.
