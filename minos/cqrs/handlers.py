@@ -27,13 +27,20 @@ class PreEventHandler:
     """Pre Event Handler class."""
 
     @classmethod
-    async def handle(cls, diff: AggregateDiff, saga_manager: MinosSagaManager) -> AggregateDiff:
+    async def handle(
+        cls, diff: AggregateDiff, saga_manager: MinosSagaManager, resolve_references: bool = True
+    ) -> AggregateDiff:
         """Handle pre event function.
 
         :param diff: The initial aggregate difference.
         :param saga_manager: The saga manager to be used to compute the queries to another microservices.
+        :param resolve_references: If ``True``, reference are resolved, otherwise, the ``AggregateDiff`` is returned
+            without any modification.
         :return: The recomposed aggregate difference.
         """
+        if not resolve_references:
+            return diff
+
         try:
             definition = cls.build_saga(diff)
         except MinosNotAnyMissingReferenceException:
