@@ -1,6 +1,6 @@
 __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 from .exceptions import (
     MinosCqrsException,

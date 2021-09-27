@@ -14,3 +14,9 @@
 ## 0.0.3 (2021-09-20)
 
 * Add support for `minos-microservice-common>=0.1.13`.
+
+## 0.0.4 (2021-09-27)
+
+* Support `event` handling on `CommandService` inherited classes.
+* Parameterize `ModelRef` reference resolution.
+* Fix troubles related with dependency injections.
