@@ -7,6 +7,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
 )
 from typing import (
     Any,
@@ -38,6 +39,7 @@ from .constants import (
     AVRO_RECORD,
     AVRO_STRING,
     AVRO_TIME,
+    AVRO_TIMEDELTA,
     AVRO_TIMESTAMP,
     AVRO_UUID,
 )
@@ -90,6 +92,8 @@ class AvroSchemaDecoder:
             return time
         if type_ == AVRO_TIMESTAMP["logicalType"]:
             return datetime
+        if type_ == AVRO_TIMEDELTA["logicalType"]:
+            return timedelta
         if type_ == AVRO_UUID["logicalType"]:
             return UUID
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_!r}")
@@ -109,7 +113,7 @@ class AvroSchemaDecoder:
             return mt
 
         model_type = ModelType.build(
-            name, {field["name"]: self._build_type(field["type"]) for field in fields}, namespace_=namespace
+            name, {field["name"]: self._build_type(field) for field in fields}, namespace_=namespace
         )
 
         model_type = _unpatch_namespace(model_type)

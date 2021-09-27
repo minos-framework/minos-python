@@ -3,6 +3,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
 )
 from typing import (
     Union,
@@ -13,7 +14,9 @@ from uuid import (
 
 from minos.common import (
     AvroSchemaDecoder,
+    AvroSchemaEncoder,
     MinosMalformedAttributeException,
+    ModelRef,
     ModelType,
 )
 
@@ -83,6 +86,11 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         observed = AvroSchemaDecoder({"name": "id", "type": "long", "logicalType": "timestamp-micros"}).build()
         self.assertEqual(expected, observed)
 
+    def test_timedelta(self):
+        expected = timedelta
+        observed = AvroSchemaDecoder({"name": "id", "type": "long", "logicalType": "timedelta-micros"}).build()
+        self.assertEqual(expected, observed)
+
     def test_uuid(self):
         expected = UUID
         observed = AvroSchemaDecoder({"name": "id", "type": "string", "logicalType": "uuid"}).build()
@@ -113,6 +121,31 @@ class TestAvroSchemaDecoder(unittest.TestCase):
     def test_union(self):
         expected = list[Union[int, str]]
         observed = AvroSchemaDecoder({"name": "example", "type": "array", "items": ["int", "string"]}).build()
+        self.assertEqual(expected, observed)
+
+    def test_model_ref(self):
+        # noinspection PyPep8Naming
+        User = ModelType.build("User", {"uuid": UUID, "version": int, "username": str})
+        schema = {
+            "type": [AvroSchemaEncoder(User).build(), {"name": "uuid", "type": "string", "logicalType": "uuid"}],
+        }
+
+        expected = ModelRef[ModelType.build("User", {"uuid": UUID, "version": int, "username": str})]
+        observed = AvroSchemaDecoder(schema).build()
+        self.assertEqual(expected, observed)
+
+    def test_union_model_ref(self):
+        # noinspection PyPep8Naming
+        User = ModelType.build("User", {"uuid": UUID, "version": int, "username": str})
+        schema = {
+            "type": [
+                "int",
+                AvroSchemaEncoder(User).build(),
+                {"name": "uuid", "type": "string", "logicalType": "uuid"},
+            ],
+        }
+        expected = Union[ModelRef[User], int]
+        observed = AvroSchemaDecoder(schema).build()
         self.assertEqual(expected, observed)
 
     def test_raises(self):

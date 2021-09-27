@@ -12,6 +12,7 @@ from typing import (
     Iterable,
     Optional,
     TypeVar,
+    Union,
     get_args,
     get_origin,
 )
@@ -69,10 +70,14 @@ class ModelRefExtractor:
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 
-        elif get_origin(type_) is ModelRef and isinstance(value, UUID):
-            cls = get_args(type_)[0]
-            name = cls.__name__
-            ans[name].add(value)
+        elif isinstance(value, UUID):
+            if get_origin(type_) is Union:
+                type_ = next((t for t in get_args(type_) if get_origin(t) is ModelRef), type_)
+
+            if get_origin(type_) is ModelRef:
+                cls = get_args(type_)[0]
+                name = cls.__name__
+                ans[name].add(value)
 
     def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[UUID]]) -> None:
         for sub_value in value:

@@ -40,12 +40,6 @@ class TestMinosConfigWithEnvironment(unittest.TestCase):
 
         self.assertEqual("src.Test", commands.service)
 
-    @mock.patch.dict(os.environ, {"MINOS_EVENTS_SERVICE": "src.Test"})
-    def test_config_events_service(self):
-        events = self.config.events
-
-        self.assertEqual("src.Test", events.service)
-
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_CLIENT": "some-type"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_HOST": "some-host"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_PORT": "333"})

@@ -3,6 +3,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
 )
 from typing import (
     Any,
@@ -84,6 +85,11 @@ class TestAvroSchemaEncoder(unittest.TestCase):
     def test_datetime(self):
         expected = {"type": "long", "logicalType": "timestamp-micros"}
         observed = AvroSchemaEncoder(datetime).build()
+        self.assertEqual(expected, observed)
+
+    def test_timedelta(self):
+        expected = {"type": "long", "logicalType": "timedelta-micros"}
+        observed = AvroSchemaEncoder(timedelta).build()
         self.assertEqual(expected, observed)
 
     def test_dict(self):

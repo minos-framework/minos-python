@@ -3,6 +3,7 @@ from datetime import (
     date,
     datetime,
     time,
+    timedelta,
     timezone,
 )
 from typing import (
@@ -158,6 +159,22 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(DataDecoderTypeException):
             decoder.build("2342342")
 
+    def test_timedelta(self):
+        decoder = AvroDataDecoder(timedelta)
+        value = timedelta(days=23, hours=12, seconds=1, microseconds=23)
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
+
+    def test_timedelta_int(self):
+        decoder = AvroDataDecoder(timedelta)
+        observed = decoder.build(2030401000023)
+        self.assertEqual(timedelta(days=23, hours=12, seconds=1, microseconds=23), observed)
+
+    def test_timedelta_raises(self):
+        decoder = AvroDataDecoder(timedelta)
+        with self.assertRaises(DataDecoderTypeException):
+            decoder.build("2342342")
+
     def test_float_raises(self):
         decoder = AvroDataDecoder(float)
         with self.assertRaises(DataDecoderTypeException):
@@ -215,8 +232,8 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     async def test_list_model_ref(self):
         decoder = AvroDataDecoder(list[ModelRef[Owner]])
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
-            value = [uuid4(), Owner("Foo", "Bar", 56, _broker=broker, _repository=repository, _snapshot=snapshot)]
+        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
+            value = [uuid4(), Owner("Foo", "Bar", 56, _broker=b, _repository=r, _snapshot=s)]
             observed = decoder.build(value)
             self.assertEqual(value, observed)
 
@@ -288,8 +305,8 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     async def test_model_ref_value(self):
         decoder = AvroDataDecoder(ModelRef[Owner])
-        async with FakeBroker() as broker, FakeRepository() as repository, InMemorySnapshot() as snapshot:
-            value = Owner("Foo", "Bar", _broker=broker, _repository=repository, _snapshot=snapshot)
+        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
+            value = Owner("Foo", "Bar", _broker=b, _repository=r, _snapshot=s)
             observed = decoder.build(value)
             self.assertEqual(value, observed)
 

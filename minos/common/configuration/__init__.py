@@ -2,7 +2,6 @@ from .config import (
     BROKER,
     COMMANDS,
     DISCOVERY,
-    EVENTS,
     QUEUE,
     REPOSITORY,
     REST,
