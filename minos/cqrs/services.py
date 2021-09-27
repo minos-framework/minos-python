@@ -86,9 +86,9 @@ class CommandService(Service, ABC):
     def _pre_query_handle(request: Request) -> Request:
         raise MinosIllegalHandlingException("Queries cannot be handled by `CommandService` inherited classes.")
 
-    @staticmethod
-    def _pre_event_handle(request: Request) -> Request:
-        raise MinosIllegalHandlingException("Events cannot be handled by `CommandService` inherited classes.")
+    def _pre_event_handle(self, request: Request) -> Request:
+        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager)
+        return WrappedRequest(request, fn)
 
     @classmethod
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
