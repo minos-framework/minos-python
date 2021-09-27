@@ -54,6 +54,22 @@ class TestEnrouteAnalyzer(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
+    def test_get_broker_command_query_event(self):
+        analyzer = EnrouteAnalyzer(FakeService)
+
+        observed = analyzer.get_broker_command_query_event()
+        expected = {
+            "get_tickets": {BrokerQueryEnrouteDecorator("GetTickets")},
+            "create_ticket": {
+                BrokerCommandEnrouteDecorator("CreateTicket"),
+                BrokerCommandEnrouteDecorator("AddTicket"),
+            },
+            "delete_ticket": {BrokerCommandEnrouteDecorator("DeleteTicket")},
+            "ticket_added": {BrokerEventEnrouteDecorator("TicketAdded")},
+        }
+
+        self.assertEqual(expected, observed)
+
     def test_get_broker_command_query(self):
         analyzer = EnrouteAnalyzer(FakeService)
 
