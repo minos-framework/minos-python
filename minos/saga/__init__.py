@@ -1,11 +1,4 @@
-# Copyright (C) 2020 Clariteia SL
-#
-# This file is part of minos framework.
-#
-# Minos framework can not be copied and/or distributed without the express
-# permission of Clariteia SL.
-
-__version__ = "0.0.11"
+__version__ = "0.0.12"
 from .context import (
     SagaContext,
 )
