@@ -1,16 +1,8 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
 
 from typing import (
-    NoReturn,
     Type,
     Union,
 )
@@ -58,7 +50,7 @@ class SagaExecutionStorage(object):
         # noinspection PyProtectedMember
         return cls(*args, **(config.saga.storage._asdict() | kwargs))
 
-    def store(self, execution: SagaExecution) -> NoReturn:
+    def store(self, execution: SagaExecution) -> None:
         """Store an execution.
 
         :param execution: Execution to be stored.
@@ -81,7 +73,7 @@ class SagaExecutionStorage(object):
         execution = SagaExecution.from_raw(value)
         return execution
 
-    def delete(self, key: Union[SagaExecution, str, UUID]) -> NoReturn:
+    def delete(self, key: Union[SagaExecution, str, UUID]) -> None:
         """Delete the reference of the given key.
 
         :param key: Execution key to be deleted.

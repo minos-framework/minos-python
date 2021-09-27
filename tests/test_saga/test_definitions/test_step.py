@@ -1,5 +1,3 @@
-"""tests.test_saga.test_definitions.test_step module."""
-
 import unittest
 from unittest.mock import (
     MagicMock,

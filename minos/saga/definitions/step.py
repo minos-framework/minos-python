@@ -1,10 +1,3 @@
-"""
-Copyright (C) 2021 Clariteia SL
-
-This file is part of minos framework.
-
-Minos framework can not be copied and/or distributed without the express permission of Clariteia SL.
-"""
 from __future__ import (
     annotations,
 )
@@ -13,7 +6,6 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Iterable,
-    NoReturn,
     Optional,
     Union,
 )
@@ -159,7 +151,7 @@ class SagaStep(object):
             raise MinosSagaNotDefinedException()
         return self.saga.commit(*args, **kwargs)
 
-    def validate(self) -> NoReturn:
+    def validate(self) -> None:
         """Performs a validation about the structure of the defined ``SagaStep``.
 
         :return This method does not return anything.

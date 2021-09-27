@@ -1,5 +1,3 @@
-"""minos.saga.manager module."""
-
 from __future__ import (
     annotations,
 )
