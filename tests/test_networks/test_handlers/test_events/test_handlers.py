@@ -79,6 +79,13 @@ class TestEventHandler(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.user, self.handler.user)
         self.assertEqual(self.config.broker.queue.password, self.handler.password)
 
+    async def test_handlers(self):
+        self.assertEqual(
+            {"query_service_ticket_added", "command_service_ticket_added"},
+            set(await self.handler.handlers["TicketAdded"](None)),
+        )
+        self.assertEqual("ticket_deleted", await self.handler.handlers["TicketDeleted"](None))
+
     def test_entry_model_cls(self):
         self.assertEqual(Event, EventHandler.ENTRY_MODEL_CLS)
 

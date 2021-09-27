@@ -1,7 +1,6 @@
 import logging
 from typing import (
     Any,
-    Optional,
 )
 
 from aiomisc import (
@@ -9,6 +8,7 @@ from aiomisc import (
 )
 from dependency_injector.wiring import (
     Provide,
+    inject,
 )
 
 from .consumers import (
@@ -21,13 +21,10 @@ logger = logging.getLogger(__name__)
 class ConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
-    dispatcher: Consumer = Provide["consumer"]
-
-    def __init__(self, dispatcher: Optional[Consumer] = None, **kwargs):
+    @inject
+    def __init__(self, dispatcher: Consumer = Provide["consumer"], **kwargs):
         super().__init__(**kwargs)
-
-        if dispatcher is not None:
-            self.dispatcher = dispatcher
+        self.dispatcher = dispatcher
 
     async def start(self) -> None:
         """Method to be called at the startup by the internal ``aiomisc`` loigc.

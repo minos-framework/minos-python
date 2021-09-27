@@ -97,3 +97,9 @@ History
 * Add support for `Kong` discovery.
 * Add support for `minos-microservice-common>=0.1.13`.
 * Fix bug related with database queues and plain dates (without timezones).
+
+0.0.17 (2021-09-27)
+------------------
+
+* Add support for multiple handling functions for events.
+* Fix troubles related with dependency injections.
