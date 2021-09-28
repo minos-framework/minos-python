@@ -1,3 +1,9 @@
+from asyncio import (
+    gather,
+)
+from collections import (
+    defaultdict,
+)
 from inspect import (
     iscoroutinefunction,
 )
@@ -26,8 +32,12 @@ from .analyzers import (
 from .definitions import (
     BrokerEnrouteDecorator,
     EnrouteDecorator,
+    EnrouteDecoratorKind,
+    PeriodicEnrouteDecorator,
     RestEnrouteDecorator,
 )
+
+Handler = Callable[[Request], Awaitable[Response]]
 
 
 class EnrouteBuilder:
@@ -40,7 +50,7 @@ class EnrouteBuilder:
         self.decorated = decorated
         self.analyzer = EnrouteAnalyzer(decorated, *args, **kwargs)
 
-    def get_rest_command_query(self) -> dict[RestEnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
+    def get_rest_command_query(self) -> dict[RestEnrouteDecorator, Handler]:
         """Get the rest handlers for commands and queries.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
@@ -49,7 +59,7 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build(mapping)
 
-    def get_broker_command_query(self) -> dict[BrokerEnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
+    def get_broker_command_query(self) -> dict[BrokerEnrouteDecorator, Handler]:
         """Get the broker handlers for commands and queries.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
@@ -58,7 +68,7 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build(mapping)
 
-    def get_broker_event(self) -> dict[BrokerEnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
+    def get_broker_event(self) -> dict[BrokerEnrouteDecorator, Handler]:
         """Get the broker handlers for events.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
@@ -67,16 +77,36 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build(mapping)
 
-    def _build(
-        self, mapping: dict[str, set[EnrouteDecorator]]
-    ) -> dict[EnrouteDecorator, Callable[[Request], Awaitable[Response]]]:
+    def get_periodic_event(self) -> dict[PeriodicEnrouteDecorator, Handler]:
+        """TODO
 
-        ans = dict()
+        :return: A dictionary with decorator classes as keys and callable handlers as values.
+        """
+        mapping = self.analyzer.get_periodic_event()
+        # noinspection PyTypeChecker
+        return self._build(mapping)
+
+    def _build(self, mapping: dict[str, set[EnrouteDecorator]]) -> dict[EnrouteDecorator, Handler]:
+
+        ans = defaultdict(set)
         for name, decorators in mapping.items():
             for decorator in decorators:
-                if decorator in ans:
-                    raise MinosRedefinedEnrouteDecoratorException(f"{decorator!r} can be used only once.")
-                ans[decorator] = self._build_one(name, decorator.pre_fn_name)
+                ans[decorator].add(self._build_one(name, decorator.pre_fn_name))
+
+        def _make_fn(d, fns: set[Handler]) -> Handler:
+            if len(fns) == 1:
+                return next(iter(fns))
+
+            if d.KIND != EnrouteDecoratorKind.Event:
+                raise MinosRedefinedEnrouteDecoratorException(f"{d!r} can be used only once.")
+
+            async def _fn(*args, **kwargs):
+                return await gather(*(fn(*args, **kwargs) for fn in fns))
+
+            return _fn
+
+        ans = {decorator: _make_fn(decorator, fns) for decorator, fns in ans.items()}
+
         return ans
 
     def _build_one(self, name: str, pref_fn_name: str) -> Callable:

@@ -4,6 +4,7 @@ from minos.networks import (
     BrokerCommandEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
+    PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
     enroute,
@@ -34,6 +35,10 @@ class TestEnroute(unittest.IsolatedAsyncioTestCase):
     def test_broker_event_decorators(self):
         decorator = enroute.broker.event("CreateTicket")
         self.assertEqual(BrokerEventEnrouteDecorator("CreateTicket"), decorator)
+
+    def test_periodic_command_decorators(self):
+        decorator = enroute.periodic.event("0 */2 * * *")
+        self.assertEqual(PeriodicEventEnrouteDecorator("0 */2 * * *"), decorator)
 
 
 if __name__ == "__main__":
