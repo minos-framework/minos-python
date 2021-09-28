@@ -18,8 +18,6 @@ from .decorators import (
     EnrouteBuilder,
     EnrouteDecorator,
     EnrouteDecoratorKind,
-    PeriodicEnrouteDecorator,
-    PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,

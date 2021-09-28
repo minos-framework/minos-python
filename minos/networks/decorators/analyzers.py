@@ -21,7 +21,6 @@ from .definitions import (
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     EnrouteDecorator,
-    PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
@@ -71,14 +70,6 @@ class EnrouteAnalyzer:
         """
         # noinspection PyTypeChecker
         return self._get_items({BrokerEventEnrouteDecorator})
-
-    def get_periodic_event(self) -> dict[str, set[PeriodicEventEnrouteDecorator]]:
-        """TODO
-
-        :return: TODO
-        """
-        # noinspection PyTypeChecker
-        return self._get_items({PeriodicEventEnrouteDecorator})
 
     def _get_items(self, expected_types: set[Type[EnrouteDecorator]]) -> dict[str, set[EnrouteDecorator]]:
         items = dict()

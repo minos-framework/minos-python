@@ -123,9 +123,6 @@ class Response:
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self._data!r})"
 
-    def __hash__(self):
-        return hash(self._data)
-
 
 class ResponseException(MinosException):
     """Response Exception class."""

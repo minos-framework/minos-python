@@ -211,16 +211,6 @@ class FakeService:
         """For testing purposes."""
         return Response(": ".join(("Ticket Added", await request.content(),)))
 
-    @enroute.periodic.event("@daily")
-    async def send_newsletter(self, request: Request):
-        """For testing purposes."""
-        return Response("newsletter sent!")
-
-    @enroute.periodic.event("@daily")
-    async def check_inactive_users(self, request: Request):
-        """For testing purposes."""
-        return Response("checked inactive users!")
-
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def bar(self, request: Request):
         """For testing purposes."""

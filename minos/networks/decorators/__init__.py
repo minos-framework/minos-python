@@ -14,8 +14,6 @@ from .definitions import (
     BrokerQueryEnrouteDecorator,
     EnrouteDecorator,
     EnrouteDecoratorKind,
-    PeriodicEnrouteDecorator,
-    PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
