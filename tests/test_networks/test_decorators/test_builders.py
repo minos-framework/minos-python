@@ -9,6 +9,7 @@ from minos.networks import (
     BrokerQueryEnrouteDecorator,
     EnrouteBuilder,
     MinosRedefinedEnrouteDecoratorException,
+    PeriodicEventEnrouteDecorator,
     Response,
     RestCommandEnrouteDecorator,
     RestQueryEnrouteDecorator,
@@ -51,6 +52,15 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
 
         expected = Response("Ticket Added: [test]")
         observed = await handlers[BrokerEventEnrouteDecorator("TicketAdded")](self.request)
+        self.assertEqual(expected, observed)
+
+    async def test_get_periodic_event(self):
+        handlers = self.builder.get_periodic_event()
+        self.assertEqual(1, len(handlers))
+
+        expected = {Response("newsletter sent!"), Response("checked inactive users!")}
+        # noinspection PyTypeChecker
+        observed = set(await handlers[PeriodicEventEnrouteDecorator("@daily")](self.request))
         self.assertEqual(expected, observed)
 
     async def test_get_broker_command_query(self):
