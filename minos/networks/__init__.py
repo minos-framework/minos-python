@@ -72,6 +72,11 @@ from .rest import (
     RestResponseException,
     RestService,
 )
+from .scheduling import (
+    SchedulingRequest,
+    TaskScheduler,
+    TaskSchedulerService,
+)
 from .snapshots import (
     SnapshotService,
 )
