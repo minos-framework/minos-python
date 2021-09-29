@@ -45,6 +45,42 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
+class TaskScheduler(MinosSetup):
+    """TODO"""
+
+    def __init__(self, tasks: set[PeriodicTask], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._tasks = tasks
+
+    @classmethod
+    def _from_config(cls, config: MinosConfig, **kwargs) -> TaskScheduler:
+        tasks = cls._tasks_from_config(config, **kwargs)
+        return cls(tasks, **kwargs)
+
+    @staticmethod
+    def _tasks_from_config(config: MinosConfig, **kwargs) -> set[PeriodicTask]:
+        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        decorators = builder.get_periodic_event(config=config, **kwargs)
+        tasks = {PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()}
+        return tasks
+
+    async def start(self) -> None:
+        """TODO
+
+        :return: TODO
+        """
+
+        await gather(*(task.start() for task in self._tasks))
+
+    async def stop(self, timeout: Optional[float] = None) -> None:
+        """TODO
+
+        :param timeout: TODO
+        :return: TODO
+        """
+        await gather(*(task.stop(timeout) for task in self._tasks))
+
+
 class PeriodicTask:
     """TODO"""
 
@@ -133,34 +169,3 @@ class PeriodicTask:
             logger.warning(f"Raised exception while executing periodic task: {exc}")
         finally:
             self._running = False
-
-
-class TaskScheduler(MinosSetup):
-    """TODO"""
-
-    def __init__(self, tasks: list[PeriodicTask], *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._tasks = tasks
-
-    @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> TaskScheduler:
-        builder = EnrouteBuilder(config.commands.service, config.queries.service)
-        decorators = builder.get_periodic_event(config=config, **kwargs)
-        tasks = [PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()]
-        return cls(tasks, **kwargs)
-
-    async def start(self) -> None:
-        """TODO
-
-        :return: TODO
-        """
-
-        await gather(*(task.start() for task in self._tasks))
-
-    async def stop(self, timeout: Optional[float] = None) -> None:
-        """TODO
-
-        :param timeout: TODO
-        :return: TODO
-        """
-        await gather(*(task.stop(timeout) for task in self._tasks))

@@ -1,12 +1,19 @@
+from __future__ import (
+    annotations,
+)
+
 from datetime import (
     datetime,
 )
 from typing import (
-    Any,
     Optional,
 )
 from uuid import (
     UUID,
+)
+
+from minos.common import (
+    DeclarativeModel,
 )
 
 from ..messages import (
@@ -29,16 +36,26 @@ class SchedulingRequest(Request):
         """
         return None
 
-    async def content(self, **kwargs) -> Any:
+    async def content(self, **kwargs) -> SchedulingRequestContent:
         """TODO
 
         :param kwargs: TODO
         :return: TODO
         """
-        return {"scheduled_at": self._scheduled_at}
+        return self._content
 
     def __eq__(self, other: Request) -> bool:
-        return False
+        return isinstance(other, type(self)) and self._content == other._content
 
     def __repr__(self) -> str:
-        return ""
+        return f"{type(self).__name__}({self._content!r})"
+
+    @property
+    def _content(self) -> SchedulingRequestContent:
+        return SchedulingRequestContent(self._scheduled_at)
+
+
+class SchedulingRequestContent(DeclarativeModel):
+    """TODO"""
+
+    scheduled_at: datetime
