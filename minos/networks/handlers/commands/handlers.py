@@ -60,14 +60,14 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        handlers = cls._handlers_from_config(config)
+        handlers = cls._handlers_from_config(config, **kwargs)
         # noinspection PyProtectedMember
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
     @staticmethod
-    def _handlers_from_config(config: MinosConfig) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
-        builder = EnrouteBuilder(config.commands.service, config.queries.service, config=config)
-        decorators = builder.get_broker_command_query()
+    def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
+        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        decorators = builder.get_broker_command_query(config=config, **kwargs)
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers
 

@@ -54,14 +54,14 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        handlers = cls._handlers_from_config(config)
+        handlers = cls._handlers_from_config(config, **kwargs)
         # noinspection PyProtectedMember
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
     @staticmethod
-    def _handlers_from_config(config: MinosConfig) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
-        builder = EnrouteBuilder(config.commands.service, config.queries.service, config=config)
-        handlers = builder.get_broker_event()
+    def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
+        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        handlers = builder.get_broker_event(config=config, **kwargs)
         handlers = {decorator.topic: fn for decorator, fn in handlers.items()}
         return handlers
 

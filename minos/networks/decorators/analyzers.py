@@ -31,7 +31,8 @@ from .definitions import (
 class EnrouteAnalyzer:
     """Search decorators in specified class"""
 
-    def __init__(self, decorated: Union[str, Type], config: Optional[MinosConfig] = None):
+    # noinspection PyUnusedLocal
+    def __init__(self, decorated: Union[str, Type], config: Optional[MinosConfig] = None, **kwargs):
         if isinstance(decorated, str):
             decorated = import_module(decorated)
 

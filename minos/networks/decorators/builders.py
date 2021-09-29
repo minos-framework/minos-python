@@ -43,49 +43,48 @@ Handler = Callable[[Request], Awaitable[Response]]
 class EnrouteBuilder:
     """Enroute builder class."""
 
-    def __init__(self, *klasses: Union[str, Type], **kwargs):
+    def __init__(self, *klasses: Union[str, Type]):
         klasses = tuple((klass if not isinstance(klass, str) else import_module(klass)) for klass in klasses)
 
-        self._init_kwargs = kwargs
         self.klasses = klasses
 
-    def get_rest_command_query(self) -> dict[RestEnrouteDecorator, Handler]:
+    def get_rest_command_query(self, **kwargs) -> dict[RestEnrouteDecorator, Handler]:
         """Get the rest handlers for commands and queries.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         # noinspection PyTypeChecker
-        return self._build("get_rest_command_query")
+        return self._build("get_rest_command_query", **kwargs)
 
-    def get_broker_command_query(self) -> dict[BrokerEnrouteDecorator, Handler]:
+    def get_broker_command_query(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
         """Get the broker handlers for commands and queries.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         # noinspection PyTypeChecker
-        return self._build("get_broker_command_query")
+        return self._build("get_broker_command_query", **kwargs)
 
-    def get_broker_event(self) -> dict[BrokerEnrouteDecorator, Handler]:
+    def get_broker_event(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
         """Get the broker handlers for events.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         # noinspection PyTypeChecker
-        return self._build("get_broker_event")
+        return self._build("get_broker_event", **kwargs)
 
-    def get_periodic_event(self) -> dict[PeriodicEnrouteDecorator, Handler]:
+    def get_periodic_event(self, **kwargs) -> dict[PeriodicEnrouteDecorator, Handler]:
         """TODO
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
         """
         # noinspection PyTypeChecker
-        return self._build("get_periodic_event")
+        return self._build("get_periodic_event", **kwargs)
 
-    def _build(self, method_name: str) -> dict[EnrouteDecorator, Handler]:
+    def _build(self, method_name: str, **kwargs) -> dict[EnrouteDecorator, Handler]:
 
         ans = defaultdict(set)
         for klass in self.klasses:
-            self._build_klass(klass, method_name, ans)
+            self._build_klass(klass, method_name, ans, **kwargs)
 
         def _make_fn(d, fns: set[Handler]) -> Handler:
             if len(fns) == 1:
@@ -94,8 +93,8 @@ class EnrouteBuilder:
             if d.KIND != EnrouteDecoratorKind.Event:
                 raise MinosRedefinedEnrouteDecoratorException(f"{d!r} can be used only once.")
 
-            async def _fn(*args, **kwargs):
-                return await gather(*(fn(*args, **kwargs) for fn in fns))
+            async def _fn(*ag, **kw):
+                return await gather(*(fn(*ag, **kw) for fn in fns))
 
             return _fn
 
@@ -103,8 +102,8 @@ class EnrouteBuilder:
 
         return ans
 
-    def _build_klass(self, klass: type, method_name: str, ans: dict[EnrouteDecorator, set[Handler]]) -> None:
-        analyzer = EnrouteAnalyzer(klass, **self._init_kwargs)
+    def _build_klass(self, klass: type, method_name: str, ans: dict[EnrouteDecorator, set[Handler]], **kwargs) -> None:
+        analyzer = EnrouteAnalyzer(klass, **kwargs)
         mapping = getattr(analyzer, method_name)()
 
         for name, decorators in mapping.items():
@@ -112,8 +111,8 @@ class EnrouteBuilder:
                 ans[decorator].add(self._build_one(klass, name, decorator.pre_fn_name))
 
     @staticmethod
-    def _build_one(klass: type, name: str, pref_fn_name: str) -> Handler:
-        instance = klass()
+    def _build_one(klass: type, name: str, pref_fn_name: str, **kwargs) -> Handler:
+        instance = klass(**kwargs)
         fn = getattr(instance, name)
         pre_fn = getattr(instance, pref_fn_name, None)
 
