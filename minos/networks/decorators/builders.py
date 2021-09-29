@@ -37,7 +37,7 @@ from .definitions import (
     RestEnrouteDecorator,
 )
 
-Handler = Callable[[Request], Awaitable[Response]]
+Handler = Callable[[Request], Awaitable[Optional[Response]]]
 
 
 class EnrouteBuilder:
