@@ -73,6 +73,7 @@ from .rest import (
     RestService,
 )
 from .scheduling import (
+    PeriodicTask,
     SchedulingRequest,
     TaskScheduler,
     TaskSchedulerService,

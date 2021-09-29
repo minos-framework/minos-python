@@ -4,16 +4,14 @@ from __future__ import (
 
 import logging
 from asyncio import (
-    AbstractEventLoop,
+    Task,
+    create_task,
     gather,
-    get_event_loop,
     sleep,
+    wait_for,
 )
 from datetime import (
     timedelta,
-)
-from itertools import (
-    chain,
 )
 from typing import (
     Awaitable,
@@ -42,43 +40,46 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
-class TaskScheduler(MinosSetup):
+class PeriodicTask:
     """TODO"""
 
-    def __init__(
-        self, tasks: list[tuple[CronTab, Callable]], loop: Optional[AbstractEventLoop] = None, *args, **kwargs
-    ):
-        super().__init__(*args, **kwargs)
-        if loop is None:
-            loop = get_event_loop()
+    _task: Optional[Task]
 
-        self._tasks = tasks
-        self._loop = loop
-
-    @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> TaskScheduler:
-        command_decorators = EnrouteBuilder(config.commands.service, config).get_periodic_event()
-        service_decorators = EnrouteBuilder(config.queries.service, config).get_periodic_event()
-
-        tasks = [
-            (decorator.crontab, fn) for decorator, fn in chain(command_decorators.items(), service_decorators.items())
-        ]
-        return cls(tasks)
+    def __init__(self, crontab: CronTab, fn: Callable[[SchedulingRequest], Awaitable[None]]):
+        self.crontab = crontab
+        self.fn = fn
+        self._task = None
 
     async def start(self) -> None:
         """TODO
 
         :return: TODO
         """
+        self._task = create_task(self.callback())
 
-        await gather(*(self.callback(*task) for task in self._tasks))
-
-    @staticmethod
-    async def callback(crontab: CronTab, fn: Callable[[SchedulingRequest], Awaitable]) -> NoReturn:
+    @property
+    def started(self) -> bool:
         """TODO
 
-        :param crontab: TODO
-        :param fn: TODO
+        :return: TODO
+        """
+
+        return self._task is not None
+
+    async def stop(self, timeout: Optional[float] = None) -> None:
+        """TODO
+
+        :param timeout: TODO
+        :return: TODO
+        """
+        if self._task is not None:
+            self._task.cancel()
+            await wait_for(self._task, timeout)
+            self._task = None
+
+    async def callback(self) -> NoReturn:
+        """TODO
+
         :return: TODO
         """
 
@@ -86,17 +87,41 @@ class TaskScheduler(MinosSetup):
         while True:
             request = SchedulingRequest(now)
             try:
-                await fn(request)
+                await self.fn(request)
             except Exception as exc:  # TODO
                 logger.warning(f"Raised exception while executing task: {exc}")
             now = current_datetime()
-            delay = crontab.next(now)
+            delay = self.crontab.next(now)
             now += timedelta(seconds=delay)
             await sleep(delay)
 
-    async def stop(self) -> None:
+
+class TaskScheduler(MinosSetup):
+    """TODO"""
+
+    def __init__(self, tasks: list[PeriodicTask], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._tasks = tasks
+
+    @classmethod
+    def _from_config(cls, config: MinosConfig, **kwargs) -> TaskScheduler:
+        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        decorators = builder.get_periodic_event(config=config, **kwargs)
+        tasks = [PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()]
+        return cls(tasks, **kwargs)
+
+    async def start(self) -> None:
         """TODO
 
         :return: TODO
         """
-        pass
+
+        await gather(*(task.start() for task in self._tasks))
+
+    async def stop(self, timeout: Optional[float] = None) -> None:
+        """TODO
+
+        :param timeout: TODO
+        :return: TODO
+        """
+        await gather(*(task.stop(timeout) for task in self._tasks))
