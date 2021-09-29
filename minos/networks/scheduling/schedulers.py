@@ -2,16 +2,8 @@ from __future__ import (
     annotations,
 )
 
+import asyncio
 import logging
-from asyncio import (
-    CancelledError,
-    Task,
-    TimeoutError,
-    create_task,
-    gather,
-    sleep,
-    wait_for,
-)
 from contextlib import (
     suppress,
 )
@@ -79,7 +71,7 @@ class TaskScheduler(MinosSetup):
         :return: TODO
         """
 
-        await gather(*(task.start() for task in self._tasks))
+        await asyncio.gather(*(task.start() for task in self._tasks))
 
     async def stop(self, timeout: Optional[float] = None) -> None:
         """TODO
@@ -87,13 +79,13 @@ class TaskScheduler(MinosSetup):
         :param timeout: TODO
         :return: TODO
         """
-        await gather(*(task.stop(timeout=timeout) for task in self._tasks))
+        await asyncio.gather(*(task.stop(timeout=timeout) for task in self._tasks))
 
 
 class PeriodicTask:
     """TODO"""
 
-    _task: Optional[Task]
+    _task: Optional[asyncio.Task]
 
     def __init__(self, crontab: Union[str, CronTab], fn: Callable[[SchedulingRequest], Awaitable[None]]):
         if isinstance(crontab, str):
@@ -120,13 +112,6 @@ class PeriodicTask:
         """
         return self._fn
 
-    async def start(self) -> None:
-        """TODO
-
-        :return: TODO
-        """
-        self._task = create_task(self.run_forever())
-
     @property
     def started(self) -> bool:
         """TODO
@@ -137,12 +122,19 @@ class PeriodicTask:
         return self._task is not None
 
     @property
-    def running(self) -> bool:
+    def task(self) -> asyncio.Task:
         """TODO
 
         :return: TODO
         """
-        return self._running
+        return self._task
+
+    async def start(self) -> None:
+        """TODO
+
+        :return: TODO
+        """
+        self._task = asyncio.create_task(self.run_forever())
 
     async def stop(self, timeout: Optional[float] = None) -> None:
         """TODO
@@ -152,8 +144,8 @@ class PeriodicTask:
         """
         if self._task is not None:
             self._task.cancel()
-            with suppress(TimeoutError, CancelledError):
-                await wait_for(self._task, timeout)
+            with suppress(asyncio.TimeoutError, asyncio.CancelledError):
+                await asyncio.wait_for(self._task, timeout)
             self._task = None
 
     async def run_forever(self) -> NoReturn:
@@ -161,21 +153,34 @@ class PeriodicTask:
 
         :return: TODO
         """
+        now = current_datetime()
+        await asyncio.sleep(self._crontab.next(now))
+
         while True:
             now = current_datetime()
-            await gather(self.run_one(now), sleep(self._crontab.next(now)))
+            await asyncio.gather(asyncio.sleep(self._crontab.next(now)), self.run_once(now))
 
-    async def run_one(self, now: datetime) -> None:
+    @property
+    def running(self) -> bool:
+        """TODO
+
+        :return: TODO
+        """
+        return self._running
+
+    async def run_once(self, now: Optional[datetime] = None) -> None:
         """TODO
 
         :param now: TODO
         :return: TODO
         """
+        if now is None:
+            now = current_datetime()
 
         request = SchedulingRequest(now)
         try:
             self._running = True
-            with suppress(CancelledError):
+            with suppress(asyncio.CancelledError):
                 await self._fn(request)
         except Exception as exc:
             logger.warning(f"Raised exception while executing periodic task: {exc}")
