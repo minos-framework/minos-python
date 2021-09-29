@@ -6,9 +6,6 @@ import logging
 from inspect import (
     isawaitable,
 )
-from itertools import (
-    chain,
-)
 from typing import (
     Any,
     Awaitable,
@@ -63,15 +60,16 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        command_decorators = EnrouteBuilder(config.commands.service, config).get_broker_command_query()
-        query_decorators = EnrouteBuilder(config.queries.service, config).get_broker_command_query()
-
-        handlers = {
-            decorator.topic: fn for decorator, fn in chain(command_decorators.items(), query_decorators.items())
-        }
-
+        handlers = cls._handlers_from_config(config)
         # noinspection PyProtectedMember
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
+
+    @staticmethod
+    def _handlers_from_config(config: MinosConfig) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
+        builder = EnrouteBuilder(config.commands.service, config.queries.service, config=config)
+        decorators = builder.get_broker_command_query()
+        handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
+        return handlers
 
     async def dispatch_one(self, entry: HandlerEntry[Command]) -> None:
         """Dispatch one row.

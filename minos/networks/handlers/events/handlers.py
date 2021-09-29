@@ -12,9 +12,6 @@ from collections import (
 from inspect import (
     isawaitable,
 )
-from itertools import (
-    chain,
-)
 from operator import (
     attrgetter,
 )
@@ -63,23 +60,9 @@ class EventHandler(Handler):
 
     @staticmethod
     def _handlers_from_config(config: MinosConfig) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
-        command_decorators = EnrouteBuilder(config.commands.service, config).get_broker_event()
-        query_decorators = EnrouteBuilder(config.queries.service, config).get_broker_event()
-
-        handlers = defaultdict(set)
-        for decorator, fn in chain(command_decorators.items(), query_decorators.items()):
-            handlers[decorator.topic].add(fn)
-
-        def _make_fn(fns: set[Callable]) -> Callable:
-            if len(fns) == 1:
-                return next(iter(fns))
-
-            async def _fn(*args, **kwargs):
-                return await gather(*(fn(*args, **kwargs) for fn in fns))
-
-            return _fn
-
-        handlers = {topic: _make_fn(fns) for topic, fns in handlers.items()}
+        builder = EnrouteBuilder(config.commands.service, config.queries.service, config=config)
+        handlers = builder.get_broker_event()
+        handlers = {decorator.topic: fn for decorator, fn in handlers.items()}
         return handlers
 
     async def _dispatch_entries(self, entries: list[HandlerEntry[Event]]) -> None:
