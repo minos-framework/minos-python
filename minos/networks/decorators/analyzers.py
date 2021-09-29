@@ -74,9 +74,9 @@ class EnrouteAnalyzer:
         return self._get_items({BrokerEventEnrouteDecorator})
 
     def get_periodic_event(self) -> dict[str, set[PeriodicEventEnrouteDecorator]]:
-        """TODO
+        """Returns periodic event values.
 
-        :return: TODO
+        :return: A mapping with functions as keys and a sets of decorators as values.
         """
         # noinspection PyTypeChecker
         return self._get_items({PeriodicEventEnrouteDecorator})
