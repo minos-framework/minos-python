@@ -28,5 +28,9 @@ class CommandService:
         return HandlerResponse("update_order")
 
     @enroute.broker.event("TicketAdded")
-    def ticket_added(self, request: Request):
+    def ticket_added(self, request: Request) -> None:
         return "command_service_ticket_added"
+
+    @enroute.periodic.event("@daily")
+    def recompute_something(self, request: Request) -> None:
+        """For testing purposes."""

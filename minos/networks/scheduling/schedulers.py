@@ -23,6 +23,7 @@ from typing import (
     Callable,
     NoReturn,
     Optional,
+    Union,
 )
 
 from crontab import (
@@ -64,6 +65,14 @@ class TaskScheduler(MinosSetup):
         tasks = {PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()}
         return tasks
 
+    @property
+    def tasks(self) -> set[PeriodicTask]:
+        """TODO
+
+        :return: TODO
+        """
+        return self._tasks
+
     async def start(self) -> None:
         """TODO
 
@@ -78,7 +87,7 @@ class TaskScheduler(MinosSetup):
         :param timeout: TODO
         :return: TODO
         """
-        await gather(*(task.stop(timeout) for task in self._tasks))
+        await gather(*(task.stop(timeout=timeout) for task in self._tasks))
 
 
 class PeriodicTask:
@@ -86,7 +95,10 @@ class PeriodicTask:
 
     _task: Optional[Task]
 
-    def __init__(self, crontab: CronTab, fn: Callable[[SchedulingRequest], Awaitable[None]]):
+    def __init__(self, crontab: Union[str, CronTab], fn: Callable[[SchedulingRequest], Awaitable[None]]):
+        if isinstance(crontab, str):
+            crontab = CronTab(crontab)
+
         self._crontab = crontab
         self._fn = fn
         self._task = None
