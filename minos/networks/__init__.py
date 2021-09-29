@@ -75,6 +75,7 @@ from .rest import (
 from .scheduling import (
     PeriodicTask,
     SchedulingRequest,
+    SchedulingRequestContent,
     TaskScheduler,
     TaskSchedulerService,
 )
