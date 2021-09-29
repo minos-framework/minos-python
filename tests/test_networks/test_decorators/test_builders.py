@@ -26,9 +26,12 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         self.request = FakeRequest("test")
         self.builder = EnrouteBuilder(FakeService)
 
-    def test_instance_str(self):
+    def test_classes(self):
+        self.assertEqual((FakeService,), self.builder.classes)
+
+    def test_classes_str(self):
         builder = EnrouteBuilder(classname(FakeService))
-        self.assertEqual((FakeService,), builder.klasses)
+        self.assertEqual((FakeService,), builder.classes)
 
     async def test_get_rest_command_query(self):
         handlers = self.builder.get_rest_command_query()

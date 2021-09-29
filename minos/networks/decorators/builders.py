@@ -43,10 +43,10 @@ Handler = Callable[[Request], Awaitable[Response]]
 class EnrouteBuilder:
     """Enroute builder class."""
 
-    def __init__(self, *klasses: Union[str, Type]):
-        klasses = tuple((klass if not isinstance(klass, str) else import_module(klass)) for klass in klasses)
+    def __init__(self, *classes: Union[str, Type]):
+        classes = tuple((class_ if not isinstance(class_, str) else import_module(class_)) for class_ in classes)
 
-        self.klasses = klasses
+        self.classes = classes
 
     def get_rest_command_query(self, **kwargs) -> dict[RestEnrouteDecorator, Handler]:
         """Get the rest handlers for commands and queries.
@@ -100,23 +100,23 @@ class EnrouteBuilder:
 
     def _build_all_classes(self, method_name: str, **kwargs) -> dict[EnrouteDecorator, set[Handler]]:
         decomposed_handlers = defaultdict(set)
-        for klass in self.klasses:
-            self._build_one_class(klass, method_name, decomposed_handlers, **kwargs)
+        for class_ in self.classes:
+            self._build_one_class(class_, method_name, decomposed_handlers, **kwargs)
         return decomposed_handlers
 
     def _build_one_class(
-        self, klass: type, method_name: str, ans: dict[EnrouteDecorator, set[Handler]], **kwargs
+        self, class_: type, method_name: str, ans: dict[EnrouteDecorator, set[Handler]], **kwargs
     ) -> None:
-        analyzer = EnrouteAnalyzer(klass, **kwargs)
+        analyzer = EnrouteAnalyzer(class_, **kwargs)
         mapping = getattr(analyzer, method_name)()
 
         for name, decorators in mapping.items():
             for decorator in decorators:
-                ans[decorator].add(self._build_one_method(klass, name, decorator.pre_fn_name))
+                ans[decorator].add(self._build_one_method(class_, name, decorator.pre_fn_name))
 
     @staticmethod
-    def _build_one_method(klass: type, name: str, pref_fn_name: str, **kwargs) -> Handler:
-        instance = klass(**kwargs)
+    def _build_one_method(class_: type, name: str, pref_fn_name: str, **kwargs) -> Handler:
+        instance = class_(**kwargs)
         fn = getattr(instance, name)
         pre_fn = getattr(instance, pref_fn_name, None)
 
