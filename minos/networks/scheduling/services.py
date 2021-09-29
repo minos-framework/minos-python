@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class TaskSchedulerService(Service):
-    """TODO"""
+    """Task Scheduler Service class."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

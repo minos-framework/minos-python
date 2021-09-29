@@ -22,7 +22,7 @@ from ..messages import (
 
 
 class SchedulingRequest(Request):
-    """TODO"""
+    """Scheduling Request class."""
 
     def __init__(self, scheduled_at: datetime):
         super().__init__()
@@ -30,17 +30,17 @@ class SchedulingRequest(Request):
 
     @property
     def user(self) -> Optional[UUID]:
-        """TODO
+        """The user of the request.
 
-        :return: TODO
+        :return: Always return ``None`` as scheduled request are launched by the system.
         """
         return None
 
     async def content(self, **kwargs) -> SchedulingRequestContent:
-        """TODO
+        """Get the request content.
 
-        :param kwargs: TODO
-        :return: TODO
+        :param kwargs: Additional named arguments.
+        :return: A ``SchedulingRequestContent` intance.`.
         """
         return self._content
 
@@ -56,6 +56,6 @@ class SchedulingRequest(Request):
 
 
 class SchedulingRequestContent(DeclarativeModel):
-    """TODO"""
+    """Scheduling Request Content class."""
 
     scheduled_at: datetime

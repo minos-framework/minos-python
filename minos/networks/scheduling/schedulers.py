@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 class TaskScheduler(MinosSetup):
-    """TODO"""
+    """Task Scheduler class."""
 
     def __init__(self, tasks: set[PeriodicTask], *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,31 +59,31 @@ class TaskScheduler(MinosSetup):
 
     @property
     def tasks(self) -> set[PeriodicTask]:
-        """TODO
+        """Get the set of periodic tasks.
 
-        :return: TODO
+        :return: A ``set`` of ``PeriodicTask`` instances.
         """
         return self._tasks
 
     async def start(self) -> None:
-        """TODO
+        """Start the execution of periodic tasks.
 
-        :return: TODO
+        :return: This method does not return anything.
         """
 
         await asyncio.gather(*(task.start() for task in self._tasks))
 
     async def stop(self, timeout: Optional[float] = None) -> None:
-        """TODO
+        """Stop the execution of periodic tasks.
 
-        :param timeout: TODO
-        :return: TODO
+        :param timeout: An optional timeout expressed in seconds.
+        :return: This method does not return anything.
         """
         await asyncio.gather(*(task.stop(timeout=timeout) for task in self._tasks))
 
 
 class PeriodicTask:
-    """TODO"""
+    """Periodic Task class."""
 
     _task: Optional[asyncio.Task]
 
@@ -98,49 +98,49 @@ class PeriodicTask:
 
     @property
     def crontab(self) -> CronTab:
-        """TODO
+        """Get the crontab of the periodic task.
 
-        :return: TODO
+        :return: A ``CronTab`` instance.
         """
         return self._crontab
 
     @property
     def fn(self) -> Callable[[SchedulingRequest], Awaitable[None]]:
-        """TODO
+        """Get the function to be called periodically.
 
-        :return: TODO
+        :return: A function returning an awaitable.
         """
         return self._fn
 
     @property
     def started(self) -> bool:
-        """TODO
+        """Check if the periodic task has been started.
 
-        :return: TODO
+        :return: ``True`` if started or ``False`` otherwise.
         """
 
         return self._task is not None
 
     @property
     def task(self) -> asyncio.Task:
-        """TODO
+        """Get the asyncio task.
 
-        :return: TODO
+        :return: An ``asyncio.Task`` instance.
         """
         return self._task
 
     async def start(self) -> None:
-        """TODO
+        """Start the periodic task.
 
-        :return: TODO
+        :return: This method does not return anything.
         """
         self._task = asyncio.create_task(self.run_forever())
 
     async def stop(self, timeout: Optional[float] = None) -> None:
-        """TODO
+        """Stop the periodic task.
 
-        :param timeout: TODO
-        :return: TODO
+        :param timeout: An optional timeout expressed in seconds.
+        :return: This method does not return anything.
         """
         if self._task is not None:
             self._task.cancel()
@@ -149,9 +149,9 @@ class PeriodicTask:
             self._task = None
 
     async def run_forever(self) -> NoReturn:
-        """TODO
+        """Run the periodic function forever. This method is equivalent to start, but it keeps waiting until infinite.
 
-        :return: TODO
+        :return: This method never returns.
         """
         now = current_datetime()
         await asyncio.sleep(self._crontab.next(now))
@@ -162,17 +162,17 @@ class PeriodicTask:
 
     @property
     def running(self) -> bool:
-        """TODO
+        """Check if the periodic function is running.
 
-        :return: TODO
+        :return: ``True`` if it's running or ``False`` otherwise.
         """
         return self._running
 
     async def run_once(self, now: Optional[datetime] = None) -> None:
-        """TODO
+        """Run the periodic function one time.
 
-        :param now: TODO
-        :return: TODO
+        :param now: An optional datetime expressing the current datetime.
+        :return: This method does not return anything.
         """
         if now is None:
             now = current_datetime()
