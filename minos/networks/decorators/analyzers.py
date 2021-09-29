@@ -31,7 +31,8 @@ from .definitions import (
 class EnrouteAnalyzer:
     """Search decorators in specified class"""
 
-    def __init__(self, decorated: Union[str, Type], config: Optional[MinosConfig] = None):
+    # noinspection PyUnusedLocal
+    def __init__(self, decorated: Union[str, Type], config: Optional[MinosConfig] = None, **kwargs):
         if isinstance(decorated, str):
             decorated = import_module(decorated)
 
@@ -73,9 +74,9 @@ class EnrouteAnalyzer:
         return self._get_items({BrokerEventEnrouteDecorator})
 
     def get_periodic_event(self) -> dict[str, set[PeriodicEventEnrouteDecorator]]:
-        """TODO
+        """Returns periodic event values.
 
-        :return: TODO
+        :return: A mapping with functions as keys and a sets of decorators as values.
         """
         # noinspection PyTypeChecker
         return self._get_items({PeriodicEventEnrouteDecorator})
