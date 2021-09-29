@@ -4,14 +4,19 @@ from __future__ import (
 
 import logging
 from asyncio import (
+    CancelledError,
     Task,
+    TimeoutError,
     create_task,
     gather,
     sleep,
     wait_for,
 )
+from contextlib import (
+    suppress,
+)
 from datetime import (
-    timedelta,
+    datetime,
 )
 from typing import (
     Awaitable,
@@ -46,16 +51,33 @@ class PeriodicTask:
     _task: Optional[Task]
 
     def __init__(self, crontab: CronTab, fn: Callable[[SchedulingRequest], Awaitable[None]]):
-        self.crontab = crontab
-        self.fn = fn
+        self._crontab = crontab
+        self._fn = fn
         self._task = None
+        self._running = False
+
+    @property
+    def crontab(self) -> CronTab:
+        """TODO
+
+        :return: TODO
+        """
+        return self._crontab
+
+    @property
+    def fn(self) -> Callable[[SchedulingRequest], Awaitable[None]]:
+        """TODO
+
+        :return: TODO
+        """
+        return self._fn
 
     async def start(self) -> None:
         """TODO
 
         :return: TODO
         """
-        self._task = create_task(self.callback())
+        self._task = create_task(self.run_forever())
 
     @property
     def started(self) -> bool:
@@ -66,6 +88,14 @@ class PeriodicTask:
 
         return self._task is not None
 
+    @property
+    def running(self) -> bool:
+        """TODO
+
+        :return: TODO
+        """
+        return self._running
+
     async def stop(self, timeout: Optional[float] = None) -> None:
         """TODO
 
@@ -74,26 +104,35 @@ class PeriodicTask:
         """
         if self._task is not None:
             self._task.cancel()
-            await wait_for(self._task, timeout)
+            with suppress(TimeoutError, CancelledError):
+                await wait_for(self._task, timeout)
             self._task = None
 
-    async def callback(self) -> NoReturn:
+    async def run_forever(self) -> NoReturn:
         """TODO
 
         :return: TODO
         """
-
-        now = current_datetime()
         while True:
-            request = SchedulingRequest(now)
-            try:
-                await self.fn(request)
-            except Exception as exc:  # TODO
-                logger.warning(f"Raised exception while executing task: {exc}")
             now = current_datetime()
-            delay = self.crontab.next(now)
-            now += timedelta(seconds=delay)
-            await sleep(delay)
+            await gather(self.run_one(now), sleep(self._crontab.next(now)))
+
+    async def run_one(self, now: datetime) -> None:
+        """TODO
+
+        :param now: TODO
+        :return: TODO
+        """
+
+        request = SchedulingRequest(now)
+        try:
+            self._running = True
+            with suppress(CancelledError):
+                await self._fn(request)
+        except Exception as exc:
+            logger.warning(f"Raised exception while executing periodic task: {exc}")
+        finally:
+            self._running = False
 
 
 class TaskScheduler(MinosSetup):
