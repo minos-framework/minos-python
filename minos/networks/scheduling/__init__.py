@@ -1,11 +1,11 @@
 from .messages import (
-    SchedulingRequest,
-    SchedulingRequestContent,
+    ScheduledRequest,
+    ScheduledRequestContent,
 )
 from .schedulers import (
     PeriodicTask,
-    TaskScheduler,
+    PeriodicTaskScheduler,
 )
 from .services import (
-    TaskSchedulerService,
+    PeriodicTaskSchedulerService,
 )

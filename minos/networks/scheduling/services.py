@@ -8,13 +8,13 @@ from cached_property import (
 )
 
 from .schedulers import (
-    TaskScheduler,
+    PeriodicTaskScheduler,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class TaskSchedulerService(Service):
+class PeriodicTaskSchedulerService(Service):
     """Task Scheduler Service class."""
 
     def __init__(self, **kwargs):
@@ -45,9 +45,9 @@ class TaskSchedulerService(Service):
         await self.scheduler.destroy()
 
     @cached_property
-    def scheduler(self) -> TaskScheduler:
+    def scheduler(self) -> PeriodicTaskScheduler:
         """Get the service scheduler.
 
-        :return: A ``TaskScheduler`` instance.
+        :return: A ``PeriodicTaskScheduler`` instance.
         """
-        return TaskScheduler.from_config(**self._init_kwargs)
+        return PeriodicTaskScheduler.from_config(**self._init_kwargs)

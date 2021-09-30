@@ -16,18 +16,18 @@ from minos.common import (
 )
 from minos.networks import (
     PeriodicTask,
-    SchedulingRequest,
-    TaskScheduler,
+    PeriodicTaskScheduler,
+    ScheduledRequest,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class TestTaskScheduler(unittest.IsolatedAsyncioTestCase):
+class TestPeriodicTaskScheduler(unittest.IsolatedAsyncioTestCase):
     def test_from_config(self):
         config = MinosConfig(BASE_PATH / "test_config.yml")
-        scheduler = TaskScheduler.from_config(config)
+        scheduler = PeriodicTaskScheduler.from_config(config)
         self.assertEqual(1, len(scheduler.tasks))
         self.assertTrue(all(map(lambda t: isinstance(t, PeriodicTask), scheduler.tasks)))
 
@@ -35,7 +35,7 @@ class TestTaskScheduler(unittest.IsolatedAsyncioTestCase):
         # noinspection PyTypeChecker
         tasks = {PeriodicTask("@daily", None), PeriodicTask("@hourly", None)}
 
-        scheduler = TaskScheduler(tasks)
+        scheduler = PeriodicTaskScheduler(tasks)
 
         self.assertEqual(tasks, scheduler.tasks)
 
@@ -45,7 +45,7 @@ class TestTaskScheduler(unittest.IsolatedAsyncioTestCase):
 
         tasks = {tasks_1_mock, tasks_2_mock}
 
-        scheduler = TaskScheduler(tasks)
+        scheduler = PeriodicTaskScheduler(tasks)
 
         await scheduler.start()
 
@@ -61,7 +61,7 @@ class TestTaskScheduler(unittest.IsolatedAsyncioTestCase):
 
         tasks = {tasks_1_mock, tasks_2_mock}
 
-        scheduler = TaskScheduler(tasks)
+        scheduler = PeriodicTaskScheduler(tasks)
 
         await scheduler.stop(timeout=30)
 
@@ -118,7 +118,7 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, self.fn_mock.call_count)
 
         observed = self.fn_mock.call_args.args[0]
-        self.assertIsInstance(observed, SchedulingRequest)
+        self.assertIsInstance(observed, ScheduledRequest)
         self.assertEqual(now, (await observed.content()).scheduled_at)
 
     async def test_run_once_handle_exceptions(self) -> None:

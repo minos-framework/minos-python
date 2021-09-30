@@ -21,7 +21,7 @@ from ..messages import (
 )
 
 
-class SchedulingRequest(Request):
+class ScheduledRequest(Request):
     """Scheduling Request class."""
 
     def __init__(self, scheduled_at: datetime):
@@ -36,11 +36,11 @@ class SchedulingRequest(Request):
         """
         return None
 
-    async def content(self, **kwargs) -> SchedulingRequestContent:
+    async def content(self, **kwargs) -> ScheduledRequestContent:
         """Get the request content.
 
         :param kwargs: Additional named arguments.
-        :return: A ``SchedulingRequestContent` intance.`.
+        :return: A ``ScheduledRequestContent` intance.`.
         """
         return self._content
 
@@ -51,11 +51,11 @@ class SchedulingRequest(Request):
         return f"{type(self).__name__}({self._content!r})"
 
     @property
-    def _content(self) -> SchedulingRequestContent:
-        return SchedulingRequestContent(self._scheduled_at)
+    def _content(self) -> ScheduledRequestContent:
+        return ScheduledRequestContent(self._scheduled_at)
 
 
-class SchedulingRequestContent(DeclarativeModel):
+class ScheduledRequestContent(DeclarativeModel):
     """Scheduling Request Content class."""
 
     scheduled_at: datetime

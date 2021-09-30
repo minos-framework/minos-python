@@ -32,21 +32,21 @@ from ..decorators import (
     EnrouteBuilder,
 )
 from .messages import (
-    SchedulingRequest,
+    ScheduledRequest,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class TaskScheduler(MinosSetup):
-    """Task Scheduler class."""
+class PeriodicTaskScheduler(MinosSetup):
+    """Periodic Task Scheduler class."""
 
     def __init__(self, tasks: set[PeriodicTask], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._tasks = tasks
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> TaskScheduler:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> PeriodicTaskScheduler:
         tasks = cls._tasks_from_config(config, **kwargs)
         return cls(tasks, **kwargs)
 
@@ -87,7 +87,7 @@ class PeriodicTask:
 
     _task: Optional[asyncio.Task]
 
-    def __init__(self, crontab: Union[str, CronTab], fn: Callable[[SchedulingRequest], Awaitable[None]]):
+    def __init__(self, crontab: Union[str, CronTab], fn: Callable[[ScheduledRequest], Awaitable[None]]):
         if isinstance(crontab, str):
             crontab = CronTab(crontab)
 
@@ -105,7 +105,7 @@ class PeriodicTask:
         return self._crontab
 
     @property
-    def fn(self) -> Callable[[SchedulingRequest], Awaitable[None]]:
+    def fn(self) -> Callable[[ScheduledRequest], Awaitable[None]]:
         """Get the function to be called periodically.
 
         :return: A function returning an awaitable.
@@ -179,7 +179,7 @@ class PeriodicTask:
         if now is None:
             now = current_datetime()
 
-        request = SchedulingRequest(now)
+        request = ScheduledRequest(now)
         logger.info("Running periodic task...")
         try:
             self._running = True

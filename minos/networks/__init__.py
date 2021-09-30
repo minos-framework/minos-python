@@ -74,10 +74,10 @@ from .rest import (
 )
 from .scheduling import (
     PeriodicTask,
-    SchedulingRequest,
-    SchedulingRequestContent,
-    TaskScheduler,
-    TaskSchedulerService,
+    PeriodicTaskScheduler,
+    PeriodicTaskSchedulerService,
+    ScheduledRequest,
+    ScheduledRequestContent,
 )
 from .snapshots import (
     SnapshotService,

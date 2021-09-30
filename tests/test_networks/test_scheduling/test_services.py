@@ -11,27 +11,27 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    TaskScheduler,
-    TaskSchedulerService,
+    PeriodicTaskScheduler,
+    PeriodicTaskSchedulerService,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class TestTaskSchedulerService(PostgresAsyncTestCase):
+class TestPeriodicTaskSchedulerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
-        service = TaskSchedulerService(config=self.config)
+        service = PeriodicTaskSchedulerService(config=self.config)
         self.assertIsInstance(service, Service)
 
     def test_dispatcher(self):
-        service = TaskSchedulerService(config=self.config)
-        self.assertIsInstance(service.scheduler, TaskScheduler)
+        service = PeriodicTaskSchedulerService(config=self.config)
+        self.assertIsInstance(service.scheduler, PeriodicTaskScheduler)
 
     async def test_start_stop(self):
-        service = TaskSchedulerService(config=self.config)
+        service = PeriodicTaskSchedulerService(config=self.config)
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()

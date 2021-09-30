@@ -5,37 +5,37 @@ from minos.common import (
     current_datetime,
 )
 from minos.networks import (
-    SchedulingRequest,
-    SchedulingRequestContent,
+    ScheduledRequest,
+    ScheduledRequestContent,
 )
 
 
-class TestSchedulingRequest(unittest.IsolatedAsyncioTestCase):
+class TestScheduledRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.now = current_datetime()
-        self.request = SchedulingRequest(self.now)
+        self.request = ScheduledRequest(self.now)
 
     async def test_content(self):
-        self.assertEqual(SchedulingRequestContent(self.now), await self.request.content())
+        self.assertEqual(ScheduledRequestContent(self.now), await self.request.content())
 
     def test_user(self):
         self.assertIsNone(self.request.user)
 
     def test_eq(self):
-        self.assertEqual(self.request, SchedulingRequest(self.now))
-        self.assertNotEqual(self.request, SchedulingRequest(current_datetime()))
+        self.assertEqual(self.request, ScheduledRequest(self.now))
+        self.assertNotEqual(self.request, ScheduledRequest(current_datetime()))
 
     def test_repr(self):
-        self.assertEqual(f"SchedulingRequest(SchedulingRequestContent(scheduled_at={self.now!s}))", repr(self.request))
+        self.assertEqual(f"ScheduledRequest(ScheduledRequestContent(scheduled_at={self.now!s}))", repr(self.request))
 
 
-class TestSchedulingRequestContent(unittest.IsolatedAsyncioTestCase):
+class TestScheduledRequestContent(unittest.IsolatedAsyncioTestCase):
     def test_subclass(self):
-        self.assertTrue(issubclass(SchedulingRequestContent, DeclarativeModel))
+        self.assertTrue(issubclass(ScheduledRequestContent, DeclarativeModel))
 
     def test_scheduled_at(self):
         now = current_datetime()
-        content = SchedulingRequestContent(now)
+        content = ScheduledRequestContent(now)
         self.assertEqual(now, content.scheduled_at)
 
 
