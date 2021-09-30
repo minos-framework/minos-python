@@ -134,6 +134,7 @@ class PeriodicTask:
 
         :return: This method does not return anything.
         """
+        logger.info("Starting periodic task...")
         self._task = asyncio.create_task(self.run_forever())
 
     async def stop(self, timeout: Optional[float] = None) -> None:
@@ -143,6 +144,7 @@ class PeriodicTask:
         :return: This method does not return anything.
         """
         if self._task is not None:
+            logger.info("Stopping periodic task...")
             self._task.cancel()
             with suppress(asyncio.TimeoutError, asyncio.CancelledError):
                 await asyncio.wait_for(self._task, timeout)
@@ -178,6 +180,7 @@ class PeriodicTask:
             now = current_datetime()
 
         request = SchedulingRequest(now)
+        logger.info("Running periodic task...")
         try:
             self._running = True
             with suppress(asyncio.CancelledError):

@@ -41,6 +41,7 @@ class TaskSchedulerService(Service):
         :param exception: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
+        await self.scheduler.stop()
         await self.scheduler.destroy()
 
     @cached_property

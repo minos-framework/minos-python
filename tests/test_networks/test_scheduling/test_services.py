@@ -35,26 +35,31 @@ class TestTaskSchedulerService(PostgresAsyncTestCase):
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()
-        start = AsyncMock()
+        start_mock = AsyncMock()
+        stop_mock = AsyncMock()
 
         service.scheduler.setup = setup_mock
         service.scheduler.destroy = destroy_mock
-        service.scheduler.start = start
+        service.scheduler.start = start_mock
+        service.scheduler.stop = stop_mock
 
         await service.start()
 
         self.assertEqual(1, setup_mock.call_count)
-        self.assertEqual(1, start.call_count)
+        self.assertEqual(1, start_mock.call_count)
+        self.assertEqual(0, stop_mock.call_count)
         self.assertEqual(0, destroy_mock.call_count)
 
         setup_mock.reset_mock()
         destroy_mock.reset_mock()
-        start.reset_mock()
+        start_mock.reset_mock()
+        stop_mock.reset_mock()
 
         await service.stop()
 
         self.assertEqual(0, setup_mock.call_count)
-        self.assertEqual(0, start.call_count)
+        self.assertEqual(0, start_mock.call_count)
+        self.assertEqual(1, stop_mock.call_count)
         self.assertEqual(1, destroy_mock.call_count)
 
 
