@@ -20,3 +20,7 @@
 * Support `event` handling on `CommandService` inherited classes.
 * Parameterize `ModelRef` reference resolution.
 * Fix troubles related with dependency injections.
+
+## 0.0.5 (2021-10-04)
+
+* Now `ModelRef` resolving is ignored for for non-`AggregateDiff` events.
