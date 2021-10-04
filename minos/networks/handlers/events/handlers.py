@@ -12,9 +12,6 @@ from collections import (
 from inspect import (
     isawaitable,
 )
-from itertools import (
-    chain,
-)
 from operator import (
     attrgetter,
 )
@@ -27,7 +24,6 @@ from typing import (
 from minos.common import (
     Event,
     MinosConfig,
-    MinosException,
 )
 
 from ...decorators import (
@@ -57,29 +53,15 @@ class EventHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
-        handlers = cls._handlers_from_config(config)
+        handlers = cls._handlers_from_config(config, **kwargs)
         # noinspection PyProtectedMember
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
     @staticmethod
-    def _handlers_from_config(config: MinosConfig) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
-        command_decorators = EnrouteBuilder(config.commands.service, config).get_broker_event()
-        query_decorators = EnrouteBuilder(config.queries.service, config).get_broker_event()
-
-        handlers = defaultdict(set)
-        for decorator, fn in chain(command_decorators.items(), query_decorators.items()):
-            handlers[decorator.topic].add(fn)
-
-        def _make_fn(fns: set[Callable]) -> Callable:
-            if len(fns) == 1:
-                return next(iter(fns))
-
-            async def _fn(*args, **kwargs):
-                return await gather(*(fn(*args, **kwargs) for fn in fns))
-
-            return _fn
-
-        handlers = {topic: _make_fn(fns) for topic, fns in handlers.items()}
+    def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
+        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        handlers = builder.get_broker_event(config=config, **kwargs)
+        handlers = {decorator.topic: fn for decorator, fn in handlers.items()}
         return handlers
 
     async def _dispatch_entries(self, entries: list[HandlerEntry[Event]]) -> None:
@@ -123,10 +105,8 @@ class EventHandler(Handler):
                 if isawaitable(response):
                     await response
             except ResponseException as exc:
-                logger.info(f"Raised a user exception: {exc!s}")
-            except MinosException as exc:
-                logger.warning(f"Raised a 'minos' exception: {exc!r}")
+                logger.warning(f"Raised an application exception: {exc!s}")
             except Exception as exc:
-                logger.exception(f"Raised an exception: {exc!r}.")
+                logger.exception(f"Raised a system exception: {exc!r}")
 
         return _fn

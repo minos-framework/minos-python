@@ -6,9 +6,6 @@ import logging
 from inspect import (
     isawaitable,
 )
-from itertools import (
-    chain,
-)
 from typing import (
     Any,
     Awaitable,
@@ -28,7 +25,6 @@ from minos.common import (
     CommandStatus,
     MinosBroker,
     MinosConfig,
-    MinosException,
 )
 
 from ...decorators import (
@@ -63,15 +59,16 @@ class CommandHandler(Handler):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
-        command_decorators = EnrouteBuilder(config.commands.service, config).get_broker_command_query()
-        query_decorators = EnrouteBuilder(config.queries.service, config).get_broker_command_query()
-
-        handlers = {
-            decorator.topic: fn for decorator, fn in chain(command_decorators.items(), query_decorators.items())
-        }
-
+        handlers = cls._handlers_from_config(config, **kwargs)
         # noinspection PyProtectedMember
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
+
+    @staticmethod
+    def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
+        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        decorators = builder.get_broker_command_query(config=config, **kwargs)
+        handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
+        return handlers
 
     async def dispatch_one(self, entry: HandlerEntry[Command]) -> None:
         """Dispatch one row.
@@ -107,13 +104,10 @@ class CommandHandler(Handler):
                     response = await response.content()
                 return response, CommandStatus.SUCCESS
             except ResponseException as exc:
-                logger.info(f"Raised a user exception: {exc!s}")
+                logger.warning(f"Raised an application exception: {exc!s}")
                 return repr(exc), CommandStatus.ERROR
-            except MinosException as exc:
-                logger.warning(f"Raised a 'minos' exception: {exc!r}")
-                return repr(exc), CommandStatus.SYSTEM_ERROR
             except Exception as exc:
-                logger.exception(f"Raised an exception: {exc!r}.")
+                logger.exception(f"Raised a system exception: {exc!r}")
                 return repr(exc), CommandStatus.SYSTEM_ERROR
 
         return _fn

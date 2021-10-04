@@ -1,4 +1,4 @@
-__version__ = "0.0.17"
+__version__ = "0.0.18"
 
 from .brokers import (
     Broker,
@@ -18,6 +18,8 @@ from .decorators import (
     EnrouteBuilder,
     EnrouteDecorator,
     EnrouteDecoratorKind,
+    PeriodicEnrouteDecorator,
+    PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
@@ -69,6 +71,14 @@ from .rest import (
     RestResponse,
     RestResponseException,
     RestService,
+)
+from .scheduling import (
+    PeriodicTask,
+    PeriodicTaskScheduler,
+    PeriodicTaskSchedulerService,
+    ScheduledRequest,
+    ScheduledRequestContent,
+    ScheduledResponseException,
 )
 from .snapshots import (
     SnapshotService,

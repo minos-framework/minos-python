@@ -15,7 +15,6 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    MinosActionNotFoundException,
     Request,
     Response,
     RestHandler,
@@ -39,10 +38,6 @@ class _Cls:
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
         raise RestResponseException("")
-
-    @staticmethod
-    async def _fn_raises_minos(request: Request) -> Response:
-        raise MinosActionNotFoundException("")
 
     @staticmethod
     async def _fn_raises_exception(request: Request) -> Response:
@@ -95,11 +90,6 @@ class TestRestHandler(PostgresAsyncTestCase):
     async def test_get_callback_raises_response(self):
         handler = self.handler.get_callback(_Cls._fn_raises_response)
         with self.assertRaises(HTTPBadRequest):
-            await handler(MockedRequest({"foo": "bar"}))
-
-    async def test_get_callback_raises_minos(self):
-        handler = self.handler.get_callback(_Cls._fn_raises_minos)
-        with self.assertRaises(HTTPInternalServerError):
             await handler(MockedRequest({"foo": "bar"}))
 
     async def test_get_callback_raises_exception(self):

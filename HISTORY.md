@@ -103,3 +103,9 @@ History
 
 * Add support for multiple handling functions for events.
 * Fix troubles related with dependency injections.
+
+0.0.18 (2021-10-04)
+------------------
+
+* Add `PeriodicTask`, `PeriodicTaskScheduler` and `PeriodicTaskSchedulerService`.
+* Add `@enroute.periodic.event` decorator

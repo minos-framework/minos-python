@@ -9,9 +9,6 @@ from functools import (
 from inspect import (
     isawaitable,
 )
-from itertools import (
-    chain,
-)
 from typing import (
     Awaitable,
     Callable,
@@ -25,7 +22,6 @@ from aiohttp import (
 
 from minos.common import (
     MinosConfig,
-    MinosException,
     MinosSetup,
 )
 
@@ -70,12 +66,10 @@ class RestHandler(MinosSetup):
         return cls(host=host, port=port, endpoints=endpoints, **kwargs)
 
     @staticmethod
-    def _endpoints_from_config(config: MinosConfig) -> dict[(str, str), Callable]:
-        command_decorators = EnrouteBuilder(config.commands.service, config).get_rest_command_query()
-        query_decorators = EnrouteBuilder(config.queries.service, config).get_rest_command_query()
-
-        endpoints = chain(command_decorators.items(), query_decorators.items())
-        endpoints = {(decorator.url, decorator.method): fn for decorator, fn in endpoints}
+    def _endpoints_from_config(config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
+        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        decorators = builder.get_rest_command_query(config=config, **kwargs)
+        endpoints = {(decorator.url, decorator.method): fn for decorator, fn in decorators.items()}
         return endpoints
 
     @property
@@ -144,13 +138,10 @@ class RestHandler(MinosSetup):
                     return web.json_response()
                 return web.json_response(response)
             except ResponseException as exc:
-                logger.info(f"Raised a user exception: {exc!s}")
+                logger.warning(f"Raised an application exception: {exc!s}")
                 raise web.HTTPBadRequest(text=str(exc))
-            except MinosException as exc:
-                logger.warning(f"Raised a 'minos' exception: {exc!r}")
-                raise web.HTTPInternalServerError()
             except Exception as exc:
-                logger.exception(f"Raised an exception: {exc!r}.")
+                logger.exception(f"Raised a system exception: {exc!r}")
                 raise web.HTTPInternalServerError()
 
         return _fn
