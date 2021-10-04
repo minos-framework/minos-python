@@ -21,7 +21,6 @@ from minos.networks import (
     HandlerRequest,
     HandlerResponse,
     HandlerResponseException,
-    MinosActionNotFoundException,
     Request,
     Response,
 )
@@ -44,10 +43,6 @@ class _Cls:
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
         raise HandlerResponseException("foo")
-
-    @staticmethod
-    async def _fn_raises_minos(request: Request) -> Response:
-        raise MinosActionNotFoundException("bar")
 
     @staticmethod
     async def _fn_raises_exception(request: Request) -> Response:
@@ -115,11 +110,6 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
         expected = (repr(HandlerResponseException("foo")), CommandStatus.ERROR)
-        self.assertEqual(expected, await fn(self.command))
-
-    async def test_get_callback_raises_minos(self):
-        fn = self.handler.get_callback(_Cls._fn_raises_minos)
-        expected = (repr(MinosActionNotFoundException("bar")), CommandStatus.SYSTEM_ERROR)
         self.assertEqual(expected, await fn(self.command))
 
     async def test_get_callback_raises_exception(self):
