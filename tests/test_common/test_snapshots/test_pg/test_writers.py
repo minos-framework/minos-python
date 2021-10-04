@@ -90,8 +90,8 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
             async with PostgreSqlSnapshotWriter.from_config(config=self.config, repository=repository) as dispatcher:
                 await dispatcher.dispatch()
 
-            async with PostgreSqlSnapshotReader.from_config(config=self.config, repository=repository) as snapshot:
-                observed = [v async for v in snapshot.find_entries(Car.classname, Condition.TRUE)]
+            async with PostgreSqlSnapshotReader.from_config(config=self.config, repository=repository) as reader:
+                observed = [v async for v in reader.find_entries(Car.classname, Condition.TRUE, exclude_deleted=False)]
 
         # noinspection PyTypeChecker
         expected = [

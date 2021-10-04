@@ -107,6 +107,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
+        exclude_deleted: bool = True,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
         """Find a collection of ``SnapshotEntry`` instances based on a ``Condition``.
@@ -119,10 +120,13 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
+            entries are filtered.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
-        query, parameters = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit).build()
+        qb = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit, exclude_deleted)
+        query, parameters = qb.build()
 
         async with self.cursor() as cursor:
             # noinspection PyTypeChecker
