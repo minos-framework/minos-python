@@ -85,6 +85,10 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(expected, observed)
 
+    async def test_handle_not_aggregate_diff(self):
+        observed = await PreEventHandler.handle(56, self.saga_manager, resolve_references=False)
+        self.assertEqual(56, observed)
+
     async def test_handle_without_resolving_references(self):
         observed = await PreEventHandler.handle(self.diff, self.saga_manager, resolve_references=False)
         self.assertEqual(self.diff, observed)

@@ -1,3 +1,10 @@
+from __future__ import (
+    annotations,
+)
+
+from typing import (
+    TypeVar,
+)
 from uuid import (
     UUID,
 )
@@ -27,9 +34,7 @@ class PreEventHandler:
     """Pre Event Handler class."""
 
     @classmethod
-    async def handle(
-        cls, diff: AggregateDiff, saga_manager: MinosSagaManager, resolve_references: bool = True
-    ) -> AggregateDiff:
+    async def handle(cls, diff: T, saga_manager: MinosSagaManager, resolve_references: bool = True) -> T:
         """Handle pre event function.
 
         :param diff: The initial aggregate difference.
@@ -38,7 +43,7 @@ class PreEventHandler:
             without any modification.
         :return: The recomposed aggregate difference.
         """
-        if not resolve_references:
+        if not isinstance(diff, AggregateDiff) or not resolve_references:
             return diff
 
         try:
@@ -101,3 +106,6 @@ class PreEventHandler:
 
         diff = ModelRefInjector(diff, recovered).build()
         return SagaContext(diff=diff)
+
+
+T = TypeVar("T")
