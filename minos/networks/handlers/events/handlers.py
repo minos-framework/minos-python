@@ -24,7 +24,6 @@ from typing import (
 from minos.common import (
     Event,
     MinosConfig,
-    MinosException,
 )
 
 from ...decorators import (
@@ -106,10 +105,8 @@ class EventHandler(Handler):
                 if isawaitable(response):
                     await response
             except ResponseException as exc:
-                logger.info(f"Raised a user exception: {exc!s}")
-            except MinosException as exc:
-                logger.warning(f"Raised a 'minos' exception: {exc!r}")
+                logger.warning(f"Raised an application exception: {exc!s}")
             except Exception as exc:
-                logger.exception(f"Raised an exception: {exc!r}.")
+                logger.exception(f"Raised a system exception: {exc!r}")
 
         return _fn

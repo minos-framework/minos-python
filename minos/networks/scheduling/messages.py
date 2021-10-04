@@ -18,6 +18,7 @@ from minos.common import (
 
 from ..messages import (
     Request,
+    ResponseException,
 )
 
 
@@ -59,3 +60,7 @@ class ScheduledRequestContent(DeclarativeModel):
     """Scheduling Request Content class."""
 
     scheduled_at: datetime
+
+
+class ScheduledResponseException(ResponseException):
+    """Scheduled Response Exception class."""

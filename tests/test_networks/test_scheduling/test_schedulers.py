@@ -18,6 +18,7 @@ from minos.networks import (
     PeriodicTask,
     PeriodicTaskScheduler,
     ScheduledRequest,
+    ScheduledResponseException,
 )
 from tests.utils import (
     BASE_PATH,
@@ -126,6 +127,9 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
         await self.periodic.run_once()
 
         self.fn_mock.side_effect = Exception
+        await self.periodic.run_once()
+
+        self.fn_mock.side_effect = ScheduledResponseException("")
         await self.periodic.run_once()
 
         self.assertTrue(True)

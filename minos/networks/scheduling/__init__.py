@@ -1,6 +1,7 @@
 from .messages import (
     ScheduledRequest,
     ScheduledRequestContent,
+    ScheduledResponseException,
 )
 from .schedulers import (
     PeriodicTask,

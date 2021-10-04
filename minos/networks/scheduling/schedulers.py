@@ -10,6 +10,9 @@ from contextlib import (
 from datetime import (
     datetime,
 )
+from inspect import (
+    isawaitable,
+)
 from typing import (
     Awaitable,
     Callable,
@@ -30,6 +33,9 @@ from minos.common import (
 
 from ..decorators import (
     EnrouteBuilder,
+)
+from ..messages import (
+    ResponseException,
 )
 from .messages import (
     ScheduledRequest,
@@ -184,8 +190,12 @@ class PeriodicTask:
         try:
             self._running = True
             with suppress(asyncio.CancelledError):
-                await self._fn(request)
+                response = self._fn(request)
+                if isawaitable(response):
+                    await response
+        except ResponseException as exc:
+            logger.warning(f"Raised an application exception: {exc!s}")
         except Exception as exc:
-            logger.warning(f"Raised exception while executing periodic task: {exc}")
+            logger.exception(f"Raised a system exception: {exc!r}")
         finally:
             self._running = False

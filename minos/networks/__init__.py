@@ -78,6 +78,7 @@ from .scheduling import (
     PeriodicTaskSchedulerService,
     ScheduledRequest,
     ScheduledRequestContent,
+    ScheduledResponseException,
 )
 from .snapshots import (
     SnapshotService,

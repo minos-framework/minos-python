@@ -25,7 +25,6 @@ from minos.common import (
     CommandStatus,
     MinosBroker,
     MinosConfig,
-    MinosException,
 )
 
 from ...decorators import (
@@ -105,13 +104,10 @@ class CommandHandler(Handler):
                     response = await response.content()
                 return response, CommandStatus.SUCCESS
             except ResponseException as exc:
-                logger.info(f"Raised a user exception: {exc!s}")
+                logger.warning(f"Raised an application exception: {exc!s}")
                 return repr(exc), CommandStatus.ERROR
-            except MinosException as exc:
-                logger.warning(f"Raised a 'minos' exception: {exc!r}")
-                return repr(exc), CommandStatus.SYSTEM_ERROR
             except Exception as exc:
-                logger.exception(f"Raised an exception: {exc!r}.")
+                logger.exception(f"Raised a system exception: {exc!r}")
                 return repr(exc), CommandStatus.SYSTEM_ERROR
 
         return _fn

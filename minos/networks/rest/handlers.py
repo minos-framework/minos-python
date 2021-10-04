@@ -22,7 +22,6 @@ from aiohttp import (
 
 from minos.common import (
     MinosConfig,
-    MinosException,
     MinosSetup,
 )
 
@@ -139,13 +138,10 @@ class RestHandler(MinosSetup):
                     return web.json_response()
                 return web.json_response(response)
             except ResponseException as exc:
-                logger.info(f"Raised a user exception: {exc!s}")
+                logger.warning(f"Raised an application exception: {exc!s}")
                 raise web.HTTPBadRequest(text=str(exc))
-            except MinosException as exc:
-                logger.warning(f"Raised a 'minos' exception: {exc!r}")
-                raise web.HTTPInternalServerError()
             except Exception as exc:
-                logger.exception(f"Raised an exception: {exc!r}.")
+                logger.exception(f"Raised a system exception: {exc!r}")
                 raise web.HTTPInternalServerError()
 
         return _fn
