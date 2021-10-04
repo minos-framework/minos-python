@@ -30,13 +30,15 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(Condition.TRUE, qb.condition)
         self.assertEqual(None, qb.ordering)
         self.assertEqual(None, qb.limit)
+        self.assertFalse(qb.exclude_deleted)
 
     def test_constructor_full(self):
-        qb = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10)
+        qb = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True)
         self.assertEqual("path.to.Aggregate", qb.aggregate_name)
         self.assertEqual(Condition.TRUE, qb.condition)
         self.assertEqual(Ordering.ASC("name"), qb.ordering)
         self.assertEqual(10, qb.limit)
+        self.assertTrue(qb.exclude_deleted)
 
     def test_build_raises(self):
         with self.assertRaises(ValueError):
@@ -287,6 +289,18 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "(((data#>'{age}' < %(hello)s::jsonb) OR (data#>'{level}' < %(goodbye)s::jsonb)))"
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1, "goodbye": 3}
+
+        self.assertEqual(expected_query, await self._flatten_query(observed[0]))
+        self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
+
+    async def test_build_exclude_deleted(self):
+        observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, exclude_deleted=True).build()
+        expected_query = (
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "FROM snapshot "
+            "WHERE (aggregate_name = %(aggregate_name)s) AND (TRUE) AND (data IS NOT NULL)"
+        )
+        expected_parameters = {"aggregate_name": "path.to.Aggregate"}
 
         self.assertEqual(expected_query, await self._flatten_query(observed[0]))
         self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
