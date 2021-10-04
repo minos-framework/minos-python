@@ -96,10 +96,6 @@ class PostgreSqlSnapshotQueryBuilder:
 
         return query
 
-    @staticmethod
-    def _exclude_removed() -> Composable:
-        return SQL("data IS NOT NULL")
-
     def _build_condition(self, condition: _Condition) -> Composable:
         if isinstance(condition, _NotCondition):
             return self._build_condition_not(condition)
