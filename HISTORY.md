@@ -194,3 +194,8 @@ History
 * Fix `Optional[ModelRef[T]]` behaviour.
 * Remove `events` section from `MinosConfig`.
 * Fix troubles related with dependency injections.
+
+0.1.15 (2021-10-04)
+--------------------
+
+* Fix bug from `PostgreSqlSnapshotReader` that returned already deleted aggregates when `Condition.TRUE` was passed.
