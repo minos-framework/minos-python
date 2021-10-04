@@ -37,6 +37,7 @@ aiopg = "^1.2.1"
 aiohttp = "^3.7.4"
 dependency-injector = "^4.32.2"
 minos-microservice-common = "^0.1.13"
+crontab = "^0.23.0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"
