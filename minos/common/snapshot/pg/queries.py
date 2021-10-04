@@ -56,11 +56,13 @@ class PostgreSqlSnapshotQueryBuilder:
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
+        exclude_deleted: bool = False,
     ):
         self.aggregate_name = aggregate_name
         self.condition = condition
         self.ordering = ordering
         self.limit = limit
+        self.exclude_deleted = exclude_deleted
         self._parameters = None
 
     def build(self) -> tuple[Composable, dict[str, Any]]:
@@ -83,6 +85,9 @@ class PostgreSqlSnapshotQueryBuilder:
             [_SELECT_MULTIPLE_ENTRIES_QUERY, SQL("({})").format(self._build_condition(self.condition))]
         )
 
+        if self.exclude_deleted:
+            query = SQL(" AND ").join([query, _EXCLUDE_DELETED_CONDITION])
+
         if self.ordering is not None:
             query = SQL(" ").join([query, self._build_ordering(self.ordering)])
 
@@ -90,6 +95,10 @@ class PostgreSqlSnapshotQueryBuilder:
             query = SQL(" ").join([query, self._build_limit(self.limit)])
 
         return query
+
+    @staticmethod
+    def _exclude_removed() -> Composable:
+        return SQL("data IS NOT NULL")
 
     def _build_condition(self, condition: _Condition) -> Composable:
         if isinstance(condition, _NotCondition):
@@ -197,3 +206,5 @@ _SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
     "FROM snapshot "
     "WHERE (aggregate_name = %(aggregate_name)s)"
 )
+
+_EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")

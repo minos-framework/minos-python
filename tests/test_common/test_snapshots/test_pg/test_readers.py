@@ -128,7 +128,7 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         ]
         self.assertEqual(expected, observed)
 
-    async def test_get_with_duplicates(self):
+    async def test_find_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
         condition = Condition.IN("uuid", uuids)
         async with await self._populate():
@@ -177,6 +177,32 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
             async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 condition = Condition.EQUAL("color", "blue")
                 iterable = snapshot.find("tests.aggregate_classes.Car", condition)
+                observed = [v async for v in iterable]
+
+        expected = [
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_2,
+                version=2,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
+            ),
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_3,
+                version=1,
+                created_at=observed[1].created_at,
+                updated_at=observed[1].updated_at,
+            ),
+        ]
+        self.assertEqual(expected, observed)
+
+    async def test_find_all(self):
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
+                iterable = snapshot.find("tests.aggregate_classes.Car", Condition.TRUE)
                 observed = [v async for v in iterable]
 
         expected = [
