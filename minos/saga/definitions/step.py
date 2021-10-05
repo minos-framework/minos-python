@@ -78,9 +78,9 @@ class SagaStep:
         return cls(**current)
 
     def on_execute(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
-        """Invoke a new participant method.
+        """On execute method.
 
-        :param callback: The callback function used for the request contents preparation.
+        :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
@@ -92,9 +92,9 @@ class SagaStep:
         return self
 
     def on_failure(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
-        """With compensation method.
+        """On failure method.
 
-        :param callback: The callback function used for the request contents preparation.
+        :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
@@ -106,9 +106,9 @@ class SagaStep:
         return self
 
     def on_success(self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
-        """On reply method.
+        """On success method.
 
-        :param callback: The callback function used to handle the invoke participant response.
+        :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
@@ -118,14 +118,6 @@ class SagaStep:
         self.on_success_operation = SagaOperation(callback, parameters)
 
         return self
-
-    @property
-    def has_reply(self) -> bool:
-        """Check if the step contains a reply operation or not.
-
-        :return: A ``bool`` instance.
-        """
-        return self.on_success_operation is not None
 
     def step(self, *args, **kwargs) -> SagaStep:
         """Create a new step in the ``Saga``.

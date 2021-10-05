@@ -104,14 +104,6 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(MinosUndefinedOnExecuteException):
             SagaStep(None).on_failure(send_delete_ticket).validate()
 
-    def test_has_reply_true(self):
-        step = SagaStep(send_create_ticket).on_success(handle_ticket_success)
-        self.assertTrue(step.has_reply)
-
-    def test_has_reply_false(self):
-        step = SagaStep(send_create_ticket)
-        self.assertFalse(step.has_reply)
-
     def test_raw(self):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
 

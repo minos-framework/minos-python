@@ -30,7 +30,7 @@ class MinosSagaEmptyStepException(MinosSagaStepException):
 
 
 class MinosMultipleOnExecuteException(MinosSagaStepException):
-    """Exception to be raised when multiple invoke participant methods are defined."""
+    """Exception to be raised when multiple on execute methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -39,7 +39,7 @@ class MinosMultipleOnExecuteException(MinosSagaStepException):
 
 
 class MinosMultipleOnFailureException(MinosSagaStepException):
-    """Exception to be raised when multiple with compensation methods are defined."""
+    """Exception to be raised when multiple on failure methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -48,7 +48,7 @@ class MinosMultipleOnFailureException(MinosSagaStepException):
 
 
 class MinosMultipleOnSuccessException(MinosSagaStepException):
-    """Exception to be raised when multiple on reply methods are defined."""
+    """Exception to be raised when multiple on success methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
@@ -66,7 +66,7 @@ class MinosAlreadyOnSagaException(MinosSagaStepException):
 
 
 class MinosUndefinedOnExecuteException(MinosSagaStepException):
-    """Exception to be raised when the invoke participant method is not defined."""
+    """Exception to be raised when the on execute method is not defined."""
 
     def __init__(self, message: str = None):
         if message is None:

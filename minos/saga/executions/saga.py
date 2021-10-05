@@ -195,7 +195,7 @@ class SagaExecution:
             self.context = new_context
 
     async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> None:
-        """Revert the invoke participant operation with a with compensation operation.
+        """Revert the executed operation with a compensatory operation.
 
         :param reply_topic: The topic in which to receive the future replies.
         :param args: Additional positional arguments.
