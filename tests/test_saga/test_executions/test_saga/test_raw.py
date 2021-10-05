@@ -12,40 +12,19 @@ from minos.common import (
 )
 from minos.saga import (
     MinosSagaPausedExecutionStepException,
-    Saga,
     SagaContext,
     SagaExecution,
 )
 from tests.utils import (
+    ADD_ORDER,
     BASE_PATH,
     Foo,
     NaiveBroker,
     fake_reply,
-    handle_order_success,
-    handle_ticket_success_raises,
-    send_create_order,
-    send_create_ticket,
-    send_delete_order,
-    send_delete_ticket,
 )
 
 
 class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.saga = (
-            Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .with_compensation(send_delete_ticket)
-            .on_reply(handle_ticket_success_raises)
-            .commit()
-        )
-
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
@@ -55,13 +34,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     def test_from_raw(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(self.saga)
+            expected = SagaExecution.from_saga(ADD_ORDER)
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
     def test_created(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            execution = SagaExecution.from_saga(self.saga)
+            execution = SagaExecution.from_saga(ADD_ORDER)
 
         expected = {
             "already_rollback": False,
@@ -76,7 +55,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     },
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                        "on_reply": {"callback": "tests.utils.handle_ticket_success_raises"},
+                        "on_reply": {"callback": "tests.utils.handle_ticket_success"},
                         "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
@@ -106,7 +85,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     },
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                        "on_reply": {"callback": "tests.utils.handle_ticket_success_raises"},
+                        "on_reply": {"callback": "tests.utils.handle_ticket_success"},
                         "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
@@ -126,7 +105,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         }
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(self.saga)
+            expected = SagaExecution.from_saga(ADD_ORDER)
             with self.assertRaises(MinosSagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
@@ -147,7 +126,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     },
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                        "on_reply": {"callback": "tests.utils.handle_ticket_success_raises"},
+                        "on_reply": {"callback": "tests.utils.handle_ticket_success"},
                         "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
@@ -166,7 +145,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "paused_step": {
                 "definition": {
                     "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                    "on_reply": {"callback": "tests.utils.handle_ticket_success_raises"},
+                    "on_reply": {"callback": "tests.utils.handle_ticket_success"},
                     "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
                 },
                 "status": "paused-on-reply",
@@ -177,7 +156,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         }
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(self.saga)
+            expected = SagaExecution.from_saga(ADD_ORDER)
             with self.assertRaises(MinosSagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 

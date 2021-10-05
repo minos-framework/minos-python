@@ -14,11 +14,10 @@ from minos.saga import (
     identity_fn,
 )
 from tests.utils import (
+    ADD_ORDER,
     BASE_PATH,
     commit_callback,
-    handle_ticket_success,
     send_create_order,
-    send_create_ticket,
     send_delete_order,
     send_delete_ticket,
 )
@@ -79,7 +78,7 @@ class TestSaga(unittest.TestCase):
 
     def test_missing_send_raises(self):
         with self.assertRaises(MinosSagaException):
-            (Saga().step().with_compensation(send_delete_ticket).commit())
+            Saga().step().with_compensation(send_delete_ticket).commit()
 
     def test_build_execution(self):
         saga = Saga().step().invoke_participant(send_create_order).with_compensation(send_delete_order).commit()
@@ -98,28 +97,19 @@ class TestSaga(unittest.TestCase):
             Saga().step(step)
 
     def test_raw(self):
-        saga = (
-            Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
-            .commit()
-        )
+        saga = ADD_ORDER
         expected = {
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                    "on_reply": None,
+                    "on_reply": {"callback": "tests.utils.handle_order_success"},
                     "with_compensation": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
                     "on_reply": {"callback": "tests.utils.handle_ticket_success"},
-                    "with_compensation": None,
+                    "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
                 },
             ],
         }
@@ -131,40 +121,20 @@ class TestSaga(unittest.TestCase):
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                    "on_reply": None,
+                    "on_reply": {"callback": "tests.utils.handle_order_success"},
                     "with_compensation": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
                     "on_reply": {"callback": "tests.utils.handle_ticket_success"},
-                    "with_compensation": None,
+                    "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
                 },
             ],
         }
-        expected = (
-            Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
-            .commit()
-        )
-        self.assertEqual(expected, Saga.from_raw(raw))
+        self.assertEqual(ADD_ORDER, Saga.from_raw(raw))
 
     def test_from_raw_already(self):
-        expected = (
-            Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
-            .commit()
-        )
-        self.assertEqual(expected, Saga.from_raw(expected))
+        self.assertEqual(ADD_ORDER, Saga.from_raw(ADD_ORDER))
 
 
 if __name__ == "__main__":

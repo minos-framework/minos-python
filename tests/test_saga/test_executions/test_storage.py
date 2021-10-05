@@ -6,43 +6,25 @@ from shutil import (
 from minos.saga import (
     MinosSagaExecutionNotFoundException,
     MinosSagaPausedExecutionStepException,
-    Saga,
     SagaExecution,
     SagaExecutionStorage,
 )
 from tests.utils import (
+    ADD_ORDER,
     BASE_PATH,
     Foo,
     NaiveBroker,
     fake_reply,
-    handle_order_success,
-    handle_ticket_success_raises,
-    send_create_order,
-    send_create_ticket,
-    send_delete_order,
-    send_delete_ticket,
 )
 
 
-class TestMinosLocalState(unittest.IsolatedAsyncioTestCase):
+class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     async def asyncSetUp(self) -> None:
         self.broker = NaiveBroker()
-        self.saga = (
-            Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .with_compensation(send_delete_ticket)
-            .on_reply(handle_ticket_success_raises)
-            .commit()
-        )
 
-        execution = SagaExecution.from_saga(self.saga)
+        execution = SagaExecution.from_saga(ADD_ORDER)
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
 
@@ -68,7 +50,7 @@ class TestMinosLocalState(unittest.IsolatedAsyncioTestCase):
         storage.store(self.execution)
         self.assertEqual(self.execution, storage.load(self.execution.uuid))
 
-        another = SagaExecution.from_saga(self.saga)
+        another = SagaExecution.from_saga(ADD_ORDER)
         another.uuid = self.execution.uuid
         storage.store(another)
 
