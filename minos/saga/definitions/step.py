@@ -122,8 +122,8 @@ class SagaStep:
     def step(self, *args, **kwargs) -> SagaStep:
         """Create a new step in the ``Saga``.
 
-        :param args: TODO
-        :param kwargs: TODO
+        :param args: Additional positional parameters.
+        :param kwargs: Additional named parameters.
         :return: A new ``SagaStep`` instance.
         """
         self.validate()
