@@ -14,11 +14,10 @@ from minos.saga import (
     identity_fn,
 )
 from tests.utils import (
+    ADD_ORDER,
     BASE_PATH,
     commit_callback,
-    handle_ticket_success,
     send_create_order,
-    send_create_ticket,
     send_delete_order,
     send_delete_ticket,
 )
@@ -72,7 +71,7 @@ class TestSaga(unittest.TestCase):
 
     def test_missing_send_raises(self):
         with self.assertRaises(MinosSagaException):
-            (Saga().step().on_failure(send_delete_ticket).commit())
+            Saga().step().on_failure(send_delete_ticket).commit()
 
     def test_build_execution(self):
         saga = Saga().step(send_create_order).on_failure(send_delete_order).commit()
@@ -91,26 +90,19 @@ class TestSaga(unittest.TestCase):
             Saga().step(step)
 
     def test_raw(self):
-        saga = (
-            Saga()
-            .step(send_create_order)
-            .on_failure(send_delete_order)
-            .step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .commit()
-        )
+        saga = ADD_ORDER
         expected = {
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
                     "on_execute": {"callback": "tests.utils.send_create_order"},
-                    "on_success": None,
+                    "on_success": {"callback": "tests.utils.handle_order_success"},
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
-                    "on_failure": None,
+                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                 },
             ],
         }
@@ -122,36 +114,20 @@ class TestSaga(unittest.TestCase):
             "steps": [
                 {
                     "on_execute": {"callback": "tests.utils.send_create_order"},
-                    "on_success": None,
+                    "on_success": {"callback": "tests.utils.handle_order_success"},
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
-                    "on_failure": None,
+                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                 },
             ],
         }
-        expected = (
-            Saga()
-            .step(send_create_order)
-            .on_failure(send_delete_order)
-            .step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .commit()
-        )
-        self.assertEqual(expected, Saga.from_raw(raw))
+        self.assertEqual(ADD_ORDER, Saga.from_raw(raw))
 
     def test_from_raw_already(self):
-        expected = (
-            Saga()
-            .step(send_create_order)
-            .on_failure(send_delete_order)
-            .step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .commit()
-        )
-        self.assertEqual(expected, Saga.from_raw(expected))
+        self.assertEqual(ADD_ORDER, Saga.from_raw(ADD_ORDER))
 
 
 if __name__ == "__main__":
