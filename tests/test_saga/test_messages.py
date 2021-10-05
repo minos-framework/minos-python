@@ -11,7 +11,11 @@ class TestSagaRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.request = SagaRequest("UpdateProductPrice", 56)
 
-    def test_targetd(self):
+    async def test_no_content(self):
+        request = SagaRequest("UpdateProductPrice")
+        self.assertIsNone(await request.content())
+
+    def test_target(self):
         self.assertEqual("UpdateProductPrice", self.request.target)
 
     async def test_content(self):
