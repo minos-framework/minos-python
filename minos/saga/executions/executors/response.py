@@ -4,7 +4,6 @@ from typing import (
 
 from minos.common import (
     CommandReply,
-    CommandStatus,
 )
 
 from ...context import (
@@ -14,7 +13,6 @@ from ...definitions import (
     SagaOperation,
 )
 from ...exceptions import (
-    MinosCommandReplyFailedException,
     MinosSagaExecutorException,
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
@@ -45,9 +43,6 @@ class ResponseExecutor(LocalExecutor):
         """
         if reply is None:
             raise MinosSagaPausedExecutionStepException()
-
-        if reply.status != CommandStatus.SUCCESS:
-            raise MinosCommandReplyFailedException(f"CommandReply failed with {reply.status!s} status: {reply.data!s}")
 
         if operation is None:
             return context

@@ -47,12 +47,15 @@ class SagaStepStatus(Enum):
     RunningOnExecute = "running-on-execute"
     FinishedOnExecute = "finished-on-execute"
     ErroredOnExecute = "errored-on-execute"
+    PausedByOnExecute = "paused-by-on-execute"
+    ErroredByOnExecute = "errored-by-on-execute"
     RunningOnFailure = "running-on-failure"
     PausedOnFailure = "paused-on-failure"
     ErroredOnFailure = "errored-on-failure"
     RunningOnSuccess = "running-on-success"
-    PausedOnSuccess = "paused-on-success"
     ErroredOnSuccess = "errored-on-success"
+    RunningOnError = "running-on-error"
+    ErroredOnError = "errored-on-error"
     Finished = "finished"
 
     @classmethod

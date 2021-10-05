@@ -54,7 +54,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(context, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.PausedOnSuccess, execution.status)
+        self.assertEqual(SagaStepStatus.PausedByOnExecute, execution.status)
 
         reply = fake_reply(status=CommandStatus.SUCCESS)
         await execution.execute(context, reply=reply, **self.execute_kwargs)
@@ -81,13 +81,13 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(context, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.PausedOnSuccess, execution.status)
+        self.assertEqual(SagaStepStatus.PausedByOnExecute, execution.status)
 
-        reply = fake_reply(status=CommandStatus.ERROR)
+        reply = fake_reply(status=CommandStatus.SYSTEM_ERROR)
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 
-        self.assertEqual(SagaStepStatus.ErroredOnSuccess, execution.status)
+        self.assertEqual(SagaStepStatus.ErroredByOnExecute, execution.status)
 
     async def test_execute_on_execute_with_on_success(self):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success)
@@ -98,7 +98,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(context, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.PausedOnSuccess, execution.status)
+        self.assertEqual(SagaStepStatus.PausedByOnExecute, execution.status)
 
         reply = fake_reply(Foo("foo"))
         await execution.execute(context, reply=reply, **self.execute_kwargs)
