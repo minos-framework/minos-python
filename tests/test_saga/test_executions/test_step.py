@@ -174,14 +174,14 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             "status": "created",
         }
         expected = SagaStepExecution(
-            (SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)),
+            SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
         )
         observed = SagaStepExecution.from_raw(raw)
         self.assertEqual(expected, observed)
 
     def test_from_raw_already(self):
         expected = SagaStepExecution(
-            (SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)),
+            SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
         )
         observed = SagaStepExecution.from_raw(expected)
         self.assertEqual(expected, observed)

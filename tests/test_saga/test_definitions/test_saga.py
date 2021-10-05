@@ -67,7 +67,7 @@ class TestSaga(unittest.TestCase):
 
     def test_duplicate_operation_raises(self):
         with self.assertRaises(MinosSagaException):
-            (Saga().step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit())
+            Saga().step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit()
 
     def test_missing_send_raises(self):
         with self.assertRaises(MinosSagaException):

@@ -53,7 +53,6 @@ class ResponseExecutor(LocalExecutor):
             return context
 
         try:
-            # noinspection PyTypeChecker
             response = SagaResponse(reply.data, reply.status)
             context = SagaContext(**context)  # Needed to avoid mutability issues.
             context = await self.exec_operation(operation, context, response)
