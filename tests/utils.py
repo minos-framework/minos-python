@@ -46,19 +46,19 @@ class Foo(MinosModel):
 # noinspection PyUnusedLocal
 async def send_create_product(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateProduct", Foo("hello"))
+    return SagaRequest("CreateProduct", Foo("create_product!"))
 
 
 # noinspection PyUnusedLocal
 async def send_delete_product(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("DeleteProduct", Foo("hello"))
+    return SagaRequest("DeleteProduct", Foo("delete_product!"))
 
 
 # noinspection PyUnusedLocal
 async def send_create_ticket(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateTicket", Foo("hello"))
+    return SagaRequest("CreateTicket", Foo("create_ticket!"))
 
 
 # noinspection PyUnusedLocal
@@ -70,25 +70,25 @@ async def send_create_ticket_raises(context: SagaContext) -> SagaRequest:
 # noinspection PyUnusedLocal
 async def send_delete_ticket(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateTicket", Foo("hello"))
+    return SagaRequest("CreateTicket", Foo("delete_ticket!"))
 
 
 # noinspection PyUnusedLocal
 async def send_create_order(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateOrder", Foo("hello"))
+    return SagaRequest("CreateOrder", Foo("create_order"))
 
 
 # noinspection PyUnusedLocal
 async def send_delete_order(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("DeleteOrder", Foo("hello"))
+    return SagaRequest("DeleteOrder", Foo("delete_order!"))
 
 
 # noinspection PyUnusedLocal
 async def send_verify_consumer(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("VerifyConsumer", Foo("hello"))
+    return SagaRequest("VerifyConsumer", Foo("verify_consumer!"))
 
 
 async def handle_order_success(context: SagaContext, response: SagaResponse) -> SagaContext:

@@ -111,13 +111,10 @@ class SagaResponseStatus(IntEnum):
     SYSTEM_ERROR = 500
 
     @classmethod
-    def from_raw(cls, raw: Union[int, SagaResponseStatus]) -> SagaResponseStatus:
+    def from_raw(cls, raw: int) -> SagaResponseStatus:
         """Build a new instance from raw.
 
         :param raw: The raw representation of the instance.
         :return: A ``SagaResponseStatus`` instance.
         """
-        if isinstance(raw, cls):
-            return raw
-
         return next(obj for obj in cls if obj.value == raw)
