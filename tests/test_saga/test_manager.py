@@ -49,7 +49,8 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.broker = NaiveBroker()
         self.handler = FakeHandler("TheReplyTopic")
         self.pool = FakePool(self.handler)
-        self.manager = SagaManager.from_config(dynamic_handler_pool=self.pool, config=self.config)
+        # noinspection PyTypeChecker
+        self.manager: SagaManager = SagaManager.from_config(dynamic_handler_pool=self.pool, config=self.config)
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
@@ -90,8 +91,8 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(topic="CreateProduct", data=Foo("hello"), saga=expected_uuid, reply_topic=reply_topic),
-                call(topic="CreateTicket", data=Foo("hello"), saga=expected_uuid, reply_topic=reply_topic),
+                call(topic="CreateOrder", data=Foo("create_order!"), saga=expected_uuid, reply_topic=reply_topic),
+                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=expected_uuid, reply_topic=reply_topic),
             ],
             send_mock.call_args_list,
         )
@@ -127,8 +128,8 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(topic="CreateProduct", data=Foo("hello"), saga=execution.uuid, reply_topic=None),
-                call(topic="CreateTicket", data=Foo("hello"), saga=execution.uuid, reply_topic=None),
+                call(topic="CreateOrder", data=Foo("create_order!"), saga=execution.uuid, reply_topic=None),
+                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=execution.uuid, reply_topic=None),
             ],
             send_mock.call_args_list,
         )

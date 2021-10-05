@@ -73,6 +73,7 @@ class RequestExecutor(LocalExecutor):
             return context
 
         try:
+            context = SagaContext(**context)  # Needed to avoid mutability issues.
             request = await self.exec_operation(operation, context)
             await self._publish(request)
         except MinosSagaExecutorException as exc:

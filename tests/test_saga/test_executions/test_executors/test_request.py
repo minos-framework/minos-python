@@ -42,19 +42,21 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
 
     async def test_exec(self):
         operation = SagaOperation(send_create_product)
-        context = SagaContext()
+        context = SagaContext(product=Foo("create_product!"))
 
         mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = mock
         await self.executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
-        args = call(data=Foo("hello"), topic="CreateProduct", saga=self.uuid, reply_topic=self.executor.reply_topic)
+        args = call(
+            data=Foo("create_product!"), topic="CreateProduct", saga=self.uuid, reply_topic=self.executor.reply_topic
+        )
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_raises(self):
         operation = SagaOperation(send_create_product)
-        context = SagaContext()
+        context = SagaContext(product=Foo("create_product!"))
 
         async def _fn(*args, **kwargs):
             raise ValueError("This is an exception")

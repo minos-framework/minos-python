@@ -46,19 +46,19 @@ class Foo(MinosModel):
 # noinspection PyUnusedLocal
 async def send_create_product(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateProduct", Foo("hello"))
+    return SagaRequest("CreateProduct", context["product"])
 
 
-# noinspection PyUnusedLocal
-async def send_delete_product(context: SagaContext) -> SagaRequest:
+async def handle_product_success(context: SagaContext, response: SagaResponse) -> SagaContext:
     """For testing purposes."""
-    return SagaRequest("DeleteProduct", Foo("hello"))
+    context["product"] = await response.content()
+    return context
 
 
 # noinspection PyUnusedLocal
 async def send_create_ticket(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateTicket", Foo("hello"))
+    return SagaRequest("CreateTicket", Foo("create_ticket!"))
 
 
 # noinspection PyUnusedLocal
@@ -70,36 +70,24 @@ async def send_create_ticket_raises(context: SagaContext) -> SagaRequest:
 # noinspection PyUnusedLocal
 async def send_delete_ticket(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateTicket", Foo("hello"))
+    return SagaRequest("CreateTicket", Foo("delete_ticket!"))
 
 
 # noinspection PyUnusedLocal
 async def send_create_order(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateOrder", Foo("hello"))
+    return SagaRequest("CreateOrder", Foo("create_order!"))
 
 
 # noinspection PyUnusedLocal
 async def send_delete_order(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("DeleteOrder", Foo("hello"))
-
-
-# noinspection PyUnusedLocal
-async def send_verify_consumer(context: SagaContext) -> SagaRequest:
-    """For testing purposes."""
-    return SagaRequest("VerifyConsumer", Foo("hello"))
+    return SagaRequest("DeleteOrder", Foo("delete_order!"))
 
 
 async def handle_order_success(context: SagaContext, response: SagaResponse) -> SagaContext:
     """For testing purposes."""
     context["order"] = await response.content()
-    return context
-
-
-async def handle_product_success(context: SagaContext, response: SagaResponse) -> SagaContext:
-    """For testing purposes."""
-    context["product"] = await response.content()
     return context
 
 
@@ -128,23 +116,25 @@ def commit_callback_raises(context: SagaContext) -> SagaContext:
     raise ValueError()
 
 
+# fmt: off
 ADD_ORDER = (
     Saga()
-    .step(send_create_product)
-    .on_success(handle_product_success)
-    .on_failure(send_delete_product)
+    .step(send_create_order)
+        .on_success(handle_order_success)
+        .on_failure(send_delete_order)
     .step(send_create_ticket)
-    .on_success(handle_ticket_success)
-    .on_failure(send_delete_order)
+        .on_success(handle_ticket_success)
+        .on_failure(send_delete_ticket)
     .commit()
 )
 
+# fmt: off
 DELETE_ORDER = (
     Saga()
-    .step(send_delete_product)
-    .on_success(handle_product_success)
+    .step(send_delete_order)
+        .on_success(handle_order_success)
     .step(send_delete_ticket)
-    .on_success(handle_ticket_success_raises)
+        .on_success(handle_ticket_success_raises)
     .commit()
 )
 

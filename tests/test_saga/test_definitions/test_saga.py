@@ -21,7 +21,6 @@ from tests.utils import (
     send_create_ticket,
     send_delete_order,
     send_delete_ticket,
-    send_verify_consumer,
 )
 
 
@@ -98,7 +97,6 @@ class TestSaga(unittest.TestCase):
             .on_failure(send_delete_order)
             .step(send_create_ticket)
             .on_success(handle_ticket_success)
-            .step(send_verify_consumer)
             .commit()
         )
         expected = {
@@ -112,11 +110,6 @@ class TestSaga(unittest.TestCase):
                 {
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
-                    "on_failure": None,
-                },
-                {
-                    "on_execute": {"callback": "tests.utils.send_verify_consumer"},
-                    "on_success": None,
                     "on_failure": None,
                 },
             ],
@@ -137,11 +130,6 @@ class TestSaga(unittest.TestCase):
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_failure": None,
                 },
-                {
-                    "on_execute": {"callback": "tests.utils.send_verify_consumer"},
-                    "on_success": None,
-                    "on_failure": None,
-                },
             ],
         }
         expected = (
@@ -150,7 +138,6 @@ class TestSaga(unittest.TestCase):
             .on_failure(send_delete_order)
             .step(send_create_ticket)
             .on_success(handle_ticket_success)
-            .step(send_verify_consumer)
             .commit()
         )
         self.assertEqual(expected, Saga.from_raw(raw))
@@ -162,7 +149,6 @@ class TestSaga(unittest.TestCase):
             .on_failure(send_delete_order)
             .step(send_create_ticket)
             .on_success(handle_ticket_success)
-            .step(send_verify_consumer)
             .commit()
         )
         self.assertEqual(expected, Saga.from_raw(expected))
