@@ -5,13 +5,14 @@ from unittest.mock import (
 )
 
 from minos.saga import (
-    MinosMultipleInvokeParticipantException,
-    MinosMultipleOnReplyException,
-    MinosMultipleWithCompensationException,
+    MinosMultipleOnExecuteException,
+    MinosMultipleOnFailureException,
+    MinosMultipleOnSuccessException,
     MinosSagaEmptyStepException,
     MinosSagaNotDefinedException,
-    MinosUndefinedInvokeParticipantException,
+    MinosUndefinedOnExecuteException,
     Saga,
+    SagaOperation,
     SagaStep,
 )
 from tests.utils import (
@@ -23,17 +24,41 @@ from tests.utils import (
 
 
 class TestSagaStep(unittest.TestCase):
-    def test_invoke_participant_multiple_raises(self):
-        with self.assertRaises(MinosMultipleInvokeParticipantException):
-            SagaStep(send_create_ticket).invoke_participant(send_create_ticket)
+    def test_on_execute_constructor(self):
+        step = SagaStep(on_execute=send_create_ticket)
+        self.assertEqual(SagaOperation(send_create_ticket), step.on_execute_operation)
+
+    def test_on_execute_method(self):
+        step = SagaStep().on_execute(send_create_ticket)
+        self.assertEqual(SagaOperation(send_create_ticket), step.on_execute_operation)
+
+    def test_on_execute_multiple_raises(self):
+        with self.assertRaises(MinosMultipleOnExecuteException):
+            SagaStep(send_create_ticket).on_execute(send_create_ticket)
+
+    def test_on_failure_constructor(self):
+        step = SagaStep(on_failure=send_delete_ticket)
+        self.assertEqual(SagaOperation(send_delete_ticket), step.on_failure_operation)
+
+    def test_on_failure_method(self):
+        step = SagaStep().on_failure(send_delete_ticket)
+        self.assertEqual(SagaOperation(send_delete_ticket), step.on_failure_operation)
 
     def test_on_failure_multiple_raises(self):
-        with self.assertRaises(MinosMultipleWithCompensationException):
-            SagaStep(send_create_ticket).on_failure(send_delete_ticket).on_failure(send_delete_ticket)
+        with self.assertRaises(MinosMultipleOnFailureException):
+            SagaStep().on_failure(send_delete_ticket).on_failure(send_delete_ticket)
+
+    def test_on_success_constructor(self):
+        step = SagaStep(on_success=handle_ticket_success)
+        self.assertEqual(SagaOperation(handle_ticket_success), step.on_success_operation)
+
+    def test_on_success_method(self):
+        step = SagaStep().on_success(handle_ticket_success)
+        self.assertEqual(SagaOperation(handle_ticket_success), step.on_success_operation)
 
     def test_on_success_multiple_raises(self):
-        with self.assertRaises(MinosMultipleOnReplyException):
-            SagaStep(send_create_ticket).on_success(handle_ticket_success).on_success(handle_ticket_success)
+        with self.assertRaises(MinosMultipleOnSuccessException):
+            SagaStep().on_success(handle_ticket_success).on_success(handle_ticket_success)
 
     def test_step_validates(self):
         step = SagaStep(saga=Saga())
@@ -75,8 +100,8 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(MinosSagaEmptyStepException):
             SagaStep(None).validate()
 
-    def test_validate_raises_non_invoke_participant(self):
-        with self.assertRaises(MinosUndefinedInvokeParticipantException):
+    def test_validate_raises_non_on_execute(self):
+        with self.assertRaises(MinosUndefinedOnExecuteException):
             SagaStep(None).on_failure(send_delete_ticket).validate()
 
     def test_has_reply_true(self):
@@ -91,7 +116,7 @@ class TestSagaStep(unittest.TestCase):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
 
         expected = {
-            "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+            "on_execute": {"callback": "tests.utils.send_create_ticket"},
             "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             "on_success": {"callback": "tests.utils.handle_ticket_success"},
         }
@@ -99,7 +124,7 @@ class TestSagaStep(unittest.TestCase):
 
     def test_from_raw(self):
         raw = {
-            "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+            "on_execute": {"callback": "tests.utils.send_create_ticket"},
             "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             "on_success": {"callback": "tests.utils.handle_ticket_success"},
         }

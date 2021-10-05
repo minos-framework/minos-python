@@ -68,12 +68,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
-                        "invoke_participant": {"callback": "tests.utils.send_create_order"},
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.handle_order_success"},
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
-                        "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                        "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success_raises"},
                         "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
@@ -98,12 +98,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
-                        "invoke_participant": {"callback": "tests.utils.send_create_order"},
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.handle_order_success"},
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
-                        "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                        "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success_raises"},
                         "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
@@ -112,11 +112,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "executed_steps": [],
             "paused_step": {
                 "definition": {
-                    "invoke_participant": {"callback": "tests.utils.send_create_order"},
+                    "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": {"callback": "tests.utils.handle_order_success"},
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
-                "status": "paused-on-reply",
+                "status": "paused-on-success",
                 "already_rollback": False,
             },
             "status": "paused",
@@ -139,12 +139,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
-                        "invoke_participant": {"callback": "tests.utils.send_create_order"},
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.handle_order_success"},
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
-                        "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                        "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success_raises"},
                         "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
@@ -153,7 +153,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "executed_steps": [
                 {
                     "definition": {
-                        "invoke_participant": {"callback": "tests.utils.send_create_order"},
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.handle_order_success"},
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
@@ -163,11 +163,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             ],
             "paused_step": {
                 "definition": {
-                    "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                    "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success_raises"},
                     "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                 },
-                "status": "paused-on-reply",
+                "status": "paused-on-success",
                 "already_rollback": False,
             },
             "status": "paused",

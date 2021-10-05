@@ -37,7 +37,7 @@ from .local import (
 )
 
 
-class PublishExecutor(LocalExecutor):
+class RequestExecutor(LocalExecutor):
     """Publish Executor class.
 
     This class has the responsibility to publish command on the corresponding broker's queue.

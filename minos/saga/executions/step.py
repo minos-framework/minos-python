@@ -26,8 +26,8 @@ from ..exceptions import (
     MinosSagaRollbackExecutionStepException,
 )
 from .executors import (
-    OnReplyExecutor,
-    PublishExecutor,
+    RequestExecutor,
+    ResponseExecutor,
 )
 from .status import (
     SagaStepStatus,
@@ -69,41 +69,41 @@ class SagaExecutionStep:
         :return: The updated context.
         """
 
-        await self._execute_invoke_participant(context, *args, **kwargs)
+        await self._execute_on_execute(context, *args, **kwargs)
         context = await self._execute_on_success(context, reply, *args, **kwargs)
 
         self.status = SagaStepStatus.Finished
         return context
 
-    async def _execute_invoke_participant(self, context: SagaContext, *args, **kwargs) -> None:
+    async def _execute_on_execute(self, context: SagaContext, *args, **kwargs) -> None:
         if self.status != SagaStepStatus.Created:
             return
 
-        self.status = SagaStepStatus.RunningInvokeParticipant
-        executor = PublishExecutor(*args, **kwargs)
+        self.status = SagaStepStatus.RunningOnExecute
+        executor = RequestExecutor(*args, **kwargs)
         try:
-            await executor.exec(self.definition.invoke_participant_operation, context)
+            await executor.exec(self.definition.on_execute_operation, context)
         except MinosSagaFailedExecutionStepException as exc:
-            self.status = SagaStepStatus.ErroredInvokeParticipant
+            self.status = SagaStepStatus.ErroredOnExecute
             raise exc
-        self.status = SagaStepStatus.FinishedInvokeParticipant
+        self.status = SagaStepStatus.FinishedOnExecute
 
     async def _execute_on_success(
         self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
     ) -> SagaContext:
-        self.status = SagaStepStatus.RunningOnReply
-        executor = OnReplyExecutor(*args, **kwargs)
+        self.status = SagaStepStatus.RunningOnSuccess
+        executor = ResponseExecutor(*args, **kwargs)
 
         try:
             context = await executor.exec(self.definition.on_success_operation, context, reply)
         except MinosSagaPausedExecutionStepException as exc:
-            self.status = SagaStepStatus.PausedOnReply
+            self.status = SagaStepStatus.PausedOnSuccess
             raise exc
         except MinosCommandReplyFailedException as exc:
-            self.status = SagaStepStatus.ErroredOnReply
+            self.status = SagaStepStatus.ErroredOnSuccess
             raise MinosSagaFailedExecutionStepException(exc)
         except MinosSagaFailedExecutionStepException as exc:
-            self.status = SagaStepStatus.ErroredOnReply
+            self.status = SagaStepStatus.ErroredOnSuccess
             await self.rollback(context, *args, **kwargs)
             raise exc
 
@@ -121,7 +121,7 @@ class SagaExecutionStep:
         if self.already_rollback:
             raise MinosSagaRollbackExecutionStepException("The step was already rollbacked.")
 
-        executor = PublishExecutor(*args, **kwargs)
+        executor = RequestExecutor(*args, **kwargs)
         await executor.exec(self.definition.on_failure_operation, context)
 
         self.already_rollback = True

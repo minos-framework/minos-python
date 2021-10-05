@@ -44,7 +44,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         self.publish_mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = self.publish_mock
 
-    async def test_execute_invoke_participant(self):
+    async def test_execute_on_execute(self):
         step = SagaStep(send_create_ticket)
         context = SagaContext()
         execution = SagaExecutionStep(step)
@@ -53,14 +53,14 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             await execution.execute(context, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
+        self.assertEqual(SagaStepStatus.PausedOnSuccess, execution.status)
 
         reply = fake_reply(status=CommandStatus.SUCCESS)
         await execution.execute(context, reply=reply, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
-    async def test_execute_invoke_participant_errored(self):
+    async def test_execute_on_execute_errored(self):
         step = SagaStep(send_create_ticket_raises).on_failure(send_delete_ticket)
         context = SagaContext()
         execution = SagaExecutionStep(step)
@@ -69,9 +69,9 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             await execution.execute(context, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, execution.status)
+        self.assertEqual(SagaStepStatus.ErroredOnExecute, execution.status)
 
-    async def test_execute_invoke_participant_errored_reply(self):
+    async def test_execute_on_execute_errored_reply(self):
         step = SagaStep(send_create_ticket)
         context = SagaContext()
         execution = SagaExecutionStep(step)
@@ -80,15 +80,15 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             await execution.execute(context, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
+        self.assertEqual(SagaStepStatus.PausedOnSuccess, execution.status)
 
         reply = fake_reply(status=CommandStatus.ERROR)
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 
-        self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
+        self.assertEqual(SagaStepStatus.ErroredOnSuccess, execution.status)
 
-    async def test_execute_invoke_participant_with_on_success(self):
+    async def test_execute_on_execute_with_on_success(self):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success)
         context = SagaContext()
         execution = SagaExecutionStep(step)
@@ -97,7 +97,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             await execution.execute(context, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
+        self.assertEqual(SagaStepStatus.PausedOnSuccess, execution.status)
 
         reply = fake_reply(Foo("foo"))
         await execution.execute(context, reply=reply, **self.execute_kwargs)
@@ -122,7 +122,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 
-        self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
+        self.assertEqual(SagaStepStatus.ErroredOnSuccess, execution.status)
 
     async def test_rollback(self):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success_raises).on_failure(send_delete_ticket)
@@ -154,7 +154,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         expected = {
             "already_rollback": False,
             "definition": {
-                "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
                 "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             },
@@ -167,7 +167,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         raw = {
             "already_rollback": False,
             "definition": {
-                "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
                 "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             },

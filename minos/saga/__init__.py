@@ -11,9 +11,9 @@ from .definitions import (
 from .exceptions import (
     MinosAlreadyOnSagaException,
     MinosCommandReplyFailedException,
-    MinosMultipleInvokeParticipantException,
-    MinosMultipleOnReplyException,
-    MinosMultipleWithCompensationException,
+    MinosMultipleOnExecuteException,
+    MinosMultipleOnFailureException,
+    MinosMultipleOnSuccessException,
     MinosSagaAlreadyCommittedException,
     MinosSagaEmptyStepException,
     MinosSagaException,
@@ -30,12 +30,12 @@ from .exceptions import (
     MinosSagaRollbackExecutionException,
     MinosSagaRollbackExecutionStepException,
     MinosSagaStepException,
-    MinosUndefinedInvokeParticipantException,
+    MinosUndefinedOnExecuteException,
 )
 from .executions import (
     LocalExecutor,
-    OnReplyExecutor,
-    PublishExecutor,
+    RequestExecutor,
+    ResponseExecutor,
     SagaExecution,
     SagaExecutionStep,
     SagaExecutionStorage,

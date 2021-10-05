@@ -105,17 +105,17 @@ class TestSaga(unittest.TestCase):
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_create_order"},
+                    "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": None,
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                    "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_failure": None,
                 },
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_verify_consumer"},
+                    "on_execute": {"callback": "tests.utils.send_verify_consumer"},
                     "on_success": None,
                     "on_failure": None,
                 },
@@ -128,17 +128,17 @@ class TestSaga(unittest.TestCase):
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_create_order"},
+                    "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": None,
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                    "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_failure": None,
                 },
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_verify_consumer"},
+                    "on_execute": {"callback": "tests.utils.send_verify_consumer"},
                     "on_success": None,
                     "on_failure": None,
                 },

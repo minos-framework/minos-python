@@ -29,16 +29,16 @@ class MinosSagaEmptyStepException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MinosMultipleInvokeParticipantException(MinosSagaStepException):
+class MinosMultipleOnExecuteException(MinosSagaStepException):
     """Exception to be raised when multiple invoke participant methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "A 'SagaStep' can only define one 'invoke_participant' method."
+            message = "A 'SagaStep' can only define one 'on_execute' method."
         super().__init__(message)
 
 
-class MinosMultipleWithCompensationException(MinosSagaStepException):
+class MinosMultipleOnFailureException(MinosSagaStepException):
     """Exception to be raised when multiple with compensation methods are defined."""
 
     def __init__(self, message: str = None):
@@ -47,7 +47,7 @@ class MinosMultipleWithCompensationException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MinosMultipleOnReplyException(MinosSagaStepException):
+class MinosMultipleOnSuccessException(MinosSagaStepException):
     """Exception to be raised when multiple on reply methods are defined."""
 
     def __init__(self, message: str = None):
@@ -65,12 +65,12 @@ class MinosAlreadyOnSagaException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MinosUndefinedInvokeParticipantException(MinosSagaStepException):
+class MinosUndefinedOnExecuteException(MinosSagaStepException):
     """Exception to be raised when the invoke participant method is not defined."""
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "A 'SagaStep' must define at least the 'invoke_participant' logic."
+            message = "A 'SagaStep' must define at least the 'on_execute' logic."
         super().__init__(message)
 
 

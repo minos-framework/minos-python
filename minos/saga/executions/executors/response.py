@@ -27,7 +27,7 @@ from .local import (
 )
 
 
-class OnReplyExecutor(LocalExecutor):
+class ResponseExecutor(LocalExecutor):
     """On Reply Executor class."""
 
     # noinspection PyUnusedLocal
@@ -53,6 +53,7 @@ class OnReplyExecutor(LocalExecutor):
             return context
 
         try:
+            # noinspection PyTypeChecker
             response = SagaResponse(reply.data, reply.status)
             context = await self.exec_operation(operation, context, response)
         except MinosSagaExecutorException as exc:

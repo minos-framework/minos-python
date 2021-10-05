@@ -14,12 +14,12 @@ from ..context import (
     SagaContext,
 )
 from ..exceptions import (
-    MinosMultipleInvokeParticipantException,
-    MinosMultipleOnReplyException,
-    MinosMultipleWithCompensationException,
+    MinosMultipleOnExecuteException,
+    MinosMultipleOnFailureException,
+    MinosMultipleOnSuccessException,
     MinosSagaEmptyStepException,
     MinosSagaNotDefinedException,
-    MinosUndefinedInvokeParticipantException,
+    MinosUndefinedOnExecuteException,
 )
 from .operations import (
     SagaOperation,
@@ -40,20 +40,23 @@ class SagaStep:
 
     def __init__(
         self,
-        callback: RequestCallBack = None,
-        parameters: Optional[SagaContext] = None,
+        on_execute: Optional[Union[RequestCallBack, SagaOperation]] = None,
+        on_success: Optional[Union[ResponseCallBack, SagaOperation]] = None,
+        on_failure: Optional[Union[RequestCallBack, SagaOperation]] = None,
         saga: Optional[Saga] = None,
-        invoke_participant: Optional[SagaOperation] = None,
-        on_failure: Optional[SagaOperation] = None,
-        on_success: Optional[SagaOperation] = None,
     ):
-        self.saga = saga
-        self.invoke_participant_operation = invoke_participant
+        if on_execute is not None and not isinstance(on_execute, SagaOperation):
+            on_execute = SagaOperation(on_execute)
+        if on_failure is not None and not isinstance(on_failure, SagaOperation):
+            on_failure = SagaOperation(on_failure)
+        if on_success is not None and not isinstance(on_success, SagaOperation):
+            on_success = SagaOperation(on_success)
+
+        self.on_execute_operation = on_execute
         self.on_failure_operation = on_failure
         self.on_success_operation = on_success
 
-        if callback is not None:
-            self.invoke_participant(callback, parameters)
+        self.saga = saga
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
@@ -68,23 +71,23 @@ class SagaStep:
 
         current = raw | kwargs
 
-        current["invoke_participant"] = SagaOperation.from_raw(current["invoke_participant"])
+        current["on_execute"] = SagaOperation.from_raw(current["on_execute"])
         current["on_failure"] = SagaOperation.from_raw(current["on_failure"])
         current["on_success"] = SagaOperation.from_raw(current["on_success"])
 
         return cls(**current)
 
-    def invoke_participant(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_execute(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
         """Invoke a new participant method.
 
         :param callback: The callback function used for the request contents preparation.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
-        if self.invoke_participant_operation is not None:
-            raise MinosMultipleInvokeParticipantException()
+        if self.on_execute_operation is not None:
+            raise MinosMultipleOnExecuteException()
 
-        self.invoke_participant_operation = SagaOperation(callback, parameters)
+        self.on_execute_operation = SagaOperation(callback, parameters)
 
         return self
 
@@ -96,7 +99,7 @@ class SagaStep:
         :return: A ``self`` reference.
         """
         if self.on_failure_operation is not None:
-            raise MinosMultipleWithCompensationException()
+            raise MinosMultipleOnFailureException()
 
         self.on_failure_operation = SagaOperation(callback, parameters)
 
@@ -110,7 +113,7 @@ class SagaStep:
         :return: A ``self`` reference.
         """
         if self.on_success_operation is not None:
-            raise MinosMultipleOnReplyException()
+            raise MinosMultipleOnSuccessException()
 
         self.on_success_operation = SagaOperation(callback, parameters)
 
@@ -154,14 +157,14 @@ class SagaStep:
         :return This method does not return anything.
         """
         if (
-            self.invoke_participant_operation is None
+            self.on_execute_operation is None
             and self.on_failure_operation is None
             and self.on_success_operation is None
         ):
             raise MinosSagaEmptyStepException()
 
-        if self.invoke_participant_operation is None:
-            raise MinosUndefinedInvokeParticipantException()
+        if self.on_execute_operation is None:
+            raise MinosUndefinedOnExecuteException()
 
     @property
     def raw(self) -> dict[str, Any]:
@@ -170,11 +173,9 @@ class SagaStep:
         :return: A ``dict`` instance.
         """
         return {
-            "invoke_participant": (
-                None if self.invoke_participant_operation is None else self.invoke_participant_operation.raw
-            ),
-            "on_failure": (None if self.on_failure_operation is None else self.on_failure_operation.raw),
-            "on_success": (None if self.on_success_operation is None else self.on_success_operation.raw),
+            "on_execute": None if self.on_execute_operation is None else self.on_execute_operation.raw,
+            "on_failure": None if self.on_failure_operation is None else self.on_failure_operation.raw,
+            "on_success": None if self.on_success_operation is None else self.on_success_operation.raw,
         }
 
     def __eq__(self, other: SagaStep) -> bool:
@@ -182,7 +183,7 @@ class SagaStep:
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.invoke_participant_operation,
+            self.on_execute_operation,
             self.on_failure_operation,
             self.on_success_operation,
         )
