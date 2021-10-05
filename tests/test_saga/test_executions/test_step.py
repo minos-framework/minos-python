@@ -22,8 +22,11 @@ from tests.utils import (
     Foo,
     NaiveBroker,
     fake_reply,
-    foo_fn,
-    foo_fn_raises,
+    handle_ticket_success,
+    handle_ticket_success_raises,
+    send_create_ticket,
+    send_create_ticket_raises,
+    send_delete_ticket,
 )
 
 
@@ -42,7 +45,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         self.broker.send = self.publish_mock
 
     async def test_execute_invoke_participant(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn)
+        step = SagaStep().invoke_participant(send_create_ticket)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
@@ -58,7 +61,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     async def test_execute_invoke_participant_errored(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn_raises).with_compensation("FooDelete", foo_fn)
+        step = SagaStep().invoke_participant(send_create_ticket_raises).with_compensation(send_delete_ticket)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
@@ -69,7 +72,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, execution.status)
 
     async def test_execute_invoke_participant_errored_reply(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn)
+        step = SagaStep().invoke_participant(send_create_ticket)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
@@ -86,7 +89,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
 
     async def test_execute_invoke_participant_with_on_reply(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
+        step = SagaStep().invoke_participant(send_create_ticket).on_reply(handle_ticket_success)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
@@ -101,17 +104,17 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     async def test_execute_on_reply(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
+        step = SagaStep().invoke_participant(send_create_ticket).on_reply(handle_ticket_success)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
-        reply = fake_reply(Foo("foo"))
+        reply = fake_reply(Foo("hello"))
         context = await execution.execute(context, reply=reply, **self.execute_kwargs)
-        self.assertEqual(SagaContext(foo=Foo("foo")), context)
+        self.assertEqual(SagaContext(ticket=Foo("hello")), context)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     async def test_execute_on_reply_errored(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", foo_fn_raises)
+        step = SagaStep().invoke_participant(send_create_ticket).on_reply(handle_ticket_success_raises)
         context = SagaContext()
         execution = SagaExecutionStep(step)
 
@@ -124,9 +127,9 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     async def test_rollback(self):
         step = (
             SagaStep()
-            .invoke_participant("FooAdd", foo_fn)
-            .with_compensation("FooDelete", foo_fn)
-            .on_reply("foo", foo_fn_raises)
+            .invoke_participant(send_create_ticket)
+            .with_compensation(send_delete_ticket)
+            .on_reply(handle_ticket_success_raises)
         )
         context = SagaContext()
         execution = SagaExecutionStep(step)
@@ -151,16 +154,19 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
 
     def test_raw(self):
         definition = (
-            SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")
+            SagaStep()
+            .invoke_participant(send_create_ticket)
+            .with_compensation(send_delete_ticket)
+            .on_reply(handle_ticket_success)
         )
         execution = SagaExecutionStep(definition)
 
         expected = {
             "already_rollback": False,
             "definition": {
-                "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
-                "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
-                "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
+                "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                "on_reply": {"callback": "tests.utils.handle_ticket_success"},
+                "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
             },
             "status": "created",
         }
@@ -171,21 +177,31 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
         raw = {
             "already_rollback": False,
             "definition": {
-                "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
-                "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
-                "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
+                "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+                "on_reply": {"callback": "tests.utils.handle_ticket_success"},
+                "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
             },
             "status": "created",
         }
         expected = SagaExecutionStep(
-            (SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")),
+            (
+                SagaStep()
+                .invoke_participant(send_create_ticket)
+                .with_compensation(send_delete_ticket)
+                .on_reply(handle_ticket_success)
+            ),
         )
         observed = SagaExecutionStep.from_raw(raw)
         self.assertEqual(expected, observed)
 
     def test_from_raw_already(self):
         expected = SagaExecutionStep(
-            (SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")),
+            (
+                SagaStep()
+                .invoke_participant(send_create_ticket)
+                .with_compensation(send_delete_ticket)
+                .on_reply(handle_ticket_success)
+            ),
         )
         observed = SagaExecutionStep.from_raw(expected)
         self.assertEqual(expected, observed)

@@ -10,36 +10,16 @@ from minos.saga import (
     SagaExecution,
     SagaStatus,
 )
-from tests.callbacks import (
-    create_order_callback,
-    create_ticket_callback,
-    delete_order_callback,
-)
 from tests.utils import (
+    ADD_ORDER,
     Foo,
-    foo_fn_raises,
 )
 
 
 class TestSagaExecutionConstructor(unittest.IsolatedAsyncioTestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.saga = (
-            Saga()
-            .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
-            .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order2", foo_fn_raises)
-            .commit()
-        )
-
     def test_from_saga(self):
-        execution = SagaExecution.from_saga(self.saga)
-        self.assertEqual(self.saga, execution.definition)
+        execution = SagaExecution.from_saga(ADD_ORDER)
+        self.assertEqual(ADD_ORDER, execution.definition)
         self.assertIsInstance(execution.uuid, UUID)
         self.assertEqual(SagaContext(), execution.context)
         self.assertEqual(SagaStatus.Created, execution.status)
@@ -52,8 +32,8 @@ class TestSagaExecutionConstructor(unittest.IsolatedAsyncioTestCase):
 
     def test_from_saga_with_context(self):
         context = SagaContext(foo=Foo("foo"), one=1, a="a")
-        execution = SagaExecution.from_saga(self.saga, context=context)
-        self.assertEqual(self.saga, execution.definition)
+        execution = SagaExecution.from_saga(ADD_ORDER, context=context)
+        self.assertEqual(ADD_ORDER, execution.definition)
         self.assertIsInstance(execution.uuid, UUID)
         self.assertEqual(context, execution.context)
         self.assertEqual(SagaStatus.Created, execution.status)

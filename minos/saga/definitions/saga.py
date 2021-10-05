@@ -18,10 +18,10 @@ from ..exceptions import (
 )
 from .operations import (
     SagaOperation,
+    identity_fn,
 )
 from .step import (
     SagaStep,
-    identity_fn,
 )
 from .types import (
     CommitCallback,

@@ -19,6 +19,9 @@ from ...exceptions import (
     MinosSagaFailedExecutionStepException,
     MinosSagaPausedExecutionStepException,
 )
+from ...messages import (
+    SagaResponse,
+)
 from .local import (
     LocalExecutor,
 )
@@ -50,13 +53,9 @@ class OnReplyExecutor(LocalExecutor):
             return context
 
         try:
-            response = await self.exec_operation(operation, reply.data)
+            response = SagaResponse(reply.data, reply.status)
+            context = await self.exec_operation(operation, context, response)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)
-
-        try:
-            context[operation.name] = response
-        except Exception as exc:
-            raise MinosSagaFailedExecutionStepException(exc)
 
         return context

@@ -10,17 +10,17 @@ from minos.saga import (
     SagaExecution,
     SagaExecutionStorage,
 )
-from tests.callbacks import (
-    create_order_callback,
-    create_ticket_callback,
-    delete_order_callback,
-)
 from tests.utils import (
     BASE_PATH,
     Foo,
     NaiveBroker,
     fake_reply,
-    foo_fn_raises,
+    handle_order_success,
+    handle_ticket_success_raises,
+    send_create_order,
+    send_create_ticket,
+    send_delete_order,
+    send_delete_ticket,
 )
 
 
@@ -32,13 +32,13 @@ class TestMinosLocalState(unittest.IsolatedAsyncioTestCase):
         self.saga = (
             Saga()
             .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
+            .invoke_participant(send_create_order)
+            .with_compensation(send_delete_order)
+            .on_reply(handle_order_success)
             .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order2", foo_fn_raises)
+            .invoke_participant(send_create_ticket)
+            .with_compensation(send_delete_ticket)
+            .on_reply(handle_ticket_success_raises)
             .commit()
         )
 

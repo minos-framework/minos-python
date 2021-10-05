@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 from typing import (
-    Any,
     Optional,
 )
 from uuid import (
@@ -20,9 +19,6 @@ from minos.common import (
     MinosBrokerNotProvidedException,
 )
 
-from ... import (
-    MinosSagaFailedExecutionStepException,
-)
 from ...context import (
     SagaContext,
 )
@@ -31,6 +27,10 @@ from ...definitions import (
 )
 from ...exceptions import (
     MinosSagaExecutorException,
+    MinosSagaFailedExecutionStepException,
+)
+from ...messages import (
+    SagaRequest,
 )
 from .local import (
     LocalExecutor,
@@ -74,14 +74,15 @@ class PublishExecutor(LocalExecutor):
 
         try:
             request = await self.exec_operation(operation, context)
-            await self._publish(operation, request)
+            await self._publish(request)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)
         return context
 
-    async def _publish(self, operation: SagaOperation, data: Any) -> None:
+    async def _publish(self, request: SagaRequest) -> None:
         fn = self.broker.send
-        topic = operation.name
+        topic = request.target
+        data = await request.content()
         saga = self.execution_uuid
         reply_topic = self.reply_topic
         await self.exec_function(fn, topic=topic, data=data, saga=saga, reply_topic=reply_topic)

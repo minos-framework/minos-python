@@ -30,12 +30,10 @@ from minos.saga import (
     SagaManager,
     SagaStatus,
 )
-from tests.sagas import (
-    ADD_ORDER,
-    DELETE_ORDER,
-)
 from tests.utils import (
+    ADD_ORDER,
     BASE_PATH,
+    DELETE_ORDER,
     FakeHandler,
     FakePool,
     Foo,
