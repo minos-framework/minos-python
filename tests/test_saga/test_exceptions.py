@@ -5,6 +5,7 @@ from minos.common import (
 )
 from minos.saga import (
     MinosAlreadyOnSagaException,
+    MinosMultipleOnErrorException,
     MinosMultipleOnExecuteException,
     MinosMultipleOnFailureException,
     MinosMultipleOnSuccessException,
@@ -71,6 +72,13 @@ class TestExceptions(unittest.TestCase):
     def test_step_multiple_on_success_repr(self):
         expected = "MinosMultipleOnSuccessException(message=\"A 'SagaStep' can only define one 'on_success' method.\")"
         self.assertEqual(expected, repr(MinosMultipleOnSuccessException()))
+
+    def test_step_multiple_on_error(self):
+        self.assertTrue(issubclass(MinosMultipleOnErrorException, MinosSagaStepException))
+
+    def test_step_multiple_on_error_repr(self):
+        expected = "MinosMultipleOnErrorException(message=\"A 'SagaStep' can only define one 'on_error' method.\")"
+        self.assertEqual(expected, repr(MinosMultipleOnErrorException()))
 
     def test_step_already_on_saga(self):
         self.assertTrue(issubclass(MinosAlreadyOnSagaException, MinosSagaStepException))

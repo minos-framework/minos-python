@@ -51,11 +51,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     {
                         "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                        "on_error": {"callback": "tests.utils.handle_ticket_error"},
                         "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
@@ -81,11 +83,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     {
                         "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                        "on_error": {"callback": "tests.utils.handle_ticket_error"},
                         "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
@@ -95,6 +99,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "definition": {
                     "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": {"callback": "tests.utils.handle_order_success"},
+                    "on_error": {"callback": "tests.utils.handle_ticket_error"},
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 "status": "paused-on-success",
@@ -122,11 +127,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     {
                         "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                        "on_error": {"callback": "tests.utils.handle_ticket_error"},
                         "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
@@ -136,6 +143,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     "definition": {
                         "on_execute": {"callback": "tests.utils.send_create_order"},
                         "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     "status": "finished",
@@ -146,6 +154,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "definition": {
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                    "on_error": {"callback": "tests.utils.handle_ticket_error"},
                     "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                 },
                 "status": "paused-on-success",

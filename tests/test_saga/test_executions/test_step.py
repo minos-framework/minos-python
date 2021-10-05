@@ -22,6 +22,7 @@ from tests.utils import (
     Foo,
     NaiveBroker,
     fake_reply,
+    handle_ticket_error,
     handle_ticket_success,
     handle_ticket_success_raises,
     send_create_ticket,
@@ -148,7 +149,12 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, self.publish_mock.call_count)
 
     def test_raw(self):
-        definition = SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
+        definition = (
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
+        )
         execution = SagaStepExecution(definition)
 
         expected = {
@@ -156,6 +162,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             "definition": {
                 "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                "on_error": {"callback": "tests.utils.handle_ticket_error"},
                 "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             },
             "status": "created",
@@ -169,19 +176,26 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             "definition": {
                 "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                "on_error": {"callback": "tests.utils.handle_ticket_error"},
                 "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             },
             "status": "created",
         }
         expected = SagaStepExecution(
-            SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
         )
         observed = SagaStepExecution.from_raw(raw)
         self.assertEqual(expected, observed)
 
     def test_from_raw_already(self):
         expected = SagaStepExecution(
-            SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
         )
         observed = SagaStepExecution.from_raw(expected)
         self.assertEqual(expected, observed)

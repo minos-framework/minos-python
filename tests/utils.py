@@ -99,6 +99,13 @@ async def handle_ticket_success(context: SagaContext, response: SagaResponse) ->
 
 
 # noinspection PyUnusedLocal
+async def handle_ticket_error(context: SagaContext, response: SagaResponse) -> SagaContext:
+    """For testing purposes."""
+    context["ticket"] = None
+    return context
+
+
+# noinspection PyUnusedLocal
 async def handle_ticket_success_raises(context: SagaContext, response: SagaResponse) -> SagaContext:
     """For testing purposes."""
     raise ValueError()
@@ -124,6 +131,7 @@ ADD_ORDER = (
         .on_failure(send_delete_order)
     .step(send_create_ticket)
         .on_success(handle_ticket_success)
+        .on_error(handle_ticket_error)
         .on_failure(send_delete_ticket)
     .commit()
 )
