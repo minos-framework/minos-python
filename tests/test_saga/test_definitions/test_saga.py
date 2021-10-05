@@ -65,7 +65,7 @@ class TestSaga(unittest.TestCase):
 
     def test_empty_step_raises(self):
         with self.assertRaises(MinosSagaException):
-            Saga().step().invoke_participant(send_create_order).with_compensation(send_delete_order).step().commit()
+            Saga().step().invoke_participant(send_create_order).on_failure(send_delete_order).step().commit()
 
     def test_duplicate_operation_raises(self):
         with self.assertRaises(MinosSagaException):
@@ -73,17 +73,17 @@ class TestSaga(unittest.TestCase):
                 Saga()
                 .step()
                 .invoke_participant(send_create_order)
-                .with_compensation(send_delete_order)
-                .with_compensation(send_delete_ticket)
+                .on_failure(send_delete_order)
+                .on_failure(send_delete_ticket)
                 .commit()
             )
 
     def test_missing_send_raises(self):
         with self.assertRaises(MinosSagaException):
-            (Saga().step().with_compensation(send_delete_ticket).commit())
+            (Saga().step().on_failure(send_delete_ticket).commit())
 
     def test_build_execution(self):
-        saga = Saga().step().invoke_participant(send_create_order).with_compensation(send_delete_order).commit()
+        saga = Saga().step().invoke_participant(send_create_order).on_failure(send_delete_order).commit()
         execution = SagaExecution.from_saga(saga)
         self.assertIsInstance(execution, SagaExecution)
 
@@ -103,10 +103,10 @@ class TestSaga(unittest.TestCase):
             Saga()
             .step()
             .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
+            .on_failure(send_delete_order)
             .step()
             .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
+            .on_success(handle_ticket_success)
             .step()
             .invoke_participant(send_verify_consumer)
             .commit()
@@ -116,18 +116,18 @@ class TestSaga(unittest.TestCase):
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                    "on_reply": None,
-                    "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                    "on_success": None,
+                    "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                    "on_reply": {"callback": "tests.utils.handle_ticket_success"},
-                    "with_compensation": None,
+                    "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                    "on_failure": None,
                 },
                 {
                     "invoke_participant": {"callback": "tests.utils.send_verify_consumer"},
-                    "on_reply": None,
-                    "with_compensation": None,
+                    "on_success": None,
+                    "on_failure": None,
                 },
             ],
         }
@@ -139,18 +139,18 @@ class TestSaga(unittest.TestCase):
             "steps": [
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                    "on_reply": None,
-                    "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                    "on_success": None,
+                    "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                    "on_reply": {"callback": "tests.utils.handle_ticket_success"},
-                    "with_compensation": None,
+                    "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                    "on_failure": None,
                 },
                 {
                     "invoke_participant": {"callback": "tests.utils.send_verify_consumer"},
-                    "on_reply": None,
-                    "with_compensation": None,
+                    "on_success": None,
+                    "on_failure": None,
                 },
             ],
         }
@@ -158,10 +158,10 @@ class TestSaga(unittest.TestCase):
             Saga()
             .step()
             .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
+            .on_failure(send_delete_order)
             .step()
             .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
+            .on_success(handle_ticket_success)
             .step()
             .invoke_participant(send_verify_consumer)
             .commit()
@@ -173,10 +173,10 @@ class TestSaga(unittest.TestCase):
             Saga()
             .step()
             .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
+            .on_failure(send_delete_order)
             .step()
             .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
+            .on_success(handle_ticket_success)
             .step()
             .invoke_participant(send_verify_consumer)
             .commit()

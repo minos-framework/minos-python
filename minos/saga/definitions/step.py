@@ -42,13 +42,13 @@ class SagaStep(object):
         self,
         saga: Optional[Saga] = None,
         invoke_participant: Optional[SagaOperation] = None,
-        with_compensation: Optional[SagaOperation] = None,
-        on_reply: Optional[SagaOperation] = None,
+        on_failure: Optional[SagaOperation] = None,
+        on_success: Optional[SagaOperation] = None,
     ):
         self.saga = saga
         self.invoke_participant_operation = invoke_participant
-        self.with_compensation_operation = with_compensation
-        self.on_reply_operation = on_reply
+        self.on_failure_operation = on_failure
+        self.on_success_operation = on_success
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
@@ -64,8 +64,8 @@ class SagaStep(object):
         current = raw | kwargs
 
         current["invoke_participant"] = SagaOperation.from_raw(current["invoke_participant"])
-        current["with_compensation"] = SagaOperation.from_raw(current["with_compensation"])
-        current["on_reply"] = SagaOperation.from_raw(current["on_reply"])
+        current["on_failure"] = SagaOperation.from_raw(current["on_failure"])
+        current["on_success"] = SagaOperation.from_raw(current["on_success"])
 
         return cls(**current)
 
@@ -83,31 +83,31 @@ class SagaStep(object):
 
         return self
 
-    def with_compensation(self, callback: PublishCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_failure(self, callback: PublishCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
         """With compensation method.
 
         :param callback: The callback function used for the request contents preparation.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
-        if self.with_compensation_operation is not None:
+        if self.on_failure_operation is not None:
             raise MinosMultipleWithCompensationException()
 
-        self.with_compensation_operation = SagaOperation(callback, parameters)
+        self.on_failure_operation = SagaOperation(callback, parameters)
 
         return self
 
-    def on_reply(self, callback: ReplyCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_success(self, callback: ReplyCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
         """On reply method.
 
         :param callback: The callback function used to handle the invoke participant response.
         :param parameters: A mapping of named parameters to be passed to the callback.
         :return: A ``self`` reference.
         """
-        if self.on_reply_operation is not None:
+        if self.on_success_operation is not None:
             raise MinosMultipleOnReplyException()
 
-        self.on_reply_operation = SagaOperation(callback, parameters)
+        self.on_success_operation = SagaOperation(callback, parameters)
 
         return self
 
@@ -117,7 +117,7 @@ class SagaStep(object):
 
         :return: A ``bool`` instance.
         """
-        return self.on_reply_operation is not None
+        return self.on_success_operation is not None
 
     def step(self) -> SagaStep:
         """Create a new step in the ``Saga``.
@@ -148,8 +148,8 @@ class SagaStep(object):
         """
         if (
             self.invoke_participant_operation is None
-            and self.with_compensation_operation is None
-            and self.on_reply_operation is None
+            and self.on_failure_operation is None
+            and self.on_success_operation is None
         ):
             raise MinosSagaEmptyStepException()
 
@@ -166,10 +166,8 @@ class SagaStep(object):
             "invoke_participant": (
                 None if self.invoke_participant_operation is None else self.invoke_participant_operation.raw
             ),
-            "with_compensation": (
-                None if self.with_compensation_operation is None else self.with_compensation_operation.raw
-            ),
-            "on_reply": (None if self.on_reply_operation is None else self.on_reply_operation.raw),
+            "on_failure": (None if self.on_failure_operation is None else self.on_failure_operation.raw),
+            "on_success": (None if self.on_success_operation is None else self.on_success_operation.raw),
         }
 
     def __eq__(self, other: SagaStep) -> bool:
@@ -178,6 +176,6 @@ class SagaStep(object):
     def __iter__(self) -> Iterable:
         yield from (
             self.invoke_participant_operation,
-            self.with_compensation_operation,
-            self.on_reply_operation,
+            self.on_failure_operation,
+            self.on_success_operation,
         )

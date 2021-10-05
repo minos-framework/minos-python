@@ -27,13 +27,13 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(MinosMultipleInvokeParticipantException):
             SagaStep().invoke_participant(send_create_ticket).invoke_participant(send_create_ticket)
 
-    def test_with_compensation_multiple_raises(self):
+    def test_on_failure_multiple_raises(self):
         with self.assertRaises(MinosMultipleWithCompensationException):
-            SagaStep().with_compensation(send_delete_ticket).with_compensation(send_delete_ticket)
+            SagaStep().on_failure(send_delete_ticket).on_failure(send_delete_ticket)
 
-    def test_on_reply_multiple_raises(self):
+    def test_on_success_multiple_raises(self):
         with self.assertRaises(MinosMultipleOnReplyException):
-            SagaStep().on_reply(handle_ticket_success).on_reply(handle_ticket_success)
+            SagaStep().on_success(handle_ticket_success).on_success(handle_ticket_success)
 
     def test_step_validates(self):
         step = SagaStep(Saga())
@@ -77,10 +77,10 @@ class TestSagaStep(unittest.TestCase):
 
     def test_validate_raises_non_invoke_participant(self):
         with self.assertRaises(MinosUndefinedInvokeParticipantException):
-            SagaStep().with_compensation(send_delete_ticket).validate()
+            SagaStep().on_failure(send_delete_ticket).validate()
 
     def test_has_reply_true(self):
-        step = SagaStep().invoke_participant(send_create_ticket).on_reply(handle_ticket_success)
+        step = SagaStep().invoke_participant(send_create_ticket).on_success(handle_ticket_success)
         self.assertTrue(step.has_reply)
 
     def test_has_reply_false(self):
@@ -91,29 +91,29 @@ class TestSagaStep(unittest.TestCase):
         step = (
             SagaStep()
             .invoke_participant(send_create_ticket)
-            .with_compensation(send_delete_ticket)
-            .on_reply(handle_ticket_success)
+            .on_success(handle_ticket_success)
+            .on_failure(send_delete_ticket)
         )
 
         expected = {
             "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-            "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
-            "on_reply": {"callback": "tests.utils.handle_ticket_success"},
+            "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+            "on_success": {"callback": "tests.utils.handle_ticket_success"},
         }
         self.assertEqual(expected, step.raw)
 
     def test_from_raw(self):
         raw = {
             "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-            "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
-            "on_reply": {"callback": "tests.utils.handle_ticket_success"},
+            "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+            "on_success": {"callback": "tests.utils.handle_ticket_success"},
         }
 
         expected = (
             SagaStep()
             .invoke_participant(send_create_ticket)
-            .with_compensation(send_delete_ticket)
-            .on_reply(handle_ticket_success)
+            .on_success(handle_ticket_success)
+            .on_failure(send_delete_ticket)
         )
         self.assertEqual(expected, SagaStep.from_raw(raw))
 
@@ -121,8 +121,8 @@ class TestSagaStep(unittest.TestCase):
         expected = (
             SagaStep()
             .invoke_participant(send_create_ticket)
-            .with_compensation(send_delete_ticket)
-            .on_reply(handle_ticket_success)
+            .on_success(handle_ticket_success)
+            .on_failure(send_delete_ticket)
         )
         observed = SagaStep.from_raw(expected)
         self.assertEqual(expected, observed)

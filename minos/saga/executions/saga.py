@@ -150,7 +150,7 @@ class SagaExecution(object):
                     f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
                 )
 
-            logger.info(f"Received 'with_compensation' reply: {reply!s}")
+            logger.info(f"Received 'on_failure' reply: {reply!s}")
             return self.context
 
         self.status = SagaStatus.Running

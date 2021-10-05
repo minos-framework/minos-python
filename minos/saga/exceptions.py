@@ -43,7 +43,7 @@ class MinosMultipleWithCompensationException(MinosSagaStepException):
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "A 'SagaStep' can only define one 'with_compensation' method."
+            message = "A 'SagaStep' can only define one 'on_failure' method."
         super().__init__(message)
 
 
@@ -52,7 +52,7 @@ class MinosMultipleOnReplyException(MinosSagaStepException):
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "A 'SagaStep' can only define one 'on_reply' method."
+            message = "A 'SagaStep' can only define one 'on_success' method."
         super().__init__(message)
 
 

@@ -37,12 +37,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             Saga()
             .step()
             .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
             .step()
             .invoke_participant(send_create_ticket)
-            .with_compensation(send_delete_ticket)
-            .on_reply(handle_ticket_success_raises)
+            .on_success(handle_ticket_success_raises)
+            .on_failure(send_delete_ticket)
             .commit()
         )
 
@@ -71,13 +71,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "steps": [
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                        "on_reply": {"callback": "tests.utils.handle_order_success"},
-                        "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                        "on_reply": {"callback": "tests.utils.handle_ticket_success_raises"},
-                        "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
+                        "on_success": {"callback": "tests.utils.handle_ticket_success_raises"},
+                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
             },
@@ -101,13 +101,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "steps": [
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                        "on_reply": {"callback": "tests.utils.handle_order_success"},
-                        "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                        "on_reply": {"callback": "tests.utils.handle_ticket_success_raises"},
-                        "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
+                        "on_success": {"callback": "tests.utils.handle_ticket_success_raises"},
+                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
             },
@@ -115,8 +115,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "paused_step": {
                 "definition": {
                     "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                    "on_reply": {"callback": "tests.utils.handle_order_success"},
-                    "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                    "on_success": {"callback": "tests.utils.handle_order_success"},
+                    "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 "status": "paused-on-reply",
                 "already_rollback": False,
@@ -142,13 +142,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "steps": [
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                        "on_reply": {"callback": "tests.utils.handle_order_success"},
-                        "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
                         "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                        "on_reply": {"callback": "tests.utils.handle_ticket_success_raises"},
-                        "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
+                        "on_success": {"callback": "tests.utils.handle_ticket_success_raises"},
+                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
             },
@@ -156,8 +156,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 {
                     "definition": {
                         "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                        "on_reply": {"callback": "tests.utils.handle_order_success"},
-                        "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     "status": "finished",
                     "already_rollback": False,
@@ -166,8 +166,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "paused_step": {
                 "definition": {
                     "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                    "on_reply": {"callback": "tests.utils.handle_ticket_success_raises"},
-                    "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
+                    "on_success": {"callback": "tests.utils.handle_ticket_success_raises"},
+                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                 },
                 "status": "paused-on-reply",
                 "already_rollback": False,

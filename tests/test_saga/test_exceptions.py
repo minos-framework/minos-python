@@ -57,21 +57,21 @@ class TestExceptions(unittest.TestCase):
         )
         self.assertEqual(expected, repr(MinosMultipleInvokeParticipantException()))
 
-    def test_step_multiple_with_compensation(self):
+    def test_step_multiple_on_failure(self):
         self.assertTrue(issubclass(MinosMultipleWithCompensationException, MinosSagaStepException))
 
-    def test_step_multiple_with_compensation_repr(self):
+    def test_step_multiple_on_failure_repr(self):
         expected = (
             "MinosMultipleWithCompensationException(message=\"A 'SagaStep'"
-            " can only define one 'with_compensation' method.\")"
+            " can only define one 'on_failure' method.\")"
         )
         self.assertEqual(expected, repr(MinosMultipleWithCompensationException()))
 
-    def test_step_multiple_on_reply(self):
+    def test_step_multiple_on_success(self):
         self.assertTrue(issubclass(MinosMultipleOnReplyException, MinosSagaStepException))
 
-    def test_step_multiple_on_reply_repr(self):
-        expected = "MinosMultipleOnReplyException(message=\"A 'SagaStep' can only define one 'on_reply' method.\")"
+    def test_step_multiple_on_success_repr(self):
+        expected = "MinosMultipleOnReplyException(message=\"A 'SagaStep' can only define one 'on_success' method.\")"
         self.assertEqual(expected, repr(MinosMultipleOnReplyException()))
 
     def test_step_already_on_saga(self):
