@@ -65,7 +65,7 @@ class Saga:
 
         return instance
 
-    def step(self, step: Optional[SagaStep] = None) -> SagaStep:
+    def step(self, step=None) -> SagaStep:
         """Add a new step in the ``Saga``.
 
         :return: A ``SagaStep`` instance.
@@ -76,11 +76,13 @@ class Saga:
             )
 
         if step is None:
-            step = SagaStep(saga=self)
-        else:
+            step = SagaStep(callback=None, saga=self)
+        elif isinstance(step, SagaStep):
             if step.saga is not None:
                 raise MinosAlreadyOnSagaException()
             step.saga = self
+        else:
+            step = SagaStep(step, saga=self)
 
         self.steps.append(step)
         return step

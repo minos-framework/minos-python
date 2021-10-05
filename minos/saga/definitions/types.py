@@ -15,6 +15,6 @@ from ..messages import (
     SagaResponse,
 )
 
-PublishCallBack = Callable[[SagaContext, ...], Union[SagaRequest, Awaitable[SagaRequest]]]
-ReplyCallBack = Callable[[SagaContext, SagaResponse, ...], Union[SagaContext, Awaitable[SagaContext]]]
+RequestCallBack = Callable[[SagaContext, ...], Union[SagaRequest, Awaitable[SagaRequest]]]
+ResponseCallBack = Callable[[SagaContext, SagaResponse, ...], Union[SagaContext, Awaitable[SagaContext]]]
 CommitCallback = Callable[[SagaContext, ...], Union[Optional[SagaContext], Awaitable[Optional[SagaContext]]]]

@@ -35,12 +35,10 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls) -> None:
         cls.saga = (
             Saga()
-            .step()
-            .invoke_participant(send_create_order)
+            .step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step()
-            .invoke_participant(send_create_ticket)
+            .step(send_create_ticket)
             .on_success(handle_ticket_success_raises)
             .on_failure(send_delete_ticket)
             .commit()

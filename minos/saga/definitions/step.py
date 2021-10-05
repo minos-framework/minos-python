@@ -25,8 +25,8 @@ from .operations import (
     SagaOperation,
 )
 from .types import (
-    PublishCallBack,
-    ReplyCallBack,
+    RequestCallBack,
+    ResponseCallBack,
 )
 
 if TYPE_CHECKING:
@@ -40,6 +40,8 @@ class SagaStep:
 
     def __init__(
         self,
+        callback: RequestCallBack = None,
+        parameters: Optional[SagaContext] = None,
         saga: Optional[Saga] = None,
         invoke_participant: Optional[SagaOperation] = None,
         on_failure: Optional[SagaOperation] = None,
@@ -49,6 +51,9 @@ class SagaStep:
         self.invoke_participant_operation = invoke_participant
         self.on_failure_operation = on_failure
         self.on_success_operation = on_success
+
+        if callback is not None:
+            self.invoke_participant(callback, parameters)
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
@@ -69,7 +74,7 @@ class SagaStep:
 
         return cls(**current)
 
-    def invoke_participant(self, callback: PublishCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def invoke_participant(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
         """Invoke a new participant method.
 
         :param callback: The callback function used for the request contents preparation.
@@ -83,7 +88,7 @@ class SagaStep:
 
         return self
 
-    def on_failure(self, callback: PublishCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_failure(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
         """With compensation method.
 
         :param callback: The callback function used for the request contents preparation.
@@ -97,7 +102,7 @@ class SagaStep:
 
         return self
 
-    def on_success(self, callback: ReplyCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_success(self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
         """On reply method.
 
         :param callback: The callback function used to handle the invoke participant response.
@@ -119,15 +124,17 @@ class SagaStep:
         """
         return self.on_success_operation is not None
 
-    def step(self) -> SagaStep:
+    def step(self, *args, **kwargs) -> SagaStep:
         """Create a new step in the ``Saga``.
 
+        :param args: TODO
+        :param kwargs: TODO
         :return: A new ``SagaStep`` instance.
         """
         self.validate()
         if self.saga is None:
             raise MinosSagaNotDefinedException()
-        return self.saga.step()
+        return self.saga.step(*args, **kwargs)
 
     def commit(self, *args, **kwargs) -> Saga:
         """Commit the current ``SagaStep`` on the ``Saga``.

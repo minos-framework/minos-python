@@ -65,50 +65,40 @@ class TestSaga(unittest.TestCase):
 
     def test_empty_step_raises(self):
         with self.assertRaises(MinosSagaException):
-            Saga().step().invoke_participant(send_create_order).on_failure(send_delete_order).step().commit()
+            Saga().step(send_create_order).on_failure(send_delete_order).step().commit()
 
     def test_duplicate_operation_raises(self):
         with self.assertRaises(MinosSagaException):
-            (
-                Saga()
-                .step()
-                .invoke_participant(send_create_order)
-                .on_failure(send_delete_order)
-                .on_failure(send_delete_ticket)
-                .commit()
-            )
+            (Saga().step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit())
 
     def test_missing_send_raises(self):
         with self.assertRaises(MinosSagaException):
             (Saga().step().on_failure(send_delete_ticket).commit())
 
     def test_build_execution(self):
-        saga = Saga().step().invoke_participant(send_create_order).on_failure(send_delete_order).commit()
+        saga = Saga().step(send_create_order).on_failure(send_delete_order).commit()
         execution = SagaExecution.from_saga(saga)
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):
-        step = SagaStep().invoke_participant(send_create_order)
+        step = SagaStep(send_create_order)
         saga = Saga().step(step).commit()
 
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
-        step = SagaStep(saga=Saga()).invoke_participant(send_create_order)
+        step = SagaStep(send_create_order, saga=Saga())
         with self.assertRaises(MinosAlreadyOnSagaException):
             Saga().step(step)
 
     def test_raw(self):
         saga = (
             Saga()
-            .step()
-            .invoke_participant(send_create_order)
+            .step(send_create_order)
             .on_failure(send_delete_order)
-            .step()
-            .invoke_participant(send_create_ticket)
+            .step(send_create_ticket)
             .on_success(handle_ticket_success)
-            .step()
-            .invoke_participant(send_verify_consumer)
+            .step(send_verify_consumer)
             .commit()
         )
         expected = {
@@ -156,14 +146,11 @@ class TestSaga(unittest.TestCase):
         }
         expected = (
             Saga()
-            .step()
-            .invoke_participant(send_create_order)
+            .step(send_create_order)
             .on_failure(send_delete_order)
-            .step()
-            .invoke_participant(send_create_ticket)
+            .step(send_create_ticket)
             .on_success(handle_ticket_success)
-            .step()
-            .invoke_participant(send_verify_consumer)
+            .step(send_verify_consumer)
             .commit()
         )
         self.assertEqual(expected, Saga.from_raw(raw))
@@ -171,14 +158,11 @@ class TestSaga(unittest.TestCase):
     def test_from_raw_already(self):
         expected = (
             Saga()
-            .step()
-            .invoke_participant(send_create_order)
+            .step(send_create_order)
             .on_failure(send_delete_order)
-            .step()
-            .invoke_participant(send_create_ticket)
+            .step(send_create_ticket)
             .on_success(handle_ticket_success)
-            .step()
-            .invoke_participant(send_verify_consumer)
+            .step(send_verify_consumer)
             .commit()
         )
         self.assertEqual(expected, Saga.from_raw(expected))
