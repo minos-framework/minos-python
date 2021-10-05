@@ -25,7 +25,7 @@ from .saga import (
 )
 
 
-class SagaExecutionStorage(object):
+class SagaExecutionStorage:
     """Saga Execution Storage class."""
 
     def __init__(

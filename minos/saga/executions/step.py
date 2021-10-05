@@ -34,7 +34,7 @@ from .status import (
 )
 
 
-class SagaExecutionStep(object):
+class SagaExecutionStep:
     """Saga Execution Step class."""
 
     def __init__(

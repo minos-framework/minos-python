@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     )
 
 
-class SagaStep(object):
+class SagaStep:
     """Saga step class."""
 
     def __init__(

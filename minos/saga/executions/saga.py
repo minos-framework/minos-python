@@ -47,7 +47,7 @@ from .step import (
 logger = logging.getLogger(__name__)
 
 
-class SagaExecution(object):
+class SagaExecution:
     """Saga Execution class."""
 
     # noinspection PyUnusedLocal
