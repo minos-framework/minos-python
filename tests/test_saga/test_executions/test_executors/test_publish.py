@@ -42,7 +42,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
 
     async def test_exec(self):
         operation = SagaOperation(send_create_product)
-        context = SagaContext()
+        context = SagaContext(product=Foo("create_product!"))
 
         mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = mock
@@ -56,7 +56,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
 
     async def test_exec_raises(self):
         operation = SagaOperation(send_create_product)
-        context = SagaContext()
+        context = SagaContext(product=Foo("create_product!"))
 
         async def _fn(*args, **kwargs):
             raise ValueError("This is an exception")

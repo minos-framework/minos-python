@@ -46,13 +46,13 @@ class Foo(MinosModel):
 # noinspection PyUnusedLocal
 async def send_create_product(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateProduct", Foo("create_product!"))
+    return SagaRequest("CreateProduct", context["product"])
 
 
-# noinspection PyUnusedLocal
-async def send_delete_product(context: SagaContext) -> SagaRequest:
+async def handle_product_success(context: SagaContext, response: SagaResponse) -> SagaContext:
     """For testing purposes."""
-    return SagaRequest("DeleteProduct", Foo("delete_product!"))
+    context["product"] = await response.content()
+    return context
 
 
 # noinspection PyUnusedLocal
@@ -76,7 +76,7 @@ async def send_delete_ticket(context: SagaContext) -> SagaRequest:
 # noinspection PyUnusedLocal
 async def send_create_order(context: SagaContext) -> SagaRequest:
     """For testing purposes."""
-    return SagaRequest("CreateOrder", Foo("create_order"))
+    return SagaRequest("CreateOrder", Foo("create_order!"))
 
 
 # noinspection PyUnusedLocal
@@ -85,21 +85,9 @@ async def send_delete_order(context: SagaContext) -> SagaRequest:
     return SagaRequest("DeleteOrder", Foo("delete_order!"))
 
 
-# noinspection PyUnusedLocal
-async def send_verify_consumer(context: SagaContext) -> SagaRequest:
-    """For testing purposes."""
-    return SagaRequest("VerifyConsumer", Foo("verify_consumer!"))
-
-
 async def handle_order_success(context: SagaContext, response: SagaResponse) -> SagaContext:
     """For testing purposes."""
     context["order"] = await response.content()
-    return context
-
-
-async def handle_product_success(context: SagaContext, response: SagaResponse) -> SagaContext:
-    """For testing purposes."""
-    context["product"] = await response.content()
     return context
 
 
@@ -128,27 +116,29 @@ def commit_callback_raises(context: SagaContext) -> SagaContext:
     raise ValueError()
 
 
+# fmt: off
 ADD_ORDER = (
     Saga()
     .step()
-    .invoke_participant(send_create_product)
-    .with_compensation(send_delete_product)
-    .on_reply(handle_product_success)
+        .invoke_participant(send_create_order)
+        .with_compensation(send_delete_order)
+        .on_reply(handle_order_success)
     .step()
-    .invoke_participant(send_create_ticket)
-    .with_compensation(send_delete_order)
-    .on_reply(handle_ticket_success)
+        .invoke_participant(send_create_ticket)
+        .with_compensation(send_delete_ticket)
+        .on_reply(handle_ticket_success)
     .commit()
 )
 
+# fmt: off
 DELETE_ORDER = (
     Saga()
     .step()
-    .invoke_participant(send_delete_product)
-    .on_reply(handle_product_success)
+        .invoke_participant(send_delete_order)
+        .on_reply(handle_order_success)
     .step()
-    .invoke_participant(send_delete_ticket)
-    .on_reply(handle_ticket_success_raises)
+        .invoke_participant(send_delete_ticket)
+        .on_reply(handle_ticket_success_raises)
     .commit()
 )
 

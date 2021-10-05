@@ -54,6 +54,7 @@ class OnReplyExecutor(LocalExecutor):
 
         try:
             response = SagaResponse(reply.data, reply.status)
+            context = SagaContext(**context)  # Needed to avoid mutability issues.
             context = await self.exec_operation(operation, context, response)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)

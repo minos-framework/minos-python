@@ -21,7 +21,6 @@ from tests.utils import (
     send_create_ticket,
     send_delete_order,
     send_delete_ticket,
-    send_verify_consumer,
 )
 
 
@@ -107,8 +106,6 @@ class TestSaga(unittest.TestCase):
             .step()
             .invoke_participant(send_create_ticket)
             .on_reply(handle_ticket_success)
-            .step()
-            .invoke_participant(send_verify_consumer)
             .commit()
         )
         expected = {
@@ -122,11 +119,6 @@ class TestSaga(unittest.TestCase):
                 {
                     "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
                     "on_reply": {"callback": "tests.utils.handle_ticket_success"},
-                    "with_compensation": None,
-                },
-                {
-                    "invoke_participant": {"callback": "tests.utils.send_verify_consumer"},
-                    "on_reply": None,
                     "with_compensation": None,
                 },
             ],
@@ -147,11 +139,6 @@ class TestSaga(unittest.TestCase):
                     "on_reply": {"callback": "tests.utils.handle_ticket_success"},
                     "with_compensation": None,
                 },
-                {
-                    "invoke_participant": {"callback": "tests.utils.send_verify_consumer"},
-                    "on_reply": None,
-                    "with_compensation": None,
-                },
             ],
         }
         expected = (
@@ -162,8 +149,6 @@ class TestSaga(unittest.TestCase):
             .step()
             .invoke_participant(send_create_ticket)
             .on_reply(handle_ticket_success)
-            .step()
-            .invoke_participant(send_verify_consumer)
             .commit()
         )
         self.assertEqual(expected, Saga.from_raw(raw))
@@ -177,8 +162,6 @@ class TestSaga(unittest.TestCase):
             .step()
             .invoke_participant(send_create_ticket)
             .on_reply(handle_ticket_success)
-            .step()
-            .invoke_participant(send_verify_consumer)
             .commit()
         )
         self.assertEqual(expected, Saga.from_raw(expected))
