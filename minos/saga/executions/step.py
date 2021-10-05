@@ -110,7 +110,7 @@ class SagaStepExecution:
         return context
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """Revert the invoke participant operation with a with compensation operation.
+        """Revert the executed operation with a compensatory operation.
 
         :param context: Execution context.
         :return: The updated execution context.
