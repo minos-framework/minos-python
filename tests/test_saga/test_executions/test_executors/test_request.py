@@ -24,7 +24,7 @@ from tests.utils import (
 )
 
 
-class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
+class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
         self.uuid = uuid4()

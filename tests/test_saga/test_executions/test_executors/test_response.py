@@ -21,7 +21,7 @@ from tests.utils import (
 )
 
 
-class TesOnSuccessExecutor(unittest.IsolatedAsyncioTestCase):
+class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.executor = ResponseExecutor()
 
