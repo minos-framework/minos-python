@@ -76,7 +76,7 @@ class Saga:
             )
 
         if step is None:
-            step = SagaStep(self)
+            step = SagaStep(saga=self)
         else:
             if step.saga is not None:
                 raise MinosAlreadyOnSagaException()

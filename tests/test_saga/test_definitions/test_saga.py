@@ -94,7 +94,7 @@ class TestSaga(unittest.TestCase):
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
-        step = SagaStep(Saga()).invoke_participant(send_create_order)
+        step = SagaStep(saga=Saga()).invoke_participant(send_create_order)
         with self.assertRaises(MinosAlreadyOnSagaException):
             Saga().step(step)
 

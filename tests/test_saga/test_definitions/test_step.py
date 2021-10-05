@@ -36,7 +36,7 @@ class TestSagaStep(unittest.TestCase):
             SagaStep().on_success(handle_ticket_success).on_success(handle_ticket_success)
 
     def test_step_validates(self):
-        step = SagaStep(Saga())
+        step = SagaStep(saga=Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
         step.step()
@@ -48,7 +48,7 @@ class TestSagaStep(unittest.TestCase):
 
     def test_commit(self):
         saga = Saga()
-        step = SagaStep(saga).invoke_participant(send_create_ticket)
+        step = SagaStep(saga=saga).invoke_participant(send_create_ticket)
         mock = MagicMock(return_value=True)
         saga.commit = mock
         step.commit(commit_callback)
@@ -56,7 +56,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(call(commit_callback), mock.call_args)
 
     def test_commit_validates(self):
-        step = SagaStep(Saga())
+        step = SagaStep(saga=Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
         step.commit()
@@ -64,7 +64,7 @@ class TestSagaStep(unittest.TestCase):
 
     def test_submit(self):
         expected = Saga()
-        observed = SagaStep(expected).invoke_participant(send_create_ticket).commit()
+        observed = SagaStep(saga=expected).invoke_participant(send_create_ticket).commit()
         self.assertEqual(expected, observed)
 
     def test_submit_raises(self):
