@@ -19,7 +19,7 @@ class SagaRequest:
         "_content",
     )
 
-    def __init__(self, target: str, content: Any):
+    def __init__(self, target: str, content: Any = None):
         self._target = target
         self._content = content
 
