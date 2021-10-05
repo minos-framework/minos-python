@@ -11,7 +11,7 @@ from .status import (
     SagaStepStatus,
 )
 from .step import (
-    SagaExecutionStep,
+    SagaStepExecution,
 )
 from .storage import (
     SagaExecutionStorage,

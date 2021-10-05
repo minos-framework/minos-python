@@ -13,8 +13,8 @@ from minos.saga import (
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionStepException,
     SagaContext,
-    SagaExecutionStep,
     SagaStep,
+    SagaStepExecution,
     SagaStepStatus,
 )
 from tests.utils import (
@@ -30,7 +30,7 @@ from tests.utils import (
 )
 
 
-class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
+class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
@@ -47,7 +47,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     async def test_execute_on_execute(self):
         step = SagaStep(send_create_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
@@ -63,7 +63,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     async def test_execute_on_execute_errored(self):
         step = SagaStep(send_create_ticket_raises).on_failure(send_delete_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
 
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
@@ -74,7 +74,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     async def test_execute_on_execute_errored_reply(self):
         step = SagaStep(send_create_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
@@ -91,7 +91,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     async def test_execute_on_execute_with_on_success(self):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
 
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
@@ -106,7 +106,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     async def test_execute_on_success(self):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
 
         reply = fake_reply(Foo("hello"))
         context = await execution.execute(context, reply=reply, **self.execute_kwargs)
@@ -116,7 +116,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     async def test_execute_on_success_errored(self):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success_raises)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
 
         reply = fake_reply(Foo("foo"))
         with self.assertRaises(MinosSagaFailedExecutionStepException):
@@ -127,7 +127,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
     async def test_rollback(self):
         step = SagaStep(send_create_ticket).on_success(handle_ticket_success_raises).on_failure(send_delete_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
 
         with self.assertRaises(MinosSagaRollbackExecutionStepException):
             await execution.rollback(context, **self.execute_kwargs)
@@ -149,7 +149,7 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
 
     def test_raw(self):
         definition = SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
-        execution = SagaExecutionStep(definition)
+        execution = SagaStepExecution(definition)
 
         expected = {
             "already_rollback": False,
@@ -173,17 +173,17 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             },
             "status": "created",
         }
-        expected = SagaExecutionStep(
+        expected = SagaStepExecution(
             (SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)),
         )
-        observed = SagaExecutionStep.from_raw(raw)
+        observed = SagaStepExecution.from_raw(raw)
         self.assertEqual(expected, observed)
 
     def test_from_raw_already(self):
-        expected = SagaExecutionStep(
+        expected = SagaStepExecution(
             (SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)),
         )
-        observed = SagaExecutionStep.from_raw(expected)
+        observed = SagaStepExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
 

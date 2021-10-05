@@ -65,7 +65,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosSagaFailedExecutionStepException) as result:
             await self.executor.exec(operation, context)
         self.assertEqual(
-            "There was a failure while 'SagaExecutionStep' was executing: ValueError('This is an exception')",
+            "There was a failure while 'SagaStepExecution' was executing: ValueError('This is an exception')",
             str(result.exception),
         )
 

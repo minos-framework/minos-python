@@ -20,7 +20,6 @@ from .exceptions import (
     MinosSagaExecutionAlreadyExecutedException,
     MinosSagaExecutionException,
     MinosSagaExecutionNotFoundException,
-    MinosSagaExecutionStepException,
     MinosSagaFailedCommitCallbackException,
     MinosSagaFailedExecutionException,
     MinosSagaFailedExecutionStepException,
@@ -30,6 +29,7 @@ from .exceptions import (
     MinosSagaRollbackExecutionException,
     MinosSagaRollbackExecutionStepException,
     MinosSagaStepException,
+    MinosSagaStepExecutionException,
     MinosUndefinedOnExecuteException,
 )
 from .executions import (
@@ -37,9 +37,9 @@ from .executions import (
     RequestExecutor,
     ResponseExecutor,
     SagaExecution,
-    SagaExecutionStep,
     SagaExecutionStorage,
     SagaStatus,
+    SagaStepExecution,
     SagaStepStatus,
 )
 from .manager import (

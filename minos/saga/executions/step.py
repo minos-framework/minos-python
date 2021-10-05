@@ -34,7 +34,7 @@ from .status import (
 )
 
 
-class SagaExecutionStep:
+class SagaStepExecution:
     """Saga Execution Step class."""
 
     def __init__(
@@ -46,12 +46,12 @@ class SagaExecutionStep:
         self.already_rollback = already_rollback
 
     @classmethod
-    def from_raw(cls, raw: Union[dict[str, Any], SagaExecutionStep], **kwargs) -> SagaExecutionStep:
+    def from_raw(cls, raw: Union[dict[str, Any], SagaStepExecution], **kwargs) -> SagaStepExecution:
         """Build a new instance from a raw representation.
 
         :param raw: The raw representation of the instance.
         :param kwargs: Additional named arguments.
-        :return: A ``SagaExecutionStep`` instance.
+        :return: A ``SagaStepExecution`` instance.
         """
         if isinstance(raw, cls):
             return raw

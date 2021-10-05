@@ -96,7 +96,7 @@ class MinosSagaFailedExecutionException(MinosSagaExecutionException):
     def __init__(self, exception: Exception, message: str = None):
         self.exception = exception
         if message is None:
-            message = f"There was a failure while 'SagaExecutionStep' was executing: {exception!r}"
+            message = f"There was a failure while 'SagaStepExecution' was executing: {exception!r}"
         super().__init__(message)
 
 
@@ -104,24 +104,24 @@ class MinosSagaExecutionAlreadyExecutedException(MinosSagaExecutionException):
     """Exception to be raised when a saga execution cannot be executed."""
 
 
-class MinosSagaExecutionStepException(MinosSagaException):
+class MinosSagaStepExecutionException(MinosSagaException):
     """Base exception for saga execution step."""
 
 
-class MinosSagaFailedExecutionStepException(MinosSagaExecutionStepException, MinosSagaFailedExecutionException):
+class MinosSagaFailedExecutionStepException(MinosSagaStepExecutionException, MinosSagaFailedExecutionException):
     """Exception to be raised when a saga execution step failed while running."""
 
 
-class MinosSagaPausedExecutionStepException(MinosSagaExecutionStepException):
+class MinosSagaPausedExecutionStepException(MinosSagaStepExecutionException):
     """Exception to be raised when a saga execution step is paused."""
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "There was a pause while 'SagaExecutionStep' was executing."
+            message = "There was a pause while 'SagaStepExecution' was executing."
         super().__init__(message)
 
 
-class MinosSagaRollbackExecutionStepException(MinosSagaExecutionStepException):
+class MinosSagaRollbackExecutionStepException(MinosSagaStepExecutionException):
     """Exception to be raised when a saga execution step failed while performing a rollback."""
 
 
@@ -135,7 +135,7 @@ class MinosSagaExecutorException(MinosSagaException):
     def __init__(self, exception: Exception, message: str = None):
         self.exception = exception
         if message is None:
-            message = f"There was a failure while 'SagaExecutionStep' was executing: {exception!r}"
+            message = f"There was a failure while 'SagaStepExecution' was executing: {exception!r}"
         super().__init__(message)
 
 
