@@ -10,15 +10,31 @@ from tests.utils import (
 
 
 class TestSagaOperation(unittest.TestCase):
+    def test_callback(self):
+        operation = SagaOperation(send_create_ticket)
+        self.assertEqual(send_create_ticket, operation.callback)
+
+    def test_parameters(self):
+        operation = SagaOperation(send_create_ticket, SagaContext(one=1))
+        self.assertEqual(SagaContext(one=1), operation.parameters)
+
+    def test_parameters_dict(self):
+        operation = SagaOperation(send_create_ticket, {"one": 1})
+        self.assertEqual(SagaContext(one=1), operation.parameters)
+
+    def test_parameters_kwargs(self):
+        operation = SagaOperation(send_create_ticket, one=1)
+        self.assertEqual(SagaContext(one=1), operation.parameters)
+
     def test_raw(self):
-        step = SagaOperation(send_create_ticket)
+        operation = SagaOperation(send_create_ticket)
         expected = {"callback": "tests.utils.send_create_ticket"}
-        self.assertEqual(expected, step.raw)
+        self.assertEqual(expected, operation.raw)
 
     def test_raw_with_parameters(self):
-        step = SagaOperation(send_create_ticket, parameters=SagaContext(foo="bar"))
+        operation = SagaOperation(send_create_ticket, parameters=SagaContext(foo="bar"))
         expected = {"callback": "tests.utils.send_create_ticket", "parameters": SagaContext(foo="bar").avro_str}
-        observed = step.raw
+        observed = operation.raw
         self.assertEqual(
             SagaContext.from_avro_str(expected.pop("parameters")), SagaContext.from_avro_str(observed.pop("parameters"))
         )

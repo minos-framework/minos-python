@@ -25,6 +25,7 @@ from .step import (
 )
 from .types import (
     CommitCallback,
+    RequestCallBack,
 )
 
 
@@ -73,7 +74,7 @@ class Saga:
 
         return instance
 
-    def step(self, step=None) -> SagaStep:
+    def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> SagaStep:
         """Add a new step in the ``Saga``.
 
         :return: A ``SagaStep`` instance.
@@ -89,8 +90,10 @@ class Saga:
             if step.saga is not None:
                 raise MinosAlreadyOnSagaException()
             step.saga = self
-        else:
+        elif isinstance(step, SagaOperation):
             step = SagaStep(step, saga=self)
+        else:
+            step = SagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
 
         self.steps.append(step)
         return step
@@ -117,11 +120,15 @@ class Saga:
         )
 
     # noinspection PyUnusedLocal
-    def commit(self, callback: Optional[CommitCallback] = None, parameters: Optional[SagaContext] = None) -> Saga:
+    def commit(
+        self, callback: Optional[CommitCallback] = None, parameters: Optional[SagaContext] = None, **kwargs
+    ) -> Saga:
         """Commit the instance to be ready for execution.
 
         :param callback: Optional function to be called at the end of execution.
         :param parameters: A mapping of named parameters to be passed to the callback.
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
+            ``None``.
         :return: A ``Saga`` instance.
         """
         if self.committed:
@@ -130,7 +137,7 @@ class Saga:
         if callback is None:
             callback = identity_fn
 
-        self.commit_operation = SagaOperation(callback, parameters=parameters)
+        self.commit_operation = SagaOperation(callback, parameters=parameters, **kwargs)
         return self
 
     @property
