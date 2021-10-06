@@ -15,22 +15,25 @@ from minos.saga import (
     SagaStep,
 )
 from tests.utils import (
-    foo_fn,
+    commit_callback,
+    handle_ticket_success,
+    send_create_ticket,
+    send_delete_ticket,
 )
 
 
 class TestSagaStep(unittest.TestCase):
     def test_invoke_participant_multiple_raises(self):
         with self.assertRaises(MinosMultipleInvokeParticipantException):
-            SagaStep().invoke_participant("foo", foo_fn).invoke_participant("foo", foo_fn)
+            SagaStep().invoke_participant(send_create_ticket).invoke_participant(send_create_ticket)
 
     def test_with_compensation_multiple_raises(self):
         with self.assertRaises(MinosMultipleWithCompensationException):
-            SagaStep().with_compensation("foo", foo_fn).with_compensation("foo", foo_fn)
+            SagaStep().with_compensation(send_delete_ticket).with_compensation(send_delete_ticket)
 
     def test_on_reply_multiple_raises(self):
         with self.assertRaises(MinosMultipleOnReplyException):
-            SagaStep().on_reply("foo").on_reply("foo")
+            SagaStep().on_reply(handle_ticket_success).on_reply(handle_ticket_success)
 
     def test_step_validates(self):
         step = SagaStep(Saga())
@@ -41,16 +44,16 @@ class TestSagaStep(unittest.TestCase):
 
     def test_step_raises_not_saga(self):
         with self.assertRaises(MinosSagaNotDefinedException):
-            SagaStep().invoke_participant("FooAdded", foo_fn).step()
+            SagaStep().invoke_participant(send_create_ticket).step()
 
     def test_commit(self):
         saga = Saga()
-        step = SagaStep(saga).invoke_participant("FoodAdd", foo_fn)
+        step = SagaStep(saga).invoke_participant(send_create_ticket)
         mock = MagicMock(return_value=True)
         saga.commit = mock
-        step.commit(foo_fn)
+        step.commit(commit_callback)
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(foo_fn), mock.call_args)
+        self.assertEqual(call(commit_callback), mock.call_args)
 
     def test_commit_validates(self):
         step = SagaStep(Saga())
@@ -61,12 +64,12 @@ class TestSagaStep(unittest.TestCase):
 
     def test_submit(self):
         expected = Saga()
-        observed = SagaStep(expected).invoke_participant("FoodAdd", foo_fn).commit()
+        observed = SagaStep(expected).invoke_participant(send_create_ticket).commit()
         self.assertEqual(expected, observed)
 
     def test_submit_raises(self):
         with self.assertRaises(MinosSagaNotDefinedException):
-            SagaStep().invoke_participant("FoodAdd", foo_fn).commit()
+            SagaStep().invoke_participant(send_create_ticket).commit()
 
     def test_validate_raises_empty(self):
         with self.assertRaises(MinosSagaEmptyStepException):
@@ -74,40 +77,52 @@ class TestSagaStep(unittest.TestCase):
 
     def test_validate_raises_non_invoke_participant(self):
         with self.assertRaises(MinosUndefinedInvokeParticipantException):
-            SagaStep().with_compensation("UserRemove", foo_fn).validate()
+            SagaStep().with_compensation(send_delete_ticket).validate()
 
     def test_has_reply_true(self):
-        step = SagaStep().invoke_participant("FoodAdd", foo_fn).on_reply("foo")
+        step = SagaStep().invoke_participant(send_create_ticket).on_reply(handle_ticket_success)
         self.assertTrue(step.has_reply)
 
     def test_has_reply_false(self):
-        step = SagaStep().invoke_participant("FoodAdd", foo_fn)
+        step = SagaStep().invoke_participant(send_create_ticket)
         self.assertFalse(step.has_reply)
 
     def test_raw(self):
-        step = SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
+        step = (
+            SagaStep()
+            .invoke_participant(send_create_ticket)
+            .with_compensation(send_delete_ticket)
+            .on_reply(handle_ticket_success)
+        )
+
         expected = {
-            "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "FoodAdd"},
-            "with_compensation": {"callback": "tests.utils.foo_fn", "name": "FooDelete"},
-            "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
+            "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+            "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
+            "on_reply": {"callback": "tests.utils.handle_ticket_success"},
         }
         self.assertEqual(expected, step.raw)
 
     def test_from_raw(self):
         raw = {
-            "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "FoodAdd"},
-            "with_compensation": {"callback": "tests.utils.foo_fn", "name": "FooDelete"},
-            "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
+            "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
+            "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
+            "on_reply": {"callback": "tests.utils.handle_ticket_success"},
         }
 
         expected = (
-            SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
+            SagaStep()
+            .invoke_participant(send_create_ticket)
+            .with_compensation(send_delete_ticket)
+            .on_reply(handle_ticket_success)
         )
         self.assertEqual(expected, SagaStep.from_raw(raw))
 
     def test_from_raw_already(self):
         expected = (
-            SagaStep().invoke_participant("FoodAdd", foo_fn).with_compensation("FooDelete", foo_fn).on_reply("foo")
+            SagaStep()
+            .invoke_participant(send_create_ticket)
+            .with_compensation(send_delete_ticket)
+            .on_reply(handle_ticket_success)
         )
         observed = SagaStep.from_raw(expected)
         self.assertEqual(expected, observed)

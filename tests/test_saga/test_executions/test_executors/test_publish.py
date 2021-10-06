@@ -20,7 +20,7 @@ from minos.saga import (
 from tests.utils import (
     Foo,
     NaiveBroker,
-    foo_fn,
+    send_create_product,
 )
 
 
@@ -41,20 +41,22 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
             PublishExecutor(reply_topic="AddFoo", execution_uuid=self.uuid)
 
     async def test_exec(self):
-        operation = SagaOperation(foo_fn, "AddBar")
-        context = SagaContext()
+        operation = SagaOperation(send_create_product)
+        context = SagaContext(product=Foo("create_product!"))
 
         mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = mock
         await self.executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
-        args = call(data=Foo("hello"), topic="AddBar", saga=self.uuid, reply_topic=self.executor.reply_topic)
+        args = call(
+            data=Foo("create_product!"), topic="CreateProduct", saga=self.uuid, reply_topic=self.executor.reply_topic
+        )
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_raises(self):
-        operation = SagaOperation(foo_fn, "AddBar")
-        context = SagaContext()
+        operation = SagaOperation(send_create_product)
+        context = SagaContext(product=Foo("create_product!"))
 
         async def _fn(*args, **kwargs):
             raise ValueError("This is an exception")

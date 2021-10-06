@@ -35,9 +35,13 @@ def identity_fn(x: T) -> T:
 class SagaOperation(object):
     """Saga Step Operation class."""
 
-    def __init__(self, callback: Callable, name: Optional[str] = None, parameters: Optional[SagaContext] = None):
+    def __init__(self, callback: Callable, parameters: Optional[Union[dict, SagaContext]] = None, **kwargs):
+        if parameters is None and len(kwargs):
+            parameters = kwargs
+        if parameters is not None and not isinstance(parameters, SagaContext):
+            parameters = SagaContext(**parameters)
+
         self.callback = callback
-        self.name = name
         self.parameters = parameters
 
     @property
@@ -48,9 +52,6 @@ class SagaOperation(object):
         """
         # noinspection PyTypeChecker
         raw = {"callback": classname(self.callback)}
-
-        if self.name is not None:
-            raw["name"] = self.name
 
         if self.parameterized:
             raw["parameters"] = self.parameters.avro_str
@@ -92,7 +93,6 @@ class SagaOperation(object):
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.name,
             self.callback,
             self.parameters,
         )

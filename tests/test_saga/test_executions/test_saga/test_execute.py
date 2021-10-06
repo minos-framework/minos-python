@@ -17,20 +17,20 @@ from minos.saga import (
     SagaExecution,
     SagaStatus,
 )
-from tests.callbacks import (
-    commit_callback,
-    commit_callback_raises,
-    create_order_callback,
-    create_ticket_callback,
-    delete_order_callback,
-    shipping_callback,
-)
 from tests.utils import (
     BASE_PATH,
     Foo,
     NaiveBroker,
+    commit_callback,
+    commit_callback_raises,
     fake_reply,
-    foo_fn_raises,
+    handle_order_success,
+    handle_ticket_success,
+    handle_ticket_success_raises,
+    send_create_order,
+    send_create_ticket,
+    send_delete_order,
+    send_delete_ticket,
 )
 
 
@@ -46,15 +46,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         saga = (
             Saga()
             .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
+            .invoke_participant(send_create_order)
+            .with_compensation(send_delete_order)
+            .on_reply(handle_order_success)
             .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .on_reply("order2")
-            .step()
-            .invoke_participant("Shopping", shipping_callback)
-            .with_compensation("BlockOrder", shipping_callback)
+            .invoke_participant(send_create_ticket)
+            .on_reply(handle_ticket_success)
             .commit()
         )
         execution = SagaExecution.from_saga(saga)
@@ -63,22 +60,17 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        reply = fake_reply(Foo("order1"))
+        reply = fake_reply(Foo("order"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        reply = fake_reply(Foo("order2"))
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute(reply=reply, broker=self.broker)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        reply = fake_reply()
+        reply = fake_reply(Foo("ticket"))
         context = await execution.execute(reply=reply, broker=self.broker)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
-        self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2")), context)
-        self.assertEqual(3, self.publish_mock.call_count)
+        self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
+        self.assertEqual(2, self.publish_mock.call_count)
         with self.assertRaises(MinosSagaExecutionAlreadyExecutedException):
             await execution.execute()
 
@@ -86,13 +78,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         saga = (
             Saga()
             .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
+            .invoke_participant(send_create_order)
+            .with_compensation(send_delete_order)
+            .on_reply(handle_order_success)
             .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order2", foo_fn_raises)
+            .invoke_participant(send_create_ticket)
+            .with_compensation(send_delete_ticket)
+            .on_reply(handle_ticket_success_raises)
             .commit()
         )
         execution = SagaExecution.from_saga(saga)
@@ -101,19 +93,19 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        reply = fake_reply(Foo("order1"))
+        reply = fake_reply(Foo("order"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         self.publish_mock.reset_mock()
-        reply = fake_reply(Foo("order2"))
+        reply = fake_reply(Foo("ticket"))
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual(2, self.publish_mock.call_count)
 
-        reply = fake_reply(Foo("order2"), execution.uuid)
+        reply = fake_reply(Foo("fixed failure!"), execution.uuid)
         await execution.execute(reply=reply)
 
         with self.assertRaises(MinosSagaExecutionAlreadyExecutedException):
@@ -123,15 +115,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         saga = (
             Saga()
             .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
+            .invoke_participant(send_create_order)
+            .with_compensation(send_delete_order)
+            .on_reply(handle_order_success)
             .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .on_reply("order2")
-            .step()
-            .invoke_participant("Shopping", shipping_callback)
-            .with_compensation("BlockOrder", shipping_callback)
+            .invoke_participant(send_create_ticket)
+            .on_reply(handle_ticket_success)
             .commit(commit_callback)
         )
         execution = SagaExecution.from_saga(saga)
@@ -140,36 +129,28 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        reply = fake_reply(Foo("order1"))
+        reply = fake_reply(Foo("order"))
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(reply=reply, broker=self.broker)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        reply = fake_reply(Foo("order2"))
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute(reply=reply, broker=self.broker)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        reply = fake_reply()
+        reply = fake_reply(Foo("ticket"))
         context = await execution.execute(reply=reply, broker=self.broker)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
-        self.assertEqual(SagaContext(order1=Foo("order1"), order2=Foo("order2"), status="Finished!"), context)
-        self.assertEqual(3, self.publish_mock.call_count)
+        self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket"), status="Finished!"), context)
+        self.assertEqual(2, self.publish_mock.call_count)
 
     async def test_execute_commit_raises(self):
         saga = (
             Saga()
             .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
+            .invoke_participant(send_create_order)
+            .with_compensation(send_delete_order)
+            .on_reply(handle_order_success)
             .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .on_reply("order2")
-            .step()
-            .invoke_participant("Shopping", shipping_callback)
-            .with_compensation("BlockOrder", shipping_callback)
+            .invoke_participant(send_create_ticket)
+            .on_reply(handle_ticket_success)
             .commit(commit_callback_raises)
         )
         execution = SagaExecution.from_saga(saga)
@@ -184,24 +165,19 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = fake_reply(Foo("order2"))
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute(reply=reply, broker=self.broker)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        reply = fake_reply()
         with self.assertRaises(MinosSagaFailedCommitCallbackException):
             await execution.execute(reply=reply, broker=self.broker)
 
         self.assertEqual(SagaStatus.Errored, execution.status)
-        self.assertEqual(5, self.publish_mock.call_count)
+        self.assertEqual(3, self.publish_mock.call_count)
 
     async def test_rollback(self):
         saga = (
             Saga()
             .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1", lambda order: order)
+            .invoke_participant(send_create_order)
+            .with_compensation(send_delete_order)
+            .on_reply(handle_order_success)
             .commit()
         )
         execution = SagaExecution.from_saga(saga)
@@ -223,9 +199,9 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         saga = (
             Saga()
             .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1", lambda order: order)
+            .invoke_participant(send_create_order)
+            .with_compensation(send_delete_order)
+            .on_reply(handle_order_success)
             .commit()
         )
         execution = SagaExecution.from_saga(saga)

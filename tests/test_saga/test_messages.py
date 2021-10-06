@@ -51,6 +51,10 @@ class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
         response = SagaResponse(56, SagaResponseStatus.SYSTEM_ERROR)
         self.assertEqual(SagaResponseStatus.SYSTEM_ERROR, response.status)
 
+    def test_status_raw(self):
+        response = SagaResponse(56, status=200)
+        self.assertEqual(SagaResponseStatus.SUCCESS, response.status)
+
     def test_eq(self):
         self.assertEqual(SagaResponse(56), self.response)
         self.assertNotEqual(SagaResponse(42), self.response)

@@ -8,6 +8,7 @@ from enum import (
 from typing import (
     Any,
     Optional,
+    Union,
 )
 
 
@@ -58,9 +59,11 @@ class SagaResponse:
         "_status",
     )
 
-    def __init__(self, content: Any, status: Optional[SagaResponseStatus] = None):
+    def __init__(self, content: Any, status: Optional[Union[int, SagaResponseStatus]] = None):
         if status is None:
             status = SagaResponseStatus.SUCCESS
+        if not isinstance(status, SagaResponseStatus):
+            status = SagaResponseStatus.from_raw(status)
 
         self._content = content
         self._status = status
@@ -106,3 +109,12 @@ class SagaResponseStatus(IntEnum):
     SUCCESS = 200
     ERROR = 400
     SYSTEM_ERROR = 500
+
+    @classmethod
+    def from_raw(cls, raw: int) -> SagaResponseStatus:
+        """Build a new instance from raw.
+
+        :param raw: The raw representation of the instance.
+        :return: A ``SagaResponseStatus`` instance.
+        """
+        return next(obj for obj in cls if obj.value == raw)
