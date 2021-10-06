@@ -5,16 +5,16 @@ from unittest.mock import (
 )
 
 from minos.saga import (
-    MinosMultipleOnErrorException,
-    MinosMultipleOnExecuteException,
-    MinosMultipleOnFailureException,
-    MinosMultipleOnSuccessException,
-    MinosSagaEmptyStepException,
-    MinosSagaNotDefinedException,
-    MinosUndefinedOnExecuteException,
+    EmptySagaStepException,
+    MultipleOnErrorException,
+    MultipleOnExecuteException,
+    MultipleOnFailureException,
+    MultipleOnSuccessException,
     Saga,
+    SagaNotDefinedException,
     SagaOperation,
     SagaStep,
+    UndefinedOnExecuteException,
 )
 from tests.utils import (
     commit_callback,
@@ -35,7 +35,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(SagaOperation(send_create_ticket), step.on_execute_operation)
 
     def test_on_execute_multiple_raises(self):
-        with self.assertRaises(MinosMultipleOnExecuteException):
+        with self.assertRaises(MultipleOnExecuteException):
             SagaStep(send_create_ticket).on_execute(send_create_ticket)
 
     def test_on_failure_constructor(self):
@@ -47,7 +47,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(SagaOperation(send_delete_ticket), step.on_failure_operation)
 
     def test_on_failure_multiple_raises(self):
-        with self.assertRaises(MinosMultipleOnFailureException):
+        with self.assertRaises(MultipleOnFailureException):
             SagaStep().on_failure(send_delete_ticket).on_failure(send_delete_ticket)
 
     def test_on_success_constructor(self):
@@ -59,7 +59,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(SagaOperation(handle_ticket_success), step.on_success_operation)
 
     def test_on_success_multiple_raises(self):
-        with self.assertRaises(MinosMultipleOnSuccessException):
+        with self.assertRaises(MultipleOnSuccessException):
             SagaStep().on_success(handle_ticket_success).on_success(handle_ticket_success)
 
     def test_on_error_constructor(self):
@@ -71,7 +71,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(SagaOperation(handle_ticket_error), step.on_error_operation)
 
     def test_on_error_multiple_raises(self):
-        with self.assertRaises(MinosMultipleOnErrorException):
+        with self.assertRaises(MultipleOnErrorException):
             SagaStep().on_error(handle_ticket_error).on_error(handle_ticket_error)
 
     def test_step_validates(self):
@@ -82,7 +82,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(1, mock.call_count)
 
     def test_step_raises_not_saga(self):
-        with self.assertRaises(MinosSagaNotDefinedException):
+        with self.assertRaises(SagaNotDefinedException):
             SagaStep(send_create_ticket).step()
 
     def test_commit(self):
@@ -107,15 +107,15 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(expected, observed)
 
     def test_submit_raises(self):
-        with self.assertRaises(MinosSagaNotDefinedException):
+        with self.assertRaises(SagaNotDefinedException):
             SagaStep(send_create_ticket).commit()
 
     def test_validate_raises_empty(self):
-        with self.assertRaises(MinosSagaEmptyStepException):
+        with self.assertRaises(EmptySagaStepException):
             SagaStep(None).validate()
 
     def test_validate_raises_non_on_execute(self):
-        with self.assertRaises(MinosUndefinedOnExecuteException):
+        with self.assertRaises(UndefinedOnExecuteException):
             SagaStep(None).on_failure(send_delete_ticket).validate()
 
     def test_raw(self):

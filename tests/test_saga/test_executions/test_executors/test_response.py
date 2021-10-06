@@ -8,9 +8,9 @@ from minos.common import (
 )
 from minos.saga import (
     Executor,
-    MinosSagaFailedExecutionStepException,
     ResponseExecutor,
     SagaContext,
+    SagaFailedExecutionStepException,
     SagaOperation,
 )
 from tests.utils import (
@@ -36,7 +36,7 @@ class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
     async def test_exec_raises(self):
         reply = fake_reply(status=CommandStatus.ERROR)
         operation = SagaOperation(AsyncMock(side_effect=ValueError))
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(SagaFailedExecutionStepException):
             await self.executor.exec(operation, SagaContext(), reply=reply)
 
 

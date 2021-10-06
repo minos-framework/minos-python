@@ -25,13 +25,13 @@ from ..definitions import (
     SagaStep,
 )
 from ..exceptions import (
-    MinosSagaExecutionAlreadyExecutedException,
-    MinosSagaFailedCommitCallbackException,
-    MinosSagaFailedExecutionStepException,
-    MinosSagaNotCommittedException,
-    MinosSagaPausedExecutionStepException,
-    MinosSagaRollbackExecutionException,
-    MinosSagaStepExecutionException,
+    SagaExecutionAlreadyExecutedException,
+    SagaFailedCommitCallbackException,
+    SagaFailedExecutionStepException,
+    SagaNotCommittedException,
+    SagaPausedExecutionStepException,
+    SagaRollbackExecutionException,
+    SagaStepExecutionException,
 )
 from .executors import (
     CommitExecutor,
@@ -63,7 +63,7 @@ class SagaExecution:
         **kwargs,
     ):
         if not definition.committed:
-            raise MinosSagaNotCommittedException("The definition must be committed before executing it.")
+            raise SagaNotCommittedException("The definition must be committed before executing it.")
 
         if steps is None:
             steps = list()
@@ -140,12 +140,12 @@ class SagaExecution:
         :return: A ``SagaContext instance.
         """
         if self.status == SagaStatus.Finished:
-            raise MinosSagaExecutionAlreadyExecutedException(
+            raise SagaExecutionAlreadyExecutedException(
                 f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
             )
         if self.status == SagaStatus.Errored:
             if reply is None or reply.saga != self.uuid:
-                raise MinosSagaExecutionAlreadyExecutedException(
+                raise SagaExecutionAlreadyExecutedException(
                     f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
                 )
 
@@ -171,11 +171,11 @@ class SagaExecution:
         try:
             self.context = await execution_step.execute(self.context, execution_uuid=self.uuid, *args, **kwargs)
             self._add_executed(execution_step)
-        except MinosSagaFailedExecutionStepException as exc:
+        except SagaFailedExecutionStepException as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
             raise exc
-        except MinosSagaPausedExecutionStepException as exc:
+        except SagaPausedExecutionStepException as exc:
             self.paused_step = execution_step
             self.status = SagaStatus.Paused
             raise exc
@@ -185,7 +185,7 @@ class SagaExecution:
 
         try:
             self.context = await executor.exec(self.definition.commit_operation, self.context)
-        except MinosSagaFailedCommitCallbackException as exc:
+        except SagaFailedCommitCallbackException as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
             raise exc
@@ -200,7 +200,7 @@ class SagaExecution:
         """
 
         if self.already_rollback:
-            raise MinosSagaRollbackExecutionException("The saga was already rollbacked.")
+            raise SagaRollbackExecutionException("The saga was already rollbacked.")
 
         raised_exception = False
         for execution_step in reversed(self.executed_steps):
@@ -208,12 +208,12 @@ class SagaExecution:
                 self.context = await execution_step.rollback(
                     self.context, reply_topic=reply_topic, execution_uuid=self.uuid, *args, **kwargs
                 )
-            except MinosSagaStepExecutionException as exc:
+            except SagaStepExecutionException as exc:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
                 raised_exception = True
 
         if raised_exception:
-            raise MinosSagaRollbackExecutionException("Some execution steps failed to rollback.")
+            raise SagaRollbackExecutionException("Some execution steps failed to rollback.")
 
         self.already_rollback = True
 

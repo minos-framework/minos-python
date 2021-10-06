@@ -4,10 +4,10 @@ from shutil import (
 )
 
 from minos.saga import (
-    MinosSagaExecutionNotFoundException,
-    MinosSagaPausedExecutionStepException,
     SagaExecution,
+    SagaExecutionNotFoundException,
     SagaExecutionStorage,
+    SagaPausedExecutionStepException,
 )
 from tests.utils import (
     ADD_ORDER,
@@ -25,11 +25,11 @@ class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
         self.broker = NaiveBroker()
 
         execution = SagaExecution.from_saga(ADD_ORDER)
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
+        with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
 
         reply = fake_reply(Foo("hola"))
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
+        with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(reply=reply, broker=self.broker)
 
         self.execution = execution
@@ -60,7 +60,7 @@ class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
     def test_load_raises(self):
         storage = SagaExecutionStorage(path=self.DB_PATH)
 
-        with self.assertRaises(MinosSagaExecutionNotFoundException):
+        with self.assertRaises(SagaExecutionNotFoundException):
             storage.load(self.execution.uuid)
 
     def test_delete(self):
@@ -68,7 +68,7 @@ class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
 
         storage.store(self.execution)
         storage.delete(self.execution)
-        with self.assertRaises(MinosSagaExecutionNotFoundException):
+        with self.assertRaises(SagaExecutionNotFoundException):
             storage.load(self.execution.uuid)
 
 

@@ -9,8 +9,8 @@ from ...definitions import (
     SagaOperation,
 )
 from ...exceptions import (
-    MinosSagaExecutorException,
-    MinosSagaFailedCommitCallbackException,
+    ExecutorException,
+    SagaFailedCommitCallbackException,
 )
 from .abc import (
     Executor,
@@ -37,8 +37,8 @@ class CommitExecutor(Executor):
         try:
             context = SagaContext(**context)  # Needed to avoid mutability issues.
             new_context = await super().exec(operation, context)
-        except MinosSagaExecutorException as exc:
-            raise MinosSagaFailedCommitCallbackException(exc.exception)
+        except ExecutorException as exc:
+            raise SagaFailedCommitCallbackException(exc.exception)
 
         if new_context is not None:
             context = new_context

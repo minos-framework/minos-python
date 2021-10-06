@@ -9,10 +9,10 @@ from minos.common import (
     MinosConfig,
 )
 from minos.saga import (
-    MinosSagaFailedExecutionStepException,
-    MinosSagaPausedExecutionStepException,
-    MinosSagaRollbackExecutionStepException,
     SagaContext,
+    SagaFailedExecutionStepException,
+    SagaPausedExecutionStepException,
+    SagaRollbackExecutionStepException,
     SagaStep,
     SagaStepExecution,
     SagaStepStatus,
@@ -53,7 +53,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
 
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
+        with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
 
         self.assertEqual(1, self.publish_mock.call_count)
@@ -67,7 +67,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
 
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
 
         self.assertEqual(0, self.publish_mock.call_count)
@@ -82,7 +82,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution.rollback = rollback_mock
         reply = fake_reply(status=CommandStatus.SYSTEM_ERROR)
 
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.ErroredByOnExecute, execution.status)
@@ -121,7 +121,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution.rollback = rollback_mock
         reply = fake_reply(Foo("foo"), status=CommandStatus.SUCCESS)
 
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.ErroredOnSuccess, execution.status)
@@ -161,7 +161,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution.rollback = rollback_mock
         reply = fake_reply(Foo("foo"), status=CommandStatus.ERROR)
 
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.ErroredOnError, execution.status)
@@ -172,7 +172,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         context = SagaContext()
         execution = SagaStepExecution(step)
 
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
+        with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
 
         self.publish_mock.reset_mock()
@@ -180,7 +180,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.publish_mock.reset_mock()
-        with self.assertRaises(MinosSagaRollbackExecutionStepException):
+        with self.assertRaises(SagaRollbackExecutionStepException):
             await execution.rollback(context, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
@@ -189,7 +189,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         context = SagaContext()
         execution = SagaStepExecution(step)
 
-        with self.assertRaises(MinosSagaRollbackExecutionStepException):
+        with self.assertRaises(SagaRollbackExecutionStepException):
             await execution.rollback(context, **self.execute_kwargs)
 
     def test_raw(self):

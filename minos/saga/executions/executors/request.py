@@ -26,8 +26,8 @@ from ...definitions import (
     SagaOperation,
 )
 from ...exceptions import (
-    MinosSagaExecutorException,
-    MinosSagaFailedExecutionStepException,
+    ExecutorException,
+    SagaFailedExecutionStepException,
 )
 from ...messages import (
     SagaRequest,
@@ -77,8 +77,8 @@ class RequestExecutor(Executor):
             context = SagaContext(**context)  # Needed to avoid mutability issues.
             request = await super().exec(operation, context)
             await self._publish(request)
-        except MinosSagaExecutorException as exc:
-            raise MinosSagaFailedExecutionStepException(exc.exception)
+        except ExecutorException as exc:
+            raise SagaFailedExecutionStepException(exc.exception)
         return context
 
     async def _publish(self, request: SagaRequest) -> None:
