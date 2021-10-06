@@ -56,6 +56,31 @@ class TestSaga(unittest.TestCase):
         saga = Saga()
         self.assertFalse(saga.committed)
 
+    def test_step(self):
+        saga = Saga()
+        initial = SagaStep()
+        step = saga.step(initial)
+        self.assertEqual(step, initial)
+        self.assertEqual(saga, step.saga)
+
+    def test_step_operation(self):
+        saga = Saga()
+        step = saga.step(SagaOperation(send_delete_ticket))
+        self.assertEqual(SagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        self.assertEqual(saga, step.saga)
+
+    def test_step_callback(self):
+        saga = Saga()
+        step = saga.step(send_delete_ticket)
+        self.assertEqual(SagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        self.assertEqual(saga, step.saga)
+
+    def test_step_empty(self):
+        saga = Saga()
+        step = saga.step()
+        self.assertIsInstance(step, SagaStep)
+        self.assertEqual(saga, step.saga)
+
     def test_step_raises(self):
         saga = Saga().commit()
         with self.assertRaises(MinosSagaAlreadyCommittedException):

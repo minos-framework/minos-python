@@ -77,9 +77,7 @@ class SagaStep:
 
         return cls(**current)
 
-    def on_execute(
-        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
-    ) -> SagaStep:
+    def on_execute(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
         """On execute method.
 
         :param callback: The callback function to be called.
@@ -95,9 +93,7 @@ class SagaStep:
 
         return self
 
-    def on_failure(
-        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
-    ) -> SagaStep:
+    def on_failure(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
         """On failure method.
 
         :param callback: The callback function to be called.
