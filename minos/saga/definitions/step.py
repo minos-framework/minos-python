@@ -83,45 +83,55 @@ class SagaStep:
 
         return cls(**current)
 
-    def on_execute(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_execute(
+        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
+    ) -> SagaStep:
         """On execute method.
 
         :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
+            ``None``.
         :return: A ``self`` reference.
         """
         if self.on_execute_operation is not None:
             raise MinosMultipleOnExecuteException()
 
-        self.on_execute_operation = SagaOperation(callback, parameters)
+        self.on_execute_operation = SagaOperation(callback, parameters, **kwargs)
 
         return self
 
-    def on_failure(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_failure(
+        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
+    ) -> SagaStep:
         """On failure method.
 
         :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
+            ``None``.
         :return: A ``self`` reference.
         """
         if self.on_failure_operation is not None:
             raise MinosMultipleOnFailureException()
 
-        self.on_failure_operation = SagaOperation(callback, parameters)
+        self.on_failure_operation = SagaOperation(callback, parameters, **kwargs)
 
         return self
 
-    def on_success(self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_success(self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
         """On success method.
 
         :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
+            ``None``.
         :return: A ``self`` reference.
         """
         if self.on_success_operation is not None:
             raise MinosMultipleOnSuccessException()
 
-        self.on_success_operation = SagaOperation(callback, parameters)
+        self.on_success_operation = SagaOperation(callback, parameters, **kwargs)
 
         return self
 
