@@ -99,6 +99,12 @@ async def handle_ticket_success(context: SagaContext, response: SagaResponse) ->
 
 
 # noinspection PyUnusedLocal
+async def handle_ticket_success_raises(context: SagaContext, response: SagaResponse) -> SagaContext:
+    """For testing purposes."""
+    raise ValueError()
+
+
+# noinspection PyUnusedLocal
 async def handle_ticket_error(context: SagaContext, response: SagaResponse) -> SagaContext:
     """For testing purposes."""
     context["ticket"] = None
@@ -106,7 +112,7 @@ async def handle_ticket_error(context: SagaContext, response: SagaResponse) -> S
 
 
 # noinspection PyUnusedLocal
-async def handle_ticket_success_raises(context: SagaContext, response: SagaResponse) -> SagaContext:
+async def handle_ticket_error_raises(context: SagaContext, response: SagaResponse) -> SagaContext:
     """For testing purposes."""
     raise ValueError()
 
@@ -126,24 +132,24 @@ def commit_callback_raises(context: SagaContext) -> SagaContext:
 # fmt: off
 ADD_ORDER = (
     Saga()
-    .step(send_create_order)
+        .step(send_create_order)
         .on_success(handle_order_success)
         .on_failure(send_delete_order)
-    .step(send_create_ticket)
+        .step(send_create_ticket)
         .on_success(handle_ticket_success)
         .on_error(handle_ticket_error)
         .on_failure(send_delete_ticket)
-    .commit()
+        .commit()
 )
 
 # fmt: off
 DELETE_ORDER = (
     Saga()
-    .step(send_delete_order)
+        .step(send_delete_order)
         .on_success(handle_order_success)
-    .step(send_delete_ticket)
+        .step(send_delete_ticket)
         .on_success(handle_ticket_success_raises)
-    .commit()
+        .commit()
 )
 
 
@@ -183,11 +189,11 @@ class FakePool(MinosPool):
         """For testing purposes."""
 
 
-def fake_reply(
-    data: Any = None, uuid: Optional[UUID] = None, status: CommandStatus = CommandStatus.SUCCESS
-) -> CommandReply:
+def fake_reply(data: Any = None, uuid: Optional[UUID] = None, status: Optional[CommandStatus] = None) -> CommandReply:
     """For testing purposes."""
 
     if uuid is None:
         uuid = uuid4()
+    if status is None:
+        status = CommandStatus.SUCCESS
     return CommandReply("FooCreated", data, uuid, status=status)

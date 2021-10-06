@@ -1,7 +1,3 @@
-from typing import (
-    Optional,
-)
-
 from minos.common import (
     CommandReply,
 )
@@ -15,7 +11,6 @@ from ...definitions import (
 from ...exceptions import (
     MinosSagaExecutorException,
     MinosSagaFailedExecutionStepException,
-    MinosSagaPausedExecutionStepException,
 )
 from ...messages import (
     SagaResponse,
@@ -30,7 +25,7 @@ class ResponseExecutor(LocalExecutor):
 
     # noinspection PyUnusedLocal
     async def exec(
-        self, operation: SagaOperation, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
+        self, operation: SagaOperation, context: SagaContext, reply: CommandReply, *args, **kwargs
     ) -> SagaContext:
         """Execute the operation.
 
@@ -41,9 +36,6 @@ class ResponseExecutor(LocalExecutor):
         :param kwargs: Additional named arguments.
         :return: An updated context instance.
         """
-        if reply is None:
-            raise MinosSagaPausedExecutionStepException()
-
         if operation is None:
             return context
 

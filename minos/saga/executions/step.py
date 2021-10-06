@@ -102,9 +102,7 @@ class SagaStepExecution:
             raise exc
         self.status = SagaStepStatus.FinishedOnExecute
 
-    async def _execute_on_success(
-        self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
-    ) -> SagaContext:
+    async def _execute_on_success(self, context: SagaContext, reply: CommandReply, *args, **kwargs) -> SagaContext:
         self.status = SagaStepStatus.RunningOnSuccess
         executor = ResponseExecutor(*args, **kwargs)
 
@@ -117,9 +115,7 @@ class SagaStepExecution:
 
         return context
 
-    async def _execute_on_error(
-        self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
-    ) -> SagaContext:
+    async def _execute_on_error(self, context: SagaContext, reply: CommandReply, *args, **kwargs) -> SagaContext:
         self.status = SagaStepStatus.RunningOnError
         executor = ResponseExecutor(*args, **kwargs)
 
