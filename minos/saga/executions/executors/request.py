@@ -62,7 +62,7 @@ class RequestExecutor(LocalExecutor):
 
         self.broker = broker
 
-    async def exec(self, operation: SagaOperation, context: SagaContext) -> SagaContext:
+    async def exec(self, operation: Optional[SagaOperation], context: SagaContext) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
 
         :param operation: Operation to be executed.

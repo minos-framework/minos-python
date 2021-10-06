@@ -1,3 +1,7 @@
+from typing import (
+    Optional,
+)
+
 from minos.common import (
     CommandReply,
 )
@@ -25,7 +29,7 @@ class ResponseExecutor(LocalExecutor):
 
     # noinspection PyUnusedLocal
     async def exec(
-        self, operation: SagaOperation, context: SagaContext, reply: CommandReply, *args, **kwargs
+        self, operation: Optional[SagaOperation], context: SagaContext, reply: CommandReply, *args, **kwargs
     ) -> SagaContext:
         """Execute the operation.
 
