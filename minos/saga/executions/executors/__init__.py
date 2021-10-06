@@ -1,3 +1,6 @@
+from .commit import (
+    CommitExecutor,
+)
 from .local import (
     LocalExecutor,
 )
