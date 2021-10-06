@@ -83,9 +83,7 @@ class SagaStep:
 
         return cls(**current)
 
-    def on_execute(
-        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
-    ) -> SagaStep:
+    def on_execute(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
         """On execute method.
 
         :param callback: The callback function to be called.
@@ -101,9 +99,7 @@ class SagaStep:
 
         return self
 
-    def on_failure(
-        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
-    ) -> SagaStep:
+    def on_failure(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
         """On failure method.
 
         :param callback: The callback function to be called.
@@ -135,17 +131,19 @@ class SagaStep:
 
         return self
 
-    def on_error(self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None) -> SagaStep:
+    def on_error(self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
         """On error method.
 
         :param callback: The callback function to be called.
         :param parameters: A mapping of named parameters to be passed to the callback.
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
+            ``None``.
         :return: A ``self`` reference.
         """
         if self.on_error_operation is not None:
             raise MinosMultipleOnErrorException()
 
-        self.on_error_operation = SagaOperation(callback, parameters)
+        self.on_error_operation = SagaOperation(callback, parameters, **kwargs)
 
         return self
 
