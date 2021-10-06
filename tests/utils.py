@@ -133,12 +133,12 @@ def commit_callback_raises(context: SagaContext) -> SagaContext:
 ADD_ORDER = (
     Saga()
         .step(send_create_order)
-        .on_success(handle_order_success)
-        .on_failure(send_delete_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
         .step(send_create_ticket)
-        .on_success(handle_ticket_success)
-        .on_error(handle_ticket_error)
-        .on_failure(send_delete_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
         .commit()
 )
 
@@ -146,9 +146,9 @@ ADD_ORDER = (
 DELETE_ORDER = (
     Saga()
         .step(send_delete_order)
-        .on_success(handle_order_success)
+            .on_success(handle_order_success)
         .step(send_delete_ticket)
-        .on_success(handle_ticket_success_raises)
+            .on_success(handle_ticket_success_raises)
         .commit()
 )
 
