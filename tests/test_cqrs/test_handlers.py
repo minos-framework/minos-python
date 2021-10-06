@@ -10,7 +10,6 @@ from uuid import (
 from minos.common import (
     Action,
     AggregateDiff,
-    DataTransferObject,
     FieldDiff,
     FieldDiffContainer,
     ModelRef,
@@ -25,6 +24,9 @@ from minos.saga import (
     Saga,
     SagaContext,
     SagaExecution,
+    SagaRequest,
+    SagaResponse,
+    SagaResponseStatus,
     SagaStatus,
 )
 from tests.utils import (
@@ -52,11 +54,9 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         execution = SagaExecution.from_saga(
             (
                 Saga()
-                .step()
-                .invoke_participant(
-                    "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars])),
-                )
-                .commit(PreEventHandler.commit_callback, SagaContext(diff=self.diff))
+                .step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
+                .on_success(PreEventHandler.on_success, name="Bar")
+                .commit(PreEventHandler.commit, diff=self.diff)
             ),
             status=SagaStatus.Finished,
             context=SagaContext(
@@ -103,11 +103,9 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         execution = SagaExecution.from_saga(
             (
                 Saga()
-                .step()
-                .invoke_participant(
-                    "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=list([b.uuid for b in self.bars]))
-                )
-                .commit(PreEventHandler.commit_callback, SagaContext(diff=self.diff))
+                .step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
+                .on_success(PreEventHandler.on_success, name="Bar")
+                .commit(PreEventHandler.commit, diff=self.diff)
             ),
             status=SagaStatus.Errored,
         )
@@ -125,11 +123,9 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         expected = (
             Saga()
             .step()
-            .invoke_participant(
-                "GetBars", PreEventHandler.invoke_callback, SagaContext(uuids=[b.uuid for b in self.bars])
-            )
-            .on_reply("Bars")
-            .commit(PreEventHandler.commit_callback, SagaContext(diff=self.diff))
+            .on_execute(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
+            .on_success(PreEventHandler.on_success, name="Bar")
+            .commit(PreEventHandler.commit, diff=self.diff)
         )
         self.assertEqual(expected, observed)
 
@@ -138,15 +134,21 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosNotAnyMissingReferenceException):
             PreEventHandler.build_saga(diff)
 
-    def test_invoke_callback(self):
+    def test_on_execute(self):
         context = SagaContext()
         uuids = [uuid4(), uuid4(), uuid4(), uuid4()]
-        dto = PreEventHandler.invoke_callback(context, uuids)
-        self.assertIsInstance(dto, DataTransferObject)
-        self.assertEqual(uuids, dto.uuids)
+        request = PreEventHandler.on_execute(context, "Foo", uuids)
+        self.assertEqual(SagaRequest("GetFoos", {"uuids": uuids}), request)
 
-    def test_commit_callback(self):
-        observed = PreEventHandler.commit_callback(SagaContext(bars=self.bars), self.diff)
+    async def test_on_success(self):
+        context = SagaContext()
+        values = [1, 2, 3, 4]
+        response = SagaResponse(values, SagaResponseStatus.SUCCESS)
+        observed = await PreEventHandler.on_success(context, response, "Foo")
+        self.assertEqual(SagaContext(foos=values), observed)
+
+    def test_commit(self):
+        observed = PreEventHandler.commit(SagaContext(bars=self.bars), self.diff)
 
         expected = SagaContext(
             diff=AggregateDiff(
