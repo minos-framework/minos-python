@@ -12,15 +12,15 @@ from ...exceptions import (
     MinosSagaExecutorException,
     MinosSagaFailedCommitCallbackException,
 )
-from .local import (
-    LocalExecutor,
+from .abc import (
+    Executor,
 )
 
 
-class CommitExecutor(LocalExecutor):
+class CommitExecutor(Executor):
     """Commit Executor class."""
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal,PyMethodOverriding
     async def exec(self, operation: Optional[SagaOperation], context: SagaContext, *args, **kwargs) -> SagaContext:
         """Execute the commit operation.
 
@@ -36,7 +36,7 @@ class CommitExecutor(LocalExecutor):
 
         try:
             context = SagaContext(**context)  # Needed to avoid mutability issues.
-            new_context = await self.exec_operation(operation, context)
+            new_context = await super().exec(operation, context)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedCommitCallbackException(exc.exception)
 

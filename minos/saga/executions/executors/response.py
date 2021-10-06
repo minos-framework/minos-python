@@ -19,15 +19,15 @@ from ...exceptions import (
 from ...messages import (
     SagaResponse,
 )
-from .local import (
-    LocalExecutor,
+from .abc import (
+    Executor,
 )
 
 
-class ResponseExecutor(LocalExecutor):
+class ResponseExecutor(Executor):
     """Response Executor class."""
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal,PyMethodOverriding
     async def exec(
         self, operation: Optional[SagaOperation], context: SagaContext, reply: CommandReply, *args, **kwargs
     ) -> SagaContext:
@@ -46,7 +46,7 @@ class ResponseExecutor(LocalExecutor):
         try:
             response = SagaResponse(reply.data, reply.status)
             context = SagaContext(**context)  # Needed to avoid mutability issues.
-            context = await self.exec_operation(operation, context, response)
+            context = await super().exec(operation, context, response)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)
 

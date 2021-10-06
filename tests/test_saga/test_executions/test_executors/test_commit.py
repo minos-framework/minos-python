@@ -5,7 +5,7 @@ from unittest.mock import (
 
 from minos.saga import (
     CommitExecutor,
-    LocalExecutor,
+    Executor,
     MinosSagaFailedCommitCallbackException,
     SagaContext,
     SagaOperation,
@@ -22,7 +22,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         self.executor = CommitExecutor()
 
     def test_constructor(self):
-        self.assertIsInstance(self.executor, LocalExecutor)
+        self.assertIsInstance(self.executor, Executor)
 
     async def test_exec(self):
         operation = SagaOperation(commit_callback)

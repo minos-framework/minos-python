@@ -32,12 +32,12 @@ from ...exceptions import (
 from ...messages import (
     SagaRequest,
 )
-from .local import (
-    LocalExecutor,
+from .abc import (
+    Executor,
 )
 
 
-class RequestExecutor(LocalExecutor):
+class RequestExecutor(Executor):
     """Request class.
 
     This class has the responsibility to publish command on the corresponding broker's queue.
@@ -62,6 +62,7 @@ class RequestExecutor(LocalExecutor):
 
         self.broker = broker
 
+    # noinspection PyMethodOverriding
     async def exec(self, operation: Optional[SagaOperation], context: SagaContext) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
 
@@ -74,7 +75,7 @@ class RequestExecutor(LocalExecutor):
 
         try:
             context = SagaContext(**context)  # Needed to avoid mutability issues.
-            request = await self.exec_operation(operation, context)
+            request = await super().exec(operation, context)
             await self._publish(request)
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)

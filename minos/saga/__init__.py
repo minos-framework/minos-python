@@ -36,7 +36,7 @@ from .exceptions import (
 )
 from .executions import (
     CommitExecutor,
-    LocalExecutor,
+    Executor,
     RequestExecutor,
     ResponseExecutor,
     SagaExecution,

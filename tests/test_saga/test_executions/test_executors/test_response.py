@@ -7,7 +7,7 @@ from minos.common import (
     CommandStatus,
 )
 from minos.saga import (
-    LocalExecutor,
+    Executor,
     MinosSagaFailedExecutionStepException,
     ResponseExecutor,
     SagaContext,
@@ -25,7 +25,7 @@ class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
         self.executor = ResponseExecutor()
 
     def test_constructor(self):
-        self.assertIsInstance(self.executor, LocalExecutor)
+        self.assertIsInstance(self.executor, Executor)
 
     async def test_exec(self):
         operation = SagaOperation(handle_ticket_success)
