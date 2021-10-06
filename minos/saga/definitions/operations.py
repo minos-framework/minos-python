@@ -35,7 +35,12 @@ def identity_fn(x: T) -> T:
 class SagaOperation(object):
     """Saga Step Operation class."""
 
-    def __init__(self, callback: Callable, parameters: Optional[SagaContext] = None):
+    def __init__(self, callback: Callable, parameters: Optional[Union[dict, SagaContext]] = None, **kwargs):
+        if parameters is None and len(kwargs):
+            parameters = kwargs
+        if parameters is not None and not isinstance(parameters, SagaContext):
+            parameters = SagaContext(**parameters)
+
         self.callback = callback
         self.parameters = parameters
 
