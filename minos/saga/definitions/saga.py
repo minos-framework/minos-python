@@ -35,12 +35,20 @@ class Saga:
     """
 
     # noinspection PyUnusedLocal
-    def __init__(self, *args, steps: list[SagaStep] = None, commit_operation: Optional[SagaOperation] = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        steps: list[SagaStep] = None,
+        commit: Optional[Union[CommitCallback, SagaOperation]] = None,
+        **kwargs
+    ):
         if steps is None:
             steps = list()
+        if commit is not None and not isinstance(commit, SagaOperation):
+            commit = SagaOperation(commit)
 
         self.steps = steps
-        self.commit_operation = commit_operation
+        self.commit_operation = commit
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
@@ -55,13 +63,13 @@ class Saga:
 
         current = raw | kwargs
 
-        commit_operation = current.pop("commit", None)
-        if commit_operation is not None:
-            commit_operation = SagaOperation.from_raw(commit_operation)
+        commit = current.pop("commit", None)
+        if commit is not None:
+            commit = SagaOperation.from_raw(commit)
 
         steps = [SagaStep.from_raw(step) for step in current.pop("steps")]
 
-        instance = cls(steps=steps, commit_operation=commit_operation, **current)
+        instance = cls(steps=steps, commit=commit, **current)
 
         return instance
 

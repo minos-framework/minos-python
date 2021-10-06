@@ -30,6 +30,10 @@ class TestSaga(unittest.TestCase):
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
 
+    def test_commit_constructor(self):
+        saga = Saga(commit=identity_fn)
+        self.assertEqual(SagaOperation(identity_fn), saga.commit_operation)
+
     def test_commit(self):
         saga = Saga()
         observed = saga.commit()
