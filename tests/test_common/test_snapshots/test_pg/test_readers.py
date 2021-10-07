@@ -72,7 +72,7 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         self.assertEqual(self.config.snapshot.password, reader.password)
 
     async def test_find_by_uuid(self):
-        condition = Condition.IN("uuid", {self.uuid_2, self.uuid_3})
+        condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
         async with await self._populate():
             async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:
                 iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
@@ -99,7 +99,7 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
     async def test_find_streaming_true(self):
-        condition = Condition.IN("uuid", {self.uuid_2, self.uuid_3})
+        condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         async with await self._populate():
             async with PostgreSqlSnapshotReader.from_config(config=self.config) as snapshot:

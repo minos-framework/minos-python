@@ -120,12 +120,16 @@ class PostgreSqlSnapshotQueryBuilder:
         return SQL("({composed})").format(composed=operator.join(parts))
 
     def _build_condition_simple(self, condition: _SimpleCondition) -> Composable:
+        from ...model import (
+            AvroDataEncoder,
+        )
+
         field = condition.field
         # noinspection PyTypeChecker
         operator = _SIMPLE_MAPPER[type(condition)]
 
-        parameter = condition.parameter
-        if isinstance(parameter, (list, tuple, set)):
+        parameter = AvroDataEncoder(condition.parameter).build()
+        if isinstance(parameter, list):
             if not len(parameter):
                 return self._build_condition(_FALSE_CONDITION)
             parameter = tuple(parameter)
