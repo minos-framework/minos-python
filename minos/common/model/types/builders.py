@@ -79,7 +79,7 @@ class TypeHintBuilder:
             return type(value)[self._build_from_iterable(value, b1)]
 
         if isinstance(value, dict):
-            b1, b2 = (Any, Any) if (type_ is None or len(get_args(type_)) != 2) else get_args(type_)
+            b1, b2 = (str, Any) if (type_ is None or len(get_args(type_)) != 2) else get_args(type_)
             return type(value)[
                 self._build_from_iterable(value.keys(), b1), self._build_from_iterable(value.values(), b2)
             ]

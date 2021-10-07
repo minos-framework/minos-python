@@ -18,6 +18,7 @@ from uuid import (
 
 from minos.common import (
     AvroDataDecoder,
+    DataDecoderException,
     DataDecoderMalformedTypeException,
     DataDecoderRequiredValueException,
     DataDecoderTypeException,
@@ -34,6 +35,7 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.model_classes import (
+    Analytics,
     Base,
     GenericUser,
     User,
@@ -78,8 +80,8 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     def test_any_raises(self):
         decoder = AvroDataDecoder(Any)
-        with self.assertRaises(DataDecoderTypeException):
-            decoder.build({"one", "two"})
+        with self.assertRaises(DataDecoderException):
+            decoder.build(AvroDataDecoder)
 
     def test_none(self):
         decoder = AvroDataDecoder(type(None))
@@ -244,6 +246,11 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
             observed = decoder.build(value)
             self.assertEqual(value, observed)
 
+    def test_list_empty(self):
+        decoder = AvroDataDecoder(list[int])
+        observed = decoder.build([])
+        self.assertEqual([], observed)
+
     def test_list_raises(self):
         decoder = AvroDataDecoder(list)
         with self.assertRaises(DataDecoderMalformedTypeException):
@@ -265,11 +272,31 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         decoder = AvroDataDecoder(list[Any])
         self.assertEqual([1, "hola", True], decoder.build([1, "hola", True]))
 
+    def test_set(self):
+        decoder = AvroDataDecoder(set[int])
+        self.assertEqual({1, 2, 3}, decoder.build([1, 2, 3]))
+
+    def test_set_raises(self):
+        decoder = AvroDataDecoder(set)
+        with self.assertRaises(DataDecoderMalformedTypeException):
+            decoder.build({1, 2, 3})
+
+        decoder = AvroDataDecoder(set[int])
+        with self.assertRaises(DataDecoderTypeException):
+            decoder.build(3)
+        with self.assertRaises(DataDecoderRequiredValueException):
+            decoder.build(None)
+
     def test_dict(self):
         decoder = AvroDataDecoder(dict[str, bool])
         value = {"foo": True, "bar": False}
         observed = decoder.build(value)
         self.assertEqual(value, observed)
+
+    def test_dict_empty(self):
+        decoder = AvroDataDecoder(dict[str, bool])
+        observed = decoder.build(dict())
+        self.assertEqual(dict(), observed)
 
     def test_dict_raises(self):
         decoder = AvroDataDecoder(dict[str, bool])
@@ -332,9 +359,9 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(observed)
 
     def test_unsupported(self):
-        decoder = AvroDataDecoder(set[int])
+        decoder = AvroDataDecoder(type[Any])
         with self.assertRaises(DataDecoderTypeException):
-            decoder.build({3})
+            decoder.build(AvroDataDecoder)
 
     def test_empty_raises(self):
         decoder = AvroDataDecoder(date)
@@ -376,6 +403,14 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         observed = decoder.build(entities)
 
         self.assertEqual(entities, observed)
+
+    def test_container_inheritance(self):
+        Container = ModelType.build("Container", {"data": list[Base]})
+        raw = Container([User(1, "John"), Analytics(2, dict()), User(3, "John"), Analytics(4, dict())])
+        decoder = AvroDataDecoder(Container)
+        observed = decoder.build(raw)
+
+        self.assertEqual(raw, observed)
 
     def test_entity_set_empty(self):
         entities = EntitySet()

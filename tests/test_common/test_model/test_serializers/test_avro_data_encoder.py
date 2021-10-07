@@ -58,6 +58,10 @@ class TestAvroDataEncoder(unittest.TestCase):
         expected = [{"id": 123, "username": None}, {"id": 456, "username": None}]
         self.assertEqual(expected, observed)
 
+    def test_avro_data_set(self):
+        observed = AvroDataEncoder({1, 2}).build()
+        self.assertEqual([1, 2], observed)
+
     def test_avro_data_dict(self):
         observed = AvroDataEncoder({"foo": 1, "bar": 2}).build()
         self.assertEqual({"bar": 2, "foo": 1}, observed)

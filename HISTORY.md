@@ -199,3 +199,11 @@ History
 --------------------
 
 * Fix bug from `PostgreSqlSnapshotReader` that returned already deleted aggregates when `Condition.TRUE` was passed.
+
+0.1.16 (2021-10-07)
+--------------------
+
+* Improve support for `Model` inheritance inside container classes (`list`, `dict`, `EntitySet`, etc.).
+* Add support for `set[T]` type.
+* Fix bug related with complex types and `PostgreSqlSnapshotQueryBuilder`.
+* Fix bug related with empty `dict` and `minos.saga.SagaContext`.

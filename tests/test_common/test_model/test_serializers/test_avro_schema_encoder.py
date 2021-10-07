@@ -92,6 +92,11 @@ class TestAvroSchemaEncoder(unittest.TestCase):
         observed = AvroSchemaEncoder(timedelta).build()
         self.assertEqual(expected, observed)
 
+    def test_set(self):
+        expected = {"type": "array", "items": "string", "logicalType": "set"}
+        observed = AvroSchemaEncoder(set[str]).build()
+        self.assertEqual(expected, observed)
+
     def test_dict(self):
         expected = {"type": "map", "values": "int"}
         observed = AvroSchemaEncoder(dict[str, int]).build()

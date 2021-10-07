@@ -2,6 +2,9 @@ import unittest
 from unittest.mock import (
     patch,
 )
+from uuid import (
+    uuid4,
+)
 
 import aiopg
 from psycopg2.extras import (
@@ -71,7 +74,8 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_fixed_uuid(self):
-        condition = Condition.EQUAL("uuid", 1)
+        uuid = uuid4()
+        condition = Condition.EQUAL("uuid", uuid)
         with patch("minos.common.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
@@ -79,7 +83,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
             'FROM snapshot WHERE (aggregate_name = %(aggregate_name)s) AND (("aggregate_uuid" = %(hello)s))'
         )
-        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
+        expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": str(uuid)}
 
         self.assertEqual(expected_query, await self._flatten_query(observed[0]))
         self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
@@ -217,7 +221,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_in(self):
-        condition = Condition.IN("age", {1, 2, 3})
+        condition = Condition.IN("age", [1, 2, 3])
         with patch("minos.common.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
@@ -232,7 +236,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(expected_parameters, self._flatten_parameters(observed[1]))
 
     async def test_build_in_empty(self):
-        condition = Condition.IN("age", set())
+        condition = Condition.IN("age", [])
         with patch("minos.common.PostgreSqlSnapshotQueryBuilder.generate_random_str", side_effect=["hello"]):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 

@@ -37,6 +37,7 @@ from .constants import (
     AVRO_INT,
     AVRO_MAP,
     AVRO_NULL,
+    AVRO_SET,
     AVRO_STRING,
     AVRO_TIME,
     AVRO_TIMEDELTA,
@@ -150,6 +151,9 @@ class AvroSchemaEncoder:
         if origin_type is list:
             return self._build_list_schema(type_)
 
+        if origin_type is set:
+            return self._build_set_schema(type_)
+
         if origin_type is dict:
             return self._build_dict_schema(type_)
 
@@ -157,6 +161,10 @@ class AvroSchemaEncoder:
             return self._build_model_ref_schema(type_)
 
         raise ValueError(f"Given field type is not supported: {type_}")  # pragma: no cover
+
+    def _build_set_schema(self, type_: type) -> dict[str, Any]:
+        schema = self._build_list_schema(type_)
+        return schema | AVRO_SET
 
     def _build_list_schema(self, type_: type) -> dict[str, Any]:
         return {"type": AVRO_ARRAY, "items": self._build_schema(get_args(type_)[0])}

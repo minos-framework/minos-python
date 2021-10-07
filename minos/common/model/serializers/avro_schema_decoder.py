@@ -37,6 +37,7 @@ from .constants import (
     AVRO_MAP,
     AVRO_NULL,
     AVRO_RECORD,
+    AVRO_SET,
     AVRO_STRING,
     AVRO_TIME,
     AVRO_TIMEDELTA,
@@ -74,7 +75,7 @@ class AvroSchemaDecoder:
 
     def _build_type_from_dict(self, schema: dict) -> type:
         if "logicalType" in schema:
-            return self._build_logical_type(schema["logicalType"])
+            return self._build_logical_type(schema)
         elif schema["type"] == AVRO_ARRAY:
             return self._build_list_type(schema["items"])
         elif schema["type"] == AVRO_MAP:
@@ -84,8 +85,8 @@ class AvroSchemaDecoder:
         else:
             return self._build_type(schema["type"])
 
-    @staticmethod
-    def _build_logical_type(type_: str) -> type:
+    def _build_logical_type(self, schema: dict[str, Any]) -> type:
+        type_ = schema["logicalType"]
         if type_ == AVRO_DATE["logicalType"]:
             return date
         if type_ == AVRO_TIME["logicalType"]:
@@ -96,10 +97,15 @@ class AvroSchemaDecoder:
             return timedelta
         if type_ == AVRO_UUID["logicalType"]:
             return UUID
+        if type_ == AVRO_SET["logicalType"]:
+            return self._build_set_type(schema["items"])
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_!r}")
 
-    def _build_list_type(self, items: Union[dict, str, Any] = None) -> type:
+    def _build_list_type(self, items: Any = None) -> type:
         return list[self._build_type(items)]
+
+    def _build_set_type(self, items: Any = None) -> type:
+        return set[self._build_type(items)]
 
     def _build_dict_type(self, values: Union[dict, str, Any] = None) -> type:
         return dict[str, self._build_type(values)]
