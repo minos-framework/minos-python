@@ -498,8 +498,8 @@ minos-microservice-common = "^0.1.12"
 [package.source]
 type = "git"
 url = "https://github.com/clariteia/minos_microservice_saga"
-reference = "0e41392991c1db6d25ae3e720165d5d7e2bf2955"
-resolved_reference = "0e41392991c1db6d25ae3e720165d5d7e2bf2955"
+reference = "10fc7d3e5c6ed61be8e87c5f0b589a7dee5ee745"
+resolved_reference = "10fc7d3e5c6ed61be8e87c5f0b589a7dee5ee745"
 
 [[package]]
 name = "mistune"
@@ -950,7 +950,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "74474242f7a545f6adad2c6f31893f910fcfcfaa31e92eed08f9336638d63a12"
+content-hash = "f3dde433e43b34fb30aeed37a208ad3aabf1ec31e4d4e795eeffd665e4180c1c"
 
 [metadata.files]
 aiohttp = [
