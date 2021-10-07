@@ -34,6 +34,7 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.model_classes import (
+    Analytics,
     Base,
     GenericUser,
     User,
@@ -376,6 +377,14 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         observed = decoder.build(entities)
 
         self.assertEqual(entities, observed)
+
+    def test_container_inheritance(self):
+        Container = ModelType.build("Container", {"data": list[Base]})
+        raw = Container([User(1, "John"), Analytics(2, dict()), User(3, "John"), Analytics(4, dict())])
+        decoder = AvroDataDecoder(Container)
+        observed = decoder.build(raw)
+
+        self.assertEqual(raw, observed)
 
     def test_entity_set_empty(self):
         entities = EntitySet()
