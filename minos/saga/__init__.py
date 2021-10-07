@@ -1,4 +1,5 @@
 __version__ = "0.0.12"
+
 from .context import (
     SagaContext,
 )
@@ -11,6 +12,7 @@ from .definitions import (
 from .exceptions import (
     MinosAlreadyOnSagaException,
     MinosCommandReplyFailedException,
+    MinosMultipleOnErrorException,
     MinosMultipleOnExecuteException,
     MinosMultipleOnFailureException,
     MinosMultipleOnSuccessException,

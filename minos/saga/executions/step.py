@@ -11,6 +11,7 @@ from typing import (
 
 from minos.common import (
     CommandReply,
+    CommandStatus,
 )
 
 from ..context import (
@@ -70,7 +71,20 @@ class SagaStepExecution:
         """
 
         await self._execute_on_execute(context, *args, **kwargs)
-        context = await self._execute_on_success(context, reply, *args, **kwargs)
+
+        if reply is None:
+            self.status = SagaStepStatus.PausedByOnExecute
+            raise MinosSagaPausedExecutionStepException()
+
+        if reply.status == CommandStatus.SYSTEM_ERROR:
+            self.status = SagaStepStatus.ErroredByOnExecute
+            exc = MinosCommandReplyFailedException(f"CommandReply failed with {reply.status!s} status: {reply.data!s}")
+            raise MinosSagaFailedExecutionStepException(exc)
+
+        if reply.status == CommandStatus.SUCCESS:
+            context = await self._execute_on_success(context, reply, *args, **kwargs)
+        else:
+            context = await self._execute_on_error(context, reply, *args, **kwargs)
 
         self.status = SagaStepStatus.Finished
         return context
@@ -88,22 +102,27 @@ class SagaStepExecution:
             raise exc
         self.status = SagaStepStatus.FinishedOnExecute
 
-    async def _execute_on_success(
-        self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
-    ) -> SagaContext:
+    async def _execute_on_success(self, context: SagaContext, reply: CommandReply, *args, **kwargs) -> SagaContext:
         self.status = SagaStepStatus.RunningOnSuccess
         executor = ResponseExecutor(*args, **kwargs)
 
         try:
             context = await executor.exec(self.definition.on_success_operation, context, reply)
-        except MinosSagaPausedExecutionStepException as exc:
-            self.status = SagaStepStatus.PausedOnSuccess
-            raise exc
-        except MinosCommandReplyFailedException as exc:
-            self.status = SagaStepStatus.ErroredOnSuccess
-            raise MinosSagaFailedExecutionStepException(exc)
         except MinosSagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredOnSuccess
+            await self.rollback(context, *args, **kwargs)
+            raise exc
+
+        return context
+
+    async def _execute_on_error(self, context: SagaContext, reply: CommandReply, *args, **kwargs) -> SagaContext:
+        self.status = SagaStepStatus.RunningOnError
+        executor = ResponseExecutor(*args, **kwargs)
+
+        try:
+            context = await executor.exec(self.definition.on_error_operation, context, reply)
+        except MinosSagaFailedExecutionStepException as exc:
+            self.status = SagaStepStatus.ErroredOnError
             await self.rollback(context, *args, **kwargs)
             raise exc
 

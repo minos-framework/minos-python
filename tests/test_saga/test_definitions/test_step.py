@@ -5,6 +5,7 @@ from unittest.mock import (
 )
 
 from minos.saga import (
+    MinosMultipleOnErrorException,
     MinosMultipleOnExecuteException,
     MinosMultipleOnFailureException,
     MinosMultipleOnSuccessException,
@@ -17,6 +18,7 @@ from minos.saga import (
 )
 from tests.utils import (
     commit_callback,
+    handle_ticket_error,
     handle_ticket_success,
     send_create_ticket,
     send_delete_ticket,
@@ -59,6 +61,18 @@ class TestSagaStep(unittest.TestCase):
     def test_on_success_multiple_raises(self):
         with self.assertRaises(MinosMultipleOnSuccessException):
             SagaStep().on_success(handle_ticket_success).on_success(handle_ticket_success)
+
+    def test_on_error_constructor(self):
+        step = SagaStep(on_error=handle_ticket_error)
+        self.assertEqual(SagaOperation(handle_ticket_error), step.on_error_operation)
+
+    def test_on_error_method(self):
+        step = SagaStep().on_error(handle_ticket_error)
+        self.assertEqual(SagaOperation(handle_ticket_error), step.on_error_operation)
+
+    def test_on_error_multiple_raises(self):
+        with self.assertRaises(MinosMultipleOnErrorException):
+            SagaStep().on_error(handle_ticket_error).on_error(handle_ticket_error)
 
     def test_step_validates(self):
         step = SagaStep(saga=Saga())
@@ -105,12 +119,18 @@ class TestSagaStep(unittest.TestCase):
             SagaStep(None).on_failure(send_delete_ticket).validate()
 
     def test_raw(self):
-        step = SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
+        step = (
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
+        )
 
         expected = {
             "on_execute": {"callback": "tests.utils.send_create_ticket"},
             "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             "on_success": {"callback": "tests.utils.handle_ticket_success"},
+            "on_error": {"callback": "tests.utils.handle_ticket_error"},
         }
         self.assertEqual(expected, step.raw)
 
@@ -119,13 +139,24 @@ class TestSagaStep(unittest.TestCase):
             "on_execute": {"callback": "tests.utils.send_create_ticket"},
             "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             "on_success": {"callback": "tests.utils.handle_ticket_success"},
+            "on_error": {"callback": "tests.utils.handle_ticket_error"},
         }
 
-        expected = SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
+        expected = (
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
+        )
         self.assertEqual(expected, SagaStep.from_raw(raw))
 
     def test_from_raw_already(self):
-        expected = SagaStep(send_create_ticket).on_success(handle_ticket_success).on_failure(send_delete_ticket)
+        expected = (
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
+        )
         observed = SagaStep.from_raw(expected)
         self.assertEqual(expected, observed)
 

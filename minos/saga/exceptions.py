@@ -56,6 +56,15 @@ class MinosMultipleOnSuccessException(MinosSagaStepException):
         super().__init__(message)
 
 
+class MinosMultipleOnErrorException(MinosSagaStepException):
+    """Exception to be raised when multiple on error methods are defined."""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'SagaStep' can only define one 'on_error' method."
+        super().__init__(message)
+
+
 class MinosAlreadyOnSagaException(MinosSagaStepException):
     """Exception to be raised when a saga step is already in another saga."""
 
