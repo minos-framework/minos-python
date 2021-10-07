@@ -57,7 +57,16 @@ class RestRequest(Request):
         """
         Returns the UUID of the user making the Request.
         """
-        return UUID(self.raw_request.headers["User"])
+        return UUID(self.headers["User"])
+
+    @property
+    def headers(self) -> dict[str, str]:
+        """Get the headers of the request.
+
+        :return: A dictionary in which keys are ``str`` instances and values are ``str`` instances.
+        """
+        # noinspection PyTypeChecker
+        return self.raw_request.headers
 
     async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
         """Get the request content.

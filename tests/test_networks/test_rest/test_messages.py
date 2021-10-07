@@ -1,11 +1,13 @@
 import unittest
-import uuid
 from json import (
     JSONDecodeError,
 )
 from unittest.mock import (
     PropertyMock,
     patch,
+)
+from uuid import (
+    uuid4,
 )
 
 from yarl import (
@@ -25,12 +27,14 @@ from tests.utils import (
 
 
 class MockedRequest:
-    def __init__(self, data=None):
+    def __init__(self, data=None, user=None):
+        if user is None:
+            user = uuid4()
         self.data = data
         self.remote = "127.0.0.1"
         self.rel_url = URL("localhost")
         self.match_info = dict()
-        self.headers = {"User": str(uuid.uuid1())}
+        self.headers = {"User": str(user), "something": "123"}
 
     def __repr__(self):
         return "repr"
@@ -58,11 +62,18 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
     def test_eq_false(self):
         self.assertNotEqual(RestRequest(MockedRequest()), RestRequest(MockedRequest()))
 
+    def test_headers(self):
+        uuid = uuid4()
+        raw_request = MockedRequest(user=uuid)
+        request = RestRequest(raw_request)
+        self.assertEqual({"User": str(uuid), "something": "123"}, request.headers)
+
     def test_user(self):
-        raw_request = MockedRequest()
+        uuid = uuid4()
+        raw_request = MockedRequest(user=uuid)
         request = RestRequest(raw_request)
         user = request.user
-        self.assertEqual(uuid.UUID(raw_request.headers["User"]), user)
+        self.assertEqual(uuid, user)
 
     async def test_content(self):
         Content = ModelType.build(
