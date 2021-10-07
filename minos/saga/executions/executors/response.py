@@ -50,4 +50,7 @@ class ResponseExecutor(LocalExecutor):
         except MinosSagaExecutorException as exc:
             raise MinosSagaFailedExecutionStepException(exc.exception)
 
+        if isinstance(context, Exception):
+            raise MinosSagaFailedExecutionStepException(context)
+
         return context

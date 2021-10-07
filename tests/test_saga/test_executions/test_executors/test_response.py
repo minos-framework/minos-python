@@ -39,6 +39,12 @@ class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosSagaFailedExecutionStepException):
             await self.executor.exec(operation, SagaContext(), reply=reply)
 
+    async def test_exec_return_exception_raises(self):
+        reply = fake_reply(status=CommandStatus.ERROR)
+        operation = SagaOperation(AsyncMock(return_value=ValueError("This is an example")))
+        with self.assertRaises(MinosSagaFailedExecutionStepException):
+            await self.executor.exec(operation, SagaContext(), reply=reply)
+
 
 if __name__ == "__main__":
     unittest.main()
