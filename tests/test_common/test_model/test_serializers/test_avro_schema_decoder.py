@@ -101,6 +101,12 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         observed = AvroSchemaDecoder({"name": "example", "type": "array", "items": "string"}).build()
         self.assertEqual(expected, observed)
 
+    def test_set(self):
+        expected = set[str]
+        schema = {"name": "example", "type": "array", "items": "string", "logicalType": "set"}
+        observed = AvroSchemaDecoder(schema).build()
+        self.assertEqual(expected, observed)
+
     def test_plain_map(self):
         expected = dict[str, int]
         observed = AvroSchemaDecoder({"name": "example", "type": "map", "values": "int"}).build()

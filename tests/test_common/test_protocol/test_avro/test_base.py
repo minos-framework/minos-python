@@ -84,6 +84,17 @@ class TestMinosAvroProtocol(unittest.TestCase):
         deserialized = MinosAvroProtocol.decode(serialized)
         self.assertEqual(data, deserialized)
 
+    def test_set(self):
+        schema = {
+            "type": "record",
+            "name": "tests.model_classes.ShoppingList",
+            "fields": [{"type": {"type": "array", "items": "string", "logicalType": "set"}, "name": "foo"}],
+        }
+        data = {"foo": ["one", "two"]}
+        serialized = MinosAvroProtocol.encode(data, schema)
+        deserialized = MinosAvroProtocol.decode(serialized)
+        self.assertEqual(data, deserialized)
+
 
 if __name__ == "__main__":
     unittest.main()

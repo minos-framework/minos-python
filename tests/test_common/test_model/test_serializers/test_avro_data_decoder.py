@@ -18,6 +18,7 @@ from uuid import (
 
 from minos.common import (
     AvroDataDecoder,
+    DataDecoderException,
     DataDecoderMalformedTypeException,
     DataDecoderRequiredValueException,
     DataDecoderTypeException,
@@ -78,8 +79,8 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     def test_any_raises(self):
         decoder = AvroDataDecoder(Any)
-        with self.assertRaises(DataDecoderTypeException):
-            decoder.build({"one", "two"})
+        with self.assertRaises(DataDecoderException):
+            decoder.build(AvroDataDecoder)
 
     def test_none(self):
         decoder = AvroDataDecoder(type(None))
@@ -265,6 +266,21 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         decoder = AvroDataDecoder(list[Any])
         self.assertEqual([1, "hola", True], decoder.build([1, "hola", True]))
 
+    def test_set(self):
+        decoder = AvroDataDecoder(set[int])
+        self.assertEqual({1, 2, 3}, decoder.build([1, 2, 3]))
+
+    def test_set_raises(self):
+        decoder = AvroDataDecoder(set)
+        with self.assertRaises(DataDecoderMalformedTypeException):
+            decoder.build({1, 2, 3})
+
+        decoder = AvroDataDecoder(set[int])
+        with self.assertRaises(DataDecoderTypeException):
+            decoder.build(3)
+        with self.assertRaises(DataDecoderRequiredValueException):
+            decoder.build(None)
+
     def test_dict(self):
         decoder = AvroDataDecoder(dict[str, bool])
         value = {"foo": True, "bar": False}
@@ -332,9 +348,9 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(observed)
 
     def test_unsupported(self):
-        decoder = AvroDataDecoder(set[int])
+        decoder = AvroDataDecoder(type[Any])
         with self.assertRaises(DataDecoderTypeException):
-            decoder.build({3})
+            decoder.build(AvroDataDecoder)
 
     def test_empty_raises(self):
         decoder = AvroDataDecoder(date)
