@@ -18,3 +18,4 @@ AVRO_TIME = {"type": AVRO_INT, "logicalType": "time-micros"}
 AVRO_TIMESTAMP = {"type": AVRO_LONG, "logicalType": "timestamp-micros"}
 AVRO_TIMEDELTA = {"type": AVRO_LONG, "logicalType": "timedelta-micros"}
 AVRO_UUID = {"type": AVRO_STRING, "logicalType": "uuid"}
+AVRO_SET = {"type": AVRO_ARRAY, "logicalType": "set"}

@@ -4,6 +4,8 @@ from __future__ import (
 
 import logging
 from collections.abc import (
+    Iterable,
+    Mapping,
     MutableSet,
 )
 from datetime import (
@@ -15,7 +17,6 @@ from datetime import (
 )
 from typing import (
     Any,
-    Iterable,
     TypeVar,
     Union,
     get_args,
@@ -251,6 +252,9 @@ class AvroDataDecoder:
         if origin_type is list:
             return self._cast_list(data, type_)
 
+        if origin_type is set:
+            return self._cast_set(data, type_)
+
         if origin_type is dict:
             return self._cast_dict(data, type_)
 
@@ -261,14 +265,21 @@ class AvroDataDecoder:
 
     def _cast_list(self, data: list, type_values: Any) -> list[Any]:
         type_values = get_args(type_values)[0]
-        if not isinstance(data, list):
+        if not isinstance(data, Iterable):
             raise DataDecoderTypeException(list, data)
 
         return list(self._cast_iterable(data, type_values))
 
+    def _cast_set(self, data: set, type_values: Any) -> set[Any]:
+        type_values = get_args(type_values)[0]
+        if not isinstance(data, Iterable):
+            raise DataDecoderTypeException(set, data)
+
+        return set(self._cast_iterable(data, type_values))
+
     def _cast_dict(self, data: dict, type_: type) -> dict[str, Any]:
         type_keys, type_values = get_args(type_)
-        if not isinstance(data, dict):
+        if not isinstance(data, Mapping):
             raise DataDecoderTypeException(dict, data)
 
         if type_keys is not str:

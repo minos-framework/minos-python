@@ -68,7 +68,7 @@ class AvroDataEncoder:
         if isinstance(value, UUID):
             return self._uuid_to_avro_raw(value)
 
-        if isinstance(value, list):
+        if isinstance(value, (list, set,)):
             return [self._to_avro_raw(v) for v in value]
 
         if isinstance(value, dict):
