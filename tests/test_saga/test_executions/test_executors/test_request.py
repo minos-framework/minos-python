@@ -13,7 +13,7 @@ from minos.common import (
 from minos.saga import (
     LocalExecutor,
     MinosSagaFailedExecutionStepException,
-    PublishExecutor,
+    RequestExecutor,
     SagaContext,
     SagaOperation,
 )
@@ -24,11 +24,11 @@ from tests.utils import (
 )
 
 
-class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
+class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
         self.uuid = uuid4()
-        self.executor = PublishExecutor(reply_topic="AddFoo", execution_uuid=self.uuid, broker=self.broker)
+        self.executor = RequestExecutor(reply_topic="AddFoo", execution_uuid=self.uuid, broker=self.broker)
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, LocalExecutor)
@@ -38,7 +38,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
 
     def test_constructor_without_broker(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
-            PublishExecutor(reply_topic="AddFoo", execution_uuid=self.uuid)
+            RequestExecutor(reply_topic="AddFoo", execution_uuid=self.uuid)
 
     async def test_exec(self):
         operation = SagaOperation(send_create_product)
@@ -67,7 +67,7 @@ class TestPublishExecutor(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosSagaFailedExecutionStepException) as result:
             await self.executor.exec(operation, context)
         self.assertEqual(
-            "There was a failure while 'SagaExecutionStep' was executing: ValueError('This is an exception')",
+            "There was a failure while 'SagaStepExecution' was executing: ValueError('This is an exception')",
             str(result.exception),
         )
 

@@ -45,13 +45,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute(self):
         saga = (
             Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
+            .step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .step(send_create_ticket)
+            .on_success(handle_ticket_success)
             .commit()
         )
         execution = SagaExecution.from_saga(saga)
@@ -77,14 +75,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_failure(self):
         saga = (
             Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .with_compensation(send_delete_ticket)
-            .on_reply(handle_ticket_success_raises)
+            .step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .step(send_create_ticket)
+            .on_success(handle_ticket_success_raises)
+            .on_failure(send_delete_ticket)
             .commit()
         )
         execution = SagaExecution.from_saga(saga)
@@ -114,13 +110,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_commit(self):
         saga = (
             Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
+            .step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .step(send_create_ticket)
+            .on_success(handle_ticket_success)
             .commit(commit_callback)
         )
         execution = SagaExecution.from_saga(saga)
@@ -144,13 +138,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_commit_raises(self):
         saga = (
             Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
-            .step()
-            .invoke_participant(send_create_ticket)
-            .on_reply(handle_ticket_success)
+            .step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .step(send_create_ticket)
+            .on_success(handle_ticket_success)
             .commit(commit_callback_raises)
         )
         execution = SagaExecution.from_saga(saga)
@@ -172,14 +164,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(3, self.publish_mock.call_count)
 
     async def test_rollback(self):
-        saga = (
-            Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
-            .commit()
-        )
+        saga = Saga().step(send_create_order).on_success(handle_order_success).on_failure(send_delete_order).commit()
         execution = SagaExecution.from_saga(saga)
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -196,14 +181,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, self.publish_mock.call_count)
 
     async def test_rollback_raises(self):
-        saga = (
-            Saga()
-            .step()
-            .invoke_participant(send_create_order)
-            .with_compensation(send_delete_order)
-            .on_reply(handle_order_success)
-            .commit()
-        )
+        saga = Saga().step(send_create_order).on_success(handle_order_success).on_failure(send_delete_order).commit()
         execution = SagaExecution.from_saga(saga)
         with self.assertRaises(MinosSagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)

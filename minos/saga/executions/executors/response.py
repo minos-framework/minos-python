@@ -27,14 +27,14 @@ from .local import (
 )
 
 
-class OnReplyExecutor(LocalExecutor):
-    """On Reply Executor class."""
+class ResponseExecutor(LocalExecutor):
+    """Response Executor class."""
 
     # noinspection PyUnusedLocal
     async def exec(
         self, operation: SagaOperation, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs
     ) -> SagaContext:
-        """Execute the on reply operation.
+        """Execute the operation.
 
         :param operation: Operation to be executed.
         :param context: Actual execution context.

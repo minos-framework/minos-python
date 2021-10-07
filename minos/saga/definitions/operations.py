@@ -32,7 +32,7 @@ def identity_fn(x: T) -> T:
     return x
 
 
-class SagaOperation(object):
+class SagaOperation:
     """Saga Step Operation class."""
 
     def __init__(self, callback: Callable, parameters: Optional[Union[dict, SagaContext]] = None, **kwargs):

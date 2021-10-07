@@ -10,6 +10,6 @@ from .step import (
 )
 from .types import (
     CommitCallback,
-    PublishCallBack,
-    ReplyCallBack,
+    RequestCallBack,
+    ResponseCallBack,
 )

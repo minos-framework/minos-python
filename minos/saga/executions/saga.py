@@ -26,13 +26,13 @@ from ..definitions import (
 )
 from ..exceptions import (
     MinosSagaExecutionAlreadyExecutedException,
-    MinosSagaExecutionStepException,
     MinosSagaExecutorException,
     MinosSagaFailedCommitCallbackException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotCommittedException,
     MinosSagaPausedExecutionStepException,
     MinosSagaRollbackExecutionException,
+    MinosSagaStepExecutionException,
 )
 from .executors import (
     LocalExecutor,
@@ -41,13 +41,13 @@ from .status import (
     SagaStatus,
 )
 from .step import (
-    SagaExecutionStep,
+    SagaStepExecution,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class SagaExecution(object):
+class SagaExecution:
     """Saga Execution class."""
 
     # noinspection PyUnusedLocal
@@ -57,8 +57,8 @@ class SagaExecution(object):
         uuid: UUID,
         context: SagaContext,
         status: SagaStatus = SagaStatus.Created,
-        steps: list[SagaExecutionStep] = None,
-        paused_step: SagaExecutionStep = None,
+        steps: list[SagaStepExecution] = None,
+        paused_step: SagaStepExecution = None,
         already_rollback: bool = False,
         *args,
         **kwargs,
@@ -93,7 +93,7 @@ class SagaExecution(object):
         current["status"] = SagaStatus.from_raw(current["status"])
         current["context"] = SagaContext.from_avro_str(current["context"])
         current["paused_step"] = (
-            None if current["paused_step"] is None else SagaExecutionStep.from_raw(current["paused_step"])
+            None if current["paused_step"] is None else SagaStepExecution.from_raw(current["paused_step"])
         )
 
         if isinstance(current["uuid"], str):
@@ -102,7 +102,7 @@ class SagaExecution(object):
         instance = cls(**current)
 
         executed_steps = (
-            SagaExecutionStep.from_raw(executed_step, definition=step)
+            SagaStepExecution.from_raw(executed_step, definition=step)
             for step, executed_step in zip(instance.definition.steps, raw.pop("executed_steps"))
         )
         for executed_step in executed_steps:
@@ -150,7 +150,7 @@ class SagaExecution(object):
                     f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
                 )
 
-            logger.info(f"Received 'with_compensation' reply: {reply!s}")
+            logger.info(f"Received 'on_failure' reply: {reply!s}")
             return self.context
 
         self.status = SagaStatus.Running
@@ -161,14 +161,14 @@ class SagaExecution(object):
                 self.paused_step = None
 
         for step in self._pending_steps:
-            execution_step = SagaExecutionStep(step)
+            execution_step = SagaStepExecution(step)
             await self._execute_one(execution_step, reply_topic=reply_topic, *args, **kwargs)
 
         await self._execute_commit(*args, **kwargs)
         self.status = SagaStatus.Finished
         return self.context
 
-    async def _execute_one(self, execution_step: SagaExecutionStep, *args, **kwargs) -> None:
+    async def _execute_one(self, execution_step: SagaStepExecution, *args, **kwargs) -> None:
         try:
             self.context = await execution_step.execute(self.context, execution_uuid=self.uuid, *args, **kwargs)
             self._add_executed(execution_step)
@@ -195,7 +195,7 @@ class SagaExecution(object):
             self.context = new_context
 
     async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> None:
-        """Revert the invoke participant operation with a with compensation operation.
+        """Revert the executed operation with a compensatory operation.
 
         :param reply_topic: The topic in which to receive the future replies.
         :param args: Additional positional arguments.
@@ -212,7 +212,7 @@ class SagaExecution(object):
                 self.context = await execution_step.rollback(
                     self.context, reply_topic=reply_topic, execution_uuid=self.uuid, *args, **kwargs
                 )
-            except MinosSagaExecutionStepException as exc:
+            except MinosSagaStepExecutionException as exc:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
                 raised_exception = True
 
@@ -226,7 +226,7 @@ class SagaExecution(object):
         offset = len(self.executed_steps)
         return self.definition.steps[offset:]
 
-    def _add_executed(self, executed_step: SagaExecutionStep) -> None:
+    def _add_executed(self, executed_step: SagaStepExecution) -> None:
         self.executed_steps.append(executed_step)
 
     @property

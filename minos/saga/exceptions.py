@@ -29,30 +29,30 @@ class MinosSagaEmptyStepException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MinosMultipleInvokeParticipantException(MinosSagaStepException):
-    """Exception to be raised when multiple invoke participant methods are defined."""
+class MinosMultipleOnExecuteException(MinosSagaStepException):
+    """Exception to be raised when multiple on execute methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "A 'SagaStep' can only define one 'invoke_participant' method."
+            message = "A 'SagaStep' can only define one 'on_execute' method."
         super().__init__(message)
 
 
-class MinosMultipleWithCompensationException(MinosSagaStepException):
-    """Exception to be raised when multiple with compensation methods are defined."""
+class MinosMultipleOnFailureException(MinosSagaStepException):
+    """Exception to be raised when multiple on failure methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "A 'SagaStep' can only define one 'with_compensation' method."
+            message = "A 'SagaStep' can only define one 'on_failure' method."
         super().__init__(message)
 
 
-class MinosMultipleOnReplyException(MinosSagaStepException):
-    """Exception to be raised when multiple on reply methods are defined."""
+class MinosMultipleOnSuccessException(MinosSagaStepException):
+    """Exception to be raised when multiple on success methods are defined."""
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "A 'SagaStep' can only define one 'on_reply' method."
+            message = "A 'SagaStep' can only define one 'on_success' method."
         super().__init__(message)
 
 
@@ -65,12 +65,12 @@ class MinosAlreadyOnSagaException(MinosSagaStepException):
         super().__init__(message)
 
 
-class MinosUndefinedInvokeParticipantException(MinosSagaStepException):
-    """Exception to be raised when the invoke participant method is not defined."""
+class MinosUndefinedOnExecuteException(MinosSagaStepException):
+    """Exception to be raised when the on execute method is not defined."""
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "A 'SagaStep' must define at least the 'invoke_participant' logic."
+            message = "A 'SagaStep' must define at least the 'on_execute' logic."
         super().__init__(message)
 
 
@@ -96,7 +96,7 @@ class MinosSagaFailedExecutionException(MinosSagaExecutionException):
     def __init__(self, exception: Exception, message: str = None):
         self.exception = exception
         if message is None:
-            message = f"There was a failure while 'SagaExecutionStep' was executing: {exception!r}"
+            message = f"There was a failure while 'SagaStepExecution' was executing: {exception!r}"
         super().__init__(message)
 
 
@@ -104,24 +104,24 @@ class MinosSagaExecutionAlreadyExecutedException(MinosSagaExecutionException):
     """Exception to be raised when a saga execution cannot be executed."""
 
 
-class MinosSagaExecutionStepException(MinosSagaException):
+class MinosSagaStepExecutionException(MinosSagaException):
     """Base exception for saga execution step."""
 
 
-class MinosSagaFailedExecutionStepException(MinosSagaExecutionStepException, MinosSagaFailedExecutionException):
+class MinosSagaFailedExecutionStepException(MinosSagaStepExecutionException, MinosSagaFailedExecutionException):
     """Exception to be raised when a saga execution step failed while running."""
 
 
-class MinosSagaPausedExecutionStepException(MinosSagaExecutionStepException):
+class MinosSagaPausedExecutionStepException(MinosSagaStepExecutionException):
     """Exception to be raised when a saga execution step is paused."""
 
     def __init__(self, message: str = None):
         if message is None:
-            message = "There was a pause while 'SagaExecutionStep' was executing."
+            message = "There was a pause while 'SagaStepExecution' was executing."
         super().__init__(message)
 
 
-class MinosSagaRollbackExecutionStepException(MinosSagaExecutionStepException):
+class MinosSagaRollbackExecutionStepException(MinosSagaStepExecutionException):
     """Exception to be raised when a saga execution step failed while performing a rollback."""
 
 
@@ -135,7 +135,7 @@ class MinosSagaExecutorException(MinosSagaException):
     def __init__(self, exception: Exception, message: str = None):
         self.exception = exception
         if message is None:
-            message = f"There was a failure while 'SagaExecutionStep' was executing: {exception!r}"
+            message = f"There was a failure while 'SagaStepExecution' was executing: {exception!r}"
         super().__init__(message)
 
 

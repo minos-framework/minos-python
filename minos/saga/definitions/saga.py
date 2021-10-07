@@ -25,6 +25,7 @@ from .step import (
 )
 from .types import (
     CommitCallback,
+    RequestCallBack,
 )
 
 
@@ -65,7 +66,7 @@ class Saga:
 
         return instance
 
-    def step(self, step: Optional[SagaStep] = None) -> SagaStep:
+    def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> SagaStep:
         """Add a new step in the ``Saga``.
 
         :return: A ``SagaStep`` instance.
@@ -76,11 +77,15 @@ class Saga:
             )
 
         if step is None:
-            step = SagaStep(self)
-        else:
+            step = SagaStep(saga=self)
+        elif isinstance(step, SagaStep):
             if step.saga is not None:
                 raise MinosAlreadyOnSagaException()
             step.saga = self
+        elif isinstance(step, SagaOperation):
+            step = SagaStep(step, saga=self)
+        else:
+            step = SagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
 
         self.steps.append(step)
         return step

@@ -119,26 +119,22 @@ def commit_callback_raises(context: SagaContext) -> SagaContext:
 # fmt: off
 ADD_ORDER = (
     Saga()
-    .step()
-        .invoke_participant(send_create_order)
-        .with_compensation(send_delete_order)
-        .on_reply(handle_order_success)
-    .step()
-        .invoke_participant(send_create_ticket)
-        .with_compensation(send_delete_ticket)
-        .on_reply(handle_ticket_success)
+    .step(send_create_order)
+        .on_success(handle_order_success)
+        .on_failure(send_delete_order)
+    .step(send_create_ticket)
+        .on_success(handle_ticket_success)
+        .on_failure(send_delete_ticket)
     .commit()
 )
 
 # fmt: off
 DELETE_ORDER = (
     Saga()
-    .step()
-        .invoke_participant(send_delete_order)
-        .on_reply(handle_order_success)
-    .step()
-        .invoke_participant(send_delete_ticket)
-        .on_reply(handle_ticket_success_raises)
+    .step(send_delete_order)
+        .on_success(handle_order_success)
+    .step(send_delete_ticket)
+        .on_success(handle_ticket_success_raises)
     .commit()
 )
 

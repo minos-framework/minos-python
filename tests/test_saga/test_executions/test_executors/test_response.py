@@ -10,7 +10,7 @@ from minos.saga import (
     LocalExecutor,
     MinosCommandReplyFailedException,
     MinosSagaFailedExecutionStepException,
-    OnReplyExecutor,
+    ResponseExecutor,
     SagaContext,
     SagaOperation,
     identity_fn,
@@ -21,9 +21,9 @@ from tests.utils import (
 )
 
 
-class TesOnReplyExecutor(unittest.IsolatedAsyncioTestCase):
+class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.executor = OnReplyExecutor()
+        self.executor = ResponseExecutor()
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, LocalExecutor)

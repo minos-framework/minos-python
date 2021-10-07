@@ -56,6 +56,31 @@ class TestSaga(unittest.TestCase):
         saga = Saga()
         self.assertFalse(saga.committed)
 
+    def test_step(self):
+        saga = Saga()
+        initial = SagaStep()
+        step = saga.step(initial)
+        self.assertEqual(step, initial)
+        self.assertEqual(saga, step.saga)
+
+    def test_step_operation(self):
+        saga = Saga()
+        step = saga.step(SagaOperation(send_delete_ticket))
+        self.assertEqual(SagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        self.assertEqual(saga, step.saga)
+
+    def test_step_callback(self):
+        saga = Saga()
+        step = saga.step(send_delete_ticket)
+        self.assertEqual(SagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        self.assertEqual(saga, step.saga)
+
+    def test_step_empty(self):
+        saga = Saga()
+        step = saga.step()
+        self.assertIsInstance(step, SagaStep)
+        self.assertEqual(saga, step.saga)
+
     def test_step_raises(self):
         saga = Saga().commit()
         with self.assertRaises(MinosSagaAlreadyCommittedException):
@@ -63,36 +88,29 @@ class TestSaga(unittest.TestCase):
 
     def test_empty_step_raises(self):
         with self.assertRaises(MinosSagaException):
-            Saga().step().invoke_participant(send_create_order).with_compensation(send_delete_order).step().commit()
+            Saga().step(send_create_order).on_failure(send_delete_order).step().commit()
 
     def test_duplicate_operation_raises(self):
         with self.assertRaises(MinosSagaException):
-            (
-                Saga()
-                .step()
-                .invoke_participant(send_create_order)
-                .with_compensation(send_delete_order)
-                .with_compensation(send_delete_ticket)
-                .commit()
-            )
+            Saga().step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit()
 
     def test_missing_send_raises(self):
         with self.assertRaises(MinosSagaException):
-            Saga().step().with_compensation(send_delete_ticket).commit()
+            Saga().step().on_failure(send_delete_ticket).commit()
 
     def test_build_execution(self):
-        saga = Saga().step().invoke_participant(send_create_order).with_compensation(send_delete_order).commit()
+        saga = Saga().step(send_create_order).on_failure(send_delete_order).commit()
         execution = SagaExecution.from_saga(saga)
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):
-        step = SagaStep().invoke_participant(send_create_order)
+        step = SagaStep(send_create_order)
         saga = Saga().step(step).commit()
 
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
-        step = SagaStep(Saga()).invoke_participant(send_create_order)
+        step = SagaStep(send_create_order, saga=Saga())
         with self.assertRaises(MinosAlreadyOnSagaException):
             Saga().step(step)
 
@@ -102,14 +120,14 @@ class TestSaga(unittest.TestCase):
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                    "on_reply": {"callback": "tests.utils.handle_order_success"},
-                    "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                    "on_execute": {"callback": "tests.utils.send_create_order"},
+                    "on_success": {"callback": "tests.utils.handle_order_success"},
+                    "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                    "on_reply": {"callback": "tests.utils.handle_ticket_success"},
-                    "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
+                    "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                    "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                 },
             ],
         }
@@ -120,14 +138,14 @@ class TestSaga(unittest.TestCase):
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_create_order"},
-                    "on_reply": {"callback": "tests.utils.handle_order_success"},
-                    "with_compensation": {"callback": "tests.utils.send_delete_order"},
+                    "on_execute": {"callback": "tests.utils.send_create_order"},
+                    "on_success": {"callback": "tests.utils.handle_order_success"},
+                    "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
-                    "invoke_participant": {"callback": "tests.utils.send_create_ticket"},
-                    "on_reply": {"callback": "tests.utils.handle_ticket_success"},
-                    "with_compensation": {"callback": "tests.utils.send_delete_ticket"},
+                    "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                    "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                 },
             ],
         }
