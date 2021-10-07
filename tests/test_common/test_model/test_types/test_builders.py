@@ -37,7 +37,7 @@ class TestTypeHintBuilder(unittest.TestCase):
         self.assertEqual(dict[str, int], TypeHintBuilder({"one": 1, "two": 2}).build())
 
     def test_dict_empty(self):
-        self.assertEqual(dict[Any, Any], TypeHintBuilder(dict()).build())
+        self.assertEqual(dict[str, Any], TypeHintBuilder(dict()).build())
 
     def test_dict_empty_with_base(self):
         self.assertEqual(dict[str, float], TypeHintBuilder(dict(), dict[str, float]).build())

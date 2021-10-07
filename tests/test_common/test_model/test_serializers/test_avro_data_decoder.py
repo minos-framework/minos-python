@@ -244,6 +244,11 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
             observed = decoder.build(value)
             self.assertEqual(value, observed)
 
+    def test_list_empty(self):
+        decoder = AvroDataDecoder(list[int])
+        observed = decoder.build([])
+        self.assertEqual([], observed)
+
     def test_list_raises(self):
         decoder = AvroDataDecoder(list)
         with self.assertRaises(DataDecoderMalformedTypeException):
@@ -270,6 +275,11 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         value = {"foo": True, "bar": False}
         observed = decoder.build(value)
         self.assertEqual(value, observed)
+
+    def test_dict_empty(self):
+        decoder = AvroDataDecoder(dict[str, bool])
+        observed = decoder.build(dict())
+        self.assertEqual(dict(), observed)
 
     def test_dict_raises(self):
         decoder = AvroDataDecoder(dict[str, bool])
