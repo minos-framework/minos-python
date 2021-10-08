@@ -1,6 +1,8 @@
 import aiohttp
 
-from .abc import DiscoveryClient
+from .abc import (
+    DiscoveryClient,
+)
 
 
 class KongDiscoveryClient(DiscoveryClient):
