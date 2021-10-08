@@ -78,3 +78,14 @@ History
 * Fix troubles related with dependency injections.
 * Remove file headers.
 * Stop using `NoReturn` everywhere.
+
+0.1.0 (2021-10-08)
+------------------
+
+* Add `SagaStep.on_error` method to handle errored responses.
+* Integrate `SagaRequest` and `SagaResponse` into `SagaOperation` definitions.
+* Rename `SagaStep` methods (`invoke_participant` as `on_execute`, `on_reply` as `on_success`, `with_compensation` as `on_failure`).
+* Enrich `SagaRequest` and `SagaResponse` to be classes instead of simple constructor helpers.
+* Add `CommitExecutor`.
+* Rename `LocalExecutor` as `Executor`, `OnReplyExecutor` as `ResponseExecutor` and `PublishExecutor` as `RequestExecutor`.
+* Simplify `SagaException` and heirs names.

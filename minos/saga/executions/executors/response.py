@@ -51,6 +51,6 @@ class ResponseExecutor(Executor):
             raise SagaFailedExecutionStepException(exc.exception)
 
         if isinstance(context, Exception):
-            raise MinosSagaFailedExecutionStepException(context)
+            raise SagaFailedExecutionStepException(context)
 
         return context
