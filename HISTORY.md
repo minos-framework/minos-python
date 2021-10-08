@@ -24,3 +24,7 @@
 ## 0.0.5 (2021-10-04)
 
 * Now `ModelRef` resolving is ignored for for non-`AggregateDiff` events.
+
+## 0.0.6 (2021-10-08)
+
+* Be compatible with the `^0.1.0` version of `minos-microservice-saga`.
