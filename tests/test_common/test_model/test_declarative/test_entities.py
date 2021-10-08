@@ -1,4 +1,7 @@
 import unittest
+from operator import (
+    attrgetter,
+)
 from uuid import (
     UUID,
     uuid4,
@@ -10,8 +13,8 @@ from minos.common import (
     DeclarativeModel,
     Entity,
     EntitySet,
-    EntitySetDiff,
-    EntitySetDiffEntry,
+    IncrementalSetDiff,
+    IncrementalSetDiffEntry,
 )
 from tests.utils import (
     FakeEntity,
@@ -110,7 +113,7 @@ class TestEntitySet(unittest.TestCase):
         entities = EntitySet(raw)
 
         observed = entities.diff(EntitySet([raw[0]]))
-        expected = EntitySetDiff([EntitySetDiffEntry(Action.CREATE, raw[1])])
+        expected = IncrementalSetDiff([IncrementalSetDiffEntry(Action.CREATE, raw[1])])
 
         self.assertEqual(observed, expected)
 
@@ -127,8 +130,8 @@ class TestEntitySetDiff(unittest.TestCase):
         new = FakeEntity("Charlie")
         entities.add(new)
 
-        observed = EntitySetDiff.from_difference(entities, self.old)
-        expected = EntitySetDiff([EntitySetDiffEntry(Action.CREATE, new)])
+        observed = IncrementalSetDiff.from_difference(entities, self.old, get_fn=attrgetter("uuid"))
+        expected = IncrementalSetDiff([IncrementalSetDiffEntry(Action.CREATE, new)])
         self.assertEqual(expected, observed)
 
     def test_from_difference_delete(self):
@@ -136,8 +139,8 @@ class TestEntitySetDiff(unittest.TestCase):
         removed = self.clone[1]
         entities.remove(removed)
 
-        observed = EntitySetDiff.from_difference(entities, self.old)
-        expected = EntitySetDiff([EntitySetDiffEntry(Action.DELETE, removed)])
+        observed = IncrementalSetDiff.from_difference(entities, self.old, get_fn=attrgetter("uuid"))
+        expected = IncrementalSetDiff([IncrementalSetDiffEntry(Action.DELETE, removed)])
         self.assertEqual(expected, observed)
 
     def test_from_difference_update(self):
@@ -145,8 +148,8 @@ class TestEntitySetDiff(unittest.TestCase):
         updated = entities.get(self.clone[0].uuid)
         updated.name = "Ryan"
 
-        observed = EntitySetDiff.from_difference(entities, self.old)
-        expected = EntitySetDiff([EntitySetDiffEntry(Action.UPDATE, updated)])
+        observed = IncrementalSetDiff.from_difference(entities, self.old, get_fn=attrgetter("uuid"))
+        expected = IncrementalSetDiff([IncrementalSetDiffEntry(Action.UPDATE, updated)])
         self.assertEqual(expected, observed)
 
     def test_from_difference_combined(self):
@@ -160,13 +163,13 @@ class TestEntitySetDiff(unittest.TestCase):
         updated = entities.get(self.clone[0].uuid)
         updated.name = "Ryan"
 
-        observed = EntitySetDiff.from_difference(entities, self.old)
+        observed = IncrementalSetDiff.from_difference(entities, self.old, get_fn=attrgetter("uuid"))
 
-        expected = EntitySetDiff(
+        expected = IncrementalSetDiff(
             [
-                EntitySetDiffEntry(Action.CREATE, new),
-                EntitySetDiffEntry(Action.DELETE, removed),
-                EntitySetDiffEntry(Action.UPDATE, updated),
+                IncrementalSetDiffEntry(Action.CREATE, new),
+                IncrementalSetDiffEntry(Action.DELETE, removed),
+                IncrementalSetDiffEntry(Action.UPDATE, updated),
             ]
         )
         self.assertEqual(expected, observed)

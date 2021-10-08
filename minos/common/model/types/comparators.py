@@ -81,17 +81,17 @@ class TypeHintComparator:
         if second is Any:
             return True
 
-        if get_origin(first) is Union and all(self._compare(f, second) for f in get_args(first)):
-            return True
-
-        if get_origin(second) is Union and any(self._compare(first, s) for s in get_args(second)):
-            return True
-
         if get_origin(first) is ModelRef:
             first = Union[(*get_args(first), UUID)]
 
         if get_origin(second) is ModelRef:
             second = Union[(*get_args(second), UUID)]
+
+        if get_origin(first) is Union and all(self._compare(f, second) for f in get_args(first)):
+            return True
+
+        if get_origin(second) is Union and any(self._compare(first, s) for s in get_args(second)):
+            return True
 
         if is_model_subclass(first):
             first = ModelType.from_model(first)

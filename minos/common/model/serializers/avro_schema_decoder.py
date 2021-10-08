@@ -102,13 +102,20 @@ class AvroSchemaDecoder:
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_!r}")
 
     def _build_list_type(self, items: Any = None) -> type:
-        return list[self._build_type(items)]
+        return list[self._build_iterable_type(items)]
 
     def _build_set_type(self, items: Any = None) -> type:
-        return set[self._build_type(items)]
+        return set[self._build_iterable_type(items)]
 
     def _build_dict_type(self, values: Union[dict, str, Any] = None) -> type:
-        return dict[str, self._build_type(values)]
+        return dict[str, self._build_iterable_type(values)]
+
+    def _build_iterable_type(self, values: Union[dict, str, Any]) -> type:
+        type_ = self._build_type(values)
+        if type_ is NoneType:
+            # FIXME: This is a design decision that must be revisited in the future.
+            type_ = Any
+        return type_
 
     def _build_record_type(self, name: str, namespace: Optional[str], fields: list[dict[str, Any]]) -> type:
         def _unpatch_namespace(mt: type) -> type:

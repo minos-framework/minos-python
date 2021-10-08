@@ -6,7 +6,6 @@ import logging
 from collections.abc import (
     Iterable,
     Mapping,
-    MutableSet,
 )
 from datetime import (
     date,
@@ -237,7 +236,11 @@ class AvroDataDecoder:
             return type_(**data)
 
         if hasattr(data, "model_type"):
-            if isinstance(data, MutableSet) and isinstance(data, type_.model_cls) and not len(data):
+            from ..declarative import (
+                IncrementalSet,
+            )
+
+            if isinstance(data, IncrementalSet) and not len(data):
                 return data
             if ModelType.from_model(data) >= type_:
                 return data
