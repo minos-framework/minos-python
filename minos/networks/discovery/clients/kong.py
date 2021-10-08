@@ -1,19 +1,17 @@
 import aiohttp
 
-from .abc import (
-    DiscoveryClient,
-)
+from .abc import DiscoveryClient
 
 
 class KongDiscoveryClient(DiscoveryClient):
     async def subscribe(
-            self,
-            host: str,
-            port: int,
-            name: str,
-            endpoints: list[dict[str, str]],
-            retry_tries: int = 3,
-            retry_delay: float = 5,
+        self,
+        host: str,
+        port: int,
+        name: str,
+        endpoints: list[dict[str, str]],
+        retry_tries: int = 3,
+        retry_delay: float = 5,
     ) -> None:
         """Perform a subscription query.
 
