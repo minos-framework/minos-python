@@ -80,7 +80,7 @@ IncrementalSetDiffEntry = ModelType.build("SetDiffEntry", {"action": Action, "en
 
 
 class IncrementalSetDiff(DeclarativeModel):
-    """Value Object Set Diff class."""
+    """Incremental Set Diff class."""
 
     diffs: list[IncrementalSetDiffEntry]
 
