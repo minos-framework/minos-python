@@ -7,11 +7,14 @@ from .aggregate import (
     AggregateDiff,
     AggregateRef,
 )
+from .collections import (
+    IncrementalSet,
+    SetDiff,
+    SetDiffEntry,
+)
 from .entities import (
     Entity,
     EntitySet,
-    EntitySetDiff,
-    EntitySetDiffEntry,
 )
 from .networks import (
     Command,
@@ -22,6 +25,4 @@ from .networks import (
 from .value_objects import (
     ValueObject,
     ValueObjectSet,
-    ValueObjectSetDiff,
-    ValueObjectSetDiffEntry,
 )

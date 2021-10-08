@@ -1,0 +1,116 @@
+from __future__ import (
+    annotations,
+)
+
+from collections.abc import (
+    MutableSet,
+)
+from typing import (
+    Any,
+    Callable,
+    Generic,
+    Iterable,
+    Iterator,
+    Optional,
+    TypeVar,
+)
+
+from ..actions import (
+    Action,
+)
+from ..types import (
+    ModelType,
+)
+from .abc import (
+    DeclarativeModel,
+)
+
+T = TypeVar("T")
+
+
+class IncrementalSet(DeclarativeModel, MutableSet, Generic[T]):
+    """Incremental Set class."""
+
+    data: set[T]
+
+    def __init__(self, data: Optional[Iterable[T]] = None, *args, **kwargs):
+        if data is None:
+            data = set()
+        elif not isinstance(data, set):
+            data = {value_obj for value_obj in data}
+        super().__init__(data, *args, **kwargs)
+
+    def add(self, value_object: T) -> None:
+        """Add an value object.
+        :param value_object: The value object to be added.
+        :return: This method does not return anything.
+        """
+        self.data.add(value_object)
+
+    def discard(self, value_object: T) -> None:
+        """Remove an value object.
+        :param value_object: The value object to be added.
+        :return: This method does not return anything.
+        """
+        self.data.discard(value_object)
+
+    def __contains__(self, value_object: T) -> bool:
+        return value_object in self.data
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def __iter__(self) -> Iterator[T]:
+        yield from self.data
+
+    def __eq__(self, other: T) -> bool:
+        if isinstance(other, IncrementalSet):
+            return super().__eq__(other)
+        return set(self) == other
+
+    def diff(self, another: IncrementalSet[T]) -> SetDiff:
+        """Compute the difference between self and another entity set.
+        :param another: Another entity set instance.
+        :return: The difference between both entity sets.
+        """
+        return SetDiff.from_difference(self, another)
+
+
+SetDiffEntry = ModelType.build("SetDiffEntry", {"action": Action, "entity": Any})
+
+
+class SetDiff(DeclarativeModel):
+    """Value Object Set Diff class."""
+
+    diffs: list[SetDiffEntry]
+
+    @classmethod
+    def from_difference(cls, new: set[T], old: set[T], get_fn: Optional[Callable[[T], Any]] = None) -> SetDiff:
+        """Build a new instance from two entity sets.
+        :param new: The new entity set.
+        :param old: The old entity set.
+        :param get_fn: Optional function to get entries from the set by identifier.
+        :return: The difference between new and old.
+        """
+        differences = cls._diff(new, old, get_fn)
+        return cls(differences)
+
+    @staticmethod
+    def _diff(new: set[T], old: set[T], get_fn) -> list[SetDiffEntry]:
+        result = list()
+        for value in new - old:
+            entry = SetDiffEntry(Action.CREATE, value)
+            result.append(entry)
+
+        for value in old - new:
+            entry = SetDiffEntry(Action.DELETE, value)
+            result.append(entry)
+
+        if get_fn is not None:
+            for value in old & new:
+                if value == old.get(value.uuid):
+                    continue
+                entry = SetDiffEntry(Action.UPDATE, value)
+                result.append(entry)
+
+        return result

@@ -1,3 +1,4 @@
+import unittest
 from unittest import (
     TestCase,
 )
@@ -5,10 +6,10 @@ from unittest import (
 from minos.common import (
     Action,
     MinosImmutableClassException,
+    SetDiff,
+    SetDiffEntry,
     ValueObject,
     ValueObjectSet,
-    ValueObjectSetDiff,
-    ValueObjectSetDiffEntry,
 )
 from tests.value_objects import (
     Address,
@@ -102,12 +103,12 @@ class TestValueObjectSet(TestCase):
         entities = ValueObjectSet(raw)
 
         observed = entities.diff(ValueObjectSet([raw[0]]))
-        expected = ValueObjectSetDiff([ValueObjectSetDiffEntry(Action.CREATE, raw[1])])
+        expected = SetDiff([SetDiffEntry(Action.CREATE, raw[1])])
 
         self.assertEqual(observed, expected)
 
 
-class TestValueObjectSetDiff(TestCase):
+class TestSetDiff(TestCase):
     def setUp(self) -> None:
         self.raw = [Location(street="street name"), Location(street="another street name")]
         self.old = ValueObjectSet(self.raw)
@@ -119,8 +120,8 @@ class TestValueObjectSetDiff(TestCase):
         new = Location("San Anton, 23")
         entities.add(new)
 
-        observed = ValueObjectSetDiff.from_difference(entities, self.old)
-        expected = ValueObjectSetDiff([ValueObjectSetDiffEntry(Action.CREATE, new)])
+        observed = SetDiff.from_difference(entities, self.old)
+        expected = SetDiff([SetDiffEntry(Action.CREATE, new)])
         self.assertEqual(expected, observed)
 
     def test_from_difference_delete(self):
@@ -128,8 +129,8 @@ class TestValueObjectSetDiff(TestCase):
         removed = self.clone[1]
         entities.remove(removed)
 
-        observed = ValueObjectSetDiff.from_difference(entities, self.old)
-        expected = ValueObjectSetDiff([ValueObjectSetDiffEntry(Action.DELETE, removed)])
+        observed = SetDiff.from_difference(entities, self.old)
+        expected = SetDiff([SetDiffEntry(Action.DELETE, removed)])
         self.assertEqual(expected, observed)
 
     def test_from_difference_combined(self):
@@ -140,9 +141,11 @@ class TestValueObjectSetDiff(TestCase):
         removed = self.clone[1]
         entities.remove(removed)
 
-        observed = ValueObjectSetDiff.from_difference(entities, self.old)
+        observed = SetDiff.from_difference(entities, self.old)
 
-        expected = ValueObjectSetDiff(
-            [ValueObjectSetDiffEntry(Action.CREATE, new), ValueObjectSetDiffEntry(Action.DELETE, removed)]
-        )
+        expected = SetDiff([SetDiffEntry(Action.CREATE, new), SetDiffEntry(Action.DELETE, removed)])
         self.assertEqual(expected, observed)
+
+
+if __name__ == "__main__":
+    unittest.main()
