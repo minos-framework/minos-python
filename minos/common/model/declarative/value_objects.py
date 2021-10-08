@@ -47,13 +47,13 @@ T = TypeVar("T", bound=Model)
 class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
     """Value Object Set class."""
 
-    data: dict[str, T]
+    data: set[T]
 
     def __init__(self, data: Optional[Iterable[T]] = None, *args, **kwargs):
         if data is None:
-            data = dict()
-        elif not isinstance(data, dict):
-            data = {str(hash(value_obj)): value_obj for value_obj in data}
+            data = set()
+        elif not isinstance(data, set):
+            data = {value_obj for value_obj in data}
         super().__init__(data, *args, **kwargs)
 
     def add(self, value_object: T) -> None:
@@ -61,31 +61,29 @@ class ValueObjectSet(DeclarativeModel, MutableSet, Generic[T]):
         :param value_object: The value object to be added.
         :return: This method does not return anything.
         """
-        self.data[str(hash(value_object))] = value_object
+        self.data.add(value_object)
 
     def discard(self, value_object: T) -> None:
         """Remove an value object.
         :param value_object: The value object to be added.
         :return: This method does not return anything.
         """
-        self.data.pop(str(hash(value_object)), None)
+        self.data.discard(value_object)
 
     def __contains__(self, value_object: T) -> bool:
         if not isinstance(value_object, ValueObject):
             return False
-        return str(hash(value_object)) in self.data
+        return value_object in self.data
 
     def __len__(self) -> int:
         return len(self.data)
 
     def __iter__(self) -> Iterator[T]:
-        yield from self.data.values()
+        yield from self.data
 
     def __eq__(self, other: T) -> bool:
         if isinstance(other, ValueObjectSet):
             return super().__eq__(other)
-        if isinstance(other, dict):
-            return self.data == other
         return set(self) == other
 
     def diff(self, another: ValueObjectSet[T]) -> ValueObjectSetDiff:
@@ -109,7 +107,7 @@ class ValueObjectSetDiff(DeclarativeModel):
         """Build a new instance from two entity sets.
         :param new: The new entity set.
         :param old: The old entity set.
-        :return: The diference between new and old.
+        :return: The difference between new and old.
         """
         differences = cls._diff(new, old)
         return cls(differences)
