@@ -2,11 +2,10 @@ from __future__ import (
     annotations,
 )
 
-from collections.abc import (
-    MutableSet,
+from operator import (
+    attrgetter,
 )
 from typing import (
-    Generic,
     Iterable,
     Iterator,
     Optional,
@@ -21,14 +20,12 @@ from uuid import (
 from ..abc import (
     Model,
 )
-from ..actions import (
-    Action,
-)
-from ..types import (
-    ModelType,
-)
 from .abc import (
     DeclarativeModel,
+)
+from .collections import (
+    IncrementalSet,
+    IncrementalSetDiff,
 )
 
 
@@ -46,7 +43,7 @@ class Entity(DeclarativeModel):
 T = TypeVar("T", bound=Model)
 
 
-class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
+class EntitySet(IncrementalSet[T]):
     """Entity set class."""
 
     data: dict[str, T]
@@ -56,7 +53,7 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
             data = dict()
         elif not isinstance(data, dict):
             data = {str(entity.uuid): entity for entity in data}
-        super().__init__(data, *args, **kwargs)
+        DeclarativeModel.__init__(self, data, *args, **kwargs)
 
     def add(self, entity: T) -> None:
         """Add an entity.
@@ -91,9 +88,6 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
             entity = entity.uuid
         return str(entity) in self.data
 
-    def __len__(self) -> int:
-        return len(self.data)
-
     def __iter__(self) -> Iterator[T]:
         yield from self.data.values()
 
@@ -104,49 +98,10 @@ class EntitySet(DeclarativeModel, MutableSet, Generic[T]):
             return self.data == other
         return set(self) == other
 
-    def diff(self, another: EntitySet[T]) -> EntitySetDiff:
+    def diff(self, another: EntitySet[T]) -> IncrementalSetDiff:
         """Compute the difference between self and another entity set.
 
         :param another: Another entity set instance.
         :return: The difference between both entity sets.
         """
-        return EntitySetDiff.from_difference(self, another)
-
-
-EntitySetDiffEntry = ModelType.build("EntitySetDiffEntry", {"action": Action, "entity": Entity})
-
-
-class EntitySetDiff(DeclarativeModel):
-    """Entity Set Diff class."""
-
-    diffs: list[EntitySetDiffEntry]
-
-    @classmethod
-    def from_difference(cls, new: EntitySet[T], old: EntitySet[T]) -> EntitySetDiff:
-        """Build a new instance from two entity sets.
-
-        :param new: The new entity set.
-        :param old: The old entity set.
-        :return: The difference between new and old.
-        """
-        differences = cls._diff(new, old)
-        return cls(differences)
-
-    @staticmethod
-    def _diff(new: EntitySet[T], old: EntitySet[T]) -> list[EntitySetDiffEntry]:
-        result = list()
-        for entity in new - old:
-            entry = EntitySetDiffEntry(Action.CREATE, entity)
-            result.append(entry)
-
-        for entity in old - new:
-            entry = EntitySetDiffEntry(Action.DELETE, entity)
-            result.append(entry)
-
-        for entity in old & new:
-            if entity == old.get(entity.uuid):
-                continue
-            entry = EntitySetDiffEntry(Action.UPDATE, entity)
-            result.append(entry)
-
-        return result
+        return IncrementalSetDiff.from_difference(self, another, get_fn=attrgetter("uuid"))

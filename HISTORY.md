@@ -207,3 +207,11 @@ History
 * Add support for `set[T]` type.
 * Fix bug related with complex types and `PostgreSqlSnapshotQueryBuilder`.
 * Fix bug related with empty `dict` and `minos.saga.SagaContext`.
+
+0.1.17 (2021-10-08)
+--------------------
+
+* Add `IncrementalSet` as the base implementation for incremental sets.
+  * Now `ValueObjectSet` and `EntitySet` inherit from `IncrementalSet`.
+* Refactor `ValueObjectSet` to be implemented on top of a `set` instead of a `dict`.
+* Fix bug related with `list`, `set` and `dict` in combination with `Any` and the `avro` schemas.

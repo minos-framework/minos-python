@@ -14,14 +14,13 @@ from .declarative import (
     DeclarativeModel,
     Entity,
     EntitySet,
-    EntitySetDiff,
-    EntitySetDiffEntry,
     Event,
+    IncrementalSet,
+    IncrementalSetDiff,
+    IncrementalSetDiffEntry,
     MinosModel,
     ValueObject,
     ValueObjectSet,
-    ValueObjectSetDiff,
-    ValueObjectSetDiffEntry,
 )
 from .dynamic import (
     BucketModel,

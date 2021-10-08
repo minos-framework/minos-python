@@ -1,4 +1,4 @@
-__version__ = "0.1.16"
+__version__ = "0.1.17"
 
 from .configuration import (
     BROKER,
@@ -90,14 +90,15 @@ from .model import (
     DynamicModel,
     Entity,
     EntitySet,
-    EntitySetDiff,
-    EntitySetDiffEntry,
     Event,
     Field,
     FieldDiff,
     FieldDiffContainer,
     GenericTypeProjector,
     IncrementalFieldDiff,
+    IncrementalSet,
+    IncrementalSetDiff,
+    IncrementalSetDiffEntry,
     MinosModel,
     MissingSentinel,
     Model,
@@ -111,8 +112,6 @@ from .model import (
     TypeHintComparator,
     ValueObject,
     ValueObjectSet,
-    ValueObjectSetDiff,
-    ValueObjectSetDiffEntry,
 )
 from .networks import (
     MinosBroker,

@@ -6,6 +6,7 @@ from datetime import (
     timedelta,
 )
 from typing import (
+    Any,
     Union,
 )
 from uuid import (
@@ -96,9 +97,14 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         observed = AvroSchemaDecoder({"name": "id", "type": "string", "logicalType": "uuid"}).build()
         self.assertEqual(expected, observed)
 
-    def test_plain_array(self):
+    def test_list(self):
         expected = list[str]
         observed = AvroSchemaDecoder({"name": "example", "type": "array", "items": "string"}).build()
+        self.assertEqual(expected, observed)
+
+    def test_list_any(self):
+        expected = list[Any]
+        observed = AvroSchemaDecoder({"name": "example", "type": "array", "items": "null"}).build()
         self.assertEqual(expected, observed)
 
     def test_set(self):
@@ -107,9 +113,20 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         observed = AvroSchemaDecoder(schema).build()
         self.assertEqual(expected, observed)
 
-    def test_plain_map(self):
+    def test_set_any(self):
+        expected = set[Any]
+        schema = {"name": "example", "type": "array", "items": "null", "logicalType": "set"}
+        observed = AvroSchemaDecoder(schema).build()
+        self.assertEqual(expected, observed)
+
+    def test_dict(self):
         expected = dict[str, int]
         observed = AvroSchemaDecoder({"name": "example", "type": "map", "values": "int"}).build()
+        self.assertEqual(expected, observed)
+
+    def test_dict_any(self):
+        expected = dict[str, Any]
+        observed = AvroSchemaDecoder({"name": "example", "type": "map", "values": "null"}).build()
         self.assertEqual(expected, observed)
 
     def test_nested_arrays(self):
