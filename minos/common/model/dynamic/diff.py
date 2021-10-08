@@ -171,14 +171,13 @@ class FieldDiffContainer(BucketModel):
     @staticmethod
     def _diff(a: dict[str, Field], b: dict[str, Field]) -> list[FieldDiff]:
         from ..declarative import (
-            EntitySet,
-            ValueObjectSet,
+            IncrementalSet,
         )
 
         differences = list()
         for a_name, a_field in a.items():
             if a_name not in b or a_field != b[a_name]:
-                if isinstance(a_field.value, (EntitySet, ValueObjectSet,)):
+                if isinstance(a_field.value, IncrementalSet):
                     diffs = a_field.value.diff(b[a_name].value).diffs
                     for diff in diffs:
                         differences.append(

@@ -86,7 +86,7 @@ class IncrementalSetDiff(DeclarativeModel):
 
     @classmethod
     def from_difference(
-        cls, new: set[T], old: set[T], get_fn: Optional[Callable[[T], Any]] = None
+        cls, new: IncrementalSet[T], old: IncrementalSet[T], get_fn: Optional[Callable[[T], Any]] = None
     ) -> IncrementalSetDiff:
         """Build a new instance from two entity sets.
         :param new: The new entity set.
@@ -98,7 +98,7 @@ class IncrementalSetDiff(DeclarativeModel):
         return cls(differences)
 
     @staticmethod
-    def _diff(new: set[T], old: set[T], get_fn) -> list[IncrementalSetDiffEntry]:
+    def _diff(new: IncrementalSet[T], old: IncrementalSet[T], get_fn) -> list[IncrementalSetDiffEntry]:
         result = list()
         for value in new - old:
             entry = IncrementalSetDiffEntry(Action.CREATE, value)
