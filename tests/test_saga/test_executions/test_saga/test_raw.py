@@ -11,41 +11,20 @@ from minos.common import (
     MinosConfig,
 )
 from minos.saga import (
-    MinosSagaPausedExecutionStepException,
-    Saga,
     SagaContext,
     SagaExecution,
-)
-from tests.callbacks import (
-    create_order_callback,
-    create_ticket_callback,
-    delete_order_callback,
+    SagaPausedExecutionStepException,
 )
 from tests.utils import (
+    ADD_ORDER,
     BASE_PATH,
     Foo,
     NaiveBroker,
     fake_reply,
-    foo_fn_raises,
 )
 
 
 class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.saga = (
-            Saga()
-            .step()
-            .invoke_participant("CreateOrder", create_order_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order1")
-            .step()
-            .invoke_participant("CreateTicket", create_ticket_callback)
-            .with_compensation("DeleteOrder", delete_order_callback)
-            .on_reply("order2", foo_fn_raises)
-            .commit()
-        )
-
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
@@ -55,13 +34,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     def test_from_raw(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(self.saga)
+            expected = SagaExecution.from_saga(ADD_ORDER)
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
     def test_created(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            execution = SagaExecution.from_saga(self.saga)
+            execution = SagaExecution.from_saga(ADD_ORDER)
 
         expected = {
             "already_rollback": False,
@@ -70,26 +49,16 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
-                        "invoke_participant": {
-                            "callback": "tests.callbacks.create_order_callback",
-                            "name": "CreateOrder",
-                        },
-                        "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
-                        "with_compensation": {
-                            "callback": "tests.callbacks.delete_order_callback",
-                            "name": "DeleteOrder",
-                        },
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
-                        "invoke_participant": {
-                            "callback": "tests.callbacks.create_ticket_callback",
-                            "name": "CreateTicket",
-                        },
-                        "on_reply": {"callback": "tests.utils.foo_fn_raises", "name": "order2"},
-                        "with_compensation": {
-                            "callback": "tests.callbacks.delete_order_callback",
-                            "name": "DeleteOrder",
-                        },
+                        "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                        "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                        "on_error": {"callback": "tests.utils.handle_ticket_error"},
+                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
             },
@@ -109,41 +78,31 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "already_rollback": False,
             "context": SagaContext().avro_str,
             "definition": {
-                "name": "OrdersAdd",
                 "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
-                        "invoke_participant": {
-                            "callback": "tests.callbacks.create_order_callback",
-                            "name": "CreateOrder",
-                        },
-                        "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
-                        "with_compensation": {
-                            "callback": "tests.callbacks.delete_order_callback",
-                            "name": "DeleteOrder",
-                        },
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
-                        "invoke_participant": {
-                            "callback": "tests.callbacks.create_ticket_callback",
-                            "name": "CreateTicket",
-                        },
-                        "on_reply": {"callback": "tests.utils.foo_fn_raises", "name": "order2"},
-                        "with_compensation": {
-                            "callback": "tests.callbacks.delete_order_callback",
-                            "name": "DeleteOrder",
-                        },
+                        "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                        "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                        "on_error": {"callback": "tests.utils.handle_ticket_error"},
+                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
             },
             "executed_steps": [],
             "paused_step": {
                 "definition": {
-                    "invoke_participant": {"callback": "tests.callbacks.create_order_callback", "name": "CreateOrder"},
-                    "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
-                    "with_compensation": {"callback": "tests.callbacks.delete_order_callback", "name": "DeleteOrder"},
+                    "on_execute": {"callback": "tests.utils.send_create_order"},
+                    "on_success": {"callback": "tests.utils.handle_order_success"},
+                    "on_error": {"callback": "tests.utils.handle_ticket_error"},
+                    "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
-                "status": "paused-on-reply",
+                "status": "paused-by-on-execute",
                 "already_rollback": False,
             },
             "status": "paused",
@@ -151,8 +110,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         }
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(self.saga)
-            with self.assertRaises(MinosSagaPausedExecutionStepException):
+            expected = SagaExecution.from_saga(ADD_ORDER)
+            with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
         observed = SagaExecution.from_raw(raw)
@@ -161,47 +120,31 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_executed_step(self):
         raw = {
             "already_rollback": False,
-            "context": SagaContext(order1=Foo("hola")).avro_str,
+            "context": SagaContext(order=Foo("hola")).avro_str,
             "definition": {
-                "name": "OrdersAdd",
                 "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
                     {
-                        "invoke_participant": {
-                            "callback": "tests.callbacks.create_order_callback",
-                            "name": "CreateOrder",
-                        },
-                        "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
-                        "with_compensation": {
-                            "callback": "tests.callbacks.delete_order_callback",
-                            "name": "DeleteOrder",
-                        },
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
-                        "invoke_participant": {
-                            "callback": "tests.callbacks.create_ticket_callback",
-                            "name": "CreateTicket",
-                        },
-                        "on_reply": {"callback": "tests.utils.foo_fn_raises", "name": "order2"},
-                        "with_compensation": {
-                            "callback": "tests.callbacks.delete_order_callback",
-                            "name": "DeleteOrder",
-                        },
+                        "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                        "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                        "on_error": {"callback": "tests.utils.handle_ticket_error"},
+                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                     },
                 ],
             },
             "executed_steps": [
                 {
                     "definition": {
-                        "invoke_participant": {
-                            "callback": "tests.callbacks.create_order_callback",
-                            "name": "CreateOrder",
-                        },
-                        "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
-                        "with_compensation": {
-                            "callback": "tests.callbacks.delete_order_callback",
-                            "name": "DeleteOrder",
-                        },
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     "status": "finished",
                     "already_rollback": False,
@@ -209,11 +152,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             ],
             "paused_step": {
                 "definition": {
-                    "invoke_participant": {"callback": "tests.callbacks.create_order_callback", "name": "CreateOrder"},
-                    "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "order1"},
-                    "with_compensation": {"callback": "tests.callbacks.delete_order_callback", "name": "DeleteOrder"},
+                    "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                    "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                    "on_error": {"callback": "tests.utils.handle_ticket_error"},
+                    "on_failure": {"callback": "tests.utils.send_delete_ticket"},
                 },
-                "status": "paused-on-reply",
+                "status": "paused-by-on-execute",
                 "already_rollback": False,
             },
             "status": "paused",
@@ -221,12 +165,12 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         }
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(self.saga)
-            with self.assertRaises(MinosSagaPausedExecutionStepException):
+            expected = SagaExecution.from_saga(ADD_ORDER)
+            with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
             reply = fake_reply(Foo("hola"))
-            with self.assertRaises(MinosSagaPausedExecutionStepException):
+            with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(reply=reply, broker=self.broker)
 
         observed = SagaExecution.from_raw(raw)

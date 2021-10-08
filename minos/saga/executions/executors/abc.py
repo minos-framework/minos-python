@@ -8,18 +8,18 @@ from ...definitions import (
     SagaOperation,
 )
 from ...exceptions import (
-    MinosSagaExecutorException,
+    ExecutorException,
 )
 
 
-class LocalExecutor:
-    """Local executor class."""
+class Executor:
+    """Executor class."""
 
     def __init__(self, *args, **kwargs):
         pass
 
-    async def exec_operation(self, operation: SagaOperation, *args, **kwargs) -> Any:
-        """Execute the given operation locally.
+    async def exec(self, operation: SagaOperation, *args, **kwargs) -> Any:
+        """Execute the given operation.
 
         :param operation: The operation to be executed.
         :param args: Additional positional arguments.
@@ -46,5 +46,5 @@ class LocalExecutor:
             if inspect.isawaitable(result):
                 result = await result
         except Exception as exc:
-            raise MinosSagaExecutorException(exc)
+            raise ExecutorException(exc)
         return result

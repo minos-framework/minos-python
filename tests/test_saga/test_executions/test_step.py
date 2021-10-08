@@ -1,7 +1,7 @@
 import unittest
 import uuid
 from unittest.mock import (
-    MagicMock,
+    AsyncMock,
 )
 
 from minos.common import (
@@ -9,12 +9,12 @@ from minos.common import (
     MinosConfig,
 )
 from minos.saga import (
-    MinosSagaFailedExecutionStepException,
-    MinosSagaPausedExecutionStepException,
-    MinosSagaRollbackExecutionStepException,
     SagaContext,
-    SagaExecutionStep,
+    SagaFailedExecutionStepException,
+    SagaPausedExecutionStepException,
+    SagaRollbackExecutionStepException,
     SagaStep,
+    SagaStepExecution,
     SagaStepStatus,
 )
 from tests.utils import (
@@ -22,12 +22,17 @@ from tests.utils import (
     Foo,
     NaiveBroker,
     fake_reply,
-    foo_fn,
-    foo_fn_raises,
+    handle_ticket_error,
+    handle_ticket_error_raises,
+    handle_ticket_success,
+    handle_ticket_success_raises,
+    send_create_ticket,
+    send_create_ticket_raises,
+    send_delete_ticket,
 )
 
 
-class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
+class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
@@ -38,156 +43,204 @@ class TestSagaExecutionStep(unittest.IsolatedAsyncioTestCase):
             "reply_topic": "FooAdd",
         }
 
-        self.publish_mock = MagicMock(side_effect=self.broker.send)
+        self.publish_mock = AsyncMock()
         self.broker.send = self.publish_mock
 
-    async def test_execute_invoke_participant(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn)
+    async def test_on_execute(self):
+        step = SagaStep(send_create_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
 
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
+        with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
+
         self.assertEqual(1, self.publish_mock.call_count)
+        self.assertEqual(SagaStepStatus.PausedByOnExecute, execution.status)
+        self.assertEqual(0, rollback_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
-
-        reply = fake_reply(status=CommandStatus.SUCCESS)
-        await execution.execute(context, reply=reply, **self.execute_kwargs)
-
-        self.assertEqual(SagaStepStatus.Finished, execution.status)
-
-    async def test_execute_invoke_participant_errored(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn_raises).with_compensation("FooDelete", foo_fn)
+    async def test_on_execute_raises(self):
+        step = SagaStep(send_create_ticket_raises).on_failure(send_delete_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
 
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
+
         self.assertEqual(0, self.publish_mock.call_count)
+        self.assertEqual(SagaStepStatus.ErroredOnExecute, execution.status)
+        self.assertEqual(0, rollback_mock.call_count)
 
-        self.assertEqual(SagaStepStatus.ErroredInvokeParticipant, execution.status)
-
-    async def test_execute_invoke_participant_errored_reply(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn)
+    async def test_errored_reply(self):
+        step = SagaStep(send_create_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
+        reply = fake_reply(status=CommandStatus.SYSTEM_ERROR)
 
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute(context, **self.execute_kwargs)
-        self.assertEqual(1, self.publish_mock.call_count)
-
-        self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
-
-        reply = fake_reply(status=CommandStatus.ERROR)
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 
-        self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
+        self.assertEqual(SagaStepStatus.ErroredByOnExecute, execution.status)
+        self.assertEqual(0, rollback_mock.call_count)
 
-    async def test_execute_invoke_participant_with_on_reply(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
+    async def test_on_success(self):
+        step = SagaStep(send_create_ticket).on_success(handle_ticket_success)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
+        reply = fake_reply(Foo("foo"), status=CommandStatus.SUCCESS)
 
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
-            await execution.execute(context, **self.execute_kwargs)
-        self.assertEqual(1, self.publish_mock.call_count)
-
-        self.assertEqual(SagaStepStatus.PausedOnReply, execution.status)
-
-        reply = fake_reply(Foo("foo"))
         await execution.execute(context, reply=reply, **self.execute_kwargs)
+
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
-    async def test_execute_on_reply(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", lambda foo: foo)
+    async def test_on_success_not_defined(self):
+        step = SagaStep(send_create_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
+        reply = fake_reply(Foo("foo"), status=CommandStatus.SUCCESS)
 
-        reply = fake_reply(Foo("foo"))
-        context = await execution.execute(context, reply=reply, **self.execute_kwargs)
-        self.assertEqual(SagaContext(foo=Foo("foo")), context)
+        await execution.execute(context, reply=reply, **self.execute_kwargs)
+
         self.assertEqual(SagaStepStatus.Finished, execution.status)
+        self.assertEqual(0, rollback_mock.call_count)
 
-    async def test_execute_on_reply_errored(self):
-        step = SagaStep().invoke_participant("FooAdd", foo_fn).on_reply("foo", foo_fn_raises)
+    async def test_on_success_raises(self):
+        step = SagaStep(send_create_ticket).on_success(handle_ticket_success_raises)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
+        reply = fake_reply(Foo("foo"), status=CommandStatus.SUCCESS)
 
-        reply = fake_reply(Foo("foo"))
-        with self.assertRaises(MinosSagaFailedExecutionStepException):
+        with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, reply=reply, **self.execute_kwargs)
 
-        self.assertEqual(SagaStepStatus.ErroredOnReply, execution.status)
+        self.assertEqual(SagaStepStatus.ErroredOnSuccess, execution.status)
+        self.assertEqual(1, rollback_mock.call_count)
+
+    async def test_on_error(self):
+        step = SagaStep(send_create_ticket).on_error(handle_ticket_error)
+        context = SagaContext()
+        execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
+        reply = fake_reply(Foo("foo"), status=CommandStatus.ERROR)
+
+        await execution.execute(context, reply=reply, **self.execute_kwargs)
+
+        self.assertEqual(SagaStepStatus.Finished, execution.status)
+        self.assertEqual(0, rollback_mock.call_count)
+
+    async def test_on_error_not_defined(self):
+        step = SagaStep(send_create_ticket)
+        context = SagaContext()
+        execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
+        reply = fake_reply(Foo("foo"), status=CommandStatus.ERROR)
+
+        await execution.execute(context, reply=reply, **self.execute_kwargs)
+
+        self.assertEqual(SagaStepStatus.Finished, execution.status)
+        self.assertEqual(0, rollback_mock.call_count)
+
+    async def test_on_error_raises(self):
+        step = SagaStep(send_create_ticket).on_error(handle_ticket_error_raises)
+        context = SagaContext()
+        execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
+        rollback_mock = AsyncMock()
+        execution.rollback = rollback_mock
+        reply = fake_reply(Foo("foo"), status=CommandStatus.ERROR)
+
+        with self.assertRaises(SagaFailedExecutionStepException):
+            await execution.execute(context, reply=reply, **self.execute_kwargs)
+
+        self.assertEqual(SagaStepStatus.ErroredOnError, execution.status)
+        self.assertEqual(1, rollback_mock.call_count)
 
     async def test_rollback(self):
-        step = (
-            SagaStep()
-            .invoke_participant("FooAdd", foo_fn)
-            .with_compensation("FooDelete", foo_fn)
-            .on_reply("foo", foo_fn_raises)
-        )
+        step = SagaStep(send_create_ticket).on_failure(send_delete_ticket)
         context = SagaContext()
-        execution = SagaExecutionStep(step)
+        execution = SagaStepExecution(step)
 
-        with self.assertRaises(MinosSagaRollbackExecutionStepException):
-            await execution.rollback(context, **self.execute_kwargs)
-        self.assertEqual(0, self.publish_mock.call_count)
-
-        with self.assertRaises(MinosSagaPausedExecutionStepException):
+        with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(context, **self.execute_kwargs)
 
-        self.assertEqual(1, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
-
         await execution.rollback(context, **self.execute_kwargs)
         self.assertEqual(1, self.publish_mock.call_count)
 
         self.publish_mock.reset_mock()
-        with self.assertRaises(MinosSagaRollbackExecutionStepException):
+        with self.assertRaises(SagaRollbackExecutionStepException):
             await execution.rollback(context, **self.execute_kwargs)
         self.assertEqual(0, self.publish_mock.call_count)
 
+    async def test_rollback_raises(self):
+        step = SagaStep(send_create_ticket).on_failure(send_delete_ticket)
+        context = SagaContext()
+        execution = SagaStepExecution(step)
+
+        with self.assertRaises(SagaRollbackExecutionStepException):
+            await execution.rollback(context, **self.execute_kwargs)
+
     def test_raw(self):
         definition = (
-            SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
         )
-        execution = SagaExecutionStep(definition)
+        execution = SagaStepExecution(definition)
 
         expected = {
             "already_rollback": False,
             "definition": {
-                "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
-                "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
-                "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
+                "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                "on_error": {"callback": "tests.utils.handle_ticket_error"},
+                "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             },
             "status": "created",
         }
         self.assertEqual(expected, execution.raw)
 
     def test_from_raw(self):
-
         raw = {
             "already_rollback": False,
             "definition": {
-                "invoke_participant": {"callback": "tests.utils.foo_fn", "name": "CreateFoo"},
-                "on_reply": {"callback": "minos.saga.definitions.operations.identity_fn", "name": "foo"},
-                "with_compensation": {"callback": "tests.utils.foo_fn", "name": "DeleteFoo"},
+                "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                "on_error": {"callback": "tests.utils.handle_ticket_error"},
+                "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             },
             "status": "created",
         }
-        expected = SagaExecutionStep(
-            (SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")),
+        expected = SagaStepExecution(
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
         )
-        observed = SagaExecutionStep.from_raw(raw)
+        observed = SagaStepExecution.from_raw(raw)
         self.assertEqual(expected, observed)
 
     def test_from_raw_already(self):
-        expected = SagaExecutionStep(
-            (SagaStep().invoke_participant("CreateFoo", foo_fn).with_compensation("DeleteFoo", foo_fn).on_reply("foo")),
+        expected = SagaStepExecution(
+            SagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
         )
-        observed = SagaExecutionStep.from_raw(expected)
+        observed = SagaStepExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
 

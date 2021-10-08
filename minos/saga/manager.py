@@ -32,8 +32,8 @@ from .definitions import (
     Saga,
 )
 from .exceptions import (
-    MinosSagaFailedExecutionException,
-    MinosSagaPausedExecutionStepException,
+    SagaFailedExecutionException,
+    SagaPausedExecutionStepException,
 )
 from .executions import (
     SagaExecution,
@@ -101,7 +101,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
                 await self._run_with_pause_on_disk(execution, **kwargs)
             else:
                 await self._run_with_pause_on_memory(execution, **kwargs)
-        except MinosSagaFailedExecutionException as exc:
+        except SagaFailedExecutionException as exc:
             self.storage.store(execution)
             if raise_on_error:
                 raise exc
@@ -118,7 +118,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> None:
         try:
             await execution.execute(**kwargs)
-        except MinosSagaPausedExecutionStepException:
+        except SagaPausedExecutionStepException:
             self.storage.store(execution)
 
     async def _run_with_pause_on_memory(
@@ -130,7 +130,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
             while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                 try:
                     await execution.execute(reply=reply, **(kwargs | {"reply_topic": handler.topic}))
-                except MinosSagaPausedExecutionStepException:
+                except SagaPausedExecutionStepException:
                     reply = await self._get_reply(handler, execution, **kwargs)
                 self.storage.store(execution)
 
@@ -142,6 +142,6 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
                 entry = await handler.get_one(**kwargs)
             except Exception as exc:
                 execution.status = SagaStatus.Errored
-                raise MinosSagaFailedExecutionException(exc)
+                raise SagaFailedExecutionException(exc)
             reply = entry.data
         return reply

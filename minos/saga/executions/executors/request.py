@@ -3,7 +3,6 @@ from __future__ import (
 )
 
 from typing import (
-    Any,
     Optional,
 )
 from uuid import (
@@ -20,9 +19,6 @@ from minos.common import (
     MinosBrokerNotProvidedException,
 )
 
-from ... import (
-    MinosSagaFailedExecutionStepException,
-)
 from ...context import (
     SagaContext,
 )
@@ -30,15 +26,19 @@ from ...definitions import (
     SagaOperation,
 )
 from ...exceptions import (
-    MinosSagaExecutorException,
+    ExecutorException,
+    SagaFailedExecutionStepException,
 )
-from .local import (
-    LocalExecutor,
+from ...messages import (
+    SagaRequest,
+)
+from .abc import (
+    Executor,
 )
 
 
-class PublishExecutor(LocalExecutor):
-    """Publish Executor class.
+class RequestExecutor(Executor):
+    """Request class.
 
     This class has the responsibility to publish command on the corresponding broker's queue.
     """
@@ -62,7 +62,8 @@ class PublishExecutor(LocalExecutor):
 
         self.broker = broker
 
-    async def exec(self, operation: SagaOperation, context: SagaContext) -> SagaContext:
+    # noinspection PyMethodOverriding
+    async def exec(self, operation: Optional[SagaOperation], context: SagaContext) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
 
         :param operation: Operation to be executed.
@@ -73,15 +74,17 @@ class PublishExecutor(LocalExecutor):
             return context
 
         try:
-            request = await self.exec_operation(operation, context)
-            await self._publish(operation, request)
-        except MinosSagaExecutorException as exc:
-            raise MinosSagaFailedExecutionStepException(exc.exception)
+            context = SagaContext(**context)  # Needed to avoid mutability issues.
+            request = await super().exec(operation, context)
+            await self._publish(request)
+        except ExecutorException as exc:
+            raise SagaFailedExecutionStepException(exc.exception)
         return context
 
-    async def _publish(self, operation: SagaOperation, data: Any) -> None:
+    async def _publish(self, request: SagaRequest) -> None:
         fn = self.broker.send
-        topic = operation.name
+        topic = request.target
+        data = await request.content()
         saga = self.execution_uuid
         reply_topic = self.reply_topic
         await self.exec_function(fn, topic=topic, data=data, saga=saga, reply_topic=reply_topic)

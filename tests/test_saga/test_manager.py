@@ -22,20 +22,18 @@ from minos.common import (
     MinosSagaManager,
 )
 from minos.saga import (
-    MinosSagaExecutionNotFoundException,
-    MinosSagaFailedExecutionException,
     SagaContext,
     SagaExecution,
+    SagaExecutionNotFoundException,
     SagaExecutionStorage,
+    SagaFailedExecutionException,
     SagaManager,
     SagaStatus,
 )
-from tests.sagas import (
-    ADD_ORDER,
-    DELETE_ORDER,
-)
 from tests.utils import (
+    ADD_ORDER,
     BASE_PATH,
+    DELETE_ORDER,
     FakeHandler,
     FakePool,
     Foo,
@@ -51,7 +49,8 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.broker = NaiveBroker()
         self.handler = FakeHandler("TheReplyTopic")
         self.pool = FakePool(self.handler)
-        self.manager = SagaManager.from_config(dynamic_handler_pool=self.pool, config=self.config)
+        # noinspection PyTypeChecker
+        self.manager: SagaManager = SagaManager.from_config(dynamic_handler_pool=self.pool, config=self.config)
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
@@ -86,14 +85,14 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
 
             execution = await self.manager.run(ADD_ORDER, broker=self.broker)
             self.assertEqual(SagaStatus.Finished, execution.status)
-            with self.assertRaises(MinosSagaExecutionNotFoundException):
+            with self.assertRaises(SagaExecutionNotFoundException):
                 self.manager.storage.load(execution.uuid)
 
         self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(topic="CreateProduct", data=Foo("hello"), saga=expected_uuid, reply_topic=reply_topic),
-                call(topic="CreateTicket", data=Foo("hello"), saga=expected_uuid, reply_topic=reply_topic),
+                call(topic="CreateOrder", data=Foo("create_order!"), saga=expected_uuid, reply_topic=reply_topic),
+                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=expected_uuid, reply_topic=reply_topic),
             ],
             send_mock.call_args_list,
         )
@@ -107,7 +106,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     async def test_run_with_pause_on_memory_with_error_raises(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
-        with self.assertRaises(MinosSagaFailedExecutionException):
+        with self.assertRaises(SagaFailedExecutionException):
             await self.manager.run(ADD_ORDER, broker=self.broker)
 
     async def test_run_with_pause_on_disk(self):
@@ -123,14 +122,14 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
 
         reply = CommandReply("AddOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
         execution = await self.manager.run(reply=reply, broker=self.broker, pause_on_disk=True)
-        with self.assertRaises(MinosSagaExecutionNotFoundException):
+        with self.assertRaises(SagaExecutionNotFoundException):
             self.manager.storage.load(execution.uuid)
 
         self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(topic="CreateProduct", data=Foo("hello"), saga=execution.uuid, reply_topic=None),
-                call(topic="CreateTicket", data=Foo("hello"), saga=execution.uuid, reply_topic=None),
+                call(topic="CreateOrder", data=Foo("create_order!"), saga=execution.uuid, reply_topic=None),
+                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=execution.uuid, reply_topic=None),
             ],
             send_mock.call_args_list,
         )

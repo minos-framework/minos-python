@@ -4,128 +4,127 @@ from minos.common import (
     MinosException,
 )
 from minos.saga import (
-    MinosAlreadyOnSagaException,
-    MinosMultipleInvokeParticipantException,
-    MinosMultipleOnReplyException,
-    MinosMultipleWithCompensationException,
-    MinosSagaEmptyStepException,
-    MinosSagaException,
-    MinosSagaExecutionException,
-    MinosSagaExecutionNotFoundException,
-    MinosSagaExecutionStepException,
-    MinosSagaFailedExecutionStepException,
-    MinosSagaNotDefinedException,
-    MinosSagaPausedExecutionStepException,
-    MinosSagaRollbackExecutionException,
-    MinosSagaRollbackExecutionStepException,
-    MinosSagaStepException,
-    MinosUndefinedInvokeParticipantException,
+    AlreadyOnSagaException,
+    EmptySagaStepException,
+    MultipleOnErrorException,
+    MultipleOnExecuteException,
+    MultipleOnFailureException,
+    MultipleOnSuccessException,
+    SagaException,
+    SagaExecutionException,
+    SagaExecutionNotFoundException,
+    SagaFailedExecutionStepException,
+    SagaNotDefinedException,
+    SagaPausedExecutionStepException,
+    SagaRollbackExecutionException,
+    SagaRollbackExecutionStepException,
+    SagaStepException,
+    SagaStepExecutionException,
+    UndefinedOnExecuteException,
 )
 
 
 class TestExceptions(unittest.TestCase):
     def test_type(self):
-        self.assertTrue(issubclass(MinosSagaException, MinosException))
+        self.assertTrue(issubclass(SagaException, MinosException))
 
     def test_step(self):
-        self.assertTrue(issubclass(MinosSagaStepException, MinosException))
+        self.assertTrue(issubclass(SagaStepException, MinosException))
 
     def test_step_saga_not_defined(self):
-        self.assertTrue(issubclass(MinosSagaNotDefinedException, MinosSagaStepException))
+        self.assertTrue(issubclass(SagaNotDefinedException, SagaStepException))
 
     def test_step_saga_not_defined_repr(self):
         expected = (
-            "MinosSagaNotDefinedException(message=\"A 'SagaStep' "
-            "must have a 'Saga' instance to call call this method.\")"
+            "SagaNotDefinedException(message=\"A 'SagaStep' " "must have a 'Saga' instance to call call this method.\")"
         )
-        self.assertEqual(expected, repr(MinosSagaNotDefinedException()))
+        self.assertEqual(expected, repr(SagaNotDefinedException()))
 
     def test_step_empty(self):
-        self.assertTrue(issubclass(MinosSagaEmptyStepException, MinosSagaStepException))
+        self.assertTrue(issubclass(EmptySagaStepException, SagaStepException))
 
     def test_step_empty_repr(self):
-        expected = "MinosSagaEmptyStepException(message=\"A 'SagaStep' must have at least one defined action.\")"
-        self.assertEqual(expected, repr(MinosSagaEmptyStepException()))
+        expected = "EmptySagaStepException(message=\"A 'SagaStep' must have at least one defined action.\")"
+        self.assertEqual(expected, repr(EmptySagaStepException()))
 
-    def test_step_multiple_invoke_participant(self):
-        self.assertTrue(issubclass(MinosMultipleInvokeParticipantException, MinosSagaStepException))
+    def test_step_multiple_on_execute(self):
+        self.assertTrue(issubclass(MultipleOnExecuteException, SagaStepException))
 
-    def test_step_multiple_invoke_participant_repr(self):
-        expected = (
-            "MinosMultipleInvokeParticipantException(message=\"A 'SagaStep' can "
-            "only define one 'invoke_participant' method.\")"
-        )
-        self.assertEqual(expected, repr(MinosMultipleInvokeParticipantException()))
+    def test_step_multiple_on_execute_repr(self):
+        expected = "MultipleOnExecuteException(message=\"A 'SagaStep' can " "only define one 'on_execute' method.\")"
+        self.assertEqual(expected, repr(MultipleOnExecuteException()))
 
-    def test_step_multiple_with_compensation(self):
-        self.assertTrue(issubclass(MinosMultipleWithCompensationException, MinosSagaStepException))
+    def test_step_multiple_on_failure(self):
+        self.assertTrue(issubclass(MultipleOnFailureException, SagaStepException))
 
-    def test_step_multiple_with_compensation_repr(self):
-        expected = (
-            "MinosMultipleWithCompensationException(message=\"A 'SagaStep'"
-            " can only define one 'with_compensation' method.\")"
-        )
-        self.assertEqual(expected, repr(MinosMultipleWithCompensationException()))
+    def test_step_multiple_on_failure_repr(self):
+        expected = "MultipleOnFailureException(message=\"A 'SagaStep'" " can only define one 'on_failure' method.\")"
+        self.assertEqual(expected, repr(MultipleOnFailureException()))
 
-    def test_step_multiple_on_reply(self):
-        self.assertTrue(issubclass(MinosMultipleOnReplyException, MinosSagaStepException))
+    def test_step_multiple_on_success(self):
+        self.assertTrue(issubclass(MultipleOnSuccessException, SagaStepException))
 
-    def test_step_multiple_on_reply_repr(self):
-        expected = "MinosMultipleOnReplyException(message=\"A 'SagaStep' can only define one 'on_reply' method.\")"
-        self.assertEqual(expected, repr(MinosMultipleOnReplyException()))
+    def test_step_multiple_on_success_repr(self):
+        expected = "MultipleOnSuccessException(message=\"A 'SagaStep' can only define one 'on_success' method.\")"
+        self.assertEqual(expected, repr(MultipleOnSuccessException()))
+
+    def test_step_multiple_on_error(self):
+        self.assertTrue(issubclass(MultipleOnErrorException, SagaStepException))
+
+    def test_step_multiple_on_error_repr(self):
+        expected = "MultipleOnErrorException(message=\"A 'SagaStep' can only define one 'on_error' method.\")"
+        self.assertEqual(expected, repr(MultipleOnErrorException()))
 
     def test_step_already_on_saga(self):
-        self.assertTrue(issubclass(MinosAlreadyOnSagaException, MinosSagaStepException))
+        self.assertTrue(issubclass(AlreadyOnSagaException, SagaStepException))
 
     def test_step_already_on_saga_repr(self):
-        expected = "MinosAlreadyOnSagaException(message=\"A 'SagaStep' can only belong to one 'Saga' simultaneously.\")"
-        self.assertEqual(expected, repr(MinosAlreadyOnSagaException()))
+        expected = "AlreadyOnSagaException(message=\"A 'SagaStep' can only belong to one 'Saga' simultaneously.\")"
+        self.assertEqual(expected, repr(AlreadyOnSagaException()))
 
-    def test_step_undefined_invoke_participant(self):
-        self.assertTrue(issubclass(MinosUndefinedInvokeParticipantException, MinosSagaStepException))
+    def test_step_undefined_on_execute(self):
+        self.assertTrue(issubclass(UndefinedOnExecuteException, SagaStepException))
 
-    def test_step_undefined_invoke_participant_repr(self):
+    def test_step_undefined_on_execute_repr(self):
         expected = (
-            "MinosUndefinedInvokeParticipantException(message=\"A 'SagaStep' "
-            "must define at least the 'invoke_participant' logic.\")"
+            "UndefinedOnExecuteException(message=\"A 'SagaStep' " "must define at least the 'on_execute' logic.\")"
         )
-        self.assertEqual(expected, repr(MinosUndefinedInvokeParticipantException()))
+        self.assertEqual(expected, repr(UndefinedOnExecuteException()))
 
     def test_execution(self):
-        self.assertTrue(issubclass(MinosSagaExecutionException, MinosException))
+        self.assertTrue(issubclass(SagaExecutionException, MinosException))
 
     def test_execution_not_found(self):
-        self.assertTrue(issubclass(MinosSagaExecutionNotFoundException, MinosException))
+        self.assertTrue(issubclass(SagaExecutionNotFoundException, MinosException))
 
     def test_execution_rollback(self):
-        self.assertTrue(issubclass(MinosSagaRollbackExecutionException, MinosSagaExecutionException))
+        self.assertTrue(issubclass(SagaRollbackExecutionException, SagaExecutionException))
 
     def test_execution_step(self):
-        self.assertTrue(issubclass(MinosSagaExecutionStepException, MinosException))
+        self.assertTrue(issubclass(SagaStepExecutionException, MinosException))
 
     def test_execution_step_failed_step(self):
-        self.assertTrue(issubclass(MinosSagaFailedExecutionStepException, MinosSagaExecutionStepException))
+        self.assertTrue(issubclass(SagaFailedExecutionStepException, SagaStepExecutionException))
 
     def test_execution_step_failed_step_repr(self):
         expected = (
-            'MinosSagaFailedExecutionStepException(message="There was '
-            "a failure while 'SagaExecutionStep' was executing: ValueError('test')\")"
+            'SagaFailedExecutionStepException(message="There was '
+            "a failure while 'SagaStepExecution' was executing: ValueError('test')\")"
         )
 
-        self.assertEqual(expected, repr(MinosSagaFailedExecutionStepException(ValueError("test"))))
+        self.assertEqual(expected, repr(SagaFailedExecutionStepException(ValueError("test"))))
 
     def test_execution_step_paused_step(self):
-        self.assertTrue(issubclass(MinosSagaPausedExecutionStepException, MinosSagaExecutionStepException))
+        self.assertTrue(issubclass(SagaPausedExecutionStepException, SagaStepExecutionException))
 
     def test_execution_step_paused_step_repr(self):
         expected = (
-            'MinosSagaPausedExecutionStepException(message="There was '
-            "a pause while 'SagaExecutionStep' was executing.\")"
+            'SagaPausedExecutionStepException(message="There was ' "a pause while 'SagaStepExecution' was executing.\")"
         )
-        self.assertEqual(expected, repr(MinosSagaPausedExecutionStepException()))
+        self.assertEqual(expected, repr(SagaPausedExecutionStepException()))
 
     def test_execution_step_rollback(self):
-        self.assertTrue(issubclass(MinosSagaRollbackExecutionStepException, MinosSagaExecutionStepException))
+        self.assertTrue(issubclass(SagaRollbackExecutionStepException, SagaStepExecutionException))
 
 
 if __name__ == "__main__":

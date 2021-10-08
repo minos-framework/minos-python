@@ -13,18 +13,19 @@ from ..context import (
     SagaContext,
 )
 from ..exceptions import (
-    MinosAlreadyOnSagaException,
-    MinosSagaAlreadyCommittedException,
+    AlreadyCommittedException,
+    AlreadyOnSagaException,
 )
 from .operations import (
     SagaOperation,
+    identity_fn,
 )
 from .step import (
     SagaStep,
-    identity_fn,
 )
 from .types import (
     CommitCallback,
+    RequestCallBack,
 )
 
 
@@ -35,12 +36,20 @@ class Saga:
     """
 
     # noinspection PyUnusedLocal
-    def __init__(self, *args, steps: list[SagaStep] = None, commit_operation: Optional[SagaOperation] = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        steps: list[SagaStep] = None,
+        commit: Optional[Union[CommitCallback, SagaOperation]] = None,
+        **kwargs
+    ):
         if steps is None:
             steps = list()
+        if commit is not None and not isinstance(commit, SagaOperation):
+            commit = SagaOperation(commit)
 
         self.steps = steps
-        self.commit_operation = commit_operation
+        self.commit_operation = commit
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
@@ -55,32 +64,34 @@ class Saga:
 
         current = raw | kwargs
 
-        commit_operation = current.pop("commit", None)
-        if commit_operation is not None:
-            commit_operation = SagaOperation.from_raw(commit_operation)
+        commit = current.pop("commit", None)
+        if commit is not None:
+            commit = SagaOperation.from_raw(commit)
 
         steps = [SagaStep.from_raw(step) for step in current.pop("steps")]
 
-        instance = cls(steps=steps, commit_operation=commit_operation, **current)
+        instance = cls(steps=steps, commit=commit, **current)
 
         return instance
 
-    def step(self, step: Optional[SagaStep] = None) -> SagaStep:
+    def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> SagaStep:
         """Add a new step in the ``Saga``.
 
         :return: A ``SagaStep`` instance.
         """
         if self.committed:
-            raise MinosSagaAlreadyCommittedException(
-                "It is not possible to add more steps to an already committed saga."
-            )
+            raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
 
         if step is None:
-            step = SagaStep(self)
-        else:
+            step = SagaStep(saga=self)
+        elif isinstance(step, SagaStep):
             if step.saga is not None:
-                raise MinosAlreadyOnSagaException()
+                raise AlreadyOnSagaException()
             step.saga = self
+        elif isinstance(step, SagaOperation):
+            step = SagaStep(step, saga=self)
+        else:
+            step = SagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
 
         self.steps.append(step)
         return step
@@ -107,20 +118,24 @@ class Saga:
         )
 
     # noinspection PyUnusedLocal
-    def commit(self, callback: Optional[CommitCallback] = None, parameters: Optional[SagaContext] = None) -> Saga:
+    def commit(
+        self, callback: Optional[CommitCallback] = None, parameters: Optional[SagaContext] = None, **kwargs
+    ) -> Saga:
         """Commit the instance to be ready for execution.
 
         :param callback: Optional function to be called at the end of execution.
         :param parameters: A mapping of named parameters to be passed to the callback.
+        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
+            ``None``.
         :return: A ``Saga`` instance.
         """
         if self.committed:
-            raise MinosSagaAlreadyCommittedException("It is not possible to commit a saga multiple times.")
+            raise AlreadyCommittedException("It is not possible to commit a saga multiple times.")
 
         if callback is None:
             callback = identity_fn
 
-        self.commit_operation = SagaOperation(callback, parameters=parameters)
+        self.commit_operation = SagaOperation(callback, parameters=parameters, **kwargs)
         return self
 
     @property
