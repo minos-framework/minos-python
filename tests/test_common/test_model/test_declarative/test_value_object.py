@@ -5,9 +5,9 @@ from unittest import (
 
 from minos.common import (
     Action,
+    IncrementalSetDiff,
+    IncrementalSetDiffEntry,
     MinosImmutableClassException,
-    SetDiff,
-    SetDiffEntry,
     ValueObject,
     ValueObjectSet,
 )
@@ -103,12 +103,12 @@ class TestValueObjectSet(TestCase):
         entities = ValueObjectSet(raw)
 
         observed = entities.diff(ValueObjectSet([raw[0]]))
-        expected = SetDiff([SetDiffEntry(Action.CREATE, raw[1])])
+        expected = IncrementalSetDiff([IncrementalSetDiffEntry(Action.CREATE, raw[1])])
 
         self.assertEqual(observed, expected)
 
 
-class TestSetDiff(TestCase):
+class TestValueObjectSetDiff(TestCase):
     def setUp(self) -> None:
         self.raw = [Location(street="street name"), Location(street="another street name")]
         self.old = ValueObjectSet(self.raw)
@@ -120,8 +120,8 @@ class TestSetDiff(TestCase):
         new = Location("San Anton, 23")
         entities.add(new)
 
-        observed = SetDiff.from_difference(entities, self.old)
-        expected = SetDiff([SetDiffEntry(Action.CREATE, new)])
+        observed = IncrementalSetDiff.from_difference(entities, self.old)
+        expected = IncrementalSetDiff([IncrementalSetDiffEntry(Action.CREATE, new)])
         self.assertEqual(expected, observed)
 
     def test_from_difference_delete(self):
@@ -129,8 +129,8 @@ class TestSetDiff(TestCase):
         removed = self.clone[1]
         entities.remove(removed)
 
-        observed = SetDiff.from_difference(entities, self.old)
-        expected = SetDiff([SetDiffEntry(Action.DELETE, removed)])
+        observed = IncrementalSetDiff.from_difference(entities, self.old)
+        expected = IncrementalSetDiff([IncrementalSetDiffEntry(Action.DELETE, removed)])
         self.assertEqual(expected, observed)
 
     def test_from_difference_combined(self):
@@ -141,9 +141,11 @@ class TestSetDiff(TestCase):
         removed = self.clone[1]
         entities.remove(removed)
 
-        observed = SetDiff.from_difference(entities, self.old)
+        observed = IncrementalSetDiff.from_difference(entities, self.old)
 
-        expected = SetDiff([SetDiffEntry(Action.CREATE, new), SetDiffEntry(Action.DELETE, removed)])
+        expected = IncrementalSetDiff(
+            [IncrementalSetDiffEntry(Action.CREATE, new), IncrementalSetDiffEntry(Action.DELETE, removed)]
+        )
         self.assertEqual(expected, observed)
 
 

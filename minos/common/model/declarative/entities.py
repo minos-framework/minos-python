@@ -25,7 +25,7 @@ from .abc import (
 )
 from .collections import (
     IncrementalSet,
-    SetDiff,
+    IncrementalSetDiff,
 )
 
 
@@ -98,10 +98,10 @@ class EntitySet(IncrementalSet[T]):
             return self.data == other
         return set(self) == other
 
-    def diff(self, another: EntitySet[T]) -> SetDiff:
+    def diff(self, another: EntitySet[T]) -> IncrementalSetDiff:
         """Compute the difference between self and another entity set.
 
         :param another: Another entity set instance.
         :return: The difference between both entity sets.
         """
-        return SetDiff.from_difference(self, another, get_fn=attrgetter("uuid"))
+        return IncrementalSetDiff.from_difference(self, another, get_fn=attrgetter("uuid"))

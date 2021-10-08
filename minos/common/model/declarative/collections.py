@@ -68,24 +68,26 @@ class IncrementalSet(DeclarativeModel, MutableSet, Generic[T]):
             return super().__eq__(other)
         return set(self) == other
 
-    def diff(self, another: IncrementalSet[T]) -> SetDiff:
+    def diff(self, another: IncrementalSet[T]) -> IncrementalSetDiff:
         """Compute the difference between self and another entity set.
         :param another: Another entity set instance.
         :return: The difference between both entity sets.
         """
-        return SetDiff.from_difference(self, another)
+        return IncrementalSetDiff.from_difference(self, another)
 
 
-SetDiffEntry = ModelType.build("SetDiffEntry", {"action": Action, "entity": Any})
+IncrementalSetDiffEntry = ModelType.build("SetDiffEntry", {"action": Action, "entity": Any})
 
 
-class SetDiff(DeclarativeModel):
+class IncrementalSetDiff(DeclarativeModel):
     """Value Object Set Diff class."""
 
-    diffs: list[SetDiffEntry]
+    diffs: list[IncrementalSetDiffEntry]
 
     @classmethod
-    def from_difference(cls, new: set[T], old: set[T], get_fn: Optional[Callable[[T], Any]] = None) -> SetDiff:
+    def from_difference(
+        cls, new: set[T], old: set[T], get_fn: Optional[Callable[[T], Any]] = None
+    ) -> IncrementalSetDiff:
         """Build a new instance from two entity sets.
         :param new: The new entity set.
         :param old: The old entity set.
@@ -96,21 +98,21 @@ class SetDiff(DeclarativeModel):
         return cls(differences)
 
     @staticmethod
-    def _diff(new: set[T], old: set[T], get_fn) -> list[SetDiffEntry]:
+    def _diff(new: set[T], old: set[T], get_fn) -> list[IncrementalSetDiffEntry]:
         result = list()
         for value in new - old:
-            entry = SetDiffEntry(Action.CREATE, value)
+            entry = IncrementalSetDiffEntry(Action.CREATE, value)
             result.append(entry)
 
         for value in old - new:
-            entry = SetDiffEntry(Action.DELETE, value)
+            entry = IncrementalSetDiffEntry(Action.DELETE, value)
             result.append(entry)
 
         if get_fn is not None:
             for value in old & new:
                 if value == old.get(value.uuid):
                     continue
-                entry = SetDiffEntry(Action.UPDATE, value)
+                entry = IncrementalSetDiffEntry(Action.UPDATE, value)
                 result.append(entry)
 
         return result

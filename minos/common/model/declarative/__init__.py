@@ -9,8 +9,8 @@ from .aggregate import (
 )
 from .collections import (
     IncrementalSet,
-    SetDiff,
-    SetDiffEntry,
+    IncrementalSetDiff,
+    IncrementalSetDiffEntry,
 )
 from .entities import (
     Entity,

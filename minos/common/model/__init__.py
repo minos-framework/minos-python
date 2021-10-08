@@ -16,9 +16,9 @@ from .declarative import (
     EntitySet,
     Event,
     IncrementalSet,
+    IncrementalSetDiff,
+    IncrementalSetDiffEntry,
     MinosModel,
-    SetDiff,
-    SetDiffEntry,
     ValueObject,
     ValueObjectSet,
 )
