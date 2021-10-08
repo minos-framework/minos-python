@@ -12,16 +12,18 @@ from uuid import (
 from minos.common import (
     AggregateDiff,
     MinosSagaManager,
-    Model,
     ModelRefExtractor,
     ModelRefInjector,
-    ModelType,
 )
 from minos.saga import (
     Saga,
     SagaContext,
     SagaExecution,
+    SagaOperation,
+    SagaRequest,
+    SagaResponse,
     SagaStatus,
+    SagaStep,
 )
 
 from .exceptions import (
@@ -68,30 +70,45 @@ class PreEventHandler:
         if not len(missing):
             raise MinosNotAnyMissingReferenceException("The diff does not have any missing reference.")
 
-        saga = Saga()
-        for name, uuids in missing.items():
-            saga = (
-                saga.step()
-                .invoke_participant(f"Get{name}s", cls.invoke_callback, SagaContext(uuids=list(uuids)))
-                .on_reply(f"{name}s")
+        steps = [
+            SagaStep(
+                on_execute=SagaOperation(cls.on_execute, name=name, uuids=list(uuids)),
+                on_success=SagaOperation(cls.on_success, name=name),
             )
-        saga = saga.commit(cls.commit_callback, parameters=SagaContext(diff=diff))
+            for name, uuids in missing.items()
+        ]
+        commit = SagaOperation(cls.commit, diff=diff)
+
+        saga = Saga(steps=steps, commit=commit)
 
         return saga
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def invoke_callback(context: SagaContext, uuids: list[UUID]) -> Model:
+    def on_execute(context: SagaContext, name: str, uuids: list[UUID]) -> SagaRequest:
         """Callback to prepare data before invoking participants.
 
         :param context: The saga context (ignored).
+        :param name: The name of the aggregate.
         :param uuids: The list of identifiers.
         :return: A dto instance.
         """
-        return ModelType.build("Query", {"uuids": list[UUID]})(uuids=uuids)
+        return SagaRequest(f"Get{name}s", {"uuids": uuids})
+
+    @staticmethod
+    async def on_success(context: SagaContext, response: SagaResponse, name: str) -> SagaContext:
+        """Callback to handle the response on successful cases.
+
+        :param context: The previous saga context instance.
+        :param response: The obtained response.
+        :param name: The name of the aggregate.
+        :return: The new saga context instance.
+        """
+        context[f"{name.lower()}s"] = await response.content()
+        return context
 
     @classmethod
-    def commit_callback(cls, context: SagaContext, diff: AggregateDiff) -> SagaContext:
+    def commit(cls, context: SagaContext, diff: AggregateDiff) -> SagaContext:
         """Callback to be executed at the end of the saga.
 
         :param context: The saga execution context.
