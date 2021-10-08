@@ -35,7 +35,8 @@ from .exceptions import (
     MinosUndefinedOnExecuteException,
 )
 from .executions import (
-    LocalExecutor,
+    CommitExecutor,
+    Executor,
     RequestExecutor,
     ResponseExecutor,
     SagaExecution,

@@ -26,7 +26,6 @@ from ..definitions import (
 )
 from ..exceptions import (
     MinosSagaExecutionAlreadyExecutedException,
-    MinosSagaExecutorException,
     MinosSagaFailedCommitCallbackException,
     MinosSagaFailedExecutionStepException,
     MinosSagaNotCommittedException,
@@ -35,7 +34,7 @@ from ..exceptions import (
     MinosSagaStepExecutionException,
 )
 from .executors import (
-    LocalExecutor,
+    CommitExecutor,
 )
 from .status import (
     SagaStatus,
@@ -182,17 +181,14 @@ class SagaExecution:
             raise exc
 
     async def _execute_commit(self, *args, **kwargs) -> None:
-        executor = LocalExecutor(*args, **kwargs)
+        executor = CommitExecutor(*args, **kwargs)
 
         try:
-            new_context = await executor.exec_operation(self.definition.commit_operation, self.context)
-        except MinosSagaExecutorException as exc:
+            self.context = await executor.exec(self.definition.commit_operation, self.context)
+        except MinosSagaFailedCommitCallbackException as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
-            raise MinosSagaFailedCommitCallbackException(exc.exception)
-
-        if new_context is not None:
-            self.context = new_context
+            raise exc
 
     async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.

@@ -12,14 +12,14 @@ from ...exceptions import (
 )
 
 
-class LocalExecutor:
-    """Local executor class."""
+class Executor:
+    """Executor class."""
 
     def __init__(self, *args, **kwargs):
         pass
 
-    async def exec_operation(self, operation: SagaOperation, *args, **kwargs) -> Any:
-        """Execute the given operation locally.
+    async def exec(self, operation: SagaOperation, *args, **kwargs) -> Any:
+        """Execute the given operation.
 
         :param operation: The operation to be executed.
         :param args: Additional positional arguments.

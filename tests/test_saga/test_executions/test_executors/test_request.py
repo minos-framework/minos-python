@@ -11,7 +11,7 @@ from minos.common import (
     MinosBrokerNotProvidedException,
 )
 from minos.saga import (
-    LocalExecutor,
+    Executor,
     MinosSagaFailedExecutionStepException,
     RequestExecutor,
     SagaContext,
@@ -31,7 +31,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         self.executor = RequestExecutor(reply_topic="AddFoo", execution_uuid=self.uuid, broker=self.broker)
 
     def test_constructor(self):
-        self.assertIsInstance(self.executor, LocalExecutor)
+        self.assertIsInstance(self.executor, Executor)
         self.assertEqual("AddFoo", self.executor.reply_topic)
         self.assertEqual(self.uuid, self.executor.execution_uuid)
         self.assertEqual(self.broker, self.executor.broker)
