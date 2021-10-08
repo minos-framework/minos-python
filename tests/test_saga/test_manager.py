@@ -22,11 +22,11 @@ from minos.common import (
     MinosSagaManager,
 )
 from minos.saga import (
-    MinosSagaExecutionNotFoundException,
-    MinosSagaFailedExecutionException,
     SagaContext,
     SagaExecution,
+    SagaExecutionNotFoundException,
     SagaExecutionStorage,
+    SagaFailedExecutionException,
     SagaManager,
     SagaStatus,
 )
@@ -85,7 +85,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
 
             execution = await self.manager.run(ADD_ORDER, broker=self.broker)
             self.assertEqual(SagaStatus.Finished, execution.status)
-            with self.assertRaises(MinosSagaExecutionNotFoundException):
+            with self.assertRaises(SagaExecutionNotFoundException):
                 self.manager.storage.load(execution.uuid)
 
         self.assertEqual(2, send_mock.call_count)
@@ -106,7 +106,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     async def test_run_with_pause_on_memory_with_error_raises(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
-        with self.assertRaises(MinosSagaFailedExecutionException):
+        with self.assertRaises(SagaFailedExecutionException):
             await self.manager.run(ADD_ORDER, broker=self.broker)
 
     async def test_run_with_pause_on_disk(self):
@@ -122,7 +122,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
 
         reply = CommandReply("AddOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
         execution = await self.manager.run(reply=reply, broker=self.broker, pause_on_disk=True)
-        with self.assertRaises(MinosSagaExecutionNotFoundException):
+        with self.assertRaises(SagaExecutionNotFoundException):
             self.manager.storage.load(execution.uuid)
 
         self.assertEqual(2, send_mock.call_count)

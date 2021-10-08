@@ -4,10 +4,10 @@ from shutil import (
 )
 
 from minos.saga import (
-    MinosAlreadyOnSagaException,
-    MinosSagaAlreadyCommittedException,
-    MinosSagaException,
+    AlreadyCommittedException,
+    AlreadyOnSagaException,
     Saga,
+    SagaException,
     SagaExecution,
     SagaOperation,
     SagaStep,
@@ -48,7 +48,7 @@ class TestSaga(unittest.TestCase):
 
     def test_commit_raises(self):
         saga = Saga().commit()
-        with self.assertRaises(MinosSagaAlreadyCommittedException):
+        with self.assertRaises(AlreadyCommittedException):
             saga.commit()
 
     def test_committed_true(self):
@@ -87,19 +87,19 @@ class TestSaga(unittest.TestCase):
 
     def test_step_raises(self):
         saga = Saga().commit()
-        with self.assertRaises(MinosSagaAlreadyCommittedException):
+        with self.assertRaises(AlreadyCommittedException):
             saga.step()
 
     def test_empty_step_raises(self):
-        with self.assertRaises(MinosSagaException):
+        with self.assertRaises(SagaException):
             Saga().step(send_create_order).on_failure(send_delete_order).step().commit()
 
     def test_duplicate_operation_raises(self):
-        with self.assertRaises(MinosSagaException):
+        with self.assertRaises(SagaException):
             Saga().step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit()
 
     def test_missing_send_raises(self):
-        with self.assertRaises(MinosSagaException):
+        with self.assertRaises(SagaException):
             Saga().step().on_failure(send_delete_ticket).commit()
 
     def test_build_execution(self):
@@ -115,7 +115,7 @@ class TestSaga(unittest.TestCase):
 
     def test_add_step_raises(self):
         step = SagaStep(send_create_order, saga=Saga())
-        with self.assertRaises(MinosAlreadyOnSagaException):
+        with self.assertRaises(AlreadyOnSagaException):
             Saga().step(step)
 
     def test_raw(self):

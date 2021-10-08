@@ -18,7 +18,7 @@ from minos.common import (
 )
 
 from ..exceptions import (
-    MinosSagaExecutionNotFoundException,
+    SagaExecutionNotFoundException,
 )
 from .saga import (
     SagaExecution,
@@ -69,7 +69,7 @@ class SagaExecutionStorage:
         key = str(key)
         value = self._storage.get(table=self.db_name, key=key)
         if value is None:
-            raise MinosSagaExecutionNotFoundException(f"The execution identified by {key} was not found.")
+            raise SagaExecutionNotFoundException(f"The execution identified by {key} was not found.")
         execution = SagaExecution.from_raw(value)
         return execution
 

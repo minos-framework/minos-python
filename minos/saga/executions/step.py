@@ -21,10 +21,10 @@ from ..definitions import (
     SagaStep,
 )
 from ..exceptions import (
-    MinosCommandReplyFailedException,
-    MinosSagaFailedExecutionStepException,
-    MinosSagaPausedExecutionStepException,
-    MinosSagaRollbackExecutionStepException,
+    CommandReplyFailedException,
+    SagaFailedExecutionStepException,
+    SagaPausedExecutionStepException,
+    SagaRollbackExecutionStepException,
 )
 from .executors import (
     RequestExecutor,
@@ -74,12 +74,12 @@ class SagaStepExecution:
 
         if reply is None:
             self.status = SagaStepStatus.PausedByOnExecute
-            raise MinosSagaPausedExecutionStepException()
+            raise SagaPausedExecutionStepException()
 
         if reply.status == CommandStatus.SYSTEM_ERROR:
             self.status = SagaStepStatus.ErroredByOnExecute
-            exc = MinosCommandReplyFailedException(f"CommandReply failed with {reply.status!s} status: {reply.data!s}")
-            raise MinosSagaFailedExecutionStepException(exc)
+            exc = CommandReplyFailedException(f"CommandReply failed with {reply.status!s} status: {reply.data!s}")
+            raise SagaFailedExecutionStepException(exc)
 
         if reply.status == CommandStatus.SUCCESS:
             context = await self._execute_on_success(context, reply, *args, **kwargs)
@@ -97,7 +97,7 @@ class SagaStepExecution:
         executor = RequestExecutor(*args, **kwargs)
         try:
             await executor.exec(self.definition.on_execute_operation, context)
-        except MinosSagaFailedExecutionStepException as exc:
+        except SagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredOnExecute
             raise exc
         self.status = SagaStepStatus.FinishedOnExecute
@@ -108,7 +108,7 @@ class SagaStepExecution:
 
         try:
             context = await executor.exec(self.definition.on_success_operation, context, reply)
-        except MinosSagaFailedExecutionStepException as exc:
+        except SagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredOnSuccess
             await self.rollback(context, *args, **kwargs)
             raise exc
@@ -121,7 +121,7 @@ class SagaStepExecution:
 
         try:
             context = await executor.exec(self.definition.on_error_operation, context, reply)
-        except MinosSagaFailedExecutionStepException as exc:
+        except SagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredOnError
             await self.rollback(context, *args, **kwargs)
             raise exc
@@ -135,10 +135,10 @@ class SagaStepExecution:
         :return: The updated execution context.
         """
         if self.status == SagaStepStatus.Created:
-            raise MinosSagaRollbackExecutionStepException("There is nothing to rollback.")
+            raise SagaRollbackExecutionStepException("There is nothing to rollback.")
 
         if self.already_rollback:
-            raise MinosSagaRollbackExecutionStepException("The step was already rollbacked.")
+            raise SagaRollbackExecutionStepException("The step was already rollbacked.")
 
         executor = RequestExecutor(*args, **kwargs)
         await executor.exec(self.definition.on_failure_operation, context)

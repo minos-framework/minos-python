@@ -11,9 +11,9 @@ from minos.common import (
     MinosConfig,
 )
 from minos.saga import (
-    MinosSagaPausedExecutionStepException,
     SagaContext,
     SagaExecution,
+    SagaPausedExecutionStepException,
 )
 from tests.utils import (
     ADD_ORDER,
@@ -111,7 +111,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(ADD_ORDER)
-            with self.assertRaises(MinosSagaPausedExecutionStepException):
+            with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
         observed = SagaExecution.from_raw(raw)
@@ -166,11 +166,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(ADD_ORDER)
-            with self.assertRaises(MinosSagaPausedExecutionStepException):
+            with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
             reply = fake_reply(Foo("hola"))
-            with self.assertRaises(MinosSagaPausedExecutionStepException):
+            with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(reply=reply, broker=self.broker)
 
         observed = SagaExecution.from_raw(raw)

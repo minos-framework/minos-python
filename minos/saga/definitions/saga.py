@@ -13,8 +13,8 @@ from ..context import (
     SagaContext,
 )
 from ..exceptions import (
-    MinosAlreadyOnSagaException,
-    MinosSagaAlreadyCommittedException,
+    AlreadyCommittedException,
+    AlreadyOnSagaException,
 )
 from .operations import (
     SagaOperation,
@@ -80,15 +80,13 @@ class Saga:
         :return: A ``SagaStep`` instance.
         """
         if self.committed:
-            raise MinosSagaAlreadyCommittedException(
-                "It is not possible to add more steps to an already committed saga."
-            )
+            raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
 
         if step is None:
             step = SagaStep(saga=self)
         elif isinstance(step, SagaStep):
             if step.saga is not None:
-                raise MinosAlreadyOnSagaException()
+                raise AlreadyOnSagaException()
             step.saga = self
         elif isinstance(step, SagaOperation):
             step = SagaStep(step, saga=self)
@@ -132,7 +130,7 @@ class Saga:
         :return: A ``Saga`` instance.
         """
         if self.committed:
-            raise MinosSagaAlreadyCommittedException("It is not possible to commit a saga multiple times.")
+            raise AlreadyCommittedException("It is not possible to commit a saga multiple times.")
 
         if callback is None:
             callback = identity_fn

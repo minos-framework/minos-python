@@ -12,9 +12,9 @@ from minos.common import (
 )
 from minos.saga import (
     Executor,
-    MinosSagaFailedExecutionStepException,
     RequestExecutor,
     SagaContext,
+    SagaFailedExecutionStepException,
     SagaOperation,
 )
 from tests.utils import (
@@ -64,7 +64,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         mock = MagicMock(side_effect=_fn)
         self.broker.send = mock
 
-        with self.assertRaises(MinosSagaFailedExecutionStepException) as result:
+        with self.assertRaises(SagaFailedExecutionStepException) as result:
             await self.executor.exec(operation, context)
         self.assertEqual(
             "There was a failure while 'SagaStepExecution' was executing: ValueError('This is an exception')",

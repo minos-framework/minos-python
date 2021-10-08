@@ -14,13 +14,13 @@ from ..context import (
     SagaContext,
 )
 from ..exceptions import (
-    MinosMultipleOnErrorException,
-    MinosMultipleOnExecuteException,
-    MinosMultipleOnFailureException,
-    MinosMultipleOnSuccessException,
-    MinosSagaEmptyStepException,
-    MinosSagaNotDefinedException,
-    MinosUndefinedOnExecuteException,
+    EmptySagaStepException,
+    MultipleOnErrorException,
+    MultipleOnExecuteException,
+    MultipleOnFailureException,
+    MultipleOnSuccessException,
+    SagaNotDefinedException,
+    UndefinedOnExecuteException,
 )
 from .operations import (
     SagaOperation,
@@ -93,7 +93,7 @@ class SagaStep:
         :return: A ``self`` reference.
         """
         if self.on_execute_operation is not None:
-            raise MinosMultipleOnExecuteException()
+            raise MultipleOnExecuteException()
 
         self.on_execute_operation = SagaOperation(callback, parameters, **kwargs)
 
@@ -109,7 +109,7 @@ class SagaStep:
         :return: A ``self`` reference.
         """
         if self.on_failure_operation is not None:
-            raise MinosMultipleOnFailureException()
+            raise MultipleOnFailureException()
 
         self.on_failure_operation = SagaOperation(callback, parameters, **kwargs)
 
@@ -125,7 +125,7 @@ class SagaStep:
         :return: A ``self`` reference.
         """
         if self.on_success_operation is not None:
-            raise MinosMultipleOnSuccessException()
+            raise MultipleOnSuccessException()
 
         self.on_success_operation = SagaOperation(callback, parameters, **kwargs)
 
@@ -141,7 +141,7 @@ class SagaStep:
         :return: A ``self`` reference.
         """
         if self.on_error_operation is not None:
-            raise MinosMultipleOnErrorException()
+            raise MultipleOnErrorException()
 
         self.on_error_operation = SagaOperation(callback, parameters, **kwargs)
 
@@ -156,7 +156,7 @@ class SagaStep:
         """
         self.validate()
         if self.saga is None:
-            raise MinosSagaNotDefinedException()
+            raise SagaNotDefinedException()
         return self.saga.step(*args, **kwargs)
 
     def commit(self, *args, **kwargs) -> Saga:
@@ -168,7 +168,7 @@ class SagaStep:
         """
         self.validate()
         if self.saga is None:
-            raise MinosSagaNotDefinedException()
+            raise SagaNotDefinedException()
         return self.saga.commit(*args, **kwargs)
 
     def validate(self) -> None:
@@ -182,10 +182,10 @@ class SagaStep:
             and self.on_success_operation is None
             and self.on_error_operation is None
         ):
-            raise MinosSagaEmptyStepException()
+            raise EmptySagaStepException()
 
         if self.on_execute_operation is None:
-            raise MinosUndefinedOnExecuteException()
+            raise UndefinedOnExecuteException()
 
     @property
     def raw(self) -> dict[str, Any]:

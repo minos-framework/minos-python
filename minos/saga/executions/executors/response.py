@@ -13,8 +13,8 @@ from ...definitions import (
     SagaOperation,
 )
 from ...exceptions import (
-    MinosSagaExecutorException,
-    MinosSagaFailedExecutionStepException,
+    ExecutorException,
+    SagaFailedExecutionStepException,
 )
 from ...messages import (
     SagaResponse,
@@ -47,8 +47,8 @@ class ResponseExecutor(Executor):
             response = SagaResponse(reply.data, reply.status)
             context = SagaContext(**context)  # Needed to avoid mutability issues.
             context = await super().exec(operation, context, response)
-        except MinosSagaExecutorException as exc:
-            raise MinosSagaFailedExecutionStepException(exc.exception)
+        except ExecutorException as exc:
+            raise SagaFailedExecutionStepException(exc.exception)
 
         if isinstance(context, Exception):
             raise MinosSagaFailedExecutionStepException(context)

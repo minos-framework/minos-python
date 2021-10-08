@@ -8,7 +8,7 @@ from ...definitions import (
     SagaOperation,
 )
 from ...exceptions import (
-    MinosSagaExecutorException,
+    ExecutorException,
 )
 
 
@@ -46,5 +46,5 @@ class Executor:
             if inspect.isawaitable(result):
                 result = await result
         except Exception as exc:
-            raise MinosSagaExecutorException(exc)
+            raise ExecutorException(exc)
         return result
