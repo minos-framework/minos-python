@@ -1,3 +1,6 @@
+from collections.abc import (
+    MutableMapping,
+)
 from typing import (
     Any,
 )
@@ -8,7 +11,7 @@ from minos.common import (
 )
 
 
-class SagaContext(BucketModel):
+class SagaContext(BucketModel, MutableMapping):
     """Saga Context class
 
     The purpose of this class is to keep an execution state.
@@ -27,3 +30,17 @@ class SagaContext(BucketModel):
             super().__setattr__(key, value)
         except AttributeError:
             self._fields[key] = Field(key, Any, value)
+
+    def __delitem__(self, item: str) -> None:
+        try:
+            return delattr(self, item)
+        except AttributeError as exc:
+            raise KeyError(exc)
+
+    def __delattr__(self, item: str) -> None:
+        if item.startswith("_"):
+            super().__delattr__(item)
+        elif item in self._fields:
+            del self._fields[item]
+        else:
+            raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field")
