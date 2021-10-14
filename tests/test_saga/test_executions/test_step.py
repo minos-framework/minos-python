@@ -9,11 +9,11 @@ from minos.common import (
     MinosConfig,
 )
 from minos.saga import (
+    RemoteSagaStep,
     SagaContext,
     SagaFailedExecutionStepException,
     SagaPausedExecutionStepException,
     SagaRollbackExecutionStepException,
-    SagaStep,
     SagaStepExecution,
     SagaStepStatus,
 )
@@ -47,7 +47,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.broker.send = self.publish_mock
 
     async def test_on_execute(self):
-        step = SagaStep(send_create_ticket)
+        step = RemoteSagaStep(send_create_ticket)
         context = SagaContext()
         execution = SagaStepExecution(step)
         rollback_mock = AsyncMock()
@@ -61,7 +61,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_execute_raises(self):
-        step = SagaStep(send_create_ticket_raises).on_failure(send_delete_ticket)
+        step = RemoteSagaStep(send_create_ticket_raises).on_failure(send_delete_ticket)
         context = SagaContext()
         execution = SagaStepExecution(step)
         rollback_mock = AsyncMock()
@@ -75,7 +75,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_errored_reply(self):
-        step = SagaStep(send_create_ticket)
+        step = RemoteSagaStep(send_create_ticket)
         context = SagaContext()
         execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
@@ -89,7 +89,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_success(self):
-        step = SagaStep(send_create_ticket).on_success(handle_ticket_success)
+        step = RemoteSagaStep(send_create_ticket).on_success(handle_ticket_success)
         context = SagaContext()
         execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
@@ -101,7 +101,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
     async def test_on_success_not_defined(self):
-        step = SagaStep(send_create_ticket)
+        step = RemoteSagaStep(send_create_ticket)
         context = SagaContext()
         execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
@@ -114,7 +114,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_success_raises(self):
-        step = SagaStep(send_create_ticket).on_success(handle_ticket_success_raises)
+        step = RemoteSagaStep(send_create_ticket).on_success(handle_ticket_success_raises)
         context = SagaContext()
         execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
@@ -128,7 +128,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, rollback_mock.call_count)
 
     async def test_on_error(self):
-        step = SagaStep(send_create_ticket).on_error(handle_ticket_error)
+        step = RemoteSagaStep(send_create_ticket).on_error(handle_ticket_error)
         context = SagaContext()
         execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
@@ -141,7 +141,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_error_not_defined(self):
-        step = SagaStep(send_create_ticket)
+        step = RemoteSagaStep(send_create_ticket)
         context = SagaContext()
         execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
@@ -154,7 +154,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_error_raises(self):
-        step = SagaStep(send_create_ticket).on_error(handle_ticket_error_raises)
+        step = RemoteSagaStep(send_create_ticket).on_error(handle_ticket_error_raises)
         context = SagaContext()
         execution = SagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
@@ -168,7 +168,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, rollback_mock.call_count)
 
     async def test_rollback(self):
-        step = SagaStep(send_create_ticket).on_failure(send_delete_ticket)
+        step = RemoteSagaStep(send_create_ticket).on_failure(send_delete_ticket)
         context = SagaContext()
         execution = SagaStepExecution(step)
 
@@ -185,7 +185,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, self.publish_mock.call_count)
 
     async def test_rollback_raises(self):
-        step = SagaStep(send_create_ticket).on_failure(send_delete_ticket)
+        step = RemoteSagaStep(send_create_ticket).on_failure(send_delete_ticket)
         context = SagaContext()
         execution = SagaStepExecution(step)
 
@@ -194,7 +194,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
 
     def test_raw(self):
         definition = (
-            SagaStep(send_create_ticket)
+            RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
             .on_failure(send_delete_ticket)
@@ -204,6 +204,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         expected = {
             "already_rollback": False,
             "definition": {
+                "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                 "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
                 "on_error": {"callback": "tests.utils.handle_ticket_error"},
@@ -217,6 +218,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         raw = {
             "already_rollback": False,
             "definition": {
+                "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                 "on_execute": {"callback": "tests.utils.send_create_ticket"},
                 "on_success": {"callback": "tests.utils.handle_ticket_success"},
                 "on_error": {"callback": "tests.utils.handle_ticket_error"},
@@ -225,7 +227,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
             "status": "created",
         }
         expected = SagaStepExecution(
-            SagaStep(send_create_ticket)
+            RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
             .on_failure(send_delete_ticket)
@@ -235,7 +237,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
 
     def test_from_raw_already(self):
         expected = SagaStepExecution(
-            SagaStep(send_create_ticket)
+            RemoteSagaStep(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
             .on_failure(send_delete_ticket)

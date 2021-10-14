@@ -4,6 +4,8 @@ from .context import (
     SagaContext,
 )
 from .definitions import (
+    LocalSagaStep,
+    RemoteSagaStep,
     Saga,
     SagaOperation,
     SagaStep,

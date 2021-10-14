@@ -19,4 +19,4 @@ RequestCallBack = Callable[[SagaContext, ...], Union[SagaRequest, Awaitable[Saga
 ResponseCallBack = Callable[
     [SagaContext, SagaResponse, ...], Union[Union[Exception, SagaContext], Awaitable[Union[Exception, SagaContext]]]
 ]
-CommitCallback = Callable[[SagaContext, ...], Union[Optional[SagaContext], Awaitable[Optional[SagaContext]]]]
+LocalCallback = Callable[[SagaContext, ...], Union[Optional[SagaContext], Awaitable[Optional[SagaContext]]]]

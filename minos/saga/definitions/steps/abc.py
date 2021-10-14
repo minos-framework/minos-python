@@ -2,6 +2,10 @@ from __future__ import (
     annotations,
 )
 
+import warnings
+from abc import (
+    ABC,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -10,10 +14,15 @@ from typing import (
     Union,
 )
 
-from ..context import (
+from minos.common import (
+    classname,
+    import_module,
+)
+
+from ...context import (
     SagaContext,
 )
-from ..exceptions import (
+from ...exceptions import (
     EmptySagaStepException,
     MultipleOnErrorException,
     MultipleOnExecuteException,
@@ -22,21 +31,21 @@ from ..exceptions import (
     SagaNotDefinedException,
     UndefinedOnExecuteException,
 )
-from .operations import (
+from ..operations import (
     SagaOperation,
 )
-from .types import (
+from ..types import (
     RequestCallBack,
     ResponseCallBack,
 )
 
 if TYPE_CHECKING:
-    from .saga import (
+    from ..saga import (
         Saga,
     )
 
 
-class SagaStep:
+class SagaStep(ABC):
     """Saga step class."""
 
     def __init__(
@@ -47,6 +56,9 @@ class SagaStep:
         on_failure: Optional[Union[RequestCallBack, SagaOperation]] = None,
         saga: Optional[Saga] = None,
     ):
+        if type(self) is SagaStep:
+            raise TypeError("Base is an abstract class and cannot be instantiated directly")
+
         if on_execute is not None and not isinstance(on_execute, SagaOperation):
             on_execute = SagaOperation(on_execute)
         if on_failure is not None and not isinstance(on_failure, SagaOperation):
@@ -76,12 +88,17 @@ class SagaStep:
 
         current = raw | kwargs
 
+        # noinspection PyTypeChecker
+        cls_: type = import_module(current.pop("cls"))
+        if not issubclass(cls_, cls):
+            raise
+
         current["on_execute"] = SagaOperation.from_raw(current["on_execute"])
         current["on_failure"] = SagaOperation.from_raw(current["on_failure"])
         current["on_success"] = SagaOperation.from_raw(current["on_success"])
         current["on_error"] = SagaOperation.from_raw(current["on_error"])
 
-        return cls(**current)
+        return cls_(**current)
 
     def on_execute(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
         """On execute method.
@@ -154,10 +171,32 @@ class SagaStep:
         :param kwargs: Additional named parameters.
         :return: A new ``SagaStep`` instance.
         """
+        warnings.warn("step() method is deprecated by remote() and will be removed soon.", DeprecationWarning)
+        return self.remote(*args, **kwargs)
+
+    def remote(self, *args, **kwargs) -> SagaStep:
+        """Create a new remote step in the ``Saga``.
+
+        :param args: Additional positional parameters.
+        :param kwargs: Additional named parameters.
+        :return: A new ``SagaStep`` instance.
+        """
         self.validate()
         if self.saga is None:
             raise SagaNotDefinedException()
-        return self.saga.step(*args, **kwargs)
+        return self.saga.remote(*args, **kwargs)
+
+    def local(self, *args, **kwargs) -> SagaStep:
+        """Create a new local step in the ``Saga``.
+
+        :param args: Additional positional parameters.
+        :param kwargs: Additional named parameters.
+        :return: A new ``SagaStep`` instance.
+        """
+        self.validate()
+        if self.saga is None:
+            raise SagaNotDefinedException()
+        return self.saga.local(*args, **kwargs)
 
     def commit(self, *args, **kwargs) -> Saga:
         """Commit the current ``SagaStep`` on the ``Saga``.
@@ -194,6 +233,7 @@ class SagaStep:
         :return: A ``dict`` instance.
         """
         return {
+            "cls": classname(type(self)),
             "on_execute": None if self.on_execute_operation is None else self.on_execute_operation.raw,
             "on_failure": None if self.on_failure_operation is None else self.on_failure_operation.raw,
             "on_success": None if self.on_success_operation is None else self.on_success_operation.raw,

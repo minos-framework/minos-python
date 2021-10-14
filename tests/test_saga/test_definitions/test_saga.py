@@ -6,6 +6,7 @@ from shutil import (
 from minos.saga import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
+    RemoteSagaStep,
     Saga,
     SagaException,
     SagaExecution,
@@ -62,7 +63,7 @@ class TestSaga(unittest.TestCase):
 
     def test_step(self):
         saga = Saga()
-        initial = SagaStep()
+        initial = RemoteSagaStep()
         step = saga.step(initial)
         self.assertEqual(step, initial)
         self.assertEqual(saga, step.saga)
@@ -70,13 +71,13 @@ class TestSaga(unittest.TestCase):
     def test_step_operation(self):
         saga = Saga()
         step = saga.step(SagaOperation(send_delete_ticket))
-        self.assertEqual(SagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
         self.assertEqual(saga, step.saga)
 
     def test_step_callback(self):
         saga = Saga()
         step = saga.step(send_delete_ticket)
-        self.assertEqual(SagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
         self.assertEqual(saga, step.saga)
 
     def test_step_empty(self):
@@ -108,13 +109,13 @@ class TestSaga(unittest.TestCase):
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):
-        step = SagaStep(send_create_order)
+        step = RemoteSagaStep(send_create_order)
         saga = Saga().step(step).commit()
 
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
-        step = SagaStep(send_create_order, saga=Saga())
+        step = RemoteSagaStep(send_create_order, saga=Saga())
         with self.assertRaises(AlreadyOnSagaException):
             Saga().step(step)
 
@@ -124,12 +125,14 @@ class TestSaga(unittest.TestCase):
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
+                    "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": {"callback": "tests.utils.handle_order_success"},
                     "on_error": None,
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
+                    "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},
@@ -144,12 +147,14 @@ class TestSaga(unittest.TestCase):
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
+                    "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": {"callback": "tests.utils.handle_order_success"},
                     "on_error": None,
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
+                    "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},

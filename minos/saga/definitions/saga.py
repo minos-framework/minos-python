@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from typing import (
     Any,
     Iterable,
@@ -20,11 +21,13 @@ from .operations import (
     SagaOperation,
     identity_fn,
 )
-from .step import (
+from .steps import (
+    LocalSagaStep,
+    RemoteSagaStep,
     SagaStep,
 )
 from .types import (
-    CommitCallback,
+    LocalCallback,
     RequestCallBack,
 )
 
@@ -40,7 +43,7 @@ class Saga:
         self,
         *args,
         steps: list[SagaStep] = None,
-        commit: Optional[Union[CommitCallback, SagaOperation]] = None,
+        commit: Optional[Union[LocalCallback, SagaOperation]] = None,
         **kwargs
     ):
         if steps is None:
@@ -74,8 +77,18 @@ class Saga:
 
         return instance
 
-    def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> SagaStep:
+    def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> RemoteSagaStep:
         """Add a new step in the ``Saga``.
+
+        :return: A ``SagaStep`` instance.
+        """
+        warnings.warn("step() method is deprecated by remote() and will be removed soon.", DeprecationWarning)
+        return self.remote(step, **kwargs)
+
+    def remote(
+        self, step: Optional[Union[RequestCallBack, SagaOperation, RemoteSagaStep]] = None, **kwargs
+    ) -> RemoteSagaStep:
+        """Add a new remote step in the ``Saga``.
 
         :return: A ``SagaStep`` instance.
         """
@@ -83,15 +96,39 @@ class Saga:
             raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
 
         if step is None:
-            step = SagaStep(saga=self)
+            step = RemoteSagaStep(saga=self)
         elif isinstance(step, SagaStep):
             if step.saga is not None:
                 raise AlreadyOnSagaException()
             step.saga = self
         elif isinstance(step, SagaOperation):
-            step = SagaStep(step, saga=self)
+            step = RemoteSagaStep(step, saga=self)
         else:
-            step = SagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
+            step = RemoteSagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
+
+        self.steps.append(step)
+        return step
+
+    def local(
+        self, step: Optional[Union[LocalCallback, SagaOperation, LocalSagaStep]] = None, **kwargs
+    ) -> LocalSagaStep:
+        """TODO
+
+        :return: A ``LocalSagaStep`` instance.
+        """
+        if self.committed:
+            raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
+
+        if step is None:
+            step = LocalSagaStep(saga=self)
+        elif isinstance(step, SagaStep):
+            if step.saga is not None:
+                raise AlreadyOnSagaException()
+            step.saga = self
+        elif isinstance(step, SagaOperation):
+            step = LocalSagaStep(step, saga=self)
+        else:
+            step = LocalSagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
 
         self.steps.append(step)
         return step
@@ -119,7 +156,7 @@ class Saga:
 
     # noinspection PyUnusedLocal
     def commit(
-        self, callback: Optional[CommitCallback] = None, parameters: Optional[SagaContext] = None, **kwargs
+        self, callback: Optional[LocalCallback] = None, parameters: Optional[SagaContext] = None, **kwargs
     ) -> Saga:
         """Commit the instance to be ready for execution.
 
