@@ -1,5 +1,11 @@
 import unittest
+from collections.abc import (
+    MutableMapping,
+)
 
+from minos.common import (
+    BucketModel,
+)
 from minos.saga import (
     SagaContext,
 )
@@ -9,6 +15,9 @@ from tests.utils import (
 
 
 class TestSagaContext(unittest.TestCase):
+    def test_subclass(self):
+        self.assertTrue(issubclass(SagaContext, (BucketModel, MutableMapping)))
+
     def test_constructor(self):
         context = SagaContext(one=1, two="two", three=Foo("three"))
         self.assertEqual(1, context.one)
@@ -23,6 +32,28 @@ class TestSagaContext(unittest.TestCase):
         self.assertEqual(1, context.one)
         self.assertEqual("two", context.two)
         self.assertEqual(Foo("three"), context.three)
+
+    def test_deleter(self):
+        context = SagaContext(one=1)
+        del context.one
+        self.assertEqual(SagaContext(), SagaContext())
+
+    def test_deleter_raises(self):
+        with self.assertRaises(AttributeError):
+            del SagaContext()._name
+        with self.assertRaises(AttributeError):
+            del SagaContext().name
+
+    def test_item_deleter(self):
+        context = SagaContext(one=1)
+        del context["one"]
+        self.assertEqual(SagaContext(), SagaContext())
+
+    def test_item_deleter_raises(self):
+        with self.assertRaises(KeyError):
+            del SagaContext()["_name"]
+        with self.assertRaises(KeyError):
+            del SagaContext()["name"]
 
     def test_item_setter(self):
         context = SagaContext()
