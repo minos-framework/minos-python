@@ -1,7 +1,9 @@
 import unittest
-import uuid
 from unittest.mock import (
     AsyncMock,
+)
+from uuid import (
+    uuid4,
 )
 
 from minos.common import (
@@ -38,9 +40,10 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.broker = NaiveBroker()
         self.execute_kwargs = {
             "definition_name": "FoodAdd",
-            "execution_uuid": uuid.uuid4(),
+            "execution_uuid": uuid4(),
             "broker": self.broker,
             "reply_topic": "FooAdd",
+            "user": uuid4(),
         }
 
         self.publish_mock = AsyncMock()
