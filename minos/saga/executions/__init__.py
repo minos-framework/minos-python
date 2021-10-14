@@ -11,7 +11,8 @@ from .status import (
     SagaStatus,
     SagaStepStatus,
 )
-from .step import (
+from .steps import (
+    RemoteSagaStepExecution,
     SagaStepExecution,
 )
 from .storage import (

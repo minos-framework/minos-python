@@ -100,6 +100,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             },
             "executed_steps": [],
             "paused_step": {
+                "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
                 "definition": {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_order"},
@@ -147,6 +148,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             },
             "executed_steps": [
                 {
+                    "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
                     "definition": {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                         "on_execute": {"callback": "tests.utils.send_create_order"},
@@ -159,6 +161,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 }
             ],
             "paused_step": {
+                "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
                 "definition": {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},

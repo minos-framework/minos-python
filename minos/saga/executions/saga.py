@@ -39,7 +39,7 @@ from .executors import (
 from .status import (
     SagaStatus,
 )
-from .step import (
+from .steps import (
     SagaStepExecution,
 )
 
@@ -160,7 +160,7 @@ class SagaExecution:
                 self.paused_step = None
 
         for step in self._pending_steps:
-            execution_step = SagaStepExecution(step)
+            execution_step = SagaStepExecution.from_step(step)
             await self._execute_one(execution_step, reply_topic=reply_topic, *args, **kwargs)
 
         await self._execute_commit(*args, **kwargs)

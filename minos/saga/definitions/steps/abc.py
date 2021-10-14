@@ -91,7 +91,7 @@ class SagaStep(ABC):
         # noinspection PyTypeChecker
         cls_: type = import_module(current.pop("cls"))
         if not issubclass(cls_, cls):
-            raise
+            raise TypeError("TODO")
 
         current["on_execute"] = SagaOperation.from_raw(current["on_execute"])
         current["on_failure"] = SagaOperation.from_raw(current["on_failure"])
