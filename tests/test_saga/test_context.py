@@ -42,6 +42,11 @@ class TestSagaContext(unittest.TestCase):
         another = SagaContext.from_avro_bytes(original.avro_bytes)
         self.assertEqual(original, another)
 
+    def test_change_type(self):
+        context = SagaContext(one=1)
+        context["one"] = "one"
+        self.assertEqual(SagaContext(one="one"), context)
+
 
 if __name__ == "__main__":
     unittest.main()

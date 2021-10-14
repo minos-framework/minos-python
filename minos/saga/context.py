@@ -4,8 +4,7 @@ from typing import (
 
 from minos.common import (
     BucketModel,
-    ModelField,
-    TypeHintBuilder,
+    Field,
 )
 
 
@@ -17,13 +16,14 @@ class SagaContext(BucketModel):
 
     def __init__(self, **kwargs):
         if "fields" not in kwargs:
-            kwargs["fields"] = {
-                name: ModelField(name, TypeHintBuilder(value).build(), value) for name, value in kwargs.items()
-            }
-        super().__init__(**kwargs)
+            fields = {name: Field(name, Any, value) for name, value in kwargs.items()}
+        else:
+            fields = {name: Field(field.name, Any, field.value) for name, field in kwargs["fields"].items()}
+
+        super().__init__(fields=fields)
 
     def __setattr__(self, key: str, value: Any) -> None:
         try:
             super().__setattr__(key, value)
         except AttributeError:
-            self._fields[key] = ModelField(key, TypeHintBuilder(value).build(), value)
+            self._fields[key] = Field(key, Any, value)
