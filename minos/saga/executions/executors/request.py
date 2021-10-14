@@ -49,6 +49,7 @@ class RequestExecutor(Executor):
         *args,
         execution_uuid: UUID,
         reply_topic: Optional[str],
+        user: Optional[UUID],
         broker: MinosBroker = Provide["command_broker"],
         **kwargs,
     ):
@@ -56,6 +57,7 @@ class RequestExecutor(Executor):
 
         self.execution_uuid = execution_uuid
         self.reply_topic = reply_topic
+        self.user = user
 
         if broker is None or isinstance(broker, Provide):
             raise MinosBrokerNotProvidedException("A broker instance is required.")
@@ -87,4 +89,5 @@ class RequestExecutor(Executor):
         data = await request.content()
         saga = self.execution_uuid
         reply_topic = self.reply_topic
-        await self.exec_function(fn, topic=topic, data=data, saga=saga, reply_topic=reply_topic)
+        user = self.user
+        await self.exec_function(fn, topic=topic, data=data, saga=saga, reply_topic=reply_topic, user=user)
