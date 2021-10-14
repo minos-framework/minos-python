@@ -12,6 +12,7 @@ from .status import (
     SagaStepStatus,
 )
 from .steps import (
+    LocalSagaStepExecution,
     RemoteSagaStepExecution,
     SagaStepExecution,
 )

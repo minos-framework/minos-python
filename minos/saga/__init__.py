@@ -39,6 +39,7 @@ from .exceptions import (
 from .executions import (
     CommitExecutor,
     Executor,
+    LocalSagaStepExecution,
     RemoteSagaStepExecution,
     RequestExecutor,
     ResponseExecutor,

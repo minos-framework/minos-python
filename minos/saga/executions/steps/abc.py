@@ -65,11 +65,18 @@ class SagaStepExecution(ABC):
         """TODO"""
 
         from ...definitions import (
+            LocalSagaStep,
             RemoteSagaStep,
+        )
+        from .local import (
+            LocalSagaStepExecution,
         )
         from .remote import (
             RemoteSagaStepExecution,
         )
+
+        if isinstance(step, LocalSagaStep):
+            return LocalSagaStepExecution(step)
 
         if isinstance(step, RemoteSagaStep):
             return RemoteSagaStepExecution(step)
