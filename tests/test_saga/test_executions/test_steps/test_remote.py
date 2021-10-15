@@ -8,7 +8,6 @@ from uuid import (
 
 from minos.common import (
     CommandStatus,
-    MinosConfig,
 )
 from minos.saga import (
     RemoteSagaStep,
@@ -20,7 +19,6 @@ from minos.saga import (
     SagaStepStatus,
 )
 from tests.utils import (
-    BASE_PATH,
     Foo,
     NaiveBroker,
     fake_reply,
@@ -36,10 +34,8 @@ from tests.utils import (
 
 class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
         self.execute_kwargs = {
-            "definition_name": "FoodAdd",
             "execution_uuid": uuid4(),
             "broker": self.broker,
             "reply_topic": "FooAdd",

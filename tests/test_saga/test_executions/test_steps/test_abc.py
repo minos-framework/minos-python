@@ -1,14 +1,5 @@
 import unittest
-from unittest.mock import (
-    AsyncMock,
-)
-from uuid import (
-    uuid4,
-)
 
-from minos.common import (
-    MinosConfig,
-)
 from minos.saga import (
     LocalSagaStep,
     LocalSagaStepExecution,
@@ -17,8 +8,6 @@ from minos.saga import (
     SagaStepExecution,
 )
 from tests.utils import (
-    BASE_PATH,
-    NaiveBroker,
     handle_ticket_error,
     handle_ticket_success,
     send_create_ticket,
@@ -27,20 +16,6 @@ from tests.utils import (
 
 
 class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        self.config = MinosConfig(path=BASE_PATH / "config.yml")
-        self.broker = NaiveBroker()
-        self.execute_kwargs = {
-            "definition_name": "FoodAdd",
-            "execution_uuid": uuid4(),
-            "broker": self.broker,
-            "reply_topic": "FooAdd",
-            "user": uuid4(),
-        }
-
-        self.publish_mock = AsyncMock()
-        self.broker.send = self.publish_mock
-
     def test_from_raw(self):
         raw = {
             "already_rollback": False,
