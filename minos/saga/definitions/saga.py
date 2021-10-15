@@ -5,8 +5,11 @@ from __future__ import (
 import warnings
 from typing import (
     Any,
+    Callable,
     Iterable,
     Optional,
+    Type,
+    TypeVar,
     Union,
 )
 
@@ -44,7 +47,7 @@ class Saga:
         *args,
         steps: list[SagaStep] = None,
         commit: Optional[Union[LocalCallback, SagaOperation]] = None,
-        **kwargs
+        **kwargs,
     ):
         if steps is None:
             steps = list()
@@ -77,6 +80,15 @@ class Saga:
 
         return instance
 
+    def local(
+        self, step: Optional[Union[LocalCallback, SagaOperation, LocalSagaStep]] = None, **kwargs
+    ) -> LocalSagaStep:
+        """TODO
+
+        :return: A ``LocalSagaStep`` instance.
+        """
+        return self._add_step(LocalSagaStep, step, **kwargs)
+
     def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> RemoteSagaStep:
         """Add a new step in the ``Saga``.
 
@@ -92,43 +104,24 @@ class Saga:
 
         :return: A ``SagaStep`` instance.
         """
+        return self._add_step(RemoteSagaStep, step, **kwargs)
+
+    def _add_step(self, step_cls: Type[T], step: Optional[Union[Callable, SagaOperation, T]], **kwargs) -> T:
         if self.committed:
             raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
 
         if step is None:
-            step = RemoteSagaStep(saga=self)
+            step = step_cls(saga=self)
         elif isinstance(step, SagaStep):
+            if not isinstance(step, step_cls):
+                raise TypeError(f"The given step does not match the requested type: {step_cls} vs {type(step)}")
             if step.saga is not None:
                 raise AlreadyOnSagaException()
             step.saga = self
         elif isinstance(step, SagaOperation):
-            step = RemoteSagaStep(step, saga=self)
+            step = step_cls(step, saga=self)
         else:
-            step = RemoteSagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
-
-        self.steps.append(step)
-        return step
-
-    def local(
-        self, step: Optional[Union[LocalCallback, SagaOperation, LocalSagaStep]] = None, **kwargs
-    ) -> LocalSagaStep:
-        """TODO
-
-        :return: A ``LocalSagaStep`` instance.
-        """
-        if self.committed:
-            raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
-
-        if step is None:
-            step = LocalSagaStep(saga=self)
-        elif isinstance(step, SagaStep):
-            if step.saga is not None:
-                raise AlreadyOnSagaException()
-            step.saga = self
-        elif isinstance(step, SagaOperation):
-            step = LocalSagaStep(step, saga=self)
-        else:
-            step = LocalSagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
+            step = step_cls(on_execute=SagaOperation(step, **kwargs), saga=self)
 
         self.steps.append(step)
         return step
@@ -182,3 +175,6 @@ class Saga:
         :return: A boolean value.
         """
         return self.commit_operation is not None
+
+
+T = TypeVar("T")

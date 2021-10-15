@@ -10,6 +10,7 @@ from unittest.mock import (
 from minos.saga import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
+    LocalSagaStep,
     RemoteSagaStep,
     Saga,
     SagaException,
@@ -22,6 +23,7 @@ from tests.utils import (
     ADD_ORDER,
     BASE_PATH,
     commit_callback,
+    create_payment,
     send_create_order,
     send_delete_order,
     send_delete_ticket,
@@ -65,6 +67,41 @@ class TestSaga(unittest.TestCase):
         saga = Saga()
         self.assertFalse(saga.committed)
 
+    def test_local(self):
+        saga = Saga()
+        initial = LocalSagaStep()
+        step = saga.local(initial)
+        self.assertEqual(step, initial)
+        self.assertEqual(saga, step.saga)
+
+    def test_local_operation(self):
+        saga = Saga()
+        step = saga.local(SagaOperation(create_payment))
+        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment)), step)
+        self.assertEqual(saga, step.saga)
+
+    def test_local_callback(self):
+        saga = Saga()
+        step = saga.local(create_payment)
+        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment)), step)
+        self.assertEqual(saga, step.saga)
+
+    def test_local_empty(self):
+        saga = Saga()
+        step = saga.local()
+        self.assertIsInstance(step, SagaStep)
+        self.assertEqual(saga, step.saga)
+
+    def test_local_raises(self):
+        saga = Saga().commit()
+        with self.assertRaises(AlreadyCommittedException):
+            saga.local()
+
+        saga = Saga()
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            saga.local(RemoteSagaStep())
+
     def test_step(self):
         saga = Saga()
         mock = MagicMock(side_effect=saga.remote)
@@ -104,6 +141,11 @@ class TestSaga(unittest.TestCase):
         saga = Saga().commit()
         with self.assertRaises(AlreadyCommittedException):
             saga.remote()
+
+        saga = Saga()
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            saga.remote(LocalSagaStep())
 
     def test_empty_step_raises(self):
         with self.assertRaises(SagaException):
