@@ -68,7 +68,7 @@ class SagaStep(ABC):
     def _from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
         """TODO"""
 
-    def local(self, *args, **kwargs) -> LocalSagaStep:
+    def local_step(self, *args, **kwargs) -> LocalSagaStep:
         """Create a new local step in the ``Saga``.
 
         :param args: Additional positional parameters.
@@ -78,7 +78,7 @@ class SagaStep(ABC):
         self.validate()
         if self.saga is None:
             raise SagaNotDefinedException()
-        return self.saga.local(*args, **kwargs)
+        return self.saga.local_step(*args, **kwargs)
 
     def step(self, *args, **kwargs) -> SagaStep:
         """Create a new step in the ``Saga``.
@@ -87,10 +87,10 @@ class SagaStep(ABC):
         :param kwargs: Additional named parameters.
         :return: A new ``SagaStep`` instance.
         """
-        warnings.warn("step() method is deprecated by remote() and will be removed soon.", DeprecationWarning)
-        return self.remote(*args, **kwargs)
+        warnings.warn("step() method is deprecated by remote_step() and will be removed soon.", DeprecationWarning)
+        return self.remote_step(*args, **kwargs)
 
-    def remote(self, *args, **kwargs) -> RemoteSagaStep:
+    def remote_step(self, *args, **kwargs) -> RemoteSagaStep:
         """Create a new remote step in the ``Saga``.
 
         :param args: Additional positional parameters.
@@ -100,7 +100,7 @@ class SagaStep(ABC):
         self.validate()
         if self.saga is None:
             raise SagaNotDefinedException()
-        return self.saga.remote(*args, **kwargs)
+        return self.saga.remote_step(*args, **kwargs)
 
     def commit(self, *args, **kwargs) -> Saga:
         """Commit the current ``SagaStep`` on the ``Saga``.

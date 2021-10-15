@@ -144,12 +144,12 @@ def commit_callback_raises(context: SagaContext) -> SagaContext:
 # fmt: off
 ADD_ORDER = (
     Saga()
-        .remote(send_create_order)
+        .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-        .local(create_payment)
+        .local_step(create_payment)
             .on_failure(delete_payment)
-        .remote(send_create_ticket)
+        .remote_step(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)
             .on_failure(send_delete_ticket)
@@ -159,9 +159,9 @@ ADD_ORDER = (
 # fmt: off
 DELETE_ORDER = (
     Saga()
-        .remote(send_delete_order)
+        .remote_step(send_delete_order)
             .on_success(handle_order_success)
-        .remote(send_delete_ticket)
+        .remote_step(send_delete_ticket)
             .on_success(handle_ticket_success_raises)
         .commit()
 )

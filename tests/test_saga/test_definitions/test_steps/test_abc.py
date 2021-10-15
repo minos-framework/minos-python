@@ -50,18 +50,18 @@ class TestSagaStep(unittest.TestCase):
         step = RemoteSagaStep(saga=Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
-        local = step.local()
+        local_step = step.local_step()
         self.assertEqual(1, mock.call_count)
-        self.assertIsInstance(local, LocalSagaStep)
+        self.assertIsInstance(local_step, LocalSagaStep)
 
     def test_local_raises(self):
         with self.assertRaises(SagaNotDefinedException):
-            RemoteSagaStep(send_create_ticket).local()
+            RemoteSagaStep(send_create_ticket).local_step()
 
     def test_step(self):
         step = RemoteSagaStep(send_create_ticket, saga=Saga())
-        mock = MagicMock(side_effect=step.remote)
-        step.remote = mock
+        mock = MagicMock(side_effect=step.remote_step)
+        step.remote_step = mock
         with warnings.catch_warnings():
             step = step.step()
 
@@ -72,13 +72,13 @@ class TestSagaStep(unittest.TestCase):
         step = RemoteSagaStep(saga=Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
-        remote = step.remote()
+        remote_step = step.remote_step()
         self.assertEqual(1, mock.call_count)
-        self.assertIsInstance(remote, RemoteSagaStep)
+        self.assertIsInstance(remote_step, RemoteSagaStep)
 
     def test_remote_raises(self):
         with self.assertRaises(SagaNotDefinedException):
-            RemoteSagaStep(send_create_ticket).remote()
+            RemoteSagaStep(send_create_ticket).remote_step()
 
     def test_commit(self):
         saga = Saga()

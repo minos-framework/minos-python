@@ -80,7 +80,7 @@ class Saga:
 
         return instance
 
-    def local(
+    def local_step(
         self, step: Optional[Union[LocalCallback, SagaOperation, LocalSagaStep]] = None, **kwargs
     ) -> LocalSagaStep:
         """TODO
@@ -94,13 +94,13 @@ class Saga:
 
         :return: A ``SagaStep`` instance.
         """
-        warnings.warn("step() method is deprecated by remote() and will be removed soon.", DeprecationWarning)
-        return self.remote(step, **kwargs)
+        warnings.warn("step() method is deprecated by remote_step() and will be removed soon.", DeprecationWarning)
+        return self.remote_step(step, **kwargs)
 
-    def remote(
+    def remote_step(
         self, step: Optional[Union[RequestCallBack, SagaOperation, RemoteSagaStep]] = None, **kwargs
     ) -> RemoteSagaStep:
-        """Add a new remote step in the ``Saga``.
+        """Add a new remote step step in the ``Saga``.
 
         :return: A ``SagaStep`` instance.
         """
