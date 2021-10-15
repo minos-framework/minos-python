@@ -65,7 +65,7 @@ class RemoteSagaStep(SagaStep):
         super().__init__(**kwargs)
 
     @classmethod
-    def _from_raw(cls, raw: Union[dict[str, Any], RemoteSagaStep], **kwargs) -> RemoteSagaStep:
+    def _from_raw(cls, raw: dict[str, Any], **kwargs) -> RemoteSagaStep:
         current = raw | kwargs
 
         current["on_execute"] = SagaOperation.from_raw(current["on_execute"])

@@ -54,7 +54,7 @@ class LocalSagaStep(SagaStep):
         super().__init__(**kwargs)
 
     @classmethod
-    def _from_raw(cls, raw: Union[dict[str, Any], LocalSagaStep], **kwargs) -> LocalSagaStep:
+    def _from_raw(cls, raw: dict[str, Any], **kwargs) -> LocalSagaStep:
         current = raw | kwargs
 
         current["on_execute"] = SagaOperation.from_raw(current["on_execute"])

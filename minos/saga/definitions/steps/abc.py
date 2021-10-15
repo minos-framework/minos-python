@@ -65,8 +65,8 @@ class SagaStep(ABC):
 
     @classmethod
     @abstractmethod
-    def _from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
-        """TODO"""
+    def _from_raw(cls, raw: dict[str, Any], **kwargs) -> SagaStep:
+        raise NotImplementedError
 
     def local_step(self, *args, **kwargs) -> LocalSagaStep:
         """Create a new local step in the ``Saga``.
