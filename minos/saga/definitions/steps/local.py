@@ -38,8 +38,8 @@ class LocalSagaStep(SagaStep):
 
     def __init__(
         self,
-        on_execute: Optional[Union[LocalCallback, SagaOperation]] = None,
-        on_failure: Optional[Union[LocalCallback, SagaOperation]] = None,
+        on_execute: Optional[Union[LocalCallback, SagaOperation[LocalCallback]]] = None,
+        on_failure: Optional[Union[LocalCallback, SagaOperation[LocalCallback]]] = None,
         **kwargs,
     ):
 

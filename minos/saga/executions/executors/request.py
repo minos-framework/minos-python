@@ -23,7 +23,7 @@ from ...context import (
     SagaContext,
 )
 from ...definitions import (
-    SagaOperation,
+    SagaOperation, RequestCallBack,
 )
 from ...exceptions import (
     ExecutorException,
@@ -65,7 +65,7 @@ class RequestExecutor(Executor):
         self.broker = broker
 
     # noinspection PyMethodOverriding
-    async def exec(self, operation: Optional[SagaOperation], context: SagaContext) -> SagaContext:
+    async def exec(self, operation: Optional[SagaOperation[RequestCallBack]], context: SagaContext) -> SagaContext:
         """Exec method, that perform the publishing logic run an pre-callback function to generate the command contents.
 
         :param operation: Operation to be executed.

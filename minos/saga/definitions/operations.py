@@ -8,7 +8,7 @@ from typing import (
     Iterable,
     Optional,
     TypeVar,
-    Union,
+    Union, Generic,
 )
 
 from minos.common import (
@@ -20,10 +20,10 @@ from ..context import (
     SagaContext,
 )
 
-T = TypeVar("T")
+T = TypeVar("T", bound=Callable)
 
 
-def identity_fn(x: T) -> T:
+def identity_fn(x: SagaContext) -> SagaContext:
     """A identity function, that returns the same value without any transformation.
 
     :param x: The input value.
@@ -32,10 +32,10 @@ def identity_fn(x: T) -> T:
     return x
 
 
-class SagaOperation:
+class SagaOperation(Generic[T]):
     """Saga Step Operation class."""
 
-    def __init__(self, callback: Callable, parameters: Optional[Union[dict, SagaContext]] = None, **kwargs):
+    def __init__(self, callback: T, parameters: Optional[Union[dict, SagaContext]] = None, **kwargs):
         if parameters is None and len(kwargs):
             parameters = kwargs
         if parameters is not None and not isinstance(parameters, SagaContext):
@@ -67,7 +67,7 @@ class SagaOperation:
         return self.parameters is not None
 
     @classmethod
-    def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaOperation]], **kwargs) -> Optional[SagaOperation]:
+    def from_raw(cls, raw: Optional[Union[dict[str, Any], SagaOperation[T]]], **kwargs) -> Optional[SagaOperation[T]]:
         """Build a new instance from a raw representation.
 
         :param raw: A raw representation.

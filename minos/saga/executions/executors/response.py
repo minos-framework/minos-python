@@ -10,7 +10,7 @@ from ...context import (
     SagaContext,
 )
 from ...definitions import (
-    SagaOperation,
+    SagaOperation, ResponseCallBack,
 )
 from ...exceptions import (
     ExecutorException,
@@ -29,7 +29,7 @@ class ResponseExecutor(Executor):
 
     # noinspection PyUnusedLocal,PyMethodOverriding
     async def exec(
-        self, operation: Optional[SagaOperation], context: SagaContext, reply: CommandReply, *args, **kwargs
+        self, operation: Optional[SagaOperation[ResponseCallBack]], context: SagaContext, reply: CommandReply, *args, **kwargs
     ) -> SagaContext:
         """Execute the operation.
 

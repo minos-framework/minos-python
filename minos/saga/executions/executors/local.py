@@ -6,6 +6,7 @@ from ...context import (
     SagaContext,
 )
 from ...definitions import (
+    LocalCallback,
     SagaOperation,
 )
 from ...exceptions import (
@@ -21,7 +22,9 @@ class LocalExecutor(Executor):
     """Local Executor class."""
 
     # noinspection PyUnusedLocal,PyMethodOverriding
-    async def exec(self, operation: Optional[SagaOperation], context: SagaContext, *args, **kwargs) -> SagaContext:
+    async def exec(
+        self, operation: Optional[SagaOperation[LocalCallback]], context: SagaContext, *args, **kwargs
+    ) -> SagaContext:
         """Execute the commit operation.
 
         :param operation: Operation to be executed.
