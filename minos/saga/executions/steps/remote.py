@@ -14,6 +14,9 @@ from minos.common import (
 from ...context import (
     SagaContext,
 )
+from ...definitions import (
+    RemoteSagaStep,
+)
 from ...exceptions import (
     CommandReplyFailedException,
     SagaFailedExecutionStepException,
@@ -34,6 +37,8 @@ from .abc import (
 
 class RemoteSagaStepExecution(SagaStepExecution):
     """Saga Execution Step class."""
+
+    definition: RemoteSagaStep
 
     async def execute(self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
         """Execution the step.

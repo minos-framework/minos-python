@@ -1,6 +1,9 @@
 from ...context import (
     SagaContext,
 )
+from ...definitions import (
+    LocalSagaStep,
+)
 from ...exceptions import (
     SagaFailedCommitCallbackException,
     SagaFailedExecutionStepException,
@@ -19,6 +22,8 @@ from .abc import (
 
 class LocalSagaStepExecution(SagaStepExecution):
     """TODO"""
+
+    definition: LocalSagaStep
 
     async def execute(self, context: SagaContext, *args, **kwargs) -> SagaContext:
         """TODO"""
