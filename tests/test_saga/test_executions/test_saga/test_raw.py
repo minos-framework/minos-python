@@ -58,8 +58,6 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
                         "on_execute": {"callback": "tests.utils.create_payment"},
-                        "on_success": None,
-                        "on_error": None,
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
@@ -99,8 +97,6 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
                         "on_execute": {"callback": "tests.utils.create_payment"},
-                        "on_success": None,
-                        "on_error": None,
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
@@ -154,8 +150,6 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
                         "on_execute": {"callback": "tests.utils.create_payment"},
-                        "on_success": None,
-                        "on_error": None,
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
@@ -185,8 +179,6 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     "definition": {
                         "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
                         "on_execute": {"callback": "tests.utils.create_payment"},
-                        "on_success": None,
-                        "on_error": None,
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     "status": "finished",

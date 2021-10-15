@@ -1,9 +1,4 @@
 import unittest
-import warnings
-from unittest.mock import (
-    MagicMock,
-    call,
-)
 
 from minos.saga import (
     EmptySagaStepException,
@@ -12,14 +7,11 @@ from minos.saga import (
     MultipleOnFailureException,
     MultipleOnSuccessException,
     RemoteSagaStep,
-    Saga,
-    SagaNotDefinedException,
     SagaOperation,
     SagaStep,
     UndefinedOnExecuteException,
 )
 from tests.utils import (
-    commit_callback,
     handle_ticket_error,
     handle_ticket_success,
     send_create_ticket,
@@ -76,52 +68,6 @@ class TestRemoteSagaStep(unittest.TestCase):
         with self.assertRaises(MultipleOnErrorException):
             RemoteSagaStep().on_error(handle_ticket_error).on_error(handle_ticket_error)
 
-    def test_step(self):
-        step = RemoteSagaStep(send_create_ticket, saga=Saga())
-        mock = MagicMock(side_effect=step.remote)
-        step.remote = mock
-        with warnings.catch_warnings():
-            step = step.step()
-
-        self.assertEqual(1, mock.call_count)
-        self.assertIsInstance(step, RemoteSagaStep)
-
-    def test_remote_validates(self):
-        step = RemoteSagaStep(saga=Saga())
-        mock = MagicMock(return_value=True)
-        step.validate = mock
-        step.remote()
-        self.assertEqual(1, mock.call_count)
-
-    def test_remote_raises_not_saga(self):
-        with self.assertRaises(SagaNotDefinedException):
-            RemoteSagaStep(send_create_ticket).remote()
-
-    def test_commit(self):
-        saga = Saga()
-        step = RemoteSagaStep(send_create_ticket, saga=saga)
-        mock = MagicMock(return_value=True)
-        saga.commit = mock
-        step.commit(commit_callback)
-        self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(commit_callback), mock.call_args)
-
-    def test_commit_validates(self):
-        step = RemoteSagaStep(send_create_ticket, saga=Saga())
-        mock = MagicMock(return_value=True)
-        step.validate = mock
-        step.commit()
-        self.assertEqual(1, mock.call_count)
-
-    def test_submit(self):
-        expected = Saga()
-        observed = RemoteSagaStep(send_create_ticket, saga=expected).commit()
-        self.assertEqual(expected, observed)
-
-    def test_submit_raises(self):
-        with self.assertRaises(SagaNotDefinedException):
-            RemoteSagaStep(send_create_ticket).commit()
-
     def test_validate_raises_empty(self):
         with self.assertRaises(EmptySagaStepException):
             RemoteSagaStep(None).validate()
@@ -173,6 +119,53 @@ class TestRemoteSagaStep(unittest.TestCase):
         )
         observed = SagaStep.from_raw(expected)
         self.assertEqual(expected, observed)
+
+    def test_equals(self):
+        base = (
+            RemoteSagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
+        )
+        another = (
+            RemoteSagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
+        )
+        self.assertEqual(another, base)
+
+        another = (
+            RemoteSagaStep(send_delete_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
+        )
+        self.assertNotEqual(another, base)
+
+        another = (
+            RemoteSagaStep(send_create_ticket)
+            .on_success(handle_ticket_error)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
+        )
+        self.assertNotEqual(another, base)
+
+        another = (
+            RemoteSagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_success)
+            .on_failure(send_delete_ticket)
+        )
+        self.assertNotEqual(another, base)
+
+        another = (
+            RemoteSagaStep(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_create_ticket)
+        )
+        self.assertNotEqual(another, base)
 
 
 if __name__ == "__main__":

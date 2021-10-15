@@ -190,8 +190,6 @@ class TestSaga(unittest.TestCase):
                 {
                     "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
                     "on_execute": {"callback": "tests.utils.create_payment"},
-                    "on_success": None,
-                    "on_error": None,
                     "on_failure": {"callback": "tests.utils.delete_payment"},
                 },
                 {
@@ -219,8 +217,6 @@ class TestSaga(unittest.TestCase):
                 {
                     "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
                     "on_execute": {"callback": "tests.utils.create_payment"},
-                    "on_success": None,
-                    "on_error": None,
                     "on_failure": {"callback": "tests.utils.delete_payment"},
                 },
                 {
