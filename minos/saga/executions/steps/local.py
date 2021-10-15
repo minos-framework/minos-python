@@ -20,12 +20,18 @@ from .abc import (
 
 
 class LocalSagaStepExecution(SagaStepExecution):
-    """TODO"""
+    """Local Saga Step Execution class."""
 
     definition: LocalSagaStep
 
     async def execute(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """TODO"""
+        """Execute the local saga step.
+
+        :param context: The execution context.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The new saga context.
+        """
 
         if self.status != SagaStepStatus.Created:
             return context
@@ -45,7 +51,13 @@ class LocalSagaStepExecution(SagaStepExecution):
         return context
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """TODO"""
+        """Rollback the local saga context.
+
+        :param context: The execution context.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The new saga context.
+        """
 
         if self.status == SagaStepStatus.Created:
             raise SagaRollbackExecutionStepException("There is nothing to rollback.")

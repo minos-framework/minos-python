@@ -37,7 +37,7 @@ from .abc import (
 
 
 class RemoteSagaStep(SagaStep):
-    """TODO"""
+    """Remote Saga Step class."""
 
     def __init__(
         self,

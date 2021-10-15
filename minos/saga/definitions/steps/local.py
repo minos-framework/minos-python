@@ -34,7 +34,7 @@ from .abc import (
 
 
 class LocalSagaStep(SagaStep):
-    """TODO"""
+    """Local Saga Step class."""
 
     def __init__(
         self,

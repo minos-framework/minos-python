@@ -41,10 +41,12 @@ class RemoteSagaStepExecution(SagaStepExecution):
     definition: RemoteSagaStep
 
     async def execute(self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
-        """Execution the step.
+        """Execution the remote step.
 
         :param context: The execution context to be used during the execution.
         :param reply: An optional command reply instance (to be consumed by the on_success method).
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: The updated context.
         """
 
@@ -107,9 +109,11 @@ class RemoteSagaStepExecution(SagaStepExecution):
         return context
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """Revert the executed operation with a compensatory operation.
+        """Revert the executed remote step.
 
         :param context: Execution context.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
         :return: The updated execution context.
         """
         if self.status == SagaStepStatus.Created:

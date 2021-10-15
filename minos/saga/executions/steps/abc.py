@@ -29,7 +29,7 @@ from ..status import (
 
 
 class SagaStepExecution(ABC):
-    """TODO"""
+    """Saga Step Execution class."""
 
     def __init__(
         self, definition: SagaStep, status: SagaStepStatus = SagaStepStatus.Created, already_rollback: bool = False,
@@ -89,11 +89,23 @@ class SagaStepExecution(ABC):
 
     @abstractmethod
     async def execute(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """TODO"""
+        """Execution the step.
+
+        :param context: The execution context to be used during the execution.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The updated context.
+        """
 
     @abstractmethod
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """TODO"""
+        """Revert the executed step.
+
+        :param context: Execution context.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The updated execution context.
+        """
 
     @property
     def raw(self) -> dict[str, Any]:

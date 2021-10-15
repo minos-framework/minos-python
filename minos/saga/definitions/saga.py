@@ -83,15 +83,19 @@ class Saga:
     def local_step(
         self, step: Optional[Union[LocalCallback, SagaOperation, LocalSagaStep]] = None, **kwargs
     ) -> LocalSagaStep:
-        """TODO
+        """Add a new local step.
 
-        :return: A ``LocalSagaStep`` instance.
+        :param step: The step to be added. If `None` is provided then a new one will be created.
+        :param kwargs: Additional named parameters.
+        :return: A ``SagaStep`` instance.
         """
         return self._add_step(LocalSagaStep, step, **kwargs)
 
     def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> RemoteSagaStep:
-        """Add a new step in the ``Saga``.
+        """Add a new remote step step.
 
+        :param step: The step to be added. If `None` is provided then a new one will be created.
+        :param kwargs: Additional named parameters.
         :return: A ``SagaStep`` instance.
         """
         warnings.warn("step() method is deprecated by remote_step() and will be removed soon.", DeprecationWarning)
@@ -100,8 +104,10 @@ class Saga:
     def remote_step(
         self, step: Optional[Union[RequestCallBack, SagaOperation, RemoteSagaStep]] = None, **kwargs
     ) -> RemoteSagaStep:
-        """Add a new remote step step in the ``Saga``.
+        """Add a new remote step step.
 
+        :param step: The step to be added. If `None` is provided then a new one will be created.
+        :param kwargs: Additional named parameters.
         :return: A ``SagaStep`` instance.
         """
         return self._add_step(RemoteSagaStep, step, **kwargs)
