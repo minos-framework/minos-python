@@ -42,9 +42,9 @@ class RemoteSagaStep(SagaStep):
     def __init__(
         self,
         on_execute: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack]]] = None,
-        on_success: Optional[Union[ResponseCallBack, SagaOperation[RequestCallBack]]] = None,
+        on_success: Optional[Union[ResponseCallBack, SagaOperation[ResponseCallBack]]] = None,
         on_error: Optional[Union[ResponseCallBack, SagaOperation[ResponseCallBack]]] = None,
-        on_failure: Optional[Union[RequestCallBack, SagaOperation[ResponseCallBack]]] = None,
+        on_failure: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack]]] = None,
         **kwargs,
     ):
 

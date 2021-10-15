@@ -5,10 +5,11 @@ from __future__ import (
 from typing import (
     Any,
     Callable,
+    Generic,
     Iterable,
     Optional,
     TypeVar,
-    Union, Generic,
+    Union,
 )
 
 from minos.common import (

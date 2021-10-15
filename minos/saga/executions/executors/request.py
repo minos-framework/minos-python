@@ -23,7 +23,8 @@ from ...context import (
     SagaContext,
 )
 from ...definitions import (
-    SagaOperation, RequestCallBack,
+    RequestCallBack,
+    SagaOperation,
 )
 from ...exceptions import (
     ExecutorException,
