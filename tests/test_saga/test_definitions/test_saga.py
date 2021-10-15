@@ -1,6 +1,10 @@
 import unittest
+import warnings
 from shutil import (
     rmtree,
+)
+from unittest.mock import (
+    MagicMock,
 )
 
 from minos.saga import (
@@ -63,61 +67,71 @@ class TestSaga(unittest.TestCase):
 
     def test_step(self):
         saga = Saga()
+        mock = MagicMock(side_effect=saga.remote)
+        saga.remote = mock
+        with warnings.catch_warnings():
+            step = saga.remote()
+
+        self.assertEqual(1, mock.call_count)
+        self.assertIsInstance(step, RemoteSagaStep)
+
+    def test_remote(self):
+        saga = Saga()
         initial = RemoteSagaStep()
-        step = saga.step(initial)
+        step = saga.remote(initial)
         self.assertEqual(step, initial)
         self.assertEqual(saga, step.saga)
 
-    def test_step_operation(self):
+    def test_remote_operation(self):
         saga = Saga()
-        step = saga.step(SagaOperation(send_delete_ticket))
+        step = saga.remote(SagaOperation(send_delete_ticket))
         self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
         self.assertEqual(saga, step.saga)
 
-    def test_step_callback(self):
+    def test_remote_callback(self):
         saga = Saga()
-        step = saga.step(send_delete_ticket)
+        step = saga.remote(send_delete_ticket)
         self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
         self.assertEqual(saga, step.saga)
 
-    def test_step_empty(self):
+    def test_remote_empty(self):
         saga = Saga()
-        step = saga.step()
+        step = saga.remote()
         self.assertIsInstance(step, SagaStep)
         self.assertEqual(saga, step.saga)
 
-    def test_step_raises(self):
+    def test_remote_raises(self):
         saga = Saga().commit()
         with self.assertRaises(AlreadyCommittedException):
-            saga.step()
+            saga.remote()
 
     def test_empty_step_raises(self):
         with self.assertRaises(SagaException):
-            Saga().step(send_create_order).on_failure(send_delete_order).step().commit()
+            Saga().remote(send_create_order).on_failure(send_delete_order).remote().commit()
 
     def test_duplicate_operation_raises(self):
         with self.assertRaises(SagaException):
-            Saga().step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit()
+            Saga().remote(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit()
 
     def test_missing_send_raises(self):
         with self.assertRaises(SagaException):
-            Saga().step().on_failure(send_delete_ticket).commit()
+            Saga().remote().on_failure(send_delete_ticket).commit()
 
     def test_build_execution(self):
-        saga = Saga().step(send_create_order).on_failure(send_delete_order).commit()
+        saga = Saga().remote(send_create_order).on_failure(send_delete_order).commit()
         execution = SagaExecution.from_saga(saga)
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):
         step = RemoteSagaStep(send_create_order)
-        saga = Saga().step(step).commit()
+        saga = Saga().remote(step).commit()
 
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
         step = RemoteSagaStep(send_create_order, saga=Saga())
         with self.assertRaises(AlreadyOnSagaException):
-            Saga().step(step)
+            Saga().remote(step)
 
     def test_raw(self):
         saga = ADD_ORDER

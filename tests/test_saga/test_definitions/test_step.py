@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import (
     MagicMock,
     call,
@@ -75,16 +76,26 @@ class TestSagaStep(unittest.TestCase):
         with self.assertRaises(MultipleOnErrorException):
             RemoteSagaStep().on_error(handle_ticket_error).on_error(handle_ticket_error)
 
-    def test_step_validates(self):
+    def test_step(self):
+        step = RemoteSagaStep(send_create_ticket, saga=Saga())
+        mock = MagicMock(side_effect=step.remote)
+        step.remote = mock
+        with warnings.catch_warnings():
+            step = step.remote()
+
+        self.assertEqual(1, mock.call_count)
+        self.assertIsInstance(step, RemoteSagaStep)
+
+    def test_remote_validates(self):
         step = RemoteSagaStep(saga=Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
-        step.step()
+        step.remote()
         self.assertEqual(1, mock.call_count)
 
-    def test_step_raises_not_saga(self):
+    def test_remote_raises_not_saga(self):
         with self.assertRaises(SagaNotDefinedException):
-            RemoteSagaStep(send_create_ticket).step()
+            RemoteSagaStep(send_create_ticket).remote()
 
     def test_commit(self):
         saga = Saga()

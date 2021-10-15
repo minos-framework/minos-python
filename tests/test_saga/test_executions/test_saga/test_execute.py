@@ -45,10 +45,10 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute(self):
         saga = (
             Saga()
-            .step(send_create_order)
+            .remote(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step(send_create_ticket)
+            .remote(send_create_ticket)
             .on_success(handle_ticket_success)
             .commit()
         )
@@ -75,10 +75,10 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_failure(self):
         saga = (
             Saga()
-            .step(send_create_order)
+            .remote(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step(send_create_ticket)
+            .remote(send_create_ticket)
             .on_success(handle_ticket_success_raises)
             .on_failure(send_delete_ticket)
             .commit()
@@ -110,10 +110,10 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_commit(self):
         saga = (
             Saga()
-            .step(send_create_order)
+            .remote(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step(send_create_ticket)
+            .remote(send_create_ticket)
             .on_success(handle_ticket_success)
             .commit(commit_callback)
         )
@@ -138,10 +138,10 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_commit_raises(self):
         saga = (
             Saga()
-            .step(send_create_order)
+            .remote(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step(send_create_ticket)
+            .remote(send_create_ticket)
             .on_success(handle_ticket_success)
             .commit(commit_callback_raises)
         )
@@ -164,7 +164,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(3, self.publish_mock.call_count)
 
     async def test_rollback(self):
-        saga = Saga().step(send_create_order).on_success(handle_order_success).on_failure(send_delete_order).commit()
+        saga = Saga().remote(send_create_order).on_success(handle_order_success).on_failure(send_delete_order).commit()
         execution = SagaExecution.from_saga(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -181,7 +181,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, self.publish_mock.call_count)
 
     async def test_rollback_raises(self):
-        saga = Saga().step(send_create_order).on_success(handle_order_success).on_failure(send_delete_order).commit()
+        saga = Saga().remote(send_create_order).on_success(handle_order_success).on_failure(send_delete_order).commit()
         execution = SagaExecution.from_saga(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)

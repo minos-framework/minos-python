@@ -43,6 +43,12 @@ if TYPE_CHECKING:
     from ..saga import (
         Saga,
     )
+    from .local import (
+        LocalSagaStep,
+    )
+    from .remote import (
+        RemoteSagaStep,
+    )
 
 
 class SagaStep(ABC):
@@ -174,7 +180,7 @@ class SagaStep(ABC):
         warnings.warn("step() method is deprecated by remote() and will be removed soon.", DeprecationWarning)
         return self.remote(*args, **kwargs)
 
-    def remote(self, *args, **kwargs) -> SagaStep:
+    def remote(self, *args, **kwargs) -> RemoteSagaStep:
         """Create a new remote step in the ``Saga``.
 
         :param args: Additional positional parameters.
@@ -186,7 +192,7 @@ class SagaStep(ABC):
             raise SagaNotDefinedException()
         return self.saga.remote(*args, **kwargs)
 
-    def local(self, *args, **kwargs) -> SagaStep:
+    def local(self, *args, **kwargs) -> LocalSagaStep:
         """Create a new local step in the ``Saga``.
 
         :param args: Additional positional parameters.
