@@ -3,8 +3,8 @@ from .abc import (
 )
 from .conditional import (
     ConditionalSagaStep,
-    IfThenCondition,
     ElseThenCondition,
+    IfThenCondition,
 )
 from .local import (
     LocalSagaStep,

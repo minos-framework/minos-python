@@ -5,14 +5,14 @@ from .context import (
 )
 from .definitions import (
     ConditionalSagaStep,
+    ElseThenCondition,
+    IfThenCondition,
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
     SagaOperation,
     SagaStep,
     identity_fn,
-    IfThenCondition,
-    ElseThenCondition,
 )
 from .exceptions import (
     AlreadyCommittedException,

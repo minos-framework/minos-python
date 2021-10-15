@@ -7,11 +7,11 @@ from .saga import (
 )
 from .steps import (
     ConditionalSagaStep,
+    ElseThenCondition,
+    IfThenCondition,
     LocalSagaStep,
     RemoteSagaStep,
     SagaStep,
-    IfThenCondition,
-    ElseThenCondition,
 )
 from .types import (
     LocalCallback,
