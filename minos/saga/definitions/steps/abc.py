@@ -68,8 +68,8 @@ class SagaStep(ABC):
 
     @classmethod
     @abstractmethod
-    def _from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
-        """TODO"""
+    def _from_raw(cls, raw: dict[str, Any], **kwargs) -> SagaStep:
+        raise NotImplementedError
 
     def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:
         """Create a new conditional step in the ``Saga``.
