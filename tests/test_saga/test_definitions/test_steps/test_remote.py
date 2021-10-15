@@ -70,11 +70,11 @@ class TestRemoteSagaStep(unittest.TestCase):
 
     def test_validate_raises_empty(self):
         with self.assertRaises(EmptySagaStepException):
-            RemoteSagaStep(None).validate()
+            RemoteSagaStep().validate()
 
     def test_validate_raises_non_on_execute(self):
         with self.assertRaises(UndefinedOnExecuteException):
-            RemoteSagaStep(None).on_failure(send_delete_ticket).validate()
+            RemoteSagaStep().on_failure(send_delete_ticket).validate()
 
     def test_raw(self):
         step = (
