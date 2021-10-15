@@ -27,6 +27,9 @@ if TYPE_CHECKING:
     from ..saga import (
         Saga,
     )
+    from .conditional import (
+        ConditionalSagaStep,
+    )
     from .local import (
         LocalSagaStep,
     )
@@ -67,6 +70,18 @@ class SagaStep(ABC):
     @abstractmethod
     def _from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
         """TODO"""
+
+    def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:
+        """Create a new conditional step in the ``Saga``.
+
+        :param args: Additional positional parameters.
+        :param kwargs: Additional named parameters.
+        :return: A new ``SagaStep`` instance.
+        """
+        self.validate()
+        if self.saga is None:
+            raise SagaNotDefinedException()
+        return self.saga.conditional_step(*args, **kwargs)
 
     def local_step(self, *args, **kwargs) -> LocalSagaStep:
         """Create a new local step in the ``Saga``.

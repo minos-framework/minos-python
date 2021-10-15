@@ -25,6 +25,7 @@ from .operations import (
     identity_fn,
 )
 from .steps import (
+    ConditionalSagaStep,
     LocalSagaStep,
     RemoteSagaStep,
     SagaStep,
@@ -79,6 +80,15 @@ class Saga:
         instance = cls(steps=steps, commit=commit, **current)
 
         return instance
+
+    def conditional_step(self, step: Optional[ConditionalSagaStep] = None, **kwargs) -> ConditionalSagaStep:
+        """Add a new conditional step.
+
+        :param step: The step to be added. If `None` is provided then a new one will be created.
+        :param kwargs: Additional named parameters.
+        :return: A ``SagaStep`` instance.
+        """
+        return self._add_step(ConditionalSagaStep, step, **kwargs)
 
     def local_step(
         self, step: Optional[Union[LocalCallback, SagaOperation[LocalCallback], LocalSagaStep]] = None, **kwargs

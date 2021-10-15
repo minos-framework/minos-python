@@ -4,6 +4,7 @@ from .context import (
     SagaContext,
 )
 from .definitions import (
+    ConditionalSagaStep,
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
