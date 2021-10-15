@@ -27,7 +27,7 @@ from tests.utils import (
 )
 
 
-class TestSagaStep(unittest.TestCase):
+class TestRemoteSagaStep(unittest.TestCase):
     def test_on_execute_constructor(self):
         step = RemoteSagaStep(on_execute=send_create_ticket)
         self.assertEqual(SagaOperation(send_create_ticket), step.on_execute_operation)

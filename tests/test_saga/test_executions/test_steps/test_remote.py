@@ -35,7 +35,7 @@ from tests.utils import (
 )
 
 
-class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
+class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
