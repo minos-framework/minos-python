@@ -117,6 +117,18 @@ async def handle_ticket_error_raises(context: SagaContext, response: SagaRespons
     raise ValueError()
 
 
+def create_payment(context: SagaContext) -> SagaContext:
+    """For testing purposes."""
+    context["payment"] = "payment"
+    return context
+
+
+def delete_payment(context: SagaContext) -> SagaContext:
+    """For testing purposes."""
+    context["payment"] = None
+    return context
+
+
 def commit_callback(context: SagaContext) -> SagaContext:
     """For testing purposes."""
     context["status"] = "Finished!"
@@ -135,6 +147,8 @@ ADD_ORDER = (
         .remote(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
+        .local(create_payment)
+            .on_failure(delete_payment)
         .remote(send_create_ticket)
             .on_success(handle_ticket_success)
             .on_error(handle_ticket_error)

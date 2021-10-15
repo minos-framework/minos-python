@@ -56,6 +56,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     {
+                        "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "on_execute": {"callback": "tests.utils.create_payment"},
+                        "on_success": None,
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.delete_payment"},
+                    },
+                    {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                         "on_execute": {"callback": "tests.utils.send_create_ticket"},
                         "on_success": {"callback": "tests.utils.handle_ticket_success"},
@@ -88,6 +95,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                         "on_success": {"callback": "tests.utils.handle_order_success"},
                         "on_error": None,
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
+                    },
+                    {
+                        "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "on_execute": {"callback": "tests.utils.create_payment"},
+                        "on_success": None,
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -126,7 +140,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_executed_step(self):
         raw = {
             "already_rollback": False,
-            "context": SagaContext(order=Foo("hola")).avro_str,
+            "context": SagaContext(order=Foo("hola"), payment="payment").avro_str,
             "definition": {
                 "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
                 "steps": [
@@ -136,6 +150,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                         "on_success": {"callback": "tests.utils.handle_order_success"},
                         "on_error": None,
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
+                    },
+                    {
+                        "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "on_execute": {"callback": "tests.utils.create_payment"},
+                        "on_success": None,
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -158,7 +179,19 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                     },
                     "status": "finished",
                     "already_rollback": False,
-                }
+                },
+                {
+                    "cls": "minos.saga.executions.steps.local.LocalSagaStepExecution",
+                    "definition": {
+                        "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                        "on_execute": {"callback": "tests.utils.create_payment"},
+                        "on_success": None,
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.delete_payment"},
+                    },
+                    "status": "finished",
+                    "already_rollback": False,
+                },
             ],
             "paused_step": {
                 "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",

@@ -146,6 +146,13 @@ class TestSaga(unittest.TestCase):
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
+                    "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                    "on_execute": {"callback": "tests.utils.create_payment"},
+                    "on_success": None,
+                    "on_error": None,
+                    "on_failure": {"callback": "tests.utils.delete_payment"},
+                },
+                {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
@@ -166,6 +173,13 @@ class TestSaga(unittest.TestCase):
                     "on_success": {"callback": "tests.utils.handle_order_success"},
                     "on_error": None,
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
+                },
+                {
+                    "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                    "on_execute": {"callback": "tests.utils.create_payment"},
+                    "on_success": None,
+                    "on_error": None,
+                    "on_failure": {"callback": "tests.utils.delete_payment"},
                 },
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
