@@ -63,6 +63,7 @@ class TestSagaStep(unittest.TestCase):
         mock = MagicMock(side_effect=step.remote_step)
         step.remote_step = mock
         with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
             step = step.step()
 
         self.assertEqual(1, mock.call_count)
