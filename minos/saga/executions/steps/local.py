@@ -5,12 +5,11 @@ from ...definitions import (
     LocalSagaStep,
 )
 from ...exceptions import (
-    SagaFailedCommitCallbackException,
     SagaFailedExecutionStepException,
     SagaRollbackExecutionStepException,
 )
 from ..executors import (
-    CommitExecutor,
+    LocalExecutor,
 )
 from ..status import (
     SagaStepStatus,
@@ -33,14 +32,14 @@ class LocalSagaStepExecution(SagaStepExecution):
 
         self.status = SagaStepStatus.RunningOnExecute
 
-        executor = CommitExecutor(*args, **kwargs)
+        executor = LocalExecutor(*args, **kwargs)
 
         try:
             context = await executor.exec(self.definition.on_execute_operation, context)
-        except SagaFailedCommitCallbackException as exc:
+        except SagaFailedExecutionStepException as exc:
             # await self.rollback(*args, **kwargs)  # Rollback must not be performed at this point.
             self.status = SagaStepStatus.ErroredOnExecute
-            raise SagaFailedExecutionStepException(exc.exception)
+            raise exc
 
         self.status = SagaStepStatus.Finished
         return context
@@ -54,7 +53,7 @@ class LocalSagaStepExecution(SagaStepExecution):
         if self.already_rollback:
             raise SagaRollbackExecutionStepException("The step was already rollbacked.")
 
-        executor = CommitExecutor(*args, **kwargs)
+        executor = LocalExecutor(*args, **kwargs)
         context = await executor.exec(self.definition.on_failure_operation, context)
 
         self.already_rollback = True

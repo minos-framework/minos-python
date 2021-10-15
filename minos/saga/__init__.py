@@ -37,8 +37,8 @@ from .exceptions import (
     UndefinedOnExecuteException,
 )
 from .executions import (
-    CommitExecutor,
     Executor,
+    LocalExecutor,
     LocalSagaStepExecution,
     RemoteSagaStepExecution,
     RequestExecutor,

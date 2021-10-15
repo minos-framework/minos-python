@@ -1,6 +1,6 @@
 from .executors import (
-    CommitExecutor,
     Executor,
+    LocalExecutor,
     RequestExecutor,
     ResponseExecutor,
 )
