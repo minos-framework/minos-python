@@ -37,6 +37,7 @@ class LocalSagaStepExecution(SagaStepExecution):
             self.status = SagaStepStatus.ErroredOnExecute
             raise SagaFailedExecutionStepException(exc.exception)
 
+        self.status = SagaStepStatus.Finished
         return context
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
