@@ -81,7 +81,7 @@ class TestRemoteSagaStep(unittest.TestCase):
         mock = MagicMock(side_effect=step.remote)
         step.remote = mock
         with warnings.catch_warnings():
-            step = step.remote()
+            step = step.step()
 
         self.assertEqual(1, mock.call_count)
         self.assertIsInstance(step, RemoteSagaStep)
