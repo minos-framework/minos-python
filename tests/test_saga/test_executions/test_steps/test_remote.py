@@ -17,7 +17,6 @@ from minos.saga import (
     SagaFailedExecutionStepException,
     SagaPausedExecutionStepException,
     SagaRollbackExecutionStepException,
-    SagaStepExecution,
     SagaStepStatus,
 )
 from tests.utils import (
@@ -195,61 +194,6 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
 
         with self.assertRaises(SagaRollbackExecutionStepException):
             await execution.rollback(context, **self.execute_kwargs)
-
-    def test_raw(self):
-        definition = (
-            RemoteSagaStep(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
-        )
-        execution = RemoteSagaStepExecution(definition)
-
-        expected = {
-            "already_rollback": False,
-            "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
-            "definition": {
-                "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
-                "on_execute": {"callback": "tests.utils.send_create_ticket"},
-                "on_success": {"callback": "tests.utils.handle_ticket_success"},
-                "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                "on_failure": {"callback": "tests.utils.send_delete_ticket"},
-            },
-            "status": "created",
-        }
-        self.assertEqual(expected, execution.raw)
-
-    def test_from_raw(self):
-        raw = {
-            "already_rollback": False,
-            "cls": "minos.saga.executions.steps.remote.RemoteSagaStepExecution",
-            "definition": {
-                "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
-                "on_execute": {"callback": "tests.utils.send_create_ticket"},
-                "on_success": {"callback": "tests.utils.handle_ticket_success"},
-                "on_error": {"callback": "tests.utils.handle_ticket_error"},
-                "on_failure": {"callback": "tests.utils.send_delete_ticket"},
-            },
-            "status": "created",
-        }
-        expected = RemoteSagaStepExecution(
-            RemoteSagaStep(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
-        )
-        observed = SagaStepExecution.from_raw(raw)
-        self.assertEqual(expected, observed)
-
-    def test_from_raw_already(self):
-        expected = RemoteSagaStepExecution(
-            RemoteSagaStep(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
-        )
-        observed = SagaStepExecution.from_raw(expected)
-        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":

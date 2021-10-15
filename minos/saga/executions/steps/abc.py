@@ -51,14 +51,18 @@ class SagaStepExecution(ABC):
 
         current = raw | kwargs
 
-        # noinspection PyTypeChecker
-        cls_: type = import_module(current.pop("cls"))
-        if not issubclass(cls_, cls):
-            raise TypeError("TODO")
+        if "cls" in current:
+            # noinspection PyTypeChecker
+            execution_cls: type = import_module(current.pop("cls"))
+        else:
+            execution_cls = cls
+
+        if not issubclass(execution_cls, cls):
+            raise TypeError(f"Given class is not a subclass of {cls}. Obtained: {execution_cls}")
 
         current["definition"] = SagaStep.from_raw(current["definition"])
         current["status"] = SagaStepStatus.from_raw(current["status"])
-        return cls_(**current)
+        return execution_cls(**current)
 
     @staticmethod
     def from_step(step: SagaStep) -> SagaStepExecution:
@@ -81,7 +85,7 @@ class SagaStepExecution(ABC):
         if isinstance(step, RemoteSagaStep):
             return RemoteSagaStepExecution(step)
 
-        raise TypeError("TODO")
+        raise TypeError(f"Given step is not supported yet. Obtained: {step}")
 
     @abstractmethod
     async def execute(self, context: SagaContext, *args, **kwargs) -> SagaContext:
