@@ -73,11 +73,11 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(TypeError):
             SagaStepExecution.from_raw({"cls": "datetime.datetime"})
 
-    def test_from_step(self):
-        self.assertIsInstance(SagaStepExecution.from_step(RemoteSagaStep()), RemoteSagaStepExecution)
-        self.assertIsInstance(SagaStepExecution.from_step(LocalSagaStep()), LocalSagaStepExecution)
+    def test_from_definition(self):
+        self.assertIsInstance(SagaStepExecution.from_definition(RemoteSagaStep()), RemoteSagaStepExecution)
+        self.assertIsInstance(SagaStepExecution.from_definition(LocalSagaStep()), LocalSagaStepExecution)
         with self.assertRaises(TypeError):
-            SagaStepExecution.from_step(123)
+            SagaStepExecution.from_definition(123)
 
     def test_raw(self):
         definition = (

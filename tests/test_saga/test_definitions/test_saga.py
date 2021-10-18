@@ -179,7 +179,7 @@ class TestSaga(unittest.TestCase):
 
     def test_build_execution(self):
         saga = Saga().remote_step(send_create_order).on_failure(send_delete_order).commit()
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):

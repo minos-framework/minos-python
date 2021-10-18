@@ -65,8 +65,12 @@ class SagaStepExecution(ABC):
         return execution_cls(**current)
 
     @staticmethod
-    def from_step(step: SagaStep) -> SagaStepExecution:
-        """TODO"""
+    def from_definition(step: SagaStep) -> SagaStepExecution:
+        """Build a ``SagaStepExecution`` instance from the ``SagaStep`` definition.
+
+        :param step: The ``SagaStep`` definition.
+        :return: A new ``SagaStepExecution``.
+        """
 
         from ...definitions import (
             LocalSagaStep,

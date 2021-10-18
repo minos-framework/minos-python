@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from typing import (
     Any,
     Iterable,
@@ -117,6 +118,22 @@ class SagaExecution:
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecution`` instance.
         """
+        warnings.warn(
+            "from_saga() method is deprecated by from_definition() and will be removed soon.", DeprecationWarning
+        )
+
+        return cls.from_definition(definition, context, *args, **kwargs)
+
+    @classmethod
+    def from_definition(cls, definition: Saga, context: Optional[SagaContext] = None, *args, **kwargs) -> SagaExecution:
+        """Build a new instance from a ``Saga`` object.
+
+        :param definition: The definition of the saga.
+        :param context: Initial saga execution context. If not provided, then a new empty context is created.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A new ``SagaExecution`` instance.
+        """
         from uuid import (
             uuid4,
         )
@@ -166,7 +183,7 @@ class SagaExecution:
                 self.paused_step = None
 
         for step in self._pending_steps:
-            execution_step = SagaStepExecution.from_step(step)
+            execution_step = SagaStepExecution.from_definition(step)
             await self._execute_one(execution_step, reply_topic=reply_topic, user=user, *args, **kwargs)
 
         await self._execute_commit(*args, **kwargs)

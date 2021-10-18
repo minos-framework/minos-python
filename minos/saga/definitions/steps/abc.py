@@ -149,4 +149,7 @@ class SagaStep(ABC):
 
     @abstractmethod
     def __iter__(self) -> Iterable:
-        """TODO"""
+        """Iterate over the ``SagaStep`` attributes.
+
+        :return: An iterable of attributes.
+        """
