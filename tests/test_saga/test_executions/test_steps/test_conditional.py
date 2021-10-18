@@ -5,6 +5,7 @@ from contextlib import (
 from unittest.mock import (
     patch,
 )
+from uuid import uuid4
 
 from minos.saga import (
     ConditionalSagaStep,
@@ -44,6 +45,12 @@ def _is_two(context):
 class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
+        self.execute_kwargs = {
+            "execution_uuid": uuid4(),
+            "broker": self.broker,
+            "reply_topic": "FooAdd",
+            "user": uuid4(),
+        }
 
         self.definition = ConditionalSagaStep(
             [
@@ -76,12 +83,12 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
         context = SagaContext(option=1)
 
         with self.assertRaises(SagaPausedExecutionStepException):
-            context = await self.execution.execute(context, broker=self.broker)
+            context = await self.execution.execute(context, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=1), context)
 
         reply = fake_reply(Foo("order"))
-        context = await self.execution.execute(context, reply=reply, broker=self.broker)
+        context = await self.execution.execute(context, reply=reply, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.Finished, self.execution.status)
         self.assertEqual(SagaContext(option=1, order=Foo("order")), context)
 
@@ -89,14 +96,14 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
         context = SagaContext(option=2)
 
         with self.assertRaises(SagaPausedExecutionStepException):
-            context = await self.execution.execute(context, broker=self.broker)
+            context = await self.execution.execute(context, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=2), context)
 
         reply = fake_reply(Foo("ticket"))
         with patch("minos.saga.SagaExecution.rollback") as mock:
             with self.assertRaises(SagaFailedExecutionStepException):
-                context = await self.execution.execute(context, reply=reply, broker=self.broker)
+                context = await self.execution.execute(context, reply=reply, **self.execute_kwargs)
             self.assertEqual(SagaStepStatus.ErroredByOnExecute, self.execution.status)
             self.assertEqual(SagaContext(option=2), context)
             self.assertEqual(1, mock.call_count)
@@ -105,14 +112,14 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
         context = SagaContext(option=3)
 
         with self.assertRaises(SagaPausedExecutionStepException):
-            context = await self.execution.execute(context, broker=self.broker)
+            context = await self.execution.execute(context, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=3), context)
 
         reply = fake_reply(Foo("ticket"))
         with patch("minos.saga.SagaExecution.rollback") as mock:
             with self.assertRaises(SagaFailedExecutionStepException):
-                context = await self.execution.execute(context, reply=reply, broker=self.broker)
+                context = await self.execution.execute(context, reply=reply, **self.execute_kwargs)
             self.assertEqual(SagaStepStatus.ErroredByOnExecute, self.execution.status)
             self.assertEqual(SagaContext(option=3), context)
         self.assertEqual(1, mock.call_count)
@@ -125,10 +132,10 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_rollback(self):
         with suppress(SagaPausedExecutionStepException):
-            await self.execution.execute(SagaContext(option=1), broker=self.broker)
-        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), broker=self.broker)
+            await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
+        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), **self.execute_kwargs)
         with patch("minos.saga.SagaExecution.rollback") as mock:
-            await self.execution.rollback(SagaContext(), broker=self.broker)
+            await self.execution.rollback(SagaContext(), **self.execute_kwargs)
         self.assertEqual(1, mock.call_count)
 
     async def test_rollback_raises_create(self):
@@ -137,11 +144,12 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_rollback_raises_already(self):
         with suppress(SagaPausedExecutionStepException):
-            await self.execution.execute(SagaContext(option=1), broker=self.broker)
-        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), broker=self.broker)
-        await self.execution.rollback(SagaContext(), broker=self.broker)
+            await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
+        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), **self.execute_kwargs)
+
+        await self.execution.rollback(SagaContext(), **self.execute_kwargs)
         with self.assertRaises(SagaRollbackExecutionStepException):
-            await self.execution.rollback(SagaContext(), broker=self.broker)
+            await self.execution.rollback(SagaContext(), **self.execute_kwargs)
 
     def test_raw_created(self):
         expected = {
@@ -155,7 +163,7 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_raw_paused(self):
         with suppress(SagaPausedExecutionStepException):
-            await self.execution.execute(SagaContext(option=1), broker=self.broker)
+            await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
 
         expected = {
             "already_rollback": False,
@@ -193,8 +201,8 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_raw_finished(self):
         with suppress(SagaPausedExecutionStepException):
-            await self.execution.execute(SagaContext(option=1), broker=self.broker)
-        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), broker=self.broker)
+            await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
+        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), **self.execute_kwargs)
 
         expected = {
             "already_rollback": False,
@@ -234,7 +242,7 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
 
     async def test_raw_from_raw(self):
         with suppress(SagaPausedExecutionStepException):
-            await self.execution.execute(SagaContext(option=1), broker=self.broker)
+            await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
 
         another = SagaStepExecution.from_raw(self.execution.raw)
         self.assertEqual(self.execution, another)
