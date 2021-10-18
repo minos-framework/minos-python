@@ -10,6 +10,7 @@ from minos.common import (
     classname,
 )
 from minos.saga import (
+    ConditionalSagaStep,
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
@@ -45,6 +46,18 @@ class TestSagaStep(unittest.TestCase):
         saga = Saga()
         step = RemoteSagaStep(saga=saga)
         self.assertEqual(saga, step.saga)
+
+    def test_conditional_step(self):
+        step = RemoteSagaStep(saga=Saga())
+        mock = MagicMock(return_value=True)
+        step.validate = mock
+        local_step = step.conditional_step()
+        self.assertEqual(1, mock.call_count)
+        self.assertIsInstance(local_step, ConditionalSagaStep)
+
+    def test_conditional_step_raises(self):
+        with self.assertRaises(SagaNotDefinedException):
+            RemoteSagaStep(send_create_ticket).conditional_step()
 
     def test_local_step(self):
         step = RemoteSagaStep(saga=Saga())

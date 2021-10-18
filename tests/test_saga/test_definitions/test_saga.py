@@ -7,6 +7,7 @@ from unittest.mock import (
 from minos.saga import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
+    ConditionalSagaStep,
     EmptySagaException,
     EmptySagaStepException,
     LocalSagaStep,
@@ -59,6 +60,29 @@ class TestSaga(unittest.TestCase):
     def test_committed_false(self):
         saga = Saga()
         self.assertFalse(saga.committed)
+
+    def test_conditional(self):
+        saga = Saga()
+        initial = ConditionalSagaStep()
+        step = saga.conditional_step(initial)
+        self.assertEqual(step, initial)
+        self.assertEqual(saga, step.saga)
+
+    def test_conditional_empty(self):
+        saga = Saga()
+        step = saga.conditional_step()
+        self.assertIsInstance(step, SagaStep)
+        self.assertEqual(saga, step.saga)
+
+    def test_conditional_raises(self):
+        saga = Saga().commit()
+        with self.assertRaises(AlreadyCommittedException):
+            saga.conditional_step()
+
+        saga = Saga()
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            saga.conditional_step(RemoteSagaStep())
 
     def test_local(self):
         saga = Saga()
