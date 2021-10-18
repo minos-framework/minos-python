@@ -18,6 +18,7 @@ from minos.common import (
 
 from ...exceptions import (
     EmptySagaStepException,
+    MultipleElseThenException,
 )
 from ..operations import (
     SagaOperation,
@@ -75,6 +76,9 @@ class ConditionalSagaStep(SagaStep):
 
     def else_then(self, saga: Saga) -> ConditionalSagaStep:
         """TODO"""
+
+        if self.else_then_alternative is not None:
+            raise MultipleElseThenException()
 
         alternative = ElseThenAlternative(saga)
         self.else_then_alternative = alternative

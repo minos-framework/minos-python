@@ -84,6 +84,15 @@ class MultipleOnErrorException(SagaStepException):
         super().__init__(message)
 
 
+class MultipleElseThenException(SagaStepException):
+    """Exception to be raised when multiple else then alternatives are defined."""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'ConditionalSagaStep' can only define one 'else_then' method."
+        super().__init__(message)
+
+
 class AlreadyOnSagaException(SagaStepException):
     """Exception to be raised when a saga step is already in another saga."""
 

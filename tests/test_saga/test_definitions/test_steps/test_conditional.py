@@ -8,6 +8,7 @@ from minos.saga import (
     ElseThenAlternative,
     EmptySagaStepException,
     IfThenAlternative,
+    MultipleElseThenException,
     SagaOperation,
     SagaStep,
 )
@@ -22,50 +23,83 @@ from tests.utils import (
 
 class TestConditionalSagaStep(unittest.TestCase):
     def setUp(self) -> None:
-        self.if_then_conditions = [
+        self.if_then = [
             IfThenAlternative(add_order_condition, ADD_ORDER),
             IfThenAlternative(delete_order_condition, DELETE_ORDER),
         ]
-        self.else_condition = ElseThenAlternative(CREATE_PAYMENT)
+        self.else_then = ElseThenAlternative(CREATE_PAYMENT)
+
+    def test_constructor(self):
+        step = ConditionalSagaStep(if_then=self.if_then[0], else_then=self.else_then)
+        self.assertEqual([self.if_then[0]], step.if_then_alternatives)
+        self.assertEqual(self.else_then, step.else_then_alternative)
 
     def test_if_then(self):
-        pass
+        observed = (
+            ConditionalSagaStep().if_then(add_order_condition, ADD_ORDER).if_then(delete_order_condition, DELETE_ORDER)
+        )
+        expected = ConditionalSagaStep(if_then=self.if_then)
+        self.assertEqual(expected, observed)
 
     def test_else_then(self):
-        pass
+        observed = ConditionalSagaStep().else_then(CREATE_PAYMENT)
+        expected = ConditionalSagaStep(else_then=self.else_then)
+        self.assertEqual(expected, observed)
 
-    def test_validate_raises_empty(self):
+    def test_else_then_raises(self):
+        with self.assertRaises(MultipleElseThenException):
+            ConditionalSagaStep().else_then(CREATE_PAYMENT).else_then(CREATE_PAYMENT)
+
+    def test_validate(self):
+        with patch("minos.saga.IfThenAlternative.validate") as if_mock, patch(
+            "minos.saga.ElseThenAlternative.validate"
+        ) as else_mock:
+            ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then).validate()
+
+            self.assertEqual(2, if_mock.call_count)
+            self.assertEqual(1, else_mock.call_count)
+
+    def test_validate_raises(self):
         with self.assertRaises(EmptySagaStepException):
             ConditionalSagaStep().validate()
 
     def test_raw(self):
-        step = ConditionalSagaStep(if_then=self.if_then_conditions, else_then=self.else_condition)
+        step = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then)
 
         expected = {
             "cls": "minos.saga.definitions.steps.conditional.ConditionalSagaStep",
-            "else_then": self.else_condition.raw,
-            "if_then": [self.if_then_conditions[0].raw, self.if_then_conditions[1].raw],
+            "else_then": self.else_then.raw,
+            "if_then": [self.if_then[0].raw, self.if_then[1].raw],
         }
         self.assertEqual(expected, step.raw)
 
     def test_from_raw(self):
         raw = {
             "cls": "minos.saga.definitions.steps.conditional.ConditionalSagaStep",
-            "else_then": self.else_condition.raw,
-            "if_then": [self.if_then_conditions[0].raw, self.if_then_conditions[1].raw],
+            "else_then": self.else_then.raw,
+            "if_then": [self.if_then[0].raw, self.if_then[1].raw],
         }
 
-        expected = ConditionalSagaStep(if_then=self.if_then_conditions, else_then=self.else_condition)
+        expected = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then)
         observed = SagaStep.from_raw(raw)
         self.assertEqual(expected, observed)
 
     def test_from_raw_already(self):
-        expected = ConditionalSagaStep(if_then=self.if_then_conditions, else_then=self.else_condition)
+        expected = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then)
         observed = SagaStep.from_raw(expected)
         self.assertEqual(expected, observed)
 
     def test_equals(self):
-        pass
+        base = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then)
+
+        another = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then)
+        self.assertEqual(another, base)
+
+        another = ConditionalSagaStep(else_then=self.else_then)
+        self.assertNotEqual(another, base)
+
+        another = ConditionalSagaStep(if_then=self.if_then)
+        self.assertNotEqual(another, base)
 
 
 class TestIfThenAlternative(unittest.TestCase):
@@ -99,7 +133,14 @@ class TestIfThenAlternative(unittest.TestCase):
         self.assertEqual(self.alternative, observed)
 
     def test_equals(self):
-        pass
+        another = IfThenAlternative(add_order_condition, ADD_ORDER)
+        self.assertEqual(another, self.alternative)
+
+        another = IfThenAlternative(delete_order_condition, ADD_ORDER)
+        self.assertNotEqual(another, self.alternative)
+
+        another = IfThenAlternative(add_order_condition, DELETE_ORDER)
+        self.assertNotEqual(another, self.alternative)
 
 
 class TestElseThenAlternative(unittest.TestCase):
@@ -128,7 +169,11 @@ class TestElseThenAlternative(unittest.TestCase):
         self.assertEqual(self.alternative, observed)
 
     def test_equals(self):
-        pass
+        another = ElseThenAlternative(CREATE_PAYMENT)
+        self.assertEqual(another, self.alternative)
+
+        another = ElseThenAlternative(ADD_ORDER)
+        self.assertNotEqual(another, self.alternative)
 
 
 if __name__ == "__main__":

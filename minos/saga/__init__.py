@@ -20,6 +20,7 @@ from .exceptions import (
     CommandReplyFailedException,
     EmptySagaException,
     EmptySagaStepException,
+    MultipleElseThenException,
     MultipleOnErrorException,
     MultipleOnExecuteException,
     MultipleOnFailureException,
