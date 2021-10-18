@@ -180,7 +180,8 @@ class SagaExecution:
                     self.paused_step, reply=reply, reply_topic=reply_topic, user=user, *args, **kwargs
                 )
             finally:
-                self.paused_step = None
+                if self.status != SagaStatus.Paused:
+                    self.paused_step = None
 
         for step in self._pending_steps:
             execution_step = SagaStepExecution.from_definition(step)
