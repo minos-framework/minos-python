@@ -65,15 +65,13 @@ class RemoteSagaStep(SagaStep):
         super().__init__(**kwargs)
 
     @classmethod
-    def _from_raw(cls, raw: dict[str, Any], **kwargs) -> RemoteSagaStep:
-        current = raw | kwargs
+    def _from_raw(cls, raw: dict[str, Any]) -> RemoteSagaStep:
+        raw["on_execute"] = SagaOperation.from_raw(raw["on_execute"])
+        raw["on_failure"] = SagaOperation.from_raw(raw["on_failure"])
+        raw["on_success"] = SagaOperation.from_raw(raw["on_success"])
+        raw["on_error"] = SagaOperation.from_raw(raw["on_error"])
 
-        current["on_execute"] = SagaOperation.from_raw(current["on_execute"])
-        current["on_failure"] = SagaOperation.from_raw(current["on_failure"])
-        current["on_success"] = SagaOperation.from_raw(current["on_success"])
-        current["on_error"] = SagaOperation.from_raw(current["on_error"])
-
-        return cls(**current)
+        return cls(**raw)
 
     def on_execute(
         self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs

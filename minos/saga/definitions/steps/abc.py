@@ -61,11 +61,11 @@ class SagaStep(ABC):
         if not issubclass(step_cls, cls):
             raise TypeError(f"Given class is not a subclass of {cls}. Obtained: {step_cls}")
 
-        return step_cls._from_raw(raw, **kwargs)
+        return step_cls._from_raw(raw | kwargs)
 
     @classmethod
     @abstractmethod
-    def _from_raw(cls, raw: dict[str, Any], **kwargs) -> SagaStep:
+    def _from_raw(cls, raw: dict[str, Any]) -> SagaStep:
         raise NotImplementedError
 
     def local_step(self, *args, **kwargs) -> LocalSagaStep:
