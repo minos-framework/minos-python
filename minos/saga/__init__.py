@@ -18,6 +18,7 @@ from .exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
     CommandReplyFailedException,
+    EmptySagaException,
     EmptySagaStepException,
     MultipleOnErrorException,
     MultipleOnExecuteException,

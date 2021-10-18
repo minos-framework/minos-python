@@ -131,9 +131,9 @@ class SagaStep(ABC):
 
     @abstractmethod
     def validate(self) -> None:
-        """Performs a validation about the structure of the defined ``SagaStep``.
+        """Check if the step is valid.
 
-        :return This method does not return anything.
+        :return: This method does not return anything, but raises an exception if the step is not valid.
         """
 
     @property

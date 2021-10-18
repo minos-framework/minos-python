@@ -1,8 +1,5 @@
 import unittest
 import warnings
-from shutil import (
-    rmtree,
-)
 from unittest.mock import (
     MagicMock,
 )
@@ -10,18 +7,20 @@ from unittest.mock import (
 from minos.saga import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
+    EmptySagaException,
+    EmptySagaStepException,
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
     SagaException,
     SagaExecution,
+    SagaNotCommittedException,
     SagaOperation,
     SagaStep,
     identity_fn,
 )
 from tests.utils import (
     ADD_ORDER,
-    BASE_PATH,
     commit_callback,
     create_payment,
     send_create_order,
@@ -31,12 +30,6 @@ from tests.utils import (
 
 
 class TestSaga(unittest.TestCase):
-    DB_PATH = BASE_PATH / "test_db.lmdb"
-
-    # noinspection PyMissingOrEmptyDocstring
-    def tearDown(self) -> None:
-        rmtree(self.DB_PATH, ignore_errors=True)
-
     def test_commit_constructor(self):
         saga = Saga(commit=identity_fn)
         self.assertEqual(SagaOperation(identity_fn), saga.commit_operation)
@@ -233,6 +226,21 @@ class TestSaga(unittest.TestCase):
 
     def test_from_raw_already(self):
         self.assertEqual(ADD_ORDER, Saga.from_raw(ADD_ORDER))
+
+    def test_validate(self):
+        saga = Saga.from_raw(ADD_ORDER)
+        saga.validate()
+        self.assertTrue(True)
+
+    def test_validate_raises(self):
+        with self.assertRaises(EmptySagaException):
+            Saga().validate()
+
+        with self.assertRaises(EmptySagaStepException):
+            Saga(steps=[RemoteSagaStep()]).validate()
+
+        with self.assertRaises(SagaNotCommittedException):
+            Saga(steps=[LocalSagaStep(create_payment)]).validate()
 
 
 if __name__ == "__main__":

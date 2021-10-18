@@ -7,6 +7,25 @@ class SagaException(MinosException):
     """Base saga exception."""
 
 
+class EmptySagaException(SagaException):
+    """Exception to be raised when saga is empty."""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'Saga' must have at least one step."
+        super().__init__(message)
+
+
+class SagaNotCommittedException(SagaException):
+    """Exception to be raised when trying to exec a  not committed saga."""
+
+    def __init__(self, message: str = None):
+        if message is None:
+            message = "A 'Saga' must be committed."
+
+        super().__init__(message)
+
+
 class SagaStepException(SagaException):
     """Base exception for saga steps."""
 
@@ -93,10 +112,6 @@ class SagaExecutionNotFoundException(SagaExecutionException):
 
 class SagaRollbackExecutionException(SagaExecutionException):
     """Exception to be raised when a saga exception cannot be rollbacked"""
-
-
-class SagaNotCommittedException(SagaExecutionException):
-    """Exception to be raised when trying to exec a  not committed saga."""
 
 
 class SagaFailedExecutionException(SagaExecutionException):
