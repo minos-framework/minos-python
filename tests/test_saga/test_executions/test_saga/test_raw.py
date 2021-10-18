@@ -7,9 +7,6 @@ from uuid import (
     UUID,
 )
 
-from minos.common import (
-    MinosConfig,
-)
 from minos.saga import (
     SagaContext,
     SagaExecution,
@@ -17,7 +14,6 @@ from minos.saga import (
 )
 from tests.utils import (
     ADD_ORDER,
-    BASE_PATH,
     Foo,
     NaiveBroker,
     fake_reply,
@@ -26,7 +22,6 @@ from tests.utils import (
 
 class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
 
         self.publish_mock = MagicMock(side_effect=self.broker.send)

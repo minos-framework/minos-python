@@ -3,9 +3,6 @@ from unittest.mock import (
     MagicMock,
 )
 
-from minos.common import (
-    MinosConfig,
-)
 from minos.saga import (
     Saga,
     SagaContext,
@@ -18,7 +15,6 @@ from minos.saga import (
     SagaStatus,
 )
 from tests.utils import (
-    BASE_PATH,
     Foo,
     NaiveBroker,
     commit_callback,
@@ -36,7 +32,6 @@ from tests.utils import (
 
 class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
 
         self.publish_mock = MagicMock(side_effect=self.broker.send)
