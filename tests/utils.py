@@ -172,6 +172,24 @@ DELETE_ORDER = (
         .commit()
 )
 
+# fmt: off
+CREATE_PAYMENT = (
+    Saga()
+        .local_step(create_payment)
+            .on_failure(delete_payment)
+        .commit()
+)
+
+
+def add_order_condition(context: SagaContext) -> bool:
+    """For testing purposes."""
+    return "a" in context
+
+
+def delete_order_condition(context: SagaContext) -> bool:
+    """For testing purposes."""
+    return "b" in context
+
 
 class NaiveBroker(MinosBroker):
     """For testing purposes."""

@@ -7,8 +7,8 @@ from .saga import (
 )
 from .steps import (
     ConditionalSagaStep,
-    ElseThenCondition,
-    IfThenCondition,
+    ElseThenAlternative,
+    IfThenAlternative,
     LocalSagaStep,
     RemoteSagaStep,
     SagaStep,

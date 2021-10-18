@@ -5,8 +5,8 @@ from .context import (
 )
 from .definitions import (
     ConditionalSagaStep,
-    ElseThenCondition,
-    IfThenCondition,
+    ElseThenAlternative,
+    IfThenAlternative,
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
