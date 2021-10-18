@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 
 class ConditionalSagaStep(SagaStep):
-    """TODO"""
+    """Conditional Saga Step class."""
 
     def __init__(
         self,
@@ -68,14 +68,23 @@ class ConditionalSagaStep(SagaStep):
     def if_then(
         self, condition: Callable[[SagaContext], Union[bool, Awaitable[bool]]], saga: Saga
     ) -> ConditionalSagaStep:
-        """TODO"""
+        """Add a new ``IfThenAlternative`` based on a condition and a saga.
+
+        :param condition: The condition that must be satisfied to execute the alternative.
+        :param saga: The saga to be executed if the condition is satisfied.
+        :return: This method returns the same instance that is called.
+        """
 
         alternative = IfThenAlternative(condition, saga)
         self.if_then_alternatives.append(alternative)
         return self
 
     def else_then(self, saga: Saga) -> ConditionalSagaStep:
-        """TODO"""
+        """Set the ``ElseThenAlternative`` with the given saga.
+
+        :param saga: The saga to be executed if not any condition is met.
+        :return: This method returns the same instance that is called.
+        """
 
         if self.else_then_alternative is not None:
             raise MultipleElseThenException()
@@ -85,7 +94,10 @@ class ConditionalSagaStep(SagaStep):
         return self
 
     def validate(self) -> None:
-        """TODO"""
+        """Check if the step is valid.
+
+        :return: This method does not return anything, but raises an exception if the step is not valid.
+        """
 
         if not len(self.if_then_alternatives) or self.else_then_alternative is None:
             raise EmptySagaStepException()
@@ -98,7 +110,10 @@ class ConditionalSagaStep(SagaStep):
 
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO"""
+        """Get the raw representation of the step.
+
+        :return: A ``dict`` instance.
+        """
 
         return {
             "cls": classname(type(self)),
@@ -114,7 +129,7 @@ class ConditionalSagaStep(SagaStep):
 
 
 class IfThenAlternative:
-    """TODO"""
+    """If Then Alternative class."""
 
     def __init__(
         self, condition: Union[SagaOperation, Callable[[SagaContext], Union[bool, Awaitable[bool]]]], saga: Saga
@@ -127,7 +142,12 @@ class IfThenAlternative:
 
     @classmethod
     def from_raw(cls, raw: Optional[Union[dict[str, Any], IfThenAlternative]], **kwargs) -> IfThenAlternative:
-        """TODO"""
+        """Build a new instance from a raw representation.
+
+        :param raw: The raw representation.
+        :param kwargs: Additional named arguments.
+        :return: A new ``IfThenAlternative`` instance.
+        """
 
         from ..saga import (
             Saga,
@@ -143,12 +163,19 @@ class IfThenAlternative:
         return cls(**current)
 
     def validate(self) -> None:
-        """TODO"""
+        """Check if the alternative is valid.
+
+        :return: This method does not return anything, but raises an exception if the alternative is not valid.
+        """
+
         return self.saga.validate()
 
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO"""
+        """Get the raw representation of the alternative.
+
+        :return: A ``dict`` value.
+        """
 
         return {
             "condition": self.condition.raw,
@@ -166,14 +193,19 @@ class IfThenAlternative:
 
 
 class ElseThenAlternative:
-    """TODO"""
+    """Else Then Alternative class."""
 
     def __init__(self, saga: Saga):
         self.saga = saga
 
     @classmethod
     def from_raw(cls, raw: Optional[Union[dict[str, Any], ElseThenAlternative]], **kwargs) -> ElseThenAlternative:
-        """TODO"""
+        """Build a new instance from a raw representation.
+
+        :param raw: The raw representation.
+        :param kwargs: Additional named arguments.
+        :return: A new ``ElseThenAlternative`` instance.
+        """
 
         from ..saga import (
             Saga,
@@ -188,12 +220,19 @@ class ElseThenAlternative:
         return cls(**current)
 
     def validate(self) -> None:
-        """TODO"""
+        """Check if the alternative is valid.
+
+        :return: This method does not return anything, but raises an exception if the alternative is not valid.
+        """
+
         return self.saga.validate()
 
     @property
     def raw(self) -> dict[str, Any]:
-        """TODO"""
+        """Get the raw representation of the alternative.
+
+        :return: A ``dict`` value.
+        """
 
         return {
             "saga": self.saga.raw,
