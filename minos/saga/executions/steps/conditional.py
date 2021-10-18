@@ -9,17 +9,17 @@ from typing import (
     Union,
 )
 
-from ... import (
-    SagaFailedCommitCallbackException,
-    SagaFailedExecutionStepException,
-    SagaPausedExecutionStepException,
-    SagaRollbackExecutionStepException,
-)
 from ...context import (
     SagaContext,
 )
 from ...definitions import (
     ConditionalSagaStep,
+)
+from ...exceptions import (
+    SagaFailedCommitCallbackException,
+    SagaFailedExecutionStepException,
+    SagaPausedExecutionStepException,
+    SagaRollbackExecutionStepException,
 )
 from ..executors import (
     Executor,
@@ -104,7 +104,7 @@ class ConditionalSagaStepExecution(SagaStepExecution):
             raise exc
         except SagaFailedCommitCallbackException as exc:
             self.status = SagaStepStatus.ErroredByOnExecute
-            raise exc.exception
+            raise SagaFailedExecutionStepException(exc.exception)
         return execution.context
 
     async def rollback(self, context: SagaContext, *args, execution_uuid=None, **kwargs) -> SagaContext:
