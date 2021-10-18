@@ -14,6 +14,9 @@ from typing import (
     Iterable,
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from ...context import (
     SagaContext,
@@ -72,12 +75,14 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         self.status = SagaStepStatus.RunningOnExecute
 
         if self.inner is not None:
-            context = await self._execute_inner(*args, **kwargs)
+            context = await self._execute_inner(context, *args, **kwargs)
 
         self.status = SagaStepStatus.Finished
         return context
 
-    async def _create_inner(self, context: SagaContext, *args, **kwargs) -> Optional[SagaExecution]:
+    async def _create_inner(
+        self, context: SagaContext, execution_uuid: Optional[UUID] = None, *args, **kwargs
+    ) -> Optional[SagaExecution]:
         from ...executions import (
             SagaExecution,
         )
@@ -86,7 +91,9 @@ class ConditionalSagaStepExecution(SagaStepExecution):
 
         for alternative in self.definition.if_then_alternatives:
             if await executor.exec(alternative.condition, context):
-                return SagaExecution.from_definition(alternative.saga, context=context, *args, **kwargs)
+                return SagaExecution.from_definition(
+                    alternative.saga, context=context, uuid=execution_uuid, *args, **kwargs
+                )
 
         if self.definition.else_then_alternative is not None:
             return SagaExecution.from_definition(
@@ -95,11 +102,14 @@ class ConditionalSagaStepExecution(SagaStepExecution):
 
         return None
 
-    async def _execute_inner(self, *args, execution_uuid=None, **kwargs) -> SagaContext:
+    async def _execute_inner(self, context: SagaContext, execution_uuid: UUID, *args, **kwargs) -> SagaContext:
         execution = self.inner
+        if execution_uuid is not None:
+            execution.uuid = execution_uuid
         try:
+            execution.context = context
             with suppress(SagaExecutionAlreadyExecutedException):
-                await execution.execute(*args, **kwargs)
+                await self.inner.execute(*args, **kwargs)
         except SagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedByOnExecute
             raise exc
@@ -111,8 +121,9 @@ class ConditionalSagaStepExecution(SagaStepExecution):
             raise SagaFailedExecutionStepException(exc.exception)
         return execution.context
 
-    async def rollback(self, context: SagaContext, *args, execution_uuid=None, **kwargs) -> SagaContext:
+    async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
         """TODO"""
+
         if self.status == SagaStepStatus.Created:
             raise SagaRollbackExecutionStepException("There is nothing to rollback.")
 
@@ -120,12 +131,21 @@ class ConditionalSagaStepExecution(SagaStepExecution):
             raise SagaRollbackExecutionStepException("The step was already rollbacked.")
 
         if self.inner is not None:
-            self.inner.context = context
-            await self.inner.rollback(*args, **kwargs)
-            context = self.inner.context
+            context = await self._rollback_inner(context, *args, **kwargs)
 
         self.already_rollback = True
         return context
+
+    async def _rollback_inner(
+        self, context: SagaContext, execution_uuid: Optional[UUID] = None, *args, **kwargs
+    ) -> SagaContext:
+        execution = self.inner
+        if execution_uuid is not None:
+            execution.uuid = execution_uuid
+        execution.context = context
+
+        await execution.rollback(*args, **kwargs)
+        return execution.context
 
     @property
     def raw(self) -> dict[str, Any]:

@@ -5,7 +5,9 @@ from contextlib import (
 from unittest.mock import (
     patch,
 )
-from uuid import uuid4
+from uuid import (
+    uuid4,
+)
 
 from minos.saga import (
     ConditionalSagaStep,
@@ -187,7 +189,7 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
                     "status": "paused-by-on-execute",
                 },
                 "status": "paused",
-                "uuid": str(self.execution.inner.uuid),
+                "uuid": str(self.execute_kwargs["execution_uuid"]),
             },
             "status": "paused-by-on-execute",
         }
@@ -200,9 +202,10 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     async def test_raw_finished(self):
+        context = SagaContext(option=1)
         with suppress(SagaPausedExecutionStepException):
-            await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
-        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), **self.execute_kwargs)
+            context = await self.execution.execute(context, **self.execute_kwargs)
+        await self.execution.execute(context, reply=fake_reply(Foo("order")), **self.execute_kwargs)
 
         expected = {
             "already_rollback": False,
@@ -228,7 +231,7 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
                 ],
                 "paused_step": None,
                 "status": "finished",
-                "uuid": str(self.execution.inner.uuid),
+                "uuid": str(self.execute_kwargs["execution_uuid"]),
             },
             "status": "finished",
         }
