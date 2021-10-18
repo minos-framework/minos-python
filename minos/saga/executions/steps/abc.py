@@ -21,6 +21,9 @@ from ...context import (
     SagaContext,
 )
 from ...definitions import (
+    ConditionalSagaStep,
+    LocalSagaStep,
+    RemoteSagaStep,
     SagaStep,
 )
 from ..status import (
@@ -71,10 +74,8 @@ class SagaStepExecution(ABC):
         :param step: The ``SagaStep`` definition.
         :return: A new ``SagaStepExecution``.
         """
-
-        from ...definitions import (
-            LocalSagaStep,
-            RemoteSagaStep,
+        from .conditional import (
+            ConditionalSagaStepExecution,
         )
         from .local import (
             LocalSagaStepExecution,
@@ -82,6 +83,9 @@ class SagaStepExecution(ABC):
         from .remote import (
             RemoteSagaStepExecution,
         )
+
+        if isinstance(step, ConditionalSagaStep):
+            return ConditionalSagaStepExecution(step)
 
         if isinstance(step, LocalSagaStep):
             return LocalSagaStepExecution(step)

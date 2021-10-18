@@ -42,6 +42,7 @@ from .exceptions import (
     UndefinedOnExecuteException,
 )
 from .executions import (
+    ConditionalSagaStepExecution,
     Executor,
     LocalExecutor,
     LocalSagaStepExecution,
