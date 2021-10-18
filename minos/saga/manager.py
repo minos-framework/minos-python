@@ -81,7 +81,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     async def _run_new(
         self, definition: Saga, context: Optional[SagaContext] = None, **kwargs,
     ) -> Union[UUID, SagaExecution]:
-        execution = SagaExecution.from_saga(definition, context=context)
+        execution = SagaExecution.from_definition(definition, context=context)
         return await self._run(execution, **kwargs)
 
     async def _load_and_run(self, reply: CommandReply, **kwargs) -> Union[UUID, SagaExecution]:
