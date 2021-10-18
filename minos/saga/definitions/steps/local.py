@@ -54,13 +54,11 @@ class LocalSagaStep(SagaStep):
         super().__init__(**kwargs)
 
     @classmethod
-    def _from_raw(cls, raw: dict[str, Any], **kwargs) -> LocalSagaStep:
-        current = raw | kwargs
+    def _from_raw(cls, raw: dict[str, Any]) -> LocalSagaStep:
+        raw["on_execute"] = SagaOperation.from_raw(raw["on_execute"])
+        raw["on_failure"] = SagaOperation.from_raw(raw["on_failure"])
 
-        current["on_execute"] = SagaOperation.from_raw(current["on_execute"])
-        current["on_failure"] = SagaOperation.from_raw(current["on_failure"])
-
-        return cls(**current)
+        return cls(**raw)
 
     def on_execute(self, callback: LocalCallback, parameters: Optional[SagaContext] = None, **kwargs) -> LocalSagaStep:
         """On execute method.

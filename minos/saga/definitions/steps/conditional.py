@@ -99,7 +99,7 @@ class ConditionalSagaStep(SagaStep):
         :return: This method does not return anything, but raises an exception if the step is not valid.
         """
 
-        if not len(self.if_then_alternatives) or self.else_then_alternative is None:
+        if not len(self.if_then_alternatives) and self.else_then_alternative is None:
             raise EmptySagaStepException()
 
         for alternative in self.if_then_alternatives:
