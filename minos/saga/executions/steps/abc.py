@@ -63,9 +63,13 @@ class SagaStepExecution(ABC):
         if not issubclass(execution_cls, cls):
             raise TypeError(f"Given class is not a subclass of {cls}. Obtained: {execution_cls}")
 
-        current["definition"] = SagaStep.from_raw(current["definition"])
-        current["status"] = SagaStepStatus.from_raw(current["status"])
-        return execution_cls(**current)
+        return execution_cls._from_raw(current)
+
+    @classmethod
+    def _from_raw(cls, raw: dict[str, Any]) -> SagaStepExecution:
+        raw["definition"] = SagaStep.from_raw(raw["definition"])
+        raw["status"] = SagaStepStatus.from_raw(raw["status"])
+        return cls(**raw)
 
     @staticmethod
     def from_definition(step: SagaStep) -> SagaStepExecution:

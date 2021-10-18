@@ -2,11 +2,17 @@ from __future__ import (
     annotations,
 )
 
+from contextlib import (
+    suppress,
+)
+from itertools import (
+    chain,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
+    Iterable,
     Optional,
-    Union,
 )
 
 from ...context import (
@@ -16,6 +22,7 @@ from ...definitions import (
     ConditionalSagaStep,
 )
 from ...exceptions import (
+    SagaExecutionAlreadyExecutedException,
     SagaFailedCommitCallbackException,
     SagaFailedExecutionStepException,
     SagaPausedExecutionStepException,
@@ -47,18 +54,14 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         self.inner = inner
 
     @classmethod
-    def from_raw(cls, raw: Union[dict[str, Any], SagaStepExecution], **kwargs) -> SagaStepExecution:
-        """TODO"""
+    def _from_raw(cls, raw: dict[str, Any]) -> SagaStepExecution:
         from ...executions import (
             SagaExecution,
         )
 
-        if "inner" in raw:
-            raw["inner"] = SagaExecution.from_raw(raw["inner"])
-        if "inner" in kwargs:
-            kwargs["inner"] = SagaExecution.from_raw(kwargs["inner"])
+        raw["inner"] = SagaExecution.from_raw(raw["inner"])
 
-        return super().from_raw(raw, **kwargs)
+        return super()._from_raw(raw)
 
     async def execute(self, context: SagaContext, *args, **kwargs) -> SagaContext:
         """TODO"""
@@ -95,7 +98,8 @@ class ConditionalSagaStepExecution(SagaStepExecution):
     async def _execute_inner(self, *args, execution_uuid=None, **kwargs) -> SagaContext:
         execution = self.inner
         try:
-            await execution.execute(*args, **kwargs)
+            with suppress(SagaExecutionAlreadyExecutedException):
+                await execution.execute(*args, **kwargs)
         except SagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedByOnExecute
             raise exc
@@ -130,3 +134,6 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         :return: A ``dict`` instance.
         """
         return super().raw | {"inner": None if self.inner is None else self.inner.raw}
+
+    def __iter__(self) -> Iterable:
+        yield from chain(super().__iter__(), (self.inner,))
