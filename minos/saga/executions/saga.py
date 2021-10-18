@@ -132,7 +132,7 @@ class SagaExecution:
 
         :param definition: The definition of the saga.
         :param context: Initial saga execution context. If not provided, then a new empty context is created.
-        :param uuid: TODO
+        :param uuid: The identifier of the execution. If ``None`` is provided, then a new one will be generated.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecution`` instance.

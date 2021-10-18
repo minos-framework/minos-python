@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
 
 class ConditionalSagaStepExecution(SagaStepExecution):
-    """TODO"""
+    """Conditional Saga Step Execution class."""
 
     definition: ConditionalSagaStep
 
@@ -67,7 +67,13 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         return super()._from_raw(raw)
 
     async def execute(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """TODO"""
+        """Execution the step.
+
+        :param context: The execution context to be used during the execution.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The updated context.
+        """
 
         if self.status == SagaStepStatus.Created:
             self.inner = await self._create_inner(context, *args, **kwargs)
@@ -122,8 +128,13 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         return execution.context
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
-        """TODO"""
+        """Revert the executed step.
 
+        :param context: Execution context.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The updated execution context.
+        """
         if self.status == SagaStepStatus.Created:
             raise SagaRollbackExecutionStepException("There is nothing to rollback.")
 
