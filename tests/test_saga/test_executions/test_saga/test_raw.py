@@ -34,13 +34,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
 
     def test_from_raw(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(ADD_ORDER)
+            expected = SagaExecution.from_definition(ADD_ORDER)
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
     def test_created(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            execution = SagaExecution.from_saga(ADD_ORDER)
+            execution = SagaExecution.from_definition(ADD_ORDER)
 
         expected = {
             "already_rollback": False,
@@ -126,7 +126,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         }
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(ADD_ORDER)
+            expected = SagaExecution.from_definition(ADD_ORDER)
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
@@ -202,7 +202,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         }
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(ADD_ORDER)
+            expected = SagaExecution.from_definition(ADD_ORDER)
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 

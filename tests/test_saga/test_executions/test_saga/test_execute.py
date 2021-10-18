@@ -52,7 +52,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             .on_success(handle_ticket_success)
             .commit()
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -83,7 +83,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             .on_failure(send_delete_ticket)
             .commit()
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -117,7 +117,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             .on_success(handle_ticket_success)
             .commit(commit_callback)
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -145,7 +145,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             .on_success(handle_ticket_success)
             .commit(commit_callback_raises)
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -171,7 +171,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             .on_failure(send_delete_order)
             .commit()
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
         reply = fake_reply(Foo("order1"))
@@ -194,7 +194,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             .on_failure(send_delete_order)
             .commit()
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
         reply = fake_reply(Foo("order1"))
