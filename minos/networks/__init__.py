@@ -60,6 +60,7 @@ from .handlers import (
     HandlerSetup,
 )
 from .messages import (
+    USER_CONTEXT_VAR,
     Request,
     Response,
     ResponseException,

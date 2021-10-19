@@ -1,4 +1,10 @@
 import unittest
+from unittest.mock import (
+    AsyncMock,
+)
+from uuid import (
+    uuid4,
+)
 
 from aiohttp import (
     web,
@@ -7,19 +13,20 @@ from aiohttp.web_exceptions import (
     HTTPBadRequest,
     HTTPInternalServerError,
 )
-from yarl import (
-    URL,
-)
 
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    USER_CONTEXT_VAR,
     Request,
     Response,
     RestHandler,
     RestResponse,
     RestResponseException,
+)
+from tests.test_networks.test_rest.utils import (
+    MockedRequest,
 )
 from tests.utils import (
     BASE_PATH,
@@ -42,17 +49,6 @@ class _Cls:
     @staticmethod
     async def _fn_raises_exception(request: Request) -> Response:
         raise ValueError
-
-
-class MockedRequest:
-    def __init__(self, data=None):
-        self.data = data
-        self.remote = "127.0.0.1"
-        self.rel_url = URL("localhost")
-        self.match_info = dict()
-
-    async def json(self):
-        return self.data
 
 
 class TestRestHandler(PostgresAsyncTestCase):
@@ -96,6 +92,20 @@ class TestRestHandler(PostgresAsyncTestCase):
         handler = self.handler.get_callback(_Cls._fn_raises_exception)
         with self.assertRaises(HTTPInternalServerError):
             await handler(MockedRequest({"foo": "bar"}))
+
+    async def test_get_callback_with_user(self):
+        user = uuid4()
+
+        async def _fn(request) -> None:
+            self.assertEqual(user, request.user)
+            self.assertEqual(user, USER_CONTEXT_VAR.get())
+
+        mock = AsyncMock(side_effect=_fn)
+
+        handler = self.handler.get_callback(mock)
+        await handler(MockedRequest({"foo": "bar"}, user=user))
+
+        self.assertEqual(1, mock.call_count)
 
 
 if __name__ == "__main__":
