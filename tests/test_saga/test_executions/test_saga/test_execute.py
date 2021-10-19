@@ -45,14 +45,14 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute(self):
         saga = (
             Saga()
-            .step(send_create_order)
+            .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step(send_create_ticket)
+            .remote_step(send_create_ticket)
             .on_success(handle_ticket_success)
             .commit()
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -75,15 +75,15 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_failure(self):
         saga = (
             Saga()
-            .step(send_create_order)
+            .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step(send_create_ticket)
+            .remote_step(send_create_ticket)
             .on_success(handle_ticket_success_raises)
             .on_failure(send_delete_ticket)
             .commit()
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -110,14 +110,14 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_commit(self):
         saga = (
             Saga()
-            .step(send_create_order)
+            .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step(send_create_ticket)
+            .remote_step(send_create_ticket)
             .on_success(handle_ticket_success)
             .commit(commit_callback)
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -138,14 +138,14 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     async def test_execute_commit_raises(self):
         saga = (
             Saga()
-            .step(send_create_order)
+            .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
-            .step(send_create_ticket)
+            .remote_step(send_create_ticket)
             .on_success(handle_ticket_success)
             .commit(commit_callback_raises)
         )
-        execution = SagaExecution.from_saga(saga)
+        execution = SagaExecution.from_definition(saga)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
@@ -164,8 +164,14 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(3, self.publish_mock.call_count)
 
     async def test_rollback(self):
-        saga = Saga().step(send_create_order).on_success(handle_order_success).on_failure(send_delete_order).commit()
-        execution = SagaExecution.from_saga(saga)
+        saga = (
+            Saga()
+            .remote_step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .commit()
+        )
+        execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
         reply = fake_reply(Foo("order1"))
@@ -181,8 +187,14 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, self.publish_mock.call_count)
 
     async def test_rollback_raises(self):
-        saga = Saga().step(send_create_order).on_success(handle_order_success).on_failure(send_delete_order).commit()
-        execution = SagaExecution.from_saga(saga)
+        saga = (
+            Saga()
+            .remote_step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .commit()
+        )
+        execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
         reply = fake_reply(Foo("order1"))

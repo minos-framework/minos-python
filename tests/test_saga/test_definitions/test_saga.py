@@ -1,11 +1,17 @@
 import unittest
+import warnings
 from shutil import (
     rmtree,
+)
+from unittest.mock import (
+    MagicMock,
 )
 
 from minos.saga import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
+    LocalSagaStep,
+    RemoteSagaStep,
     Saga,
     SagaException,
     SagaExecution,
@@ -17,6 +23,7 @@ from tests.utils import (
     ADD_ORDER,
     BASE_PATH,
     commit_callback,
+    create_payment,
     send_create_order,
     send_delete_order,
     send_delete_ticket,
@@ -60,63 +67,114 @@ class TestSaga(unittest.TestCase):
         saga = Saga()
         self.assertFalse(saga.committed)
 
-    def test_step(self):
+    def test_local(self):
         saga = Saga()
-        initial = SagaStep()
-        step = saga.step(initial)
+        initial = LocalSagaStep()
+        step = saga.local_step(initial)
         self.assertEqual(step, initial)
         self.assertEqual(saga, step.saga)
 
-    def test_step_operation(self):
+    def test_local_operation(self):
         saga = Saga()
-        step = saga.step(SagaOperation(send_delete_ticket))
-        self.assertEqual(SagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        step = saga.local_step(SagaOperation(create_payment))
+        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment)), step)
         self.assertEqual(saga, step.saga)
 
-    def test_step_callback(self):
+    def test_local_callback(self):
         saga = Saga()
-        step = saga.step(send_delete_ticket)
-        self.assertEqual(SagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        step = saga.local_step(create_payment)
+        self.assertEqual(LocalSagaStep(on_execute=SagaOperation(create_payment)), step)
         self.assertEqual(saga, step.saga)
 
-    def test_step_empty(self):
+    def test_local_empty(self):
         saga = Saga()
-        step = saga.step()
+        step = saga.local_step()
         self.assertIsInstance(step, SagaStep)
         self.assertEqual(saga, step.saga)
 
-    def test_step_raises(self):
+    def test_local_raises(self):
         saga = Saga().commit()
         with self.assertRaises(AlreadyCommittedException):
-            saga.step()
+            saga.local_step()
+
+        saga = Saga()
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            saga.local_step(RemoteSagaStep())
+
+    def test_step(self):
+        saga = Saga()
+        mock = MagicMock(side_effect=saga.remote_step)
+        saga.remote_step = mock
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            step = saga.step()
+
+        self.assertEqual(1, mock.call_count)
+        self.assertIsInstance(step, RemoteSagaStep)
+
+    def test_remote(self):
+        saga = Saga()
+        initial = RemoteSagaStep()
+        step = saga.remote_step(initial)
+        self.assertEqual(step, initial)
+        self.assertEqual(saga, step.saga)
+
+    def test_remote_operation(self):
+        saga = Saga()
+        step = saga.remote_step(SagaOperation(send_delete_ticket))
+        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        self.assertEqual(saga, step.saga)
+
+    def test_remote_callback(self):
+        saga = Saga()
+        step = saga.remote_step(send_delete_ticket)
+        self.assertEqual(RemoteSagaStep(on_execute=SagaOperation(send_delete_ticket)), step)
+        self.assertEqual(saga, step.saga)
+
+    def test_remote_empty(self):
+        saga = Saga()
+        step = saga.remote_step()
+        self.assertIsInstance(step, SagaStep)
+        self.assertEqual(saga, step.saga)
+
+    def test_remote_raises(self):
+        saga = Saga().commit()
+        with self.assertRaises(AlreadyCommittedException):
+            saga.remote_step()
+
+        saga = Saga()
+        with self.assertRaises(TypeError):
+            # noinspection PyTypeChecker
+            saga.remote_step(LocalSagaStep())
 
     def test_empty_step_raises(self):
         with self.assertRaises(SagaException):
-            Saga().step(send_create_order).on_failure(send_delete_order).step().commit()
+            Saga().remote_step(send_create_order).on_failure(send_delete_order).remote_step().commit()
 
     def test_duplicate_operation_raises(self):
         with self.assertRaises(SagaException):
-            Saga().step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit()
+            Saga().remote_step(send_create_order).on_failure(send_delete_order).on_failure(send_delete_ticket).commit()
 
     def test_missing_send_raises(self):
         with self.assertRaises(SagaException):
-            Saga().step().on_failure(send_delete_ticket).commit()
+            Saga().remote_step().on_failure(send_delete_ticket).commit()
 
     def test_build_execution(self):
-        saga = Saga().step(send_create_order).on_failure(send_delete_order).commit()
-        execution = SagaExecution.from_saga(saga)
+        saga = Saga().remote_step(send_create_order).on_failure(send_delete_order).commit()
+        execution = SagaExecution.from_definition(saga)
         self.assertIsInstance(execution, SagaExecution)
 
     def test_add_step(self):
-        step = SagaStep(send_create_order)
-        saga = Saga().step(step).commit()
+        step = RemoteSagaStep(send_create_order)
+        saga = Saga().remote_step(step).commit()
 
         self.assertEqual([step], saga.steps)
 
     def test_add_step_raises(self):
-        step = SagaStep(send_create_order, saga=Saga())
+        step = RemoteSagaStep(send_create_order, saga=Saga())
         with self.assertRaises(AlreadyOnSagaException):
-            Saga().step(step)
+            Saga().remote_step(step)
 
     def test_raw(self):
         saga = ADD_ORDER
@@ -124,12 +182,19 @@ class TestSaga(unittest.TestCase):
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
+                    "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": {"callback": "tests.utils.handle_order_success"},
                     "on_error": None,
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
+                    "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                    "on_execute": {"callback": "tests.utils.create_payment"},
+                    "on_failure": {"callback": "tests.utils.delete_payment"},
+                },
+                {
+                    "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},
@@ -144,12 +209,19 @@ class TestSaga(unittest.TestCase):
             "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
             "steps": [
                 {
+                    "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_order"},
                     "on_success": {"callback": "tests.utils.handle_order_success"},
                     "on_error": None,
                     "on_failure": {"callback": "tests.utils.send_delete_order"},
                 },
                 {
+                    "cls": "minos.saga.definitions.steps.local.LocalSagaStep",
+                    "on_execute": {"callback": "tests.utils.create_payment"},
+                    "on_failure": {"callback": "tests.utils.delete_payment"},
+                },
+                {
+                    "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
                     "on_execute": {"callback": "tests.utils.send_create_ticket"},
                     "on_success": {"callback": "tests.utils.handle_ticket_success"},
                     "on_error": {"callback": "tests.utils.handle_ticket_error"},

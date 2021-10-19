@@ -3,41 +3,41 @@ from __future__ import (
 )
 
 from typing import (
-    TYPE_CHECKING,
     Any,
     Iterable,
     Optional,
     Union,
 )
 
-from ..context import (
+from minos.common import (
+    classname,
+)
+
+from ...context import (
     SagaContext,
 )
-from ..exceptions import (
+from ...exceptions import (
     EmptySagaStepException,
     MultipleOnErrorException,
     MultipleOnExecuteException,
     MultipleOnFailureException,
     MultipleOnSuccessException,
-    SagaNotDefinedException,
     UndefinedOnExecuteException,
 )
-from .operations import (
+from ..operations import (
     SagaOperation,
 )
-from .types import (
+from ..types import (
     RequestCallBack,
     ResponseCallBack,
 )
-
-if TYPE_CHECKING:
-    from .saga import (
-        Saga,
-    )
+from .abc import (
+    SagaStep,
+)
 
 
-class SagaStep:
-    """Saga step class."""
+class RemoteSagaStep(SagaStep):
+    """Remote Saga Step class."""
 
     def __init__(
         self,
@@ -45,8 +45,9 @@ class SagaStep:
         on_success: Optional[Union[ResponseCallBack, SagaOperation]] = None,
         on_error: Optional[Union[ResponseCallBack, SagaOperation]] = None,
         on_failure: Optional[Union[RequestCallBack, SagaOperation]] = None,
-        saga: Optional[Saga] = None,
+        **kwargs,
     ):
+
         if on_execute is not None and not isinstance(on_execute, SagaOperation):
             on_execute = SagaOperation(on_execute)
         if on_failure is not None and not isinstance(on_failure, SagaOperation):
@@ -61,29 +62,20 @@ class SagaStep:
         self.on_success_operation = on_success
         self.on_error_operation = on_error
 
-        self.saga = saga
+        super().__init__(**kwargs)
 
     @classmethod
-    def from_raw(cls, raw: Union[dict[str, Any], SagaStep], **kwargs) -> SagaStep:
-        """Build a new instance from raw.
+    def _from_raw(cls, raw: dict[str, Any]) -> RemoteSagaStep:
+        raw["on_execute"] = SagaOperation.from_raw(raw["on_execute"])
+        raw["on_failure"] = SagaOperation.from_raw(raw["on_failure"])
+        raw["on_success"] = SagaOperation.from_raw(raw["on_success"])
+        raw["on_error"] = SagaOperation.from_raw(raw["on_error"])
 
-        :param raw: A raw representation.
-        :param kwargs: Additional named arguments.
-        :return: A ``SagaStep`` instance.
-        """
-        if isinstance(raw, cls):
-            return raw
+        return cls(**raw)
 
-        current = raw | kwargs
-
-        current["on_execute"] = SagaOperation.from_raw(current["on_execute"])
-        current["on_failure"] = SagaOperation.from_raw(current["on_failure"])
-        current["on_success"] = SagaOperation.from_raw(current["on_success"])
-        current["on_error"] = SagaOperation.from_raw(current["on_error"])
-
-        return cls(**current)
-
-    def on_execute(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
+    def on_execute(
+        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
+    ) -> RemoteSagaStep:
         """On execute method.
 
         :param callback: The callback function to be called.
@@ -99,7 +91,9 @@ class SagaStep:
 
         return self
 
-    def on_failure(self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
+    def on_failure(
+        self, callback: RequestCallBack, parameters: Optional[SagaContext] = None, **kwargs
+    ) -> RemoteSagaStep:
         """On failure method.
 
         :param callback: The callback function to be called.
@@ -115,7 +109,9 @@ class SagaStep:
 
         return self
 
-    def on_success(self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
+    def on_success(
+        self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None, **kwargs
+    ) -> RemoteSagaStep:
         """On success method.
 
         :param callback: The callback function to be called.
@@ -131,7 +127,9 @@ class SagaStep:
 
         return self
 
-    def on_error(self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None, **kwargs) -> SagaStep:
+    def on_error(
+        self, callback: ResponseCallBack, parameters: Optional[SagaContext] = None, **kwargs
+    ) -> RemoteSagaStep:
         """On error method.
 
         :param callback: The callback function to be called.
@@ -147,32 +145,8 @@ class SagaStep:
 
         return self
 
-    def step(self, *args, **kwargs) -> SagaStep:
-        """Create a new step in the ``Saga``.
-
-        :param args: Additional positional parameters.
-        :param kwargs: Additional named parameters.
-        :return: A new ``SagaStep`` instance.
-        """
-        self.validate()
-        if self.saga is None:
-            raise SagaNotDefinedException()
-        return self.saga.step(*args, **kwargs)
-
-    def commit(self, *args, **kwargs) -> Saga:
-        """Commit the current ``SagaStep`` on the ``Saga``.
-
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: A ``Saga`` instance.
-        """
-        self.validate()
-        if self.saga is None:
-            raise SagaNotDefinedException()
-        return self.saga.commit(*args, **kwargs)
-
     def validate(self) -> None:
-        """Performs a validation about the structure of the defined ``SagaStep``.
+        """Performs a validation about the structure of the defined ``RemoteSagaStep``.
 
         :return This method does not return anything.
         """
@@ -194,14 +168,12 @@ class SagaStep:
         :return: A ``dict`` instance.
         """
         return {
+            "cls": classname(type(self)),
             "on_execute": None if self.on_execute_operation is None else self.on_execute_operation.raw,
             "on_failure": None if self.on_failure_operation is None else self.on_failure_operation.raw,
             "on_success": None if self.on_success_operation is None else self.on_success_operation.raw,
             "on_error": None if self.on_error_operation is None else self.on_error_operation.raw,
         }
-
-    def __eq__(self, other: SagaStep) -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __iter__(self) -> Iterable:
         yield from (
