@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from typing import (
     Any,
     Iterable,
@@ -28,18 +29,17 @@ from ..exceptions import (
     SagaExecutionAlreadyExecutedException,
     SagaFailedCommitCallbackException,
     SagaFailedExecutionStepException,
-    SagaNotCommittedException,
     SagaPausedExecutionStepException,
     SagaRollbackExecutionException,
     SagaStepExecutionException,
 )
 from .executors import (
-    CommitExecutor,
+    LocalExecutor,
 )
 from .status import (
     SagaStatus,
 )
-from .step import (
+from .steps import (
     SagaStepExecution,
 )
 
@@ -63,8 +63,7 @@ class SagaExecution:
         *args,
         **kwargs,
     ):
-        if not definition.committed:
-            raise SagaNotCommittedException("The definition must be committed before executing it.")
+        definition.validate()  # If not valid, raises an exception.
 
         if steps is None:
             steps = list()
@@ -123,14 +122,36 @@ class SagaExecution:
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecution`` instance.
         """
-        from uuid import (
-            uuid4,
+        warnings.warn(
+            "from_saga() method is deprecated by from_definition() and will be removed soon.", DeprecationWarning
         )
+
+        return cls.from_definition(definition, context, *args, **kwargs)
+
+    @classmethod
+    def from_definition(
+        cls, definition: Saga, context: Optional[SagaContext] = None, uuid: Optional[UUID] = None, *args, **kwargs
+    ) -> SagaExecution:
+        """Build a new instance from a ``Saga`` object.
+
+        :param definition: The definition of the saga.
+        :param context: Initial saga execution context. If not provided, then a new empty context is created.
+        :param uuid: The identifier of the execution. If ``None`` is provided, then a new one will be generated.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A new ``SagaExecution`` instance.
+        """
+        if uuid is None:
+            from uuid import (
+                uuid4,
+            )
+
+            uuid = uuid4()
 
         if context is None:
             context = SagaContext()
 
-        return cls(definition, uuid4(), context, *args, **kwargs)
+        return cls(definition, uuid, context, *args, **kwargs)
 
     async def execute(
         self, reply: Optional[CommandReply] = None, reply_topic: Optional[str] = None, *args, **kwargs,
@@ -161,10 +182,11 @@ class SagaExecution:
             try:
                 await self._execute_one(self.paused_step, reply=reply, reply_topic=reply_topic, *args, **kwargs)
             finally:
-                self.paused_step = None
+                if self.status != SagaStatus.Paused:
+                    self.paused_step = None
 
         for step in self._pending_steps:
-            execution_step = SagaStepExecution(step)
+            execution_step = SagaStepExecution.from_definition(step)
             await self._execute_one(execution_step, reply_topic=reply_topic, *args, **kwargs)
 
         await self._execute_commit(*args, **kwargs)
@@ -187,14 +209,14 @@ class SagaExecution:
             raise exc
 
     async def _execute_commit(self, *args, **kwargs) -> None:
-        executor = CommitExecutor(*args, **kwargs)
+        executor = LocalExecutor(*args, **kwargs)
 
         try:
             self.context = await executor.exec(self.definition.commit_operation, self.context)
-        except SagaFailedCommitCallbackException as exc:
+        except SagaFailedExecutionStepException as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
-            raise exc
+            raise SagaFailedCommitCallbackException(exc.exception)
 
     async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.

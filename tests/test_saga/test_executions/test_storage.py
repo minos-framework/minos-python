@@ -24,7 +24,7 @@ class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         self.broker = NaiveBroker()
 
-        execution = SagaExecution.from_saga(ADD_ORDER)
+        execution = SagaExecution.from_definition(ADD_ORDER)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker)
 
@@ -50,7 +50,7 @@ class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
         storage.store(self.execution)
         self.assertEqual(self.execution, storage.load(self.execution.uuid))
 
-        another = SagaExecution.from_saga(ADD_ORDER)
+        another = SagaExecution.from_definition(ADD_ORDER)
         another.uuid = self.execution.uuid
         storage.store(another)
 

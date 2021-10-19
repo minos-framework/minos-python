@@ -4,6 +4,11 @@ from .context import (
     SagaContext,
 )
 from .definitions import (
+    ConditionalSagaStep,
+    ElseThenAlternative,
+    IfThenAlternative,
+    LocalSagaStep,
+    RemoteSagaStep,
     Saga,
     SagaOperation,
     SagaStep,
@@ -13,7 +18,9 @@ from .exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
     CommandReplyFailedException,
+    EmptySagaException,
     EmptySagaStepException,
+    MultipleElseThenException,
     MultipleOnErrorException,
     MultipleOnExecuteException,
     MultipleOnFailureException,
@@ -35,8 +42,11 @@ from .exceptions import (
     UndefinedOnExecuteException,
 )
 from .executions import (
-    CommitExecutor,
+    ConditionalSagaStepExecution,
     Executor,
+    LocalExecutor,
+    LocalSagaStepExecution,
+    RemoteSagaStepExecution,
     RequestExecutor,
     ResponseExecutor,
     SagaExecution,
