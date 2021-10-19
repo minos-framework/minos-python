@@ -87,7 +87,7 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         return context
 
     async def _create_inner(
-        self, context: SagaContext, execution_uuid: Optional[UUID] = None, *args, **kwargs
+        self, context: SagaContext, user: Optional[UUID] = None, execution_uuid: Optional[UUID] = None, *args, **kwargs
     ) -> Optional[SagaExecution]:
         from ...executions import (
             SagaExecution,
@@ -95,25 +95,33 @@ class ConditionalSagaStepExecution(SagaStepExecution):
 
         executor = Executor()
 
+        definition = None
         for alternative in self.definition.if_then_alternatives:
             if await executor.exec(alternative.condition, context):
-                return SagaExecution.from_definition(
-                    alternative.saga, context=context, uuid=execution_uuid, *args, **kwargs
-                )
+                definition = alternative.saga
+                break
 
-        if self.definition.else_then_alternative is not None:
-            return SagaExecution.from_definition(
-                self.definition.else_then_alternative.saga, context=context, *args, **kwargs
-            )
+        if definition is None and self.definition.else_then_alternative is not None:
+            definition = self.definition.else_then_alternative.saga
 
-        return None
+        if definition is None:
+            return None
 
-    async def _execute_inner(self, context: SagaContext, execution_uuid: UUID, *args, **kwargs) -> SagaContext:
+        return SagaExecution.from_definition(
+            definition, context=context, user=user, uuid=execution_uuid, *args, **kwargs
+        )
+
+    async def _execute_inner(
+        self, context: SagaContext, user: Optional[UUID] = None, execution_uuid: Optional[UUID] = None, *args, **kwargs
+    ) -> SagaContext:
         execution = self.inner
         if execution_uuid is not None:
             execution.uuid = execution_uuid
+        if user is not None:
+            execution.user = user
+        execution.context = context
+
         try:
-            execution.context = context
             with suppress(SagaExecutionAlreadyExecutedException):
                 await self.inner.execute(*args, **kwargs)
         except SagaPausedExecutionStepException as exc:
@@ -125,6 +133,7 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         except SagaFailedCommitCallbackException as exc:
             self.status = SagaStepStatus.ErroredByOnExecute
             raise SagaFailedExecutionStepException(exc.exception)
+
         return execution.context
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
@@ -148,14 +157,17 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         return context
 
     async def _rollback_inner(
-        self, context: SagaContext, execution_uuid: Optional[UUID] = None, *args, **kwargs
+        self, context: SagaContext, user: Optional[UUID] = None, execution_uuid: Optional[UUID] = None, *args, **kwargs
     ) -> SagaContext:
         execution = self.inner
         if execution_uuid is not None:
             execution.uuid = execution_uuid
+        if user is not None:
+            execution.user = user
         execution.context = context
 
         await execution.rollback(*args, **kwargs)
+
         return execution.context
 
     @property

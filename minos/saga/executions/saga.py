@@ -59,6 +59,7 @@ class SagaExecution:
         steps: list[SagaStepExecution] = None,
         paused_step: SagaStepExecution = None,
         already_rollback: bool = False,
+        user: Optional[UUID] = None,
         *args,
         **kwargs,
     ):
@@ -74,6 +75,7 @@ class SagaExecution:
         self.status = status
         self.already_rollback = already_rollback
         self.paused_step = paused_step
+        self.user = user
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaExecution], **kwargs) -> SagaExecution:
@@ -96,6 +98,8 @@ class SagaExecution:
 
         if isinstance(current["uuid"], str):
             current["uuid"] = UUID(current["uuid"])
+        if isinstance(current["user"], str):
+            current["user"] = UUID(current["user"])
 
         instance = cls(**current)
 
@@ -150,18 +154,12 @@ class SagaExecution:
         return cls(definition, uuid, context, *args, **kwargs)
 
     async def execute(
-        self,
-        reply: Optional[CommandReply] = None,
-        reply_topic: Optional[str] = None,
-        user: Optional[UUID] = None,
-        *args,
-        **kwargs,
+        self, reply: Optional[CommandReply] = None, reply_topic: Optional[str] = None, *args, **kwargs,
     ) -> SagaContext:
         """Execute the ``Saga`` definition.
 
         :param reply: An optional ``CommandReply`` to be consumed by the immediately next executed step.
         :param reply_topic: The topic in which to receive the future replies.
-        :param user: An optional identifier of the user who executes the saga.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
@@ -182,16 +180,14 @@ class SagaExecution:
         self.status = SagaStatus.Running
         if self.paused_step is not None:
             try:
-                await self._execute_one(
-                    self.paused_step, reply=reply, reply_topic=reply_topic, user=user, *args, **kwargs
-                )
+                await self._execute_one(self.paused_step, reply=reply, reply_topic=reply_topic, *args, **kwargs)
             finally:
                 if self.status != SagaStatus.Paused:
                     self.paused_step = None
 
         for step in self._pending_steps:
             execution_step = SagaStepExecution.from_definition(step)
-            await self._execute_one(execution_step, reply_topic=reply_topic, user=user, *args, **kwargs)
+            await self._execute_one(execution_step, reply_topic=reply_topic, *args, **kwargs)
 
         await self._execute_commit(*args, **kwargs)
         self.status = SagaStatus.Finished
@@ -199,7 +195,9 @@ class SagaExecution:
 
     async def _execute_one(self, execution_step: SagaStepExecution, *args, **kwargs) -> None:
         try:
-            self.context = await execution_step.execute(self.context, execution_uuid=self.uuid, *args, **kwargs)
+            self.context = await execution_step.execute(
+                self.context, execution_uuid=self.uuid, user=self.user, *args, **kwargs
+            )
             self._add_executed(execution_step)
         except SagaFailedExecutionStepException as exc:
             await self.rollback(*args, **kwargs)
@@ -220,11 +218,10 @@ class SagaExecution:
             self.status = SagaStatus.Errored
             raise SagaFailedCommitCallbackException(exc.exception)
 
-    async def rollback(self, reply_topic: Optional[str] = None, user: Optional[UUID] = None, *args, **kwargs) -> None:
+    async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.
 
         :param reply_topic: The topic in which to receive the future replies.
-        :param user: An optional identifier of the user who executes the saga.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: The updated execution context.
@@ -237,7 +234,7 @@ class SagaExecution:
         for execution_step in reversed(self.executed_steps):
             try:
                 self.context = await execution_step.rollback(
-                    self.context, reply_topic=reply_topic, user=user, execution_uuid=self.uuid, *args, **kwargs
+                    self.context, reply_topic=reply_topic, user=self.user, execution_uuid=self.uuid, *args, **kwargs
                 )
             except SagaStepExecutionException as exc:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
@@ -270,6 +267,7 @@ class SagaExecution:
             "paused_step": None if self.paused_step is None else self.paused_step.raw,
             "context": self.context.avro_str,
             "already_rollback": self.already_rollback,
+            "user": None if self.user is None else str(self.user),
         }
 
     def __eq__(self, other: SagaStep) -> bool:
@@ -283,4 +281,5 @@ class SagaExecution:
             self.executed_steps,
             self.context,
             self.already_rollback,
+            self.user,
         )

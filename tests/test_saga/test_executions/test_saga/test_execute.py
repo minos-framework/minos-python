@@ -1,6 +1,10 @@
 import unittest
 from unittest.mock import (
-    MagicMock,
+    AsyncMock,
+    call,
+)
+from uuid import (
+    uuid4,
 )
 
 from minos.saga import (
@@ -34,7 +38,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.broker = NaiveBroker()
 
-        self.publish_mock = MagicMock(side_effect=self.broker.send)
+        self.publish_mock = AsyncMock()
         self.broker.send = self.publish_mock
 
     async def test_execute(self):
@@ -66,6 +70,23 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, self.publish_mock.call_count)
         with self.assertRaises(SagaExecutionAlreadyExecutedException):
             await execution.execute()
+
+    async def test_execute_and_publish(self):
+        user = uuid4()
+        reply_topic = "foobar"
+
+        definition = Saga().remote_step(send_create_order).commit()
+        execution = SagaExecution.from_definition(definition, user=user)
+
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute(broker=self.broker, reply_topic=reply_topic)
+
+        self.assertEqual(1, self.publish_mock.call_count)
+        args = call(
+            topic="CreateOrder", data=Foo(foo="create_order!"), saga=execution.uuid, reply_topic=reply_topic, user=user,
+        )
+        self.assertEqual(args, self.publish_mock.call_args)
+        self.assertEqual(SagaStatus.Paused, execution.status)
 
     async def test_execute_failure(self):
         saga = (
