@@ -87,7 +87,7 @@ class CommandService(Service, ABC):
         raise MinosIllegalHandlingException("Queries cannot be handled by `CommandService` inherited classes.")
 
     def _pre_event_handle(self, request: Request) -> Request:
-        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager)
+        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager, user=request.user)
         return WrappedRequest(request, fn)
 
     @classmethod
@@ -153,5 +153,5 @@ class QueryService(Service, ABC):
         return request
 
     def _pre_event_handle(self, request: Request) -> Request:
-        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager)
+        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager, user=request.user)
         return WrappedRequest(request, fn)

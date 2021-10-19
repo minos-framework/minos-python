@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_cqrs"
-version = "0.0.6"
+version = "0.0.7"
 description = "Minos Microservice CQRS package"
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_cqrs"
@@ -33,7 +33,7 @@ include = [
 python = "^3.9"
 dependency-injector = "^4.34.0"
 minos-microservice-common = "^0.1.13"
-minos-microservice-saga = "^0.1.0"
+minos-microservice-saga = "^0.1.1"
 minos-microservice-networks = ">=0.0.16<0.1"
 
 [tool.poetry.dev-dependencies]
