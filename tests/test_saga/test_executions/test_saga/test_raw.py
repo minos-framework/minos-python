@@ -5,6 +5,7 @@ from unittest.mock import (
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from minos.common import (
@@ -28,17 +29,59 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.config = MinosConfig(path=BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
-
+        self.user = uuid4()
         self.publish_mock = MagicMock(side_effect=self.broker.send)
         self.broker.send = self.publish_mock
 
     def test_from_raw(self):
+        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+            expected = SagaExecution.from_saga(ADD_ORDER, user=self.user)
+        observed = SagaExecution.from_raw(expected)
+        self.assertEqual(expected, observed)
+
+    def test_from_raw_without_user(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_saga(ADD_ORDER)
         observed = SagaExecution.from_raw(expected)
         self.assertEqual(expected, observed)
 
     def test_created(self):
+        with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
+            execution = SagaExecution.from_saga(ADD_ORDER, user=self.user)
+
+        expected = {
+            "already_rollback": False,
+            "context": SagaContext().avro_str,
+            "definition": {
+                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "steps": [
+                    {
+                        "on_execute": {"callback": "tests.utils.send_create_order"},
+                        "on_success": {"callback": "tests.utils.handle_order_success"},
+                        "on_error": None,
+                        "on_failure": {"callback": "tests.utils.send_delete_order"},
+                    },
+                    {
+                        "on_execute": {"callback": "tests.utils.send_create_ticket"},
+                        "on_success": {"callback": "tests.utils.handle_ticket_success"},
+                        "on_error": {"callback": "tests.utils.handle_ticket_error"},
+                        "on_failure": {"callback": "tests.utils.send_delete_ticket"},
+                    },
+                ],
+            },
+            "executed_steps": [],
+            "paused_step": None,
+            "status": "created",
+            "user": str(self.user),
+            "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
+        }
+        observed = execution.raw
+        self.assertEqual(
+            SagaContext.from_avro_str(expected.pop("context")), SagaContext.from_avro_str(observed.pop("context"))
+        )
+        self.assertEqual(expected, observed)
+
+    def test_created_without_user(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             execution = SagaExecution.from_saga(ADD_ORDER)
 
@@ -65,6 +108,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "executed_steps": [],
             "paused_step": None,
             "status": "created",
+            "user": None,
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
         observed = execution.raw
@@ -105,12 +149,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "status": "paused-by-on-execute",
                 "already_rollback": False,
             },
+            "user": str(self.user),
             "status": "paused",
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(ADD_ORDER)
+            expected = SagaExecution.from_saga(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
@@ -160,12 +205,13 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 "status": "paused-by-on-execute",
                 "already_rollback": False,
             },
+            "user": str(self.user),
             "status": "paused",
             "uuid": "a74d9d6d-290a-492e-afcc-70607958f65d",
         }
 
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
-            expected = SagaExecution.from_saga(ADD_ORDER)
+            expected = SagaExecution.from_saga(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
