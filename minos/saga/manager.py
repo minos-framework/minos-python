@@ -99,7 +99,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     ) -> Union[UUID, SagaExecution]:
         if self.user_context_var is not None:
             if user is not None:
-                warnings.warn("`user` argument is ignored in favor of the context var...", RuntimeWarning)
+                warnings.warn("The `user` Argument will be ignored in favor of the `user` ContextVar", RuntimeWarning)
             user = self.user_context_var.get()
 
         execution = SagaExecution.from_definition(definition, context=context, user=user)
