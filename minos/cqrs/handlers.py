@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 from typing import (
+    Optional,
     TypeVar,
 )
 from uuid import (
@@ -16,6 +17,7 @@ from minos.common import (
     ModelRefInjector,
 )
 from minos.saga import (
+    RemoteSagaStep,
     Saga,
     SagaContext,
     SagaExecution,
@@ -23,7 +25,6 @@ from minos.saga import (
     SagaRequest,
     SagaResponse,
     SagaStatus,
-    SagaStep,
 )
 
 from .exceptions import (
@@ -36,10 +37,13 @@ class PreEventHandler:
     """Pre Event Handler class."""
 
     @classmethod
-    async def handle(cls, diff: T, saga_manager: MinosSagaManager, resolve_references: bool = True) -> T:
+    async def handle(
+        cls, diff: T, user: Optional[UUID], saga_manager: MinosSagaManager, resolve_references: bool = True
+    ) -> T:
         """Handle pre event function.
 
         :param diff: The initial aggregate difference.
+        :param user: TODO
         :param saga_manager: The saga manager to be used to compute the queries to another microservices.
         :param resolve_references: If ``True``, reference are resolved, otherwise, the ``AggregateDiff`` is returned
             without any modification.
@@ -53,7 +57,7 @@ class PreEventHandler:
         except MinosNotAnyMissingReferenceException:
             return diff
 
-        execution = await saga_manager.run(definition=definition)
+        execution = await saga_manager.run(definition=definition, user=user)
         if not isinstance(execution, SagaExecution) or execution.status != SagaStatus.Finished:
             raise MinosQueryServiceException("The saga execution could not finish.")
         return execution.context["diff"]
@@ -71,7 +75,7 @@ class PreEventHandler:
             raise MinosNotAnyMissingReferenceException("The diff does not have any missing reference.")
 
         steps = [
-            SagaStep(
+            RemoteSagaStep(
                 on_execute=SagaOperation(cls.on_execute, name=name, uuids=list(uuids)),
                 on_success=SagaOperation(cls.on_success, name=name),
             )
