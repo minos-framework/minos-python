@@ -125,23 +125,29 @@ class SagaExecution:
         return cls.from_definition(definition, context, *args, **kwargs)
 
     @classmethod
-    def from_definition(cls, definition: Saga, context: Optional[SagaContext] = None, *args, **kwargs) -> SagaExecution:
+    def from_definition(
+        cls, definition: Saga, context: Optional[SagaContext] = None, uuid: Optional[UUID] = None, *args, **kwargs
+    ) -> SagaExecution:
         """Build a new instance from a ``Saga`` object.
 
         :param definition: The definition of the saga.
         :param context: Initial saga execution context. If not provided, then a new empty context is created.
+        :param uuid: The identifier of the execution. If ``None`` is provided, then a new one will be generated.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecution`` instance.
         """
-        from uuid import (
-            uuid4,
-        )
+        if uuid is None:
+            from uuid import (
+                uuid4,
+            )
+
+            uuid = uuid4()
 
         if context is None:
             context = SagaContext()
 
-        return cls(definition, uuid4(), context, *args, **kwargs)
+        return cls(definition, uuid, context, *args, **kwargs)
 
     async def execute(
         self,
@@ -180,7 +186,8 @@ class SagaExecution:
                     self.paused_step, reply=reply, reply_topic=reply_topic, user=user, *args, **kwargs
                 )
             finally:
-                self.paused_step = None
+                if self.status != SagaStatus.Paused:
+                    self.paused_step = None
 
         for step in self._pending_steps:
             execution_step = SagaStepExecution.from_definition(step)

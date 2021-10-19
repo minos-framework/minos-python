@@ -21,6 +21,9 @@ from ...context import (
     SagaContext,
 )
 from ...definitions import (
+    ConditionalSagaStep,
+    LocalSagaStep,
+    RemoteSagaStep,
     SagaStep,
 )
 from ..status import (
@@ -60,9 +63,13 @@ class SagaStepExecution(ABC):
         if not issubclass(execution_cls, cls):
             raise TypeError(f"Given class is not a subclass of {cls}. Obtained: {execution_cls}")
 
-        current["definition"] = SagaStep.from_raw(current["definition"])
-        current["status"] = SagaStepStatus.from_raw(current["status"])
-        return execution_cls(**current)
+        return execution_cls._from_raw(current)
+
+    @classmethod
+    def _from_raw(cls, raw: dict[str, Any]) -> SagaStepExecution:
+        raw["definition"] = SagaStep.from_raw(raw["definition"])
+        raw["status"] = SagaStepStatus.from_raw(raw["status"])
+        return cls(**raw)
 
     @staticmethod
     def from_definition(step: SagaStep) -> SagaStepExecution:
@@ -71,10 +78,8 @@ class SagaStepExecution(ABC):
         :param step: The ``SagaStep`` definition.
         :return: A new ``SagaStepExecution``.
         """
-
-        from ...definitions import (
-            LocalSagaStep,
-            RemoteSagaStep,
+        from .conditional import (
+            ConditionalSagaStepExecution,
         )
         from .local import (
             LocalSagaStepExecution,
@@ -82,6 +87,9 @@ class SagaStepExecution(ABC):
         from .remote import (
             RemoteSagaStepExecution,
         )
+
+        if isinstance(step, ConditionalSagaStep):
+            return ConditionalSagaStepExecution(step)
 
         if isinstance(step, LocalSagaStep):
             return LocalSagaStepExecution(step)
