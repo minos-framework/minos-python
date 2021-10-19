@@ -38,7 +38,7 @@ class PreEventHandler:
 
     @classmethod
     async def handle(
-        cls, diff: T, user: Optional[UUID], saga_manager: MinosSagaManager, resolve_references: bool = True
+        cls, diff: T, saga_manager: MinosSagaManager, user: Optional[UUID] = None, resolve_references: bool = True
     ) -> T:
         """Handle pre event function.
 
