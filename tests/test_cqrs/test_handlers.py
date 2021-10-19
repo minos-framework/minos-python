@@ -51,10 +51,10 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
         self.saga_manager = FakeSagaManager()
 
     async def test_handle(self):
-        execution = SagaExecution.from_saga(
+        execution = SagaExecution.from_definition(
             (
                 Saga()
-                .step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
+                .remote_step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
                 .on_success(PreEventHandler.on_success, name="Bar")
                 .commit(PreEventHandler.commit, diff=self.diff)
             ),
@@ -100,10 +100,10 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(self.diff, observed)
 
     async def test_handle_raises(self):
-        execution = SagaExecution.from_saga(
+        execution = SagaExecution.from_definition(
             (
                 Saga()
-                .step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
+                .remote_step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
                 .on_success(PreEventHandler.on_success, name="Bar")
                 .commit(PreEventHandler.commit, diff=self.diff)
             ),
@@ -122,8 +122,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
 
         expected = (
             Saga()
-            .step()
-            .on_execute(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
+            .remote_step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
             .on_success(PreEventHandler.on_success, name="Bar")
             .commit(PreEventHandler.commit, diff=self.diff)
         )
