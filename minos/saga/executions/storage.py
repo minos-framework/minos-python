@@ -39,16 +39,15 @@ class SagaExecutionStorage:
         self._storage = storage_cls.build(protocol=protocol, **kwargs)
 
     @classmethod
-    def from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaExecutionStorage:
+    def from_config(cls, config: MinosConfig, **kwargs) -> SagaExecutionStorage:
         """Build an instance from config.
 
-        :param args: Additional positional arguments.
         :param config: Config instance.
         :param kwargs: Additional named arguments.
         :return: A new ``SagaExecutionStorage`` instance.
         """
         # noinspection PyProtectedMember
-        return cls(*args, **(config.saga.storage._asdict() | kwargs))
+        return cls(**(config.saga.storage._asdict() | kwargs))
 
     def store(self, execution: SagaExecution) -> None:
         """Store an execution.
