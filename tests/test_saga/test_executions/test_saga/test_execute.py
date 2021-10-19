@@ -75,8 +75,8 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         user = uuid4()
         reply_topic = "foobar"
 
-        definition = Saga().step(send_create_order).commit()
-        execution = SagaExecution.from_saga(definition, user=user)
+        definition = Saga().remote_step(send_create_order).commit()
+        execution = SagaExecution.from_definition(definition, user=user)
 
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(broker=self.broker, reply_topic=reply_topic)
