@@ -3,6 +3,11 @@ from __future__ import (
 )
 
 import logging
+import warnings
+from contextvars import (
+    ContextVar,
+    copy_context,
+)
 from typing import (
     Optional,
     Union,
@@ -55,6 +60,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
         self,
         storage: SagaExecutionStorage,
         dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"],
+        user_context_var: Optional[ContextVar[Optional[UUID]]] = None,
         *args,
         **kwargs,
     ):
@@ -65,6 +71,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
             raise MinosHandlerNotProvidedException("A handler pool instance is required.")
 
         self.dynamic_handler_pool = dynamic_handler_pool
+        self.user_context_var = user_context_var
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
@@ -75,16 +82,34 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
         :param kwargs: Additional named arguments.
         :return: A new ``SagaManager`` instance.
         """
-        storage = SagaExecutionStorage.from_config(config=config, **kwargs)
-        return cls(*args, storage=storage, **kwargs)
+        user_context_var = cls._user_context_var_from_config(config)
+        storage = SagaExecutionStorage.from_config(config, **kwargs)
+        return cls(storage=storage, user_context_var=user_context_var, **kwargs)
+
+    @staticmethod
+    def _user_context_var_from_config(*args, **kwargs) -> Optional[ContextVar]:
+        context = copy_context()
+        for var in context:
+            if var.name == "user":
+                return var
+        return None
 
     async def _run_new(
-        self, definition: Saga, context: Optional[SagaContext] = None, **kwargs,
+        self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs,
     ) -> Union[UUID, SagaExecution]:
-        execution = SagaExecution.from_saga(definition, context=context)
+        if self.user_context_var is not None:
+            if user is not None:
+                warnings.warn("The `user` Argument will be ignored in favor of the `user` ContextVar", RuntimeWarning)
+            user = self.user_context_var.get()
+
+        execution = SagaExecution.from_definition(definition, context=context, user=user)
         return await self._run(execution, **kwargs)
 
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> Union[UUID, SagaExecution]:
+    async def _load_and_run(
+        self, reply: CommandReply, user: Optional[UUID] = None, **kwargs
+    ) -> Union[UUID, SagaExecution]:
+        # NOTE: ``user`` is consumed here to avoid its injection on already started sagas.
+
         execution = self.storage.load(reply.saga)
         return await self._run(execution, reply=reply, **kwargs)
 

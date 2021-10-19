@@ -1,6 +1,10 @@
 import unittest
+import warnings
 from collections import (
     namedtuple,
+)
+from contextvars import (
+    ContextVar,
 )
 from shutil import (
     rmtree,
@@ -12,6 +16,7 @@ from unittest.mock import (
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from minos.common import (
@@ -40,15 +45,19 @@ from tests.utils import (
     NaiveBroker,
 )
 
+_USER_CONTEXT_VAR = ContextVar("user")
+
 
 class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
-    def setUp(self) -> None:
+    async def asyncSetUp(self) -> None:
         self.config = MinosConfig(BASE_PATH / "config.yml")
         self.broker = NaiveBroker()
         self.handler = FakeHandler("TheReplyTopic")
         self.pool = FakePool(self.handler)
+        self.user = uuid4()
+        _USER_CONTEXT_VAR.set(self.user)
         # noinspection PyTypeChecker
         self.manager: SagaManager = SagaManager.from_config(dynamic_handler_pool=self.pool, config=self.config)
 
@@ -62,6 +71,13 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
     def test_constructor_without_handler(self):
         with self.assertRaises(MinosHandlerNotProvidedException):
             SagaManager.from_config(handler=None, config=self.config)
+
+    def test_from_config_with_user_context_var(self):
+        _USER_CONTEXT_VAR.set(None)
+        saga_manager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
+
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(_USER_CONTEXT_VAR, saga_manager.user_context_var)
 
     async def test_context_manager(self):
         async with self.manager as saga_manager:
@@ -91,8 +107,20 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(topic="CreateOrder", data=Foo("create_order!"), saga=expected_uuid, reply_topic=reply_topic),
-                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=expected_uuid, reply_topic=reply_topic),
+                call(
+                    topic="CreateOrder",
+                    data=Foo("create_order!"),
+                    saga=expected_uuid,
+                    reply_topic=reply_topic,
+                    user=self.user,
+                ),
+                call(
+                    topic="CreateTicket",
+                    data=Foo("create_ticket!"),
+                    saga=expected_uuid,
+                    reply_topic=reply_topic,
+                    user=self.user,
+                ),
             ],
             send_mock.call_args_list,
         )
@@ -128,8 +156,20 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(topic="CreateOrder", data=Foo("create_order!"), saga=execution.uuid, reply_topic=None),
-                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=execution.uuid, reply_topic=None),
+                call(
+                    topic="CreateOrder",
+                    data=Foo("create_order!"),
+                    saga=execution.uuid,
+                    reply_topic=None,
+                    user=self.user,
+                ),
+                call(
+                    topic="CreateTicket",
+                    data=Foo("create_ticket!"),
+                    saga=execution.uuid,
+                    reply_topic=None,
+                    user=self.user,
+                ),
             ],
             send_mock.call_args_list,
         )
@@ -157,6 +197,19 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         reply = CommandReply("DeleteOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
         execution = await self.manager.run(reply=reply, broker=self.broker, pause_on_disk=True, raise_on_error=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
+
+    async def test_run_with_user_context_var(self):
+        send_mock = AsyncMock()
+        self.broker.send = send_mock
+
+        saga_manager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyUnresolvedReferences
+            await saga_manager.run(ADD_ORDER, user=uuid4(), broker=self.broker, pause_on_disk=True)
+
+        self.assertEqual(self.user, send_mock.call_args.kwargs["user"])
 
 
 if __name__ == "__main__":

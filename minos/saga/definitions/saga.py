@@ -2,10 +2,13 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from typing import (
     Any,
     Iterable,
     Optional,
+    Type,
+    TypeVar,
     Union,
 )
 
@@ -15,16 +18,21 @@ from ..context import (
 from ..exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
+    EmptySagaException,
+    SagaNotCommittedException,
 )
 from .operations import (
     SagaOperation,
     identity_fn,
 )
-from .step import (
+from .steps import (
+    ConditionalSagaStep,
+    LocalSagaStep,
+    RemoteSagaStep,
     SagaStep,
 )
 from .types import (
-    CommitCallback,
+    LocalCallback,
     RequestCallBack,
 )
 
@@ -40,8 +48,8 @@ class Saga:
         self,
         *args,
         steps: list[SagaStep] = None,
-        commit: Optional[Union[CommitCallback, SagaOperation]] = None,
-        **kwargs
+        commit: Optional[Union[LocalCallback, SagaOperation[LocalCallback]]] = None,
+        **kwargs,
     ):
         if steps is None:
             steps = list()
@@ -74,24 +82,66 @@ class Saga:
 
         return instance
 
-    def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> SagaStep:
-        """Add a new step in the ``Saga``.
+    def conditional_step(self, step: Optional[ConditionalSagaStep] = None) -> ConditionalSagaStep:
+        """Add a new conditional step.
 
+        :param step: The step to be added. If `None` is provided then a new one will be created.
         :return: A ``SagaStep`` instance.
         """
+        return self._add_step(ConditionalSagaStep, step)
+
+    def local_step(
+        self, step: Optional[Union[LocalCallback, SagaOperation[LocalCallback], LocalSagaStep]] = None, **kwargs
+    ) -> LocalSagaStep:
+        """Add a new local step.
+
+        :param step: The step to be added. If `None` is provided then a new one will be created.
+        :param kwargs: Additional named parameters.
+        :return: A ``SagaStep`` instance.
+        """
+        if step is not None and not isinstance(step, SagaStep) and not isinstance(step, SagaOperation):
+            step = SagaOperation(step, **kwargs)
+        return self._add_step(LocalSagaStep, step)
+
+    def step(
+        self, step: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack], RemoteSagaStep]] = None, **kwargs
+    ) -> RemoteSagaStep:
+        """Add a new remote step step.
+
+        :param step: The step to be added. If `None` is provided then a new one will be created.
+        :param kwargs: Additional named parameters.
+        :return: A ``SagaStep`` instance.
+        """
+        warnings.warn("step() method is deprecated by remote_step() and will be removed soon.", DeprecationWarning)
+        return self.remote_step(step, **kwargs)
+
+    def remote_step(
+        self, step: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack], RemoteSagaStep]] = None, **kwargs
+    ) -> RemoteSagaStep:
+        """Add a new remote step step.
+
+        :param step: The step to be added. If `None` is provided then a new one will be created.
+        :param kwargs: Additional named parameters.
+        :return: A ``SagaStep`` instance.
+        """
+        if step is not None and not isinstance(step, SagaStep) and not isinstance(step, SagaOperation):
+            step = SagaOperation(step, **kwargs)
+        return self._add_step(RemoteSagaStep, step)
+
+    def _add_step(self, step_cls: Type[T], step: Optional[Union[SagaOperation, T]]) -> T:
         if self.committed:
             raise AlreadyCommittedException("It is not possible to add more steps to an already committed saga.")
 
         if step is None:
-            step = SagaStep(saga=self)
+            step = step_cls(saga=self)
         elif isinstance(step, SagaStep):
+            if not isinstance(step, step_cls):
+                raise TypeError(f"The given step does not match the requested type: {step_cls} vs {type(step)}")
             if step.saga is not None:
                 raise AlreadyOnSagaException()
             step.saga = self
-        elif isinstance(step, SagaOperation):
-            step = SagaStep(step, saga=self)
         else:
-            step = SagaStep(on_execute=SagaOperation(step, **kwargs), saga=self)
+            step = step_cls(step, saga=self)
 
         self.steps.append(step)
         return step
@@ -119,7 +169,7 @@ class Saga:
 
     # noinspection PyUnusedLocal
     def commit(
-        self, callback: Optional[CommitCallback] = None, parameters: Optional[SagaContext] = None, **kwargs
+        self, callback: Optional[LocalCallback] = None, parameters: Optional[SagaContext] = None, **kwargs
     ) -> Saga:
         """Commit the instance to be ready for execution.
 
@@ -138,6 +188,21 @@ class Saga:
         self.commit_operation = SagaOperation(callback, parameters=parameters, **kwargs)
         return self
 
+    def validate(self) -> None:
+        """Check if the saga is valid.
+
+        :return: This method does not return anything, but raises an exception if the saga is not valid.
+        """
+
+        if not len(self.steps):
+            raise EmptySagaException()
+
+        for step in self.steps:
+            step.validate()
+
+        if not self.committed:
+            raise SagaNotCommittedException()
+
     @property
     def committed(self) -> bool:
         """Check if the instance is already committed.
@@ -145,3 +210,6 @@ class Saga:
         :return: A boolean value.
         """
         return self.commit_operation is not None
+
+
+T = TypeVar("T")

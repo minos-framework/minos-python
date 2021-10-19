@@ -6,22 +6,25 @@ from ...context import (
     SagaContext,
 )
 from ...definitions import (
+    LocalCallback,
     SagaOperation,
 )
 from ...exceptions import (
     ExecutorException,
-    SagaFailedCommitCallbackException,
+    SagaFailedExecutionStepException,
 )
 from .abc import (
     Executor,
 )
 
 
-class CommitExecutor(Executor):
-    """Commit Executor class."""
+class LocalExecutor(Executor):
+    """Local Executor class."""
 
     # noinspection PyUnusedLocal,PyMethodOverriding
-    async def exec(self, operation: Optional[SagaOperation], context: SagaContext, *args, **kwargs) -> SagaContext:
+    async def exec(
+        self, operation: Optional[SagaOperation[LocalCallback]], context: SagaContext, *args, **kwargs
+    ) -> SagaContext:
         """Execute the commit operation.
 
         :param operation: Operation to be executed.
@@ -38,7 +41,7 @@ class CommitExecutor(Executor):
             context = SagaContext(**context)  # Needed to avoid mutability issues.
             new_context = await super().exec(operation, context)
         except ExecutorException as exc:
-            raise SagaFailedCommitCallbackException(exc.exception)
+            raise SagaFailedExecutionStepException(exc.exception)
 
         if new_context is not None:
             context = new_context

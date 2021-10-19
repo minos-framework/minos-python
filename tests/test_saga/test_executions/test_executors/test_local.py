@@ -1,45 +1,59 @@
 import unittest
+from unittest.mock import (
+    AsyncMock,
+)
 
 from minos.saga import (
     Executor,
+    LocalExecutor,
     SagaContext,
+    SagaFailedExecutionStepException,
     SagaOperation,
+)
+from tests.utils import (
+    Foo,
+    commit_callback,
+    commit_callback_raises,
 )
 
 
-class TestExecutor(unittest.IsolatedAsyncioTestCase):
+class TestLocalExecutor(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.executor = Executor()
+        self.executor = LocalExecutor()
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, Executor)
 
     async def test_exec(self):
-        def _fn(c):
-            return c["foo"]
+        operation = SagaOperation(commit_callback)
+        initial = SagaContext(product=Foo("create_product!"))
 
-        context = SagaContext(foo="bar")
-        operation = SagaOperation(_fn)
-        observed = await self.executor.exec(operation, context)
-        self.assertEqual("bar", observed)
+        observed = await self.executor.exec(operation, initial)
 
-    async def test_exec_with_parameters(self):
-        def _fn(c, one):
-            return one
+        self.assertEqual(SagaContext(product=Foo("create_product!"), status="Finished!"), observed)
+        self.assertEqual(SagaContext(product=Foo("create_product!")), initial)
 
-        context = SagaContext(foo="bar")
-        operation = SagaOperation(_fn, parameters=SagaContext(one=1))
-        observed = await self.executor.exec(operation, context)
-        self.assertEqual(1, observed)
+    async def test_exec_not_defined(self):
+        context = SagaContext(product=Foo("create_product!"))
 
-    async def test_exec_async(self):
-        async def _fn(c):
-            return c["foo"]
+        observed = await self.executor.exec(None, context)
 
-        context = SagaContext(foo="bar")
-        operation = SagaOperation(_fn)
-        observed = await self.executor.exec(operation, context)
-        self.assertEqual("bar", observed)
+        self.assertEqual(context, observed)
+
+    async def test_exec_return_none(self):
+        operation = SagaOperation(AsyncMock(return_value=None))
+        initial = SagaContext(product=Foo("create_product!"))
+
+        observed = await self.executor.exec(operation, initial)
+
+        self.assertEqual(initial, observed)
+
+    async def test_exec_raises(self):
+        operation = SagaOperation(commit_callback_raises)
+        context = SagaContext(product=Foo("create_product!"))
+
+        with self.assertRaises(SagaFailedExecutionStepException):
+            await self.executor.exec(operation, context)
 
 
 if __name__ == "__main__":

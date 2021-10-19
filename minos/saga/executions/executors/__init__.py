@@ -1,8 +1,8 @@
 from .abc import (
     Executor,
 )
-from .commit import (
-    CommitExecutor,
+from .local import (
+    LocalExecutor,
 )
 from .request import (
     RequestExecutor,

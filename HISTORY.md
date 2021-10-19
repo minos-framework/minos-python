@@ -89,3 +89,13 @@ History
 * Add `CommitExecutor`.
 * Rename `LocalExecutor` as `Executor`, `OnReplyExecutor` as `ResponseExecutor` and `PublishExecutor` as `RequestExecutor`.
 * Simplify `SagaException` and heirs names.
+
+0.1.1 (2021-10-19)
+------------------
+
+* Add `ConditionalSagaStep` and `ConditionalSagaStepExecution` which allow to define conditional logic for steps within the `SagaExecution`.
+* Add `LocalSagaStep` and `LocalSagaStepExecution` classes which allow to execute local functions within the `SagaExecution`.
+* Improve `SagaStep` and `SagaStepExecution` class hierarchy.
+* Support dynamic `user` setup through a `ContextVar[Optional[UUID]]` variable.
+* Add `user` propagation from `SagaManager` to `RequestExecutor`.
+* Improve `SagaContext` behaviour, allowing to dynamically change field types and also delete them as in any `dict` instance.
