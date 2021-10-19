@@ -46,7 +46,7 @@ class Saga:
         self,
         *args,
         steps: list[SagaStep] = None,
-        commit: Optional[Union[LocalCallback, SagaOperation]] = None,
+        commit: Optional[Union[LocalCallback, SagaOperation[LocalCallback]]] = None,
         **kwargs,
     ):
         if steps is None:
@@ -81,7 +81,7 @@ class Saga:
         return instance
 
     def local_step(
-        self, step: Optional[Union[LocalCallback, SagaOperation, LocalSagaStep]] = None, **kwargs
+        self, step: Optional[Union[LocalCallback, SagaOperation[LocalCallback], LocalSagaStep]] = None, **kwargs
     ) -> LocalSagaStep:
         """Add a new local step.
 
@@ -91,7 +91,9 @@ class Saga:
         """
         return self._add_step(LocalSagaStep, step, **kwargs)
 
-    def step(self, step: Optional[Union[RequestCallBack, SagaOperation, SagaStep]] = None, **kwargs) -> RemoteSagaStep:
+    def step(
+        self, step: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack], RemoteSagaStep]] = None, **kwargs
+    ) -> RemoteSagaStep:
         """Add a new remote step step.
 
         :param step: The step to be added. If `None` is provided then a new one will be created.
@@ -102,7 +104,7 @@ class Saga:
         return self.remote_step(step, **kwargs)
 
     def remote_step(
-        self, step: Optional[Union[RequestCallBack, SagaOperation, RemoteSagaStep]] = None, **kwargs
+        self, step: Optional[Union[RequestCallBack, SagaOperation[RequestCallBack], RemoteSagaStep]] = None, **kwargs
     ) -> RemoteSagaStep:
         """Add a new remote step step.
 
