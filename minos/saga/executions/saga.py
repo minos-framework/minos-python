@@ -29,7 +29,6 @@ from ..exceptions import (
     SagaExecutionAlreadyExecutedException,
     SagaFailedCommitCallbackException,
     SagaFailedExecutionStepException,
-    SagaNotCommittedException,
     SagaPausedExecutionStepException,
     SagaRollbackExecutionException,
     SagaStepExecutionException,
@@ -63,8 +62,7 @@ class SagaExecution:
         *args,
         **kwargs,
     ):
-        if not definition.committed:
-            raise SagaNotCommittedException("The definition must be committed before executing it.")
+        definition.validate()  # If not valid, raises an exception.
 
         if steps is None:
             steps = list()

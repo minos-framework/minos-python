@@ -10,6 +10,7 @@ from minos.common import (
     classname,
 )
 from minos.saga import (
+    ConditionalSagaStep,
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
@@ -46,7 +47,19 @@ class TestSagaStep(unittest.TestCase):
         step = RemoteSagaStep(saga=saga)
         self.assertEqual(saga, step.saga)
 
-    def test_local_validate(self):
+    def test_conditional_step(self):
+        step = RemoteSagaStep(saga=Saga())
+        mock = MagicMock(return_value=True)
+        step.validate = mock
+        local_step = step.conditional_step()
+        self.assertEqual(1, mock.call_count)
+        self.assertIsInstance(local_step, ConditionalSagaStep)
+
+    def test_conditional_step_raises(self):
+        with self.assertRaises(SagaNotDefinedException):
+            RemoteSagaStep(send_create_ticket).conditional_step()
+
+    def test_local_step(self):
         step = RemoteSagaStep(saga=Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
@@ -54,7 +67,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(1, mock.call_count)
         self.assertIsInstance(local_step, LocalSagaStep)
 
-    def test_local_raises(self):
+    def test_local_step_raises(self):
         with self.assertRaises(SagaNotDefinedException):
             RemoteSagaStep(send_create_ticket).local_step()
 
@@ -69,7 +82,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(1, mock.call_count)
         self.assertIsInstance(step, RemoteSagaStep)
 
-    def test_remote_validate(self):
+    def test_remote_step(self):
         step = RemoteSagaStep(saga=Saga())
         mock = MagicMock(return_value=True)
         step.validate = mock
@@ -77,7 +90,7 @@ class TestSagaStep(unittest.TestCase):
         self.assertEqual(1, mock.call_count)
         self.assertIsInstance(remote_step, RemoteSagaStep)
 
-    def test_remote_raises(self):
+    def test_remote_step_raises(self):
         with self.assertRaises(SagaNotDefinedException):
             RemoteSagaStep(send_create_ticket).remote_step()
 

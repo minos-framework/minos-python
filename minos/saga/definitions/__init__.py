@@ -6,6 +6,9 @@ from .saga import (
     Saga,
 )
 from .steps import (
+    ConditionalSagaStep,
+    ElseThenAlternative,
+    IfThenAlternative,
     LocalSagaStep,
     RemoteSagaStep,
     SagaStep,

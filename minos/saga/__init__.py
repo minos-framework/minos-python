@@ -4,6 +4,9 @@ from .context import (
     SagaContext,
 )
 from .definitions import (
+    ConditionalSagaStep,
+    ElseThenAlternative,
+    IfThenAlternative,
     LocalSagaStep,
     RemoteSagaStep,
     Saga,
@@ -15,7 +18,9 @@ from .exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
     CommandReplyFailedException,
+    EmptySagaException,
     EmptySagaStepException,
+    MultipleElseThenException,
     MultipleOnErrorException,
     MultipleOnExecuteException,
     MultipleOnFailureException,

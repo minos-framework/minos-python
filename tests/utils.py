@@ -151,14 +151,14 @@ def commit_callback_raises(context: SagaContext) -> SagaContext:
 ADD_ORDER = (
     Saga()
         .remote_step(send_create_order)
-        .on_success(handle_order_success)
-        .on_failure(send_delete_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
         .local_step(create_payment)
-        .on_failure(delete_payment)
+            .on_failure(delete_payment)
         .remote_step(send_create_ticket)
-        .on_success(handle_ticket_success)
-        .on_error(handle_ticket_error)
-        .on_failure(send_delete_ticket)
+            .on_success(handle_ticket_success)
+            .on_error(handle_ticket_error)
+            .on_failure(send_delete_ticket)
         .commit()
 )
 
@@ -166,11 +166,29 @@ ADD_ORDER = (
 DELETE_ORDER = (
     Saga()
         .remote_step(send_delete_order)
-        .on_success(handle_order_success)
+            .on_success(handle_order_success)
         .remote_step(send_delete_ticket)
-        .on_success(handle_ticket_success_raises)
+            .on_success(handle_ticket_success_raises)
         .commit()
 )
+
+# fmt: off
+CREATE_PAYMENT = (
+    Saga()
+        .local_step(create_payment)
+            .on_failure(delete_payment)
+        .commit()
+)
+
+
+def add_order_condition(context: SagaContext) -> bool:
+    """For testing purposes."""
+    return "a" in context
+
+
+def delete_order_condition(context: SagaContext) -> bool:
+    """For testing purposes."""
+    return "b" in context
 
 
 class NaiveBroker(MinosBroker):

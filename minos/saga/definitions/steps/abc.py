@@ -27,6 +27,9 @@ if TYPE_CHECKING:
     from ..saga import (
         Saga,
     )
+    from .conditional import (
+        ConditionalSagaStep,
+    )
     from .local import (
         LocalSagaStep,
     )
@@ -67,6 +70,18 @@ class SagaStep(ABC):
     @abstractmethod
     def _from_raw(cls, raw: dict[str, Any]) -> SagaStep:
         raise NotImplementedError
+
+    def conditional_step(self, *args, **kwargs) -> ConditionalSagaStep:
+        """Create a new conditional step in the ``Saga``.
+
+        :param args: Additional positional parameters.
+        :param kwargs: Additional named parameters.
+        :return: A new ``SagaStep`` instance.
+        """
+        self.validate()
+        if self.saga is None:
+            raise SagaNotDefinedException()
+        return self.saga.conditional_step(*args, **kwargs)
 
     def local_step(self, *args, **kwargs) -> LocalSagaStep:
         """Create a new local step in the ``Saga``.
@@ -116,9 +131,9 @@ class SagaStep(ABC):
 
     @abstractmethod
     def validate(self) -> None:
-        """Performs a validation about the structure of the defined ``SagaStep``.
+        """Check if the step is valid.
 
-        :return This method does not return anything.
+        :return: This method does not return anything, but raises an exception if the step is not valid.
         """
 
     @property
