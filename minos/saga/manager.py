@@ -87,6 +87,8 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     async def _load_and_run(
         self, reply: CommandReply, user: Optional[UUID] = None, **kwargs
     ) -> Union[UUID, SagaExecution]:
+        # NOTE: ``user`` is consumed here to avoid its injection on already started sagas.
+
         execution = self.storage.load(reply.saga)
         return await self._run(execution, reply=reply, **kwargs)
 
