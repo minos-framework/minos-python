@@ -28,8 +28,8 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         self.event_broker = FakeBroker()
-        self.repository = PostgreSqlRepository.from_config(config=self.config)
-        self.snapshot = PostgreSqlSnapshot.from_config(config=self.config, repository=self.repository)
+        self.repository = PostgreSqlRepository.from_config(self.config)
+        self.snapshot = PostgreSqlSnapshot.from_config(self.config, repository=self.repository)
 
         self.kwargs = {
             "_broker": self.event_broker,

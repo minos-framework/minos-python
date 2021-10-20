@@ -51,10 +51,10 @@ class PostgreSqlSnapshot(MinosSnapshot):
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshot:
         if "reader" not in kwargs:
-            kwargs["reader"] = PostgreSqlSnapshotReader.from_config(config=config, **kwargs)
+            kwargs["reader"] = PostgreSqlSnapshotReader.from_config(config, **kwargs)
 
         if "writer" not in kwargs:
-            kwargs["writer"] = PostgreSqlSnapshotWriter.from_config(config=config, **kwargs)
+            kwargs["writer"] = PostgreSqlSnapshotWriter.from_config(config, **kwargs)
 
         return cls(**config.snapshot._asdict(), **kwargs)
 
