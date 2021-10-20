@@ -104,7 +104,7 @@ class RepositoryEntry:
             self.version,
             self.action,
             self.created_at,
-            FieldDiffContainer.from_avro_bytes(self.data),
+            FieldDiffContainer() if not self.data else FieldDiffContainer.from_avro_bytes(self.data),
         )
 
     def __eq__(self, other: "RepositoryEntry") -> bool:

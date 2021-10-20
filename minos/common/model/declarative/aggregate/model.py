@@ -158,7 +158,7 @@ class Aggregate(Entity):
         instance: T = cls(*args, **kwargs)
 
         aggregate_diff = AggregateDiff.from_aggregate(instance)
-        entry = await instance._repository.create(aggregate_diff)
+        entry = await instance._repository.submit(aggregate_diff)
 
         instance._update_from_repository_entry(entry)
 
@@ -193,7 +193,7 @@ class Aggregate(Entity):
         if not len(aggregate_diff.fields_diff):
             return self
 
-        entry = await self._repository.update(aggregate_diff)
+        entry = await self._repository.submit(aggregate_diff)
 
         self._update_from_repository_entry(entry)
 
@@ -242,7 +242,7 @@ class Aggregate(Entity):
         :return: This method does not return anything.
         """
         aggregate_diff = AggregateDiff.from_deleted_aggregate(self)
-        entry = await self._repository.delete(aggregate_diff)
+        entry = await self._repository.submit(aggregate_diff)
 
         self._update_from_repository_entry(entry)
 

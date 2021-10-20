@@ -2,12 +2,16 @@ import unittest
 from datetime import (
     timedelta,
 )
+from unittest.mock import (
+    patch,
+)
 from uuid import (
     uuid4,
 )
 
 from minos.common import (
     Action,
+    FieldDiffContainer,
     InMemoryRepository,
     MinosBrokerNotProvidedException,
     MinosRepository,
@@ -25,6 +29,13 @@ class TestInMemoryRepository(unittest.IsolatedAsyncioTestCase):
         self.uuid_1 = uuid4()
         self.uuid_2 = uuid4()
         self.broker = FakeBroker()
+        self.field_diff_container_patcher = patch(
+            "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
+        )
+        self.field_diff_container_patcher.start()
+
+    def tearDown(self):
+        self.field_diff_container_patcher.stop()
 
     def test_constructor(self):
         repository = InMemoryRepository(self.broker)

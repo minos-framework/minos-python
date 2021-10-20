@@ -2,6 +2,9 @@ import unittest
 from datetime import (
     timedelta,
 )
+from unittest.mock import (
+    patch,
+)
 from uuid import (
     UUID,
     uuid4,
@@ -12,7 +15,7 @@ import aiopg
 from minos.common import (
     NULL_UUID,
     Action,
-    InMemorySnapshot,
+    FieldDiffContainer,
     MinosBrokerNotProvidedException,
     MinosRepository,
     PostgreSqlRepository,
@@ -21,9 +24,6 @@ from minos.common import (
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
-)
-from tests.aggregate_classes import (
-    Car,
 )
 from tests.utils import (
     BASE_PATH,
@@ -40,6 +40,13 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
         self.uuid_1 = uuid4()
         self.uuid_2 = uuid4()
         self.broker = FakeBroker()
+        self.field_diff_container_patcher = patch(
+            "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
+        )
+        self.field_diff_container_patcher.start()
+
+    def tearDown(self):
+        self.field_diff_container_patcher.stop()
 
     def test_constructor(self):
         repository = PostgreSqlRepository("host", 1234, "database", "user", "password", event_broker=self.broker)
@@ -71,17 +78,6 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
                     )
                     response = (await cursor.fetchone())[0]
         self.assertTrue(response)
-
-    async def test_aggregate(self):
-        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
-            await car.update(color="red")
-            await car.update(doors=5)
-
-            another = await Car.get(car.uuid, _repository=r, _snapshot=s)
-            self.assertEqual(car, another)
-
-            await car.delete()
 
     async def test_generate_uuid(self):
         async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:

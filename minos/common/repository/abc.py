@@ -61,77 +61,60 @@ class MinosRepository(ABC, MinosSetup):
         return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
-        """Store new creation entry into de repository.
+        """Store new creation entry into the repository.
 
         :param entry: Entry to be stored.
-        :return: This method does not return anything.
+        :return: The repository entry containing the stored information.
         """
         from ..model import (
             Action,
-            AggregateDiff,
         )
-
-        aggregate_diff = None
-        if isinstance(entry, AggregateDiff):
-            aggregate_diff = entry
-            entry = RepositoryEntry.from_aggregate_diff(entry)
 
         entry.action = Action.CREATE
-        entry = await self._submit(entry)
-
-        if aggregate_diff is not None:
-            aggregate_diff.update_from_repository_entry(entry)
-            await self._send_events(aggregate_diff, "Created")
-
-        return entry
+        return await self.submit(entry)
 
     async def update(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
-        """Store new update entry into de repository.
+        """Store new update entry into the repository.
 
         :param entry: Entry to be stored.
-        :return: This method does not return anything.
+        :return: The repository entry containing the stored information.
         """
         from ..model import (
             Action,
-            AggregateDiff,
         )
-
-        aggregate_diff = None
-        if isinstance(entry, AggregateDiff):
-            aggregate_diff = entry
-            entry = RepositoryEntry.from_aggregate_diff(entry)
 
         entry.action = Action.UPDATE
-        entry = await self._submit(entry)
-
-        if aggregate_diff is not None:
-            aggregate_diff.update_from_repository_entry(entry)
-            await self._send_events(aggregate_diff, "Updated", with_decomposed=True)
-
-        return entry
+        return await self.submit(entry)
 
     async def delete(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
-        """Store new deletion entry into de repository.
+        """Store new deletion entry into the repository.
 
         :param entry: Entry to be stored.
-        :return: This method does not return anything.
+        :return: The repository entry containing the stored information.
         """
         from ..model import (
             Action,
+        )
+
+        entry.action = Action.DELETE
+        return await self.submit(entry)
+
+    async def submit(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
+        """Store new entry into the repository.
+
+        :param entry: The entry to be stored.
+        :return: The repository entry containing the stored information.
+        """
+        from ..model import (
             AggregateDiff,
         )
 
-        aggregate_diff = None
         if isinstance(entry, AggregateDiff):
-            aggregate_diff = entry
             entry = RepositoryEntry.from_aggregate_diff(entry)
 
-        entry.action = Action.DELETE
         entry = await self._submit(entry)
 
-        if aggregate_diff is not None:
-            aggregate_diff.update_from_repository_entry(entry)
-            await self._send_events(aggregate_diff, "Deleted")
+        await self._send_events(entry.aggregate_diff)
 
         return entry
 
@@ -143,14 +126,25 @@ class MinosRepository(ABC, MinosSetup):
         :return: This method does not return anything.
         """
 
-    async def _send_events(self, aggregate_diff: AggregateDiff, suffix: str, with_decomposed: bool = False):
-        topic = f"{aggregate_diff.simplified_name}{suffix}"
+    async def _send_events(self, aggregate_diff: AggregateDiff):
+        from ..model import (
+            Action,
+        )
+
+        suffix_mapper = {
+            Action.CREATE: "Created",
+            Action.UPDATE: "Updated",
+            Action.DELETE: "Deleted",
+        }
+
+        topic = f"{aggregate_diff.simplified_name}{suffix_mapper[aggregate_diff.action]}"
         futures = [self._broker.send(aggregate_diff, topic=topic)]
 
-        if with_decomposed:
+        if aggregate_diff.action == Action.UPDATE:
             from ..model import (
                 IncrementalFieldDiff,
             )
+
             for decomposed_aggregate_diff in aggregate_diff.decompose():
                 diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
                 composed_topic = f"{topic}.{diff.name}"
