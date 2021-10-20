@@ -83,7 +83,7 @@ class TestResponse(unittest.IsolatedAsyncioTestCase):
 
     async def test_repr(self):
         response = Response(self.data)
-        self.assertEqual("Response([FakeModel(text=blue), FakeModel(text=red)])", repr(response))
+        self.assertEqual(f"Response({self.data!r})", repr(response))
 
     def test_hash(self):
         self.assertIsInstance(hash(Response("test")), int)
