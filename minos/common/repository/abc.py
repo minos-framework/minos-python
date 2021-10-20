@@ -81,7 +81,7 @@ class MinosRepository(ABC, MinosSetup):
 
         if aggregate_diff is not None:
             aggregate_diff.update_from_repository_entry(entry)
-            await self._broker.send(aggregate_diff, topic=f"{aggregate_diff.simplified_name}Created")
+            await self._send_events(aggregate_diff, "Created")
 
         return entry
 
@@ -106,25 +106,9 @@ class MinosRepository(ABC, MinosSetup):
 
         if aggregate_diff is not None:
             aggregate_diff.update_from_repository_entry(entry)
-            await self._send_update_events(aggregate_diff)
+            await self._send_events(aggregate_diff, "Updated", with_decomposed=True)
 
         return entry
-
-    async def _send_update_events(self, aggregate_diff: AggregateDiff):
-        from ..model import (
-            IncrementalFieldDiff,
-        )
-
-        futures = [self._broker.send(aggregate_diff, topic=f"{aggregate_diff.simplified_name}Updated")]
-
-        for decomposed_aggregate_diff in aggregate_diff.decompose():
-            diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
-            topic = f"{aggregate_diff.simplified_name}Updated.{diff.name}"
-            if isinstance(diff, IncrementalFieldDiff):
-                topic += f".{diff.action.value}"
-            futures.append(self._broker.send(decomposed_aggregate_diff, topic=topic))
-
-        await gather(*futures)
 
     async def delete(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new deletion entry into de repository.
@@ -147,7 +131,7 @@ class MinosRepository(ABC, MinosSetup):
 
         if aggregate_diff is not None:
             aggregate_diff.update_from_repository_entry(entry)
-            await self._broker.send(aggregate_diff, topic=f"{aggregate_diff.simplified_name}Deleted")
+            await self._send_events(aggregate_diff, "Deleted")
 
         return entry
 
@@ -158,6 +142,23 @@ class MinosRepository(ABC, MinosSetup):
         :param entry: Entry to be submitted.
         :return: This method does not return anything.
         """
+
+    async def _send_events(self, aggregate_diff: AggregateDiff, suffix: str, with_decomposed: bool = False):
+        topic = f"{aggregate_diff.simplified_name}{suffix}"
+        futures = [self._broker.send(aggregate_diff, topic=topic)]
+
+        if with_decomposed:
+            from ..model import (
+                IncrementalFieldDiff,
+            )
+            for decomposed_aggregate_diff in aggregate_diff.decompose():
+                diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
+                composed_topic = f"{topic}.{diff.name}"
+                if isinstance(diff, IncrementalFieldDiff):
+                    composed_topic += f".{diff.action.value}"
+                futures.append(self._broker.send(decomposed_aggregate_diff, topic=composed_topic))
+
+        await gather(*futures)
 
     # noinspection PyShadowingBuiltins
     async def select(
