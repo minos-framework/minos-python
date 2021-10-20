@@ -81,8 +81,7 @@ class MinosRepository(ABC, MinosSetup):
 
         if aggregate_diff is not None:
             aggregate_diff.update_from_repository_entry(entry)
-            name = aggregate_diff.name.rsplit(".", 1)[-1]
-            await self._broker.send(aggregate_diff, topic=f"{name}Created")
+            await self._broker.send(aggregate_diff, topic=f"{aggregate_diff.simplified_name}Created")
 
         return entry
 
@@ -116,13 +115,11 @@ class MinosRepository(ABC, MinosSetup):
             IncrementalFieldDiff,
         )
 
-        name = aggregate_diff.name.rsplit(".", 1)[-1]
-
-        futures = [self._broker.send(aggregate_diff, topic=f"{name}Updated")]
+        futures = [self._broker.send(aggregate_diff, topic=f"{aggregate_diff.simplified_name}Updated")]
 
         for decomposed_aggregate_diff in aggregate_diff.decompose():
             diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
-            topic = f"{name}Updated.{diff.name}"
+            topic = f"{aggregate_diff.simplified_name}Updated.{diff.name}"
             if isinstance(diff, IncrementalFieldDiff):
                 topic += f".{diff.action.value}"
             futures.append(self._broker.send(decomposed_aggregate_diff, topic=topic))
@@ -150,8 +147,7 @@ class MinosRepository(ABC, MinosSetup):
 
         if aggregate_diff is not None:
             aggregate_diff.update_from_repository_entry(entry)
-            name = aggregate_diff.name.rsplit(".", 1)[-1]
-            await self._broker.send(aggregate_diff, topic=f"{name}Deleted")
+            await self._broker.send(aggregate_diff, topic=f"{aggregate_diff.simplified_name}Deleted")
 
         return entry
 

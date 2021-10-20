@@ -50,6 +50,9 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
+    def test_simplified_name(self):
+        self.assertEqual("Car", self.diff.simplified_name)
+
     def test_from_aggregate(self):
         observed = AggregateDiff.from_aggregate(self.initial)
         self.assertEqual(self.diff, observed)

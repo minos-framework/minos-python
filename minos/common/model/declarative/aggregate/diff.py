@@ -51,6 +51,14 @@ class AggregateDiff(DeclarativeModel):
 
     fields_diff: FieldDiffContainer
 
+    @property
+    def simplified_name(self) -> str:
+        """Get the Aggregate's simplified name.
+
+        :return: An string value.
+        """
+        return self.name.rsplit(".", 1)[-1]
+
     def __getattr__(self, item: str) -> Any:
         try:
             return super().__getattr__(item)
