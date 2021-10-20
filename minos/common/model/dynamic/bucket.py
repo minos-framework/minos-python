@@ -21,7 +21,7 @@ class BucketModel(DynamicModel):
 
         :return: A ``BucketModel`` instance.
         """
-        return cls(dict())
+        return cls(fields=dict())
 
 
 T = TypeVar("T", bound=BucketModel)
