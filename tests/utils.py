@@ -31,8 +31,10 @@ BASE_PATH = Path(__file__).parent
 class FakeRepository(MinosRepository):
     """For testing purposes."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, event_broker=None, *args, **kwargs):
+        if event_broker is None:
+            event_broker = FakeBroker()
+        super().__init__(event_broker=event_broker, *args, **kwargs)
         self.id_counter = 0
         self.items = set()
 

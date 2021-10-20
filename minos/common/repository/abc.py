@@ -6,6 +6,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from asyncio import (
+    gather,
+)
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
@@ -16,8 +19,19 @@ from uuid import (
     UUID,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
 from ..configuration import (
     MinosConfig,
+)
+from ..exceptions import (
+    MinosBrokerNotProvidedException,
+)
+from ..networks import (
+    MinosBroker,
 )
 from ..setup import (
     MinosSetup,
@@ -35,6 +49,13 @@ if TYPE_CHECKING:
 class MinosRepository(ABC, MinosSetup):
     """Base repository class in ``minos``."""
 
+    @inject
+    def __init__(self, event_broker: MinosBroker = Provide["event_broker"], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if event_broker is None or isinstance(event_broker, Provide):
+            raise MinosBrokerNotProvidedException("A broker instance is required.")
+        self._broker = event_broker
+
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
@@ -45,14 +66,25 @@ class MinosRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate_diff(entry)
         from ..model import (
             Action,
+            AggregateDiff,
         )
 
+        aggregate_diff = None
+        if isinstance(entry, AggregateDiff):
+            aggregate_diff = entry
+            entry = RepositoryEntry.from_aggregate_diff(entry)
+
         entry.action = Action.CREATE
-        return await self._submit(entry)
+        entry = await self._submit(entry)
+
+        if aggregate_diff is not None:
+            aggregate_diff.update_from_repository_entry(entry)
+            name = aggregate_diff.name.rsplit(".", 1)[-1]
+            await self._broker.send(aggregate_diff, topic=f"{name}Created")
+
+        return entry
 
     async def update(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new update entry into de repository.
@@ -60,15 +92,42 @@ class MinosRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate_diff(entry)
-
         from ..model import (
             Action,
+            AggregateDiff,
         )
 
+        aggregate_diff = None
+        if isinstance(entry, AggregateDiff):
+            aggregate_diff = entry
+            entry = RepositoryEntry.from_aggregate_diff(entry)
+
         entry.action = Action.UPDATE
-        return await self._submit(entry)
+        entry = await self._submit(entry)
+
+        if aggregate_diff is not None:
+            aggregate_diff.update_from_repository_entry(entry)
+            await self._send_update_events(aggregate_diff)
+
+        return entry
+
+    async def _send_update_events(self, aggregate_diff: AggregateDiff):
+        from ..model import (
+            IncrementalFieldDiff,
+        )
+
+        name = aggregate_diff.name.rsplit(".", 1)[-1]
+
+        futures = [self._broker.send(aggregate_diff, topic=f"{name}Updated")]
+
+        for decomposed_aggregate_diff in aggregate_diff.decompose():
+            diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
+            topic = f"{name}Updated.{diff.name}"
+            if isinstance(diff, IncrementalFieldDiff):
+                topic += f".{diff.action.value}"
+            futures.append(self._broker.send(decomposed_aggregate_diff, topic=topic))
+
+        await gather(*futures)
 
     async def delete(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new deletion entry into de repository.
@@ -76,15 +135,25 @@ class MinosRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: This method does not return anything.
         """
-        if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate_diff(entry)
-
         from ..model import (
             Action,
+            AggregateDiff,
         )
 
+        aggregate_diff = None
+        if isinstance(entry, AggregateDiff):
+            aggregate_diff = entry
+            entry = RepositoryEntry.from_aggregate_diff(entry)
+
         entry.action = Action.DELETE
-        return await self._submit(entry)
+        entry = await self._submit(entry)
+
+        if aggregate_diff is not None:
+            aggregate_diff.update_from_repository_entry(entry)
+            name = aggregate_diff.name.rsplit(".", 1)[-1]
+            await self._broker.send(aggregate_diff, topic=f"{name}Deleted")
+
+        return entry
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
@@ -109,7 +178,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
 

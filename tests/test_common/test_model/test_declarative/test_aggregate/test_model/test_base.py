@@ -27,8 +27,8 @@ from tests.utils import (
 
 class TestAggregate(unittest.IsolatedAsyncioTestCase):
     async def test_create(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            observed = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            observed = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
             expected = Car(
                 3,
                 "blue",
@@ -36,62 +36,57 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 version=1,
                 created_at=observed.created_at,
                 updated_at=observed.updated_at,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
             self.assertEqual(expected, observed)
 
     async def test_create_raises(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
             with self.assertRaises(MinosRepositoryException):
-                await Car.create(uuid=uuid4(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+                await Car.create(uuid=uuid4(), doors=3, color="blue", _repository=r, _snapshot=s)
             with self.assertRaises(MinosRepositoryException):
-                await Car.create(version=1, doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+                await Car.create(version=1, doors=3, color="blue", _repository=r, _snapshot=s)
             with self.assertRaises(MinosRepositoryException):
-                await Car.create(
-                    created_at=current_datetime(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s
-                )
+                await Car.create(created_at=current_datetime(), doors=3, color="blue", _repository=r, _snapshot=s)
             with self.assertRaises(MinosRepositoryException):
-                await Car.create(
-                    updated_at=current_datetime(), doors=3, color="blue", _broker=b, _repository=r, _snapshot=s
-                )
+                await Car.create(updated_at=current_datetime(), doors=3, color="blue", _repository=r, _snapshot=s)
 
     async def test_classname(self):
         self.assertEqual("tests.aggregate_classes.Car", Car.classname)
 
     async def test_find(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
             originals = set(
                 await gather(
-                    Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s),
-                    Car.create(doors=3, color="red", _broker=b, _repository=r, _snapshot=s),
-                    Car.create(doors=5, color="blue", _broker=b, _repository=r, _snapshot=s),
+                    Car.create(doors=3, color="blue", _repository=r, _snapshot=s),
+                    Car.create(doors=3, color="red", _repository=r, _snapshot=s),
+                    Car.create(doors=5, color="blue", _repository=r, _snapshot=s),
                 )
             )
             condition = Condition.IN("uuid", {o.uuid for o in originals})
             ordering = Ordering.ASC("doors")
             limit = 10
-            iterable = Car.find(condition, ordering, limit, _broker=b, _repository=r, _snapshot=s)
+            iterable = Car.find(condition, ordering, limit, _repository=r, _snapshot=s)
             recovered = {v async for v in iterable}
 
             self.assertEqual(originals, recovered)
 
     async def test_get(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            original = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
-            recovered = await Car.get(original.uuid, _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            original = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
+            recovered = await Car.get(original.uuid, _repository=r, _snapshot=s)
 
             self.assertEqual(original, recovered)
 
     async def test_get_raises(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
             with self.assertRaises(MinosSnapshotAggregateNotFoundException):
-                await Car.get(NULL_UUID, _broker=b, _repository=r, _snapshot=s)
+                await Car.get(NULL_UUID, _repository=r, _snapshot=s)
 
     async def test_update(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
 
             await car.update(color="red")
             expected = Car(
@@ -101,12 +96,11 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 version=2,
                 created_at=car.created_at,
                 updated_at=car.updated_at,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
             self.assertEqual(expected, car)
-            self.assertEqual(car, await Car.get(car.uuid, _broker=b, _repository=r, _snapshot=s))
+            self.assertEqual(car, await Car.get(car.uuid, _repository=r, _snapshot=s))
 
             await car.update(doors=5)
             expected = Car(
@@ -116,16 +110,15 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 version=3,
                 created_at=car.created_at,
                 updated_at=car.updated_at,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
             self.assertEqual(expected, car)
-            self.assertEqual(car, await Car.get(car.uuid, _broker=b, _repository=r, _snapshot=s))
+            self.assertEqual(car, await Car.get(car.uuid, _repository=r, _snapshot=s))
 
     async def test_update_no_changes(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
 
             await car.update(color="blue")
             expected = Car(
@@ -135,30 +128,29 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 version=1,
                 created_at=car.created_at,
                 updated_at=car.updated_at,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
             self.assertEqual(expected, car)
-            self.assertEqual(car, await Car.get(car.uuid, _broker=b, _repository=r, _snapshot=s))
+            self.assertEqual(car, await Car.get(car.uuid, _repository=r, _snapshot=s))
 
     async def test_update_raises(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
             with self.assertRaises(MinosRepositoryException):
-                await Car(3, "blue", _broker=b, _repository=r, _snapshot=s).update(version=1)
+                await Car(3, "blue", _repository=r, _snapshot=s).update(version=1)
             with self.assertRaises(MinosRepositoryException):
-                await Car(3, "blue", _broker=b, _repository=r, _snapshot=s).update(created_at=current_datetime())
+                await Car(3, "blue", _repository=r, _snapshot=s).update(created_at=current_datetime())
             with self.assertRaises(MinosRepositoryException):
-                await Car(3, "blue", _broker=b, _repository=r, _snapshot=s).update(updated_at=current_datetime())
+                await Car(3, "blue", _repository=r, _snapshot=s).update(updated_at=current_datetime())
 
     async def test_refresh(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
             uuid = car.uuid
 
-            car2 = await Car.get(uuid, _broker=b, _repository=r, _snapshot=s)
-            await car2.update(color="red", _broker=b, _repository=r, _snapshot=s)
-            await car2.update(doors=5, _broker=b, _repository=r, _snapshot=s)
+            car2 = await Car.get(uuid, _repository=r, _snapshot=s)
+            await car2.update(color="red", _repository=r, _snapshot=s)
+            await car2.update(doors=5, _repository=r, _snapshot=s)
 
             self.assertEqual(
                 Car(
@@ -168,7 +160,6 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                     version=1,
                     created_at=car.created_at,
                     updated_at=car.updated_at,
-                    _broker=b,
                     _repository=r,
                     _snapshot=s,
                 ),
@@ -183,7 +174,6 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                     version=3,
                     created_at=car.created_at,
                     updated_at=car.updated_at,
-                    _broker=b,
                     _repository=r,
                     _snapshot=s,
                 ),
@@ -191,8 +181,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_save_create(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = Car(3, "blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = Car(3, "blue", _repository=r, _snapshot=s)
             car.color = "red"
             car.doors = 5
 
@@ -208,7 +198,6 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                     version=1,
                     created_at=car.created_at,
                     updated_at=car.updated_at,
-                    _broker=b,
                     _repository=r,
                     _snapshot=s,
                 ),
@@ -216,8 +205,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_save_update(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
 
             uuid = car.uuid
 
@@ -231,12 +220,11 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 version=1,
                 created_at=car.created_at,
                 updated_at=car.updated_at,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
             self.assertEqual(
-                expected, await Car.get(uuid, _broker=b, _repository=r, _snapshot=s),
+                expected, await Car.get(uuid, _repository=r, _snapshot=s),
             )
 
             await car.save()
@@ -247,7 +235,6 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 version=2,
                 created_at=car.created_at,
                 updated_at=car.updated_at,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
@@ -260,27 +247,26 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
                 version=2,
                 created_at=car.created_at,
                 updated_at=car.updated_at,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
             self.assertEqual(
-                expected, await Car.get(uuid, _broker=b, _repository=r, _snapshot=s),
+                expected, await Car.get(uuid, _repository=r, _snapshot=s),
             )
 
     async def test_save_raises(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
             with self.assertRaises(MinosRepositoryException):
-                await Car(3, "blue", uuid=uuid4(), _broker=b, _repository=r, _snapshot=s).save()
+                await Car(3, "blue", uuid=uuid4(), _repository=r, _snapshot=s).save()
             with self.assertRaises(MinosRepositoryException):
-                await Car(3, "blue", version=1, _broker=b, _repository=r, _snapshot=s).save()
+                await Car(3, "blue", version=1, _repository=r, _snapshot=s).save()
 
     async def test_delete(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
             await car.delete()
             with self.assertRaises(MinosSnapshotDeletedAggregateException):
-                await Car.get(car.uuid, _broker=b, _repository=r, _snapshot=s)
+                await Car.get(car.uuid, _repository=r, _snapshot=s)
 
 
 if __name__ == "__main__":

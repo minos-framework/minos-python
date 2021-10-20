@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from asyncio import (
-    gather,
-)
 from datetime import (
     datetime,
 )
@@ -28,13 +25,9 @@ from ....datetime import (
     NULL_DATETIME,
 )
 from ....exceptions import (
-    MinosBrokerNotProvidedException,
     MinosRepositoryException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
-)
-from ....networks import (
-    MinosBroker,
 )
 from ....queries import (
     _Condition,
@@ -78,7 +71,6 @@ class Aggregate(Entity):
         version: int = 0,
         created_at: datetime = NULL_DATETIME,
         updated_at: datetime = NULL_DATETIME,
-        _broker: MinosBroker = Provide["event_broker"],
         _repository: MinosRepository = Provide["repository"],
         _snapshot: MinosSnapshot = Provide["snapshot"],
         **kwargs,
@@ -86,14 +78,11 @@ class Aggregate(Entity):
 
         super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
 
-        if _broker is None or isinstance(_broker, Provide):
-            raise MinosBrokerNotProvidedException("A broker instance is required.")
         if _repository is None or isinstance(_repository, Provide):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
         if _snapshot is None or isinstance(_snapshot, Provide):
             raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 
-        self._broker = _broker
         self._repository = _repository
         self._snapshot = _snapshot
 
@@ -172,9 +161,6 @@ class Aggregate(Entity):
         entry = await instance._repository.create(aggregate_diff)
 
         instance._update_from_repository_entry(entry)
-        aggregate_diff.update_from_repository_entry(entry)
-
-        await instance._broker.send(aggregate_diff, topic=f"{type(instance).__name__}Created")
 
         return instance
 
@@ -202,9 +188,7 @@ class Aggregate(Entity):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        previous = await self.get(
-            self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
-        )
+        previous = await self.get(self.uuid, _repository=self._repository, _snapshot=self._snapshot)
         aggregate_diff = self.diff(previous)
         if not len(aggregate_diff.fields_diff):
             return self
@@ -212,23 +196,8 @@ class Aggregate(Entity):
         entry = await self._repository.update(aggregate_diff)
 
         self._update_from_repository_entry(entry)
-        aggregate_diff.update_from_repository_entry(entry)
-
-        await self._send_update_events(aggregate_diff)
 
         return self
-
-    async def _send_update_events(self, aggregate_diff: AggregateDiff):
-        futures = [self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Updated")]
-
-        for decomposed_aggregate_diff in aggregate_diff.decompose():
-            diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
-            topic = f"{type(self).__name__}Updated.{diff.name}"
-            if isinstance(diff, IncrementalFieldDiff):
-                topic += f".{diff.action.value}"
-            futures.append(self._broker.send(decomposed_aggregate_diff, topic=topic))
-
-        await gather(*futures)
 
     async def save(self) -> None:
         """Store the current instance on the repository.
@@ -252,13 +221,11 @@ class Aggregate(Entity):
             if k not in {"uuid", "version", "created_at", "updated_at"}
         }
         if is_creation:
-            new = await self.create(
-                **values, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
-            )
+            new = await self.create(**values, _repository=self._repository, _snapshot=self._snapshot)
             self._fields |= new.fields
         else:
             await self.update(
-                **values, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot,
+                **values, _repository=self._repository, _snapshot=self._snapshot,
             )
 
     async def refresh(self) -> None:
@@ -266,9 +233,7 @@ class Aggregate(Entity):
 
         :return: This method does not return anything.
         """
-        new = await type(self).get(
-            self.uuid, _broker=self._broker, _repository=self._repository, _snapshot=self._snapshot
-        )
+        new = await type(self).get(self.uuid, _repository=self._repository, _snapshot=self._snapshot)
         self._fields |= new.fields
 
     async def delete(self) -> None:
@@ -280,9 +245,6 @@ class Aggregate(Entity):
         entry = await self._repository.delete(aggregate_diff)
 
         self._update_from_repository_entry(entry)
-        aggregate_diff.update_from_repository_entry(entry)
-
-        await self._broker.send(aggregate_diff, topic=f"{type(self).__name__}Deleted")
 
     def _update_from_repository_entry(self, entry: RepositoryEntry) -> None:
         self.uuid = entry.aggregate_uuid
