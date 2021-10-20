@@ -61,7 +61,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, entry.version)
         self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
         self.assertEqual(None, entry.id)
-        self.assertEqual(None, entry.action)
+        self.assertEqual(Action.CREATE, entry.action)
         self.assertEqual(None, entry.created_at)
 
     def test_id_set(self):

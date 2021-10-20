@@ -26,7 +26,6 @@ from tests.model_classes import (
     User,
 )
 from tests.utils import (
-    FakeBroker,
     FakeRepository,
 )
 
@@ -159,12 +158,12 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(expected, Auth.avro_schema)
 
     async def test_avro_data_model_ref(self):
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
+        async with FakeRepository() as r, InMemorySnapshot(r) as s:
             owners = [
-                Owner("Hello", "Good Bye", uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s),
-                Owner("Foo", "Bar", uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s),
+                Owner("Hello", "Good Bye", uuid=uuid4(), version=1, _repository=r, _snapshot=s),
+                Owner("Foo", "Bar", uuid=uuid4(), version=1, _repository=r, _snapshot=s),
             ]
-            car = Car(5, "blue", owners, uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s)
+            car = Car(5, "blue", owners, uuid=uuid4(), version=1, _repository=r, _snapshot=s)
             expected = {
                 "color": "blue",
                 "doors": 5,
@@ -196,12 +195,12 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(expected, car.avro_data)
 
     async def test_avro_bytes_model_ref(self):
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
+        async with FakeRepository() as r, InMemorySnapshot(r) as s:
             owners = [
-                Owner("Hello", "Good Bye", _broker=b, _repository=r, _snapshot=s),
-                Owner("Foo", "Bar", _broker=b, _repository=r, _snapshot=s),
+                Owner("Hello", "Good Bye", _repository=r, _snapshot=s),
+                Owner("Foo", "Bar", _repository=r, _snapshot=s),
             ]
-            car = Car(5, "blue", owners, _broker=b, _repository=r, _snapshot=s)
+            car = Car(5, "blue", owners, _repository=r, _snapshot=s)
             self.assertIsInstance(car.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):

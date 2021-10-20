@@ -6,7 +6,6 @@ from datetime import (
 from unittest.mock import (
     MagicMock,
     call,
-    patch,
 )
 from uuid import (
     uuid4,
@@ -65,7 +64,6 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
         self.uuid_3 = uuid4()
 
         self.container = containers.DynamicContainer()
-        self.container.event_broker = providers.Singleton(FakeBroker)
         self.container.repository = providers.Singleton(FakeRepository)
         self.container.snapshot = providers.Singleton(FakeSnapshot)
         self.container.wire(modules=[sys.modules[__name__]])
@@ -137,12 +135,12 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
             yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
             yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
-        async with PostgreSqlRepository.from_config(config=self.config) as r:
-            with patch("minos.common.PostgreSqlRepository.select", _fn):
-                async with PostgreSqlSnapshotWriter.from_config(config=self.config, repository=r) as dispatcher:
-                    await dispatcher.dispatch()
-            async with PostgreSqlSnapshotReader.from_config(config=self.config, repository=r) as snapshot:
-                observed = [v async for v in snapshot.find_entries(aggregate_name, condition)]
+        repository = FakeRepository()
+        repository.select = MagicMock(side_effect=_fn)
+        async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+            await dispatcher.dispatch()
+        async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as snapshot:
+            observed = [v async for v in snapshot.find_entries(aggregate_name, condition)]
 
         # noinspection PyTypeChecker
         expected = [
@@ -209,7 +207,7 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
-        async with PostgreSqlRepository.from_config(config=self.config) as repository:
+        async with PostgreSqlRepository.from_config(self.config, event_broker=FakeBroker()) as repository:
             await repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
             await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
             await repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))

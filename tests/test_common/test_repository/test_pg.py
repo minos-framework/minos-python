@@ -38,9 +38,10 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
         self.uuid = uuid4()
         self.uuid_1 = uuid4()
         self.uuid_2 = uuid4()
+        self.broker = FakeBroker()
 
     def test_constructor(self):
-        repository = PostgreSqlRepository("host", 1234, "database", "user", "password")
+        repository = PostgreSqlRepository(self.broker, "host", 1234, "database", "user", "password")
         self.assertIsInstance(repository, MinosRepository)
         self.assertEqual("host", repository.host)
         self.assertEqual(1234, repository.port)
@@ -57,7 +58,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
                 response = (await cursor.fetchone())[0]
                 self.assertFalse(response)
 
-        async with PostgreSqlRepository(**self.repository_db):
+        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db):
             async with aiopg.connect(**self.repository_db) as connection:
                 async with connection.cursor() as cursor:
                     await cursor.execute(
@@ -67,18 +68,18 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
         self.assertTrue(response)
 
     async def test_aggregate(self):
-        async with FakeBroker() as b, PostgreSqlRepository(**self.repository_db) as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
             await car.update(color="red")
             await car.update(doors=5)
 
-            another = await Car.get(car.uuid, _broker=b, _repository=r, _snapshot=s)
+            another = await Car.get(car.uuid, _repository=r, _snapshot=s)
             self.assertEqual(car, another)
 
             await car.delete()
 
     async def test_generate_uuid(self):
-        async with PostgreSqlRepository(**self.repository_db) as repository:
+        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             await repository.create(RepositoryEntry(NULL_UUID, "example.Car", 1, bytes("foo", "utf-8")))
             observed = [v async for v in repository.select()]
             self.assertEqual(1, len(observed))
@@ -86,7 +87,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             self.assertNotEqual(NULL_UUID, observed[0].aggregate_uuid)
 
     async def test_create(self):
-        async with PostgreSqlRepository(**self.repository_db) as repository:
+        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             await repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
 
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE)]
@@ -94,14 +95,14 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             self._assert_equal_entries(expected, observed)
 
     async def test_update(self):
-        async with PostgreSqlRepository(**self.repository_db) as repository:
+        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             await repository.update(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.UPDATE)]
             observed = [v async for v in repository.select()]
             self._assert_equal_entries(expected, observed)
 
     async def test_delete(self):
-        async with PostgreSqlRepository(**self.repository_db) as repository:
+        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             await repository.delete(RepositoryEntry(self.uuid, "example.Car", 1, bytes()))
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.DELETE)]
             observed = [v async for v in repository.select()]
@@ -122,7 +123,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             self._assert_equal_entries(expected, observed)
 
     async def test_select_empty(self):
-        async with PostgreSqlRepository(**self.repository_db) as repository:
+        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             expected = []
             observed = [v async for v in repository.select()]
             self._assert_equal_entries(expected, observed)
@@ -254,7 +255,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             self._assert_equal_entries(expected, observed)
 
     async def _build_repository(self):
-        async with PostgreSqlRepository(**self.repository_db) as repository:
+        async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             await repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
             await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
             await repository.create(RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))

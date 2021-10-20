@@ -22,7 +22,6 @@ from tests.aggregate_classes import (
     Car,
 )
 from tests.utils import (
-    FakeBroker,
     FakeRepository,
     FakeSnapshot,
 )
@@ -33,7 +32,6 @@ class TestSnapshotEntry(unittest.TestCase):
         self.uuid = uuid4()
 
         self.container = containers.DynamicContainer()
-        self.container.event_broker = providers.Singleton(FakeBroker)
         self.container.repository = providers.Singleton(FakeRepository)
         self.container.snapshot = providers.Singleton(FakeSnapshot)
         self.container.wire(modules=[sys.modules[__name__]])

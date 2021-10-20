@@ -14,7 +14,6 @@ from tests.aggregate_classes import (
     Car,
 )
 from tests.utils import (
-    FakeBroker,
     FakeRepository,
     FakeSnapshot,
 )
@@ -29,7 +28,7 @@ class TestAggregateDifferences(unittest.IsolatedAsyncioTestCase):
         self.final_datetime = current_datetime()
         self.another_datetime = current_datetime()
 
-        async with FakeBroker() as b, FakeRepository() as r, FakeSnapshot() as s:
+        async with FakeRepository() as r, FakeSnapshot() as s:
             self.initial = Car(
                 3,
                 "blue",
@@ -37,7 +36,6 @@ class TestAggregateDifferences(unittest.IsolatedAsyncioTestCase):
                 version=1,
                 created_at=self.initial_datetime,
                 updated_at=self.initial_datetime,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
@@ -48,7 +46,6 @@ class TestAggregateDifferences(unittest.IsolatedAsyncioTestCase):
                 version=3,
                 created_at=self.initial_datetime,
                 updated_at=self.final_datetime,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )
@@ -59,7 +56,6 @@ class TestAggregateDifferences(unittest.IsolatedAsyncioTestCase):
                 created_at=self.another_datetime,
                 updated_at=self.another_datetime,
                 version=1,
-                _broker=b,
                 _repository=r,
                 _snapshot=s,
             )

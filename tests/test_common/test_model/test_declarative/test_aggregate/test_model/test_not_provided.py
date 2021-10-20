@@ -1,7 +1,6 @@
 import unittest
 
 from minos.common import (
-    MinosBrokerNotProvidedException,
     MinosRepositoryNotProvidedException,
     MinosSnapshotNotProvidedException,
 )
@@ -9,21 +8,17 @@ from tests.aggregate_classes import (
     Car,
 )
 from tests.utils import (
-    FakeBroker,
     FakeRepository,
 )
 
 
 class TestAggregateNotProvided(unittest.IsolatedAsyncioTestCase):
     async def test_create_raises(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
+        with self.assertRaises(MinosRepositoryNotProvidedException):
             await Car.create(doors=3, color="blue")
-        async with FakeBroker() as broker:
-            with self.assertRaises(MinosRepositoryNotProvidedException):
-                await Car.create(doors=3, color="blue", _broker=broker)
-        async with FakeBroker() as broker, FakeRepository() as repository:
+        async with FakeRepository() as repository:
             with self.assertRaises(MinosSnapshotNotProvidedException):
-                await Car.create(doors=3, color="blue", _broker=broker, _repository=repository)
+                await Car.create(doors=3, color="blue", _repository=repository)
 
     async def test_get_raises(self):
         with self.assertRaises(MinosSnapshotNotProvidedException):

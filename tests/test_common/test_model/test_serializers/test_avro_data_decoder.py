@@ -234,8 +234,8 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     async def test_list_model_ref(self):
         decoder = AvroDataDecoder(list[ModelRef[Owner]])
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
-            value = [uuid4(), Owner("Foo", "Bar", 56, _broker=b, _repository=r, _snapshot=s)]
+        async with FakeRepository() as r, InMemorySnapshot(r) as s:
+            value = [uuid4(), Owner("Foo", "Bar", 56, _repository=r, _snapshot=s)]
             observed = decoder.build(value)
             self.assertEqual(value, observed)
 
@@ -332,8 +332,8 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     async def test_model_ref_value(self):
         decoder = AvroDataDecoder(ModelRef[Owner])
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
-            value = Owner("Foo", "Bar", _broker=b, _repository=r, _snapshot=s)
+        async with FakeRepository() as r, InMemorySnapshot(r) as s:
+            value = Owner("Foo", "Bar", _repository=r, _snapshot=s)
             observed = decoder.build(value)
             self.assertEqual(value, observed)
 
