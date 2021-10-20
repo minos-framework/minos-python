@@ -116,8 +116,8 @@ class TestField(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(hash(("id", Optional[int], 3, None, None)), hash(Field("id", Optional[int], 3)))
 
     def test_repr(self):
-        field = Field("test", Optional[int], 1, parser=lambda x: x * 10, validator=lambda x: x > 0)
-        self.assertEqual("test=10", repr(field))
+        field = Field("foo", str, "bar")
+        self.assertEqual("foo='bar'", repr(field))
 
     def test_str(self):
         field = Field("test", Optional[int], 1, parser=lambda x: x * 10, validator=lambda x: x > 0)
