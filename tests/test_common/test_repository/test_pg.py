@@ -42,7 +42,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
         self.broker = FakeBroker()
 
     def test_constructor(self):
-        repository = PostgreSqlRepository(self.broker, "host", 1234, "database", "user", "password")
+        repository = PostgreSqlRepository("host", 1234, "database", "user", "password", event_broker=self.broker)
         self.assertIsInstance(repository, MinosRepository)
         self.assertEqual("host", repository.host)
         self.assertEqual(1234, repository.port)
@@ -52,7 +52,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
 
     async def test_constructor_raises(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
-            PostgreSqlRepository()
+            PostgreSqlRepository("host", 1234, "database", "user", "password")
 
     async def test_setup(self):
         async with aiopg.connect(**self.repository_db) as connection:
