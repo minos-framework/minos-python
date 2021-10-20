@@ -47,7 +47,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         )
 
     def test_from_config(self):
-        launcher = EntrypointLauncher.from_config(config=self.config)
+        launcher = EntrypointLauncher.from_config(self.config)
         self.assertIsInstance(launcher, EntrypointLauncher)
         self.assertEqual(self.config, launcher.config)
         self.assertEqual(dict(), launcher.injector.injections)
