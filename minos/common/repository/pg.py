@@ -35,7 +35,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
     async def _create_events_table(self):
         await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock=hash("aggregate_event"))
         await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
-        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("aggregate_event"))
+        await self.submit_query(_CREATE_TABLE_QUERY, {"null_uuid": NULL_UUID}, lock=hash("aggregate_event"))
 
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         params = {
@@ -44,6 +44,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             "aggregate_name": entry.aggregate_name,
             "data": entry.data,
             "null_uuid": NULL_UUID,
+            "transaction_uuid": entry.transaction_uuid,
         }
 
         lock = None
@@ -135,12 +136,13 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
     version INT NOT NULL,
     data BYTEA NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (aggregate_uuid, aggregate_name, version)
+    transaction_uuid UUID NOT NULL DEFAULT %(null_uuid)s,
+    UNIQUE (aggregate_uuid, aggregate_name, version, transaction_uuid)
 );
 """.strip()
 
 _INSERT_VALUES_QUERY = """
-INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at)
+INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at, transaction_uuid)
 VALUES (
     default,
     %(action)s,
@@ -151,14 +153,24 @@ VALUES (
         FROM aggregate_event
         WHERE aggregate_uuid = %(aggregate_uuid)s
           AND aggregate_name = %(aggregate_name)s
+          AND transaction_uuid = (
+            CASE (
+                SELECT COUNT(*)
+                FROM aggregate_event
+                WHERE aggregate_uuid = %(aggregate_uuid)s
+                    AND aggregate_name = %(aggregate_name)s
+                    AND transaction_uuid =  %(transaction_uuid)s
+            ) WHEN 0 THEN %(null_uuid)s ELSE %(transaction_uuid)s END
+          )
     ),
     %(data)s,
-    default
+    default,
+    %(transaction_uuid)s
 )
 RETURNING id, aggregate_uuid, version, created_at;
 """.strip()
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at
+SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid
 FROM aggregate_event
 """.strip()

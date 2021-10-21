@@ -13,6 +13,9 @@ from ...configuration import (
 from ...database import (
     PostgreSqlMinosDatabase,
 )
+from ...uuid import (
+    NULL_UUID,
+)
 
 
 class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
@@ -23,7 +26,7 @@ class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
         return cls(**config.snapshot._asdict(), **kwargs)
 
     async def _setup(self) -> None:
-        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("snapshot"))
+        await self.submit_query(_CREATE_TABLE_QUERY, {"null_uuid": NULL_UUID}, lock=hash("snapshot"))
         await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock=hash("snapshot_aux_offset"))
 
 
@@ -36,9 +39,10 @@ CREATE TABLE IF NOT EXISTS snapshot (
     version INT NOT NULL,
     schema BYTEA,
     data JSONB,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (aggregate_uuid, aggregate_name)
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    transaction_uuid UUID NOT NULL DEFAULT %(null_uuid)s,
+    PRIMARY KEY (aggregate_uuid, aggregate_name, transaction_uuid)
 );
 """.strip()
 

@@ -19,19 +19,32 @@ from uuid import (
 from ..importlib import (
     import_module,
 )
+from ..uuid import (
+    NULL_UUID,
+)
 
 if TYPE_CHECKING:
     from ..model import (
         Action,
         Aggregate,
         AggregateDiff,
+        FieldDiffContainer,
     )
 
 
 class RepositoryEntry:
     """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
 
-    __slots__ = "aggregate_uuid", "aggregate_name", "version", "data", "id", "action", "created_at"
+    __slots__ = (
+        "aggregate_uuid",
+        "aggregate_name",
+        "version",
+        "data",
+        "id",
+        "action",
+        "created_at",
+        "transaction_uuid",
+    )
 
     # noinspection PyShadowingBuiltins
     def __init__(
@@ -43,6 +56,7 @@ class RepositoryEntry:
         id: Optional[int] = None,
         action: Optional[Union[str, Action]] = None,
         created_at: Optional[datetime] = None,
+        transaction_uuid: UUID = NULL_UUID,
     ):
         if isinstance(data, memoryview):
             data = data.tobytes()
@@ -61,6 +75,7 @@ class RepositoryEntry:
         self.id = id
         self.action = action
         self.created_at = created_at
+        self.transaction_uuid = transaction_uuid
 
     @classmethod
     def from_aggregate_diff(cls, aggregate_diff: AggregateDiff) -> RepositoryEntry:
@@ -75,6 +90,7 @@ class RepositoryEntry:
             aggregate_name=aggregate_diff.name,
             version=aggregate_diff.version,
             data=aggregate_diff.fields_diff.avro_bytes,
+            created_at=aggregate_diff.created_at,
             action=aggregate_diff.action,
         )
 
@@ -95,7 +111,6 @@ class RepositoryEntry:
         """
         from ..model import (
             AggregateDiff,
-            FieldDiffContainer,
         )
 
         return AggregateDiff(
@@ -104,8 +119,23 @@ class RepositoryEntry:
             self.version,
             self.action,
             self.created_at,
-            FieldDiffContainer() if not self.data else FieldDiffContainer.from_avro_bytes(self.data),
+            self.field_diff_container,
         )
+
+    @property
+    def field_diff_container(self) -> FieldDiffContainer:
+        """Get the stored field diff container.
+
+        :return: A ``FieldDiffContainer`` instance.
+        """
+        from ..model import (
+            FieldDiffContainer,
+        )
+
+        if not self.data:
+            return FieldDiffContainer.empty()
+
+        return FieldDiffContainer.from_avro_bytes(self.data)
 
     def __eq__(self, other: "RepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
@@ -122,6 +152,7 @@ class RepositoryEntry:
             self.id,
             self.action,
             self.created_at,
+            self.transaction_uuid,
         )
 
     def __repr__(self):
@@ -129,5 +160,6 @@ class RepositoryEntry:
             f"{type(self).__name__}("
             f"aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
             f"version={self.version!r}, data={self.data!r}, "
-            f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r})"
+            f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r}, "
+            f"transaction_uuid={self.transaction_uuid!r})"
         )

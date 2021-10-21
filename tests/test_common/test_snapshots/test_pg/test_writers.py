@@ -23,6 +23,7 @@ from minos.common import (
     FieldDiffContainer,
     MinosRepositoryNotProvidedException,
     MinosSnapshotDeletedAggregateException,
+    Ordering,
     PostgreSqlRepository,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
@@ -89,7 +90,10 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as reader:
-                observed = [v async for v in reader.find_entries(Car.classname, Condition.TRUE, exclude_deleted=False)]
+                iterable = reader.find_entries(
+                    Car.classname, Condition.TRUE, Ordering.ASC("updated_at"), exclude_deleted=False
+                )
+                observed = [v async for v in iterable]
 
         # noinspection PyTypeChecker
         expected = [
