@@ -136,6 +136,8 @@ from .repository import (
     MinosRepository,
     PostgreSqlRepository,
     RepositoryEntry,
+    RepositoryTransaction,
+    RepositoryTransactionStatus,
 )
 from .saga import (
     MinosSagaManager,
