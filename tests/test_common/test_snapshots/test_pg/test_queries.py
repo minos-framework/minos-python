@@ -53,7 +53,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot WHERE (aggregate_name = %(aggregate_name)s) AND (TRUE)"
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
@@ -65,7 +65,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         condition = Condition.FALSE
         observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot WHERE (aggregate_name = %(aggregate_name)s) AND (FALSE)"
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate"}
@@ -80,7 +80,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             'FROM snapshot WHERE (aggregate_name = %(aggregate_name)s) AND (("aggregate_uuid" = %(hello)s))'
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": str(uuid)}
@@ -94,7 +94,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             'FROM snapshot WHERE (aggregate_name = %(aggregate_name)s) AND (("version" = %(hello)s))'
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
@@ -108,7 +108,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             'FROM snapshot WHERE (aggregate_name = %(aggregate_name)s) AND (("created_at" = %(hello)s))'
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
@@ -122,7 +122,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             'FROM snapshot WHERE (aggregate_name = %(aggregate_name)s) AND (("updated_at" = %(hello)s))'
         )
         expected_parameters = {"aggregate_name": "path.to.Aggregate", "hello": 1}
@@ -136,7 +136,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' < %(hello)s::jsonb))"
         )
@@ -151,7 +151,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' <= %(hello)s::jsonb))"
         )
@@ -166,7 +166,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' > %(hello)s::jsonb))"
         )
@@ -181,7 +181,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' >= %(hello)s::jsonb))"
         )
@@ -196,7 +196,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' = %(hello)s::jsonb))"
         )
@@ -211,7 +211,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' <> %(hello)s::jsonb))"
         )
@@ -226,7 +226,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((data#>'{age}' IN %(hello)s::jsonb))"
         )
@@ -241,7 +241,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND (FALSE)"
         )
@@ -256,7 +256,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND ((NOT (data#>'{age}' < %(hello)s::jsonb)))"
         )
@@ -271,7 +271,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND "
             "(((data#>'{age}' < %(hello)s::jsonb) AND (data#>'{level}' < %(goodbye)s::jsonb)))"
@@ -287,7 +287,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND "
             "(((data#>'{age}' < %(hello)s::jsonb) OR (data#>'{level}' < %(goodbye)s::jsonb)))"
@@ -300,7 +300,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
     async def test_build_exclude_deleted(self):
         observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, exclude_deleted=True).build()
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND (TRUE) AND (data IS NOT NULL)"
         )
@@ -315,7 +315,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
         # noinspection SqlRedundantOrderingDirection
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND (TRUE) "
             'ORDER BY "created_at" ASC'
@@ -330,7 +330,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, ordering).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND (TRUE) "
             'ORDER BY "created_at" DESC'
@@ -346,7 +346,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
 
         # noinspection SqlRedundantOrderingDirection
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND (TRUE) "
             "ORDER BY data#>'{name}' ASC"
@@ -361,7 +361,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, ordering).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND (TRUE) "
             "ORDER BY data#>'{name}' DESC"
@@ -375,7 +375,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE, limit=10).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND (TRUE) "
             "LIMIT 10"
@@ -399,7 +399,7 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
             observed = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", condition, ordering, limit).build()
 
         expected_query = (
-            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+            "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
             "FROM snapshot "
             "WHERE (aggregate_name = %(aggregate_name)s) AND "
             "(((data#>'{inventory,amount}' = %(one)s::jsonb) AND ((data#>'{title}' = %(two)s::jsonb) OR "

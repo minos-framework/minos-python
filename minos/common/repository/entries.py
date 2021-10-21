@@ -19,6 +19,9 @@ from uuid import (
 from ..importlib import (
     import_module,
 )
+from ..uuid import (
+    NULL_UUID,
+)
 
 if TYPE_CHECKING:
     from ..model import (
@@ -53,7 +56,7 @@ class RepositoryEntry:
         id: Optional[int] = None,
         action: Optional[Union[str, Action]] = None,
         created_at: Optional[datetime] = None,
-        transaction_uuid: Optional[UUID] = None,
+        transaction_uuid: UUID = NULL_UUID,
     ):
         if isinstance(data, memoryview):
             data = data.tobytes()

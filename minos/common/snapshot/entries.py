@@ -30,6 +30,9 @@ from ..protocol import (
 from ..repository import (
     RepositoryEntry,
 )
+from ..uuid import (
+    NULL_UUID,
+)
 
 if TYPE_CHECKING:
     from ..model import (
@@ -43,7 +46,16 @@ class SnapshotEntry:
     Is the python object representation of a row in the ``snapshot`` storage system.
     """
 
-    __slots__ = "aggregate_uuid", "aggregate_name", "version", "schema", "data", "created_at", "updated_at"
+    __slots__ = (
+        "aggregate_uuid",
+        "aggregate_name",
+        "version",
+        "schema",
+        "data",
+        "created_at",
+        "updated_at",
+        "transaction_uuid",
+    )
 
     # noinspection PyShadowingBuiltins
     def __init__(
@@ -55,6 +67,7 @@ class SnapshotEntry:
         data: Optional[dict[str, Any]] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
+        transaction_uuid: UUID = NULL_UUID,
     ):
         if isinstance(schema, memoryview):
             schema = schema.tobytes()
@@ -71,8 +84,10 @@ class SnapshotEntry:
         self.created_at = created_at
         self.updated_at = updated_at
 
+        self.transaction_uuid = transaction_uuid
+
     @classmethod
-    def from_aggregate(cls, aggregate: Aggregate) -> SnapshotEntry:
+    def from_aggregate(cls, aggregate: Aggregate, **kwargs) -> SnapshotEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate: The aggregate instance.
@@ -91,6 +106,7 @@ class SnapshotEntry:
             data=data,
             created_at=aggregate.created_at,
             updated_at=aggregate.updated_at,
+            **kwargs,
         )
 
     @classmethod
@@ -106,6 +122,7 @@ class SnapshotEntry:
             version=entry.version,
             created_at=entry.created_at,
             updated_at=entry.created_at,
+            transaction_uuid=entry.transaction_uuid,
         )
 
     def as_raw(self) -> dict[str, Any]:
@@ -121,6 +138,7 @@ class SnapshotEntry:
             "data": self.encoded_data,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
+            "transaction_uuid": self.transaction_uuid,
         }
 
     @property
@@ -184,12 +202,21 @@ class SnapshotEntry:
 
     def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
-        yield from (self.aggregate_name, self.version, self.schema, self.data, self.created_at, self.updated_at)
+        yield from (
+            self.aggregate_name,
+            self.version,
+            self.schema,
+            self.data,
+            self.created_at,
+            self.updated_at,
+            self.transaction_uuid,
+        )
 
     def __repr__(self):
         name = type(self).__name__
         return (
             f"{name}(aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
             f"version={self.version!r}, schema={self.schema!r}, data={self.data!r}, "
-            f"created_at={self.created_at!r}, updated_at={self.updated_at!r})"
+            f"created_at={self.created_at!r}, updated_at={self.updated_at!r}, "
+            f"transaction_uuid={self.transaction_uuid!r})"
         )

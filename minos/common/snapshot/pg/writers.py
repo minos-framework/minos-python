@@ -153,13 +153,13 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
-SELECT version, schema, data, created_at, updated_at
+SELECT version, schema, data, created_at, updated_at, transaction_uuid
 FROM snapshot
 WHERE aggregate_uuid = %s and aggregate_name = %s;
 """.strip()
 
 _INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """
-INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at)
+INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid)
 VALUES (
     %(aggregate_uuid)s,
     %(aggregate_name)s,
@@ -167,9 +167,10 @@ VALUES (
     %(schema)s,
     %(data)s,
     %(created_at)s,
-    %(updated_at)s
+    %(updated_at)s,
+    %(transaction_uuid)s
 )
-ON CONFLICT (aggregate_uuid, aggregate_name)
+ON CONFLICT (aggregate_uuid, aggregate_name, transaction_uuid)
 DO
    UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;
@@ -187,5 +188,3 @@ VALUES (TRUE, %(value)s)
 ON CONFLICT (id)
 DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
 """.strip()
-
-PostgreSqlSnapshotReader = PostgreSqlSnapshotWriter

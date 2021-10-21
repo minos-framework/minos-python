@@ -202,7 +202,7 @@ _ORDERING_MAPPER = {
 }
 
 _SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
-    "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
+    "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
     "FROM snapshot "
     "WHERE (aggregate_name = %(aggregate_name)s)"
 )

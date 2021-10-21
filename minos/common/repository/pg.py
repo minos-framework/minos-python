@@ -35,7 +35,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
     async def _create_events_table(self):
         await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock=hash("aggregate_event"))
         await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
-        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("aggregate_event"))
+        await self.submit_query(_CREATE_TABLE_QUERY, {"null_uuid": NULL_UUID}, lock=hash("aggregate_event"))
 
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         params = {
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
     version INT NOT NULL,
     data BYTEA NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    transaction_uuid UUID,
+    transaction_uuid UUID NOT NULL DEFAULT %(null_uuid)s,
     UNIQUE (aggregate_uuid, aggregate_name, version, transaction_uuid)
 );
 """.strip()
