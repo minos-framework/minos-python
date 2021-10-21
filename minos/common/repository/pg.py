@@ -153,6 +153,15 @@ VALUES (
         FROM aggregate_event
         WHERE aggregate_uuid = %(aggregate_uuid)s
           AND aggregate_name = %(aggregate_name)s
+          AND transaction_uuid = (
+            CASE (
+                SELECT COUNT(*)
+                FROM aggregate_event
+                WHERE aggregate_uuid = %(aggregate_uuid)s
+                    AND aggregate_name = %(aggregate_name)s
+                    AND transaction_uuid =  %(transaction_uuid)s
+            ) WHEN 0 THEN %(null_uuid)s ELSE %(transaction_uuid)s END
+          )
     ),
     %(data)s,
     default,

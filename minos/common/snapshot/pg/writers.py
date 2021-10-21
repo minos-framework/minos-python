@@ -26,6 +26,9 @@ from ...repository import (
     MinosRepository,
     RepositoryEntry,
 )
+from ...uuid import (
+    NULL_UUID,
+)
 from ..entries import (
     SnapshotEntry,
 )
@@ -96,9 +99,9 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
     async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:
-            return await self._submit_delete(event_entry, **kwargs)
+            return await self._submit_delete(event_entry, transaction_uuid=event_entry.transaction_uuid, **kwargs)
 
-        return await self._submit_update_or_create(event_entry, **kwargs)
+        return await self._submit_update_or_create(event_entry, transaction_uuid=event_entry.transaction_uuid, **kwargs)
 
     async def _submit_delete(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         snapshot_entry = SnapshotEntry.from_event_entry(event_entry)
@@ -108,7 +111,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     async def _submit_update_or_create(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         aggregate = await self._build_instance(event_entry, **kwargs)
 
-        snapshot_entry = SnapshotEntry.from_aggregate(aggregate)
+        snapshot_entry = SnapshotEntry.from_aggregate(aggregate, transaction_uuid=event_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
@@ -122,7 +125,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         try:
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(aggregate_diff.uuid, aggregate_diff.name, **kwargs)
-        except Exception:
+        except StopAsyncIteration:
             # noinspection PyTypeChecker
             aggregate_cls: Type[Aggregate] = import_module(aggregate_diff.name)
             return aggregate_cls.from_diff(aggregate_diff, **kwargs)
@@ -137,11 +140,17 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         snapshot_entry = await self._select_one(aggregate_uuid, aggregate_name, **kwargs)
         return snapshot_entry.build_aggregate(**kwargs)
 
-    async def _select_one(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> SnapshotEntry:
-        raw = await self.submit_query_and_fetchone(
-            _SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_uuid, aggregate_name), **kwargs
-        )
-        return SnapshotEntry(aggregate_uuid, aggregate_name, *raw)
+    async def _select_one(
+        self, aggregate_uuid: UUID, aggregate_name: str, transaction_uuid: UUID, **kwargs
+    ) -> SnapshotEntry:
+        parameters = {
+            "aggregate_uuid": aggregate_uuid,
+            "aggregate_name": aggregate_name,
+            "transaction_uuid": transaction_uuid,
+            "null_uuid": NULL_UUID,
+        }
+        raw = await self.submit_query_and_fetchone(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, parameters, **kwargs)
+        return SnapshotEntry(aggregate_uuid, aggregate_name, *raw, transaction_uuid=transaction_uuid)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
         params = snapshot_entry.as_raw()
@@ -153,9 +162,21 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
-SELECT version, schema, data, created_at, updated_at, transaction_uuid
+SELECT version, schema, data, created_at, updated_at
 FROM snapshot
-WHERE aggregate_uuid = %s and aggregate_name = %s;
+WHERE
+    aggregate_uuid = %(aggregate_uuid)s
+    AND aggregate_name = %(aggregate_name)s
+    AND transaction_uuid = (
+        CASE (
+            SELECT COUNT(*)
+            FROM snapshot
+            WHERE aggregate_uuid = %(aggregate_uuid)s
+            AND aggregate_name = %(aggregate_name)s
+            AND transaction_uuid =  %(transaction_uuid)s
+        ) WHEN 0 THEN %(null_uuid)s ELSE %(transaction_uuid)s END
+    )
+;
 """.strip()
 
 _INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """

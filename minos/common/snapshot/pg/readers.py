@@ -86,6 +86,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
+        transaction_uuid: UUID = NULL_UUID,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -98,11 +99,12 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param transaction_uuid: TODO
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
         async for snapshot_entry in self.find_entries(
-            aggregate_name, condition, ordering, limit, streaming_mode, **kwargs
+            aggregate_name, condition, ordering, limit, streaming_mode, transaction_uuid, **kwargs,
         ):
             yield snapshot_entry.build_aggregate(**kwargs)
 
@@ -113,6 +115,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
+        transaction_uuid: UUID = NULL_UUID,
         exclude_deleted: bool = True,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
@@ -126,12 +129,15 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param transaction_uuid: TODO
         :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
             entries are filtered.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
-        qb = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit, exclude_deleted)
+        qb = PostgreSqlSnapshotQueryBuilder(
+            aggregate_name, condition, ordering, limit, transaction_uuid, exclude_deleted,
+        )
         query, parameters = qb.build()
 
         async with self.cursor() as cursor:
