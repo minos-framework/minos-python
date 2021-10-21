@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS snapshot (
     version INT NOT NULL,
     schema BYTEA,
     data JSONB,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
     PRIMARY KEY (aggregate_uuid, aggregate_name)
 );
 """.strip()
