@@ -107,18 +107,27 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(hash(entry), int)
 
     def test_repr(self):
+        id_ = 5678
+        version = 0
+        aggregate_name = "example.Car"
+        data = bytes("car", "utf-8")
+        action = Action.CREATE
+        created_at = datetime(2020, 10, 13, 8, 45, 32)
+        transaction_uuid = uuid4()
         entry = RepositoryEntry(
             aggregate_uuid=self.uuid,
-            aggregate_name="example.Car",
-            version=0,
-            data=bytes("car", "utf-8"),
-            id=5678,
-            action=Action.CREATE,
-            created_at=datetime(2020, 10, 13, 8, 45, 32),
+            aggregate_name=aggregate_name,
+            version=version,
+            data=data,
+            id=id_,
+            action=action,
+            created_at=created_at,
+            transaction_uuid=transaction_uuid,
         )
         expected = (
-            f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name='example.Car', version=0, data=b'car', "
-            "id=5678, action=<Action.CREATE: 'create'>, created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
+            f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name={aggregate_name!r}, version={version!r}, "
+            f"data={data!r}, id={id_!r}, action={action!r}, created_at={created_at!r}, "
+            f"transaction_uuid={transaction_uuid!r})"
         )
         self.assertEqual(expected, repr(entry))
 
