@@ -1,6 +1,4 @@
-from __future__ import (
-    annotations,
-)
+from __future__ import annotations
 
 import logging
 from typing import (
@@ -8,37 +6,26 @@ from typing import (
     AsyncIterator,
     Optional,
 )
-from uuid import (
-    UUID,
-)
+from uuid import UUID
 
-from ...exceptions import (
-    MinosSnapshotAggregateNotFoundException,
-)
+from psycopg2.sql import SQL
+
+from ...exceptions import MinosSnapshotAggregateNotFoundException
 from ...queries import (
     _Condition,
     _Ordering,
 )
-from ...repository import (
-    TRANSACTION_CONTEXT_VAR,
-)
-from ...uuid import (
-    NULL_UUID,
-)
-from ..entries import (
-    SnapshotEntry,
-)
-from .abc import (
-    PostgreSqlSnapshotSetup,
-)
+from ...repository import TRANSACTION_CONTEXT_VAR
+from ...uuid import NULL_UUID
+from ..entries import SnapshotEntry
+from .abc import PostgreSqlSnapshotSetup
 from .queries import (
+    _SELECT_MULTIPLE_ENTRIES_QUERY,
     PostgreSqlSnapshotQueryBuilder,
 )
 
 if TYPE_CHECKING:
-    from ...model import (
-        Aggregate,
-    )
+    from ...model import Aggregate
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +66,12 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             else:
                 transaction_uuid = transaction.uuid
 
-        parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid, "transaction_uuid": transaction_uuid}
+        parameters = {
+            "aggregate_name": aggregate_name,
+            "aggregate_uuid": uuid,
+            "transaction_uuid": transaction_uuid,
+            "null_uuid": NULL_UUID,
+        }
 
         async with self.cursor() as cursor:
             await cursor.execute(_SELECT_ENTRY_BY_UUID_QUERY, parameters)
@@ -87,7 +79,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             if row is None:
                 raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
 
-            return SnapshotEntry(uuid, aggregate_name, *row, transaction_uuid=transaction_uuid)
+            return SnapshotEntry(*row)
 
     async def find(
         self,
@@ -171,11 +163,6 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             yield SnapshotEntry(*row)
 
 
-_SELECT_ENTRY_BY_UUID_QUERY = """
-SELECT version, schema, data, created_at, updated_at
-FROM snapshot
-WHERE
-    aggregate_name = %(aggregate_name)s
-    AND aggregate_uuid = %(aggregate_uuid)s
-    AND transaction_uuid = %(transaction_uuid)s
-""".strip()
+_SELECT_ENTRY_BY_UUID_QUERY = SQL(" WHERE ").join(
+    [_SELECT_MULTIPLE_ENTRIES_QUERY, SQL("aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s")]
+)

@@ -9,6 +9,9 @@ from uuid import (
 from ..database import (
     PostgreSqlMinosDatabase,
 )
+from ..datetime import (
+    NULL_DATETIME,
+)
 from ..uuid import (
     NULL_UUID,
 )
@@ -45,7 +48,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             "data": entry.data,
             "null_uuid": NULL_UUID,
             "transaction_uuid": entry.transaction_uuid,
-            "created_at": entry.created_at,
+            "created_at": None if entry.created_at == NULL_DATETIME else entry.created_at,
             "commit_of": entry.commit_of,
         }
 
