@@ -114,7 +114,6 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         action = Action.CREATE
         created_at = datetime(2020, 10, 13, 8, 45, 32)
         transaction_uuid = uuid4()
-        commit_of = 123
         entry = RepositoryEntry(
             aggregate_uuid=self.uuid,
             aggregate_name=aggregate_name,
@@ -124,12 +123,11 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             action=action,
             created_at=created_at,
             transaction_uuid=transaction_uuid,
-            commit_of=commit_of,
         )
         expected = (
             f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name={aggregate_name!r}, version={version!r}, "
             f"data={data!r}, id={id_!r}, action={action!r}, created_at={created_at!r}, "
-            f"transaction_uuid={transaction_uuid!r}, commit_of={commit_of!r})"
+            f"transaction_uuid={transaction_uuid!r})"
         )
         self.assertEqual(expected, repr(entry))
 
