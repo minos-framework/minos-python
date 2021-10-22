@@ -49,7 +49,6 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             "null_uuid": NULL_UUID,
             "transaction_uuid": entry.transaction_uuid,
             "created_at": None if entry.created_at == NULL_DATETIME else entry.created_at,
-            "commit_of": entry.commit_of,
         }
 
         lock = None
@@ -145,15 +144,12 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
     data BYTEA NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     transaction_uuid UUID NOT NULL DEFAULT %(null_uuid)s,
-    commit_of BIGINT REFERENCES aggregate_event,
     UNIQUE (aggregate_uuid, aggregate_name, version, transaction_uuid)
 );
 """.strip()
 
 _INSERT_VALUES_QUERY = """
-INSERT INTO aggregate_event (
-    id, action, aggregate_uuid, aggregate_name, version, data, created_at, transaction_uuid, commit_of
-)
+INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at, transaction_uuid)
 VALUES (
     default,
     %(action)s,
@@ -176,13 +172,12 @@ VALUES (
     ),
     %(data)s,
     (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),
-    %(transaction_uuid)s,
-    %(commit_of)s
+    %(transaction_uuid)s
 )
 RETURNING id, aggregate_uuid, version, created_at;
 """.strip()
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid, commit_of
+SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid
 FROM aggregate_event
 """.strip()
