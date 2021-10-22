@@ -51,6 +51,9 @@ class RepositoryTransaction:
         if TRANSACTION_CONTEXT_VAR.get() is not None:
             raise ValueError()
         self._token = TRANSACTION_CONTEXT_VAR.set(self)
+
+        await self.repository.submit_transaction(self)
+
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -76,3 +79,4 @@ class RepositoryTransactionStatus(str, Enum):
     CREATED = "created"
     PENDING = "pending"
     COMMITTED = "committed"
+    REJECTED = "rejected"

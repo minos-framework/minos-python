@@ -9,9 +9,6 @@ from uuid import (
 from ..database import (
     PostgreSqlMinosDatabase,
 )
-from ..datetime import (
-    NULL_DATETIME,
-)
 from ..uuid import (
     NULL_UUID,
 )
@@ -36,18 +33,31 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         await self._create_events_table()
 
     async def _create_events_table(self):
-        await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock=hash("aggregate_event"))
         await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+
+        await self.submit_query(_CREATE_TRANSACTION_STATUS_ENUM_QUERY, lock=hash("aggregate_transaction_enum"))
+        await self.submit_query(_CREATE_TRANSACTION_TABLE_QUERY, lock=hash("aggregate_transaction"))
+
+        await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock=hash("aggregate_event"))
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("aggregate_event"))
 
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
+        if entry.transaction_uuid != NULL_UUID:
+            # FIXME
+            await self.submit_query_and_fetchone(
+                _INSERT_TRANSACTIONS_VALUES_QUERY,
+                {"uuid": entry.transaction_uuid, "status": "pending"},
+                lock=entry.transaction_uuid.int & (1 << 32) - 1,
+            )
+
         params = {
             "action": entry.action.value,
             "aggregate_uuid": entry.aggregate_uuid,
             "aggregate_name": entry.aggregate_name,
+            "version": entry.version,
             "data": entry.data,
             "transaction_uuid": entry.transaction_uuid,
-            "created_at": None if entry.created_at == NULL_DATETIME else entry.created_at,
+            "created_at": entry.created_at,
         }
 
         lock = None
@@ -57,6 +67,14 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
+
+    async def submit_transaction(self, transaction):
+        # FIXME
+        await self.submit_query_and_fetchone(
+            _INSERT_TRANSACTIONS_VALUES_QUERY,
+            {"uuid": transaction.uuid, "status": transaction.status.value},
+            lock=transaction.uuid.int & (1 << 32) - 1,
+        )
 
     async def _select(self, **kwargs) -> AsyncIterator[RepositoryEntry]:
         query = self._build_select_query(**kwargs)
@@ -155,7 +173,7 @@ VALUES (
     CASE %(aggregate_uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
     %(aggregate_name)s,
     (
-        SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(version) + 1 END)
+        SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(version), 0) ELSE %(version)s END)
         FROM aggregate_event
         WHERE aggregate_uuid = %(aggregate_uuid)s
           AND aggregate_name = %(aggregate_name)s
@@ -179,4 +197,49 @@ RETURNING id, aggregate_uuid, version, created_at;
 _SELECT_ALL_ENTRIES_QUERY = """
 SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid
 FROM aggregate_event
+""".strip()
+
+_CREATE_TRANSACTION_STATUS_ENUM_QUERY = """
+DO
+$$
+    BEGIN
+        IF NOT EXISTS(SELECT *
+                      FROM pg_type typ
+                               INNER JOIN pg_namespace nsp
+                                          ON nsp.oid = typ.typnamespace
+                      WHERE nsp.nspname = current_schema()
+                        AND typ.typname = 'transaction_status') THEN
+            CREATE TYPE transaction_status AS ENUM ('created', 'pending', 'committed', 'rejected');
+        END IF;
+    END;
+$$
+LANGUAGE plpgsql;
+""".strip()
+
+_CREATE_TRANSACTION_TABLE_QUERY = """
+CREATE TABLE IF NOT EXISTS aggregate_transaction (
+    uuid UUID PRIMARY KEY,
+    status TRANSACTION_STATUS NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+""".strip()
+
+
+_INSERT_TRANSACTIONS_VALUES_QUERY = """
+INSERT INTO aggregate_transaction (uuid, status, updated_at)
+VALUES (
+    CASE %(uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(uuid)s END,
+    %(status)s,
+    default
+)
+ON CONFLICT (uuid)
+DO
+   UPDATE SET status = %(status)s, updated_at = NOW()
+RETURNING uuid, created_at, updated_at;
+""".strip()
+
+_SELECT_ALL_TRANSACTIONS_QUERY = """
+SELECT uuid, status, created_at, updated_at
+FROM aggregate_transaction
 """.strip()

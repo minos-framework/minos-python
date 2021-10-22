@@ -45,6 +45,7 @@ from .entries import (
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,
     RepositoryTransaction,
+    RepositoryTransactionStatus,
 )
 
 if TYPE_CHECKING:
@@ -113,18 +114,24 @@ class MinosRepository(ABC, MinosSetup):
         :return: TODO
         """
         entries = list()
-        async for entry in self.select(transaction_uuid=transaction.uuid):
-            new = RepositoryEntry(
-                aggregate_uuid=entry.aggregate_uuid,
-                aggregate_name=entry.aggregate_name,
-                version=entry.version,
-                data=entry.data,
-                action=entry.action,
-                created_at=entry.created_at,
-            )
-            committed = await self.submit(new)
-            entries.append(committed)
-
+        try:
+            async for entry in self.select(transaction_uuid=transaction.uuid):
+                new = RepositoryEntry(
+                    aggregate_uuid=entry.aggregate_uuid,
+                    aggregate_name=entry.aggregate_name,
+                    version=entry.version,
+                    data=entry.data,
+                    action=entry.action,
+                    created_at=entry.created_at,
+                )
+                committed = await self.submit(new)
+                entries.append(committed)
+            transaction.status = RepositoryTransactionStatus.COMMITTED
+        except Exception as exc:
+            transaction.status = RepositoryTransactionStatus.REJECTED
+            raise exc
+        finally:
+            await self.submit_transaction(transaction)
         return entries
 
     async def submit(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
@@ -161,6 +168,9 @@ class MinosRepository(ABC, MinosSetup):
         :return: TODO
         """
         return RepositoryTransaction(self, **kwargs)
+
+    async def submit_transaction(self, transaction: RepositoryTransaction):
+        """TODO"""
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
