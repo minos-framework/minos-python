@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
     data BYTEA NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL,
     transaction_uuid UUID NOT NULL DEFAULT %(null_uuid)s,
     UNIQUE (aggregate_uuid, aggregate_name, version, transaction_uuid)
 );
