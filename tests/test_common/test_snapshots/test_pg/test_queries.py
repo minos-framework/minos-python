@@ -38,7 +38,6 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         super().setUp()
         self.base_parameters = {
             "aggregate_name": "path.to.Aggregate",
-            "null_uuid": NULL_UUID,
             "transaction_uuid": NULL_UUID,
         }
 

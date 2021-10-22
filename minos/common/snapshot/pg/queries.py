@@ -87,7 +87,6 @@ class PostgreSqlSnapshotQueryBuilder:
     def _build(self) -> Composable:
         self._parameters["aggregate_name"] = self.aggregate_name
         self._parameters["transaction_uuid"] = self.transaction_uuid
-        self._parameters["null_uuid"] = NULL_UUID
 
         query = SQL(" WHERE ").join([_SELECT_MULTIPLE_ENTRIES_QUERY, self._build_condition(self.condition)])
 
@@ -212,7 +211,7 @@ _SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
     "FROM ("
     "   SELECT DISTINCT ON (aggregate_name, aggregate_uuid) * "
     "   FROM snapshot "
-    "   WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid IN (%(transaction_uuid)s, %(null_uuid)s) "
+    "   WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid IN (%(transaction_uuid)s, uuid_nil()) "
     "   ORDER BY aggregate_name, aggregate_uuid, transaction_uuid DESC"
     ") s "
 )
