@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS snapshot (
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),
-    PRIMARY KEY (aggregate_uuid, aggregate_name, transaction_uuid)
+    PRIMARY KEY (aggregate_uuid, transaction_uuid)
 );
 """.strip()
 
