@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
     data BYTEA NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),
-    UNIQUE (aggregate_uuid, aggregate_name, version, transaction_uuid)
+    UNIQUE (aggregate_uuid, version, transaction_uuid)
 );
 """.strip()
 

@@ -39,6 +39,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
         self.uuid = uuid4()
         self.uuid_1 = uuid4()
         self.uuid_2 = uuid4()
+        self.uuid_4 = uuid4()
         self.broker = FakeBroker()
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
@@ -118,7 +119,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
                 RepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8"), 4, Action.UPDATE),
                 RepositoryEntry(self.uuid_1, "example.Car", 4, bytes(), 5, Action.DELETE),
                 RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8"), 6, Action.UPDATE),
-                RepositoryEntry(self.uuid_1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
+                RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
             ]
             observed = [v async for v in repository.select()]
             self._assert_equal_entries(expected, observed)
@@ -153,7 +154,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             expected = [
                 RepositoryEntry(self.uuid_1, "example.Car", 4, bytes(), 5, Action.DELETE),
                 RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8"), 6, Action.UPDATE),
-                RepositoryEntry(self.uuid_1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
+                RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
             ]
             observed = [v async for v in repository.select(id_gt=4)]
             self._assert_equal_entries(expected, observed)
@@ -174,7 +175,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             expected = [
                 RepositoryEntry(self.uuid_1, "example.Car", 4, bytes(), 5, Action.DELETE),
                 RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8"), 6, Action.UPDATE),
-                RepositoryEntry(self.uuid_1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
+                RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
             ]
             observed = [v async for v in repository.select(id_ge=5)]
             self._assert_equal_entries(expected, observed)
@@ -191,7 +192,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
     async def test_select_aggregate_name(self):
         async with (await self._build_repository()) as repository:
             expected = [
-                RepositoryEntry(self.uuid_1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
+                RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
             ]
             observed = [v async for v in repository.select(aggregate_name="example.MotorCycle")]
             self._assert_equal_entries(expected, observed)
@@ -209,7 +210,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             expected = [
                 RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE),
                 RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8"), 3, Action.CREATE),
-                RepositoryEntry(self.uuid_1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
+                RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
             ]
             observed = [v async for v in repository.select(version_lt=2)]
             self._assert_equal_entries(expected, observed)
@@ -230,7 +231,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             expected = [
                 RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE),
                 RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8"), 3, Action.CREATE),
-                RepositoryEntry(self.uuid_1, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
+                RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
             ]
             observed = [v async for v in repository.select(version_le=1)]
             self._assert_equal_entries(expected, observed)
@@ -263,7 +264,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
             await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
             await repository.delete(RepositoryEntry(self.uuid_1, "example.Car", 4))
             await repository.update(RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
-            await repository.create(RepositoryEntry(self.uuid_1, "example.MotorCycle", 1, bytes("one", "utf-8")))
+            await repository.create(RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
             return repository
 
     def _assert_equal_entries(self, expected: list[RepositoryEntry], observed: list[RepositoryEntry]) -> None:

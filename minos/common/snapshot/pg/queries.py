@@ -209,11 +209,18 @@ _ORDERING_MAPPER = {
 _SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
     "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
     "FROM ("
-    "   SELECT DISTINCT ON (aggregate_name, aggregate_uuid) * "
-    "   FROM snapshot "
-    "   WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid IN (%(transaction_uuid)s, uuid_nil()) "
-    "   ORDER BY aggregate_name, aggregate_uuid, transaction_uuid DESC"
-    ") s "
+    "   SELECT DISTINCT ON (aggregate_uuid) * "
+    "   FROM ( "
+    "           SELECT 0 AS transaction_index, * "
+    "           FROM snapshot "
+    "           WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = uuid_nil() "
+    "      UNION "
+    "           SELECT 1 AS transaction_index, * "
+    "           FROM snapshot "
+    "           WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = %(transaction_uuid)s "
+    "   )  AS s1 "
+    "   ORDER BY aggregate_uuid, transaction_index DESC "
+    ") AS s2"
 )
 
 _EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")

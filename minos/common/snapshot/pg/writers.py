@@ -187,7 +187,7 @@ VALUES (
     %(updated_at)s,
     %(transaction_uuid)s
 )
-ON CONFLICT (aggregate_uuid, aggregate_name, transaction_uuid)
+ON CONFLICT (aggregate_uuid, transaction_uuid)
 DO
    UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;
