@@ -26,9 +26,6 @@ from ...repository import (
     MinosRepository,
     RepositoryEntry,
 )
-from ...uuid import (
-    NULL_UUID,
-)
 from ..entries import (
     SnapshotEntry,
 )
@@ -147,7 +144,6 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
             "aggregate_uuid": aggregate_uuid,
             "aggregate_name": aggregate_name,
             "transaction_uuid": transaction_uuid,
-            "null_uuid": NULL_UUID,
         }
         raw = await self.submit_query_and_fetchone(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, parameters, **kwargs)
         return SnapshotEntry(aggregate_uuid, aggregate_name, *raw, transaction_uuid=transaction_uuid)
@@ -174,7 +170,7 @@ WHERE
             WHERE aggregate_uuid = %(aggregate_uuid)s
             AND aggregate_name = %(aggregate_name)s
             AND transaction_uuid =  %(transaction_uuid)s
-        ) WHEN 0 THEN %(null_uuid)s ELSE %(transaction_uuid)s END
+        ) WHEN 0 THEN uuid_nil() ELSE %(transaction_uuid)s END
     )
 ;
 """.strip()
@@ -191,7 +187,7 @@ VALUES (
     %(updated_at)s,
     %(transaction_uuid)s
 )
-ON CONFLICT (aggregate_uuid, aggregate_name, transaction_uuid)
+ON CONFLICT (aggregate_uuid, transaction_uuid)
 DO
    UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;

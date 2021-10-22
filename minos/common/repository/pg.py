@@ -38,7 +38,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
     async def _create_events_table(self):
         await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock=hash("aggregate_event"))
         await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
-        await self.submit_query(_CREATE_TABLE_QUERY, {"null_uuid": NULL_UUID}, lock=hash("aggregate_event"))
+        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("aggregate_event"))
 
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         params = {
@@ -46,7 +46,6 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             "aggregate_uuid": entry.aggregate_uuid,
             "aggregate_name": entry.aggregate_name,
             "data": entry.data,
-            "null_uuid": NULL_UUID,
             "transaction_uuid": entry.transaction_uuid,
             "created_at": None if entry.created_at == NULL_DATETIME else entry.created_at,
         }
@@ -143,8 +142,8 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
     version INT NOT NULL,
     data BYTEA NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
-    transaction_uuid UUID NOT NULL DEFAULT %(null_uuid)s,
-    UNIQUE (aggregate_uuid, aggregate_name, version, transaction_uuid)
+    transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),
+    UNIQUE (aggregate_uuid, version, transaction_uuid)
 );
 """.strip()
 
@@ -153,7 +152,7 @@ INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version
 VALUES (
     default,
     %(action)s,
-    CASE %(aggregate_uuid)s WHEN %(null_uuid)s THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
+    CASE %(aggregate_uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
     %(aggregate_name)s,
     (
         SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(version) + 1 END)
@@ -167,7 +166,7 @@ VALUES (
                 WHERE aggregate_uuid = %(aggregate_uuid)s
                     AND aggregate_name = %(aggregate_name)s
                     AND transaction_uuid =  %(transaction_uuid)s
-            ) WHEN 0 THEN %(null_uuid)s ELSE %(transaction_uuid)s END
+            ) WHEN 0 THEN uuid_nil() ELSE %(transaction_uuid)s END
           )
     ),
     %(data)s,
