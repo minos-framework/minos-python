@@ -214,7 +214,7 @@ _SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
     "           SELECT 0 AS transaction_index, * "
     "           FROM snapshot "
     "           WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = uuid_nil() "
-    "      UNION "
+    "      UNION ALL "
     "           SELECT 1 AS transaction_index, * "
     "           FROM snapshot "
     "           WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = %(transaction_uuid)s "
