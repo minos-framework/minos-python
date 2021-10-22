@@ -22,9 +22,6 @@ if TYPE_CHECKING:
     from .abc import (
         MinosRepository,
     )
-    from .repository import (
-        RepositoryEntry,
-    )
 
 TRANSACTION_CONTEXT_VAR: Final[ContextVar[Optional[RepositoryTransaction]]] = ContextVar("transaction", default=None)
 
@@ -38,20 +35,16 @@ class RepositoryTransaction:
         uuid: Optional[UUID] = None,
         autocommit: bool = True,
         status: RepositoryTransactionStatus = None,
-        entries: list[RepositoryEntry] = None,
     ):
         if uuid is None:
             uuid = uuid4()
         if status is None:
             status = RepositoryTransactionStatus.CREATED
-        if entries is None:
-            entries = list()
 
         self.repository = repository
         self.uuid = uuid
         self.autocommit = autocommit
         self.status = status
-        self.entries = entries
         self._token = None
 
     async def __aenter__(self):

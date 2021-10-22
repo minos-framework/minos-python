@@ -142,10 +142,6 @@ class MinosRepository(ABC, MinosSetup):
 
         entry = await self._submit(entry)
 
-        transaction = TRANSACTION_CONTEXT_VAR.get()
-        if transaction is not None:
-            transaction.entries.append(entry)
-
         if entry.transaction_uuid == NULL_UUID:
             await self._send_events(entry.aggregate_diff)
 
