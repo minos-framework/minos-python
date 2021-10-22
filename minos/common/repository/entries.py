@@ -78,10 +78,11 @@ class RepositoryEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_aggregate_diff(cls, aggregate_diff: AggregateDiff) -> RepositoryEntry:
+    def from_aggregate_diff(cls, aggregate_diff: AggregateDiff, **kwargs) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate_diff: The aggregate difference.
+        :param kwargs: Additional named arguments.
         :return: A new ``RepositoryEntry`` instance.
         """
         # noinspection PyTypeChecker
@@ -92,6 +93,7 @@ class RepositoryEntry:
             data=aggregate_diff.fields_diff.avro_bytes,
             created_at=aggregate_diff.created_at,
             action=aggregate_diff.action,
+            **kwargs,
         )
 
     @property
