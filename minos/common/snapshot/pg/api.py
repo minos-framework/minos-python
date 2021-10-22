@@ -87,6 +87,7 @@ class PostgreSqlSnapshot(MinosSnapshot):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -99,6 +100,7 @@ class PostgreSqlSnapshot(MinosSnapshot):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param transaction_uuid: TODO
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """

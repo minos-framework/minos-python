@@ -19,6 +19,9 @@ from ...queries import (
     _Condition,
     _Ordering,
 )
+from ...repository import (
+    TRANSACTION_CONTEXT_VAR,
+)
 from ...uuid import (
     NULL_UUID,
 )
@@ -59,7 +62,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         return aggregate
 
     async def get_entry(
-        self, aggregate_name: str, uuid: UUID, transaction_uuid: UUID = NULL_UUID, **kwargs
+        self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
     ) -> SnapshotEntry:
         """Get an ``SnapshotEntry`` from its identifier.
 
@@ -69,6 +72,13 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
+        if transaction_uuid is None:
+            transaction = TRANSACTION_CONTEXT_VAR.get()
+            if transaction is None:
+                transaction_uuid = NULL_UUID
+            else:
+                transaction_uuid = transaction.uuid
+
         parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid, "transaction_uuid": transaction_uuid}
 
         async with self.cursor() as cursor:
@@ -86,7 +96,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
-        transaction_uuid: UUID = NULL_UUID,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -115,7 +125,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
-        transaction_uuid: UUID = NULL_UUID,
+        transaction_uuid: Optional[UUID] = None,
         exclude_deleted: bool = True,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
@@ -135,6 +145,13 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
+        if transaction_uuid is None:
+            transaction = TRANSACTION_CONTEXT_VAR.get()
+            if transaction is None:
+                transaction_uuid = NULL_UUID
+            else:
+                transaction_uuid = transaction.uuid
+
         qb = PostgreSqlSnapshotQueryBuilder(
             aggregate_name, condition, ordering, limit, transaction_uuid, exclude_deleted,
         )
@@ -157,5 +174,8 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
 _SELECT_ENTRY_BY_UUID_QUERY = """
 SELECT version, schema, data, created_at, updated_at
 FROM snapshot
-WHERE aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s
+WHERE
+    aggregate_name = %(aggregate_name)s
+    AND aggregate_uuid = %(aggregate_uuid)s
+    AND transaction_uuid = %(transaction_uuid)s
 """.strip()

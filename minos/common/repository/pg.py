@@ -45,6 +45,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             "data": entry.data,
             "null_uuid": NULL_UUID,
             "transaction_uuid": entry.transaction_uuid,
+            "created_at": entry.created_at,
         }
 
         lock = None
@@ -75,6 +76,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> str:
         conditions = list()
@@ -103,6 +105,8 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             conditions.append("id <= %(id_le)s")
         if id_ge is not None:
             conditions.append("id >= %(id_ge)s")
+        if transaction_uuid is not None:
+            conditions.append("transaction_uuid = %(transaction_uuid)s")
 
         if not conditions:
             return f"{_SELECT_ALL_ENTRIES_QUERY} ORDER BY id;"
@@ -164,7 +168,7 @@ VALUES (
           )
     ),
     %(data)s,
-    default,
+    (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),
     %(transaction_uuid)s
 )
 RETURNING id, aggregate_uuid, version, created_at;

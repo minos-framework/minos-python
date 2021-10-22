@@ -36,8 +36,15 @@ from ..networks import (
 from ..setup import (
     MinosSetup,
 )
+from ..uuid import (
+    NULL_UUID,
+)
 from .entries import (
     RepositoryEntry,
+)
+from .transactions import (
+    TRANSACTION_CONTEXT_VAR,
+    RepositoryTransaction,
 )
 
 if TYPE_CHECKING:
@@ -99,6 +106,27 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
+    async def commit(self, transaction: RepositoryTransaction) -> list[RepositoryEntry]:
+        """TODO
+
+        :param transaction: TODO
+        :return: TODO
+        """
+        entries = list()
+        async for entry in self.select(transaction_uuid=transaction.uuid):
+            new = RepositoryEntry(
+                aggregate_uuid=entry.aggregate_uuid,
+                aggregate_name=entry.aggregate_name,
+                version=entry.version,
+                data=entry.data,
+                action=entry.action,
+                created_at=entry.created_at,
+            )
+            committed = await self.submit(new)
+            entries.append(committed)
+
+        return entries
+
     async def submit(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new entry into the repository.
 
@@ -110,13 +138,33 @@ class MinosRepository(ABC, MinosSetup):
         )
 
         if isinstance(entry, AggregateDiff):
-            entry = RepositoryEntry.from_aggregate_diff(entry)
+            entry = RepositoryEntry.from_aggregate_diff(entry, transaction_uuid=self._transaction_uuid)
 
         entry = await self._submit(entry)
 
-        await self._send_events(entry.aggregate_diff)
+        transaction = TRANSACTION_CONTEXT_VAR.get()
+        if transaction is not None:
+            transaction.entries.append(entry)
+
+        if entry.transaction_uuid == NULL_UUID:
+            await self._send_events(entry.aggregate_diff)
 
         return entry
+
+    @property
+    def _transaction_uuid(self) -> UUID:
+        transaction = TRANSACTION_CONTEXT_VAR.get()
+        if transaction is None:
+            return NULL_UUID
+        return transaction.uuid
+
+    def begin(self, **kwargs) -> RepositoryTransaction:
+        """TODO
+
+        :param kwargs: TODO
+        :return: TODO
+        """
+        return RepositoryTransaction(self, **kwargs)
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
@@ -169,6 +217,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
@@ -185,6 +234,7 @@ class MinosRepository(ABC, MinosSetup):
         :param id_gt: Entry identifier greater than the given value.
         :param id_le: Entry identifier lower or equal to the given value.
         :param id_ge: Entry identifier greater or equal to the given value.
+        :param transaction_uuid: TODO
         :return: A list of entries.
         """
         generator = self._select(
@@ -200,6 +250,7 @@ class MinosRepository(ABC, MinosSetup):
             id_gt=id_gt,
             id_le=id_le,
             id_ge=id_ge,
+            transaction_uuid=transaction_uuid,
             **kwargs,
         )
         # noinspection PyTypeChecker

@@ -11,6 +11,7 @@ from .pg import (
     PostgreSqlRepository,
 )
 from .transactions import (
+    TRANSACTION_CONTEXT_VAR,
     RepositoryTransaction,
     RepositoryTransactionStatus,
 )
