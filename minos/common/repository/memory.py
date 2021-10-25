@@ -17,11 +17,11 @@ from uuid import (
     uuid4,
 )
 
-from .. import (
-    MinosRepositoryException,
-)
 from ..datetime import (
     current_datetime,
+)
+from ..exceptions import (
+    MinosRepositoryException,
 )
 from ..uuid import (
     NULL_UUID,
