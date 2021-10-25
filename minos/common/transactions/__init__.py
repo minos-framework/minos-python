@@ -5,6 +5,7 @@ from .models import (
     Transaction,
     TransactionStatus,
 )
-from .pg import (
+from .repositories import (
     PostgreSqlTransactionRepository,
+    TransactionRepository,
 )

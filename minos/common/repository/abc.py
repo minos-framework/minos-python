@@ -109,7 +109,7 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def _commit_transaction(self, transaction: Transaction) -> list[RepositoryEntry]:
+    async def _commit_transaction(self, transaction: Transaction) -> int:
         """TODO
 
         :param transaction: TODO
@@ -120,7 +120,7 @@ class MinosRepository(ABC, MinosSetup):
             new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
             committed = await self.submit(new)
             entries.append(committed)
-        return entries
+        return max(e.id for e in entries)
 
     async def submit(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new entry into the repository.
@@ -146,8 +146,7 @@ class MinosRepository(ABC, MinosSetup):
         if transaction is None:
             await self._send_events(entry.aggregate_diff)
         else:
-            transaction.status = TransactionStatus.PENDING
-            await transaction.save()
+            await transaction.save(event_offset=entry.id, status=TransactionStatus.PENDING)
 
         return entry
 

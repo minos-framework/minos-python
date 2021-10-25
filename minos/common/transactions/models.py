@@ -20,6 +20,9 @@ from dependency_injector.wiring import (
     inject,
 )
 
+from ..exceptions import (
+    MinosRepositoryConflictException,
+)
 from .contextvars import (
     TRANSACTION_CONTEXT_VAR,
 )
@@ -28,8 +31,8 @@ if TYPE_CHECKING:
     from ..repository import (
         MinosRepository,
     )
-    from .pg import (
-        PostgreSqlTransactionRepository,
+    from .repositories import (
+        TransactionRepository,
     )
 
 logger = logging.getLogger(__name__)
@@ -41,23 +44,26 @@ class Transaction:
     @inject
     def __init__(
         self,
-        event_repository: MinosRepository = Provide["transaction_repository"],
-        transaction_repository: PostgreSqlTransactionRepository = Provide["transaction_repository"],
         uuid: Optional[UUID] = None,
-        autocommit: bool = True,
         status: TransactionStatus = None,
+        event_offset: Optional[int] = None,
+        autocommit: bool = True,
+        event_repository: MinosRepository = Provide["repository"],
+        transaction_repository: TransactionRepository = Provide["transaction_repository"],
     ):
         if uuid is None:
             uuid = uuid4()
         if status is None:
             status = TransactionStatus.CREATED
 
-        self.event_repository = event_repository
-        self.transaction_repository = transaction_repository
-
         self.uuid = uuid
         self.autocommit = autocommit
         self.status = status
+        self.event_offset = event_offset
+
+        self.event_repository = event_repository
+        self.transaction_repository = transaction_repository
+
         self._token = None
 
     async def __aenter__(self):
@@ -81,20 +87,24 @@ class Transaction:
 
         try:
             # noinspection PyProtectedMember
-            await self.event_repository._commit_transaction(self)
-            self.status = TransactionStatus.COMMITTED
-        except Exception as exc:
-            self.status = TransactionStatus.REJECTED
+            event_offset = await self.event_repository._commit_transaction(self)
+            await self.save(event_offset, status=TransactionStatus.COMMITTED)
+        except MinosRepositoryConflictException as exc:
+            await self.save(exc.offset, status=TransactionStatus.REJECTED)
             raise exc
-        finally:
-            await self.save()
 
-    async def save(self):
+    async def save(self, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None):
         """TODO"""
+
+        if event_offset is not None:
+            self.event_offset = event_offset
+        if status is not None:
+            self.status = status
+
         await self.transaction_repository.submit(self)
 
     def __repr__(self):
-        return f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r})"
+        return f"{type(self).__name__}(uuid={self.uuid!r}, event_offset={self.event_offset!r},  status={self.status!r})"
 
 
 class TransactionStatus(str, Enum):

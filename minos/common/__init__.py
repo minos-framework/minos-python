@@ -161,6 +161,7 @@ from .storage import (
 from .transactions import (
     PostgreSqlTransactionRepository,
     Transaction,
+    TransactionRepository,
     TransactionStatus,
 )
 from .uuid import (
