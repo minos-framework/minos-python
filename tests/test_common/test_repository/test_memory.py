@@ -1,4 +1,8 @@
 import unittest
+from datetime import (
+    datetime,
+    timezone,
+)
 from unittest.mock import (
     patch,
 )
@@ -13,6 +17,7 @@ from minos.common import (
     InMemoryRepository,
     MinosBrokerNotProvidedException,
     MinosRepository,
+    MinosRepositoryException,
     RepositoryEntry,
 )
 from tests.utils import (
@@ -30,6 +35,15 @@ class TestInMemoryRepository(TestRepositorySelect):
         )
         self.field_diff_container_patcher.start()
 
+    async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+        self.repository = InMemoryRepository(self.broker)
+        await self.repository.setup()
+
+    async def asyncTearDown(self) -> None:
+        await self.repository.destroy()
+        await super().asyncTearDown()
+
     def tearDown(self):
         self.field_diff_container_patcher.stop()
 
@@ -42,29 +56,50 @@ class TestInMemoryRepository(TestRepositorySelect):
             InMemoryRepository()
 
     async def test_create(self):
-        async with InMemoryRepository(self.broker) as repository:
-            await repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
-            expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE)]
-            observed = [v async for v in repository.select()]
-            self.assert_equal_repository_entries(expected, observed)
+        await self.repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
+        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE)]
+        observed = [v async for v in self.repository.select()]
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_update(self):
-        async with InMemoryRepository(self.broker) as repository:
-            await repository.update(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
-            expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.UPDATE)]
-            observed = [v async for v in repository.select()]
-            self.assert_equal_repository_entries(expected, observed)
+        await self.repository.update(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
+        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.UPDATE)]
+        observed = [v async for v in self.repository.select()]
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_delete(self):
-        async with InMemoryRepository(self.broker) as repository:
-            await repository.delete(RepositoryEntry(self.uuid, "example.Car", 1, bytes()))
-            expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.DELETE)]
-            observed = [v async for v in repository.select()]
-            self.assert_equal_repository_entries(expected, observed)
+        await self.repository.delete(RepositoryEntry(self.uuid, "example.Car", 1, bytes()))
+        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.DELETE)]
+        observed = [v async for v in self.repository.select()]
+        self.assert_equal_repository_entries(expected, observed)
+
+    async def test_submit(self):
+        await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", action=Action.CREATE))
+        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE)]
+        observed = [v async for v in self.repository.select()]
+        self.assert_equal_repository_entries(expected, observed)
+
+    async def test_submit_with_version(self):
+        await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
+        expected = [RepositoryEntry(self.uuid, "example.Car", 3, bytes(), 1, Action.CREATE)]
+        observed = [v async for v in self.repository.select()]
+        self.assert_equal_repository_entries(expected, observed)
+
+    async def test_submit_with_created_at(self):
+        created_at = datetime(2021, 10, 25, 8, 30, tzinfo=timezone.utc)
+        await self.repository.submit(
+            RepositoryEntry(self.uuid, "example.Car", created_at=created_at, action=Action.CREATE)
+        )
+        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE, created_at=created_at)]
+        observed = [v async for v in self.repository.select()]
+        self.assert_equal_repository_entries(expected, observed)
+
+    async def test_submit_raises(self):
+        with self.assertRaises(MinosRepositoryException):
+            await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, "foo".encode()))
 
     async def test_select_empty(self):
-        repository = InMemoryRepository(self.broker)
-        self.assertEqual([], [v async for v in repository.select()])
+        self.assertEqual([], [v async for v in self.repository.select()])
 
 
 class TestInMemoryRepositorySelect(TestRepositorySelect):

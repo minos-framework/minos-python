@@ -29,6 +29,7 @@ from ..configuration import (
 )
 from ..exceptions import (
     MinosBrokerNotProvidedException,
+    MinosRepositoryException,
 )
 from ..networks import (
     MinosBroker,
@@ -106,11 +107,15 @@ class MinosRepository(ABC, MinosSetup):
         :return: The repository entry containing the stored information.
         """
         from ..model import (
+            Action,
             AggregateDiff,
         )
 
         if isinstance(entry, AggregateDiff):
             entry = RepositoryEntry.from_aggregate_diff(entry)
+
+        if not isinstance(entry.action, Action):
+            raise MinosRepositoryException("The 'RepositoryEntry.action' attribute must be an 'Action' instance.")
 
         entry = await self._submit(entry)
 

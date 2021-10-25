@@ -51,7 +51,7 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(e.data, o.data)
             self.assertEqual(e.id, o.id)
             self.assertEqual(e.action, o.action)
-            self.assertAlmostEqual(current_datetime(), o.created_at, delta=timedelta(seconds=5))
+            self.assertAlmostEqual(e.created_at or current_datetime(), o.created_at, delta=timedelta(seconds=5))
 
 
 class FakeRepository(MinosRepository):
