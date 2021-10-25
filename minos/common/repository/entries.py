@@ -104,6 +104,16 @@ class RepositoryEntry:
             **kwargs,
         )
 
+    @classmethod
+    def from_another(cls, another: RepositoryEntry, **kwargs) -> RepositoryEntry:
+        """Build a new instance from another ``RepositoryEntry``.
+
+        :param another: The ``RepositoryEntry``.
+        :param kwargs: Additional named arguments.
+        :return: A new ``RepositoryEntry`` instance.
+        """
+        return cls(**(another.as_raw() | kwargs | {"id": None}))
+
     def as_raw(self) -> dict[str, Any]:
         """Get a raw representation of the instance.
 

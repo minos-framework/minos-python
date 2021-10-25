@@ -43,6 +43,9 @@ from ..transactions import (
     Transaction,
     TransactionStatus,
 )
+from ..uuid import (
+    NULL_UUID,
+)
 from .entries import (
     RepositoryEntry,
 )
@@ -114,22 +117,15 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def _commit_transaction(self, transaction_uuid: UUID) -> list[RepositoryEntry]:
+    async def _commit_transaction(self, transaction: Transaction) -> list[RepositoryEntry]:
         """TODO
 
-        :param transaction_uuid: TODO
+        :param transaction: TODO
         :return: TODO
         """
         entries = list()
-        async for entry in self.select(transaction_uuid=transaction_uuid):
-            new = RepositoryEntry(
-                aggregate_uuid=entry.aggregate_uuid,
-                aggregate_name=entry.aggregate_name,
-                version=entry.version,
-                data=entry.data,
-                action=entry.action,
-                created_at=entry.created_at,
-            )
+        async for entry in self.select(transaction_uuid=transaction.uuid):
+            new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
             committed = await self.submit(new)
             entries.append(committed)
         return entries

@@ -81,7 +81,7 @@ class Transaction:
 
         try:
             # noinspection PyProtectedMember
-            await self.event_repository._commit_transaction(self.uuid)
+            await self.event_repository._commit_transaction(self)
             self.status = TransactionStatus.COMMITTED
         except Exception as exc:
             self.status = TransactionStatus.REJECTED
