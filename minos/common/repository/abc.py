@@ -39,7 +39,6 @@ from ..setup import (
 )
 from ..transactions import (
     TRANSACTION_CONTEXT_VAR,
-    PostgreSqlTransactionRepository,
     Transaction,
     TransactionStatus,
 )
@@ -60,19 +59,12 @@ class MinosRepository(ABC, MinosSetup):
     """Base repository class in ``minos``."""
 
     @inject
-    def __init__(
-        self,
-        event_broker: MinosBroker = Provide["event_broker"],
-        transaction_repository: PostgreSqlTransactionRepository = Provide["transaction_repository"],
-        *args,
-        **kwargs,
-    ):
+    def __init__(self, event_broker: MinosBroker = Provide["event_broker"], *args, **kwargs):
         super().__init__(*args, **kwargs)
         if event_broker is None or isinstance(event_broker, Provide):
             raise MinosBrokerNotProvidedException("A broker instance is required.")
 
         self._broker = event_broker
-        self._transaction_repository = transaction_repository
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
@@ -169,7 +161,7 @@ class MinosRepository(ABC, MinosSetup):
         :param kwargs: TODO
         :return: TODO
         """
-        return Transaction(self, self._transaction_repository, **kwargs)
+        return Transaction(event_repository=self, **kwargs)
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:

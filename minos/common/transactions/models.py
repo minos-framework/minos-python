@@ -91,10 +91,6 @@ class Transaction:
 
     async def save(self):
         """TODO"""
-
-        if not isinstance(self.transaction_repository, PostgreSqlTransactionRepository):
-            logger.warning("TransactionRepository is not configured...")
-            return
         await self.transaction_repository.submit(self)
 
     def __repr__(self):
