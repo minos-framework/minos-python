@@ -96,9 +96,9 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
     async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:
-            return await self._submit_delete(event_entry, transaction_uuid=event_entry.transaction_uuid, **kwargs)
+            return await self._submit_delete(event_entry, **kwargs)
 
-        return await self._submit_update_or_create(event_entry, transaction_uuid=event_entry.transaction_uuid, **kwargs)
+        return await self._submit_update_or_create(event_entry, **kwargs)
 
     async def _submit_delete(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         snapshot_entry = SnapshotEntry.from_event_entry(event_entry)
@@ -114,7 +114,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
     async def _build_instance(self, event_entry: RepositoryEntry, **kwargs) -> Aggregate:
         diff = event_entry.aggregate_diff
-        instance = await self._update_if_exists(diff, **kwargs)
+        instance = await self._update_if_exists(diff, transaction_uuid=event_entry.transaction_uuid, **kwargs)
         return instance
 
     async def _update_if_exists(self, aggregate_diff: AggregateDiff, **kwargs) -> Aggregate:
