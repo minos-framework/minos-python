@@ -38,20 +38,11 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("aggregate_event"))
 
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
-        params = {
-            "action": entry.action.value,
-            "aggregate_uuid": entry.aggregate_uuid,
-            "aggregate_name": entry.aggregate_name,
-            "version": entry.version,
-            "data": entry.data,
-            "transaction_uuid": entry.transaction_uuid,
-            "created_at": entry.created_at,
-        }
-
         lock = None
         if entry.aggregate_uuid != NULL_UUID:
             lock = entry.aggregate_uuid.int & (1 << 32) - 1
 
+        params = entry.as_raw()
         response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry

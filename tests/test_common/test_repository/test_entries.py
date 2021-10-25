@@ -136,6 +136,37 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         )
         self.assertEqual(expected, repr(entry))
 
+    def test_as_raw(self):
+        id_ = 5678
+        version = 0
+        aggregate_name = "example.Car"
+        data = bytes("car", "utf-8")
+        action = Action.CREATE
+        created_at = datetime(2020, 10, 13, 8, 45, 32)
+        transaction_uuid = uuid4()
+        entry = RepositoryEntry(
+            aggregate_uuid=self.uuid,
+            aggregate_name=aggregate_name,
+            version=version,
+            data=data,
+            id=id_,
+            action=action,
+            created_at=created_at,
+            transaction_uuid=transaction_uuid,
+        )
+        expected = {
+            "aggregate_uuid": self.uuid,
+            "aggregate_name": aggregate_name,
+            "version": version,
+            "data": data,
+            "id": id_,
+            "action": action,
+            "created_at": created_at,
+            "transaction_uuid": transaction_uuid,
+        }
+
+        self.assertEqual(expected, entry.as_raw())
+
 
 if __name__ == "__main__":
     unittest.main()
