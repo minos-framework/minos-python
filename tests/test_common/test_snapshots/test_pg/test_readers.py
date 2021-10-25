@@ -132,6 +132,30 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         ]
         self.assertEqual(expected, observed)
 
+    async def test_find_with_transaction_delete(self):
+        condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
+                iterable = snapshot.find(
+                    "tests.aggregate_classes.Car",
+                    condition,
+                    ordering=Ordering.ASC("updated_at"),
+                    transaction_uuid=self.second_transaction,
+                )
+                observed = [v async for v in iterable]
+
+        expected = [
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_3,
+                version=1,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
+            ),
+        ]
+        self.assertEqual(expected, observed)
+
     async def test_find_streaming_true(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
@@ -198,6 +222,28 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         expected = set()
         self.assertEqual(expected, observed)
 
+    async def test_get(self):
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
+                observed = await snapshot.get("tests.aggregate_classes.Car", self.uuid_2)
+
+        expected = Car(
+            3, "blue", uuid=self.uuid_2, version=2, created_at=observed.created_at, updated_at=observed.updated_at,
+        )
+        self.assertEqual(expected, observed)
+
+    async def test_get_with_transaction(self):
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
+                observed = await snapshot.get(
+                    "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.first_transaction
+                )
+
+        expected = Car(
+            3, "blue", uuid=self.uuid_2, version=4, created_at=observed.created_at, updated_at=observed.updated_at,
+        )
+        self.assertEqual(expected, observed)
+
     async def test_get_raises(self):
         async with await self._populate():
             async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
@@ -205,6 +251,14 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
                     await snapshot.get("tests.aggregate_classes.Car", self.uuid_1)
                 with self.assertRaises(MinosSnapshotAggregateNotFoundException):
                     await snapshot.get("tests.aggregate_classes.Car", uuid4())
+
+    async def test_get_with_transaction_raises(self):
+        async with await self._populate():
+            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
+                with self.assertRaises(MinosSnapshotDeletedAggregateException):
+                    await snapshot.get(
+                        "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.second_transaction
+                    )
 
     async def test_find(self):
         async with await self._populate():
@@ -287,10 +341,8 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
                     self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.first_transaction
                 )
             )
-            await repository.update(
-                RepositoryEntry(
-                    self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.second_transaction
-                )
+            await repository.delete(
+                RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.second_transaction)
             )
             await repository.update(
                 RepositoryEntry(
