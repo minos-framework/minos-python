@@ -66,7 +66,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuid: TODO
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
@@ -100,7 +100,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: TODO
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
@@ -130,7 +130,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: TODO
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
             entries are filtered.
         :param kwargs: Additional named arguments.

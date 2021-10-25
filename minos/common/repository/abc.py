@@ -125,11 +125,7 @@ class MinosRepository(ABC, MinosSetup):
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
-        """Submit a new entry into the events table.
-
-        :param entry: Entry to be submitted.
-        :return: This method does not return anything.
-        """
+        raise NotImplementedError
 
     async def _send_events(self, aggregate_diff: AggregateDiff):
         from ..model import (
@@ -191,7 +187,7 @@ class MinosRepository(ABC, MinosSetup):
         :param id_gt: Entry identifier greater than the given value.
         :param id_le: Entry identifier lower or equal to the given value.
         :param id_ge: Entry identifier greater or equal to the given value.
-        :param transaction_uuid: TODO
+        :param transaction_uuid: Transaction identifier.
         :return: A list of entries.
         """
         generator = self._select(
