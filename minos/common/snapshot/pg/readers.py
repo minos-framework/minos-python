@@ -65,7 +65,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param: transaction_uuid: TODO
+        :param transaction_uuid: TODO
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
