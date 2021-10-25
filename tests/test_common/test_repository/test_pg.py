@@ -24,11 +24,11 @@ from minos.common.testing import (
 from tests.utils import (
     BASE_PATH,
     FakeBroker,
-    assert_equal_repository_entries,
+    TestRepositorySelect,
 )
 
 
-class TestPostgreSqlRepository(PostgresAsyncTestCase):
+class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -89,30 +89,30 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase):
 
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE)]
             observed = [v async for v in repository.select()]
-            assert_equal_repository_entries(self, expected, observed)
+            self.assert_equal_repository_entries(expected, observed)
 
     async def test_update(self):
         async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             await repository.update(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.UPDATE)]
             observed = [v async for v in repository.select()]
-            assert_equal_repository_entries(self, expected, observed)
+            self.assert_equal_repository_entries(expected, observed)
 
     async def test_delete(self):
         async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             await repository.delete(RepositoryEntry(self.uuid, "example.Car", 1, bytes()))
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.DELETE)]
             observed = [v async for v in repository.select()]
-            assert_equal_repository_entries(self, expected, observed)
+            self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_empty(self):
         async with PostgreSqlRepository(event_broker=self.broker, **self.repository_db) as repository:
             expected = []
             observed = [v async for v in repository.select()]
-            assert_equal_repository_entries(self, expected, observed)
+            self.assert_equal_repository_entries(expected, observed)
 
 
-class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase):
+class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, TestRepositorySelect):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -210,55 +210,53 @@ class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase):
     async def test_select(self):
         expected = self.entries
         observed = [v async for v in self.repository.select()]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_id(self):
-        expected = [
-            self.entries[1],
-        ]
+        expected = [self.entries[1]]
         observed = [v async for v in self.repository.select(id=2)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_id_lt(self):
         expected = self.entries[:4]
 
         observed = [v async for v in self.repository.select(id_lt=5)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_id_gt(self):
         expected = self.entries[4:]
         observed = [v async for v in self.repository.select(id_gt=4)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_id_le(self):
         expected = self.entries[:4]
         observed = [v async for v in self.repository.select(id_le=4)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_id_ge(self):
         expected = self.entries[4:]
         observed = [v async for v in self.repository.select(id_ge=5)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_aggregate_uuid(self):
         expected = [self.entries[2], self.entries[5], self.entries[7], self.entries[8], self.entries[9]]
         observed = [v async for v in self.repository.select(aggregate_uuid=self.uuid_2)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_aggregate_name(self):
         expected = [self.entries[6]]
         observed = [v async for v in self.repository.select(aggregate_name="example.MotorCycle")]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_version(self):
         expected = [self.entries[4], self.entries[9]]
         observed = [v async for v in self.repository.select(version=4)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_version_lt(self):
         expected = [self.entries[0], self.entries[2], self.entries[6]]
         observed = [v async for v in self.repository.select(version_lt=2)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_version_gt(self):
         expected = [
@@ -271,12 +269,12 @@ class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase):
             self.entries[9],
         ]
         observed = [v async for v in self.repository.select(version_gt=1)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_version_le(self):
         expected = [self.entries[0], self.entries[2], self.entries[6]]
         observed = [v async for v in self.repository.select(version_le=1)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_version_ge(self):
         expected = [
@@ -289,22 +287,22 @@ class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase):
             self.entries[9],
         ]
         observed = [v async for v in self.repository.select(version_ge=2)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_transaction_uuid_null(self):
         expected = self.entries[:7]
         observed = [v async for v in self.repository.select(transaction_uuid=NULL_UUID)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_transaction_uuid(self):
         expected = [self.entries[7], self.entries[9]]
         observed = [v async for v in self.repository.select(transaction_uuid=self.first_transaction)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_combined(self):
         expected = [self.entries[2], self.entries[5], self.entries[7], self.entries[8], self.entries[9]]
         observed = [v async for v in self.repository.select(aggregate_name="example.Car", aggregate_uuid=self.uuid_2)]
-        assert_equal_repository_entries(self, expected, observed)
+        self.assert_equal_repository_entries(expected, observed)
 
 
 if __name__ == "__main__":

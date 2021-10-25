@@ -44,10 +44,12 @@ class InMemoryRepository(MinosRepository):
         """
         if entry.aggregate_uuid == NULL_UUID:
             entry.aggregate_uuid = uuid4()
-        entry.version = self._get_next_version_id(entry.aggregate_name, entry.aggregate_uuid)
+        if entry.version is None:
+            entry.version = self._get_next_version_id(entry.aggregate_name, entry.aggregate_uuid)
+        if entry.created_at is None:
+            entry.created_at = current_datetime()
         entry.id = self._generate_next_id()
         self._storage.append(entry)
-        entry.created_at = current_datetime()
         return entry
 
     def _generate_next_id(self) -> int:
@@ -80,6 +82,7 @@ class InMemoryRepository(MinosRepository):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
+        transaction_uuid: Optional[UUID] = None,
         *args,
         **kwargs
     ) -> AsyncIterator[RepositoryEntry]:
@@ -109,6 +112,8 @@ class InMemoryRepository(MinosRepository):
             if id_le is not None and id_le < entry.id:
                 return False
             if id_ge is not None and id_ge > entry.id:
+                return False
+            if transaction_uuid is not None and transaction_uuid != entry.transaction_uuid:
                 return False
             return True
 
