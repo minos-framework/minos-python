@@ -82,6 +82,15 @@ class Transaction:
         if self.autocommit:
             await self.commit()
 
+    async def reserve(self) -> None:
+        """TODO"""
+        # noinspection PyProtectedMember
+        committable, event_offset = await self.event_repository._check_transaction(self)
+        if committable:
+            await self.save(event_offset=event_offset, status=TransactionStatus.RESERVED)
+        else:
+            await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
+
     async def commit(self) -> None:
         """TODO"""
 
@@ -113,4 +122,5 @@ class TransactionStatus(str, Enum):
     CREATED = "created"
     PENDING = "pending"
     COMMITTED = "committed"
+    RESERVED = "reserved"
     REJECTED = "rejected"

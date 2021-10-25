@@ -195,7 +195,7 @@ class RepositoryEntry:
         return (
             f"{type(self).__name__}("
             f"aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
-            f"version={self.version!r}, data={self.data!r}, "
+            f"version={self.version!r}, len(data)={len(self.data)!r}, "
             f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r}, "
             f"transaction_uuid={self.transaction_uuid!r})"
         )

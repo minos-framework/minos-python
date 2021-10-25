@@ -131,7 +131,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         )
         expected = (
             f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name={aggregate_name!r}, version={version!r}, "
-            f"data={data!r}, id={id_!r}, action={action!r}, created_at={created_at!r}, "
+            f"len(data)={len(data)!r}, id={id_!r}, action={action!r}, created_at={created_at!r}, "
             f"transaction_uuid={transaction_uuid!r})"
         )
         self.assertEqual(expected, repr(entry))

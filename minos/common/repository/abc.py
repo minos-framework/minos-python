@@ -29,6 +29,7 @@ from ..configuration import (
 )
 from ..exceptions import (
     MinosBrokerNotProvidedException,
+    MinosRepositoryConflictException,
     MinosRepositoryException,
 )
 from ..networks import (
@@ -40,6 +41,7 @@ from ..setup import (
 from ..transactions import (
     TRANSACTION_CONTEXT_VAR,
     Transaction,
+    TransactionRepository,
     TransactionStatus,
 )
 from ..uuid import (
@@ -59,12 +61,19 @@ class MinosRepository(ABC, MinosSetup):
     """Base repository class in ``minos``."""
 
     @inject
-    def __init__(self, event_broker: MinosBroker = Provide["event_broker"], *args, **kwargs):
+    def __init__(
+        self,
+        event_broker: MinosBroker = Provide["event_broker"],
+        transaction_repository: TransactionRepository = Provide["transaction_repository"],
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         if event_broker is None or isinstance(event_broker, Provide):
             raise MinosBrokerNotProvidedException("A broker instance is required.")
 
         self._broker = event_broker
+        self._transaction_repository = transaction_repository
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
@@ -109,6 +118,26 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
+    async def _check_transaction(self, transaction: Transaction) -> tuple[bool, int]:
+        # FIXME: This check must be within a lock.
+
+        async for entry in self.select(transaction_uuid=transaction.uuid):
+            async for _ in self.select(
+                aggregate_uuid=entry.aggregate_uuid, version=entry.version, transaction_uuid=NULL_UUID
+            ):
+                return False, None
+
+            transaction_uuids = {
+                e.transaction_uuid
+                async for e in self.select(aggregate_uuid=entry.aggregate_uuid, version=entry.version)
+            }
+            async for _ in self._transaction_repository.select(
+                uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
+            ):
+                return False, None
+
+        return True, None
+
     async def _commit_transaction(self, transaction: Transaction) -> int:
         """TODO
 
@@ -118,11 +147,13 @@ class MinosRepository(ABC, MinosSetup):
         entries = list()
         async for entry in self.select(transaction_uuid=transaction.uuid):
             new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
-            committed = await self.submit(new)
+            committed = await self.submit(new, _transaction_uuid=transaction.uuid)
             entries.append(committed)
         return max(e.id for e in entries)
 
-    async def submit(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
+    async def submit(
+        self, entry: Union[AggregateDiff, RepositoryEntry], _transaction_uuid: Optional[UUID] = None
+    ) -> RepositoryEntry:
         """Store new entry into the repository.
 
         :param entry: The entry to be stored.
@@ -140,6 +171,21 @@ class MinosRepository(ABC, MinosSetup):
 
         if not isinstance(entry.action, Action):
             raise MinosRepositoryException("The 'RepositoryEntry.action' attribute must be an 'Action' instance.")
+
+        if transaction is None and isinstance(self._transaction_repository, TransactionRepository):
+            transaction_uuids = {
+                e.transaction_uuid
+                async for e in self.select(aggregate_uuid=entry.aggregate_uuid)
+                if e.transaction_uuid != _transaction_uuid
+            }
+            if len(transaction_uuids):
+                async for transaction in self._transaction_repository.select(
+                    uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
+                ):
+                    raise MinosRepositoryConflictException(
+                        f"The {transaction!r} transaction has already reserved the (uuid, version) key: {entry!r}",
+                        transaction.event_offset,
+                    )
 
         entry = await self._submit(entry)
 

@@ -4,7 +4,6 @@ from abc import (
 )
 from typing import (
     AsyncIterator,
-    Iterable,
     Optional,
 )
 from uuid import (
@@ -34,8 +33,9 @@ class TransactionRepository(ABC, MinosSetup):
     async def select(
         self,
         uuid: Optional[UUID] = None,
+        uuid_in: Optional[tuple[UUID, ...]] = None,
         status: Optional[TransactionStatus] = None,
-        status_in: Optional[Iterable[str]] = None,
+        status_in: Optional[tuple[str, ...]] = None,
         event_offset: Optional[int] = None,
         event_offset_lt: Optional[int] = None,
         event_offset_gt: Optional[int] = None,
@@ -46,6 +46,7 @@ class TransactionRepository(ABC, MinosSetup):
         """TODO"""
         generator = self._select(
             uuid=uuid,
+            uuid_in=uuid_in,
             status=status,
             status_in=status_in,
             event_offset=event_offset,

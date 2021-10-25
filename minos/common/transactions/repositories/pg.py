@@ -4,7 +4,6 @@ from __future__ import (
 
 from typing import (
     AsyncIterator,
-    Iterable,
     Optional,
 )
 from uuid import (
@@ -57,8 +56,9 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
     @staticmethod
     def _build_select_query(
         uuid: Optional[UUID] = None,
+        uuid_in: Optional[tuple[UUID]] = None,
         status: Optional[str] = None,
-        status_in: Optional[Iterable[str]] = None,
+        status_in: Optional[tuple[str]] = None,
         event_offset: Optional[int] = None,
         event_offset_lt: Optional[int] = None,
         event_offset_gt: Optional[int] = None,
@@ -70,6 +70,8 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
 
         if uuid is not None:
             conditions.append("uuid = %(uuid)s")
+        if uuid_in is not None:
+            conditions.append("uuid IN %(uuid_in)s")
         if status is not None:
             conditions.append("status = %(status)s")
         if status_in is not None:
@@ -101,7 +103,7 @@ $$
                                           ON nsp.oid = typ.typnamespace
                       WHERE nsp.nspname = current_schema()
                         AND typ.typname = 'transaction_status') THEN
-            CREATE TYPE transaction_status AS ENUM ('created', 'pending', 'committed', 'rejected');
+            CREATE TYPE transaction_status AS ENUM ('created', 'pending', 'committed', 'reserved', 'rejected');
         END IF;
     END;
 $$
