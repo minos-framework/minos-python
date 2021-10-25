@@ -136,8 +136,6 @@ from .repository import (
     MinosRepository,
     PostgreSqlRepository,
     RepositoryEntry,
-    RepositoryTransaction,
-    RepositoryTransactionStatus,
 )
 from .saga import (
     MinosSagaManager,
@@ -158,6 +156,11 @@ from .snapshot import (
 from .storage import (
     MinosStorage,
     MinosStorageLmdb,
+)
+from .transactions import (
+    PostgreSqlTransactionRepository,
+    Transaction,
+    TransactionStatus,
 )
 from .uuid import (
     NULL_UUID,

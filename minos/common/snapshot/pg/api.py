@@ -68,17 +68,20 @@ class PostgreSqlSnapshot(MinosSnapshot):
         await self.reader.destroy()
         await self.writer.destroy()
 
-    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+    async def get(
+        self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
+    ) -> Aggregate:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
         await self.synchronize(**kwargs)
 
-        return await self.reader.get(aggregate_name, uuid, **kwargs)
+        return await self.reader.get(aggregate_name, uuid, transaction_uuid, **kwargs)
 
     async def find(
         self,
@@ -100,13 +103,15 @@ class PostgreSqlSnapshot(MinosSnapshot):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: TODO
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
         await self.synchronize(**kwargs)
 
-        async for aggregate in self.reader.find(aggregate_name, condition, ordering, limit, **kwargs):
+        async for aggregate in self.reader.find(
+            aggregate_name, condition, ordering, limit, streaming_mode, transaction_uuid, **kwargs
+        ):
             yield aggregate
 
     async def synchronize(self, **kwargs) -> None:

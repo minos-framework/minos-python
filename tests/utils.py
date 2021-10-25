@@ -21,7 +21,6 @@ from uuid import (
 from minos.common import (
     Aggregate,
     CommandReply,
-    Condition,
     Entity,
     MinosBroker,
     MinosHandler,
@@ -151,10 +150,10 @@ class FakeLoop:
 class FakeSnapshot(MinosSnapshot):
     """For testing purposes."""
 
-    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+    async def get(self, *args, **kwargs) -> Aggregate:
         """For testing purposes."""
 
-    async def find(self, aggregate_name: str, condition: Condition, **kwargs) -> AsyncIterator[Aggregate]:
+    async def find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""
 
     async def synchronize(self, **kwargs) -> None:

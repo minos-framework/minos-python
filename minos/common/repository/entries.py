@@ -31,6 +31,9 @@ if TYPE_CHECKING:
         AggregateDiff,
         FieldDiffContainer,
     )
+    from ..transactions import (
+        Transaction,
+    )
 
 
 class RepositoryEntry:
@@ -79,13 +82,19 @@ class RepositoryEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_aggregate_diff(cls, aggregate_diff: AggregateDiff, **kwargs) -> RepositoryEntry:
+    def from_aggregate_diff(
+        cls, aggregate_diff: AggregateDiff, transaction: Optional[Transaction] = None, **kwargs
+    ) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate_diff: The aggregate difference.
+        :param transaction: Optional transaction.
         :param kwargs: Additional named arguments.
         :return: A new ``RepositoryEntry`` instance.
         """
+        if transaction is not None:
+            kwargs["transaction_uuid"] = transaction.uuid
+
         # noinspection PyTypeChecker
         return cls(
             aggregate_uuid=aggregate_diff.uuid,

@@ -37,16 +37,14 @@ from ..networks import (
 from ..setup import (
     MinosSetup,
 )
-from ..uuid import (
-    NULL_UUID,
+from ..transactions import (
+    TRANSACTION_CONTEXT_VAR,
+    PostgreSqlTransactionRepository,
+    Transaction,
+    TransactionStatus,
 )
 from .entries import (
     RepositoryEntry,
-)
-from .transactions import (
-    TRANSACTION_CONTEXT_VAR,
-    RepositoryTransaction,
-    RepositoryTransactionStatus,
 )
 
 if TYPE_CHECKING:
@@ -59,11 +57,19 @@ class MinosRepository(ABC, MinosSetup):
     """Base repository class in ``minos``."""
 
     @inject
-    def __init__(self, event_broker: MinosBroker = Provide["event_broker"], *args, **kwargs):
+    def __init__(
+        self,
+        event_broker: MinosBroker = Provide["event_broker"],
+        transaction_repository: PostgreSqlTransactionRepository = Provide["transaction_repository"],
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         if event_broker is None or isinstance(event_broker, Provide):
             raise MinosBrokerNotProvidedException("A broker instance is required.")
+
         self._broker = event_broker
+        self._transaction_repository = transaction_repository
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
@@ -108,31 +114,24 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def commit(self, transaction: RepositoryTransaction) -> list[RepositoryEntry]:
+    async def _commit_transaction(self, transaction_uuid: UUID) -> list[RepositoryEntry]:
         """TODO
 
-        :param transaction: TODO
+        :param transaction_uuid: TODO
         :return: TODO
         """
         entries = list()
-        try:
-            async for entry in self.select(transaction_uuid=transaction.uuid):
-                new = RepositoryEntry(
-                    aggregate_uuid=entry.aggregate_uuid,
-                    aggregate_name=entry.aggregate_name,
-                    version=entry.version,
-                    data=entry.data,
-                    action=entry.action,
-                    created_at=entry.created_at,
-                )
-                committed = await self.submit(new)
-                entries.append(committed)
-            transaction.status = RepositoryTransactionStatus.COMMITTED
-        except Exception as exc:
-            transaction.status = RepositoryTransactionStatus.REJECTED
-            raise exc
-        finally:
-            await self.submit_transaction(transaction)
+        async for entry in self.select(transaction_uuid=transaction_uuid):
+            new = RepositoryEntry(
+                aggregate_uuid=entry.aggregate_uuid,
+                aggregate_name=entry.aggregate_name,
+                version=entry.version,
+                data=entry.data,
+                action=entry.action,
+                created_at=entry.created_at,
+            )
+            committed = await self.submit(new)
+            entries.append(committed)
         return entries
 
     async def submit(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
@@ -146,36 +145,35 @@ class MinosRepository(ABC, MinosSetup):
             AggregateDiff,
         )
 
+        transaction = self._transaction
+
         if isinstance(entry, AggregateDiff):
-            entry = RepositoryEntry.from_aggregate_diff(entry, transaction_uuid=self._transaction_uuid)
+            entry = RepositoryEntry.from_aggregate_diff(entry, transaction=transaction)
 
         if not isinstance(entry.action, Action):
             raise MinosRepositoryException("The 'RepositoryEntry.action' attribute must be an 'Action' instance.")
 
         entry = await self._submit(entry)
 
-        if entry.transaction_uuid == NULL_UUID:
+        if transaction is None:
             await self._send_events(entry.aggregate_diff)
+        else:
+            transaction.status = TransactionStatus.PENDING
+            await transaction.save()
 
         return entry
 
     @property
-    def _transaction_uuid(self) -> UUID:
-        transaction = TRANSACTION_CONTEXT_VAR.get()
-        if transaction is None:
-            return NULL_UUID
-        return transaction.uuid
+    def _transaction(self) -> Optional[Transaction]:
+        return TRANSACTION_CONTEXT_VAR.get()
 
-    def begin(self, **kwargs) -> RepositoryTransaction:
+    def begin(self, **kwargs) -> Transaction:
         """TODO
 
         :param kwargs: TODO
         :return: TODO
         """
-        return RepositoryTransaction(self, **kwargs)
-
-    async def submit_transaction(self, transaction: RepositoryTransaction):
-        """TODO"""
+        return Transaction(self, self._transaction_repository, **kwargs)
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:

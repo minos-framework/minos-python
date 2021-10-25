@@ -36,11 +36,14 @@ class MinosSnapshot(ABC, MinosSetup):
     """
 
     @abstractmethod
-    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+    async def get(
+        self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
+    ) -> Aggregate:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
@@ -52,6 +55,7 @@ class MinosSnapshot(ABC, MinosSetup):
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -62,6 +66,7 @@ class MinosSnapshot(ABC, MinosSetup):
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """

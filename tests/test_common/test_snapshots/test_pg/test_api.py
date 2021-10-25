@@ -53,7 +53,7 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         self.assertEqual(call(), self.dispatch_mock.call_args)
 
         self.assertEqual(1, self.get_mock.call_count)
-        self.assertEqual(call("path.to.Aggregate", uuid), self.get_mock.call_args)
+        self.assertEqual(call("path.to.Aggregate", uuid, None), self.get_mock.call_args)
 
     async def test_find(self):
         observed = [a async for a in self.snapshot.find("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10)]
@@ -63,7 +63,8 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         self.assertEqual(call(), self.dispatch_mock.call_args)
 
         self.assertEqual(1, self.find_mock.call_count)
-        self.assertEqual(call("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10), self.find_mock.call_args)
+        args = call("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, False, None)
+        self.assertEqual(args, self.find_mock.call_args)
 
     async def test_synchronize(self):
         await self.snapshot.synchronize()

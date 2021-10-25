@@ -33,6 +33,9 @@ from ..queries import (
 from ..repository import (
     MinosRepository,
 )
+from ..transactions import (
+    TRANSACTION_CONTEXT_VAR,
+)
 from ..uuid import (
     NULL_UUID,
 )
@@ -64,7 +67,7 @@ class InMemorySnapshot(MinosSnapshot):
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
-        transaction_uuid: UUID = NULL_UUID,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -101,7 +104,9 @@ class InMemorySnapshot(MinosSnapshot):
             yield aggregate
 
     # noinspection PyMethodOverriding
-    async def get(self, aggregate_name: str, uuid: UUID, transaction_uuid: UUID = NULL_UUID, **kwargs) -> Aggregate:
+    async def get(
+        self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
+    ) -> Aggregate:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
@@ -110,6 +115,13 @@ class InMemorySnapshot(MinosSnapshot):
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
+
+        if transaction_uuid is None:
+            if (transaction := TRANSACTION_CONTEXT_VAR.get()) is not None:
+                transaction_uuid = transaction.uuid
+            else:
+                transaction_uuid = NULL_UUID
+
         entries = [
             v
             async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
