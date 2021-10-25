@@ -10,11 +10,11 @@ from psycopg2 import (
     IntegrityError,
 )
 
-from .. import (
-    MinosRepositoryException,
-)
 from ..database import (
     PostgreSqlMinosDatabase,
+)
+from ..exceptions import (
+    MinosRepositoryException,
 )
 from ..uuid import (
     NULL_UUID,
