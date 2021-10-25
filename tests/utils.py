@@ -1,3 +1,6 @@
+from datetime import (
+    timedelta,
+)
 from pathlib import (
     Path,
 )
@@ -5,6 +8,9 @@ from typing import (
     Any,
     AsyncIterator,
     Optional,
+)
+from unittest import (
+    TestCase,
 )
 from uuid import (
     UUID,
@@ -26,6 +32,24 @@ from minos.common import (
 )
 
 BASE_PATH = Path(__file__).parent
+
+
+def assert_equal_repository_entries(
+    test_case: TestCase, expected: list[RepositoryEntry], observed: list[RepositoryEntry]
+) -> None:
+    """For testing purposes."""
+
+    test_case.assertEqual(len(expected), len(observed))
+
+    for e, o in zip(expected, observed):
+        test_case.assertEqual(type(e), type(o))
+        test_case.assertEqual(e.aggregate_uuid, o.aggregate_uuid)
+        test_case.assertEqual(e.aggregate_name, o.aggregate_name)
+        test_case.assertEqual(e.version, o.version)
+        test_case.assertEqual(e.data, o.data)
+        test_case.assertEqual(e.id, o.id)
+        test_case.assertEqual(e.action, o.action)
+        test_case.assertAlmostEqual(current_datetime(), o.created_at, delta=timedelta(seconds=5))
 
 
 class FakeRepository(MinosRepository):

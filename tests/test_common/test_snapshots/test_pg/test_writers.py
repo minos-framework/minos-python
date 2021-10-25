@@ -64,6 +64,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
         self.uuid_2 = uuid4()
         self.uuid_3 = uuid4()
 
+        self.first_transaction = uuid4()
+        self.second_transaction = uuid4()
+
         self.container = containers.DynamicContainer()
         self.container.repository = providers.Singleton(FakeRepository)
         self.container.snapshot = providers.Singleton(FakeSnapshot)
@@ -193,17 +196,17 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_gt=7), mock.call_args)
+                self.assertEqual(call(id_gt=10), mock.call_args)
                 mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_gt=8), mock.call_args)
+                self.assertEqual(call(id_gt=11), mock.call_args)
                 mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_gt=8), mock.call_args)
+                self.assertEqual(call(id_gt=11), mock.call_args)
                 mock.reset_mock()
 
     async def _populate(self):
@@ -217,6 +220,21 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
             await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
             await repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
             await repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+            await repository.update(
+                RepositoryEntry(
+                    self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.first_transaction
+                )
+            )
+            await repository.update(
+                RepositoryEntry(
+                    self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.second_transaction
+                )
+            )
+            await repository.update(
+                RepositoryEntry(
+                    self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.first_transaction
+                )
+            )
             await repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
             return repository
 
