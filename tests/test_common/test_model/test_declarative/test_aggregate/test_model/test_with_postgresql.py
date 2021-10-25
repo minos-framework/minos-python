@@ -27,18 +27,16 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.event_broker = FakeBroker()
-        self.repository = PostgreSqlRepository.from_config(self.config)
+        self.repository = PostgreSqlRepository.from_config(self.config, event_broker=FakeBroker())
         self.snapshot = PostgreSqlSnapshot.from_config(self.config, repository=self.repository)
 
         self.kwargs = {
-            "_broker": self.event_broker,
             "_repository": self.repository,
             "_snapshot": self.snapshot,
         }
 
     async def test_create_update_delete(self):
-        async with self.event_broker, self.repository, self.snapshot:
+        async with self.repository, self.snapshot:
             car = await Car.create(doors=3, color="blue", **self.kwargs)
             uuid = car.uuid
 
@@ -74,7 +72,7 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
                 await Car.get(car.uuid, **self.kwargs)
 
     async def test_entity_set_value_object_set(self):
-        async with self.event_broker, self.repository, self.snapshot:
+        async with self.repository, self.snapshot:
             order = await Order.create(products=EntitySet(), reviews=ValueObjectSet(), **self.kwargs)
             item = OrderItem(24)
             order.products.add(item)

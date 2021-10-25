@@ -20,7 +20,7 @@ from .entries import (
 )
 
 
-class PostgreSqlRepository(MinosRepository, PostgreSqlMinosDatabase):
+class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
     """PostgreSQL-based implementation of the repository class in ``Minos``."""
 
     async def _setup(self):

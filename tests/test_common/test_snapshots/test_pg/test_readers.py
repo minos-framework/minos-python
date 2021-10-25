@@ -51,7 +51,6 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         self.uuid_3 = uuid4()
 
         self.container = containers.DynamicContainer()
-        self.container.event_broker = providers.Singleton(FakeBroker)
         self.container.repository = providers.Singleton(FakeRepository)
         self.container.snapshot = providers.Singleton(FakeSnapshot)
         self.container.wire(modules=[sys.modules[__name__]])
@@ -241,7 +240,7 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
-        async with PostgreSqlRepository.from_config(self.config) as repository:
+        async with PostgreSqlRepository.from_config(self.config, event_broker=FakeBroker()) as repository:
             await repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
             await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
             await repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))

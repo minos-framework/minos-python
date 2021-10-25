@@ -32,7 +32,7 @@ class InMemoryRepository(MinosRepository):
     """Memory-based implementation of the repository class in ``minos``."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self._storage = list()
         self._id_generator = count()
 

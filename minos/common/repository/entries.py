@@ -25,6 +25,7 @@ if TYPE_CHECKING:
         Action,
         Aggregate,
         AggregateDiff,
+        FieldDiffContainer,
     )
 
 
@@ -71,7 +72,12 @@ class RepositoryEntry:
         """
         # noinspection PyTypeChecker
         return cls(
-            aggregate_diff.uuid, aggregate_diff.name, aggregate_diff.version, aggregate_diff.fields_diff.avro_bytes
+            aggregate_uuid=aggregate_diff.uuid,
+            aggregate_name=aggregate_diff.name,
+            version=aggregate_diff.version,
+            data=aggregate_diff.fields_diff.avro_bytes,
+            created_at=aggregate_diff.created_at,
+            action=aggregate_diff.action,
         )
 
     @property
@@ -91,7 +97,6 @@ class RepositoryEntry:
         """
         from ..model import (
             AggregateDiff,
-            FieldDiffContainer,
         )
 
         return AggregateDiff(
@@ -100,8 +105,23 @@ class RepositoryEntry:
             self.version,
             self.action,
             self.created_at,
-            FieldDiffContainer.from_avro_bytes(self.data),
+            self.field_diff_container,
         )
+
+    @property
+    def field_diff_container(self) -> FieldDiffContainer:
+        """Get the stored field diff container.
+
+        :return: A ``FieldDiffContainer`` instance.
+        """
+        from ..model import (
+            FieldDiffContainer,
+        )
+
+        if not self.data:
+            return FieldDiffContainer.empty()
+
+        return FieldDiffContainer.from_avro_bytes(self.data)
 
     def __eq__(self, other: "RepositoryEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)

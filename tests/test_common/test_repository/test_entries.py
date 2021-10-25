@@ -53,7 +53,8 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
     async def test_from_aggregate_diff(self):
         fields_diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        aggregate_diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, current_datetime(), fields_diff)
+        created_at = current_datetime()
+        aggregate_diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
 
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
         self.assertEqual(self.uuid, entry.aggregate_uuid)
@@ -61,16 +62,36 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, entry.version)
         self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
         self.assertEqual(None, entry.id)
-        self.assertEqual(None, entry.action)
-        self.assertEqual(None, entry.created_at)
+        self.assertEqual(Action.CREATE, entry.action)
+        self.assertEqual(created_at, entry.created_at)
 
-    def test_id_set(self):
+    def test_aggregate_diff(self):
+        field_diff_container = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
+        aggregate_diff = AggregateDiff(
+            self.uuid, Car.classname, 1, Action.CREATE, current_datetime(), field_diff_container
+        )
+        entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
+
+        self.assertEqual(aggregate_diff, entry.aggregate_diff)
+
+    def test_field_diff_container(self):
+        field_diff_container = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
+        entry = RepositoryEntry(self.uuid, "example.Car", 0, field_diff_container.avro_bytes)
+
+        self.assertEqual(field_diff_container, entry.field_diff_container)
+
+    def test_field_diff_container_empty(self):
+        entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes())
+
+        self.assertEqual(FieldDiffContainer.empty(), entry.field_diff_container)
+
+    def test_id_setup(self):
         entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.id)
         entry.id = 5678
         self.assertEqual(5678, entry.id)
 
-    def test_id_action(self):
+    def test_action_setup(self):
         entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
         self.assertEqual(None, entry.action)
         entry.action = Action.CREATE

@@ -6,6 +6,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from asyncio import (
+    gather,
+)
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
@@ -16,8 +19,19 @@ from uuid import (
     UUID,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
 from ..configuration import (
     MinosConfig,
+)
+from ..exceptions import (
+    MinosBrokerNotProvidedException,
+)
+from ..networks import (
+    MinosBroker,
 )
 from ..setup import (
     MinosSetup,
@@ -35,56 +49,74 @@ if TYPE_CHECKING:
 class MinosRepository(ABC, MinosSetup):
     """Base repository class in ``minos``."""
 
+    @inject
+    def __init__(self, event_broker: MinosBroker = Provide["event_broker"], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if event_broker is None or isinstance(event_broker, Provide):
+            raise MinosBrokerNotProvidedException("A broker instance is required.")
+        self._broker = event_broker
+
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
-        """Store new creation entry into de repository.
+        """Store new creation entry into the repository.
 
         :param entry: Entry to be stored.
-        :return: This method does not return anything.
+        :return: The repository entry containing the stored information.
         """
-        if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate_diff(entry)
         from ..model import (
             Action,
         )
 
         entry.action = Action.CREATE
-        return await self._submit(entry)
+        return await self.submit(entry)
 
     async def update(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
-        """Store new update entry into de repository.
+        """Store new update entry into the repository.
 
         :param entry: Entry to be stored.
-        :return: This method does not return anything.
+        :return: The repository entry containing the stored information.
         """
-        if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate_diff(entry)
-
         from ..model import (
             Action,
         )
 
         entry.action = Action.UPDATE
-        return await self._submit(entry)
+        return await self.submit(entry)
 
     async def delete(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
-        """Store new deletion entry into de repository.
+        """Store new deletion entry into the repository.
 
         :param entry: Entry to be stored.
-        :return: This method does not return anything.
+        :return: The repository entry containing the stored information.
         """
-        if not isinstance(entry, RepositoryEntry):
-            entry = RepositoryEntry.from_aggregate_diff(entry)
-
         from ..model import (
             Action,
         )
 
         entry.action = Action.DELETE
-        return await self._submit(entry)
+        return await self.submit(entry)
+
+    async def submit(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
+        """Store new entry into the repository.
+
+        :param entry: The entry to be stored.
+        :return: The repository entry containing the stored information.
+        """
+        from ..model import (
+            AggregateDiff,
+        )
+
+        if isinstance(entry, AggregateDiff):
+            entry = RepositoryEntry.from_aggregate_diff(entry)
+
+        entry = await self._submit(entry)
+
+        await self._send_events(entry.aggregate_diff)
+
+        return entry
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
@@ -93,6 +125,34 @@ class MinosRepository(ABC, MinosSetup):
         :param entry: Entry to be submitted.
         :return: This method does not return anything.
         """
+
+    async def _send_events(self, aggregate_diff: AggregateDiff):
+        from ..model import (
+            Action,
+        )
+
+        suffix_mapper = {
+            Action.CREATE: "Created",
+            Action.UPDATE: "Updated",
+            Action.DELETE: "Deleted",
+        }
+
+        topic = f"{aggregate_diff.simplified_name}{suffix_mapper[aggregate_diff.action]}"
+        futures = [self._broker.send(aggregate_diff, topic=topic)]
+
+        if aggregate_diff.action == Action.UPDATE:
+            from ..model import (
+                IncrementalFieldDiff,
+            )
+
+            for decomposed_aggregate_diff in aggregate_diff.decompose():
+                diff = next(iter(decomposed_aggregate_diff.fields_diff.flatten_values()))
+                composed_topic = f"{topic}.{diff.name}"
+                if isinstance(diff, IncrementalFieldDiff):
+                    composed_topic += f".{diff.action.value}"
+                futures.append(self._broker.send(decomposed_aggregate_diff, topic=composed_topic))
+
+        await gather(*futures)
 
     # noinspection PyShadowingBuiltins
     async def select(
@@ -109,7 +169,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
 

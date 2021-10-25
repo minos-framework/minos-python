@@ -20,7 +20,6 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.utils import (
-    FakeBroker,
     FakeRepository,
     FakeSnapshot,
 )
@@ -31,10 +30,10 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
         self.uuid = uuid4()
         self.uuid_another = uuid4()
 
-        async with FakeBroker() as b, FakeRepository() as r, FakeSnapshot() as s:
-            self.initial = Car(3, "blue", uuid=self.uuid, version=1, _broker=b, _repository=r, _snapshot=s)
-            self.final = Car(5, "yellow", uuid=self.uuid, version=3, _broker=b, _repository=r, _snapshot=s)
-            self.another = Car(3, "blue", uuid=self.uuid_another, version=1, _broker=b, _repository=r, _snapshot=s)
+        async with FakeRepository() as r, FakeSnapshot() as s:
+            self.initial = Car(3, "blue", uuid=self.uuid, version=1, _repository=r, _snapshot=s)
+            self.final = Car(5, "yellow", uuid=self.uuid, version=3, _repository=r, _snapshot=s)
+            self.another = Car(3, "blue", uuid=self.uuid_another, version=1, _repository=r, _snapshot=s)
 
         self.diff = AggregateDiff(
             uuid=self.uuid,
@@ -50,6 +49,9 @@ class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
                 ]
             ),
         )
+
+    def test_simplified_name(self):
+        self.assertEqual("Car", self.diff.simplified_name)
 
     def test_from_aggregate(self):
         observed = AggregateDiff.from_aggregate(self.initial)

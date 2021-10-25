@@ -23,8 +23,8 @@ from tests.utils import (
 
 class TestAggregate(unittest.IsolatedAsyncioTestCase):
     async def test_create(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
             self.assertEqual(
                 [
                     {
@@ -49,8 +49,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_update(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
             b.reset_mock()
 
             await car.update(color="red")
@@ -83,8 +83,8 @@ class TestAggregate(unittest.IsolatedAsyncioTestCase):
             )
 
     async def test_delete(self):
-        async with FakeBroker() as b, InMemoryRepository() as r, InMemorySnapshot(r) as s:
-            car = await Car.create(doors=3, color="blue", _broker=b, _repository=r, _snapshot=s)
+        async with FakeBroker() as b, InMemoryRepository(b) as r, InMemorySnapshot(r) as s:
+            car = await Car.create(doors=3, color="blue", _repository=r, _snapshot=s)
             b.reset_mock()
 
             await car.delete()

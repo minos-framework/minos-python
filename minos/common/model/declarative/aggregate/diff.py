@@ -30,9 +30,6 @@ from ..abc import (
 )
 
 if TYPE_CHECKING:
-    from ....repository import (
-        RepositoryEntry,
-    )
     from .model import (
         Aggregate,
     )
@@ -50,6 +47,14 @@ class AggregateDiff(DeclarativeModel):
     created_at: datetime
 
     fields_diff: FieldDiffContainer
+
+    @property
+    def simplified_name(self) -> str:
+        """Get the Aggregate's simplified name.
+
+        :return: An string value.
+        """
+        return self.name.rsplit(".", 1)[-1]
 
     def __getattr__(self, item: str) -> Any:
         try:
@@ -80,16 +85,6 @@ class AggregateDiff(DeclarativeModel):
         :return: A list of ``FieldDiff`` instances.
         """
         return self.fields_diff.get_all(return_diff)
-
-    def update_from_repository_entry(self, entry: RepositoryEntry) -> None:
-        """Update metadata from a repository entry.
-
-        :param entry: A repository entry.
-        :return: This method does not return anything.
-        """
-        self.uuid = entry.aggregate_uuid
-        self.version = entry.version
-        self.created_at = entry.created_at
 
     @classmethod
     def from_difference(cls, a: Aggregate, b: Aggregate, action: Action = Action.UPDATE) -> AggregateDiff:

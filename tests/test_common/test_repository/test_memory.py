@@ -2,16 +2,24 @@ import unittest
 from datetime import (
     timedelta,
 )
+from unittest.mock import (
+    patch,
+)
 from uuid import (
     uuid4,
 )
 
 from minos.common import (
     Action,
+    FieldDiffContainer,
     InMemoryRepository,
+    MinosBrokerNotProvidedException,
     MinosRepository,
     RepositoryEntry,
     current_datetime,
+)
+from tests.utils import (
+    FakeBroker,
 )
 
 
@@ -20,27 +28,39 @@ class TestInMemoryRepository(unittest.IsolatedAsyncioTestCase):
         self.uuid = uuid4()
         self.uuid_1 = uuid4()
         self.uuid_2 = uuid4()
+        self.broker = FakeBroker()
+        self.field_diff_container_patcher = patch(
+            "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
+        )
+        self.field_diff_container_patcher.start()
+
+    def tearDown(self):
+        self.field_diff_container_patcher.stop()
 
     def test_constructor(self):
-        repository = InMemoryRepository()
+        repository = InMemoryRepository(self.broker)
         self.assertIsInstance(repository, MinosRepository)
 
+    async def test_constructor_raises(self):
+        with self.assertRaises(MinosBrokerNotProvidedException):
+            InMemoryRepository()
+
     async def test_create(self):
-        async with InMemoryRepository() as repository:
+        async with InMemoryRepository(self.broker) as repository:
             await repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE)]
             observed = [v async for v in repository.select()]
             self._assert_equal_entries(expected, observed)
 
     async def test_update(self):
-        async with InMemoryRepository() as repository:
+        async with InMemoryRepository(self.broker) as repository:
             await repository.update(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.UPDATE)]
             observed = [v async for v in repository.select()]
             self._assert_equal_entries(expected, observed)
 
     async def test_delete(self):
-        async with InMemoryRepository() as repository:
+        async with InMemoryRepository(self.broker) as repository:
             await repository.delete(RepositoryEntry(self.uuid, "example.Car", 1, bytes()))
             expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.DELETE)]
             observed = [v async for v in repository.select()]
@@ -61,7 +81,7 @@ class TestInMemoryRepository(unittest.IsolatedAsyncioTestCase):
         self._assert_equal_entries(expected, observed)
 
     async def test_select_empty(self):
-        repository = InMemoryRepository()
+        repository = InMemoryRepository(self.broker)
         self.assertEqual([], [v async for v in repository.select()])
 
     async def test_select_id(self):
@@ -192,7 +212,7 @@ class TestInMemoryRepository(unittest.IsolatedAsyncioTestCase):
         self._assert_equal_entries(expected, observed)
 
     async def _build_repository(self):
-        repository = InMemoryRepository()
+        repository = InMemoryRepository(self.broker)
         await repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
         await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
         await repository.create(RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
