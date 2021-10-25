@@ -45,6 +45,7 @@ from .exceptions import (
     MinosParseAttributeException,
     MinosPreviousVersionSnapshotException,
     MinosProtocolException,
+    MinosRepositoryConflictException,
     MinosRepositoryException,
     MinosRepositoryNotProvidedException,
     MinosReqAttributeException,

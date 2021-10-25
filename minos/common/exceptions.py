@@ -71,6 +71,14 @@ class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
 
+class MinosRepositoryConflictException(MinosRepositoryException):
+    """Exception to be raised when some ``RepositoryEntry`` raises a conflict."""
+
+    def __init__(self, error_message: str, offset: int):
+        super().__init__(error_message)
+        self.offset = offset
+
+
 class MinosRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a repository is needed but none is set."""
 

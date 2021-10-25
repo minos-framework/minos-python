@@ -21,7 +21,7 @@ from ..datetime import (
     current_datetime,
 )
 from ..exceptions import (
-    MinosRepositoryException,
+    MinosRepositoryConflictException,
 )
 from ..uuid import (
     NULL_UUID,
@@ -56,8 +56,9 @@ class InMemoryRepository(MinosRepository):
         if entry.version is None:
             entry.version = next_version
         if entry.version < next_version:
-            raise MinosRepositoryException(
-                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}"
+            raise MinosRepositoryConflictException(
+                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}",
+                len(self._storage),
             )
 
         if entry.created_at is None:

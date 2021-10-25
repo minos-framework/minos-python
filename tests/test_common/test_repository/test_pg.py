@@ -19,6 +19,7 @@ from minos.common import (
     FieldDiffContainer,
     MinosBrokerNotProvidedException,
     MinosRepository,
+    MinosRepositoryConflictException,
     MinosRepositoryException,
     PostgreSqlRepository,
     RepositoryEntry,
@@ -129,7 +130,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
 
     async def test_submit_raises_duplicate(self):
         await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(MinosRepositoryConflictException):
             await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
 
     async def test_submit_raises_no_action(self):

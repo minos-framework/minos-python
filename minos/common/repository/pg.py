@@ -18,7 +18,7 @@ from ..database import (
     PostgreSqlMinosDatabase,
 )
 from ..exceptions import (
-    MinosRepositoryException,
+    MinosRepositoryConflictException,
 )
 from ..uuid import (
     NULL_UUID,
@@ -55,8 +55,9 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         try:
             response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
         except IntegrityError:
-            raise MinosRepositoryException(
-                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}"
+            offset = (await self.submit_query_and_fetchone(_SELECT_MAX_ID_QUERY))[0]
+            raise MinosRepositoryConflictException(
+                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}", offset
             )
 
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
@@ -184,3 +185,5 @@ _SELECT_ALL_ENTRIES_QUERY = """
 SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid
 FROM aggregate_event
 """.strip()
+
+_SELECT_MAX_ID_QUERY = "SELECT MAX(id) FROM aggregate_event;".strip()
