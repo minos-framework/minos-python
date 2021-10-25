@@ -19,7 +19,6 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from ..uuid import NULL_UUID
 from ..exceptions import (
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
@@ -30,6 +29,9 @@ from ..queries import (
 )
 from ..repository import (
     MinosRepository,
+)
+from ..uuid import (
+    NULL_UUID,
 )
 from .abc import (
     MinosSnapshot,
@@ -102,7 +104,8 @@ class InMemorySnapshot(MinosSnapshot):
         :return: The ``Aggregate`` instance.
         """
         entries = [
-            v async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
+            v
+            async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
             if v.transaction_uuid in (transaction_uuid, NULL_UUID)
         ]
         if not len(entries):

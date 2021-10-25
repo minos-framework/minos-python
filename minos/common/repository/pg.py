@@ -6,6 +6,13 @@ from uuid import (
     UUID,
 )
 
+from psycopg2 import (
+    IntegrityError,
+)
+
+from .. import (
+    MinosRepositoryException,
+)
 from ..database import (
     PostgreSqlMinosDatabase,
 )
@@ -43,7 +50,13 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             lock = entry.aggregate_uuid.int & (1 << 32) - 1
 
         params = entry.as_raw()
-        response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
+        try:
+            response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
+        except IntegrityError:
+            raise MinosRepositoryException(
+                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}"
+            )
+
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
 

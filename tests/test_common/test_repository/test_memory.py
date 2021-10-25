@@ -94,7 +94,12 @@ class TestInMemoryRepository(TestRepositorySelect):
         observed = [v async for v in self.repository.select()]
         self.assert_equal_repository_entries(expected, observed)
 
-    async def test_submit_raises(self):
+    async def test_submit_raises_duplicate(self):
+        await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
+        with self.assertRaises(MinosRepositoryException):
+            await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
+
+    async def test_submit_raises_no_action(self):
         with self.assertRaises(MinosRepositoryException):
             await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, "foo".encode()))
 

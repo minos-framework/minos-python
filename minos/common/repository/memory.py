@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from collections import (
+    defaultdict,
+)
 from itertools import (
     count,
 )
@@ -14,6 +17,9 @@ from uuid import (
     uuid4,
 )
 
+from .. import (
+    MinosRepositoryException,
+)
 from ..datetime import (
     current_datetime,
 )
@@ -35,6 +41,7 @@ class InMemoryRepository(MinosRepository):
         super().__init__(*args, **kwargs)
         self._storage = list()
         self._id_generator = count()
+        self._next_versions = defaultdict(int)
 
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
         """Store new deletion entry into de repository.
@@ -44,10 +51,18 @@ class InMemoryRepository(MinosRepository):
         """
         if entry.aggregate_uuid == NULL_UUID:
             entry.aggregate_uuid = uuid4()
+
+        next_version = self._get_next_version_id(entry)
         if entry.version is None:
-            entry.version = self._get_next_version_id(entry.aggregate_name, entry.aggregate_uuid)
+            entry.version = next_version
+        if entry.version < next_version:
+            raise MinosRepositoryException(
+                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}"
+            )
+
         if entry.created_at is None:
             entry.created_at = current_datetime()
+
         entry.id = self._generate_next_id()
         self._storage.append(entry)
         return entry
@@ -55,18 +70,10 @@ class InMemoryRepository(MinosRepository):
     def _generate_next_id(self) -> int:
         return next(self._id_generator) + 1
 
-    def _get_next_version_id(self, aggregate_name: str, aggregate_uuid: UUID) -> int:
-        """Generate a new version number for the given aggregate name and identifier.
-
-        :param aggregate_name: The name of the aggregate.
-        :param aggregate_uuid: The identifier of the aggregate.
-        :return: A positive-integer value.
-        """
-        iterable = iter(self._storage)
-        iterable = filter(
-            lambda entry: entry.aggregate_name == aggregate_name and entry.aggregate_uuid == aggregate_uuid, iterable,
-        )
-        return len(list(iterable)) + 1
+    def _get_next_version_id(self, entry: RepositoryEntry) -> int:
+        key = (entry.aggregate_name, entry.aggregate_uuid, entry.transaction_uuid)
+        self._next_versions[key] += 1
+        return self._next_versions[key]
 
     async def _select(
         self,
@@ -84,7 +91,7 @@ class InMemoryRepository(MinosRepository):
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
         *args,
-        **kwargs
+        **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
 
         # noinspection DuplicatedCode
