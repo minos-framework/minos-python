@@ -59,18 +59,23 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
         self.assertEqual(self.uuid, entry.aggregate_uuid)
         self.assertEqual("tests.aggregate_classes.Car", entry.aggregate_name)
-        self.assertEqual(1, entry.version)
+        self.assertEqual(None, entry.version)
         self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
         self.assertEqual(None, entry.id)
         self.assertEqual(Action.CREATE, entry.action)
-        self.assertEqual(created_at, entry.created_at)
+        self.assertEqual(None, entry.created_at)
 
     def test_aggregate_diff(self):
         field_diff_container = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        aggregate_diff = AggregateDiff(
-            self.uuid, Car.classname, 1, Action.CREATE, current_datetime(), field_diff_container
-        )
+        version = 1
+        now = current_datetime()
+
+        aggregate_diff = AggregateDiff(self.uuid, Car.classname, version, Action.CREATE, now, field_diff_container)
+
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
+
+        entry.version = version
+        entry.created_at = now
 
         self.assertEqual(aggregate_diff, entry.aggregate_diff)
 

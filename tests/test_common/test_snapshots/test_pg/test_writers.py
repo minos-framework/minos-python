@@ -187,7 +187,6 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
                 entry = RepositoryEntry(
                     aggregate_uuid=self.uuid_3,
                     aggregate_name=Car.classname,
-                    version=1,
                     data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
                 )
                 await repository.create(entry)

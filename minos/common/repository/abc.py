@@ -169,6 +169,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
@@ -185,6 +186,7 @@ class MinosRepository(ABC, MinosSetup):
         :param id_gt: Entry identifier greater than the given value.
         :param id_le: Entry identifier lower or equal to the given value.
         :param id_ge: Entry identifier greater or equal to the given value.
+        :param transaction_uuid: TODO
         :return: A list of entries.
         """
         generator = self._select(
@@ -200,6 +202,7 @@ class MinosRepository(ABC, MinosSetup):
             id_gt=id_gt,
             id_le=id_le,
             id_ge=id_ge,
+            transaction_uuid=transaction_uuid,
             **kwargs,
         )
         # noinspection PyTypeChecker

@@ -29,6 +29,7 @@ from .abc import (
     PostgreSqlSnapshotSetup,
 )
 from .queries import (
+    _SELECT_ENTRY_BY_UUID_QUERY,
     PostgreSqlSnapshotQueryBuilder,
 )
 
@@ -77,7 +78,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             if row is None:
                 raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
 
-            return SnapshotEntry(uuid, aggregate_name, *row, transaction_uuid=transaction_uuid)
+            return SnapshotEntry(*row)
 
     async def find(
         self,
@@ -152,10 +153,3 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
                 rows = await cursor.fetchall()
         for row in rows:
             yield SnapshotEntry(*row)
-
-
-_SELECT_ENTRY_BY_UUID_QUERY = """
-SELECT version, schema, data, created_at, updated_at
-FROM snapshot
-WHERE aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s
-""".strip()

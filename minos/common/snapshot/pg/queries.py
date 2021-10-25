@@ -88,7 +88,7 @@ class PostgreSqlSnapshotQueryBuilder:
         self._parameters["aggregate_name"] = self.aggregate_name
         self._parameters["transaction_uuid"] = self.transaction_uuid
 
-        query = SQL(" WHERE ").join([_SELECT_MULTIPLE_ENTRIES_QUERY, self._build_condition(self.condition)])
+        query = SQL(" WHERE ").join([_SELECT_ENTRIES_QUERY, self._build_condition(self.condition)])
 
         if self.exclude_deleted:
             query = SQL(" AND ").join([query, _EXCLUDE_DELETED_CONDITION])
@@ -206,7 +206,7 @@ _ORDERING_MAPPER = {
     False: SQL("ASC"),
 }
 
-_SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
+_SELECT_ENTRIES_QUERY = SQL(
     "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid "
     "FROM ("
     "   SELECT DISTINCT ON (aggregate_uuid) * "
@@ -224,3 +224,8 @@ _SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
 )
 
 _EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")
+
+
+_SELECT_ENTRY_BY_UUID_QUERY = SQL(" WHERE ").join(
+    [_SELECT_ENTRIES_QUERY, SQL("aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s")]
+)

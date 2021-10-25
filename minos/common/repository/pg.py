@@ -42,8 +42,10 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             "action": entry.action.value,
             "aggregate_uuid": entry.aggregate_uuid,
             "aggregate_name": entry.aggregate_name,
+            "version": entry.version,
             "data": entry.data,
             "transaction_uuid": entry.transaction_uuid,
+            "created_at": entry.created_at,
         }
 
         lock = None
@@ -74,6 +76,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> str:
         conditions = list()
@@ -102,6 +105,8 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             conditions.append("id <= %(id_le)s")
         if id_ge is not None:
             conditions.append("id >= %(id_ge)s")
+        if transaction_uuid is not None:
+            conditions.append("transaction_uuid = %(transaction_uuid)s")
 
         if not conditions:
             return f"{_SELECT_ALL_ENTRIES_QUERY} ORDER BY id;"
@@ -134,7 +139,7 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
     data BYTEA NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL,
     transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),
     UNIQUE (aggregate_uuid, version, transaction_uuid)
 );
@@ -148,7 +153,7 @@ VALUES (
     CASE %(aggregate_uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
     %(aggregate_name)s,
     (
-        SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(version) + 1 END)
+        SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(version), 0) ELSE %(version)s END)
         FROM aggregate_event
         WHERE aggregate_uuid = %(aggregate_uuid)s
           AND aggregate_name = %(aggregate_name)s
@@ -163,7 +168,7 @@ VALUES (
           )
     ),
     %(data)s,
-    default,
+    (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),
     %(transaction_uuid)s
 )
 RETURNING id, aggregate_uuid, version, created_at;
