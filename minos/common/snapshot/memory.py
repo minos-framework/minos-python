@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from itertools import (
+    chain,
+)
 from operator import (
     attrgetter,
 )
@@ -72,7 +75,7 @@ class InMemorySnapshot(MinosSnapshot):
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction..
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
@@ -80,7 +83,11 @@ class InMemorySnapshot(MinosSnapshot):
 
         aggregates = list()
         for uuid in uuids:
-            aggregate = await self.get(aggregate_name, uuid, transaction_uuid, **kwargs)
+            try:
+                aggregate = await self.get(aggregate_name, uuid, transaction_uuid, **kwargs)
+            except MinosSnapshotDeletedAggregateException:
+                continue
+
             if condition.evaluate(aggregate):
                 aggregates.append(aggregate)
 
@@ -111,7 +118,16 @@ class InMemorySnapshot(MinosSnapshot):
         if not len(entries):
             raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
 
-        entries.sort(key=attrgetter("version", "transaction_uuid"))
+        entries.sort(key=attrgetter("version"))
+
+        if len({e.transaction_uuid for e in entries}) > 1:
+            minimal = next(e for e in entries if e.transaction_uuid == transaction_uuid)
+            entries = list(
+                chain(
+                    (e for e in entries if e.version < minimal.version),
+                    (e for e in entries if e.transaction_uuid == transaction_uuid),
+                )
+            )
 
         if entries[-1].action.is_delete:
             raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
