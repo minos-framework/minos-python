@@ -7,6 +7,7 @@ from datetime import (
 )
 from typing import (
     TYPE_CHECKING,
+    Any,
     Iterable,
     Optional,
     Type,
@@ -93,6 +94,22 @@ class RepositoryEntry:
             action=aggregate_diff.action,
             **kwargs,
         )
+
+    def as_raw(self) -> dict[str, Any]:
+        """Get a raw representation of the instance.
+
+        :return: A dictionary in which the keys are attribute names and values the attribute contents.
+        """
+        return {
+            "aggregate_uuid": self.aggregate_uuid,
+            "aggregate_name": self.aggregate_name,
+            "version": self.version,
+            "data": self.data,
+            "id": self.id,
+            "action": self.action.value,
+            "created_at": self.created_at,
+            "transaction_uuid": self.transaction_uuid,
+        }
 
     @property
     def aggregate_cls(self) -> Type[Aggregate]:

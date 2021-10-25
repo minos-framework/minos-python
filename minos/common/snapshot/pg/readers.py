@@ -12,10 +12,6 @@ from uuid import (
     UUID,
 )
 
-from psycopg2.sql import (
-    SQL,
-)
-
 from ...exceptions import (
     MinosSnapshotAggregateNotFoundException,
 )
@@ -36,7 +32,7 @@ from .abc import (
     PostgreSqlSnapshotSetup,
 )
 from .queries import (
-    _SELECT_MULTIPLE_ENTRIES_QUERY,
+    _SELECT_ENTRY_BY_UUID_QUERY,
     PostgreSqlSnapshotQueryBuilder,
 )
 
@@ -73,7 +69,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuid: TODO
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
@@ -84,12 +80,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             else:
                 transaction_uuid = transaction.uuid
 
-        parameters = {
-            "aggregate_name": aggregate_name,
-            "aggregate_uuid": uuid,
-            "transaction_uuid": transaction_uuid,
-            "null_uuid": NULL_UUID,
-        }
+        parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid, "transaction_uuid": transaction_uuid}
 
         async with self.cursor() as cursor:
             await cursor.execute(_SELECT_ENTRY_BY_UUID_QUERY, parameters)
@@ -119,7 +110,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: TODO
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
@@ -149,7 +140,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: TODO
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
             entries are filtered.
         :param kwargs: Additional named arguments.
@@ -179,8 +170,3 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
                 rows = await cursor.fetchall()
         for row in rows:
             yield SnapshotEntry(*row)
-
-
-_SELECT_ENTRY_BY_UUID_QUERY = SQL(" WHERE ").join(
-    [_SELECT_MULTIPLE_ENTRIES_QUERY, SQL("aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s")]
-)
