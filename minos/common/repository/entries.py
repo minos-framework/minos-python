@@ -83,7 +83,7 @@ class RepositoryEntry:
 
     @classmethod
     def from_aggregate_diff(
-        cls, aggregate_diff: AggregateDiff, transaction: Optional[Transaction] = None, **kwargs
+        cls, aggregate_diff: AggregateDiff, *, transaction: Optional[Transaction] = None, **kwargs
     ) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
