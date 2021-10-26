@@ -81,7 +81,9 @@ class PostgreSqlSnapshot(MinosSnapshot):
         """
         await self.synchronize(**kwargs)
 
-        return await self.reader.get(aggregate_name, uuid, transaction_uuid, **kwargs)
+        return await self.reader.get(
+            aggregate_name=aggregate_name, uuid=uuid, transaction_uuid=transaction_uuid, **kwargs,
+        )
 
     async def find(
         self,
@@ -109,9 +111,17 @@ class PostgreSqlSnapshot(MinosSnapshot):
         """
         await self.synchronize(**kwargs)
 
-        async for aggregate in self.reader.find(
-            aggregate_name, condition, ordering, limit, streaming_mode, transaction_uuid, **kwargs
-        ):
+        iterable = self.reader.find(
+            aggregate_name=aggregate_name,
+            condition=condition,
+            ordering=ordering,
+            limit=limit,
+            streaming_mode=streaming_mode,
+            transaction_uuid=transaction_uuid,
+            **kwargs,
+        )
+
+        async for aggregate in iterable:
             yield aggregate
 
     async def synchronize(self, **kwargs) -> None:
