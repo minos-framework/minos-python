@@ -9,6 +9,9 @@ from abc import (
 from asyncio import (
     gather,
 )
+from contextlib import (
+    suppress,
+)
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
@@ -111,7 +114,7 @@ class MinosRepository(ABC, MinosSetup):
         entries = list()
         async for entry in self.select(transaction_uuid=transaction.uuid):
             new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
-            committed = await self.submit(new, _transaction_uuid=transaction.uuid)
+            committed = await self.submit(new, skipped_transaction_uuid=transaction.uuid)
             entries.append(committed)
         return max(e.id for e in entries)
 
@@ -154,12 +157,11 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def submit(
-        self, entry: Union[AggregateDiff, RepositoryEntry], _transaction_uuid: Optional[UUID] = None
-    ) -> RepositoryEntry:
+    async def submit(self, entry: Union[AggregateDiff, RepositoryEntry], **kwargs) -> RepositoryEntry:
         """Store new entry into the repository.
 
         :param entry: The entry to be stored.
+        :param kwargs: Additional named arguments.
         :return: The repository entry containing the stored information.
         """
         from ..model import (
@@ -175,22 +177,10 @@ class MinosRepository(ABC, MinosSetup):
         if not isinstance(entry.action, Action):
             raise MinosRepositoryException("The 'RepositoryEntry.action' attribute must be an 'Action' instance.")
 
-        if transaction is None and isinstance(self._transaction_repository, TransactionRepository):
-            transaction_uuids = {
-                e.transaction_uuid
-                async for e in self.select(aggregate_uuid=entry.aggregate_uuid)
-                if e.transaction_uuid != _transaction_uuid
-            }
-            if len(transaction_uuids):
-                async for transaction in self._transaction_repository.select(
-                    uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
-                ):
-                    raise MinosRepositoryConflictException(
-                        f"The {transaction!r} transaction has already reserved the (uuid, version) key: {entry!r}",
-                        transaction.event_offset,
-                    )
+        if not await self._validate(entry, **kwargs):
+            raise MinosRepositoryConflictException("TODO", await self.offset)
 
-        entry = await self._submit(entry)
+        entry = await self._submit(entry, **kwargs)
 
         if transaction is None:
             await self._send_events(entry.aggregate_diff)
@@ -199,8 +189,33 @@ class MinosRepository(ABC, MinosSetup):
 
         return entry
 
+    # noinspection PyUnusedLocal
+    async def _validate(
+        self, entry: RepositoryEntry, skipped_transaction_uuid: Optional[UUID] = None, **kwargs
+    ) -> bool:
+        if not isinstance(self._transaction_repository, TransactionRepository):
+            return True  # FIXME: Is this condition reasonable?
+
+        transaction_uuids = {
+            e.transaction_uuid
+            async for e in self.select(aggregate_uuid=entry.aggregate_uuid)
+            if e.transaction_uuid != skipped_transaction_uuid
+        }
+
+        if len(transaction_uuids):
+
+            with suppress(StopAsyncIteration):
+                iterable = self._transaction_repository.select(
+                    uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
+                )
+                await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
+
+                return False
+
+        return True
+
     @abstractmethod
-    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
         raise NotImplementedError
 
     async def _send_events(self, aggregate_diff: AggregateDiff):

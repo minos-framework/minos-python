@@ -43,12 +43,7 @@ class InMemoryRepository(MinosRepository):
         self._id_generator = count()
         self._next_versions = defaultdict(int)
 
-    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
-        """Store new deletion entry into de repository.
-
-        :param entry: Entry to be stored.
-        :return: This method does not return anything.
-        """
+    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
         if entry.aggregate_uuid == NULL_UUID:
             entry.aggregate_uuid = uuid4()
 

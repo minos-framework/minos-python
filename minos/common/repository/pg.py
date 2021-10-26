@@ -53,7 +53,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock=hash("aggregate_event"))
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("aggregate_event"))
 
-    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
         lock = None
         if entry.aggregate_uuid != NULL_UUID:
             lock = entry.aggregate_uuid.int & (1 << 32) - 1

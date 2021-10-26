@@ -73,8 +73,7 @@ class FakeRepository(MinosRepository):
         self.id_counter = 0
         self.items = set()
 
-    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
-        """For testing purposes."""
+    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
         self.id_counter += 1
         entry.id = self.id_counter
         entry.version += 1
