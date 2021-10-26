@@ -102,7 +102,7 @@ class MinosRepository(ABC, MinosSetup):
             with suppress(StopAsyncIteration):
                 iterable = self._transaction_repository.select(
                     uuid_in=tuple(transaction_uuids),
-                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED)
+                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED),
                 )
                 await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
 
@@ -211,7 +211,7 @@ class MinosRepository(ABC, MinosSetup):
             with suppress(StopAsyncIteration):
                 iterable = self._transaction_repository.select(
                     uuid_in=tuple(transaction_uuids),
-                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED)
+                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED),
                 )
                 await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
 

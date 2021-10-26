@@ -92,7 +92,8 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
                 pass
             offset = max(event_entry.id, offset)
 
-        await self._clean(initial_offset)
+        if initial_offset != offset:
+            await self._clean_transactions(initial_offset)
 
         await self._store_offset(offset)
 
@@ -169,15 +170,16 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
         return snapshot_entry
 
-    async def _clean(self, offset: int, **kwargs) -> None:
+    async def _clean_transactions(self, offset: int, **kwargs) -> None:
         if not isinstance(self._transaction_repository, TransactionRepository):
             return  # FIXME: Is this condition reasonable?
 
         iterable = self._transaction_repository.select(
             event_offset_gt=offset, status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED), **kwargs
         )
-        async for transaction in iterable:
-            await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuid": transaction.uuid})
+        transaction_uuids = {transaction.uuid async for transaction in iterable}
+
+        await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuids": tuple(transaction_uuids)})
 
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
@@ -219,7 +221,7 @@ RETURNING created_at, updated_at;
 
 _DELETE_SNAPSHOT_ENTRIES_QUERY = """
 DELETE FROM snapshot
-WHERE transaction_uuid = %(transaction_uuid)s;
+WHERE transaction_uuid IN %(transaction_uuids)s;
 """.strip()
 
 _SELECT_OFFSET_QUERY = """
