@@ -225,11 +225,11 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
 
     async def test_commit_raises(self) -> None:
         with self.assertRaises(ValueError):
-            await Transaction(status=TransactionStatus.CREATED).reject()
+            await Transaction(status=TransactionStatus.CREATED).commit()
         with self.assertRaises(ValueError):
-            await Transaction(status=TransactionStatus.COMMITTED).reject()
+            await Transaction(status=TransactionStatus.COMMITTED).commit()
         with self.assertRaises(ValueError):
-            await Transaction(status=TransactionStatus.REJECTED).reject()
+            await Transaction(status=TransactionStatus.REJECTED).commit()
 
     async def test_save(self) -> None:
         uuid = uuid4()
