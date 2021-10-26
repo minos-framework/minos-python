@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import (
     AsyncMock,
     call,
@@ -118,7 +119,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
             with patch("minos.common.launchers._create_entrypoint") as mock_entrypoint:
                 entrypoint = FakeEntrypoint()
                 mock_entrypoint.return_value = entrypoint
-                self.launcher.launch()
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+
+                    self.launcher.launch()
 
         self.assertEqual(1, mock_entrypoint.call_count)
         self.assertEqual(1, mock_loop.call_count)
