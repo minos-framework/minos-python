@@ -119,3 +119,6 @@ class InMemorySnapshot(MinosSnapshot):
             instance.apply_diff(entry.aggregate_diff)
 
         return instance
+
+    async def _synchronize(self, **kwargs) -> None:
+        pass

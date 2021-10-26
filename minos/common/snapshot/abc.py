@@ -126,5 +126,6 @@ class MinosSnapshot(ABC, MinosSetup):
         """
         return self._synchronize(**kwargs)
 
+    @abstractmethod
     async def _synchronize(self, **kwargs) -> None:
-        pass
+        raise NotImplementedError

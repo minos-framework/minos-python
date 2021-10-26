@@ -19,22 +19,16 @@ from minos.common import (
     Ordering,
     Transaction,
 )
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
 from minos.common.transactions import (
     TRANSACTION_CONTEXT_VAR,
 )
 from tests.utils import (
-    BASE_PATH,
     FakeAsyncIterator,
     FakeSnapshot,
 )
 
 
-class TestMinosSnapshot(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
+class TestMinosSnapshot(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
 
@@ -53,7 +47,7 @@ class TestMinosSnapshot(PostgresAsyncTestCase):
 
     def test_abstract(self):
         # noinspection PyUnresolvedReferences
-        self.assertEqual({"_get", "_find"}, MinosSnapshot.__abstractmethods__)
+        self.assertEqual({"_get", "_find", "_synchronize"}, MinosSnapshot.__abstractmethods__)
 
     async def test_get(self):
         transaction_uuid = uuid4()
