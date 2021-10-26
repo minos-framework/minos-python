@@ -5,24 +5,11 @@ from __future__ import (
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
-    Optional,
-)
-from uuid import (
-    UUID,
+    Awaitable,
 )
 
 from ...configuration import (
     MinosConfig,
-)
-from ...queries import (
-    _Condition,
-    _Ordering,
-)
-from ...transactions import (
-    TRANSACTION_CONTEXT_VAR,
-)
-from ...uuid import (
-    NULL_UUID,
 )
 from ..abc import (
     MinosSnapshot,
@@ -74,78 +61,11 @@ class PostgreSqlSnapshot(MinosSnapshot):
         await self.reader.destroy()
         await self.writer.destroy()
 
-    async def get(
-        self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
-    ) -> Aggregate:
-        """Get an aggregate instance from its identifier.
+    def _get(self, *args, **kwargs) -> Awaitable[Aggregate]:
+        return self.reader.get(*args, **kwargs)
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
-        :param kwargs: Additional named arguments.
-        :return: The ``Aggregate`` instance.
-        """
-        await self.synchronize(**kwargs)
+    def _find(self, *args, **kwargs,) -> AsyncIterator[Aggregate]:
+        return self.reader.find(*args, **kwargs)
 
-        if transaction_uuid is None:
-            if (transaction := TRANSACTION_CONTEXT_VAR.get()) is not None:
-                transaction_uuid = transaction.uuid
-            else:
-                transaction_uuid = NULL_UUID
-
-        return await self.reader.get(
-            aggregate_name=aggregate_name, uuid=uuid, transaction_uuid=transaction_uuid, **kwargs,
-        )
-
-    async def find(
-        self,
-        aggregate_name: str,
-        condition: _Condition,
-        ordering: Optional[_Ordering] = None,
-        limit: Optional[int] = None,
-        streaming_mode: bool = False,
-        transaction_uuid: Optional[UUID] = None,
-        **kwargs,
-    ) -> AsyncIterator[Aggregate]:
-        """Find a collection of ``Aggregate`` instances based on a ``Condition``.
-
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
-        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
-            is to retrieve them without any order pattern.
-        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
-            instances that meet the given condition.
-        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
-            database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
-        :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that containing the ``Aggregate`` instances.
-        """
-        await self.synchronize(**kwargs)
-
-        if transaction_uuid is None:
-            if (transaction := TRANSACTION_CONTEXT_VAR.get()) is not None:
-                transaction_uuid = transaction.uuid
-            else:
-                transaction_uuid = NULL_UUID
-
-        iterable = self.reader.find(
-            aggregate_name=aggregate_name,
-            condition=condition,
-            ordering=ordering,
-            limit=limit,
-            streaming_mode=streaming_mode,
-            transaction_uuid=transaction_uuid,
-            **kwargs,
-        )
-
-        async for aggregate in iterable:
-            yield aggregate
-
-    async def synchronize(self, **kwargs) -> None:
-        """Synchronize the snapshot to the latest available version.
-
-        :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
-        """
-        await self.writer.dispatch(**kwargs)
+    def _synchronize(self, *args, **kwargs) -> Awaitable[None]:
+        return self.writer.dispatch(**kwargs)

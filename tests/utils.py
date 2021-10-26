@@ -152,13 +152,13 @@ class FakeLoop:
 class FakeSnapshot(MinosSnapshot):
     """For testing purposes."""
 
-    async def get(self, *args, **kwargs) -> Aggregate:
+    async def _get(self, *args, **kwargs) -> Aggregate:
         """For testing purposes."""
 
-    async def find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
+    async def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""
 
-    async def synchronize(self, **kwargs) -> None:
+    async def _synchronize(self, **kwargs) -> None:
         """For testing purposes."""
 
 

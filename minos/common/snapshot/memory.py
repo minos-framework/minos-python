@@ -33,9 +33,6 @@ from ..queries import (
 from ..repository import (
     MinosRepository,
 )
-from ..transactions import (
-    TRANSACTION_CONTEXT_VAR,
-)
 from ..uuid import (
     NULL_UUID,
 )
@@ -60,8 +57,7 @@ class InMemorySnapshot(MinosSnapshot):
         super().__init__(*args, **kwargs)
         self._repository = repository
 
-    # noinspection PyMethodOverriding
-    async def find(
+    async def _find(
         self,
         aggregate_name: str,
         condition: _Condition,
@@ -70,18 +66,6 @@ class InMemorySnapshot(MinosSnapshot):
         transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
-        """Find a collection of ``Aggregate`` instances based on a ``Condition``.
-
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
-        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
-            is to retrieve them without any order pattern.
-        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
-            instances that meet the given condition.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction..
-        :param kwargs: Additional named arguments.
-        :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
-        """
         uuids = {v.aggregate_uuid async for v in self._repository.select(aggregate_name=aggregate_name)}
 
         aggregates = list()
@@ -104,24 +88,9 @@ class InMemorySnapshot(MinosSnapshot):
             yield aggregate
 
     # noinspection PyMethodOverriding
-    async def get(
+    async def _get(
         self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
     ) -> Aggregate:
-        """Get an aggregate instance from its identifier.
-
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
-        :param kwargs: Additional named arguments.
-        :return: The ``Aggregate`` instance.
-        """
-
-        if transaction_uuid is None:
-            if (transaction := TRANSACTION_CONTEXT_VAR.get()) is not None:
-                transaction_uuid = transaction.uuid
-            else:
-                transaction_uuid = NULL_UUID
-
         entries = [
             v
             async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
@@ -150,11 +119,3 @@ class InMemorySnapshot(MinosSnapshot):
             instance.apply_diff(entry.aggregate_diff)
 
         return instance
-
-    # noinspection PyMethodOverriding
-    async def synchronize(self, **kwargs) -> None:
-        """Synchronize the snapshot to the latest available version.
-
-        :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
-        """
