@@ -107,6 +107,11 @@ class TestInMemoryRepository(TestRepositorySelect):
     async def test_select_empty(self):
         self.assertEqual([], [v async for v in self.repository.select()])
 
+    async def test_offset(self):
+        self.assertEqual(0, await self.repository.offset)
+        await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
+        self.assertEqual(1, await self.repository.offset)
+
 
 class TestInMemoryRepositorySelect(TestRepositorySelect):
     def setUp(self) -> None:

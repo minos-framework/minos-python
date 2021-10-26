@@ -137,6 +137,11 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
         with self.assertRaises(MinosRepositoryException):
             await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, "foo".encode()))
 
+    async def test_offset(self):
+        self.assertEqual(0, await self.repository.offset)
+        await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
+        self.assertEqual(1, await self.repository.offset)
+
     async def test_select_empty(self):
         expected = []
         observed = [v async for v in self.repository.select()]

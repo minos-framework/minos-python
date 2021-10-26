@@ -122,7 +122,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
 
     @property
     async def _offset(self) -> int:
-        return (await self.submit_query_and_fetchone(_SELECT_MAX_ID_QUERY))[0]
+        return (await self.submit_query_and_fetchone(_SELECT_MAX_ID_QUERY))[0] or 0
 
 
 _CREATE_ACTION_ENUM_QUERY = """
