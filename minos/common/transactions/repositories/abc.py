@@ -20,10 +20,14 @@ from ..models import (
 
 
 class TransactionRepository(ABC, MinosSetup):
-    """TODO"""
+    """Transaction Repository base class."""
 
     async def submit(self, transaction: Transaction) -> None:
-        """TODO"""
+        """Submit a new or updated transaction to store it on the repository.
+
+        :param transaction: The transaction to be stored.
+        :return: This method does not return anything.
+        """
         await self._submit(transaction)
 
     @abstractmethod
@@ -43,7 +47,20 @@ class TransactionRepository(ABC, MinosSetup):
         event_offset_ge: Optional[int] = None,
         **kwargs
     ) -> AsyncIterator[Transaction]:
-        """TODO"""
+        """Get a transaction from the repository.
+
+        :param uuid: Transaction identifier equal to the given value.
+        :param uuid_in: Transaction identifier within the given values.
+        :param status: Transaction status equal to the given value.
+        :param status_in: Transaction status within the given values
+        :param event_offset: Event offset equal to the given value.
+        :param event_offset_lt: Event Offset lower than the given value
+        :param event_offset_gt: Event Offset greater than the given value
+        :param event_offset_le: Event Offset lower or equal to the given value
+        :param event_offset_ge: Event Offset greater or equal to the given value
+        :param kwargs: Additional named arguments.
+        :return: An asynchronous iterator.
+        """
         generator = self._select(
             uuid=uuid,
             uuid_in=uuid_in,

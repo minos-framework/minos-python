@@ -25,7 +25,7 @@ from .abc import (
 
 
 class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionRepository):
-    """TODO"""
+    """PostgreSql Transaction Repository class."""
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[PostgreSqlTransactionRepository]:
@@ -77,7 +77,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
         if status_in is not None:
             conditions.append("status IN %(status_in)s")
         if event_offset is not None:
-            conditions.append("event_offset = %(id)s")
+            conditions.append("event_offset = %(event_offset)s")
         if event_offset_lt is not None:
             conditions.append("event_offset < %(event_offset_lt)s")
         if event_offset_gt is not None:

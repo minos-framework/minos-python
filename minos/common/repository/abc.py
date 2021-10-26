@@ -206,7 +206,7 @@ class MinosRepository(ABC, MinosSetup):
         :param kwargs: TODO
         :return: TODO
         """
-        return Transaction(event_repository=self, **kwargs)
+        return Transaction(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:

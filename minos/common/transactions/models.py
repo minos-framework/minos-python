@@ -8,6 +8,7 @@ from enum import (
 )
 from typing import (
     TYPE_CHECKING,
+    Iterable,
     Optional,
 )
 from uuid import (
@@ -55,6 +56,8 @@ class Transaction:
             uuid = uuid4()
         if status is None:
             status = TransactionStatus.CREATED
+        if not isinstance(status, TransactionStatus):
+            status = TransactionStatus.value_of(status)
 
         self.uuid = uuid
         self.autocommit = autocommit
@@ -112,8 +115,19 @@ class Transaction:
 
         await self.transaction_repository.submit(self)
 
+    def __eq__(self, other: Transaction) -> bool:
+        return type(self) == type(other) and tuple(self) == tuple(other)
+
+    def __iter__(self) -> Iterable:
+        # noinspection PyRedundantParentheses
+        yield from (
+            self.uuid,
+            self.status,
+            self.event_offset,
+        )
+
     def __repr__(self):
-        return f"{type(self).__name__}(uuid={self.uuid!r}, event_offset={self.event_offset!r},  status={self.status!r})"
+        return f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r}, event_offset={self.event_offset!r})"
 
 
 class TransactionStatus(str, Enum):
@@ -124,3 +138,11 @@ class TransactionStatus(str, Enum):
     COMMITTED = "committed"
     RESERVED = "reserved"
     REJECTED = "rejected"
+
+    @classmethod
+    def value_of(cls, value: str) -> TransactionStatus:
+        """Get the status based on its text representation."""
+        for item in cls.__members__.values():
+            if item.value == value:
+                return item
+        raise ValueError(f"The given value does not match with any enum items. Obtained {value}")

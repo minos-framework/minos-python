@@ -28,6 +28,8 @@ from minos.common import (
     MinosSagaManager,
     MinosSnapshot,
     RepositoryEntry,
+    Transaction,
+    TransactionRepository,
     current_datetime,
 )
 
@@ -180,3 +182,13 @@ class FakeAsyncIterator:
             return next(self.iter)
         except StopIteration:
             raise StopAsyncIteration
+
+
+class FakeTransactionRepository(TransactionRepository):
+    """For testing purposes."""
+
+    async def _submit(self, transaction: Transaction) -> None:
+        """For testing purposes."""
+
+    async def _select(self, **kwargs) -> AsyncIterator[Transaction]:
+        """For testing purposes."""
