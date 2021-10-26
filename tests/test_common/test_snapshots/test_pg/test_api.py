@@ -9,14 +9,19 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     Condition,
     Ordering,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotWriter,
+    Transaction,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
+)
+from minos.common.transactions import (
+    TRANSACTION_CONTEXT_VAR,
 )
 from tests.utils import (
     BASE_PATH,
@@ -57,6 +62,20 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         args = call(aggregate_name="path.to.Aggregate", uuid=uuid, transaction_uuid=transaction_uuid)
         self.assertEqual(args, self.get_mock.call_args)
 
+    async def test_get_transaction_null(self):
+        await self.snapshot.get("path.to.Aggregate", uuid4())
+
+        self.assertEqual(1, self.get_mock.call_count)
+        self.assertEqual(NULL_UUID, self.get_mock.call_args.kwargs["transaction_uuid"])
+
+    async def test_get_transaction_context(self):
+        transaction = Transaction()
+        TRANSACTION_CONTEXT_VAR.set(transaction)
+        await self.snapshot.get("path.to.Aggregate", uuid4())
+
+        self.assertEqual(1, self.get_mock.call_count)
+        self.assertEqual(transaction.uuid, self.get_mock.call_args.kwargs["transaction_uuid"])
+
     async def test_find(self):
         transaction_uuid = uuid4()
         iterable = self.snapshot.find(
@@ -78,6 +97,20 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
             transaction_uuid=transaction_uuid,
         )
         self.assertEqual(args, self.find_mock.call_args)
+
+    async def test_find_transaction_null(self):
+        [a async for a in self.snapshot.find("path.to.Aggregate", Condition.TRUE)]
+
+        self.assertEqual(1, self.find_mock.call_count)
+        self.assertEqual(NULL_UUID, self.find_mock.call_args.kwargs["transaction_uuid"])
+
+    async def test_find_transaction_context(self):
+        transaction = Transaction()
+        TRANSACTION_CONTEXT_VAR.set(transaction)
+        [a async for a in self.snapshot.find("path.to.Aggregate", Condition.TRUE)]
+
+        self.assertEqual(1, self.find_mock.call_count)
+        self.assertEqual(transaction.uuid, self.find_mock.call_args.kwargs["transaction_uuid"])
 
     async def test_synchronize(self):
         await self.snapshot.synchronize()

@@ -18,6 +18,12 @@ from ...queries import (
     _Condition,
     _Ordering,
 )
+from ...transactions import (
+    TRANSACTION_CONTEXT_VAR,
+)
+from ...uuid import (
+    NULL_UUID,
+)
 from ..abc import (
     MinosSnapshot,
 )
@@ -81,6 +87,12 @@ class PostgreSqlSnapshot(MinosSnapshot):
         """
         await self.synchronize(**kwargs)
 
+        if transaction_uuid is None:
+            if (transaction := TRANSACTION_CONTEXT_VAR.get()) is not None:
+                transaction_uuid = transaction.uuid
+            else:
+                transaction_uuid = NULL_UUID
+
         return await self.reader.get(
             aggregate_name=aggregate_name, uuid=uuid, transaction_uuid=transaction_uuid, **kwargs,
         )
@@ -110,6 +122,12 @@ class PostgreSqlSnapshot(MinosSnapshot):
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
         await self.synchronize(**kwargs)
+
+        if transaction_uuid is None:
+            if (transaction := TRANSACTION_CONTEXT_VAR.get()) is not None:
+                transaction_uuid = transaction.uuid
+            else:
+                transaction_uuid = NULL_UUID
 
         iterable = self.reader.find(
             aggregate_name=aggregate_name,
