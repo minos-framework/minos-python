@@ -25,9 +25,6 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from ..configuration import (
-    MinosConfig,
-)
 from ..exceptions import (
     MinosBrokerNotProvidedException,
     MinosRepositoryConflictException,
@@ -75,10 +72,6 @@ class MinosRepository(ABC, MinosSetup):
 
         self._broker = event_broker
         self._transaction_repository = transaction_repository
-
-    @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
-        return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new creation entry into the repository.

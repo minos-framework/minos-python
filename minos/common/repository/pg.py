@@ -14,6 +14,9 @@ from psycopg2 import (
     IntegrityError,
 )
 
+from ..configuration import (
+    MinosConfig,
+)
 from ..database import (
     PostgreSqlMinosDatabase,
 )
@@ -33,6 +36,10 @@ from .entries import (
 
 class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
     """PostgreSQL-based implementation of the repository class in ``Minos``."""
+
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
+        return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def _setup(self):
         """Setup miscellaneous repository thing.
