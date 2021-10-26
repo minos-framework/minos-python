@@ -10,6 +10,7 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -46,7 +47,7 @@ class Transaction:
     def __init__(
         self,
         uuid: Optional[UUID] = None,
-        status: TransactionStatus = None,
+        status: Union[str, TransactionStatus] = None,
         event_offset: Optional[int] = None,
         autocommit: bool = True,
         event_repository: MinosRepository = Provide["repository"],
@@ -71,22 +72,19 @@ class Transaction:
 
     async def __aenter__(self):
         if self.status in (TransactionStatus.COMMITTED, TransactionStatus.RESERVED, TransactionStatus.REJECTED):
-            raise ValueError("TODO")
+            raise ValueError(f"Current transaction cannot be modified. Status: {self.status!r}")
 
-        if TRANSACTION_CONTEXT_VAR.get() is not None:
-            raise ValueError("TODO")
+        if TRANSACTION_CONTEXT_VAR.get() is not None:  # FIXME: Future implementations should not have this constraint.
+            raise ValueError("Already inside a transaction. Multiple simultaneous transactions are not supported yet!")
 
         self._token = TRANSACTION_CONTEXT_VAR.set(self)
         await self.save()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self._token is not None:
-            TRANSACTION_CONTEXT_VAR.reset(self._token)
-        else:
-            TRANSACTION_CONTEXT_VAR.set(None)
+        TRANSACTION_CONTEXT_VAR.reset(self._token)
 
-        if self.autocommit and self.status != TransactionStatus.CREATED:
+        if self.autocommit and self.status in (TransactionStatus.PENDING, TransactionStatus.RESERVED):
             await self.commit()
 
     async def reserve(self) -> None:
