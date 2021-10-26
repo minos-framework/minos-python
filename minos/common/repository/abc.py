@@ -73,6 +73,48 @@ class MinosRepository(ABC, MinosSetup):
         self._broker = event_broker
         self._transaction_repository = transaction_repository
 
+    def begin(self, **kwargs) -> Transaction:
+        """TODO
+
+        :param kwargs: TODO
+        :return: TODO
+        """
+        return Transaction(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
+
+    async def _check_transaction(self, transaction: Transaction) -> bool:
+        # FIXME: This check must be within a lock.
+
+        async for entry in self.select(transaction_uuid=transaction.uuid):
+            async for _ in self.select(
+                aggregate_uuid=entry.aggregate_uuid, version=entry.version, transaction_uuid=NULL_UUID
+            ):
+                return False
+
+            transaction_uuids = {
+                e.transaction_uuid
+                async for e in self.select(aggregate_uuid=entry.aggregate_uuid, version=entry.version)
+            }
+
+            async for _ in self._transaction_repository.select(
+                uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
+            ):
+                return False
+
+        return True
+
+    async def _commit_transaction(self, transaction: Transaction) -> int:
+        """TODO
+
+        :param transaction: TODO
+        :return: TODO
+        """
+        entries = list()
+        async for entry in self.select(transaction_uuid=transaction.uuid):
+            new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
+            committed = await self.submit(new, _transaction_uuid=transaction.uuid)
+            entries.append(committed)
+        return max(e.id for e in entries)
+
     async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new creation entry into the repository.
 
@@ -112,50 +154,6 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def _check_transaction(self, transaction: Transaction) -> bool:
-        # FIXME: This check must be within a lock.
-
-        async for entry in self.select(transaction_uuid=transaction.uuid):
-            async for _ in self.select(
-                aggregate_uuid=entry.aggregate_uuid, version=entry.version, transaction_uuid=NULL_UUID
-            ):
-                return False
-
-            transaction_uuids = {
-                e.transaction_uuid
-                async for e in self.select(aggregate_uuid=entry.aggregate_uuid, version=entry.version)
-            }
-
-            async for _ in self._transaction_repository.select(
-                uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
-            ):
-                return False
-
-        return True
-
-    @property
-    def offset(self) -> Awaitable[int]:
-        """TODO"""
-        return self._offset
-
-    @property
-    @abstractmethod
-    async def _offset(self) -> int:
-        raise NotImplementedError
-
-    async def _commit_transaction(self, transaction: Transaction) -> int:
-        """TODO
-
-        :param transaction: TODO
-        :return: TODO
-        """
-        entries = list()
-        async for entry in self.select(transaction_uuid=transaction.uuid):
-            new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
-            committed = await self.submit(new, _transaction_uuid=transaction.uuid)
-            entries.append(committed)
-        return max(e.id for e in entries)
-
     async def submit(
         self, entry: Union[AggregateDiff, RepositoryEntry], _transaction_uuid: Optional[UUID] = None
     ) -> RepositoryEntry:
@@ -169,7 +167,7 @@ class MinosRepository(ABC, MinosSetup):
             AggregateDiff,
         )
 
-        transaction = self._transaction
+        transaction = TRANSACTION_CONTEXT_VAR.get()
 
         if isinstance(entry, AggregateDiff):
             entry = RepositoryEntry.from_aggregate_diff(entry, transaction=transaction)
@@ -200,18 +198,6 @@ class MinosRepository(ABC, MinosSetup):
             await transaction.save(event_offset=entry.id, status=TransactionStatus.PENDING)
 
         return entry
-
-    @property
-    def _transaction(self) -> Optional[Transaction]:
-        return TRANSACTION_CONTEXT_VAR.get()
-
-    def begin(self, **kwargs) -> Transaction:
-        """TODO
-
-        :param kwargs: TODO
-        :return: TODO
-        """
-        return Transaction(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
@@ -303,3 +289,13 @@ class MinosRepository(ABC, MinosSetup):
     @abstractmethod
     async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository."""
+
+    @property
+    def offset(self) -> Awaitable[int]:
+        """TODO"""
+        return self._offset
+
+    @property
+    @abstractmethod
+    async def _offset(self) -> int:
+        raise NotImplementedError

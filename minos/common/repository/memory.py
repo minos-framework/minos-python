@@ -58,7 +58,7 @@ class InMemoryRepository(MinosRepository):
         if entry.version < next_version:
             raise MinosRepositoryConflictException(
                 f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}",
-                len(self._storage),
+                await self.offset,
             )
 
         if entry.created_at is None:
