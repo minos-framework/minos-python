@@ -12,6 +12,7 @@ from asyncio import (
 from typing import (
     TYPE_CHECKING,
     AsyncIterator,
+    Awaitable,
     Optional,
     Union,
 )
@@ -118,25 +119,36 @@ class MinosRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def _check_transaction(self, transaction: Transaction) -> tuple[bool, int]:
+    async def _check_transaction(self, transaction: Transaction) -> bool:
         # FIXME: This check must be within a lock.
 
         async for entry in self.select(transaction_uuid=transaction.uuid):
             async for _ in self.select(
                 aggregate_uuid=entry.aggregate_uuid, version=entry.version, transaction_uuid=NULL_UUID
             ):
-                return False, None
+                return False
 
             transaction_uuids = {
                 e.transaction_uuid
                 async for e in self.select(aggregate_uuid=entry.aggregate_uuid, version=entry.version)
             }
+
             async for _ in self._transaction_repository.select(
                 uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
             ):
-                return False, None
+                return False
 
-        return True, None
+        return True
+
+    @property
+    def offset(self) -> Awaitable[int]:
+        """TODO"""
+        return self._offset
+
+    @property
+    @abstractmethod
+    async def _offset(self) -> int:
+        raise NotImplementedError
 
     async def _commit_transaction(self, transaction: Transaction) -> int:
         """TODO

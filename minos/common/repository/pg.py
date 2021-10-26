@@ -55,9 +55,9 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         try:
             response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
         except IntegrityError:
-            offset = (await self.submit_query_and_fetchone(_SELECT_MAX_ID_QUERY))[0]
             raise MinosRepositoryConflictException(
-                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}", offset
+                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}",
+                await self.offset,
             )
 
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
@@ -119,6 +119,10 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             return f"{_SELECT_ALL_ENTRIES_QUERY} ORDER BY id;"
 
         return f"{_SELECT_ALL_ENTRIES_QUERY} WHERE {' AND '.join(conditions)} ORDER BY id;"
+
+    @property
+    async def _offset(self) -> int:
+        return (await self.submit_query_and_fetchone(_SELECT_MAX_ID_QUERY))[0]
 
 
 _CREATE_ACTION_ENUM_QUERY = """

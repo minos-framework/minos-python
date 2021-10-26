@@ -129,3 +129,7 @@ class InMemoryRepository(MinosRepository):
         iterable = filter(_fn_filter, iterable)
         for item in iterable:
             yield item
+
+    @property
+    async def _offset(self) -> int:
+        return len(self._storage)

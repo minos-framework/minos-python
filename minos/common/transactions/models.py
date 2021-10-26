@@ -71,7 +71,8 @@ class Transaction:
 
     async def __aenter__(self):
         if TRANSACTION_CONTEXT_VAR.get() is not None:
-            raise ValueError()
+            raise ValueError("TODO")
+
         self._token = TRANSACTION_CONTEXT_VAR.set(self)
         await self.save()
         return self
@@ -88,7 +89,9 @@ class Transaction:
     async def reserve(self) -> None:
         """TODO"""
         # noinspection PyProtectedMember
-        committable, event_offset = await self.event_repository._check_transaction(self)
+        committable = await self.event_repository._check_transaction(self)
+        # noinspection PyProtectedMember
+        event_offset = await self.event_repository.offset + 1
         if committable:
             await self.save(event_offset=event_offset, status=TransactionStatus.RESERVED)
         else:

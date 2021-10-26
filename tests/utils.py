@@ -77,6 +77,10 @@ class FakeRepository(MinosRepository):
     async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """For testing purposes."""
 
+    @property
+    async def _offset(self) -> int:
+        return 0
+
 
 class FakeBroker(MinosBroker):
     """For testing purposes."""
