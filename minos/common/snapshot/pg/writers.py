@@ -94,7 +94,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
         if isinstance(self._transaction_repository, TransactionRepository):  # FIXME: Improve this code.
             iterable = self._transaction_repository.select(
-                event_offset_gt=initial_offset,
+                event_offset_ge=initial_offset,
                 status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED),
                 **kwargs
             )
