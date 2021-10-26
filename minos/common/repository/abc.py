@@ -85,22 +85,27 @@ class MinosRepository(ABC, MinosSetup):
         return Transaction(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
 
     async def _check_transaction(self, transaction: Transaction) -> bool:
-        # FIXME: This check must be within a lock.
-
+        entries = dict()
         async for entry in self.select(transaction_uuid=transaction.uuid):
-            async for _ in self.select(
-                aggregate_uuid=entry.aggregate_uuid, version=entry.version, transaction_uuid=NULL_UUID
-            ):
-                return False
+            if entry.aggregate_uuid in entries and entry.version < entries[entry.aggregate_uuid]:
+                continue
+            entries[entry.aggregate_uuid] = entry.version
 
-            transaction_uuids = {
-                e.transaction_uuid
-                async for e in self.select(aggregate_uuid=entry.aggregate_uuid, version=entry.version)
-            }
+        transaction_uuids = set()
+        for aggregate_uuid, version in entries.items():
+            async for entry in self.select(aggregate_uuid=aggregate_uuid, version=version):
+                if entry.transaction_uuid == NULL_UUID:
+                    return False
+                transaction_uuids.add(entry.transaction_uuid)
 
-            async for _ in self._transaction_repository.select(
-                uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
-            ):
+        if len(transaction_uuids):
+            with suppress(StopAsyncIteration):
+                iterable = self._transaction_repository.select(
+                    uuid_in=tuple(transaction_uuids),
+                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED)
+                )
+                await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
+
                 return False
 
         return True
@@ -203,10 +208,10 @@ class MinosRepository(ABC, MinosSetup):
         }
 
         if len(transaction_uuids):
-
             with suppress(StopAsyncIteration):
                 iterable = self._transaction_repository.select(
-                    uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED
+                    uuid_in=tuple(transaction_uuids),
+                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED)
                 )
                 await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
 
