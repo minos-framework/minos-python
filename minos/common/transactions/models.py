@@ -86,7 +86,7 @@ class Transaction:
         else:
             TRANSACTION_CONTEXT_VAR.set(None)
 
-        if self.autocommit:
+        if self.autocommit and self.status != TransactionStatus.CREATED:
             await self.commit()
 
     async def reserve(self) -> None:
