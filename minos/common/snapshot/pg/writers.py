@@ -92,7 +92,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
             return 0
 
     async def _store_offset(self, offset: int) -> None:
-        await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset}, lock=hash("insert_snapshot_aux_offset"))
+        await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset}, lock="insert_snapshot_aux_offset")
 
     async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:

@@ -2,9 +2,13 @@ from typing import (
     Any,
     AsyncContextManager,
     AsyncIterator,
+    Hashable,
     Optional,
 )
 
+from aiomisc.pool import (
+    ContextManager,
+)
 from aiopg import (
     Cursor,
 )
@@ -74,34 +78,27 @@ class PostgreSqlMinosDatabase(MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        async with self.cursor() as cursor:
-            if lock is not None:
-                await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
-            try:
-                await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
+        if lock is None:
+            context_manager = self.cursor()
+        else:
+            context_manager = self.lock(lock)
 
-                if streaming_mode:
-                    async for row in cursor:
-                        yield row
-                    return
+        async with context_manager as cursor:
+            await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
 
-                rows = await cursor.fetchall()
-            finally:
-                if lock is not None:
-                    await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
+            if streaming_mode:
+                async for row in cursor:
+                    yield row
+                return
+
+            rows = await cursor.fetchall()
 
         for row in rows:
             yield row
 
     # noinspection PyUnusedLocal
     async def submit_query(
-        self,
-        operation: Any,
-        parameters: Any = None,
-        *,
-        timeout: Optional[float] = None,
-        lock: Optional[int] = None,
-        **kwargs,
+        self, operation: Any, parameters: Any = None, *, timeout: Optional[float] = None, lock: Any = None, **kwargs,
     ) -> None:
         """Submit a SQL query.
 
@@ -113,14 +110,18 @@ class PostgreSqlMinosDatabase(MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        async with self.cursor() as cursor:
-            if lock is not None:
-                await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
-            try:
-                await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
-            finally:
-                if lock is not None:
-                    await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
+        if lock is None:
+            context_manager = self.cursor()
+        else:
+            context_manager = self.lock(lock)
+
+        async with context_manager as cursor:
+            await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
+
+    def lock(self, key: Any):
+        """TODO"""
+        wrapped_cursor = self.pool.cursor()
+        return PostgreSqlLock(wrapped_cursor, key)
 
     def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
         """Get a connection cursor from the pool.
@@ -150,3 +151,28 @@ class PostgreSqlMinosDatabase(MinosSetup):
             host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
         )
         return pool, True
+
+
+class PostgreSqlLock(ContextManager):
+    """"TODO"""
+
+    def __init__(self, wrapped_cursor: AsyncContextManager[Cursor], key: Any):
+        super().__init__(self._fn_enter, self._fn_exit)
+
+        if not isinstance(key, Hashable):
+            raise ValueError("TODO")
+
+        if not isinstance(key, int):
+            key = hash(key)
+
+        self.wrapped_cursor = wrapped_cursor
+        self.key = key
+
+    async def _fn_enter(self):
+        cursor = await self.wrapped_cursor.__aenter__()
+        await cursor.execute("select pg_advisory_lock(%(key)s)", {"key": self.key})
+        return cursor
+
+    async def _fn_exit(self, cursor: Cursor):
+        await cursor.execute("select pg_advisory_unlock(%(key)s)", {"key": self.key})
+        await self.wrapped_cursor.__aexit__(None, None, None)

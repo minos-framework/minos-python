@@ -15,6 +15,7 @@ from .configuration import (
     MinosConfigAbstract,
 )
 from .database import (
+    PostgreSqlLock,
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
 )
