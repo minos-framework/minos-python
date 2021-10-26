@@ -72,7 +72,11 @@ class Transaction:
 
     async def __aenter__(self):
         if self.status in (TransactionStatus.COMMITTED, TransactionStatus.RESERVED, TransactionStatus.REJECTED):
-            raise ValueError(f"Current transaction cannot be modified. Status: {self.status!r}")
+            raise ValueError(
+                "Current status is not in "
+                f"{(TransactionStatus.COMMITTED, TransactionStatus.RESERVED, TransactionStatus.REJECTED)!r}. "
+                f"Obtained: {self.status!r}"
+            )
 
         if TRANSACTION_CONTEXT_VAR.get() is not None:  # FIXME: Future implementations should not have this constraint.
             raise ValueError("Already inside a transaction. Multiple simultaneous transactions are not supported yet!")
@@ -89,13 +93,13 @@ class Transaction:
 
     async def reserve(self) -> None:
         """TODO"""
-        if self.status != self.status.PENDING:
-            raise ValueError("TODO")
+        if self.status != TransactionStatus.PENDING:
+            raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
         # noinspection PyProtectedMember
         committable = await self.event_repository._check_transaction(self)
         # noinspection PyProtectedMember
-        event_offset = await self.event_repository.offset + 1
+        event_offset = 1 + await self.event_repository.offset
         if committable:
             await self.save(event_offset=event_offset, status=TransactionStatus.RESERVED)
         else:
@@ -104,27 +108,34 @@ class Transaction:
     async def reject(self) -> None:
         """TODO"""
         if self.status not in (TransactionStatus.PENDING, TransactionStatus.RESERVED):
-            raise ValueError("TODO")
+            raise ValueError(
+                f"Current status is not in {(TransactionStatus.PENDING, TransactionStatus.RESERVED)!r}. "
+                f"Obtained: {self.status!r}"
+            )
 
         # noinspection PyProtectedMember
-        event_offset = await self.event_repository.offset + 1
+        event_offset = 1 + await self.event_repository.offset
         await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
 
     async def commit(self) -> None:
         """TODO"""
 
         if self.status not in (TransactionStatus.PENDING, TransactionStatus.RESERVED):
-            raise ValueError("TODO")
+            raise ValueError(
+                f"Current status is not in {(TransactionStatus.PENDING, TransactionStatus.RESERVED)!r}. "
+                f"Obtained: {self.status!r}"
+            )
 
         try:
             # noinspection PyProtectedMember
-            event_offset = await self.event_repository._commit_transaction(self)
-            await self.save(event_offset, status=TransactionStatus.COMMITTED)
+            event_offset = 1 + await self.event_repository._commit_transaction(self)
+            await self.save(event_offset=event_offset, status=TransactionStatus.COMMITTED)
         except MinosRepositoryConflictException as exc:
-            await self.save(exc.offset, status=TransactionStatus.REJECTED)
+            event_offset = 1 + exc.offset
+            await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
             raise exc
 
-    async def save(self, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None):
+    async def save(self, *, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None):
         """TODO"""
 
         if event_offset is not None:
@@ -135,7 +146,7 @@ class Transaction:
         await self.transaction_repository.submit(self)
 
     def __eq__(self, other: Transaction) -> bool:
-        return type(self) == type(other) and tuple(self) == tuple(other)
+        return isinstance(other, type(self)) and tuple(self) == tuple(other)
 
     def __iter__(self) -> Iterable:
         # noinspection PyRedundantParentheses
