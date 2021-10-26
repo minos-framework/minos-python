@@ -92,14 +92,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
                 pass
             offset = max(event_entry.id, offset)
 
-        if isinstance(self._transaction_repository, TransactionRepository):  # FIXME: Improve this code.
-            iterable = self._transaction_repository.select(
-                event_offset_ge=initial_offset,
-                status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED),
-                **kwargs
-            )
-            async for transaction in iterable:
-                await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuid": transaction.uuid})
+        await self._clean(initial_offset)
 
         await self._store_offset(offset)
 
@@ -175,6 +168,16 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         snapshot_entry.created_at, snapshot_entry.updated_at = response
 
         return snapshot_entry
+
+    async def _clean(self, offset: int, **kwargs) -> None:
+        if not isinstance(self._transaction_repository, TransactionRepository):
+            return  # FIXME: Is this condition reasonable?
+
+        iterable = self._transaction_repository.select(
+            event_offset_gt=offset, status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED), **kwargs
+        )
+        async for transaction in iterable:
+            await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuid": transaction.uuid})
 
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
