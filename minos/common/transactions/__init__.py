@@ -6,6 +6,7 @@ from .models import (
     TransactionStatus,
 )
 from .repositories import (
+    InMemoryTransactionRepository,
     PostgreSqlTransactionRepository,
     TransactionRepository,
 )

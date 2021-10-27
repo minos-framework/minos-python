@@ -22,7 +22,7 @@ from tests.utils import (
     FakeLockPool,
     FakePool,
     FakeSagaManager,
-    FakeTransactionRepository,
+    InMemoryTransactionRepository,
 )
 
 
@@ -52,8 +52,8 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(injector.saga_manager, FakeSagaManager)
 
     def test_transaction_repository(self):
-        injector = DependencyInjector(self.config, transaction_repository=FakeTransactionRepository)
-        self.assertIsInstance(injector.transaction_repository, FakeTransactionRepository)
+        injector = DependencyInjector(self.config, transaction_repository=InMemoryTransactionRepository)
+        self.assertIsInstance(injector.transaction_repository, InMemoryTransactionRepository)
 
     def test_lock_pool(self):
         injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
@@ -63,7 +63,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(
             self.config,
             event_broker=FakeBroker,
-            transaction_repository=FakeTransactionRepository,
+            transaction_repository=InMemoryTransactionRepository,
             lock_pool=FakeLockPool,
             repository=InMemoryRepository,
         )
@@ -73,7 +73,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(
             self.config,
             event_broker=FakeBroker,
-            transaction_repository=FakeTransactionRepository,
+            transaction_repository=InMemoryTransactionRepository,
             lock_pool=FakeLockPool,
             repository=InMemoryRepository,
             snapsthot=InMemorySnapshot,
@@ -111,7 +111,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(injector.saga_manager, injector.container.saga_manager())
 
     def test_container_transaction_repository(self):
-        injector = DependencyInjector(self.config, transaction_repository=FakeTransactionRepository)
+        injector = DependencyInjector(self.config, transaction_repository=InMemoryTransactionRepository)
         self.assertEqual(injector.transaction_repository, injector.container.transaction_repository())
 
     def test_container_lock_pool(self):
@@ -122,7 +122,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(
             self.config,
             event_broker=FakeBroker,
-            transaction_repository=FakeTransactionRepository,
+            transaction_repository=InMemoryTransactionRepository,
             lock_pool=FakeLockPool,
             repository=InMemoryRepository,
         )
@@ -132,7 +132,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(
             self.config,
             event_broker=FakeBroker,
-            transaction_repository=FakeTransactionRepository,
+            transaction_repository=InMemoryTransactionRepository,
             lock_pool=FakeLockPool,
             repository=InMemoryRepository,
             snapsthot=InMemorySnapshot,
@@ -146,7 +146,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
             command_broker=FakeBroker,
             command_reply_broker=FakeBroker,
             saga_manager=FakeSagaManager,
-            transaction_repository=FakeTransactionRepository,
+            transaction_repository=InMemoryTransactionRepository,
             lock_pool=FakeLockPool,
             repository=InMemoryRepository,
             snapsthot=InMemorySnapshot,

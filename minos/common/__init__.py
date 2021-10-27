@@ -168,6 +168,7 @@ from .storage import (
 )
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,
+    InMemoryTransactionRepository,
     PostgreSqlTransactionRepository,
     Transaction,
     TransactionRepository,

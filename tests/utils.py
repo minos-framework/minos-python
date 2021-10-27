@@ -29,6 +29,7 @@ from minos.common import (
     Entity,
     InMemoryRepository,
     InMemorySnapshot,
+    InMemoryTransactionRepository,
     Lock,
     MinosBroker,
     MinosHandler,
@@ -50,7 +51,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         super().setUp()
 
         self.event_broker = FakeBroker()
-        self.transaction_repository = FakeTransactionRepository()
+        self.transaction_repository = InMemoryTransactionRepository()
         self.lock_pool = FakeLockPool()
         self.repository = InMemoryRepository(
             event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
@@ -112,15 +113,13 @@ class FakeRepository(MinosRepository):
 
     async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
         """For testing purposes."""
-        return entry
 
     def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """For testing purposes."""
-        return FakeAsyncIterator(tuple())
 
     @property
     async def _offset(self) -> int:
-        return 0
+        """For testing purposes."""
 
 
 class FakeBroker(MinosBroker):
@@ -202,7 +201,6 @@ class FakeSnapshot(MinosSnapshot):
 
     def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""
-        return FakeAsyncIterator(tuple())
 
     async def _synchronize(self, **kwargs) -> None:
         """For testing purposes."""
@@ -222,7 +220,6 @@ class FakeTransactionRepository(TransactionRepository):
 
     def _select(self, **kwargs) -> AsyncIterator[Transaction]:
         """For testing purposes."""
-        return FakeAsyncIterator(tuple())
 
 
 class FakeAsyncIterator:
