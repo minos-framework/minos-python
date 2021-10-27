@@ -70,6 +70,9 @@ from .injectors import (
 from .launchers import (
     EntrypointLauncher,
 )
+from .locks import (
+    Lock,
+)
 from .meta import (
     classproperty,
     property_or_classproperty,

@@ -4,7 +4,7 @@ from .abc import (
 from .locks import (
     PostgreSqlLock,
 )
-from .pool import (
+from .pools import (
     PostgreSqlLockPool,
     PostgreSqlPool,
 )

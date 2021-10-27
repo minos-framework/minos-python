@@ -1,5 +1,5 @@
 import logging
-from typing import (
+from collections.abc import (
     Hashable,
 )
 
@@ -9,6 +9,9 @@ from aiomisc.pool import (
 )
 from aiopg import (
     Connection,
+)
+from psycopg2 import (
+    OperationalError,
 )
 
 from ..pools import (
@@ -48,11 +51,20 @@ class PostgreSqlPool(MinosPool[ContextManager]):
             await instance.close()
         logger.info(f"Destroyed {self.database!r} database connection identified by {id(instance)}!")
 
+    async def _check_instance(self, instance: Connection) -> bool:
+        try:
+            # This operation connects to the database and raises an exception if something goes wrong.
+            instance.isolation_level
+        except OperationalError:
+            return False
+
+        return not instance.closed
+
 
 class PostgreSqlLockPool(PostgreSqlPool):
     """Postgres Locking Pool class."""
 
-    def acquire(self, key: Hashable = None, *args, **kwargs) -> PostgreSqlLock:
+    def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:
         """Acquire a new lock.
 
         :param key: The key to be used for locking.
