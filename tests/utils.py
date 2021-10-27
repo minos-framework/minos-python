@@ -160,3 +160,6 @@ class FakeAsyncIterator:
 
 class FakeLock(Lock):
     """For testing purposes."""
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        return
