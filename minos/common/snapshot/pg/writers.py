@@ -178,8 +178,8 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
             event_offset_gt=offset, status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED), **kwargs
         )
         transaction_uuids = {transaction.uuid async for transaction in iterable}
-
-        await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuids": tuple(transaction_uuids)})
+        if len(transaction_uuids):
+            await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuids": tuple(transaction_uuids)})
 
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
