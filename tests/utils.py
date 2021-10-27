@@ -1,3 +1,4 @@
+import sys
 import unittest
 from datetime import (
     timedelta,
@@ -15,16 +16,23 @@ from unittest import (
 )
 from uuid import (
     UUID,
-    uuid4,
+)
+
+from dependency_injector import (
+    containers,
+    providers,
 )
 
 from minos.common import (
     Aggregate,
     CommandReply,
     Entity,
+    InMemoryRepository,
+    InMemorySnapshot,
     Lock,
     MinosBroker,
     MinosHandler,
+    MinosPool,
     MinosRepository,
     MinosSagaManager,
     MinosSnapshot,
@@ -35,6 +43,49 @@ from minos.common import (
 )
 
 BASE_PATH = Path(__file__).parent
+
+
+class MinosTestCase(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.event_broker = FakeBroker()
+        self.transaction_repository = FakeTransactionRepository()
+        self.lock_pool = FakeLockPool()
+        self.repository = InMemoryRepository(
+            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+        )
+        self.snapshot = InMemorySnapshot(repository=self.repository)
+
+        self.container = containers.DynamicContainer()
+        self.container.event_broker = providers.Object(self.event_broker)
+        self.container.transaction_repository = providers.Object(self.transaction_repository)
+        self.container.lock_pool = providers.Object(self.lock_pool)
+        self.container.repository = providers.Object(self.repository)
+        self.container.snapshot = providers.Object(self.snapshot)
+        self.container.wire(modules=[sys.modules[__name__]])
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+
+        await self.event_broker.setup()
+        await self.transaction_repository.setup()
+        await self.lock_pool.setup()
+        await self.repository.setup()
+        await self.snapshot.setup()
+
+    async def asyncTearDown(self):
+        await self.snapshot.destroy()
+        await self.repository.destroy()
+        await self.lock_pool.destroy()
+        await self.transaction_repository.destroy()
+        await self.event_broker.destroy()
+
+        await super().asyncTearDown()
+
+    def tearDown(self) -> None:
+        self.container.unwire()
+        super().tearDown()
 
 
 class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
@@ -59,27 +110,8 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
 class FakeRepository(MinosRepository):
     """For testing purposes."""
 
-    def __init__(
-        self,
-        event_broker: Optional[MinosBroker] = None,
-        transaction_repository: Optional[TransactionRepository] = None,
-        *args,
-        **kwargs
-    ):
-        if event_broker is None:
-            event_broker = FakeBroker()
-        if transaction_repository is None:
-            transaction_repository = FakeTransactionRepository()
-        super().__init__(event_broker=event_broker, transaction_repository=transaction_repository, *args, **kwargs)
-        self.id_counter = 0
-        self.items = set()
-
     async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
-        self.id_counter += 1
-        entry.id = self.id_counter
-        entry.version += 1
-        entry.aggregate_uuid = uuid4()
-        entry.created_at = current_datetime()
+        """For testing purposes."""
         return entry
 
     def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
@@ -212,5 +244,32 @@ class FakeAsyncIterator:
 class FakeLock(Lock):
     """For testing purposes."""
 
+    def __init__(self, key=None, *args, **kwargs):
+        if key is None:
+            key = "fake"
+        super().__init__(key, *args, **kwargs)
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return
+
+
+class FakePool(MinosPool):
+    """For testing purposes."""
+
+    # noinspection PyMissingConstructor,PyUnusedLocal
+    def __init__(self, instance, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.instance = instance
+
+    async def _create_instance(self):
+        return self.instance
+
+    async def _destroy_instance(self, instance) -> None:
+        """For testing purposes."""
+
+
+class FakeLockPool(FakePool):
+    """For testing purposes."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(FakeLock(), *args, **kwargs)

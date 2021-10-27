@@ -14,7 +14,6 @@ from contextlib import (
 )
 from typing import (
     TYPE_CHECKING,
-    AsyncContextManager,
     AsyncIterator,
     Awaitable,
     Optional,
@@ -24,9 +23,6 @@ from uuid import (
     UUID,
 )
 
-from aiomisc.pool import (
-    ContextManager,
-)
 from dependency_injector.wiring import (
     Provide,
     inject,
@@ -34,6 +30,7 @@ from dependency_injector.wiring import (
 
 from ..exceptions import (
     MinosBrokerNotProvidedException,
+    MinosLockPoolNotProvidedException,
     MinosRepositoryConflictException,
     MinosRepositoryException,
     MinosTransactionRepositoryNotProvidedException,
@@ -89,11 +86,14 @@ class MinosRepository(ABC, MinosSetup):
         if transaction_repository is None or isinstance(transaction_repository, Provide):
             raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
 
+        if lock_pool is None or isinstance(lock_pool, Provide):
+            raise MinosLockPoolNotProvidedException("A transaction repository instance is required.")
+
         self._broker = event_broker
         self._transaction_repository = transaction_repository
         self._lock_pool = lock_pool
 
-    def begin(self, **kwargs) -> Transaction:
+    def transaction(self, **kwargs) -> Transaction:
         """TODO
 
         :param kwargs: TODO
@@ -212,23 +212,12 @@ class MinosRepository(ABC, MinosSetup):
 
         return entry
 
-    def write_lock(self) -> AsyncContextManager:
+    def write_lock(self) -> Lock:
         """Get a write lock.
 
         :return: An asynchronous context manager.
         """
-
-        if isinstance(self._lock_pool, MinosPool):
-            return self._lock_pool.acquire("aggregate_event_write_lock")
-        else:  # FIXME: Is this condition reasonable?
-
-            async def _fn_enter():
-                pass
-
-            async def _fn_exit(_):
-                pass
-
-            return ContextManager(_fn_enter, _fn_exit)
+        return self._lock_pool.acquire("aggregate_event_write_lock")
 
     # noinspection PyUnusedLocal
     async def _validate(

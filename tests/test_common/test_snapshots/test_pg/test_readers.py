@@ -1,15 +1,9 @@
-import sys
 import unittest
 from datetime import (
     datetime,
 )
 from uuid import (
     uuid4,
-)
-
-from dependency_injector import (
-    containers,
-    providers,
 )
 
 from minos.common import (
@@ -19,7 +13,6 @@ from minos.common import (
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
     Ordering,
-    PostgreSqlRepository,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
     PostgreSqlSnapshotWriter,
@@ -34,14 +27,11 @@ from tests.aggregate_classes import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeBroker,
-    FakeRepository,
-    FakeSnapshot,
-    FakeTransactionRepository,
+    MinosTestCase,
 )
 
 
-class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
+class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -54,14 +44,42 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         self.first_transaction = uuid4()
         self.second_transaction = uuid4()
 
-        self.container = containers.DynamicContainer()
-        self.container.repository = providers.Singleton(FakeRepository)
-        self.container.snapshot = providers.Singleton(FakeSnapshot)
-        self.container.wire(modules=[sys.modules[__name__]])
+        self.reader = PostgreSqlSnapshotReader.from_config(self.config)
 
-    def tearDown(self) -> None:
-        self.container.unwire()
-        super().tearDown()
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.reader.setup()
+        await self._populate()
+
+    async def asyncTearDown(self):
+        await self.reader.destroy()
+        await super().asyncTearDown()
+
+    async def _populate(self):
+        diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
+        # noinspection PyTypeChecker
+        aggregate_name: str = Car.classname
+        await self.repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
+        await self.repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
+        await self.repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
+        await self.repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
+        await self.repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
+        await self.repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+        await self.repository.update(
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.first_transaction)
+        )
+        await self.repository.delete(
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.second_transaction)
+        )
+        await self.repository.update(
+            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.first_transaction)
+        )
+        await self.repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+
+        async with PostgreSqlSnapshotWriter.from_config(
+            self.config, repository=self.repository, transaction_repository=self.transaction_repository
+        ) as dispatcher:
+            await dispatcher.dispatch()
 
     def test_type(self):
         self.assertTrue(issubclass(PostgreSqlSnapshotReader, PostgreSqlSnapshotSetup))
@@ -76,10 +94,9 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
 
     async def test_find_by_uuid(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
-                observed = [v async for v in iterable]
+
+        iterable = self.reader.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
+        observed = [v async for v in iterable]
 
         expected = [
             Car(
@@ -103,15 +120,14 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
 
     async def test_find_with_transaction(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                iterable = snapshot.find(
-                    "tests.aggregate_classes.Car",
-                    condition,
-                    ordering=Ordering.ASC("updated_at"),
-                    transaction_uuid=self.first_transaction,
-                )
-                observed = [v async for v in iterable]
+
+        iterable = self.reader.find(
+            "tests.aggregate_classes.Car",
+            condition,
+            ordering=Ordering.ASC("updated_at"),
+            transaction_uuid=self.first_transaction,
+        )
+        observed = [v async for v in iterable]
 
         expected = [
             Car(
@@ -135,15 +151,14 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
 
     async def test_find_with_transaction_delete(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                iterable = snapshot.find(
-                    "tests.aggregate_classes.Car",
-                    condition,
-                    ordering=Ordering.ASC("updated_at"),
-                    transaction_uuid=self.second_transaction,
-                )
-                observed = [v async for v in iterable]
+
+        iterable = self.reader.find(
+            "tests.aggregate_classes.Car",
+            condition,
+            ordering=Ordering.ASC("updated_at"),
+            transaction_uuid=self.second_transaction,
+        )
+        observed = [v async for v in iterable]
 
         expected = [
             Car(
@@ -160,12 +175,10 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
     async def test_find_streaming_true(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                iterable = snapshot.find(
-                    "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering=Ordering.ASC("updated_at")
-                )
-                observed = [v async for v in iterable]
+        iterable = self.reader.find(
+            "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering=Ordering.ASC("updated_at")
+        )
+        observed = [v async for v in iterable]
 
         expected = [
             Car(
@@ -190,43 +203,40 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
     async def test_find_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
         condition = Condition.IN("uuid", uuids)
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
-                observed = [v async for v in iterable]
 
-            expected = [
-                Car(
-                    3,
-                    "blue",
-                    uuid=self.uuid_2,
-                    version=2,
-                    created_at=observed[0].created_at,
-                    updated_at=observed[0].updated_at,
-                ),
-                Car(
-                    3,
-                    "blue",
-                    uuid=self.uuid_3,
-                    version=1,
-                    created_at=observed[1].created_at,
-                    updated_at=observed[1].updated_at,
-                ),
-            ]
-            self.assertEqual(expected, observed)
+        iterable = self.reader.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
+        observed = [v async for v in iterable]
+
+        expected = [
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_2,
+                version=2,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
+            ),
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_3,
+                version=1,
+                created_at=observed[1].created_at,
+                updated_at=observed[1].updated_at,
+            ),
+        ]
+        self.assertEqual(expected, observed)
 
     async def test_find_empty(self):
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                observed = {v async for v in snapshot.find("tests.aggregate_classes.Car", Condition.FALSE)}
+
+        observed = {v async for v in self.reader.find("tests.aggregate_classes.Car", Condition.FALSE)}
 
         expected = set()
         self.assertEqual(expected, observed)
 
     async def test_get(self):
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                observed = await snapshot.get("tests.aggregate_classes.Car", self.uuid_2)
+
+        observed = await self.reader.get("tests.aggregate_classes.Car", self.uuid_2)
 
         expected = Car(
             3, "blue", uuid=self.uuid_2, version=2, created_at=observed.created_at, updated_at=observed.updated_at,
@@ -234,11 +244,10 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
     async def test_get_with_transaction(self):
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                observed = await snapshot.get(
-                    "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.first_transaction
-                )
+
+        observed = await self.reader.get(
+            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.first_transaction
+        )
 
         expected = Car(
             3, "blue", uuid=self.uuid_2, version=4, created_at=observed.created_at, updated_at=observed.updated_at,
@@ -246,27 +255,22 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
     async def test_get_raises(self):
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                with self.assertRaises(MinosSnapshotDeletedAggregateException):
-                    await snapshot.get("tests.aggregate_classes.Car", self.uuid_1)
-                with self.assertRaises(MinosSnapshotAggregateNotFoundException):
-                    await snapshot.get("tests.aggregate_classes.Car", uuid4())
+
+        with self.assertRaises(MinosSnapshotDeletedAggregateException):
+            await self.reader.get("tests.aggregate_classes.Car", self.uuid_1)
+        with self.assertRaises(MinosSnapshotAggregateNotFoundException):
+            await self.reader.get("tests.aggregate_classes.Car", uuid4())
 
     async def test_get_with_transaction_raises(self):
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                with self.assertRaises(MinosSnapshotDeletedAggregateException):
-                    await snapshot.get(
-                        "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.second_transaction
-                    )
+
+        with self.assertRaises(MinosSnapshotDeletedAggregateException):
+            await self.reader.get("tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.second_transaction)
 
     async def test_find(self):
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                condition = Condition.EQUAL("color", "blue")
-                iterable = snapshot.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
-                observed = [v async for v in iterable]
+
+        condition = Condition.EQUAL("color", "blue")
+        iterable = self.reader.find("tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at"))
+        observed = [v async for v in iterable]
 
         expected = [
             Car(
@@ -289,10 +293,9 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
     async def test_find_all(self):
-        async with await self._populate():
-            async with PostgreSqlSnapshotReader.from_config(self.config) as snapshot:
-                iterable = snapshot.find("tests.aggregate_classes.Car", Condition.TRUE, Ordering.ASC("updated_at"))
-                observed = [v async for v in iterable]
+
+        iterable = self.reader.find("tests.aggregate_classes.Car", Condition.TRUE, Ordering.ASC("updated_at"))
+        observed = [v async for v in iterable]
 
         expected = [
             Car(
@@ -325,41 +328,6 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
                 self.assertEqual(exp.build_aggregate(), obs.build_aggregate())
             self.assertIsInstance(obs.created_at, datetime)
             self.assertIsInstance(obs.updated_at, datetime)
-
-    async def _populate(self):
-        transaction_repository = FakeTransactionRepository()
-
-        diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        # noinspection PyTypeChecker
-        aggregate_name: str = Car.classname
-        async with PostgreSqlRepository.from_config(
-            self.config, event_broker=FakeBroker(), transaction_repository=transaction_repository
-        ) as repository:
-            await repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
-            await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
-            await repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
-            await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
-            await repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
-            await repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
-            await repository.update(
-                RepositoryEntry(
-                    self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.first_transaction
-                )
-            )
-            await repository.delete(
-                RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.second_transaction)
-            )
-            await repository.update(
-                RepositoryEntry(
-                    self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.first_transaction
-                )
-            )
-            await repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
-            async with PostgreSqlSnapshotWriter.from_config(
-                self.config, repository=repository, transaction_repository=transaction_repository
-            ) as dispatcher:
-                await dispatcher.dispatch()
-            return repository
 
 
 if __name__ == "__main__":

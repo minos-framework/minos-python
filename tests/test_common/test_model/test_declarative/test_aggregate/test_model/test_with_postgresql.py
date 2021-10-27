@@ -18,19 +18,21 @@ from tests.aggregate_classes import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeBroker,
-    FakeTransactionRepository,
+    MinosTestCase,
 )
 
 
-class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
+class TestAggregateWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.transaction_repository = FakeTransactionRepository()
+
         self.repository = PostgreSqlRepository.from_config(
-            self.config, event_broker=FakeBroker(), transaction_repository=self.transaction_repository
+            self.config,
+            event_broker=self.event_broker,
+            transaction_repository=self.transaction_repository,
+            lock_pool=self.lock_pool,
         )
         self.snapshot = PostgreSqlSnapshot.from_config(
             self.config, repository=self.repository, transaction_repository=self.transaction_repository

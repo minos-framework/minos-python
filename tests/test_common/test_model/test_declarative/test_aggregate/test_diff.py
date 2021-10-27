@@ -20,20 +20,20 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.utils import (
-    FakeRepository,
-    FakeSnapshot,
+    MinosTestCase,
 )
 
 
-class TestAggregateDiff(unittest.IsolatedAsyncioTestCase):
+class TestAggregateDiff(MinosTestCase):
     async def asyncSetUp(self) -> None:
+        await super().asyncSetUp()
+
         self.uuid = uuid4()
         self.uuid_another = uuid4()
 
-        async with FakeRepository() as r, FakeSnapshot() as s:
-            self.initial = Car(3, "blue", uuid=self.uuid, version=1, _repository=r, _snapshot=s)
-            self.final = Car(5, "yellow", uuid=self.uuid, version=3, _repository=r, _snapshot=s)
-            self.another = Car(3, "blue", uuid=self.uuid_another, version=1, _repository=r, _snapshot=s)
+        self.initial = Car(3, "blue", uuid=self.uuid, version=1)
+        self.final = Car(5, "yellow", uuid=self.uuid, version=3)
+        self.another = Car(3, "blue", uuid=self.uuid_another, version=1)
 
         self.diff = AggregateDiff(
             uuid=self.uuid,

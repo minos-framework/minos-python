@@ -21,19 +21,18 @@ from minos.common.testing import (
 from tests.utils import (
     BASE_PATH,
     FakeAsyncIterator,
-    FakeRepository,
-    FakeTransactionRepository,
+    MinosTestCase,
 )
 
 
-class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
+class TestPostgreSqlSnapshot(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
 
         self.snapshot = PostgreSqlSnapshot.from_config(
-            self.config, repository=FakeRepository(), transaction_repository=FakeTransactionRepository()
+            self.config, repository=self.repository, transaction_repository=self.transaction_repository
         )
 
         self.dispatch_mock = AsyncMock()

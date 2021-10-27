@@ -17,52 +17,43 @@ from minos.common import (
     TransactionStatus,
 )
 from tests.utils import (
-    FakeRepository,
-    FakeTransactionRepository,
+    MinosTestCase,
 )
 
 
-class TestTransaction(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        self.transaction_repository = FakeTransactionRepository()
-        self.event_repository = FakeRepository(transaction_repository=self.transaction_repository)
-        self.kwargs = {
-            "event_repository": self.event_repository,
-            "transaction_repository": self.transaction_repository,
-        }
-
+class TestTransaction(MinosTestCase):
     def test_constructor(self):
-        transaction = Transaction(**self.kwargs)
+        transaction = Transaction()
 
         self.assertIsInstance(transaction.uuid, UUID)
         self.assertEqual(TransactionStatus.CREATED, transaction.status)
         self.assertEqual(None, transaction.event_offset)
         self.assertEqual(True, transaction.autocommit)
 
-        self.assertEqual(self.event_repository, transaction.event_repository)
+        self.assertEqual(self.repository, transaction.event_repository)
         self.assertEqual(self.transaction_repository, transaction.transaction_repository)
 
     def test_constructor_extended(self):
         uuid = uuid4()
         status = TransactionStatus.PENDING
         event_offset = 56
-        transaction = Transaction(uuid, status, event_offset, autocommit=False, **self.kwargs)
+        transaction = Transaction(uuid, status, event_offset, autocommit=False)
         self.assertEqual(uuid, transaction.uuid)
         self.assertEqual(status, transaction.status)
         self.assertEqual(event_offset, transaction.event_offset)
         self.assertEqual(False, transaction.autocommit)
 
-        self.assertEqual(self.event_repository, transaction.event_repository)
+        self.assertEqual(self.repository, transaction.event_repository)
         self.assertEqual(self.transaction_repository, transaction.transaction_repository)
 
     def test_constructor_raw_status(self):
-        transaction = Transaction(status="pending", **self.kwargs)
+        transaction = Transaction(status="pending",)
         self.assertEqual(TransactionStatus.PENDING, transaction.status)
 
     async def test_async_context_manager_with_context_var(self):
         self.assertEqual(TRANSACTION_CONTEXT_VAR.get(), None)
 
-        async with Transaction(**self.kwargs) as transaction:
+        async with Transaction() as transaction:
             self.assertEqual(TRANSACTION_CONTEXT_VAR.get(), transaction)
 
         self.assertEqual(TRANSACTION_CONTEXT_VAR.get(), None)
@@ -71,7 +62,7 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
         with patch("minos.common.Transaction.save") as save_mock, patch(
             "minos.common.Transaction.commit"
         ) as commit_mock:
-            async with Transaction(**self.kwargs):
+            async with Transaction():
                 self.assertEqual(1, save_mock.call_count)
                 self.assertEqual(0, commit_mock.call_count)
 
@@ -79,7 +70,7 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
 
     async def test_async_context_manager_with_changes(self):
         with patch("minos.common.Transaction.commit") as commit_mock:
-            async with Transaction(**self.kwargs) as transaction:
+            async with Transaction() as transaction:
                 self.assertEqual(0, commit_mock.call_count)
                 transaction.status = TransactionStatus.PENDING
 
@@ -88,7 +79,7 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
             commit_mock.reset_mock()
 
         with patch("minos.common.Transaction.commit") as commit_mock:
-            async with Transaction(**self.kwargs) as transaction:
+            async with Transaction() as transaction:
                 self.assertEqual(0, commit_mock.call_count)
                 transaction.status = TransactionStatus.RESERVED
 
@@ -98,7 +89,7 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
 
     async def test_async_context_manager_without_autocommit(self):
         with patch("minos.common.Transaction.commit") as commit_mock:
-            async with Transaction(autocommit=False, **self.kwargs) as transaction:
+            async with Transaction(autocommit=False,) as transaction:
                 self.assertEqual(0, commit_mock.call_count)
                 transaction.status = TransactionStatus.PENDING
 
@@ -106,28 +97,28 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
 
     async def test_async_context_manager_raises(self):
         with self.assertRaises(ValueError):
-            async with Transaction(status=TransactionStatus.COMMITTED, **self.kwargs):
+            async with Transaction(status=TransactionStatus.COMMITTED,):
                 pass
 
         with self.assertRaises(ValueError):
-            async with Transaction(status=TransactionStatus.RESERVED, **self.kwargs):
+            async with Transaction(status=TransactionStatus.RESERVED,):
                 pass
 
         with self.assertRaises(ValueError):
-            async with Transaction(status=TransactionStatus.REJECTED, **self.kwargs):
+            async with Transaction(status=TransactionStatus.REJECTED,):
                 pass
 
-        TRANSACTION_CONTEXT_VAR.set(Transaction(**self.kwargs))
+        TRANSACTION_CONTEXT_VAR.set(Transaction())
         with self.assertRaises(ValueError):
-            async with Transaction(**self.kwargs):
+            async with Transaction():
                 pass
 
     async def test_reserve_success(self) -> None:
         uuid = uuid4()
         check_mock = AsyncMock(return_value=True)
         save_mock = AsyncMock()
-        self.event_repository._check_transaction = check_mock
-        transaction = Transaction(uuid, TransactionStatus.PENDING, **self.kwargs)
+        self.repository._check_transaction = check_mock
+        transaction = Transaction(uuid, TransactionStatus.PENDING,)
         transaction.save = save_mock
         with patch(
             "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
@@ -144,8 +135,8 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
         uuid = uuid4()
         check_mock = AsyncMock(return_value=False)
         save_mock = AsyncMock()
-        self.event_repository._check_transaction = check_mock
-        transaction = Transaction(uuid, TransactionStatus.PENDING, **self.kwargs)
+        self.repository._check_transaction = check_mock
+        transaction = Transaction(uuid, TransactionStatus.PENDING,)
         transaction.save = save_mock
         with patch(
             "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
@@ -171,7 +162,7 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
     async def test_reject(self) -> None:
         uuid = uuid4()
         save_mock = AsyncMock()
-        transaction = Transaction(uuid, TransactionStatus.RESERVED, **self.kwargs)
+        transaction = Transaction(uuid, TransactionStatus.RESERVED,)
         transaction.save = save_mock
         with patch(
             "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
@@ -194,8 +185,8 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
 
         commit_transaction = AsyncMock(return_value=55)
         save_mock = AsyncMock()
-        self.event_repository._commit_transaction = commit_transaction
-        transaction = Transaction(uuid, TransactionStatus.PENDING, **self.kwargs)
+        self.repository._commit_transaction = commit_transaction
+        transaction = Transaction(uuid, TransactionStatus.PENDING,)
         transaction.save = save_mock
         await transaction.commit()
 
@@ -210,8 +201,8 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
 
         commit_transaction = AsyncMock(side_effect=MinosRepositoryConflictException("", 55))
         save_mock = AsyncMock()
-        self.event_repository._commit_transaction = commit_transaction
-        transaction = Transaction(uuid, TransactionStatus.PENDING, **self.kwargs)
+        self.repository._commit_transaction = commit_transaction
+        transaction = Transaction(uuid, TransactionStatus.PENDING,)
         transaction.save = save_mock
 
         with self.assertRaises(MinosRepositoryConflictException):
@@ -236,17 +227,17 @@ class TestTransaction(unittest.IsolatedAsyncioTestCase):
         submit_mock = AsyncMock()
         self.transaction_repository.submit = submit_mock
 
-        await Transaction(uuid, TransactionStatus.PENDING, **self.kwargs).save()
+        await Transaction(uuid, TransactionStatus.PENDING,).save()
         self.assertEqual(1, submit_mock.call_count)
         self.assertEqual(call(Transaction(uuid, TransactionStatus.PENDING)), submit_mock.call_args)
 
         submit_mock.reset_mock()
-        await Transaction(uuid, TransactionStatus.PENDING, **self.kwargs).save(status=TransactionStatus.COMMITTED)
+        await Transaction(uuid, TransactionStatus.PENDING,).save(status=TransactionStatus.COMMITTED)
         self.assertEqual(1, submit_mock.call_count)
         self.assertEqual(call(Transaction(uuid, TransactionStatus.COMMITTED)), submit_mock.call_args)
 
         submit_mock.reset_mock()
-        await Transaction(uuid, TransactionStatus.PENDING, **self.kwargs).save(event_offset=56)
+        await Transaction(uuid, TransactionStatus.PENDING,).save(event_offset=56)
         self.assertEqual(1, submit_mock.call_count)
         self.assertEqual(call(Transaction(uuid, TransactionStatus.PENDING, 56)), submit_mock.call_args)
 

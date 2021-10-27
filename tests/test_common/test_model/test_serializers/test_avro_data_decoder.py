@@ -25,7 +25,6 @@ from minos.common import (
     DataTransferObject,
     EntitySet,
     Field,
-    InMemorySnapshot,
     MissingSentinel,
     ModelRef,
     ModelType,
@@ -44,13 +43,12 @@ from tests.subaggregate_classes import (
     CartItem,
 )
 from tests.utils import (
-    FakeBroker,
     FakeEntity,
-    FakeRepository,
+    MinosTestCase,
 )
 
 
-class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
+class TestAvroDataDecoder(MinosTestCase):
     def test_model_type(self):
         observed = AvroDataDecoder(ModelType.build("Foo", {"bar": str})).build({"bar": "foobar"})
 
@@ -234,17 +232,15 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     async def test_list_model_ref(self):
         decoder = AvroDataDecoder(list[ModelRef[Owner]])
-        async with FakeRepository() as r, InMemorySnapshot(r) as s:
-            value = [uuid4(), Owner("Foo", "Bar", 56, _repository=r, _snapshot=s)]
-            observed = decoder.build(value)
-            self.assertEqual(value, observed)
+        value = [uuid4(), Owner("Foo", "Bar", 56)]
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
 
     async def test_list_model_subaggregate_ref(self):
         decoder = AvroDataDecoder(list[ModelRef[CartItem]])
-        async with FakeBroker():
-            value = [uuid4(), CartItem(uuid4(), 3, "Foo", 56)]
-            observed = decoder.build(value)
-            self.assertEqual(value, observed)
+        value = [uuid4(), CartItem(uuid4(), 3, "Foo", 56)]
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
 
     def test_list_empty(self):
         decoder = AvroDataDecoder(list[int])
@@ -332,10 +328,9 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
 
     async def test_model_ref_value(self):
         decoder = AvroDataDecoder(ModelRef[Owner])
-        async with FakeRepository() as r, InMemorySnapshot(r) as s:
-            value = Owner("Foo", "Bar", _repository=r, _snapshot=s)
-            observed = decoder.build(value)
-            self.assertEqual(value, observed)
+        value = Owner("Foo", "Bar")
+        observed = decoder.build(value)
+        self.assertEqual(value, observed)
 
     def test_model_ref_reference(self):
         decoder = AvroDataDecoder(ModelRef[Owner])

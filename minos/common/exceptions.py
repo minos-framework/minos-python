@@ -87,6 +87,14 @@ class MinosTransactionRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a transactions repository is needed but none is set."""
 
 
+class MinosLockException(MinosException):
+    """Base lock exception"""
+
+
+class MinosLockPoolNotProvidedException(MinosException):
+    """Exception to be raised when a lock pool is needed but none is set."""
+
+
 class MinosSnapshotException(MinosException):
     """Base snapshot exception."""
 

@@ -16,6 +16,7 @@ from minos.common import (
     FieldDiffContainer,
     InMemoryRepository,
     MinosBrokerNotProvidedException,
+    MinosLockPoolNotProvidedException,
     MinosRepository,
     MinosRepositoryConflictException,
     MinosRepositoryException,
@@ -23,43 +24,40 @@ from minos.common import (
     RepositoryEntry,
 )
 from tests.utils import (
-    FakeBroker,
-    FakeTransactionRepository,
+    MinosTestCase,
     TestRepositorySelect,
 )
 
 
-class TestInMemoryRepository(TestRepositorySelect):
+class TestInMemoryRepository(MinosTestCase, TestRepositorySelect):
     def setUp(self) -> None:
+        super().setUp()
+
         self.uuid = uuid4()
-        self.broker = FakeBroker()
-        self.transaction_repository = FakeTransactionRepository()
+        self.repository = InMemoryRepository(
+            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+        )
+
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
         self.field_diff_container_patcher.start()
 
-    async def asyncSetUp(self) -> None:
-        await super().asyncSetUp()
-        self.repository = InMemoryRepository(self.broker, self.transaction_repository)
-        await self.repository.setup()
-
-    async def asyncTearDown(self) -> None:
-        await self.repository.destroy()
-        await super().asyncTearDown()
-
     def tearDown(self):
         self.field_diff_container_patcher.stop()
+        super().tearDown()
 
     def test_constructor(self):
-        repository = InMemoryRepository(self.broker, self.transaction_repository)
+        repository = InMemoryRepository()
         self.assertIsInstance(repository, MinosRepository)
 
     async def test_constructor_raises(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
-            InMemoryRepository()
+            InMemoryRepository(event_broker=None)
         with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
-            InMemoryRepository(self.broker)
+            InMemoryRepository(transaction_repository=None)
+        with self.assertRaises(MinosLockPoolNotProvidedException):
+            InMemoryRepository(lock_pool=None)
 
     async def test_create(self):
         await self.repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
@@ -118,10 +116,12 @@ class TestInMemoryRepository(TestRepositorySelect):
         self.assertEqual(1, await self.repository.offset)
 
 
-class TestInMemoryRepositorySelect(TestRepositorySelect):
+class TestInMemoryRepositorySelect(MinosTestCase, TestRepositorySelect):
     def setUp(self) -> None:
         super().setUp()
+
         self.uuid = uuid4()
+
         self.uuid_1 = uuid4()
         self.uuid_2 = uuid4()
         self.uuid_4 = uuid4()
@@ -129,8 +129,9 @@ class TestInMemoryRepositorySelect(TestRepositorySelect):
         self.first_transaction = uuid4()
         self.second_transaction = uuid4()
 
-        self.broker = FakeBroker()
-        self.transaction_repository = FakeTransactionRepository()
+        self.repository = InMemoryRepository(
+            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+        )
 
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
@@ -176,38 +177,32 @@ class TestInMemoryRepositorySelect(TestRepositorySelect):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.repository = await self._build_repository()
+        await self._build_repository()
 
     async def _build_repository(self):
-        repository = InMemoryRepository(self.broker, self.transaction_repository)
-        await repository.setup()
-        await repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
-        await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
-        await repository.create(RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
-        await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
-        await repository.delete(RepositoryEntry(self.uuid_1, "example.Car", 4))
-        await repository.update(RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
-        await repository.create(RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
-        await repository.update(
+        await self.repository.setup()
+        await self.repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
+        await self.repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
+        await self.repository.create(RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
+        await self.repository.update(RepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
+        await self.repository.delete(RepositoryEntry(self.uuid_1, "example.Car", 4))
+        await self.repository.update(RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
+        await self.repository.create(RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 3, bytes("hola", "utf-8"), transaction_uuid=self.first_transaction
             )
         )
-        await repository.update(
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 3, bytes("salut", "utf-8"), transaction_uuid=self.second_transaction
             )
         )
-        await repository.update(
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction
             )
         )
-        return repository
-
-    async def asyncTearDown(self):
-        await self.repository.destroy()
-        await super().asyncTearDown()
 
     def tearDown(self):
         self.field_diff_container_patcher.stop()

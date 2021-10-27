@@ -14,12 +14,11 @@ from tests.aggregate_classes import (
     Car,
 )
 from tests.utils import (
-    FakeRepository,
-    FakeSnapshot,
+    MinosTestCase,
 )
 
 
-class TestAggregateDifferences(unittest.IsolatedAsyncioTestCase):
+class TestAggregateDifferences(MinosTestCase):
     async def asyncSetUp(self) -> None:
         self.uuid = uuid4()
         self.uuid_another = uuid4()
@@ -28,37 +27,20 @@ class TestAggregateDifferences(unittest.IsolatedAsyncioTestCase):
         self.final_datetime = current_datetime()
         self.another_datetime = current_datetime()
 
-        async with FakeRepository() as r, FakeSnapshot() as s:
-            self.initial = Car(
-                3,
-                "blue",
-                uuid=self.uuid,
-                version=1,
-                created_at=self.initial_datetime,
-                updated_at=self.initial_datetime,
-                _repository=r,
-                _snapshot=s,
-            )
-            self.final = Car(
-                5,
-                "yellow",
-                uuid=self.uuid,
-                version=3,
-                created_at=self.initial_datetime,
-                updated_at=self.final_datetime,
-                _repository=r,
-                _snapshot=s,
-            )
-            self.another = Car(
-                3,
-                "blue",
-                uuid=self.uuid_another,
-                created_at=self.another_datetime,
-                updated_at=self.another_datetime,
-                version=1,
-                _repository=r,
-                _snapshot=s,
-            )
+        self.initial = Car(
+            3, "blue", uuid=self.uuid, version=1, created_at=self.initial_datetime, updated_at=self.initial_datetime,
+        )
+        self.final = Car(
+            5, "yellow", uuid=self.uuid, version=3, created_at=self.initial_datetime, updated_at=self.final_datetime,
+        )
+        self.another = Car(
+            3,
+            "blue",
+            uuid=self.uuid_another,
+            created_at=self.another_datetime,
+            updated_at=self.another_datetime,
+            version=1,
+        )
 
     def test_diff(self):
         expected = AggregateDiff(
