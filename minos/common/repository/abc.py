@@ -23,6 +23,9 @@ from uuid import (
     UUID,
 )
 
+from aiomisc.pool import (
+    ContextManager,
+)
 from dependency_injector.wiring import (
     Provide,
     inject,
@@ -182,10 +185,11 @@ class MinosRepository(ABC, MinosSetup):
         if not isinstance(entry.action, Action):
             raise MinosRepositoryException("The 'RepositoryEntry.action' attribute must be an 'Action' instance.")
 
-        if not await self._validate(entry, **kwargs):
-            raise MinosRepositoryConflictException("TODO", await self.offset)
+        async with self.write_lock():
+            if not await self._validate(entry, **kwargs):
+                raise MinosRepositoryConflictException("TODO", await self.offset)
 
-        entry = await self._submit(entry, **kwargs)
+            entry = await self._submit(entry, **kwargs)
 
         if transaction is None:
             await self._send_events(entry.aggregate_diff)
@@ -193,6 +197,17 @@ class MinosRepository(ABC, MinosSetup):
             await transaction.save(event_offset=entry.id, status=TransactionStatus.PENDING)
 
         return entry
+
+    @staticmethod
+    def write_lock() -> ContextManager:
+        """TODO"""
+        async def _fn_enter():
+            pass
+
+        async def _fn_exit(_):
+            pass
+
+        return ContextManager(_fn_enter, _fn_exit)
 
     # noinspection PyUnusedLocal
     async def _validate(

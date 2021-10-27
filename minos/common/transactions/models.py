@@ -96,14 +96,15 @@ class Transaction:
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
-        # noinspection PyProtectedMember
-        committable = await self.event_repository._check_transaction(self)
-        # noinspection PyProtectedMember
-        event_offset = 1 + await self.event_repository.offset
-        if committable:
-            await self.save(event_offset=event_offset, status=TransactionStatus.RESERVED)
-        else:
-            await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
+        async with self.event_repository.write_lock():
+            # noinspection PyProtectedMember
+            committable = await self.event_repository._check_transaction(self)
+            # noinspection PyProtectedMember
+            event_offset = 1 + await self.event_repository.offset
+            if committable:
+                await self.save(event_offset=event_offset, status=TransactionStatus.RESERVED)
+            else:
+                await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
 
     async def reject(self) -> None:
         """TODO"""
