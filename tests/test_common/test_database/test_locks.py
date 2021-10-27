@@ -6,6 +6,7 @@ from aiopg import (
 )
 
 from minos.common import (
+    Lock,
     PostgreSqlLock,
 )
 from minos.common.testing import (
@@ -16,8 +17,11 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlLockPool(PostgresAsyncTestCase):
+class TestPostgreSqlLock(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
+
+    def test_base(self):
+        self.assertTrue(issubclass(PostgreSqlLock, Lock))
 
     async def test_wrapped_connection(self):
         wrapped_connection = aiopg.connect(**self.repository_db)

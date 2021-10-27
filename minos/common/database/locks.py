@@ -10,37 +10,25 @@ from aiopg import (
     Connection,
     Cursor,
 )
-from cached_property import (
-    cached_property,
+
+from ..locks import (
+    Lock,
 )
 
 
-class PostgreSqlLock:
+class PostgreSqlLock(Lock):
     """"PostgreSql Lock class."""
 
-    key: Hashable
     cursor: Optional[Cursor]
 
     def __init__(self, wrapped_connection: AsyncContextManager[Connection], key: Hashable, *args, **kwargs):
-        if not isinstance(key, Hashable):
-            raise ValueError(f"The key must be hashable. Obtained: {key!r} ({type(key)})")
+        super().__init__(key, *args, **kwargs)
 
         self.wrapped_connection = wrapped_connection
-        self.key = key
         self.cursor = None
 
         self._args = args
         self._kwargs = kwargs
-
-    @cached_property
-    def hashed_key(self) -> int:
-        """Get the hashed key.
-
-        :return: An integer value.
-        """
-        if not isinstance(self.key, int):
-            return hash(self.key)
-        return self.key
 
     async def __aenter__(self):
         connection = await self.wrapped_connection.__aenter__()

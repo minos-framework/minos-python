@@ -23,6 +23,7 @@ from minos.common import (
     CommandReply,
     Condition,
     Entity,
+    Lock,
     MinosBroker,
     MinosHandler,
     MinosRepository,
@@ -181,3 +182,7 @@ class FakeAsyncIterator:
             return next(self.iter)
         except StopIteration:
             raise StopAsyncIteration
+
+
+class FakeLock(Lock):
+    """For testing purposes."""

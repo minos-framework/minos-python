@@ -25,7 +25,7 @@ from ..setup import (
 from .locks import (
     PostgreSqlLock,
 )
-from .pool import (
+from .pools import (
     PostgreSqlPool,
 )
 

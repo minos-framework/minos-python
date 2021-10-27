@@ -1,7 +1,14 @@
 import unittest
+from unittest.mock import (
+    PropertyMock,
+    patch,
+)
 
 from aiopg import (
     Connection,
+)
+from psycopg2 import (
+    OperationalError,
 )
 
 from minos.common import (
@@ -42,6 +49,11 @@ class TestPostgreSqlPool(PostgresAsyncTestCase):
     async def test_acquire(self):
         async with self.pool.acquire() as connection:
             self.assertIsInstance(connection, Connection)
+
+    async def test_acquire_with_error(self):
+        with patch("aiopg.Connection.isolation_level", new_callable=PropertyMock, side_effect=(OperationalError, None)):
+            async with self.pool.acquire() as connection:
+                self.assertIsInstance(connection, Connection)
 
 
 class TestPostgreSqlLockPool(PostgresAsyncTestCase):
