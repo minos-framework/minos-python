@@ -52,7 +52,7 @@ class MinosSetup:
         return not self._already_setup
 
     @classmethod
-    def from_config(cls: Type[T], config: Optional[Union[MinosConfig, Path]] = None, **kwargs) -> T:
+    def from_config(cls: Type[S], config: Optional[Union[MinosConfig, Path]] = None, **kwargs) -> S:
         """Build a new instance from config.
 
         :param config: Config instance. If `None` is provided, default config is chosen.
@@ -75,10 +75,10 @@ class MinosSetup:
         return config
 
     @classmethod
-    def _from_config(cls: Type[T], config: MinosConfig, **kwargs) -> T:
+    def _from_config(cls: Type[S], config: MinosConfig, **kwargs) -> S:
         return cls(**kwargs)
 
-    async def __aenter__(self: T) -> T:
+    async def __aenter__(self: S) -> S:
         await self.setup()
         return self
 
@@ -118,4 +118,4 @@ class MinosSetup:
             )
 
 
-T = TypeVar("T", bound=MinosSetup)
+S = TypeVar("S", bound=MinosSetup)
