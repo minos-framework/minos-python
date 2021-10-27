@@ -56,7 +56,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.repository = InMemoryRepository(
             event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
         )
-        self.snapshot = InMemorySnapshot(repository=self.repository)
+        self.snapshot = InMemorySnapshot(repository=self.repository, transaction_repository=self.transaction_repository)
 
         self.container = containers.DynamicContainer()
         self.container.event_broker = providers.Object(self.event_broker)

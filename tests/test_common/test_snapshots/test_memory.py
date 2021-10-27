@@ -11,12 +11,16 @@ from minos.common import (
     FieldDiff,
     FieldDiffContainer,
     InMemorySnapshot,
+    MinosRepositoryNotProvidedException,
     MinosSnapshot,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
+    MinosTransactionRepositoryNotProvidedException,
     Ordering,
     RepositoryEntry,
     SnapshotEntry,
+    Transaction,
+    TransactionStatus,
 )
 from tests.aggregate_classes import (
     Car,
@@ -34,8 +38,9 @@ class TestInMemorySnapshot(MinosTestCase):
         self.uuid_2 = uuid4()
         self.uuid_3 = uuid4()
 
-        self.first_transaction = uuid4()
-        self.second_transaction = uuid4()
+        self.transaction_1 = uuid4()
+        self.transaction_2 = uuid4()
+        self.transaction_3 = uuid4()
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -52,18 +57,33 @@ class TestInMemorySnapshot(MinosTestCase):
         await self.repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
         await self.repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
         await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.first_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.repository.delete(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.second_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
         await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.first_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+        await self.repository.delete(
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
+        )
+        await self.transaction_repository.submit(
+            Transaction(self.transaction_3, TransactionStatus.REJECTED, await self.repository.offset)
+        )
 
     def test_type(self):
         self.assertTrue(issubclass(InMemorySnapshot, MinosSnapshot))
+
+    def test_constructor_raises(self):
+        with self.assertRaises(MinosRepositoryNotProvidedException):
+            # noinspection PyTypeChecker
+            InMemorySnapshot(repository=None)
+
+        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
+            # noinspection PyTypeChecker
+            InMemorySnapshot(transaction_repository=None)
 
     async def test_find_by_uuid(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
@@ -96,7 +116,7 @@ class TestInMemorySnapshot(MinosTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.first_transaction,
+            transaction_uuid=self.transaction_1,
         )
         observed = [v async for v in iterable]
 
@@ -126,7 +146,7 @@ class TestInMemorySnapshot(MinosTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.second_transaction,
+            transaction_uuid=self.transaction_2,
         )
         observed = [v async for v in iterable]
 
@@ -138,6 +158,36 @@ class TestInMemorySnapshot(MinosTestCase):
                 version=1,
                 created_at=observed[0].created_at,
                 updated_at=observed[0].updated_at,
+            ),
+        ]
+        self.assertEqual(expected, observed)
+
+    async def test_find_with_transaction_reverted(self):
+        condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
+        iterable = self.snapshot.find(
+            "tests.aggregate_classes.Car",
+            condition,
+            ordering=Ordering.ASC("updated_at"),
+            transaction_uuid=self.transaction_3,
+        )
+        observed = [v async for v in iterable]
+
+        expected = [
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_2,
+                version=2,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
+            ),
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_3,
+                version=1,
+                created_at=observed[1].created_at,
+                updated_at=observed[1].updated_at,
             ),
         ]
         self.assertEqual(expected, observed)
@@ -212,7 +262,7 @@ class TestInMemorySnapshot(MinosTestCase):
 
     async def test_get_with_transaction(self):
         observed = await self.snapshot.get(
-            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.first_transaction
+            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.transaction_1
         )
 
         expected = Car(
@@ -228,9 +278,7 @@ class TestInMemorySnapshot(MinosTestCase):
 
     async def test_get_with_transaction_raises(self):
         with self.assertRaises(MinosSnapshotDeletedAggregateException):
-            await self.snapshot.get(
-                "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.second_transaction
-            )
+            await self.snapshot.get("tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.transaction_2)
 
     async def test_find(self):
         condition = Condition.EQUAL("color", "blue")

@@ -23,8 +23,10 @@ from dependency_injector.wiring import (
 )
 
 from ..exceptions import (
+    MinosRepositoryNotProvidedException,
     MinosSnapshotAggregateNotFoundException,
     MinosSnapshotDeletedAggregateException,
+    MinosTransactionRepositoryNotProvidedException,
 )
 from ..queries import (
     _Condition,
@@ -32,6 +34,10 @@ from ..queries import (
 )
 from ..repository import (
     MinosRepository,
+)
+from ..transactions import (
+    TransactionRepository,
+    TransactionStatus,
 )
 from ..uuid import (
     NULL_UUID,
@@ -53,9 +59,23 @@ class InMemorySnapshot(MinosSnapshot):
     """
 
     @inject
-    def __init__(self, repository: MinosRepository = Provide["repository"], *args, **kwargs):
+    def __init__(
+        self,
+        *args,
+        repository: MinosRepository = Provide["repository"],
+        transaction_repository: TransactionRepository = Provide["transaction_repository"],
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
+
+        if repository is None or isinstance(repository, Provide):
+            raise MinosRepositoryNotProvidedException("A repository instance is required.")
+
+        if transaction_repository is None or isinstance(transaction_repository, Provide):
+            raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
+
         self._repository = repository
+        self._transaction_repository = transaction_repository
 
     async def _find(
         self,
@@ -91,6 +111,11 @@ class InMemorySnapshot(MinosSnapshot):
     async def _get(
         self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
     ) -> Aggregate:
+        if transaction_uuid != NULL_UUID:
+            transaction = await self._transaction_repository.select(uuid=transaction_uuid).__anext__()
+            if transaction.status == TransactionStatus.REJECTED:
+                transaction_uuid = NULL_UUID
+
         entries = [
             v
             async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)

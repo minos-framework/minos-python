@@ -18,6 +18,8 @@ from minos.common import (
     PostgreSqlSnapshotWriter,
     RepositoryEntry,
     SnapshotEntry,
+    Transaction,
+    TransactionStatus,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -41,8 +43,9 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
         self.uuid_2 = uuid4()
         self.uuid_3 = uuid4()
 
-        self.first_transaction = uuid4()
-        self.second_transaction = uuid4()
+        self.transaction_1 = uuid4()
+        self.transaction_2 = uuid4()
+        self.transaction_3 = uuid4()
 
         self.reader = PostgreSqlSnapshotReader.from_config(self.config)
 
@@ -59,6 +62,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
+
         await self.repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
         await self.repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
         await self.repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
@@ -66,15 +70,21 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
         await self.repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
         await self.repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
         await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.first_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.repository.delete(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.second_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
         await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.first_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+        await self.repository.delete(
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
+        )
+        await self.transaction_repository.submit(
+            Transaction(self.transaction_3, TransactionStatus.REJECTED, await self.repository.offset)
+        )
 
         async with PostgreSqlSnapshotWriter.from_config(
             self.config, repository=self.repository, transaction_repository=self.transaction_repository
@@ -125,7 +135,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.first_transaction,
+            transaction_uuid=self.transaction_1,
         )
         observed = [v async for v in iterable]
 
@@ -156,7 +166,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.second_transaction,
+            transaction_uuid=self.transaction_2,
         )
         observed = [v async for v in iterable]
 
@@ -168,6 +178,37 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
                 version=1,
                 created_at=observed[0].created_at,
                 updated_at=observed[0].updated_at,
+            ),
+        ]
+        self.assertEqual(expected, observed)
+
+    async def test_find_with_transaction_reverted(self):
+        condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
+
+        iterable = self.reader.find(
+            "tests.aggregate_classes.Car",
+            condition,
+            ordering=Ordering.ASC("updated_at"),
+            transaction_uuid=self.transaction_3,
+        )
+        observed = [v async for v in iterable]
+
+        expected = [
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_2,
+                version=2,
+                created_at=observed[0].created_at,
+                updated_at=observed[0].updated_at,
+            ),
+            Car(
+                3,
+                "blue",
+                uuid=self.uuid_3,
+                version=1,
+                created_at=observed[1].created_at,
+                updated_at=observed[1].updated_at,
             ),
         ]
         self.assertEqual(expected, observed)
@@ -246,7 +287,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
     async def test_get_with_transaction(self):
 
         observed = await self.reader.get(
-            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.first_transaction
+            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.transaction_1
         )
 
         expected = Car(
@@ -264,7 +305,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
     async def test_get_with_transaction_raises(self):
 
         with self.assertRaises(MinosSnapshotDeletedAggregateException):
-            await self.reader.get("tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.second_transaction)
+            await self.reader.get("tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.transaction_2)
 
     async def test_find(self):
 

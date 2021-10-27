@@ -23,6 +23,10 @@ from ..datetime import (
 from ..exceptions import (
     MinosRepositoryConflictException,
 )
+from ..transactions import (
+    Transaction,
+    TransactionStatus,
+)
 from ..uuid import (
     NULL_UUID,
 )
@@ -61,6 +65,10 @@ class InMemoryRepository(MinosRepository):
 
         entry.id = self._generate_next_id()
         self._storage.append(entry)
+        if entry.transaction_uuid != NULL_UUID:
+            await self._transaction_repository.submit(
+                Transaction(entry.transaction_uuid, TransactionStatus.PENDING, await self.offset)
+            )
         return entry
 
     def _generate_next_id(self) -> int:

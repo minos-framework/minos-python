@@ -40,17 +40,6 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshotWriterWithoutContainer(MinosTestCase, PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
-    def test_from_config_without_repository(self):
-        with self.assertRaises(MinosRepositoryNotProvidedException):
-            PostgreSqlSnapshotWriter.from_config(self.config, repository=None)
-
-        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
-            PostgreSqlSnapshotWriter.from_config(self.config, repository=self.repository, transaction_repository=None)
-
-
 class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
@@ -62,6 +51,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
 
         self.transaction_1 = uuid4()
         self.transaction_2 = uuid4()
+        self.transaction_3 = uuid4()
 
         self.writer = PostgreSqlSnapshotWriter.from_config(
             self.config, repository=self.repository, transaction_repository=self.transaction_repository
@@ -100,9 +90,11 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
-
+        await self.repository.delete(
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
+        )
         await self.transaction_repository.submit(
-            Transaction(self.transaction_2, TransactionStatus.REJECTED, await self.repository.offset)
+            Transaction(self.transaction_3, TransactionStatus.REJECTED, await self.repository.offset)
         )
 
     def test_type(self):
@@ -114,6 +106,13 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(self.config.snapshot.database, self.writer.database)
         self.assertEqual(self.config.snapshot.user, self.writer.user)
         self.assertEqual(self.config.snapshot.password, self.writer.password)
+
+    def test_from_config_raises(self):
+        with self.assertRaises(MinosRepositoryNotProvidedException):
+            PostgreSqlSnapshotWriter.from_config(self.config, repository=None)
+
+        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
+            PostgreSqlSnapshotWriter.from_config(self.config, repository=self.repository, transaction_repository=None)
 
     async def test_dispatch(self):
         await self.writer.dispatch()
@@ -199,6 +198,36 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             Ordering.ASC("updated_at"),
             exclude_deleted=False,
             transaction_uuid=self.transaction_2,
+        )
+        observed = [v async for v in iterable]
+
+        # noinspection PyTypeChecker
+        expected = [
+            SnapshotEntry(self.uuid_1, Car.classname, 4),
+            SnapshotEntry(self.uuid_2, Car.classname, 4),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_3,
+                    version=1,
+                    created_at=observed[2].created_at,
+                    updated_at=observed[2].updated_at,
+                )
+            ),
+        ]
+        self._assert_equal_snapshot_entries(expected, observed)
+
+    async def test_dispatch_third_transaction(self):
+        await self.writer.dispatch()
+
+        # noinspection PyTypeChecker
+        iterable = self.reader.find_entries(
+            Car.classname,
+            Condition.TRUE,
+            Ordering.ASC("updated_at"),
+            exclude_deleted=False,
+            transaction_uuid=self.transaction_3,
         )
         observed = [v async for v in iterable]
 
@@ -296,17 +325,17 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
 
         await self.writer.dispatch()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(id_gt=10), mock.call_args)
-        mock.reset_mock()
-
-        await self.writer.dispatch()
-        self.assertEqual(1, mock.call_count)
         self.assertEqual(call(id_gt=11), mock.call_args)
         mock.reset_mock()
 
         await self.writer.dispatch()
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(id_gt=11), mock.call_args)
+        self.assertEqual(call(id_gt=12), mock.call_args)
+        mock.reset_mock()
+
+        await self.writer.dispatch()
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call(id_gt=12), mock.call_args)
         mock.reset_mock()
 
 
