@@ -19,10 +19,12 @@ from minos.common import (
     MinosRepository,
     MinosRepositoryConflictException,
     MinosRepositoryException,
+    MinosTransactionRepositoryNotProvidedException,
     RepositoryEntry,
 )
 from tests.utils import (
     FakeBroker,
+    FakeTransactionRepository,
     TestRepositorySelect,
 )
 
@@ -31,6 +33,7 @@ class TestInMemoryRepository(TestRepositorySelect):
     def setUp(self) -> None:
         self.uuid = uuid4()
         self.broker = FakeBroker()
+        self.transaction_repository = FakeTransactionRepository()
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
@@ -38,7 +41,7 @@ class TestInMemoryRepository(TestRepositorySelect):
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.repository = InMemoryRepository(self.broker)
+        self.repository = InMemoryRepository(self.broker, self.transaction_repository)
         await self.repository.setup()
 
     async def asyncTearDown(self) -> None:
@@ -49,12 +52,14 @@ class TestInMemoryRepository(TestRepositorySelect):
         self.field_diff_container_patcher.stop()
 
     def test_constructor(self):
-        repository = InMemoryRepository(self.broker)
+        repository = InMemoryRepository(self.broker, self.transaction_repository)
         self.assertIsInstance(repository, MinosRepository)
 
     async def test_constructor_raises(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
             InMemoryRepository()
+        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
+            InMemoryRepository(self.broker)
 
     async def test_create(self):
         await self.repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
@@ -125,6 +130,8 @@ class TestInMemoryRepositorySelect(TestRepositorySelect):
         self.second_transaction = uuid4()
 
         self.broker = FakeBroker()
+        self.transaction_repository = FakeTransactionRepository()
+
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
@@ -172,7 +179,7 @@ class TestInMemoryRepositorySelect(TestRepositorySelect):
         self.repository = await self._build_repository()
 
     async def _build_repository(self):
-        repository = InMemoryRepository(self.broker)
+        repository = InMemoryRepository(self.broker, self.transaction_repository)
         await repository.setup()
         await repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
         await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))

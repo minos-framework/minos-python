@@ -23,6 +23,7 @@ from minos.common import (
     FieldDiffContainer,
     MinosRepositoryNotProvidedException,
     MinosSnapshotDeletedAggregateException,
+    MinosTransactionRepositoryNotProvidedException,
     Ordering,
     PostgreSqlRepository,
     PostgreSqlSnapshotReader,
@@ -43,6 +44,7 @@ from tests.utils import (
     FakeBroker,
     FakeRepository,
     FakeSnapshot,
+    FakeTransactionRepository,
 )
 
 
@@ -50,9 +52,10 @@ class TestPostgreSqlSnapshotWriterWithoutContainer(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_without_repository(self):
-        PostgreSqlSnapshotWriter._repository = None
         with self.assertRaises(MinosRepositoryNotProvidedException):
             PostgreSqlSnapshotWriter.from_config(self.config)
+        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
+            PostgreSqlSnapshotWriter.from_config(self.config, repository=FakeRepository())
 
 
 class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
@@ -67,6 +70,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
         self.first_transaction = uuid4()
         self.second_transaction = uuid4()
 
+        self.event_broker = FakeBroker()
+        self.transaction_repository = FakeTransactionRepository()
+
         self.container = containers.DynamicContainer()
         self.container.repository = providers.Singleton(FakeRepository)
         self.container.snapshot = providers.Singleton(FakeSnapshot)
@@ -80,7 +86,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
         self.assertTrue(issubclass(PostgreSqlSnapshotWriter, PostgreSqlSnapshotSetup))
 
     def test_from_config(self):
-        dispatcher = PostgreSqlSnapshotWriter.from_config(self.config, repository=FakeRepository())
+        dispatcher = PostgreSqlSnapshotWriter.from_config(
+            self.config, repository=FakeRepository(), transaction_repository=self.transaction_repository
+        )
         self.assertEqual(self.config.snapshot.host, dispatcher.host)
         self.assertEqual(self.config.snapshot.port, dispatcher.port)
         self.assertEqual(self.config.snapshot.database, dispatcher.database)
@@ -89,7 +97,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
 
     async def test_dispatch(self):
         async with await self._populate() as repository:
-            async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+            async with PostgreSqlSnapshotWriter.from_config(
+                self.config, repository=repository, transaction_repository=self.transaction_repository
+            ) as dispatcher:
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as reader:
@@ -126,7 +136,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
 
     async def test_dispatch_first_transaction(self):
         async with await self._populate() as repository:
-            async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+            async with PostgreSqlSnapshotWriter.from_config(
+                self.config, repository=repository, transaction_repository=self.transaction_repository
+            ) as dispatcher:
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as reader:
@@ -167,7 +179,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
 
     async def test_dispatch_second_transaction(self):
         async with await self._populate() as repository:
-            async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+            async with PostgreSqlSnapshotWriter.from_config(
+                self.config, repository=repository, transaction_repository=self.transaction_repository
+            ) as dispatcher:
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as reader:
@@ -199,7 +213,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
 
     async def test_is_synced(self):
         async with await self._populate() as repository:
-            async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+            async with PostgreSqlSnapshotWriter.from_config(
+                self.config, repository=repository, transaction_repository=self.transaction_repository
+            ) as dispatcher:
                 self.assertFalse(await dispatcher.is_synced("tests.aggregate_classes.Car"))
                 await dispatcher.dispatch()
                 self.assertTrue(await dispatcher.is_synced("tests.aggregate_classes.Car"))
@@ -217,7 +233,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
 
         repository = FakeRepository()
         repository.select = MagicMock(side_effect=_fn)
-        async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+        async with PostgreSqlSnapshotWriter.from_config(
+            self.config, repository=repository, transaction_repository=self.transaction_repository
+        ) as dispatcher:
             await dispatcher.dispatch()
         async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as snapshot:
             observed = [v async for v in snapshot.find_entries(aggregate_name, condition)]
@@ -250,7 +268,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
 
     async def test_dispatch_with_offset(self):
         async with await self._populate() as repository:
-            async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+            async with PostgreSqlSnapshotWriter.from_config(
+                self.config, repository=repository, transaction_repository=FakeTransactionRepository()
+            ) as dispatcher:
                 mock = MagicMock(side_effect=dispatcher._repository.select)
                 dispatcher._repository.select = mock
 
@@ -266,6 +286,8 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
                     data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
                 )
                 await repository.create(entry)
+                self.assertEqual(1, mock.call_count)
+                mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
@@ -286,7 +308,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
-        async with PostgreSqlRepository.from_config(self.config, event_broker=FakeBroker()) as repository:
+        async with PostgreSqlRepository.from_config(
+            self.config, event_broker=self.event_broker, transaction_repository=self.transaction_repository
+        ) as repository:
             await repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
             await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
             await repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))

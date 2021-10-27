@@ -82,8 +82,9 @@ class FakeRepository(MinosRepository):
         entry.created_at = current_datetime()
         return entry
 
-    async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
+    def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """For testing purposes."""
+        return FakeAsyncIterator(tuple())
 
     @property
     async def _offset(self) -> int:
@@ -167,8 +168,9 @@ class FakeSnapshot(MinosSnapshot):
     async def _get(self, *args, **kwargs) -> Aggregate:
         """For testing purposes."""
 
-    async def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
+    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""
+        return FakeAsyncIterator(tuple())
 
     async def _synchronize(self, **kwargs) -> None:
         """For testing purposes."""
@@ -178,6 +180,17 @@ class FakeEntity(Entity):
     """For testing purposes."""
 
     name: str
+
+
+class FakeTransactionRepository(TransactionRepository):
+    """For testing purposes."""
+
+    async def _submit(self, transaction: Transaction) -> None:
+        """For testing purposes."""
+
+    def _select(self, **kwargs) -> AsyncIterator[Transaction]:
+        """For testing purposes."""
+        return FakeAsyncIterator(tuple())
 
 
 class FakeAsyncIterator:
@@ -201,13 +214,3 @@ class FakeLock(Lock):
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return
-
-
-class FakeTransactionRepository(TransactionRepository):
-    """For testing purposes."""
-
-    async def _submit(self, transaction: Transaction) -> None:
-        """For testing purposes."""
-
-    async def _select(self, **kwargs) -> AsyncIterator[Transaction]:
-        """For testing purposes."""

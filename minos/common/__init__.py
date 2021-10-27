@@ -57,6 +57,7 @@ from .exceptions import (
     MinosSnapshotDeletedAggregateException,
     MinosSnapshotException,
     MinosSnapshotNotProvidedException,
+    MinosTransactionRepositoryNotProvidedException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )

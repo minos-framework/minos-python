@@ -83,6 +83,10 @@ class MinosRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a repository is needed but none is set."""
 
 
+class MinosTransactionRepositoryNotProvidedException(MinosRepositoryException):
+    """Exception to be raised when a transactions repository is needed but none is set."""
+
+
 class MinosSnapshotException(MinosException):
     """Base snapshot exception."""
 

@@ -21,6 +21,7 @@ from minos.common import (
     MinosRepository,
     MinosRepositoryConflictException,
     MinosRepositoryException,
+    MinosTransactionRepositoryNotProvidedException,
     PostgreSqlRepository,
     RepositoryEntry,
 )
@@ -30,6 +31,7 @@ from minos.common.testing import (
 from tests.utils import (
     BASE_PATH,
     FakeBroker,
+    FakeTransactionRepository,
     TestRepositorySelect,
 )
 
@@ -40,7 +42,10 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
     def setUp(self) -> None:
         super().setUp()
         self.uuid = uuid4()
+
         self.broker = FakeBroker()
+        self.transaction_repository = FakeTransactionRepository()
+
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
@@ -48,7 +53,9 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.repository = PostgreSqlRepository(event_broker=self.broker, **self.repository_db)
+        self.repository = PostgreSqlRepository(
+            event_broker=self.broker, transaction_repository=self.transaction_repository, **self.repository_db
+        )
         await self.repository.setup()
 
     async def asyncTearDown(self) -> None:
@@ -60,7 +67,15 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
         super().tearDown()
 
     def test_constructor(self):
-        repository = PostgreSqlRepository("host", 1234, "database", "user", "password", event_broker=self.broker)
+        repository = PostgreSqlRepository(
+            "host",
+            1234,
+            "database",
+            "user",
+            "password",
+            event_broker=self.broker,
+            transaction_repository=self.transaction_repository,
+        )
         self.assertIsInstance(repository, MinosRepository)
         self.assertEqual("host", repository.host)
         self.assertEqual(1234, repository.port)
@@ -71,9 +86,13 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
     async def test_constructor_raises(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
             PostgreSqlRepository("host", 1234, "database", "user", "password")
+        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
+            PostgreSqlRepository("host", 1234, "database", "user", "password", event_broker=self.broker)
 
     def test_from_config(self):
-        repository = PostgreSqlRepository.from_config(self.config, event_broker=self.broker)
+        repository = PostgreSqlRepository.from_config(
+            self.config, event_broker=self.broker, transaction_repository=self.transaction_repository
+        )
         self.assertEqual(self.config.repository.database, repository.database)
         self.assertEqual(self.config.repository.user, repository.user)
         self.assertEqual(self.config.repository.password, repository.password)
@@ -170,6 +189,8 @@ class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, TestRepositorySelect
         self.second_transaction = uuid4()
 
         self.broker = FakeBroker()
+        self.transaction_repository = FakeTransactionRepository()
+
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
@@ -217,7 +238,9 @@ class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, TestRepositorySelect
         self.repository = await self._build_repository()
 
     async def _build_repository(self):
-        repository = PostgreSqlRepository(event_broker=self.broker, **self.repository_db)
+        repository = PostgreSqlRepository(
+            event_broker=self.broker, transaction_repository=self.transaction_repository, **self.repository_db
+        )
         await repository.setup()
         await repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
         await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))

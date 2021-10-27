@@ -36,6 +36,10 @@ from ..exceptions import (
     MinosBrokerNotProvidedException,
     MinosRepositoryConflictException,
     MinosRepositoryException,
+    MinosTransactionRepositoryNotProvidedException,
+)
+from ..locks import (
+    Lock,
 )
 from ..networks import (
     MinosBroker,
@@ -73,13 +77,17 @@ class MinosRepository(ABC, MinosSetup):
         self,
         event_broker: MinosBroker = Provide["event_broker"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
-        lock_pool: MinosPool = Provide["lock_pool"],
+        lock_pool: MinosPool[Lock] = Provide["lock_pool"],
         *args,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+
         if event_broker is None or isinstance(event_broker, Provide):
             raise MinosBrokerNotProvidedException("A broker instance is required.")
+
+        if transaction_repository is None or isinstance(transaction_repository, Provide):
+            raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
 
         self._broker = event_broker
         self._transaction_repository = transaction_repository
@@ -226,9 +234,6 @@ class MinosRepository(ABC, MinosSetup):
     async def _validate(
         self, entry: RepositoryEntry, skipped_transaction_uuid: Optional[UUID] = None, **kwargs
     ) -> bool:
-        if not isinstance(self._transaction_repository, TransactionRepository):
-            return True  # FIXME: Is this condition reasonable?
-
         transaction_uuids = {
             e.transaction_uuid
             async for e in self.select(aggregate_uuid=entry.aggregate_uuid)

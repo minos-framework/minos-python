@@ -19,6 +19,7 @@ from tests.aggregate_classes import (
 from tests.utils import (
     BASE_PATH,
     FakeBroker,
+    FakeTransactionRepository,
 )
 
 
@@ -27,8 +28,13 @@ class TestAggregateWithPostgreSql(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.repository = PostgreSqlRepository.from_config(self.config, event_broker=FakeBroker())
-        self.snapshot = PostgreSqlSnapshot.from_config(self.config, repository=self.repository)
+        self.transaction_repository = FakeTransactionRepository()
+        self.repository = PostgreSqlRepository.from_config(
+            self.config, event_broker=FakeBroker(), transaction_repository=self.transaction_repository
+        )
+        self.snapshot = PostgreSqlSnapshot.from_config(
+            self.config, repository=self.repository, transaction_repository=self.transaction_repository
+        )
 
         self.kwargs = {
             "_repository": self.repository,

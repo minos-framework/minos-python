@@ -22,6 +22,7 @@ from tests.utils import (
     BASE_PATH,
     FakeAsyncIterator,
     FakeRepository,
+    FakeTransactionRepository,
 )
 
 
@@ -31,7 +32,9 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.snapshot = PostgreSqlSnapshot.from_config(self.config, repository=FakeRepository())
+        self.snapshot = PostgreSqlSnapshot.from_config(
+            self.config, repository=FakeRepository(), transaction_repository=FakeTransactionRepository()
+        )
 
         self.dispatch_mock = AsyncMock()
         self.get_mock = AsyncMock(return_value=1)

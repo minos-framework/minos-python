@@ -37,6 +37,7 @@ from tests.utils import (
     FakeBroker,
     FakeRepository,
     FakeSnapshot,
+    FakeTransactionRepository,
 )
 
 
@@ -326,10 +327,14 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
             self.assertIsInstance(obs.updated_at, datetime)
 
     async def _populate(self):
+        transaction_repository = FakeTransactionRepository()
+
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
-        async with PostgreSqlRepository.from_config(self.config, event_broker=FakeBroker()) as repository:
+        async with PostgreSqlRepository.from_config(
+            self.config, event_broker=FakeBroker(), transaction_repository=transaction_repository
+        ) as repository:
             await repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
             await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
             await repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
@@ -350,7 +355,9 @@ class TestPostgreSqlSnapshotReader(PostgresAsyncTestCase):
                 )
             )
             await repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
-            async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+            async with PostgreSqlSnapshotWriter.from_config(
+                self.config, repository=repository, transaction_repository=transaction_repository
+            ) as dispatcher:
                 await dispatcher.dispatch()
             return repository
 

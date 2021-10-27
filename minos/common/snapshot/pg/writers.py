@@ -18,6 +18,7 @@ from dependency_injector.wiring import (
 from ...exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosRepositoryNotProvidedException,
+    MinosTransactionRepositoryNotProvidedException,
 )
 from ...importlib import (
     import_module,
@@ -59,6 +60,9 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
         if repository is None or isinstance(repository, Provide):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
+
+        if transaction_repository is None or isinstance(transaction_repository, Provide):
+            raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
 
         self._repository = repository
         self._transaction_repository = transaction_repository
@@ -171,9 +175,6 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         return snapshot_entry
 
     async def _clean_transactions(self, offset: int, **kwargs) -> None:
-        if not isinstance(self._transaction_repository, TransactionRepository):
-            return  # FIXME: Is this condition reasonable?
-
         iterable = self._transaction_repository.select(
             event_offset_gt=offset, status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED), **kwargs
         )

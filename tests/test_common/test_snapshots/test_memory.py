@@ -32,6 +32,7 @@ from tests.utils import (
     FakeBroker,
     FakeRepository,
     FakeSnapshot,
+    FakeTransactionRepository,
 )
 
 
@@ -59,7 +60,9 @@ class TestMemorySnapshotReader(unittest.IsolatedAsyncioTestCase):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
-        async with InMemoryRepository(event_broker=FakeBroker()) as repository:
+        async with InMemoryRepository(
+            event_broker=FakeBroker(), transaction_repository=FakeTransactionRepository()
+        ) as repository:
             await repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
             await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
             await repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
