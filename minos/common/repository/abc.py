@@ -14,6 +14,7 @@ from contextlib import (
 )
 from typing import (
     TYPE_CHECKING,
+    AsyncContextManager,
     AsyncIterator,
     Awaitable,
     Optional,
@@ -38,6 +39,9 @@ from ..exceptions import (
 )
 from ..networks import (
     MinosBroker,
+)
+from ..pools import (
+    MinosPool,
 )
 from ..setup import (
     MinosSetup,
@@ -69,6 +73,7 @@ class MinosRepository(ABC, MinosSetup):
         self,
         event_broker: MinosBroker = Provide["event_broker"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
+        lock_pool: MinosPool = Provide["lock_pool"],
         *args,
         **kwargs,
     ):
@@ -78,6 +83,7 @@ class MinosRepository(ABC, MinosSetup):
 
         self._broker = event_broker
         self._transaction_repository = transaction_repository
+        self._lock_pool = lock_pool
 
     def begin(self, **kwargs) -> Transaction:
         """TODO
@@ -198,16 +204,23 @@ class MinosRepository(ABC, MinosSetup):
 
         return entry
 
-    @staticmethod
-    def write_lock() -> ContextManager:
-        """TODO"""
-        async def _fn_enter():
-            pass
+    def write_lock(self) -> AsyncContextManager:
+        """Get a write lock.
 
-        async def _fn_exit(_):
-            pass
+        :return: An asynchronous context manager.
+        """
 
-        return ContextManager(_fn_enter, _fn_exit)
+        if isinstance(self._lock_pool, MinosPool):
+            return self._lock_pool.acquire("aggregate_event_write_lock")
+        else:  # FIXME: Is this condition reasonable?
+
+            async def _fn_enter():
+                pass
+
+            async def _fn_exit(_):
+                pass
+
+            return ContextManager(_fn_enter, _fn_exit)
 
     # noinspection PyUnusedLocal
     async def _validate(
@@ -225,8 +238,7 @@ class MinosRepository(ABC, MinosSetup):
         if len(transaction_uuids):
             with suppress(StopAsyncIteration):
                 iterable = self._transaction_repository.select(
-                    uuid_in=tuple(transaction_uuids),
-                    status=TransactionStatus.RESERVED,
+                    uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED,
                 )
                 await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
 
