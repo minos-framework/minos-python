@@ -1,8 +1,10 @@
+from collections.abc import (
+    Hashable,
+)
 from typing import (
     Any,
     AsyncContextManager,
     AsyncIterator,
-    Hashable,
     Optional,
 )
 
@@ -19,6 +21,9 @@ from dependency_injector.wiring import (
 
 from ..setup import (
     MinosSetup,
+)
+from .locks import (
+    PostgreSqlLock,
 )
 from .pool import (
     PostgreSqlPool,
@@ -81,7 +86,7 @@ class PostgreSqlMinosDatabase(MinosSetup):
         if lock is None:
             context_manager = self.cursor()
         else:
-            context_manager = self.lock(lock)
+            context_manager = self.locked_cursor(lock)
 
         async with context_manager as cursor:
             await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
@@ -113,24 +118,50 @@ class PostgreSqlMinosDatabase(MinosSetup):
         if lock is None:
             context_manager = self.cursor()
         else:
-            context_manager = self.lock(lock)
+            context_manager = self.locked_cursor(lock)
 
         async with context_manager as cursor:
             await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
 
-    def lock(self, key: Any):
-        """TODO"""
-        wrapped_cursor = self.pool.cursor()
-        return PostgreSqlLock(wrapped_cursor, key)
+    def locked_cursor(self, key: Hashable, *args, **kwargs) -> AsyncContextManager[Cursor]:
+        """Get a new locked cursor.
+
+        :param key: The key to be used for locking.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A Cursor wrapped into an asynchronous context manager.
+        """
+        lock = PostgreSqlLock(self.pool.acquire(), key, *args, **kwargs)
+
+        async def _fn_enter():
+            await lock.__aenter__()
+            return lock.cursor
+
+        async def _fn_exit(_):
+            await lock.__aexit__(None, None, None)
+
+        return ContextManager(_fn_enter, _fn_exit)
 
     def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
-        """Get a connection cursor from the pool.
+        """Get a new cursor.
 
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: A ``Cursor`` instance wrapped inside a context manager.
+        :return: A Cursor wrapped into an asynchronous context manager.
         """
-        return self.pool.cursor(*args, **kwargs)
+        acquired = self.pool.acquire()
+
+        async def _fn_enter():
+            connection = await acquired.__aenter__()
+            cursor = await connection.cursor(*args, **kwargs).__aenter__()
+            return cursor
+
+        async def _fn_exit(cursor: Cursor):
+            if not cursor.closed:
+                cursor.close()
+            await acquired.__aexit__(None, None, None)
+
+        return ContextManager(_fn_enter, _fn_exit)
 
     @property
     def pool(self) -> PostgreSqlPool:
@@ -151,28 +182,3 @@ class PostgreSqlMinosDatabase(MinosSetup):
             host=self.host, port=self.port, database=self.database, user=self.user, password=self.password,
         )
         return pool, True
-
-
-class PostgreSqlLock(ContextManager):
-    """"TODO"""
-
-    def __init__(self, wrapped_cursor: AsyncContextManager[Cursor], key: Any):
-        super().__init__(self._fn_enter, self._fn_exit)
-
-        if not isinstance(key, Hashable):
-            raise ValueError("TODO")
-
-        if not isinstance(key, int):
-            key = hash(key)
-
-        self.wrapped_cursor = wrapped_cursor
-        self.key = key
-
-    async def _fn_enter(self):
-        cursor = await self.wrapped_cursor.__aenter__()
-        await cursor.execute("select pg_advisory_lock(%(key)s)", {"key": self.key})
-        return cursor
-
-    async def _fn_exit(self, cursor: Cursor):
-        await cursor.execute("select pg_advisory_unlock(%(key)s)", {"key": self.key})
-        await self.wrapped_cursor.__aexit__(None, None, None)

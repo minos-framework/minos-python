@@ -16,6 +16,7 @@ from .configuration import (
 )
 from .database import (
     PostgreSqlLock,
+    PostgreSqlLockPool,
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
 )
