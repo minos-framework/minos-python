@@ -1,8 +1,8 @@
-from abc import (
-    ABC,
-)
 from collections.abc import (
     Hashable,
+)
+from contextlib import (
+    AbstractAsyncContextManager,
 )
 
 from cached_property import (
@@ -10,15 +10,10 @@ from cached_property import (
 )
 
 
-class Lock(ABC):
+class Lock(AbstractAsyncContextManager):
     """"Lock base class."""
 
     key: Hashable
-
-    def __new__(cls, *args, **kwargs):
-        if cls is Lock:
-            raise TypeError(f"Abstract class {cls.__name__} cannot be instantiated")
-        return super().__new__(cls)
 
     def __init__(self, key: Hashable, *args, **kwargs):
         if not isinstance(key, Hashable):
