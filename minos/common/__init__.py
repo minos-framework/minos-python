@@ -15,6 +15,8 @@ from .configuration import (
     MinosConfigAbstract,
 )
 from .database import (
+    PostgreSqlLock,
+    PostgreSqlLockPool,
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
 )
@@ -66,6 +68,9 @@ from .injectors import (
 )
 from .launchers import (
     EntrypointLauncher,
+)
+from .locks import (
+    Lock,
 )
 from .meta import (
     classproperty,

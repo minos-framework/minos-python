@@ -1,3 +1,6 @@
+from collections.abc import (
+    Hashable,
+)
 from typing import (
     Any,
     AsyncContextManager,
@@ -5,6 +8,9 @@ from typing import (
     Optional,
 )
 
+from aiomisc.pool import (
+    ContextManager,
+)
 from aiopg import (
     Cursor,
 )
@@ -16,7 +22,10 @@ from dependency_injector.wiring import (
 from ..setup import (
     MinosSetup,
 )
-from .pool import (
+from .locks import (
+    PostgreSqlLock,
+)
+from .pools import (
     PostgreSqlPool,
 )
 
@@ -74,34 +83,27 @@ class PostgreSqlMinosDatabase(MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        async with self.cursor() as cursor:
-            if lock is not None:
-                await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
-            try:
-                await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
+        if lock is None:
+            context_manager = self.cursor()
+        else:
+            context_manager = self.locked_cursor(lock)
 
-                if streaming_mode:
-                    async for row in cursor:
-                        yield row
-                    return
+        async with context_manager as cursor:
+            await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
 
-                rows = await cursor.fetchall()
-            finally:
-                if lock is not None:
-                    await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
+            if streaming_mode:
+                async for row in cursor:
+                    yield row
+                return
+
+            rows = await cursor.fetchall()
 
         for row in rows:
             yield row
 
     # noinspection PyUnusedLocal
     async def submit_query(
-        self,
-        operation: Any,
-        parameters: Any = None,
-        *,
-        timeout: Optional[float] = None,
-        lock: Optional[int] = None,
-        **kwargs,
+        self, operation: Any, parameters: Any = None, *, timeout: Optional[float] = None, lock: Any = None, **kwargs,
     ) -> None:
         """Submit a SQL query.
 
@@ -113,23 +115,53 @@ class PostgreSqlMinosDatabase(MinosSetup):
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
-        async with self.cursor() as cursor:
-            if lock is not None:
-                await cursor.execute("select pg_advisory_lock(%s)", (int(lock),))
-            try:
-                await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
-            finally:
-                if lock is not None:
-                    await cursor.execute("select pg_advisory_unlock(%s)", (int(lock),))
+        if lock is None:
+            context_manager = self.cursor()
+        else:
+            context_manager = self.locked_cursor(lock)
+
+        async with context_manager as cursor:
+            await cursor.execute(operation=operation, parameters=parameters, timeout=timeout)
+
+    def locked_cursor(self, key: Hashable, *args, **kwargs) -> AsyncContextManager[Cursor]:
+        """Get a new locked cursor.
+
+        :param key: The key to be used for locking.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: A Cursor wrapped into an asynchronous context manager.
+        """
+        lock = PostgreSqlLock(self.pool.acquire(), key, *args, **kwargs)
+
+        async def _fn_enter():
+            await lock.__aenter__()
+            return lock.cursor
+
+        async def _fn_exit(_):
+            await lock.__aexit__(None, None, None)
+
+        return ContextManager(_fn_enter, _fn_exit)
 
     def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
-        """Get a connection cursor from the pool.
+        """Get a new cursor.
 
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
-        :return: A ``Cursor`` instance wrapped inside a context manager.
+        :return: A Cursor wrapped into an asynchronous context manager.
         """
-        return self.pool.cursor(*args, **kwargs)
+        acquired = self.pool.acquire()
+
+        async def _fn_enter():
+            connection = await acquired.__aenter__()
+            cursor = await connection.cursor(*args, **kwargs).__aenter__()
+            return cursor
+
+        async def _fn_exit(cursor: Cursor):
+            if not cursor.closed:
+                cursor.close()
+            await acquired.__aexit__(None, None, None)
+
+        return ContextManager(_fn_enter, _fn_exit)
 
     @property
     def pool(self) -> PostgreSqlPool:

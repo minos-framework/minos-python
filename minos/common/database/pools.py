@@ -1,6 +1,6 @@
 import logging
-from typing import (
-    AsyncContextManager,
+from collections.abc import (
+    Hashable,
 )
 
 import aiopg
@@ -9,17 +9,22 @@ from aiomisc.pool import (
 )
 from aiopg import (
     Connection,
-    Cursor,
+)
+from psycopg2 import (
+    OperationalError,
 )
 
 from ..pools import (
     MinosPool,
 )
+from .locks import (
+    PostgreSqlLock,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class PostgreSqlPool(MinosPool[Connection]):
+class PostgreSqlPool(MinosPool[ContextManager]):
     """Postgres Pool class."""
 
     def __init__(self, host: str, port: int, database: str, user: str, password: str, *args, **kwargs):
@@ -46,23 +51,23 @@ class PostgreSqlPool(MinosPool[Connection]):
             await instance.close()
         logger.info(f"Destroyed {self.database!r} database connection identified by {id(instance)}!")
 
-    def cursor(self, *args, **kwargs) -> AsyncContextManager[Cursor]:
-        """Get a new cursor.
+    async def _check_instance(self, instance: Connection) -> bool:
+        try:
+            # This operation connects to the database and raises an exception if something goes wrong.
+            instance.isolation_level
+        except OperationalError:
+            return False
 
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: A Cursor wrapped into an asynchronous context manager.
+        return not instance.closed
+
+
+class PostgreSqlLockPool(PostgreSqlPool):
+    """Postgres Locking Pool class."""
+
+    def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:
+        """Acquire a new lock.
+
+        :param key: The key to be used for locking.
+        :return: A ``PostgreSqlLock`` instance.
         """
-        acquired: ContextManager = self.acquire()
-
-        async def _fn_enter():
-            connection = await acquired.__aenter__()
-            cursor = await connection.cursor(*args, **kwargs).__aenter__()
-            return cursor
-
-        async def _fn_exit(cursor: Cursor):
-            if not cursor.closed:
-                cursor.close()
-            await acquired.__aexit__(None, None, None)
-
-        return ContextManager(_fn_enter, _fn_exit)
+        return PostgreSqlLock(super().acquire(), key, *args, **kwargs)
