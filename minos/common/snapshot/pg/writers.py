@@ -96,7 +96,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
                 pass
             offset = max(event_entry.id, offset)
 
-        if initial_offset != offset:
+        if initial_offset < offset:
             await self._clean_transactions(initial_offset)
 
         await self._store_offset(offset)

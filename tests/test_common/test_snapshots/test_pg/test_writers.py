@@ -24,6 +24,8 @@ from minos.common import (
     PostgreSqlSnapshotWriter,
     RepositoryEntry,
     SnapshotEntry,
+    Transaction,
+    TransactionStatus,
     current_datetime,
 )
 from minos.common.testing import (
@@ -58,8 +60,8 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.uuid_2 = uuid4()
         self.uuid_3 = uuid4()
 
-        self.first_transaction = uuid4()
-        self.second_transaction = uuid4()
+        self.transaction_1 = uuid4()
+        self.transaction_2 = uuid4()
 
         self.writer = PostgreSqlSnapshotWriter.from_config(
             self.config, repository=self.repository, transaction_repository=self.transaction_repository
@@ -89,15 +91,19 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         await self.repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
         await self.repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
         await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.first_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.repository.delete(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.second_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
         await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.first_transaction)
+            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+
+        await self.transaction_repository.submit(
+            Transaction(self.transaction_2, TransactionStatus.REJECTED, await self.repository.offset)
+        )
 
     def test_type(self):
         self.assertTrue(issubclass(PostgreSqlSnapshotWriter, PostgreSqlSnapshotSetup))
@@ -153,7 +159,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             Condition.TRUE,
             Ordering.ASC("updated_at"),
             exclude_deleted=False,
-            transaction_uuid=self.first_transaction,
+            transaction_uuid=self.transaction_1,
         )
         observed = [v async for v in iterable]
 
@@ -192,14 +198,23 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             Condition.TRUE,
             Ordering.ASC("updated_at"),
             exclude_deleted=False,
-            transaction_uuid=self.second_transaction,
+            transaction_uuid=self.transaction_2,
         )
         observed = [v async for v in iterable]
 
         # noinspection PyTypeChecker
         expected = [
             SnapshotEntry(self.uuid_1, Car.classname, 4),
-            SnapshotEntry(self.uuid_2, Car.classname, 3),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_2,
+                    version=2,
+                    created_at=observed[1].created_at,
+                    updated_at=observed[1].updated_at,
+                )
+            ),
             SnapshotEntry.from_aggregate(
                 Car(
                     3,
