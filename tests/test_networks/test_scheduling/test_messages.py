@@ -26,7 +26,8 @@ class TestScheduledRequest(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(self.request, ScheduledRequest(current_datetime()))
 
     def test_repr(self):
-        self.assertEqual(f"ScheduledRequest(ScheduledRequestContent(scheduled_at={self.now!s}))", repr(self.request))
+        content = ScheduledRequestContent(self.now)
+        self.assertEqual(f"ScheduledRequest({content!r})", repr(self.request))
 
 
 class TestScheduledRequestContent(unittest.IsolatedAsyncioTestCase):

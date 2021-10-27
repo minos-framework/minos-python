@@ -31,6 +31,7 @@ from ...decorators import (
     EnrouteBuilder,
 )
 from ...messages import (
+    USER_CONTEXT_VAR,
     Response,
     ResponseException,
 )
@@ -95,8 +96,10 @@ class CommandHandler(Handler):
         """
 
         async def _fn(command: Command) -> Tuple[Any, CommandStatus]:
+            request = HandlerRequest(command)
+            token = USER_CONTEXT_VAR.set(request.user)
+
             try:
-                request = HandlerRequest(command)
                 response = fn(request)
                 if isawaitable(response):
                     response = await response
@@ -109,5 +112,7 @@ class CommandHandler(Handler):
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
                 return repr(exc), CommandStatus.SYSTEM_ERROR
+            finally:
+                USER_CONTEXT_VAR.reset(token)
 
         return _fn

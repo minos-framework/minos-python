@@ -6,12 +6,16 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from contextvars import (
+    ContextVar,
+)
 from inspect import (
     isawaitable,
 )
 from typing import (
     Any,
     Callable,
+    Final,
     Optional,
 )
 from uuid import (
@@ -25,6 +29,9 @@ from minos.common import (
 from .exceptions import (
     MinosException,
 )
+
+USER_CONTEXT_VAR: Final[ContextVar[Optional[UUID]]] = ContextVar("user", default=None)
+USER_CONTEXT_VAR.set(None)  # needed to "register" the context variable.
 
 
 class Request(ABC):

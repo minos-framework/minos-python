@@ -16,6 +16,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    USER_CONTEXT_VAR,
     CommandHandler,
     HandlerEntry,
     HandlerRequest,
@@ -56,7 +57,8 @@ class TestCommandHandler(PostgresAsyncTestCase):
         super().setUp()
         self.broker = FakeBroker()
         self.handler = CommandHandler.from_config(config=self.config, broker=self.broker)
-        self.command = Command("AddOrder", FakeModel("foo"), uuid4(), "UpdateTicket")
+        self.user = uuid4()
+        self.command = Command("AddOrder", FakeModel("foo"), self.user, "UpdateTicket")
 
     def test_from_config(self):
         broker = FakeBroker()
@@ -116,6 +118,18 @@ class TestCommandHandler(PostgresAsyncTestCase):
         fn = self.handler.get_callback(_Cls._fn_raises_exception)
         expected = (repr(ValueError()), CommandStatus.SYSTEM_ERROR)
         self.assertEqual(expected, await fn(self.command))
+
+    async def test_get_callback_with_user(self):
+        async def _fn(request) -> None:
+            self.assertEqual(self.user, request.user)
+            self.assertEqual(self.user, USER_CONTEXT_VAR.get())
+
+        mock = AsyncMock(side_effect=_fn)
+
+        handler = self.handler.get_callback(mock)
+        await handler(self.command)
+
+        self.assertEqual(1, mock.call_count)
 
 
 if __name__ == "__main__":

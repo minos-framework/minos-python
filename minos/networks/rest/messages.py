@@ -57,6 +57,8 @@ class RestRequest(Request):
         """
         Returns the UUID of the user making the Request.
         """
+        if "User" not in self.headers:
+            return None
         return UUID(self.headers["User"])
 
     @property
