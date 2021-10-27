@@ -29,6 +29,7 @@ from ..configuration import (
 )
 from ..exceptions import (
     MinosBrokerNotProvidedException,
+    MinosRepositoryException,
 )
 from ..networks import (
     MinosBroker,
@@ -106,11 +107,15 @@ class MinosRepository(ABC, MinosSetup):
         :return: The repository entry containing the stored information.
         """
         from ..model import (
+            Action,
             AggregateDiff,
         )
 
         if isinstance(entry, AggregateDiff):
             entry = RepositoryEntry.from_aggregate_diff(entry)
+
+        if not isinstance(entry.action, Action):
+            raise MinosRepositoryException("The 'RepositoryEntry.action' attribute must be an 'Action' instance.")
 
         entry = await self._submit(entry)
 
@@ -120,11 +125,7 @@ class MinosRepository(ABC, MinosSetup):
 
     @abstractmethod
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
-        """Submit a new entry into the events table.
-
-        :param entry: Entry to be submitted.
-        :return: This method does not return anything.
-        """
+        raise NotImplementedError
 
     async def _send_events(self, aggregate_diff: AggregateDiff):
         from ..model import (
@@ -169,6 +170,7 @@ class MinosRepository(ABC, MinosSetup):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
@@ -185,6 +187,7 @@ class MinosRepository(ABC, MinosSetup):
         :param id_gt: Entry identifier greater than the given value.
         :param id_le: Entry identifier lower or equal to the given value.
         :param id_ge: Entry identifier greater or equal to the given value.
+        :param transaction_uuid: Transaction identifier.
         :return: A list of entries.
         """
         generator = self._select(
@@ -200,6 +203,7 @@ class MinosRepository(ABC, MinosSetup):
             id_gt=id_gt,
             id_le=id_le,
             id_ge=id_ge,
+            transaction_uuid=transaction_uuid,
             **kwargs,
         )
         # noinspection PyTypeChecker

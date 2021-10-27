@@ -59,18 +59,23 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
         self.assertEqual(self.uuid, entry.aggregate_uuid)
         self.assertEqual("tests.aggregate_classes.Car", entry.aggregate_name)
-        self.assertEqual(1, entry.version)
+        self.assertEqual(None, entry.version)
         self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
         self.assertEqual(None, entry.id)
         self.assertEqual(Action.CREATE, entry.action)
-        self.assertEqual(created_at, entry.created_at)
+        self.assertEqual(None, entry.created_at)
 
     def test_aggregate_diff(self):
         field_diff_container = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
-        aggregate_diff = AggregateDiff(
-            self.uuid, Car.classname, 1, Action.CREATE, current_datetime(), field_diff_container
-        )
+        version = 1
+        now = current_datetime()
+
+        aggregate_diff = AggregateDiff(self.uuid, Car.classname, version, Action.CREATE, now, field_diff_container)
+
         entry = RepositoryEntry.from_aggregate_diff(aggregate_diff)
+
+        entry.version = version
+        entry.created_at = now
 
         self.assertEqual(aggregate_diff, entry.aggregate_diff)
 
@@ -107,20 +112,60 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(hash(entry), int)
 
     def test_repr(self):
+        id_ = 5678
+        version = 0
+        aggregate_name = "example.Car"
+        data = bytes("car", "utf-8")
+        action = Action.CREATE
+        created_at = datetime(2020, 10, 13, 8, 45, 32)
+        transaction_uuid = uuid4()
         entry = RepositoryEntry(
             aggregate_uuid=self.uuid,
-            aggregate_name="example.Car",
-            version=0,
-            data=bytes("car", "utf-8"),
-            id=5678,
-            action=Action.CREATE,
-            created_at=datetime(2020, 10, 13, 8, 45, 32),
+            aggregate_name=aggregate_name,
+            version=version,
+            data=data,
+            id=id_,
+            action=action,
+            created_at=created_at,
+            transaction_uuid=transaction_uuid,
         )
         expected = (
-            f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name='example.Car', version=0, data=b'car', "
-            "id=5678, action=<Action.CREATE: 'create'>, created_at=datetime.datetime(2020, 10, 13, 8, 45, 32))"
+            f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name={aggregate_name!r}, version={version!r}, "
+            f"data={data!r}, id={id_!r}, action={action!r}, created_at={created_at!r}, "
+            f"transaction_uuid={transaction_uuid!r})"
         )
         self.assertEqual(expected, repr(entry))
+
+    def test_as_raw(self):
+        id_ = 5678
+        version = 0
+        aggregate_name = "example.Car"
+        data = bytes("car", "utf-8")
+        action = Action.CREATE
+        created_at = datetime(2020, 10, 13, 8, 45, 32)
+        transaction_uuid = uuid4()
+        entry = RepositoryEntry(
+            aggregate_uuid=self.uuid,
+            aggregate_name=aggregate_name,
+            version=version,
+            data=data,
+            id=id_,
+            action=action,
+            created_at=created_at,
+            transaction_uuid=transaction_uuid,
+        )
+        expected = {
+            "aggregate_uuid": self.uuid,
+            "aggregate_name": aggregate_name,
+            "version": version,
+            "data": data,
+            "id": id_,
+            "action": action,
+            "created_at": created_at,
+            "transaction_uuid": transaction_uuid,
+        }
+
+        self.assertEqual(expected, entry.as_raw())
 
 
 if __name__ == "__main__":

@@ -23,6 +23,7 @@ from minos.common import (
     FieldDiffContainer,
     MinosRepositoryNotProvidedException,
     MinosSnapshotDeletedAggregateException,
+    Ordering,
     PostgreSqlRepository,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
@@ -63,6 +64,9 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
         self.uuid_2 = uuid4()
         self.uuid_3 = uuid4()
 
+        self.first_transaction = uuid4()
+        self.second_transaction = uuid4()
+
         self.container = containers.DynamicContainer()
         self.container.repository = providers.Singleton(FakeRepository)
         self.container.snapshot = providers.Singleton(FakeSnapshot)
@@ -89,7 +93,10 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
                 await dispatcher.dispatch()
 
             async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as reader:
-                observed = [v async for v in reader.find_entries(Car.classname, Condition.TRUE, exclude_deleted=False)]
+                iterable = reader.find_entries(
+                    Car.classname, Condition.TRUE, Ordering.ASC("updated_at"), exclude_deleted=False
+                )
+                observed = [v async for v in iterable]
 
         # noinspection PyTypeChecker
         expected = [
@@ -104,6 +111,79 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
                     updated_at=observed[1].updated_at,
                 )
             ),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_3,
+                    version=1,
+                    created_at=observed[2].created_at,
+                    updated_at=observed[2].updated_at,
+                )
+            ),
+        ]
+        self._assert_equal_snapshot_entries(expected, observed)
+
+    async def test_dispatch_first_transaction(self):
+        async with await self._populate() as repository:
+            async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+                await dispatcher.dispatch()
+
+            async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as reader:
+                iterable = reader.find_entries(
+                    Car.classname,
+                    Condition.TRUE,
+                    Ordering.ASC("updated_at"),
+                    exclude_deleted=False,
+                    transaction_uuid=self.first_transaction,
+                )
+                observed = [v async for v in iterable]
+
+        # noinspection PyTypeChecker
+        expected = [
+            SnapshotEntry(self.uuid_1, Car.classname, 4),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_2,
+                    version=4,
+                    created_at=observed[1].created_at,
+                    updated_at=observed[1].updated_at,
+                )
+            ),
+            SnapshotEntry.from_aggregate(
+                Car(
+                    3,
+                    "blue",
+                    uuid=self.uuid_3,
+                    version=1,
+                    created_at=observed[2].created_at,
+                    updated_at=observed[2].updated_at,
+                )
+            ),
+        ]
+        self._assert_equal_snapshot_entries(expected, observed)
+
+    async def test_dispatch_second_transaction(self):
+        async with await self._populate() as repository:
+            async with PostgreSqlSnapshotWriter.from_config(self.config, repository=repository) as dispatcher:
+                await dispatcher.dispatch()
+
+            async with PostgreSqlSnapshotReader.from_config(self.config, repository=repository) as reader:
+                iterable = reader.find_entries(
+                    Car.classname,
+                    Condition.TRUE,
+                    Ordering.ASC("updated_at"),
+                    exclude_deleted=False,
+                    transaction_uuid=self.second_transaction,
+                )
+                observed = [v async for v in iterable]
+
+        # noinspection PyTypeChecker
+        expected = [
+            SnapshotEntry(self.uuid_1, Car.classname, 4),
+            SnapshotEntry(self.uuid_2, Car.classname, 3),
             SnapshotEntry.from_aggregate(
                 Car(
                     3,
@@ -183,24 +263,23 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
                 entry = RepositoryEntry(
                     aggregate_uuid=self.uuid_3,
                     aggregate_name=Car.classname,
-                    version=1,
                     data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
                 )
                 await repository.create(entry)
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_gt=7), mock.call_args)
+                self.assertEqual(call(id_gt=10), mock.call_args)
                 mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_gt=8), mock.call_args)
+                self.assertEqual(call(id_gt=11), mock.call_args)
                 mock.reset_mock()
 
                 await dispatcher.dispatch()
                 self.assertEqual(1, mock.call_count)
-                self.assertEqual(call(id_gt=8), mock.call_args)
+                self.assertEqual(call(id_gt=11), mock.call_args)
                 mock.reset_mock()
 
     async def _populate(self):
@@ -214,6 +293,19 @@ class TestPostgreSqlSnapshotWriter(PostgresAsyncTestCase):
             await repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
             await repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
             await repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+            await repository.update(
+                RepositoryEntry(
+                    self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.first_transaction
+                )
+            )
+            await repository.delete(
+                RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.second_transaction)
+            )
+            await repository.update(
+                RepositoryEntry(
+                    self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.first_transaction
+                )
+            )
             await repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
             return repository
 

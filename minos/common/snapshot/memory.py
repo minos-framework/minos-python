@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from itertools import (
+    chain,
+)
 from operator import (
     attrgetter,
 )
@@ -29,6 +32,9 @@ from ..queries import (
 )
 from ..repository import (
     MinosRepository,
+)
+from ..uuid import (
+    NULL_UUID,
 )
 from .abc import (
     MinosSnapshot,
@@ -58,6 +64,7 @@ class InMemorySnapshot(MinosSnapshot):
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
+        transaction_uuid: UUID = NULL_UUID,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -68,8 +75,7 @@ class InMemorySnapshot(MinosSnapshot):
             is to retrieve them without any order pattern.
         :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
             instances that meet the given condition.
-        :param _repository: The event's ``Repository`` instance that provides access to the aggregate events needed to
-            reconstruct the target aggregates.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction..
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that provides the requested ``Aggregate`` instances.
         """
@@ -77,7 +83,11 @@ class InMemorySnapshot(MinosSnapshot):
 
         aggregates = list()
         for uuid in uuids:
-            aggregate = await self.get(aggregate_name, uuid, **kwargs)
+            try:
+                aggregate = await self.get(aggregate_name, uuid, transaction_uuid, **kwargs)
+            except MinosSnapshotDeletedAggregateException:
+                continue
+
             if condition.evaluate(aggregate):
                 aggregates.append(aggregate)
 
@@ -91,21 +101,33 @@ class InMemorySnapshot(MinosSnapshot):
             yield aggregate
 
     # noinspection PyMethodOverriding
-    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+    async def get(self, aggregate_name: str, uuid: UUID, transaction_uuid: UUID = NULL_UUID, **kwargs) -> Aggregate:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param _repository: The event's ``Repository`` instance that provides access to the aggregate events needed to
-            reconstruct the target aggregates.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
-        entries = [v async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)]
+        entries = [
+            v
+            async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
+            if v.transaction_uuid in (transaction_uuid, NULL_UUID)
+        ]
         if not len(entries):
             raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
 
         entries.sort(key=attrgetter("version"))
+
+        if len({e.transaction_uuid for e in entries}) > 1:
+            minimal = next(e for e in entries if e.transaction_uuid == transaction_uuid)
+            entries = list(
+                chain(
+                    (e for e in entries if e.version < minimal.version),
+                    (e for e in entries if e.transaction_uuid == transaction_uuid),
+                )
+            )
 
         if entries[-1].action.is_delete:
             raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")

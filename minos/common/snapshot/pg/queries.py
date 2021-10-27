@@ -9,6 +9,7 @@ from typing import (
     Optional,
 )
 from uuid import (
+    UUID,
     uuid4,
 )
 
@@ -42,6 +43,9 @@ from ...queries import (
     _SimpleCondition,
     _TrueCondition,
 )
+from ...uuid import (
+    NULL_UUID,
+)
 
 
 class PostgreSqlSnapshotQueryBuilder:
@@ -56,12 +60,14 @@ class PostgreSqlSnapshotQueryBuilder:
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
+        transaction_uuid: UUID = NULL_UUID,
         exclude_deleted: bool = False,
     ):
         self.aggregate_name = aggregate_name
         self.condition = condition
         self.ordering = ordering
         self.limit = limit
+        self.transaction_uuid = transaction_uuid
         self.exclude_deleted = exclude_deleted
         self._parameters = None
 
@@ -80,10 +86,9 @@ class PostgreSqlSnapshotQueryBuilder:
 
     def _build(self) -> Composable:
         self._parameters["aggregate_name"] = self.aggregate_name
+        self._parameters["transaction_uuid"] = self.transaction_uuid
 
-        query = SQL(" AND ").join(
-            [_SELECT_MULTIPLE_ENTRIES_QUERY, SQL("({})").format(self._build_condition(self.condition))]
-        )
+        query = SQL(" WHERE ").join([_SELECT_ENTRIES_QUERY, self._build_condition(self.condition)])
 
         if self.exclude_deleted:
             query = SQL(" AND ").join([query, _EXCLUDE_DELETED_CONDITION])
@@ -201,10 +206,34 @@ _ORDERING_MAPPER = {
     False: SQL("ASC"),
 }
 
-_SELECT_MULTIPLE_ENTRIES_QUERY = SQL(
-    "SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at "
-    "FROM snapshot "
-    "WHERE (aggregate_name = %(aggregate_name)s)"
+_SELECT_ENTRIES_QUERY = SQL(
+    "SELECT "
+    "   t2.aggregate_uuid, "
+    "   t2.aggregate_name, "
+    "   t2.version, "
+    "   t2.schema, "
+    "   t2.data, "
+    "   t2.created_at, "
+    "   t2.updated_at, "
+    "   t2.transaction_uuid "
+    "FROM ("
+    "   SELECT DISTINCT ON (aggregate_uuid) t1.* "
+    "   FROM ( "
+    "           SELECT 0 AS transaction_index, * "
+    "           FROM snapshot "
+    "           WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = uuid_nil() "
+    "      UNION ALL "
+    "           SELECT 1 AS transaction_index, * "
+    "           FROM snapshot "
+    "           WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = %(transaction_uuid)s "
+    "   ) AS t1 "
+    "   ORDER BY aggregate_uuid, transaction_index DESC "
+    ") AS t2"
 )
 
 _EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")
+
+
+_SELECT_ENTRY_BY_UUID_QUERY = SQL(" WHERE ").join(
+    [_SELECT_ENTRIES_QUERY, SQL("aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s")]
+)

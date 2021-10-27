@@ -23,6 +23,7 @@ class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
         return cls(**config.snapshot._asdict(), **kwargs)
 
     async def _setup(self) -> None:
+        await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
         await self.submit_query(_CREATE_TABLE_QUERY, lock="snapshot")
         await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock="snapshot_aux_offset")
 
@@ -36,9 +37,10 @@ CREATE TABLE IF NOT EXISTS snapshot (
     version INT NOT NULL,
     schema BYTEA,
     data JSONB,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (aggregate_uuid, aggregate_name)
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),
+    PRIMARY KEY (aggregate_uuid, transaction_uuid)
 );
 """.strip()
 

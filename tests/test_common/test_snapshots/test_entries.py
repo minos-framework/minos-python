@@ -102,20 +102,29 @@ class TestSnapshotEntry(unittest.TestCase):
         self.assertEqual(car, entry.build_aggregate())
 
     def test_repr(self):
+        aggregate_name = "example.Car"
+        version = 0
+        created_at = datetime(2020, 1, 10, 4, 23)
+        updated_at = datetime(2020, 1, 10, 4, 25)
+        transaction_uuid = uuid4()
+
         entry = SnapshotEntry(
-            self.uuid,
-            "example.Car",
-            0,
-            self.schema,
-            self.data,
-            datetime(2020, 1, 10, 4, 23),
-            datetime(2020, 1, 10, 4, 25),
+            aggregate_uuid=self.uuid,
+            aggregate_name=aggregate_name,
+            version=version,
+            schema=self.schema,
+            data=self.data,
+            created_at=created_at,
+            updated_at=updated_at,
+            transaction_uuid=transaction_uuid,
         )
+
         expected = (
-            f"SnapshotEntry(aggregate_uuid={self.uuid!r}, aggregate_name='example.Car', version=0, "
-            f"schema={self.schema!r}, data={self.data!r}, "
-            "created_at=datetime.datetime(2020, 1, 10, 4, 23), updated_at=datetime.datetime(2020, 1, 10, 4, 25))"
+            f"SnapshotEntry(aggregate_uuid={self.uuid!r}, aggregate_name={aggregate_name!r}, version={version!r}, "
+            f"schema={self.schema!r}, data={self.data!r}, created_at={created_at!r}, updated_at={updated_at!r}, "
+            f"transaction_uuid={transaction_uuid!r})"
         )
+
         self.assertEqual(expected, repr(entry))
 
 

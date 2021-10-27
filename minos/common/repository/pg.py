@@ -6,8 +6,15 @@ from uuid import (
     UUID,
 )
 
+from psycopg2 import (
+    IntegrityError,
+)
+
 from ..database import (
     PostgreSqlMinosDatabase,
+)
+from ..exceptions import (
+    MinosRepositoryException,
 )
 from ..uuid import (
     NULL_UUID,
@@ -38,19 +45,18 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         await self.submit_query(_CREATE_TABLE_QUERY, lock="aggregate_event")
 
     async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
-        params = {
-            "action": entry.action.value,
-            "aggregate_uuid": entry.aggregate_uuid,
-            "aggregate_name": entry.aggregate_name,
-            "data": entry.data,
-            "null_uuid": NULL_UUID,
-        }
-
         lock = None
         if entry.aggregate_uuid != NULL_UUID:
             lock = entry.aggregate_uuid.int & (1 << 32) - 1
 
-        response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
+        params = entry.as_raw()
+        try:
+            response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
+        except IntegrityError:
+            raise MinosRepositoryException(
+                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}"
+            )
+
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
 
@@ -74,6 +80,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         id_gt: Optional[int] = None,
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
+        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> str:
         conditions = list()
@@ -102,6 +109,8 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             conditions.append("id <= %(id_le)s")
         if id_ge is not None:
             conditions.append("id >= %(id_ge)s")
+        if transaction_uuid is not None:
+            conditions.append("transaction_uuid = %(transaction_uuid)s")
 
         if not conditions:
             return f"{_SELECT_ALL_ENTRIES_QUERY} ORDER BY id;"
@@ -134,31 +143,42 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
     aggregate_name TEXT NOT NULL,
     version INT NOT NULL,
     data BYTEA NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (aggregate_uuid, aggregate_name, version)
+    created_at TIMESTAMPTZ NOT NULL,
+    transaction_uuid UUID NOT NULL DEFAULT uuid_nil(),
+    UNIQUE (aggregate_uuid, version, transaction_uuid)
 );
 """.strip()
 
 _INSERT_VALUES_QUERY = """
-INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at)
+INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at, transaction_uuid)
 VALUES (
     default,
     %(action)s,
-    CASE %(aggregate_uuid)s WHEN %(null_uuid)s THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
+    CASE %(aggregate_uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
     %(aggregate_name)s,
     (
-        SELECT (CASE COUNT(*) WHEN 0 THEN 1 ELSE MAX(version) + 1 END)
+        SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(version), 0) ELSE %(version)s END)
         FROM aggregate_event
         WHERE aggregate_uuid = %(aggregate_uuid)s
           AND aggregate_name = %(aggregate_name)s
+          AND transaction_uuid = (
+            CASE (
+                SELECT COUNT(*)
+                FROM aggregate_event
+                WHERE aggregate_uuid = %(aggregate_uuid)s
+                    AND aggregate_name = %(aggregate_name)s
+                    AND transaction_uuid =  %(transaction_uuid)s
+            ) WHEN 0 THEN uuid_nil() ELSE %(transaction_uuid)s END
+          )
     ),
     %(data)s,
-    default
+    (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),
+    %(transaction_uuid)s
 )
 RETURNING id, aggregate_uuid, version, created_at;
 """.strip()
 
 _SELECT_ALL_ENTRIES_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at
+SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid
 FROM aggregate_event
 """.strip()

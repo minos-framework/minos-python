@@ -19,6 +19,9 @@ from ...queries import (
     _Condition,
     _Ordering,
 )
+from ...uuid import (
+    NULL_UUID,
+)
 from ..entries import (
     SnapshotEntry,
 )
@@ -26,6 +29,7 @@ from .abc import (
     PostgreSqlSnapshotSetup,
 )
 from .queries import (
+    _SELECT_ENTRY_BY_UUID_QUERY,
     PostgreSqlSnapshotQueryBuilder,
 )
 
@@ -55,15 +59,18 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         aggregate = snapshot_entry.build_aggregate(**kwargs)
         return aggregate
 
-    async def get_entry(self, aggregate_name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
+    async def get_entry(
+        self, aggregate_name: str, uuid: UUID, transaction_uuid: UUID = NULL_UUID, **kwargs
+    ) -> SnapshotEntry:
         """Get an ``SnapshotEntry`` from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
-        parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid}
+        parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid, "transaction_uuid": transaction_uuid}
 
         async with self.cursor() as cursor:
             await cursor.execute(_SELECT_ENTRY_BY_UUID_QUERY, parameters)
@@ -80,6 +87,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
+        transaction_uuid: UUID = NULL_UUID,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -92,11 +100,12 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
         async for snapshot_entry in self.find_entries(
-            aggregate_name, condition, ordering, limit, streaming_mode, **kwargs
+            aggregate_name, condition, ordering, limit, streaming_mode, transaction_uuid, **kwargs,
         ):
             yield snapshot_entry.build_aggregate(**kwargs)
 
@@ -107,6 +116,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
+        transaction_uuid: UUID = NULL_UUID,
         exclude_deleted: bool = True,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
@@ -120,12 +130,15 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
+        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
         :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
             entries are filtered.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
-        qb = PostgreSqlSnapshotQueryBuilder(aggregate_name, condition, ordering, limit, exclude_deleted)
+        qb = PostgreSqlSnapshotQueryBuilder(
+            aggregate_name, condition, ordering, limit, transaction_uuid, exclude_deleted,
+        )
         query, parameters = qb.build()
 
         async with self.cursor() as cursor:
@@ -140,10 +153,3 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
                 rows = await cursor.fetchall()
         for row in rows:
             yield SnapshotEntry(*row)
-
-
-_SELECT_ENTRY_BY_UUID_QUERY = """
-SELECT aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at
-FROM snapshot
-WHERE aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s
-""".strip()

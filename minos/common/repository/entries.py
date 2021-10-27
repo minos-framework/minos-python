@@ -7,6 +7,7 @@ from datetime import (
 )
 from typing import (
     TYPE_CHECKING,
+    Any,
     Iterable,
     Optional,
     Type,
@@ -18,6 +19,9 @@ from uuid import (
 
 from ..importlib import (
     import_module,
+)
+from ..uuid import (
+    NULL_UUID,
 )
 
 if TYPE_CHECKING:
@@ -32,18 +36,28 @@ if TYPE_CHECKING:
 class RepositoryEntry:
     """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
 
-    __slots__ = "aggregate_uuid", "aggregate_name", "version", "data", "id", "action", "created_at"
+    __slots__ = (
+        "aggregate_uuid",
+        "aggregate_name",
+        "version",
+        "data",
+        "id",
+        "action",
+        "created_at",
+        "transaction_uuid",
+    )
 
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
         aggregate_uuid: UUID,
         aggregate_name: str,
-        version: int,
+        version: Optional[int] = None,
         data: Union[bytes, memoryview] = bytes(),
         id: Optional[int] = None,
         action: Optional[Union[str, Action]] = None,
         created_at: Optional[datetime] = None,
+        transaction_uuid: UUID = NULL_UUID,
     ):
         if isinstance(data, memoryview):
             data = data.tobytes()
@@ -62,23 +76,40 @@ class RepositoryEntry:
         self.id = id
         self.action = action
         self.created_at = created_at
+        self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_aggregate_diff(cls, aggregate_diff: AggregateDiff) -> RepositoryEntry:
+    def from_aggregate_diff(cls, aggregate_diff: AggregateDiff, **kwargs) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate_diff: The aggregate difference.
+        :param kwargs: Additional named arguments.
         :return: A new ``RepositoryEntry`` instance.
         """
         # noinspection PyTypeChecker
         return cls(
             aggregate_uuid=aggregate_diff.uuid,
             aggregate_name=aggregate_diff.name,
-            version=aggregate_diff.version,
             data=aggregate_diff.fields_diff.avro_bytes,
-            created_at=aggregate_diff.created_at,
             action=aggregate_diff.action,
+            **kwargs,
         )
+
+    def as_raw(self) -> dict[str, Any]:
+        """Get a raw representation of the instance.
+
+        :return: A dictionary in which the keys are attribute names and values the attribute contents.
+        """
+        return {
+            "aggregate_uuid": self.aggregate_uuid,
+            "aggregate_name": self.aggregate_name,
+            "version": self.version,
+            "data": self.data,
+            "id": self.id,
+            "action": self.action.value,
+            "created_at": self.created_at,
+            "transaction_uuid": self.transaction_uuid,
+        }
 
     @property
     def aggregate_cls(self) -> Type[Aggregate]:
@@ -138,6 +169,7 @@ class RepositoryEntry:
             self.id,
             self.action,
             self.created_at,
+            self.transaction_uuid,
         )
 
     def __repr__(self):
@@ -145,5 +177,6 @@ class RepositoryEntry:
             f"{type(self).__name__}("
             f"aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
             f"version={self.version!r}, data={self.data!r}, "
-            f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r})"
+            f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r}, "
+            f"transaction_uuid={self.transaction_uuid!r})"
         )

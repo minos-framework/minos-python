@@ -108,13 +108,13 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     async def _submit_update_or_create(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
         aggregate = await self._build_instance(event_entry, **kwargs)
 
-        snapshot_entry = SnapshotEntry.from_aggregate(aggregate)
+        snapshot_entry = SnapshotEntry.from_aggregate(aggregate, transaction_uuid=event_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
     async def _build_instance(self, event_entry: RepositoryEntry, **kwargs) -> Aggregate:
         diff = event_entry.aggregate_diff
-        instance = await self._update_if_exists(diff, **kwargs)
+        instance = await self._update_if_exists(diff, transaction_uuid=event_entry.transaction_uuid, **kwargs)
         return instance
 
     async def _update_if_exists(self, aggregate_diff: AggregateDiff, **kwargs) -> Aggregate:
@@ -122,7 +122,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         try:
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(aggregate_diff.uuid, aggregate_diff.name, **kwargs)
-        except Exception:
+        except StopAsyncIteration:
             # noinspection PyTypeChecker
             aggregate_cls: Type[Aggregate] = import_module(aggregate_diff.name)
             return aggregate_cls.from_diff(aggregate_diff, **kwargs)
@@ -137,11 +137,16 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         snapshot_entry = await self._select_one(aggregate_uuid, aggregate_name, **kwargs)
         return snapshot_entry.build_aggregate(**kwargs)
 
-    async def _select_one(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> SnapshotEntry:
-        raw = await self.submit_query_and_fetchone(
-            _SELECT_ONE_SNAPSHOT_ENTRY_QUERY, (aggregate_uuid, aggregate_name), **kwargs
-        )
-        return SnapshotEntry(aggregate_uuid, aggregate_name, *raw)
+    async def _select_one(
+        self, aggregate_uuid: UUID, aggregate_name: str, transaction_uuid: UUID, **kwargs
+    ) -> SnapshotEntry:
+        parameters = {
+            "aggregate_uuid": aggregate_uuid,
+            "aggregate_name": aggregate_name,
+            "transaction_uuid": transaction_uuid,
+        }
+        raw = await self.submit_query_and_fetchone(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, parameters, **kwargs)
+        return SnapshotEntry(aggregate_uuid, aggregate_name, *raw, transaction_uuid=transaction_uuid)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
         params = snapshot_entry.as_raw()
@@ -155,11 +160,23 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
 SELECT version, schema, data, created_at, updated_at
 FROM snapshot
-WHERE aggregate_uuid = %s and aggregate_name = %s;
+WHERE
+    aggregate_uuid = %(aggregate_uuid)s
+    AND aggregate_name = %(aggregate_name)s
+    AND transaction_uuid = (
+        CASE (
+            SELECT COUNT(*)
+            FROM snapshot
+            WHERE aggregate_uuid = %(aggregate_uuid)s
+            AND aggregate_name = %(aggregate_name)s
+            AND transaction_uuid =  %(transaction_uuid)s
+        ) WHEN 0 THEN uuid_nil() ELSE %(transaction_uuid)s END
+    )
+;
 """.strip()
 
 _INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """
-INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at)
+INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid)
 VALUES (
     %(aggregate_uuid)s,
     %(aggregate_name)s,
@@ -167,9 +184,10 @@ VALUES (
     %(schema)s,
     %(data)s,
     %(created_at)s,
-    %(updated_at)s
+    %(updated_at)s,
+    %(transaction_uuid)s
 )
-ON CONFLICT (aggregate_uuid, aggregate_name)
+ON CONFLICT (aggregate_uuid, transaction_uuid)
 DO
    UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;
@@ -187,5 +205,3 @@ VALUES (TRUE, %(value)s)
 ON CONFLICT (id)
 DO UPDATE SET value = GREATEST(%(value)s, (SELECT value FROM snapshot_aux_offset WHERE id = TRUE));
 """.strip()
-
-PostgreSqlSnapshotReader = PostgreSqlSnapshotWriter
