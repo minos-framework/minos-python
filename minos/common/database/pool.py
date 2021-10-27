@@ -52,7 +52,7 @@ class PostgreSqlPool(MinosPool[ContextManager]):
 class PostgreSqlLockPool(PostgreSqlPool):
     """Postgres Locking Pool class."""
 
-    def acquire(self, key: Hashable = None, *args, **kwargs) -> PostgreSqlLock:
+    def acquire(self, key: Hashable, *args, **kwargs) -> PostgreSqlLock:
         """Acquire a new lock.
 
         :param key: The key to be used for locking.
