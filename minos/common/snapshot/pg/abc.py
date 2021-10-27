@@ -24,8 +24,8 @@ class PostgreSqlSnapshotSetup(PostgreSqlMinosDatabase):
 
     async def _setup(self) -> None:
         await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
-        await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("snapshot"))
-        await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock=hash("snapshot_aux_offset"))
+        await self.submit_query(_CREATE_TABLE_QUERY, lock="snapshot")
+        await self.submit_query(_CREATE_OFFSET_TABLE_QUERY, lock="snapshot_aux_offset")
 
 
 T = TypeVar("T", bound=PostgreSqlSnapshotSetup)
