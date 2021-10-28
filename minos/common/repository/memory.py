@@ -94,6 +94,7 @@ class InMemoryRepository(MinosRepository):
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
+        transaction_uuid_ne: Optional[UUID] = None,
         *args,
         **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
@@ -125,6 +126,8 @@ class InMemoryRepository(MinosRepository):
             if id_ge is not None and id_ge > entry.id:
                 return False
             if transaction_uuid is not None and transaction_uuid != entry.transaction_uuid:
+                return False
+            if transaction_uuid_ne is not None and transaction_uuid_ne == entry.transaction_uuid:
                 return False
             return True
 

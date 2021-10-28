@@ -136,7 +136,7 @@ class MinosRepository(ABC, MinosSetup):
         entries = list()
         async for entry in self.select(transaction_uuid=transaction.uuid):
             new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
-            committed = await self.submit(new, skipped_transaction_uuid=transaction.uuid)
+            committed = await self.submit(new, transaction_uuid_ne=transaction.uuid)
             entries.append(committed)
         return max(e.id for e in entries)
 
@@ -220,13 +220,9 @@ class MinosRepository(ABC, MinosSetup):
         return self._lock_pool.acquire("aggregate_event_write_lock")
 
     # noinspection PyUnusedLocal
-    async def _validate(
-        self, entry: RepositoryEntry, skipped_transaction_uuid: Optional[UUID] = None, **kwargs
-    ) -> bool:
+    async def _validate(self, entry: RepositoryEntry, **kwargs) -> bool:
         transaction_uuids = {
-            e.transaction_uuid
-            async for e in self.select(aggregate_uuid=entry.aggregate_uuid)
-            if e.transaction_uuid != skipped_transaction_uuid
+            e.transaction_uuid async for e in self.select(aggregate_uuid=entry.aggregate_uuid, **kwargs)
         }
 
         if len(transaction_uuids):
@@ -288,6 +284,7 @@ class MinosRepository(ABC, MinosSetup):
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
+        transaction_uuid_ne: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
         """Perform a selection query of entries stored in to the repository.
@@ -305,6 +302,7 @@ class MinosRepository(ABC, MinosSetup):
         :param id_le: Entry identifier lower or equal to the given value.
         :param id_ge: Entry identifier greater or equal to the given value.
         :param transaction_uuid: Transaction identifier.
+        :param transaction_uuid_ne: Transaction identifier distinct of the given value.
         :return: A list of entries.
         """
         generator = self._select(
@@ -321,6 +319,7 @@ class MinosRepository(ABC, MinosSetup):
             id_le=id_le,
             id_ge=id_ge,
             transaction_uuid=transaction_uuid,
+            transaction_uuid_ne=transaction_uuid_ne,
             **kwargs,
         )
         # noinspection PyTypeChecker

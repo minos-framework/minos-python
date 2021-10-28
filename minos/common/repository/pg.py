@@ -91,6 +91,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
+        transaction_uuid_ne: Optional[UUID] = None,
         **kwargs,
     ) -> str:
         conditions = list()
@@ -121,6 +122,8 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             conditions.append("id >= %(id_ge)s")
         if transaction_uuid is not None:
             conditions.append("transaction_uuid = %(transaction_uuid)s")
+        if transaction_uuid_ne is not None:
+            conditions.append("transaction_uuid <> %(transaction_uuid_ne)s")
 
         if not conditions:
             return f"{_SELECT_ALL_ENTRIES_QUERY} ORDER BY id;"

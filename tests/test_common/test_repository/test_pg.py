@@ -100,25 +100,6 @@ class TestPostgreSqlRepository(MinosTestCase, PostgresAsyncTestCase, TestReposit
         self.assertIsInstance(observed[0].aggregate_uuid, UUID)
         self.assertNotEqual(NULL_UUID, observed[0].aggregate_uuid)
 
-    async def test_create(self):
-        await self.repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
-
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
-
-    async def test_update(self):
-        await self.repository.update(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.UPDATE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
-
-    async def test_delete(self):
-        await self.repository.delete(RepositoryEntry(self.uuid, "example.Car", 1, bytes()))
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.DELETE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
-
     async def test_submit(self):
         await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", action=Action.CREATE))
         expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE)]
@@ -350,6 +331,11 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
     async def test_select_transaction_uuid(self):
         expected = [self.entries[7], self.entries[9]]
         observed = [v async for v in self.repository.select(transaction_uuid=self.first_transaction)]
+        self.assert_equal_repository_entries(expected, observed)
+
+    async def test_select_transaction_uuid_ne(self):
+        expected = [self.entries[7], self.entries[8], self.entries[9]]
+        observed = [v async for v in self.repository.select(transaction_uuid_ne=NULL_UUID)]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_combined(self):
