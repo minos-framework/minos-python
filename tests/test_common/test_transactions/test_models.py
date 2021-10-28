@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import (
     AsyncMock,
+    MagicMock,
     PropertyMock,
     call,
     patch,
@@ -12,7 +13,9 @@ from uuid import (
 
 from minos.common import (
     TRANSACTION_CONTEXT_VAR,
+    Action,
     MinosRepositoryConflictException,
+    RepositoryEntry,
     Transaction,
     TransactionStatus,
 )
@@ -167,14 +170,24 @@ class TestTransaction(MinosTestCase):
         with self.assertRaises(ValueError):
             await Transaction(status=TransactionStatus.REJECTED).reject()
 
-    async def test_commit_success(self) -> None:
+    async def test_commit(self) -> None:
         uuid = uuid4()
 
-        commit_mock = AsyncMock()
+        agg_uuid = uuid4()
+
+        async def _fn(*args, **kwargs):
+            yield RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
+            yield RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
+            yield RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
+
+        select_mock = MagicMock(side_effect=_fn)
+        submit_mock = AsyncMock()
         save_mock = AsyncMock()
 
+        self.repository.select = select_mock
+        self.repository.submit = submit_mock
+
         transaction = Transaction(uuid, TransactionStatus.RESERVED)
-        transaction._commit = commit_mock
         transaction.save = save_mock
 
         with patch(
@@ -182,57 +195,45 @@ class TestTransaction(MinosTestCase):
         ):
             await transaction.commit()
 
-        # TODO
-
-        self.assertEqual(1, commit_mock.call_count)
-        self.assertEqual(call(), commit_mock.call_args)
+        self.assertEqual(3, submit_mock.call_count)
+        self.assertEqual(
+            [
+                call(RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid),
+                call(RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
+                call(RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
+            ],
+            submit_mock.call_args_list,
+        )
 
         self.assertEqual(1, save_mock.call_count)
         self.assertEqual(call(event_offset=56, status=TransactionStatus.COMMITTED), save_mock.call_args)
 
-    async def test_commit_reserved_success(self) -> None:
+    async def test_commit_pending(self) -> None:
         uuid = uuid4()
 
         commit_mock = AsyncMock()
-        save_mock = AsyncMock()
 
-        transaction = Transaction(uuid, TransactionStatus.RESERVED)
+        save_mock = AsyncMock()
+        transaction = Transaction(uuid, TransactionStatus.PENDING)
+
         transaction._commit = commit_mock
         transaction.save = save_mock
 
+        async def _fn():
+            transaction.status = TransactionStatus.RESERVED
+
         with patch(
             "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ):
+        ), patch.object(transaction, "reserve", side_effect=_fn) as reserve_mock:
             await transaction.commit()
 
-        # TODO
+        self.assertEqual(1, reserve_mock.call_count)
 
         self.assertEqual(1, commit_mock.call_count)
         self.assertEqual(call(), commit_mock.call_args)
 
         self.assertEqual(1, save_mock.call_count)
         self.assertEqual(call(event_offset=56, status=TransactionStatus.COMMITTED), save_mock.call_args)
-
-    async def test_commit_failure(self) -> None:
-        uuid = uuid4()
-
-        commit_mock = AsyncMock(side_effect=MinosRepositoryConflictException("", 55))
-        save_mock = AsyncMock()
-
-        transaction = Transaction(uuid, TransactionStatus.RESERVED)
-        transaction._commit = commit_mock
-        transaction.save = save_mock
-
-        with self.assertRaises(MinosRepositoryConflictException):
-            await transaction.commit()
-
-        # TODO
-
-        self.assertEqual(1, commit_mock.call_count)
-        self.assertEqual(call(), commit_mock.call_args)
-
-        self.assertEqual(1, save_mock.call_count)
-        self.assertEqual(call(event_offset=56, status=TransactionStatus.REJECTED), save_mock.call_args)
 
     async def test_commit_raises(self) -> None:
         with self.assertRaises(ValueError):

@@ -98,6 +98,32 @@ class Transaction:
         if self.autocommit:
             await self.commit()
 
+    async def commit(self) -> None:
+        """Commit transaction changes.
+
+        :return: This method does not return anything.
+        """
+
+        if self.status == TransactionStatus.PENDING:
+            await self.reserve()
+
+        if self.status != TransactionStatus.RESERVED:
+            raise ValueError(f"Current status is not {TransactionStatus.RESERVED!r}. Obtained: {self.status!r}")
+
+        async with self.transaction_repository.write_lock():
+            await self._commit()
+            event_offset = 1 + await self.event_repository.offset
+            await self.save(event_offset=event_offset, status=TransactionStatus.COMMITTED)
+
+    async def _commit(self) -> None:
+        from ..repository import (
+            RepositoryEntry,
+        )
+
+        async for entry in self.event_repository.select(transaction_uuid=self.uuid):
+            new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
+            await self.event_repository.submit(new, transaction_uuid_ne=self.uuid)
+
     async def reserve(self) -> None:
         """Reserve transaction changes to be ensured that they can be applied.
 
@@ -114,7 +140,7 @@ class Transaction:
                 event_offset = 1 + await self.event_repository.offset
                 await self.save(event_offset=event_offset, status=status)
                 if not committable:
-                    raise MinosRepositoryConflictException("TODO", event_offset)
+                    raise MinosRepositoryConflictException("'Transaction' could not be reserved!", event_offset)
 
     async def validate(self) -> bool:
         """TODO
@@ -161,45 +187,6 @@ class Transaction:
         async with self.transaction_repository.write_lock():
             event_offset = 1 + await self.event_repository.offset
             await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
-
-    async def commit(self) -> None:
-        """Commit transaction changes.
-
-        :return: This method does not return anything.
-        """
-
-        if self.status == TransactionStatus.PENDING:
-            await self.reserve()
-
-        if self.status != TransactionStatus.RESERVED:
-            raise ValueError(f"Current status is not {TransactionStatus.RESERVED!r}. Obtained: {self.status!r}")
-
-        async with self.transaction_repository.write_lock():
-            event_offset = None
-            status = TransactionStatus.REJECTED
-            try:
-                await self._commit()
-                status = TransactionStatus.COMMITTED
-            except MinosRepositoryConflictException as exc:
-                event_offset = 1 + exc.offset
-                raise exc
-            finally:
-                if event_offset is None:
-                    event_offset = 1 + await self.event_repository.offset
-                await self.save(event_offset=event_offset, status=status)
-
-    async def _commit(self) -> None:
-        """TODO
-
-        :return: TODO
-        """
-        from ..repository import (
-            RepositoryEntry,
-        )
-
-        async for entry in self.event_repository.select(transaction_uuid=self.uuid):
-            new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
-            await self.event_repository.submit(new, transaction_uuid_ne=self.uuid)
 
     async def save(self, *, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None) -> None:
         """Saves the transaction into the repository.

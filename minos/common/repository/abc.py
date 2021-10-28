@@ -159,7 +159,7 @@ class MinosRepository(ABC, MinosSetup):
 
         async with self.write_lock():
             if not await self.validate(entry, **kwargs):
-                raise MinosRepositoryConflictException("TODO", await self.offset)
+                raise MinosRepositoryConflictException("'RepositoryEntry' could not be committed!", await self.offset)
 
             entry = await self._submit(entry, **kwargs)
 
