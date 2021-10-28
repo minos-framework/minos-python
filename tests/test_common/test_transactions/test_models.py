@@ -242,7 +242,7 @@ class TestTransaction(MinosTestCase):
 
 class TestTransactionStatus(unittest.TestCase):
     def test_value_of_created(self):
-        self.assertEqual(TransactionStatus.PENDING, TransactionStatus.value_of("created"))
+        self.assertEqual(TransactionStatus.PENDING, TransactionStatus.value_of("pending"))
 
     def test_value_of_reserved(self):
         self.assertEqual(TransactionStatus.RESERVED, TransactionStatus.value_of("reserved"))

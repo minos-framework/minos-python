@@ -114,24 +114,21 @@ _CREATE_TRANSACTION_TABLE_QUERY = """
 CREATE TABLE IF NOT EXISTS aggregate_transaction (
     uuid UUID PRIMARY KEY,
     status TRANSACTION_STATUS NOT NULL,
-    event_offset INTEGER,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    event_offset INTEGER
 );
 """.strip()
 
 _INSERT_TRANSACTIONS_VALUES_QUERY = """
-INSERT INTO aggregate_transaction (uuid, status, event_offset, updated_at)
+INSERT INTO aggregate_transaction (uuid, status, event_offset)
 VALUES (
     CASE %(uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(uuid)s END,
     %(status)s,
-    %(event_offset)s,
-    default
+    %(event_offset)s
 )
 ON CONFLICT (uuid)
 DO
-   UPDATE SET status = %(status)s, event_offset = %(event_offset)s, updated_at = NOW()
-RETURNING uuid, created_at, updated_at;
+   UPDATE SET status = %(status)s, event_offset = %(event_offset)s
+RETURNING uuid;
 """.strip()
 
 _SELECT_ALL_TRANSACTIONS_QUERY = """

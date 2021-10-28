@@ -71,12 +71,8 @@ class Transaction:
         self._token = None
 
     async def __aenter__(self):
-        if self.status in (TransactionStatus.COMMITTED, TransactionStatus.RESERVED, TransactionStatus.REJECTED):
-            raise ValueError(
-                "Current status is not in "
-                f"{(TransactionStatus.COMMITTED, TransactionStatus.RESERVED, TransactionStatus.REJECTED)!r}. "
-                f"Obtained: {self.status!r}"
-            )
+        if self.status != TransactionStatus.PENDING:
+            raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
         if TRANSACTION_CONTEXT_VAR.get() is not None:  # FIXME: Future implementations should not have this constraint.
             raise ValueError("Already inside a transaction. Multiple simultaneous transactions are not supported yet!")
@@ -102,12 +98,10 @@ class Transaction:
         async with self.event_repository.write_lock():
             # noinspection PyProtectedMember
             committable = await self.event_repository._check_transaction(self)
+            status = TransactionStatus.RESERVED if committable else TransactionStatus.REJECTED
             # noinspection PyProtectedMember
             event_offset = 1 + await self.event_repository.offset
-            if committable:
-                await self.save(event_offset=event_offset, status=TransactionStatus.RESERVED)
-            else:
-                await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
+            await self.save(event_offset=event_offset, status=status)
 
     async def reject(self) -> None:
         """Reject transaction changes.
