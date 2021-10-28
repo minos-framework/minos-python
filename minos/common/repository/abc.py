@@ -53,9 +53,6 @@ from ..transactions import (
     TransactionRepository,
     TransactionStatus,
 )
-from ..uuid import (
-    NULL_UUID,
-)
 from .entries import (
     RepositoryEntry,
 )
@@ -100,42 +97,6 @@ class MinosRepository(ABC, MinosSetup):
         :return: A new ``Transaction`` instance.
         """
         return Transaction(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
-
-    async def _check_transaction(self, transaction: Transaction) -> bool:
-        entries = dict()
-        async for entry in self.select(transaction_uuid=transaction.uuid):
-            if entry.aggregate_uuid in entries and entry.version < entries[entry.aggregate_uuid]:
-                continue
-            entries[entry.aggregate_uuid] = entry.version
-
-        transaction_uuids = set()
-        for aggregate_uuid, version in entries.items():
-            async for entry in self.select(aggregate_uuid=aggregate_uuid, version=version):
-                if entry.transaction_uuid == NULL_UUID:
-                    return False
-                transaction_uuids.add(entry.transaction_uuid)
-
-        if len(transaction_uuids):
-            with suppress(StopAsyncIteration):
-                iterable = self._transaction_repository.select(
-                    uuid_in=tuple(transaction_uuids),
-                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED),
-                )
-                await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
-
-                return False
-
-        return True
-
-    async def _commit_transaction(self, transaction: Transaction) -> None:
-        """TODO
-
-        :param transaction: TODO
-        :return: TODO
-        """
-        async for entry in self.select(transaction_uuid=transaction.uuid):
-            new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
-            await self.submit(new, transaction_uuid_ne=transaction.uuid)
 
     async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new creation entry into the repository.

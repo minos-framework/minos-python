@@ -22,16 +22,16 @@ from ..models import (
 class TransactionRepository(ABC, MinosSetup):
     """Transaction Repository base class."""
 
-    async def submit(self, transaction: Transaction) -> None:
+    async def submit(self, transaction: Transaction) -> Transaction:
         """Submit a new or updated transaction to store it on the repository.
 
         :param transaction: The transaction to be stored.
         :return: This method does not return anything.
         """
-        await self._submit(transaction)
+        return await self._submit(transaction)
 
     @abstractmethod
-    async def _submit(self, transaction: Transaction) -> None:
+    async def _submit(self, transaction: Transaction) -> Transaction:
         raise NotImplementedError
 
     async def select(

@@ -6,6 +6,9 @@ from uuid import (
     UUID,
 )
 
+from ...datetime import (
+    current_datetime,
+)
 from ..models import (
     Transaction,
     TransactionStatus,
@@ -23,6 +26,7 @@ class InMemoryTransactionRepository(TransactionRepository):
         self._storage = dict()
 
     async def _submit(self, transaction: Transaction) -> None:
+        transaction.updated_at = current_datetime()
         self._storage[transaction.uuid] = transaction
 
     async def _select(

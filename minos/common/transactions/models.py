@@ -3,6 +3,12 @@ from __future__ import (
 )
 
 import logging
+from contextlib import (
+    suppress,
+)
+from datetime import (
+    datetime,
+)
 from enum import (
     Enum,
 )
@@ -24,6 +30,9 @@ from dependency_injector.wiring import (
 
 from ..exceptions import (
     MinosRepositoryConflictException,
+)
+from ..uuid import (
+    NULL_UUID,
 )
 from .contextvars import (
     TRANSACTION_CONTEXT_VAR,
@@ -49,6 +58,7 @@ class Transaction:
         uuid: Optional[UUID] = None,
         status: Union[str, TransactionStatus] = None,
         event_offset: Optional[int] = None,
+        updated_at: Optional[datetime] = None,
         autocommit: bool = True,
         event_repository: MinosRepository = Provide["repository"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
@@ -64,6 +74,7 @@ class Transaction:
         self.autocommit = autocommit
         self.status = status
         self.event_offset = event_offset
+        self.updated_at = updated_at
 
         self.event_repository = event_repository
         self.transaction_repository = transaction_repository
@@ -97,11 +108,41 @@ class Transaction:
 
         async with self.event_repository.write_lock():
             # noinspection PyProtectedMember
-            committable = await self.event_repository._check_transaction(self)
+            committable = await self.validate()
             status = TransactionStatus.RESERVED if committable else TransactionStatus.REJECTED
             # noinspection PyProtectedMember
             event_offset = 1 + await self.event_repository.offset
             await self.save(event_offset=event_offset, status=status)
+
+    async def validate(self) -> bool:
+        """TODO
+
+        :return: TODO
+        """
+        entries = dict()
+        async for entry in self.event_repository.select(transaction_uuid=self.uuid):
+            if entry.aggregate_uuid in entries and entry.version < entries[entry.aggregate_uuid]:
+                continue
+            entries[entry.aggregate_uuid] = entry.version
+
+        transaction_uuids = set()
+        for aggregate_uuid, version in entries.items():
+            async for entry in self.event_repository.select(aggregate_uuid=aggregate_uuid, version=version):
+                if entry.transaction_uuid == NULL_UUID:
+                    return False
+                transaction_uuids.add(entry.transaction_uuid)
+
+        if len(transaction_uuids):
+            with suppress(StopAsyncIteration):
+                iterable = self.transaction_repository.select(
+                    uuid_in=tuple(transaction_uuids),
+                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED),
+                )
+                await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
+
+                return False
+
+        return True
 
     async def reject(self) -> None:
         """Reject transaction changes.
@@ -134,7 +175,7 @@ class Transaction:
         status = TransactionStatus.REJECTED
         try:
             # noinspection PyProtectedMember
-            await self.event_repository._commit_transaction(self)
+            await self._commit()
             status = TransactionStatus.COMMITTED
         except MinosRepositoryConflictException as exc:
             event_offset = 1 + exc.offset
@@ -143,6 +184,19 @@ class Transaction:
             if event_offset is None:
                 event_offset = 1 + await self.event_repository.offset
             await self.save(event_offset=event_offset, status=status)
+
+    async def _commit(self) -> None:
+        """TODO
+
+        :return: TODO
+        """
+        from ..repository import (
+            RepositoryEntry,
+        )
+
+        async for entry in self.event_repository.select(transaction_uuid=self.uuid):
+            new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
+            await self.event_repository.submit(new, transaction_uuid_ne=self.uuid)
 
     async def save(self, *, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None) -> None:
         """Saves the transaction into the repository.

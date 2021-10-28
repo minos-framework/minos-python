@@ -94,6 +94,12 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
         await self.transaction_repository.submit(
+            Transaction(self.transaction_1, TransactionStatus.PENDING, await self.repository.offset)
+        )
+        await self.transaction_repository.submit(
+            Transaction(self.transaction_2, TransactionStatus.PENDING, await self.repository.offset)
+        )
+        await self.transaction_repository.submit(
             Transaction(self.transaction_3, TransactionStatus.REJECTED, await self.repository.offset)
         )
 

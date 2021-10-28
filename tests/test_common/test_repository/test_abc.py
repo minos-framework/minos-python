@@ -7,6 +7,7 @@ from unittest.mock import (
     MagicMock,
     PropertyMock,
     call,
+    patch,
 )
 from uuid import (
     uuid4,
@@ -125,10 +126,10 @@ class TestMinosRepository(MinosTestCase):
         ]
         transactions = []
 
-        select_event_mock = PropertyMock(return_value=FakeAsyncIterator(events))
+        select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
         self.repository.select = select_event_mock
 
-        select_transaction_mock = PropertyMock(return_value=FakeAsyncIterator(transactions))
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
         entry = RepositoryEntry(aggregate_uuid, "example.Car")
@@ -154,10 +155,10 @@ class TestMinosRepository(MinosTestCase):
         ]
         transactions = []
 
-        select_event_mock = PropertyMock(return_value=FakeAsyncIterator(events))
+        select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
         self.repository.select = select_event_mock
 
-        select_transaction_mock = PropertyMock(return_value=FakeAsyncIterator(transactions))
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
         entry = RepositoryEntry(aggregate_uuid, "example.Car")
@@ -178,10 +179,10 @@ class TestMinosRepository(MinosTestCase):
         ]
         transactions = [Transaction(transaction_uuid, TransactionStatus.RESERVED)]
 
-        select_event_mock = PropertyMock(return_value=FakeAsyncIterator(events))
+        select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
         self.repository.select = select_event_mock
 
-        select_transaction_mock = PropertyMock(return_value=FakeAsyncIterator(transactions))
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
         entry = RepositoryEntry(aggregate_uuid, "example.Car")
@@ -242,12 +243,11 @@ class TestMinosRepository(MinosTestCase):
         self.assertEqual(args, mock.call_args)
 
     async def test_offset(self):
-        mock = PropertyMock(side_effect=AsyncMock(return_value=56))
-        # noinspection PyPropertyAccess
-        type(self.repository)._offset = mock
-
-        self.assertEqual(56, await self.repository.offset)
-        self.assertEqual(1, mock.call_count)
+        with patch(
+            "tests.utils.FakeRepository._offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=56)
+        ) as mock:
+            self.assertEqual(56, await self.repository.offset)
+            self.assertEqual(1, mock.call_count)
 
 
 if __name__ == "__main__":
