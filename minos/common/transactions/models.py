@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 class Transaction:
-    """TODO"""
+    """Transaction class."""
 
     @inject
     def __init__(
@@ -92,7 +92,10 @@ class Transaction:
             await self.commit()
 
     async def reserve(self) -> None:
-        """TODO"""
+        """Reserve transaction changes to be ensured that they can be applied.
+
+        :return: This method does not return anything.
+        """
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
@@ -107,7 +110,10 @@ class Transaction:
                 await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
 
     async def reject(self) -> None:
-        """TODO"""
+        """Reject transaction changes.
+
+        :return: This method does not return anything.
+        """
         if self.status not in (TransactionStatus.PENDING, TransactionStatus.RESERVED):
             raise ValueError(
                 f"Current status is not in {(TransactionStatus.PENDING, TransactionStatus.RESERVED)!r}. "
@@ -119,7 +125,10 @@ class Transaction:
         await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
 
     async def commit(self) -> None:
-        """TODO"""
+        """Commit transaction changes.
+
+        :return: This method does not return anything.
+        """
 
         if self.status not in (TransactionStatus.PENDING, TransactionStatus.RESERVED):
             raise ValueError(
@@ -141,8 +150,13 @@ class Transaction:
                 event_offset = 1 + await self.event_repository.offset
             await self.save(event_offset=event_offset, status=status)
 
-    async def save(self, *, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None):
-        """TODO"""
+    async def save(self, *, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None) -> None:
+        """Saves the transaction into the repository.
+
+        :param event_offset: The event offset.
+        :param status: The status.
+        :return: This method does not return anything.
+        """
 
         if event_offset is not None:
             self.event_offset = event_offset
@@ -167,7 +181,7 @@ class Transaction:
 
 
 class TransactionStatus(str, Enum):
-    """TODO"""
+    """Transaction Status Enum."""
 
     PENDING = "pending"
     RESERVED = "reserved"
