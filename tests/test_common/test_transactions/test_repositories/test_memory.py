@@ -9,24 +9,19 @@ from minos.common import (
     TransactionRepository,
     TransactionStatus,
 )
-from minos.common.testing import (
-    PostgresAsyncTestCase,
-)
 from tests.utils import (
-    BASE_PATH,
+    MinosTestCase,
 )
 
 
-class TestInMemoryTransactionRepository(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
+class TestInMemoryTransactionRepository(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid = uuid4()
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.repository = InMemoryTransactionRepository(**self.repository_db)
+        self.repository = InMemoryTransactionRepository()
         await self.repository.setup()
 
     async def asyncTearDown(self) -> None:
@@ -48,9 +43,7 @@ class TestInMemoryTransactionRepository(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
 
-class TestInMemoryTransactionRepositorySelect(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
+class TestInMemoryTransactionRepositorySelect(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.uuid_1 = uuid4()
@@ -70,7 +63,7 @@ class TestInMemoryTransactionRepositorySelect(PostgresAsyncTestCase):
         self.repository = await self._build_repository()
 
     async def _build_repository(self):
-        repository = InMemoryTransactionRepository(**self.repository_db)
+        repository = InMemoryTransactionRepository()
         await repository.setup()
         await repository.submit(Transaction(self.uuid_1, TransactionStatus.PENDING, 12))
         await repository.submit(Transaction(self.uuid_2, TransactionStatus.PENDING, 15))

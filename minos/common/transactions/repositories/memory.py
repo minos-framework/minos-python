@@ -25,9 +25,10 @@ class InMemoryTransactionRepository(TransactionRepository):
         super().__init__(*args, **kwargs)
         self._storage = dict()
 
-    async def _submit(self, transaction: Transaction) -> None:
+    async def _submit(self, transaction: Transaction) -> Transaction:
         transaction.updated_at = current_datetime()
         self._storage[transaction.uuid] = transaction
+        return transaction
 
     async def _select(
         self,

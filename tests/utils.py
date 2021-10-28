@@ -51,8 +51,8 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         super().setUp()
 
         self.event_broker = FakeBroker()
-        self.transaction_repository = InMemoryTransactionRepository()
         self.lock_pool = FakeLockPool()
+        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
         self.repository = InMemoryRepository(
             event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
         )
@@ -250,23 +250,11 @@ class FakeLock(Lock):
         return
 
 
-class FakePool(MinosPool):
+class FakeLockPool(MinosPool):
     """For testing purposes."""
 
-    # noinspection PyMissingConstructor,PyUnusedLocal
-    def __init__(self, instance, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.instance = instance
-
     async def _create_instance(self):
-        return self.instance
+        return FakeLock()
 
     async def _destroy_instance(self, instance) -> None:
         """For testing purposes."""
-
-
-class FakeLockPool(FakePool):
-    """For testing purposes."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(FakeLock(), *args, **kwargs)

@@ -16,10 +16,11 @@ from minos.common.testing import (
 )
 from tests.utils import (
     BASE_PATH,
+    MinosTestCase,
 )
 
 
-class TestPostgreSqlTransactionRepository(PostgresAsyncTestCase):
+class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -76,7 +77,7 @@ class TestPostgreSqlTransactionRepository(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
 
-class TestPostgreSqlTransactionRepositorySelect(PostgresAsyncTestCase):
+class TestPostgreSqlTransactionRepositorySelect(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:

@@ -12,6 +12,7 @@ from uuid import (
 )
 
 from minos.common import (
+    MinosLockPoolNotProvidedException,
     MinosSetup,
     Transaction,
     TransactionRepository,
@@ -19,13 +20,21 @@ from minos.common import (
 )
 from tests.utils import (
     FakeAsyncIterator,
+    FakeLock,
     FakeTransactionRepository,
+    MinosTestCase,
 )
 
 
-class TestTransactionRepository(unittest.IsolatedAsyncioTestCase):
+class TestTransactionRepository(MinosTestCase):
     def setUp(self) -> None:
-        self.repository = FakeTransactionRepository()
+        super().setUp()
+        self.transaction_repository = FakeTransactionRepository()
+
+    async def test_constructor_raises(self):
+        with self.assertRaises(MinosLockPoolNotProvidedException):
+            # noinspection PyTypeChecker
+            FakeTransactionRepository(lock_pool=None)
 
     def test_abstract(self):
         self.assertTrue(issubclass(TransactionRepository, (ABC, MinosSetup)))
@@ -35,19 +44,29 @@ class TestTransactionRepository(unittest.IsolatedAsyncioTestCase):
     async def test_submit(self):
         transaction = Transaction()
         mock = AsyncMock()
-        self.repository._submit = mock
+        self.transaction_repository._submit = mock
 
-        await self.repository.submit(transaction)
+        await self.transaction_repository.submit(transaction)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(transaction), mock.call_args)
+
+    def test_write_lock(self):
+        expected = FakeLock()
+        mock = MagicMock(return_value=expected)
+
+        self.lock_pool.acquire = mock
+
+        self.assertEqual(expected, self.transaction_repository.write_lock())
+        self.assertEqual(1, mock.call_count)
+        self.assertEqual(call("aggregate_transaction_write_lock"), mock.call_args)
 
     async def test_select(self):
         uuid = uuid4()
 
         mock = MagicMock(return_value=FakeAsyncIterator(range(5)))
-        self.repository._select = mock
+        self.transaction_repository._select = mock
 
-        iterable = self.repository.select(
+        iterable = self.transaction_repository.select(
             uuid=uuid, status_in=(TransactionStatus.REJECTED, TransactionStatus.COMMITTED), event_offset_gt=56
         )
         observed = [v async for v in iterable]

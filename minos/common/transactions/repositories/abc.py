@@ -10,6 +10,20 @@ from uuid import (
     UUID,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
+from ...exceptions import (
+    MinosLockPoolNotProvidedException,
+)
+from ...locks import (
+    Lock,
+)
+from ...pools import (
+    MinosPool,
+)
 from ...setup import (
     MinosSetup,
 )
@@ -21,6 +35,17 @@ from ..models import (
 
 class TransactionRepository(ABC, MinosSetup):
     """Transaction Repository base class."""
+
+    @inject
+    def __init__(
+        self, lock_pool: MinosPool[Lock] = Provide["lock_pool"], *args, **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        if lock_pool is None or isinstance(lock_pool, Provide):
+            raise MinosLockPoolNotProvidedException("A transaction repository instance is required.")
+
+        self._lock_pool = lock_pool
 
     async def submit(self, transaction: Transaction) -> Transaction:
         """Submit a new or updated transaction to store it on the repository.
@@ -45,7 +70,7 @@ class TransactionRepository(ABC, MinosSetup):
         event_offset_gt: Optional[int] = None,
         event_offset_le: Optional[int] = None,
         event_offset_ge: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> AsyncIterator[Transaction]:
         """Get a transaction from the repository.
 
@@ -80,3 +105,10 @@ class TransactionRepository(ABC, MinosSetup):
     @abstractmethod
     async def _select(self, **kwargs) -> AsyncIterator[Transaction]:
         raise NotImplementedError
+
+    def write_lock(self) -> Lock:
+        """Get a write lock.
+
+        :return: An asynchronous context manager.
+        """
+        return self._lock_pool.acquire("aggregate_transaction_write_lock")

@@ -43,10 +43,10 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
             "status": transaction.status,
             "event_offset": transaction.event_offset,
         }
-        uuid, updated_at = await self.submit_query_and_fetchone(
+        updated_at = await self.submit_query_and_fetchone(
             _INSERT_TRANSACTIONS_VALUES_QUERY, params, lock=transaction.uuid.int & (1 << 32) - 1,
         )
-        transaction.uuid, transaction.updated_at = uuid, updated_at
+        transaction.updated_at = updated_at
         return transaction
 
     async def _select(self, **kwargs) -> AsyncIterator[Transaction]:
@@ -123,15 +123,11 @@ CREATE TABLE IF NOT EXISTS aggregate_transaction (
 
 _INSERT_TRANSACTIONS_VALUES_QUERY = """
 INSERT INTO aggregate_transaction (uuid, status, event_offset)
-VALUES (
-    CASE %(uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(uuid)s END,
-    %(status)s,
-    %(event_offset)s
-)
+VALUES (%(uuid)s, %(status)s, %(event_offset)s)
 ON CONFLICT (uuid)
 DO
    UPDATE SET status = %(status)s, event_offset = %(event_offset)s, updated_at = NOW()
-RETURNING uuid, updated_at;
+RETURNING updated_at;
 """.strip()
 
 _SELECT_ALL_TRANSACTIONS_QUERY = """

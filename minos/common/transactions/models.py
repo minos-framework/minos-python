@@ -106,13 +106,15 @@ class Transaction:
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
-        async with self.event_repository.write_lock():
-            # noinspection PyProtectedMember
-            committable = await self.validate()
-            status = TransactionStatus.RESERVED if committable else TransactionStatus.REJECTED
-            # noinspection PyProtectedMember
-            event_offset = 1 + await self.event_repository.offset
-            await self.save(event_offset=event_offset, status=status)
+        async with self.transaction_repository.write_lock():
+            async with self.event_repository.write_lock():
+                committable = await self.validate()
+
+                status = TransactionStatus.RESERVED if committable else TransactionStatus.REJECTED
+                event_offset = 1 + await self.event_repository.offset
+                await self.save(event_offset=event_offset, status=status)
+                if not committable:
+                    raise MinosRepositoryConflictException("TODO", event_offset)
 
     async def validate(self) -> bool:
         """TODO
@@ -130,7 +132,8 @@ class Transaction:
             async for entry in self.event_repository.select(aggregate_uuid=aggregate_uuid, version=version):
                 if entry.transaction_uuid == NULL_UUID:
                     return False
-                transaction_uuids.add(entry.transaction_uuid)
+                if entry.transaction_uuid != self.uuid:
+                    transaction_uuids.add(entry.transaction_uuid)
 
         if len(transaction_uuids):
             with suppress(StopAsyncIteration):
@@ -155,9 +158,9 @@ class Transaction:
                 f"Obtained: {self.status!r}"
             )
 
-        # noinspection PyProtectedMember
-        event_offset = 1 + await self.event_repository.offset
-        await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
+        async with self.transaction_repository.write_lock():
+            event_offset = 1 + await self.event_repository.offset
+            await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
 
     async def commit(self) -> None:
         """Commit transaction changes.
@@ -165,25 +168,25 @@ class Transaction:
         :return: This method does not return anything.
         """
 
-        if self.status not in (TransactionStatus.PENDING, TransactionStatus.RESERVED):
-            raise ValueError(
-                f"Current status is not in {(TransactionStatus.PENDING, TransactionStatus.RESERVED)!r}. "
-                f"Obtained: {self.status!r}"
-            )
+        if self.status == TransactionStatus.PENDING:
+            await self.reserve()
 
-        event_offset = None
-        status = TransactionStatus.REJECTED
-        try:
-            # noinspection PyProtectedMember
-            await self._commit()
-            status = TransactionStatus.COMMITTED
-        except MinosRepositoryConflictException as exc:
-            event_offset = 1 + exc.offset
-            raise exc
-        finally:
-            if event_offset is None:
-                event_offset = 1 + await self.event_repository.offset
-            await self.save(event_offset=event_offset, status=status)
+        if self.status != TransactionStatus.RESERVED:
+            raise ValueError(f"Current status is not {TransactionStatus.RESERVED!r}. Obtained: {self.status!r}")
+
+        async with self.transaction_repository.write_lock():
+            event_offset = None
+            status = TransactionStatus.REJECTED
+            try:
+                await self._commit()
+                status = TransactionStatus.COMMITTED
+            except MinosRepositoryConflictException as exc:
+                event_offset = 1 + exc.offset
+                raise exc
+            finally:
+                if event_offset is None:
+                    event_offset = 1 + await self.event_repository.offset
+                await self.save(event_offset=event_offset, status=status)
 
     async def _commit(self) -> None:
         """TODO
