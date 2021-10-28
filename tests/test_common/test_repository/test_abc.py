@@ -13,12 +13,16 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     Action,
+    MinosBrokerNotProvidedException,
+    MinosLockPoolNotProvidedException,
     MinosRepository,
     MinosSetup,
+    MinosTransactionRepositoryNotProvidedException,
     RepositoryEntry,
-    Transaction, MinosBrokerNotProvidedException, MinosTransactionRepositoryNotProvidedException,
-    MinosLockPoolNotProvidedException, TransactionStatus, NULL_UUID,
+    Transaction,
+    TransactionStatus,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -117,7 +121,7 @@ class TestMinosRepository(MinosTestCase):
 
         events = [
             RepositoryEntry(aggregate_uuid, "example.Car", 1),
-            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid)
+            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
         ]
         transactions = []
 
@@ -137,7 +141,7 @@ class TestMinosRepository(MinosTestCase):
         self.assertEqual(1, select_transaction_mock.call_count)
         self.assertEqual(
             call(uuid_in=(NULL_UUID, transaction_uuid), status=TransactionStatus.RESERVED),
-            select_transaction_mock.call_args
+            select_transaction_mock.call_args,
         )
 
     async def test_validate_with_skip(self):
@@ -146,7 +150,7 @@ class TestMinosRepository(MinosTestCase):
 
         events = [
             RepositoryEntry(aggregate_uuid, "example.Car", 1),
-            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid)
+            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
         ]
         transactions = []
 
@@ -170,11 +174,9 @@ class TestMinosRepository(MinosTestCase):
 
         events = [
             RepositoryEntry(aggregate_uuid, "example.Car", 1),
-            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid)
+            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
         ]
-        transactions = [
-            Transaction(transaction_uuid, TransactionStatus.RESERVED)
-        ]
+        transactions = [Transaction(transaction_uuid, TransactionStatus.RESERVED)]
 
         select_event_mock = PropertyMock(return_value=FakeAsyncIterator(events))
         self.repository.select = select_event_mock
@@ -192,7 +194,7 @@ class TestMinosRepository(MinosTestCase):
         self.assertEqual(1, select_transaction_mock.call_count)
         self.assertEqual(
             call(uuid_in=(NULL_UUID, transaction_uuid), status=TransactionStatus.RESERVED),
-            select_transaction_mock.call_args
+            select_transaction_mock.call_args,
         )
 
     def test_write_lock(self):
