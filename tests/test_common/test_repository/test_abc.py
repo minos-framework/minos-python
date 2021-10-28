@@ -15,15 +15,23 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
+    TRANSACTION_CONTEXT_VAR,
     Action,
+    AggregateDiff,
+    FieldDiff,
+    FieldDiffContainer,
+    IncrementalFieldDiff,
     MinosBrokerNotProvidedException,
     MinosLockPoolNotProvidedException,
     MinosRepository,
+    MinosRepositoryConflictException,
+    MinosRepositoryException,
     MinosSetup,
     MinosTransactionRepositoryNotProvidedException,
     RepositoryEntry,
     Transaction,
     TransactionStatus,
+    current_datetime,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -71,12 +79,6 @@ class TestMinosRepository(MinosTestCase):
         self.assertEqual(self.repository, transaction.event_repository)
         self.assertEqual(self.transaction_repository, transaction.transaction_repository)
 
-    def test_check_transaction(self):
-        pass
-
-    def test_commit_transaction(self):
-        pass
-
     async def test_create(self):
         mock = AsyncMock(side_effect=lambda x: x)
         self.repository.submit = mock
@@ -113,8 +115,168 @@ class TestMinosRepository(MinosTestCase):
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(entry), mock.call_args)
 
-    def test_submit(self):
-        pass
+    async def test_submit(self):
+        created_at = current_datetime()
+        id_ = 12
+        field_diff_container = FieldDiffContainer([FieldDiff("color", str, "red")])
+
+        async def _fn(e: RepositoryEntry) -> RepositoryEntry:
+            e.id = id_
+            e.version = 56
+            e.created_at = created_at
+            return e
+
+        submit_mock = AsyncMock(side_effect=_fn)
+        send_events_mock = AsyncMock()
+        self.repository._submit = submit_mock
+        self.repository._send_events = send_events_mock
+
+        uuid = uuid4()
+        aggregate_diff = AggregateDiff(
+            uuid=uuid,
+            name="example.Car",
+            version=2,
+            action=Action.UPDATE,
+            created_at=current_datetime(),
+            fields_diff=field_diff_container,
+        )
+
+        validate_mock = AsyncMock(return_value=True)
+        self.repository.validate = validate_mock
+
+        observed = await self.repository.submit(aggregate_diff)
+
+        self.assertEqual(1, send_events_mock.call_count)
+
+        self.assertIsInstance(observed, RepositoryEntry)
+        self.assertEqual(uuid, observed.aggregate_uuid)
+        self.assertEqual("example.Car", observed.aggregate_name)
+        self.assertEqual(56, observed.version)
+        self.assertEqual(field_diff_container, FieldDiffContainer.from_avro_bytes(observed.data))
+        self.assertEqual(12, observed.id)
+        self.assertEqual(Action.UPDATE, observed.action)
+        self.assertEqual(created_at, observed.created_at)
+        self.assertEqual(NULL_UUID, observed.transaction_uuid)
+
+    async def test_submit_in_transaction(self):
+        created_at = current_datetime()
+        id_ = 12
+        field_diff_container = FieldDiffContainer([FieldDiff("color", str, "red")])
+        transaction = Transaction(uuid4())
+
+        TRANSACTION_CONTEXT_VAR.set(transaction)
+
+        async def _fn(e: RepositoryEntry) -> RepositoryEntry:
+            e.id = id_
+            e.version = 56
+            e.created_at = created_at
+            return e
+
+        submit_mock = AsyncMock(side_effect=_fn)
+        send_events_mock = AsyncMock()
+        self.repository._submit = submit_mock
+        self.repository._send_events = send_events_mock
+
+        uuid = uuid4()
+        aggregate_diff = AggregateDiff(
+            uuid=uuid,
+            name="example.Car",
+            version=2,
+            action=Action.UPDATE,
+            created_at=current_datetime(),
+            fields_diff=field_diff_container,
+        )
+
+        validate_mock = AsyncMock(return_value=True)
+        self.repository.validate = validate_mock
+
+        observed = await self.repository.submit(aggregate_diff)
+
+        self.assertEqual(0, send_events_mock.call_count)
+
+        self.assertIsInstance(observed, RepositoryEntry)
+        self.assertEqual(uuid, observed.aggregate_uuid)
+        self.assertEqual("example.Car", observed.aggregate_name)
+        self.assertEqual(56, observed.version)
+        self.assertEqual(field_diff_container, FieldDiffContainer.from_avro_bytes(observed.data))
+        self.assertEqual(12, observed.id)
+        self.assertEqual(Action.UPDATE, observed.action)
+        self.assertEqual(created_at, observed.created_at)
+        self.assertEqual(transaction.uuid, observed.transaction_uuid)
+
+    async def test_submit_send_events(self):
+        created_at = current_datetime()
+        id_ = 12
+        field_diff_container = FieldDiffContainer([IncrementalFieldDiff("colors", str, "red", Action.CREATE)])
+
+        async def _fn(e: RepositoryEntry) -> RepositoryEntry:
+            e.id = id_
+            e.version = 56
+            e.created_at = created_at
+            return e
+
+        submit_mock = AsyncMock(side_effect=_fn)
+        send_mock = AsyncMock()
+        self.repository._submit = submit_mock
+        self.event_broker.send = send_mock
+
+        uuid = uuid4()
+        aggregate_diff = AggregateDiff(
+            uuid=uuid,
+            name="example.Car",
+            version=2,
+            action=Action.UPDATE,
+            created_at=current_datetime(),
+            fields_diff=field_diff_container,
+        )
+
+        validate_mock = AsyncMock(return_value=True)
+        self.repository.validate = validate_mock
+
+        await self.repository.submit(aggregate_diff)
+
+        self.assertEqual(2, send_mock.call_count)
+
+        args = [
+            call(
+                AggregateDiff(
+                    uuid=uuid,
+                    name="example.Car",
+                    version=56,
+                    action=Action.UPDATE,
+                    created_at=created_at,
+                    fields_diff=field_diff_container,
+                ),
+                topic="CarUpdated",
+            ),
+            call(
+                AggregateDiff(
+                    uuid=uuid,
+                    name="example.Car",
+                    version=56,
+                    action=Action.UPDATE,
+                    created_at=created_at,
+                    fields_diff=field_diff_container,
+                ),
+                topic="CarUpdated.colors.create",
+            ),
+        ]
+
+        self.assertEqual(args, send_mock.call_args_list)
+
+    async def test_submit_raises_missing_action(self):
+        entry = RepositoryEntry(uuid4(), "example.Car", 0, bytes())
+        with self.assertRaises(MinosRepositoryException):
+            await self.repository.submit(entry)
+
+    async def test_submit_raises_conflict(self):
+        validate_mock = AsyncMock(return_value=False)
+
+        self.repository.validate = validate_mock
+
+        entry = RepositoryEntry(uuid4(), "example.Car", 0, bytes(), action=Action.CREATE)
+        with self.assertRaises(MinosRepositoryConflictException):
+            await self.repository.submit(entry)
 
     async def test_validate_true(self):
         aggregate_uuid = uuid4()
