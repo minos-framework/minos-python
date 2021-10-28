@@ -103,7 +103,7 @@ $$
                                           ON nsp.oid = typ.typnamespace
                       WHERE nsp.nspname = current_schema()
                         AND typ.typname = 'transaction_status') THEN
-            CREATE TYPE transaction_status AS ENUM ('created', 'pending', 'committed', 'reserved', 'rejected');
+            CREATE TYPE transaction_status AS ENUM ('pending', 'reserved', 'committed', 'rejected');
         END IF;
     END;
 $$

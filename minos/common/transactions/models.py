@@ -56,7 +56,7 @@ class Transaction:
         if uuid is None:
             uuid = uuid4()
         if status is None:
-            status = TransactionStatus.CREATED
+            status = TransactionStatus.PENDING
         if not isinstance(status, TransactionStatus):
             status = TransactionStatus.value_of(status)
 
@@ -88,7 +88,7 @@ class Transaction:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         TRANSACTION_CONTEXT_VAR.reset(self._token)
 
-        if self.autocommit and self.status in (TransactionStatus.PENDING, TransactionStatus.RESERVED):
+        if self.autocommit:
             await self.commit()
 
     async def reserve(self) -> None:
@@ -127,14 +127,19 @@ class Transaction:
                 f"Obtained: {self.status!r}"
             )
 
+        event_offset = None
+        status = TransactionStatus.REJECTED
         try:
             # noinspection PyProtectedMember
-            event_offset = 1 + await self.event_repository._commit_transaction(self)
-            await self.save(event_offset=event_offset, status=TransactionStatus.COMMITTED)
+            await self.event_repository._commit_transaction(self)
+            status = TransactionStatus.COMMITTED
         except MinosRepositoryConflictException as exc:
             event_offset = 1 + exc.offset
-            await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
             raise exc
+        finally:
+            if event_offset is None:
+                event_offset = 1 + await self.event_repository.offset
+            await self.save(event_offset=event_offset, status=status)
 
     async def save(self, *, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None):
         """TODO"""
@@ -164,10 +169,9 @@ class Transaction:
 class TransactionStatus(str, Enum):
     """TODO"""
 
-    CREATED = "created"
     PENDING = "pending"
-    COMMITTED = "committed"
     RESERVED = "reserved"
+    COMMITTED = "committed"
     REJECTED = "rejected"
 
     @classmethod

@@ -65,8 +65,8 @@ class TestPostgreSqlTransactionRepository(PostgresAsyncTestCase):
         self.assertTrue(response)
 
     async def test_submit(self):
-        await self.repository.submit(Transaction(self.uuid, TransactionStatus.CREATED, 34))
-        expected = [Transaction(self.uuid, TransactionStatus.CREATED, 34)]
+        await self.repository.submit(Transaction(self.uuid, TransactionStatus.PENDING, 34))
+        expected = [Transaction(self.uuid, TransactionStatus.PENDING, 34)]
         observed = [v async for v in self.repository.select()]
         self.assertEqual(expected, observed)
 
@@ -87,7 +87,7 @@ class TestPostgreSqlTransactionRepositorySelect(PostgresAsyncTestCase):
         self.uuid_4 = uuid4()
 
         self.entries = [
-            Transaction(self.uuid_1, TransactionStatus.CREATED, 12),
+            Transaction(self.uuid_1, TransactionStatus.PENDING, 12),
             Transaction(self.uuid_2, TransactionStatus.PENDING, 15),
             Transaction(self.uuid_3, TransactionStatus.REJECTED, 16),
             Transaction(self.uuid_4, TransactionStatus.COMMITTED, 20),
@@ -100,7 +100,7 @@ class TestPostgreSqlTransactionRepositorySelect(PostgresAsyncTestCase):
     async def _build_repository(self):
         repository = PostgreSqlTransactionRepository(**self.repository_db)
         await repository.setup()
-        await repository.submit(Transaction(self.uuid_1, TransactionStatus.CREATED, 12))
+        await repository.submit(Transaction(self.uuid_1, TransactionStatus.PENDING, 12))
         await repository.submit(Transaction(self.uuid_2, TransactionStatus.PENDING, 15))
         await repository.submit(Transaction(self.uuid_3, TransactionStatus.REJECTED, 16))
         await repository.submit(Transaction(self.uuid_4, TransactionStatus.COMMITTED, 20))
@@ -126,8 +126,8 @@ class TestPostgreSqlTransactionRepositorySelect(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
     async def test_select_status(self):
-        expected = [self.entries[0]]
-        observed = [v async for v in self.repository.select(status=TransactionStatus.CREATED)]
+        expected = [self.entries[0], self.entries[1]]
+        observed = [v async for v in self.repository.select(status=TransactionStatus.PENDING)]
         self.assertEqual(expected, observed)
 
     async def test_select_status_in(self):

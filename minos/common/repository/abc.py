@@ -127,18 +127,15 @@ class MinosRepository(ABC, MinosSetup):
 
         return True
 
-    async def _commit_transaction(self, transaction: Transaction) -> int:
+    async def _commit_transaction(self, transaction: Transaction) -> None:
         """TODO
 
         :param transaction: TODO
         :return: TODO
         """
-        entries = list()
         async for entry in self.select(transaction_uuid=transaction.uuid):
             new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
-            committed = await self.submit(new, transaction_uuid_ne=transaction.uuid)
-            entries.append(committed)
-        return max(e.id for e in entries)
+            await self.submit(new, transaction_uuid_ne=transaction.uuid)
 
     async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
         """Store new creation entry into the repository.
@@ -207,8 +204,6 @@ class MinosRepository(ABC, MinosSetup):
 
         if transaction is None:
             await self._send_events(entry.aggregate_diff)
-        else:
-            await transaction.save(event_offset=entry.id, status=TransactionStatus.PENDING)
 
         return entry
 
