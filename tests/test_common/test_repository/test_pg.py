@@ -68,14 +68,6 @@ class TestPostgreSqlRepository(MinosTestCase, PostgresAsyncTestCase, TestReposit
         self.assertEqual("user", repository.user)
         self.assertEqual("password", repository.password)
 
-    async def test_constructor_raises(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
-            PostgreSqlRepository("host", 1234, "database", "user", "password", event_broker=None)
-        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
-            PostgreSqlRepository("host", 1234, "database", "user", "password", transaction_repository=None)
-        with self.assertRaises(MinosLockPoolNotProvidedException):
-            PostgreSqlRepository("host", 1234, "database", "user", "password", lock_pool=None)
-
     def test_from_config(self):
         repository = PostgreSqlRepository.from_config(self.config)
         self.assertEqual(self.config.repository.database, repository.database)

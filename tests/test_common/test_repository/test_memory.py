@@ -51,14 +51,6 @@ class TestInMemoryRepository(MinosTestCase, TestRepositorySelect):
         repository = InMemoryRepository()
         self.assertIsInstance(repository, MinosRepository)
 
-    async def test_constructor_raises(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
-            InMemoryRepository(event_broker=None)
-        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
-            InMemoryRepository(transaction_repository=None)
-        with self.assertRaises(MinosLockPoolNotProvidedException):
-            InMemoryRepository(lock_pool=None)
-
     async def test_submit(self):
         await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", action=Action.CREATE))
         expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE)]

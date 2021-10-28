@@ -89,15 +89,15 @@ class MinosRepository(ABC, MinosSetup):
         if lock_pool is None or isinstance(lock_pool, Provide):
             raise MinosLockPoolNotProvidedException("A transaction repository instance is required.")
 
-        self._broker = event_broker
+        self._event_broker = event_broker
         self._transaction_repository = transaction_repository
         self._lock_pool = lock_pool
 
     def transaction(self, **kwargs) -> Transaction:
-        """TODO
+        """Build a transaction instance related to the repository.
 
-        :param kwargs: TODO
-        :return: TODO
+        :param kwargs: Additional named arguments.
+        :return: A new ``Transaction`` instance.
         """
         return Transaction(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
 
@@ -200,7 +200,7 @@ class MinosRepository(ABC, MinosSetup):
             raise MinosRepositoryException("The 'RepositoryEntry.action' attribute must be an 'Action' instance.")
 
         async with self.write_lock():
-            if not await self._validate(entry, **kwargs):
+            if not await self.validate(entry, **kwargs):
                 raise MinosRepositoryConflictException("TODO", await self.offset)
 
             entry = await self._submit(entry, **kwargs)
@@ -212,23 +212,23 @@ class MinosRepository(ABC, MinosSetup):
 
         return entry
 
-    def write_lock(self) -> Lock:
-        """Get a write lock.
-
-        :return: An asynchronous context manager.
-        """
-        return self._lock_pool.acquire("aggregate_event_write_lock")
-
     # noinspection PyUnusedLocal
-    async def _validate(self, entry: RepositoryEntry, **kwargs) -> bool:
-        transaction_uuids = {
-            e.transaction_uuid async for e in self.select(aggregate_uuid=entry.aggregate_uuid, **kwargs)
-        }
+    async def validate(self, entry: RepositoryEntry, transaction_uuid_ne: Optional[UUID] = None, **kwargs) -> bool:
+        """Check if it is able to submit the given entry.
+
+        :param entry: The entry to be validated.
+        :param transaction_uuid_ne: Optional transaction identifier to skip it from the validation.
+        :param kwargs: Additional named arguments.
+        :return: ``True`` if the entry can be submitted or ``False`` otherwise.
+        """
+        iterable = self.select(aggregate_uuid=entry.aggregate_uuid, transaction_uuid_ne=transaction_uuid_ne, **kwargs)
+        transaction_uuids = {e.transaction_uuid async for e in iterable}
 
         if len(transaction_uuids):
             with suppress(StopAsyncIteration):
                 iterable = self._transaction_repository.select(
-                    uuid_in=tuple(transaction_uuids), status=TransactionStatus.RESERVED,
+                    uuid_in=tuple(transaction_uuids),
+                    status=TransactionStatus.RESERVED,
                 )
                 await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
 
@@ -252,7 +252,7 @@ class MinosRepository(ABC, MinosSetup):
         }
 
         topic = f"{aggregate_diff.simplified_name}{suffix_mapper[aggregate_diff.action]}"
-        futures = [self._broker.send(aggregate_diff, topic=topic)]
+        futures = [self._event_broker.send(aggregate_diff, topic=topic)]
 
         if aggregate_diff.action == Action.UPDATE:
             from ..model import (
@@ -264,7 +264,7 @@ class MinosRepository(ABC, MinosSetup):
                 composed_topic = f"{topic}.{diff.name}"
                 if isinstance(diff, IncrementalFieldDiff):
                     composed_topic += f".{diff.action.value}"
-                futures.append(self._broker.send(decomposed_aggregate_diff, topic=composed_topic))
+                futures.append(self._event_broker.send(decomposed_aggregate_diff, topic=composed_topic))
 
         await gather(*futures)
 
@@ -332,10 +332,20 @@ class MinosRepository(ABC, MinosSetup):
 
     @property
     def offset(self) -> Awaitable[int]:
-        """TODO"""
+        """Get the current repository offset.
+
+        :return: An awaitable containing an integer value.
+        """
         return self._offset
 
     @property
     @abstractmethod
     async def _offset(self) -> int:
         raise NotImplementedError
+
+    def write_lock(self) -> Lock:
+        """Get a write lock.
+
+        :return: An asynchronous context manager.
+        """
+        return self._lock_pool.acquire("aggregate_event_write_lock")
