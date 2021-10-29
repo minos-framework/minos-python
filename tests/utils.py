@@ -120,6 +120,7 @@ class FakeRepository(MinosRepository):
     @property
     async def _offset(self) -> int:
         """For testing purposes."""
+        return 0
 
 
 class FakeBroker(MinosBroker):
