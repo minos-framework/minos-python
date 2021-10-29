@@ -42,7 +42,7 @@ class InMemoryTransactionRepository(TransactionRepository):
                 or (status == s.REJECTED)
             ):
                 raise MinosInvalidTransactionStatusException(
-                    f"Transaction status ({transaction.status!r}) is invalid respect to the previous one ({status!r})"
+                    f"{transaction!r} status is invalid respect to the previous one."
                 )
 
         self._storage[transaction.uuid] = Transaction(

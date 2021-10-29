@@ -52,7 +52,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
             )
         except StopAsyncIteration:
             raise MinosInvalidTransactionStatusException(
-                f"Transaction status ({transaction.status!r}) is invalid respect to the previous one."
+                f"{transaction!r} status is invalid respect to the previous one."
             )
         transaction.updated_at = updated_at
         return transaction

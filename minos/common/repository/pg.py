@@ -63,7 +63,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
         except IntegrityError:
             raise MinosRepositoryConflictException(
-                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}",
+                f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
                 await self.offset,
             )
 

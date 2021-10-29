@@ -143,7 +143,7 @@ class Transaction:
                 event_offset = 1 + await self.event_repository.offset
                 await self.save(event_offset=event_offset, status=status)
                 if not committable:
-                    raise MinosRepositoryConflictException("'Transaction' could not be reserved!", event_offset)
+                    raise MinosRepositoryConflictException(f"{self!r} could not be reserved!", event_offset)
 
     async def validate(self) -> bool:
         """Check if the transaction is committable.
