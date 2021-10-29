@@ -303,7 +303,11 @@ class TestMinosRepository(MinosTestCase):
 
         self.assertEqual(1, select_transaction_mock.call_count)
         self.assertEqual(
-            call(uuid_in=(NULL_UUID, transaction_uuid), status=TransactionStatus.RESERVED),
+            call(
+                uuid_in=(NULL_UUID, transaction_uuid),
+                uuid_ne=None,
+                status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
+            ),
             select_transaction_mock.call_args,
         )
 
@@ -356,7 +360,11 @@ class TestMinosRepository(MinosTestCase):
 
         self.assertEqual(1, select_transaction_mock.call_count)
         self.assertEqual(
-            call(uuid_in=(NULL_UUID, transaction_uuid), status=TransactionStatus.RESERVED),
+            call(
+                uuid_in=(NULL_UUID, transaction_uuid),
+                uuid_ne=None,
+                status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
+            ),
             select_transaction_mock.call_args,
         )
 

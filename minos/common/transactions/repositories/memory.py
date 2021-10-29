@@ -9,10 +9,13 @@ from uuid import (
 from ...datetime import (
     current_datetime,
 )
+from ...exceptions import (
+    MinosInvalidTransactionStatusException,
+)
 from ..models import (
     Transaction,
-    TransactionStatus,
 )
+from ..models import TransactionStatus as s
 from .abc import (
     TransactionRepository,
 )
@@ -27,26 +30,52 @@ class InMemoryTransactionRepository(TransactionRepository):
 
     async def _submit(self, transaction: Transaction) -> Transaction:
         transaction.updated_at = current_datetime()
-        self._storage[transaction.uuid] = transaction
+
+        if transaction.uuid in self._storage:
+            status = self._storage[transaction.uuid].status
+            if (
+                (status == s.PENDING and transaction.status not in (s.RESERVING, s.REJECTED))
+                or (status == s.RESERVING and transaction.status not in (s.RESERVED, s.REJECTED))
+                or (status == s.RESERVED and transaction.status not in (s.COMMITTING, s.REJECTED))
+                or (status == s.COMMITTING and transaction.status not in (s.COMMITTED, s.REJECTED))
+                or (status == s.COMMITTED)
+                or (status == s.REJECTED)
+            ):
+                raise MinosInvalidTransactionStatusException(
+                    f"Transaction status ({transaction.status!r}) is invalid respect to the previous one ({status!r})"
+                )
+
+        self._storage[transaction.uuid] = Transaction(
+            uuid=transaction.uuid,
+            status=transaction.status,
+            event_offset=transaction.event_offset,
+            updated_at=transaction.updated_at,
+            event_repository=transaction.event_repository,
+            transaction_repository=transaction.transaction_repository,
+        )
+
         return transaction
 
     async def _select(
         self,
         uuid: Optional[UUID] = None,
+        uuid_ne: Optional[UUID] = None,
         uuid_in: Optional[tuple[UUID, ...]] = None,
-        status: Optional[TransactionStatus] = None,
+        status: Optional[s] = None,
         status_in: Optional[tuple[str, ...]] = None,
         event_offset: Optional[int] = None,
         event_offset_lt: Optional[int] = None,
         event_offset_gt: Optional[int] = None,
         event_offset_le: Optional[int] = None,
         event_offset_ge: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ) -> AsyncIterator[Transaction]:
 
         # noinspection DuplicatedCode
         def _fn_filter(transaction: Transaction) -> bool:
             if uuid is not None and uuid != transaction.uuid:
+                return False
+            if uuid_ne is not None and uuid_ne == transaction.uuid:
                 return False
             if uuid_in is not None and transaction.uuid not in uuid_in:
                 return False

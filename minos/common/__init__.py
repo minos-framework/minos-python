@@ -40,6 +40,7 @@ from .exceptions import (
     MinosHandlerNotProvidedException,
     MinosImmutableClassException,
     MinosImportException,
+    MinosInvalidTransactionStatusException,
     MinosLockException,
     MinosLockPoolNotProvidedException,
     MinosMalformedAttributeException,

@@ -75,6 +75,7 @@ class TestTransactionRepository(MinosTestCase):
         self.assertEqual(1, mock.call_count)
         args = call(
             uuid=uuid,
+            uuid_ne=None,
             uuid_in=None,
             status=None,
             status_in=(TransactionStatus.REJECTED, TransactionStatus.COMMITTED),

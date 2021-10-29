@@ -87,6 +87,10 @@ class MinosTransactionRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a transactions repository is needed but none is set."""
 
 
+class MinosInvalidTransactionStatusException(MinosRepositoryException):
+    """Exception to be raised when a transactions has invalid status."""
+
+
 class MinosLockException(MinosException):
     """Base lock exception"""
 

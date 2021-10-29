@@ -62,6 +62,7 @@ class TransactionRepository(ABC, MinosSetup):
     async def select(
         self,
         uuid: Optional[UUID] = None,
+        uuid_ne: Optional[UUID] = None,
         uuid_in: Optional[tuple[UUID, ...]] = None,
         status: Optional[TransactionStatus] = None,
         status_in: Optional[tuple[str, ...]] = None,
@@ -75,6 +76,7 @@ class TransactionRepository(ABC, MinosSetup):
         """Get a transaction from the repository.
 
         :param uuid: Transaction identifier equal to the given value.
+        :param uuid_ne: TODO
         :param uuid_in: Transaction identifier within the given values.
         :param status: Transaction status equal to the given value.
         :param status_in: Transaction status within the given values
@@ -88,6 +90,7 @@ class TransactionRepository(ABC, MinosSetup):
         """
         generator = self._select(
             uuid=uuid,
+            uuid_ne=uuid_ne,
             uuid_in=uuid_in,
             status=status,
             status_in=status_in,

@@ -111,6 +111,7 @@ class Transaction:
             raise ValueError(f"Current status is not {TransactionStatus.RESERVED!r}. Obtained: {self.status!r}")
 
         async with self.transaction_repository.write_lock():
+            await self.save(status=TransactionStatus.COMMITTING)
             await self._commit()
             event_offset = 1 + await self.event_repository.offset
             await self.save(event_offset=event_offset, status=TransactionStatus.COMMITTED)
@@ -134,6 +135,8 @@ class Transaction:
 
         async with self.transaction_repository.write_lock():
             async with self.event_repository.write_lock():
+                await self.save(status=TransactionStatus.RESERVING)
+
                 committable = await self.validate()
 
                 status = TransactionStatus.RESERVED if committable else TransactionStatus.REJECTED
@@ -165,7 +168,12 @@ class Transaction:
             with suppress(StopAsyncIteration):
                 iterable = self.transaction_repository.select(
                     uuid_in=tuple(transaction_uuids),
-                    status_in=(TransactionStatus.RESERVED, TransactionStatus.COMMITTED),
+                    status_in=(
+                        TransactionStatus.RESERVED,
+                        TransactionStatus.RESERVING,
+                        TransactionStatus.COMMITTING,
+                        TransactionStatus.COMMITTED,
+                    ),
                 )
                 await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
 
@@ -222,7 +230,9 @@ class TransactionStatus(str, Enum):
     """Transaction Status Enum."""
 
     PENDING = "pending"
+    RESERVING = "reserving"
     RESERVED = "reserved"
+    COMMITTING = "committing"
     COMMITTED = "committed"
     REJECTED = "rejected"
 

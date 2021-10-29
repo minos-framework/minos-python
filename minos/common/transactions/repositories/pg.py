@@ -16,6 +16,9 @@ from ...configuration import (
 from ...database import (
     PostgreSqlMinosDatabase,
 )
+from ...exceptions import (
+    MinosInvalidTransactionStatusException,
+)
 from ..models import (
     Transaction,
 )
@@ -43,9 +46,14 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
             "status": transaction.status,
             "event_offset": transaction.event_offset,
         }
-        updated_at = await self.submit_query_and_fetchone(
-            _INSERT_TRANSACTIONS_VALUES_QUERY, params, lock=transaction.uuid.int & (1 << 32) - 1,
-        )
+        try:
+            updated_at = await self.submit_query_and_fetchone(
+                _INSERT_TRANSACTIONS_VALUES_QUERY, params, lock=transaction.uuid.int & (1 << 32) - 1,
+            )
+        except StopAsyncIteration:
+            raise MinosInvalidTransactionStatusException(
+                f"Transaction status ({transaction.status!r}) is invalid respect to the previous one."
+            )
         transaction.updated_at = updated_at
         return transaction
 
@@ -58,6 +66,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
     @staticmethod
     def _build_select_query(
         uuid: Optional[UUID] = None,
+        uuid_ne: Optional[UUID] = None,
         uuid_in: Optional[tuple[UUID]] = None,
         status: Optional[str] = None,
         status_in: Optional[tuple[str]] = None,
@@ -72,6 +81,8 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
 
         if uuid is not None:
             conditions.append("uuid = %(uuid)s")
+        if uuid_ne is not None:
+            conditions.append("uuid <> %(uuid_ne)s")
         if uuid_in is not None:
             conditions.append("uuid IN %(uuid_in)s")
         if status is not None:
@@ -105,7 +116,9 @@ $$
                                           ON nsp.oid = typ.typnamespace
                       WHERE nsp.nspname = current_schema()
                         AND typ.typname = 'transaction_status') THEN
-            CREATE TYPE transaction_status AS ENUM ('pending', 'reserved', 'committed', 'rejected');
+            CREATE TYPE transaction_status AS ENUM (
+                'pending', 'reserving', 'reserved', 'committing', 'committed', 'rejected'
+            );
         END IF;
     END;
 $$
@@ -127,6 +140,12 @@ VALUES (%(uuid)s, %(status)s, %(event_offset)s)
 ON CONFLICT (uuid)
 DO
    UPDATE SET status = %(status)s, event_offset = %(event_offset)s, updated_at = NOW()
+WHERE (NOT (aggregate_transaction.status = 'pending' AND %(status)s NOT IN ('reserving', 'rejected')))
+  AND (NOT (aggregate_transaction.status = 'reserving' AND %(status)s NOT IN ('reserved', 'rejected')))
+  AND (NOT (aggregate_transaction.status = 'reserved' AND %(status)s NOT IN ('committing', 'rejected')))
+  AND (NOT (aggregate_transaction.status = 'committing' AND %(status)s NOT IN ('committed', 'rejected')))
+  AND (NOT (aggregate_transaction.status = 'committed'))
+  AND (NOT (aggregate_transaction.status = 'rejected'))
 RETURNING updated_at;
 """.strip()
 

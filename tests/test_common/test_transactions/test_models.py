@@ -114,8 +114,11 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(1, validate_mock.call_count)
         self.assertEqual(call(), validate_mock.call_args)
 
-        self.assertEqual(1, save_mock.call_count)
-        self.assertEqual(call(event_offset=56, status=TransactionStatus.RESERVED), save_mock.call_args)
+        self.assertEqual(2, save_mock.call_count)
+        self.assertEqual(
+            [call(status=TransactionStatus.RESERVING), call(event_offset=56, status=TransactionStatus.RESERVED)],
+            save_mock.call_args_list,
+        )
 
     async def test_reserve_failure(self) -> None:
         uuid = uuid4()
@@ -134,8 +137,10 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(1, validate_mock.call_count)
         self.assertEqual(call(), validate_mock.call_args)
 
-        self.assertEqual(1, save_mock.call_count)
-        self.assertEqual(call(event_offset=56, status=TransactionStatus.REJECTED), save_mock.call_args)
+        self.assertEqual(
+            [call(status=TransactionStatus.RESERVING), call(event_offset=56, status=TransactionStatus.REJECTED)],
+            save_mock.call_args_list,
+        )
 
     async def test_reserve_raises(self) -> None:
         with self.assertRaises(ValueError):
@@ -205,8 +210,11 @@ class TestTransaction(MinosTestCase):
             submit_mock.call_args_list,
         )
 
-        self.assertEqual(1, save_mock.call_count)
-        self.assertEqual(call(event_offset=56, status=TransactionStatus.COMMITTED), save_mock.call_args)
+        self.assertEqual(2, save_mock.call_count)
+        self.assertEqual(
+            [call(status=TransactionStatus.COMMITTING), call(event_offset=56, status=TransactionStatus.COMMITTED)],
+            save_mock.call_args_list,
+        )
 
     async def test_commit_pending(self) -> None:
         uuid = uuid4()
@@ -232,8 +240,11 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(1, commit_mock.call_count)
         self.assertEqual(call(), commit_mock.call_args)
 
-        self.assertEqual(1, save_mock.call_count)
-        self.assertEqual(call(event_offset=56, status=TransactionStatus.COMMITTED), save_mock.call_args)
+        self.assertEqual(2, save_mock.call_count)
+        self.assertEqual(
+            [call(status=TransactionStatus.COMMITTING), call(event_offset=56, status=TransactionStatus.COMMITTED)],
+            save_mock.call_args_list,
+        )
 
     async def test_commit_raises(self) -> None:
         with self.assertRaises(ValueError):
