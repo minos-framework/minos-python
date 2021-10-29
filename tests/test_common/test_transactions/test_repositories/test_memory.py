@@ -6,7 +6,7 @@ from uuid import (
 from minos.common import (
     InMemoryTransactionRepository,
     MinosInvalidTransactionStatusException,
-    Transaction,
+    TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
@@ -33,46 +33,46 @@ class TestInMemoryTransactionRepository(MinosTestCase):
         self.assertTrue(issubclass(InMemoryTransactionRepository, TransactionRepository))
 
     async def test_submit(self):
-        await self.repository.submit(Transaction(self.uuid, TransactionStatus.PENDING, 34))
-        expected = [Transaction(self.uuid, TransactionStatus.PENDING, 34)]
+        await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+        expected = [TransactionEntry(self.uuid, TransactionStatus.PENDING, 34)]
         observed = [v async for v in self.repository.select()]
         self.assertEqual(expected, observed)
 
     async def test_submit_pending_raises(self):
-        await self.repository.submit(Transaction(self.uuid, TransactionStatus.PENDING, 34))
+        await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.PENDING, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.COMMITTED, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
 
     async def test_submit_reserved_raises(self):
-        await self.repository.submit(Transaction(self.uuid, TransactionStatus.RESERVED, 34))
+        await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.PENDING, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.RESERVED, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
 
     async def test_submit_committed_raises(self):
-        await self.repository.submit(Transaction(self.uuid, TransactionStatus.COMMITTED, 34))
+        await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.PENDING, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.RESERVED, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.COMMITTED, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.REJECTED, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
     async def test_submit_rejected_raises(self):
-        await self.repository.submit(Transaction(self.uuid, TransactionStatus.REJECTED, 34))
+        await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.PENDING, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.RESERVED, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.COMMITTED, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
         with self.assertRaises(MinosInvalidTransactionStatusException):
-            await self.repository.submit(Transaction(self.uuid, TransactionStatus.REJECTED, 34))
+            await self.repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
     async def test_select_empty(self):
         expected = []
@@ -89,10 +89,10 @@ class TestInMemoryTransactionRepositorySelect(MinosTestCase):
         self.uuid_4 = uuid4()
 
         self.entries = [
-            Transaction(self.uuid_1, TransactionStatus.PENDING, 12),
-            Transaction(self.uuid_2, TransactionStatus.PENDING, 15),
-            Transaction(self.uuid_3, TransactionStatus.REJECTED, 16),
-            Transaction(self.uuid_4, TransactionStatus.COMMITTED, 20),
+            TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12),
+            TransactionEntry(self.uuid_2, TransactionStatus.PENDING, 15),
+            TransactionEntry(self.uuid_3, TransactionStatus.REJECTED, 16),
+            TransactionEntry(self.uuid_4, TransactionStatus.COMMITTED, 20),
         ]
 
     async def asyncSetUp(self):
@@ -102,10 +102,10 @@ class TestInMemoryTransactionRepositorySelect(MinosTestCase):
     async def _build_repository(self):
         repository = InMemoryTransactionRepository()
         await repository.setup()
-        await repository.submit(Transaction(self.uuid_1, TransactionStatus.PENDING, 12))
-        await repository.submit(Transaction(self.uuid_2, TransactionStatus.PENDING, 15))
-        await repository.submit(Transaction(self.uuid_3, TransactionStatus.REJECTED, 16))
-        await repository.submit(Transaction(self.uuid_4, TransactionStatus.COMMITTED, 20))
+        await repository.submit(TransactionEntry(self.uuid_1, TransactionStatus.PENDING, 12))
+        await repository.submit(TransactionEntry(self.uuid_2, TransactionStatus.PENDING, 15))
+        await repository.submit(TransactionEntry(self.uuid_3, TransactionStatus.REJECTED, 16))
+        await repository.submit(TransactionEntry(self.uuid_4, TransactionStatus.COMMITTED, 20))
         return repository
 
     async def asyncTearDown(self):

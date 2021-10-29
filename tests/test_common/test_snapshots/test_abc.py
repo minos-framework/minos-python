@@ -17,7 +17,7 @@ from minos.common import (
     MinosSetup,
     MinosSnapshot,
     Ordering,
-    Transaction,
+    TransactionEntry,
 )
 from minos.common.transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -69,7 +69,7 @@ class TestMinosSnapshot(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(NULL_UUID, self.get_mock.call_args.kwargs["transaction_uuid"])
 
     async def test_get_transaction_context(self):
-        transaction = Transaction()
+        transaction = TransactionEntry()
         TRANSACTION_CONTEXT_VAR.set(transaction)
         await self.snapshot.get("path.to.Aggregate", uuid4())
 
@@ -105,7 +105,7 @@ class TestMinosSnapshot(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(NULL_UUID, self.find_mock.call_args.kwargs["transaction_uuid"])
 
     async def test_find_transaction_context(self):
-        transaction = Transaction()
+        transaction = TransactionEntry()
         TRANSACTION_CONTEXT_VAR.set(transaction)
         [a async for a in self.snapshot.find("path.to.Aggregate", Condition.TRUE)]
 

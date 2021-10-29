@@ -38,7 +38,7 @@ from minos.common import (
     MinosSagaManager,
     MinosSnapshot,
     RepositoryEntry,
-    Transaction,
+    TransactionEntry,
     TransactionRepository,
     current_datetime,
 )
@@ -216,10 +216,10 @@ class FakeEntity(Entity):
 class FakeTransactionRepository(TransactionRepository):
     """For testing purposes."""
 
-    async def _submit(self, transaction: Transaction) -> None:
+    async def _submit(self, transaction: TransactionEntry) -> None:
         """For testing purposes."""
 
-    def _select(self, **kwargs) -> AsyncIterator[Transaction]:
+    def _select(self, **kwargs) -> AsyncIterator[TransactionEntry]:
         """For testing purposes."""
 
 

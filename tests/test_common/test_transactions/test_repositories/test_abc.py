@@ -14,7 +14,7 @@ from uuid import (
 from minos.common import (
     MinosLockPoolNotProvidedException,
     MinosSetup,
-    Transaction,
+    TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
@@ -42,7 +42,7 @@ class TestTransactionRepository(MinosTestCase):
         self.assertEqual({"_submit", "_select"}, TransactionRepository.__abstractmethods__)
 
     async def test_submit(self):
-        transaction = Transaction()
+        transaction = TransactionEntry()
         mock = AsyncMock()
         self.transaction_repository._submit = mock
 

@@ -12,8 +12,8 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-    from .models import (
-        Transaction,
+    from .entries import (
+        TransactionEntry,
     )
 
-TRANSACTION_CONTEXT_VAR: Final[ContextVar[Optional[Transaction]]] = ContextVar("transaction", default=None)
+TRANSACTION_CONTEXT_VAR: Final[ContextVar[Optional[TransactionEntry]]] = ContextVar("transaction", default=None)

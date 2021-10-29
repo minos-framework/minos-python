@@ -49,8 +49,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Transaction:
-    """Transaction class."""
+class TransactionEntry:
+    """Transaction Entry class."""
 
     @inject
     def __init__(
@@ -211,7 +211,7 @@ class Transaction:
 
         await self.transaction_repository.submit(self)
 
-    def __eq__(self, other: Transaction) -> bool:
+    def __eq__(self, other: TransactionEntry) -> bool:
         return isinstance(other, type(self)) and tuple(self) == tuple(other)
 
     def __iter__(self) -> Iterable:

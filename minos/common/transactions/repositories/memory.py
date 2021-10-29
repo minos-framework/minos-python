@@ -12,10 +12,10 @@ from ...datetime import (
 from ...exceptions import (
     MinosInvalidTransactionStatusException,
 )
-from ..models import (
-    Transaction,
+from ..entries import (
+    TransactionEntry,
 )
-from ..models import TransactionStatus as s
+from ..entries import TransactionStatus as s
 from .abc import (
     TransactionRepository,
 )
@@ -28,7 +28,7 @@ class InMemoryTransactionRepository(TransactionRepository):
         super().__init__(*args, **kwargs)
         self._storage = dict()
 
-    async def _submit(self, transaction: Transaction) -> Transaction:
+    async def _submit(self, transaction: TransactionEntry) -> TransactionEntry:
         transaction.updated_at = current_datetime()
 
         if transaction.uuid in self._storage:
@@ -45,7 +45,7 @@ class InMemoryTransactionRepository(TransactionRepository):
                     f"{transaction!r} status is invalid respect to the previous one."
                 )
 
-        self._storage[transaction.uuid] = Transaction(
+        self._storage[transaction.uuid] = TransactionEntry(
             uuid=transaction.uuid,
             status=transaction.status,
             event_offset=transaction.event_offset,
@@ -69,10 +69,10 @@ class InMemoryTransactionRepository(TransactionRepository):
         event_offset_le: Optional[int] = None,
         event_offset_ge: Optional[int] = None,
         **kwargs,
-    ) -> AsyncIterator[Transaction]:
+    ) -> AsyncIterator[TransactionEntry]:
 
         # noinspection DuplicatedCode
-        def _fn_filter(transaction: Transaction) -> bool:
+        def _fn_filter(transaction: TransactionEntry) -> bool:
             if uuid is not None and uuid != transaction.uuid:
                 return False
             if uuid_ne is not None and uuid_ne == transaction.uuid:
