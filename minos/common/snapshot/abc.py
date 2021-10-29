@@ -55,7 +55,8 @@ class MinosSnapshot(ABC, MinosSetup):
         """
 
         if transaction_uuid is None:
-            if (transaction := TRANSACTION_CONTEXT_VAR.get()) is not None:
+            transaction = TRANSACTION_CONTEXT_VAR.get()
+            if transaction is not None:
                 transaction_uuid = transaction.uuid
             else:
                 transaction_uuid = NULL_UUID
@@ -94,7 +95,8 @@ class MinosSnapshot(ABC, MinosSetup):
         """
 
         if transaction_uuid is None:
-            if (transaction := TRANSACTION_CONTEXT_VAR.get()) is not None:
+            transaction = TRANSACTION_CONTEXT_VAR.get()
+            if transaction is not None:
                 transaction_uuid = transaction.uuid
             else:
                 transaction_uuid = NULL_UUID
