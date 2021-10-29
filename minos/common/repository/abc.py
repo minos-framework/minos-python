@@ -49,7 +49,7 @@ from ..setup import (
 )
 from ..transactions import (
     TRANSACTION_CONTEXT_VAR,
-    Transaction,
+    TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
@@ -90,13 +90,13 @@ class EventRepository(ABC, MinosSetup):
         self._transaction_repository = transaction_repository
         self._lock_pool = lock_pool
 
-    def transaction(self, **kwargs) -> Transaction:
+    def transaction(self, **kwargs) -> TransactionEntry:
         """Build a transaction instance related to the repository.
 
         :param kwargs: Additional named arguments.
-        :return: A new ``Transaction`` instance.
+        :return: A new ``TransactionEntry`` instance.
         """
-        return Transaction(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
+        return TransactionEntry(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
 
     async def create(self, entry: Union[AggregateDiff, EventRepositoryEntry]) -> EventRepositoryEntry:
         """Store new creation entry into the repository.

@@ -29,7 +29,7 @@ from minos.common import (
     MinosRepositoryException,
     MinosSetup,
     MinosTransactionRepositoryNotProvidedException,
-    Transaction,
+    TransactionEntry,
     TransactionStatus,
     current_datetime,
 )
@@ -75,7 +75,7 @@ class TestMinosRepository(MinosTestCase):
     def test_transaction(self):
         uuid = uuid4()
         transaction = self.event_repository.transaction(uuid=uuid)
-        self.assertEqual(Transaction(uuid), transaction)
+        self.assertEqual(TransactionEntry(uuid), transaction)
         self.assertEqual(self.event_repository, transaction._event_repository)
         self.assertEqual(self.transaction_repository, transaction._transaction_repository)
 
@@ -162,7 +162,7 @@ class TestMinosRepository(MinosTestCase):
         created_at = current_datetime()
         id_ = 12
         field_diff_container = FieldDiffContainer([FieldDiff("color", str, "red")])
-        transaction = Transaction(uuid4())
+        transaction = TransactionEntry(uuid4())
 
         TRANSACTION_CONTEXT_VAR.set(transaction)
 
@@ -341,7 +341,7 @@ class TestMinosRepository(MinosTestCase):
             EventRepositoryEntry(aggregate_uuid, "example.Car", 1),
             EventRepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
         ]
-        transactions = [Transaction(transaction_uuid, TransactionStatus.RESERVED)]
+        transactions = [TransactionEntry(transaction_uuid, TransactionStatus.RESERVED)]
 
         select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
         self.event_repository.select = select_event_mock

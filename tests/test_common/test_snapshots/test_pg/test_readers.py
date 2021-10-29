@@ -18,7 +18,7 @@ from minos.common import (
     PostgreSqlSnapshotSetup,
     PostgreSqlSnapshotWriter,
     SnapshotEntry,
-    Transaction,
+    TransactionEntry,
     TransactionStatus,
 )
 from minos.common.testing import (
@@ -83,13 +83,13 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
             EventRepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
         await self.transaction_repository.submit(
-            Transaction(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
+            TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
         )
         await self.transaction_repository.submit(
-            Transaction(self.transaction_2, TransactionStatus.PENDING, await self.event_repository.offset)
+            TransactionEntry(self.transaction_2, TransactionStatus.PENDING, await self.event_repository.offset)
         )
         await self.transaction_repository.submit(
-            Transaction(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
+            TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
         )
         async with PostgreSqlSnapshotWriter.from_config(
             self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository

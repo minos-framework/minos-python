@@ -19,8 +19,8 @@ from ...database import (
 from ...exceptions import (
     MinosInvalidTransactionStatusException,
 )
-from ..models import (
-    Transaction,
+from ..entries import (
+    TransactionEntry,
 )
 from .abc import (
     TransactionRepository,
@@ -40,7 +40,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
         await self.submit_query(_CREATE_TRANSACTION_STATUS_ENUM_QUERY, lock=hash("aggregate_transaction_enum"))
         await self.submit_query(_CREATE_TRANSACTION_TABLE_QUERY, lock=hash("aggregate_transaction"))
 
-    async def _submit(self, transaction: Transaction) -> Transaction:
+    async def _submit(self, transaction: TransactionEntry) -> TransactionEntry:
         params = {
             "uuid": transaction.uuid,
             "status": transaction.status,
@@ -57,10 +57,10 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
         transaction.updated_at = updated_at
         return transaction
 
-    async def _select(self, **kwargs) -> AsyncIterator[Transaction]:
+    async def _select(self, **kwargs) -> AsyncIterator[TransactionEntry]:
         query = self._build_select_query(**kwargs)
         async for row in self.submit_query_and_iter(query, kwargs, **kwargs):
-            yield Transaction(*row, transaction_repository=self)
+            yield TransactionEntry(*row, transaction_repository=self)
 
     # noinspection PyUnusedLocal
     @staticmethod

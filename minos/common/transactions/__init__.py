@@ -1,8 +1,8 @@
 from .contextvars import (
     TRANSACTION_CONTEXT_VAR,
 )
-from .models import (
-    Transaction,
+from .entries import (
+    TransactionEntry,
     TransactionStatus,
 )
 from .repositories import (

@@ -171,7 +171,7 @@ from .transactions import (
     TRANSACTION_CONTEXT_VAR,
     InMemoryTransactionRepository,
     PostgreSqlTransactionRepository,
-    Transaction,
+    TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )

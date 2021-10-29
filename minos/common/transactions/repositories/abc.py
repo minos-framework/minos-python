@@ -27,8 +27,8 @@ from ...pools import (
 from ...setup import (
     MinosSetup,
 )
-from ..models import (
-    Transaction,
+from ..entries import (
+    TransactionEntry,
     TransactionStatus,
 )
 
@@ -47,7 +47,7 @@ class TransactionRepository(ABC, MinosSetup):
 
         self._lock_pool = lock_pool
 
-    async def submit(self, transaction: Transaction) -> Transaction:
+    async def submit(self, transaction: TransactionEntry) -> TransactionEntry:
         """Submit a new or updated transaction to store it on the repository.
 
         :param transaction: The transaction to be stored.
@@ -56,7 +56,7 @@ class TransactionRepository(ABC, MinosSetup):
         return await self._submit(transaction)
 
     @abstractmethod
-    async def _submit(self, transaction: Transaction) -> Transaction:
+    async def _submit(self, transaction: TransactionEntry) -> TransactionEntry:
         raise NotImplementedError
 
     async def select(
@@ -72,7 +72,7 @@ class TransactionRepository(ABC, MinosSetup):
         event_offset_le: Optional[int] = None,
         event_offset_ge: Optional[int] = None,
         **kwargs,
-    ) -> AsyncIterator[Transaction]:
+    ) -> AsyncIterator[TransactionEntry]:
         """Get a transaction from the repository.
 
         :param uuid: Transaction identifier equal to the given value.
@@ -106,7 +106,7 @@ class TransactionRepository(ABC, MinosSetup):
             yield entry
 
     @abstractmethod
-    async def _select(self, **kwargs) -> AsyncIterator[Transaction]:
+    async def _select(self, **kwargs) -> AsyncIterator[TransactionEntry]:
         raise NotImplementedError
 
     def write_lock(self) -> Lock:
