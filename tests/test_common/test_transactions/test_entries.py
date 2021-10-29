@@ -32,7 +32,7 @@ class TestTransaction(MinosTestCase):
         self.assertIsInstance(transaction.uuid, UUID)
         self.assertEqual(TransactionStatus.PENDING, transaction.status)
         self.assertEqual(None, transaction.event_offset)
-        self.assertEqual(True, transaction.autocommit)
+        self.assertEqual(True, transaction._autocommit)
 
         self.assertEqual(self.event_repository, transaction._event_repository)
         self.assertEqual(self.transaction_repository, transaction._transaction_repository)
@@ -45,7 +45,7 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(uuid, transaction.uuid)
         self.assertEqual(status, transaction.status)
         self.assertEqual(event_offset, transaction.event_offset)
-        self.assertEqual(False, transaction.autocommit)
+        self.assertEqual(False, transaction._autocommit)
 
         self.assertEqual(self.event_repository, transaction._event_repository)
         self.assertEqual(self.transaction_repository, transaction._transaction_repository)

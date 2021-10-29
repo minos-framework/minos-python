@@ -52,10 +52,23 @@ logger = logging.getLogger(__name__)
 class TransactionEntry:
     """Transaction Entry class."""
 
+    __slots__ = (
+        "uuid",
+        "destination",
+        "status",
+        "event_offset",
+        "updated_at",
+        "_autocommit",
+        "_event_repository",
+        "_transaction_repository",
+        "_token",
+    )
+
     @inject
     def __init__(
         self,
         uuid: Optional[UUID] = None,
+        destination: Optional[UUID] = None,
         status: Union[str, TransactionStatus] = None,
         event_offset: Optional[int] = None,
         updated_at: Optional[datetime] = None,
@@ -71,11 +84,12 @@ class TransactionEntry:
             status = TransactionStatus.value_of(status)
 
         self.uuid = uuid
-        self.autocommit = autocommit
+        self.destination = destination
         self.status = status
         self.event_offset = event_offset
         self.updated_at = updated_at
 
+        self._autocommit = autocommit
         self._event_repository = event_repository
         self._transaction_repository = transaction_repository
 
@@ -85,9 +99,17 @@ class TransactionEntry:
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
-        if TRANSACTION_CONTEXT_VAR.get() is not None:  # FIXME: Future implementations should not have this constraint.
-            raise ValueError("Already inside a transaction. Multiple simultaneous transactions are not supported yet!")
+        outer = TRANSACTION_CONTEXT_VAR.get()
+        if outer is not None:
+            if self.destination is not None:  # TODO: check this condition.
+                raise ValueError(
+                    "Already inside a transaction. Multiple simultaneous transactions are not supported yet!"
+                )
+            destination = outer.uuid
+        else:
+            destination = NULL_UUID
 
+        self.destination = destination
         self._token = TRANSACTION_CONTEXT_VAR.set(self)
         await self.save()
         return self
@@ -95,7 +117,7 @@ class TransactionEntry:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         TRANSACTION_CONTEXT_VAR.reset(self._token)
 
-        if self.autocommit:
+        if self._autocommit:
             await self.commit()
 
     async def commit(self) -> None:
@@ -122,7 +144,7 @@ class TransactionEntry:
         )
 
         async for entry in self._event_repository.select(transaction_uuid=self.uuid):
-            new = EventEntry.from_another(entry, transaction_uuid=NULL_UUID)
+            new = EventEntry.from_another(entry, transaction_uuid=self.destination)
             await self._event_repository.submit(new, transaction_uuid_ne=self.uuid)
 
     async def reserve(self) -> None:
@@ -159,7 +181,7 @@ class TransactionEntry:
         transaction_uuids = set()
         for aggregate_uuid, version in entries.items():
             async for entry in self._event_repository.select(aggregate_uuid=aggregate_uuid, version=version):
-                if entry.transaction_uuid == NULL_UUID:
+                if entry.transaction_uuid == self.destination:
                     return False
                 if entry.transaction_uuid != self.uuid:
                     transaction_uuids.add(entry.transaction_uuid)
@@ -167,6 +189,7 @@ class TransactionEntry:
         if len(transaction_uuids):
             with suppress(StopAsyncIteration):
                 iterable = self._transaction_repository.select(
+                    destination=self.destination,
                     uuid_in=tuple(transaction_uuids),
                     status_in=(
                         TransactionStatus.RESERVING,
@@ -218,12 +241,16 @@ class TransactionEntry:
         # noinspection PyRedundantParentheses
         yield from (
             self.uuid,
+            self.destination,
             self.status,
             self.event_offset,
         )
 
     def __repr__(self):
-        return f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r}, event_offset={self.event_offset!r})"
+        return (
+            f"{type(self).__name__}(uuid={self.uuid!r}, destination={self.destination!r}, status={self.status!r}, "
+            f"event_offset={self.event_offset!r}, updated_at={self.updated_at!r})"
+        )
 
 
 class TransactionStatus(str, Enum):

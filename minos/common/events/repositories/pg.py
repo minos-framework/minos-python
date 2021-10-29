@@ -92,6 +92,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
         transaction_uuid_ne: Optional[UUID] = None,
+        transaction_uuid_in: Optional[tuple[UUID,...]] = None,
         **kwargs,
     ) -> str:
         conditions = list()
@@ -124,6 +125,8 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
             conditions.append("transaction_uuid = %(transaction_uuid)s")
         if transaction_uuid_ne is not None:
             conditions.append("transaction_uuid <> %(transaction_uuid_ne)s")
+        if transaction_uuid_in is not None:
+            conditions.append("transaction_uuid IN %(transaction_uuid_in)s")
 
         if not conditions:
             return f"{_SELECT_ALL_ENTRIES_QUERY} ORDER BY id;"

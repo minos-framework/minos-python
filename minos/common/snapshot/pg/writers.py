@@ -27,15 +27,24 @@ from ...exceptions import (
 from ...importlib import (
     import_module,
 )
+from ...queries import (
+    Condition,
+)
 from ...transactions import (
     TransactionRepository,
     TransactionStatus,
+)
+from ...uuid import (
+    NULL_UUID,
 )
 from ..entries import (
     SnapshotEntry,
 )
 from .abc import (
     PostgreSqlSnapshotSetup,
+)
+from .queries import (
+    PostgreSqlSnapshotQueryBuilder,
 )
 
 if TYPE_CHECKING:
@@ -158,13 +167,20 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     async def _select_one(
         self, aggregate_uuid: UUID, aggregate_name: str, transaction_uuid: UUID, **kwargs
     ) -> SnapshotEntry:
-        parameters = {
-            "aggregate_uuid": aggregate_uuid,
-            "aggregate_name": aggregate_name,
-            "transaction_uuid": transaction_uuid,
-        }
-        raw = await self.submit_query_and_fetchone(_SELECT_ONE_SNAPSHOT_ENTRY_QUERY, parameters, **kwargs)
-        return SnapshotEntry(aggregate_uuid, aggregate_name, *raw, transaction_uuid=transaction_uuid)
+
+        # FIXME: Extract transaction identifiers.
+        if transaction_uuid == NULL_UUID:
+            transaction_uuids = (NULL_UUID,)
+        else:
+            transaction_uuids = (NULL_UUID, transaction_uuid)
+
+        qb = PostgreSqlSnapshotQueryBuilder(
+            aggregate_name, Condition.EQUAL("uuid", aggregate_uuid), transaction_uuids=transaction_uuids
+        )
+        query, parameters = qb.build()
+
+        raw = await self.submit_query_and_fetchone(query, parameters, **kwargs)
+        return SnapshotEntry(*raw)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
         params = snapshot_entry.as_raw()
@@ -183,24 +199,6 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
             await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuids": tuple(transaction_uuids)})
 
 
-_SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
-SELECT version, schema, data, created_at, updated_at
-FROM snapshot
-WHERE
-    aggregate_uuid = %(aggregate_uuid)s
-    AND aggregate_name = %(aggregate_name)s
-    AND transaction_uuid = (
-        CASE (
-            SELECT COUNT(*)
-            FROM snapshot
-            WHERE aggregate_uuid = %(aggregate_uuid)s
-            AND aggregate_name = %(aggregate_name)s
-            AND transaction_uuid =  %(transaction_uuid)s
-        ) WHEN 0 THEN uuid_nil() ELSE %(transaction_uuid)s END
-    )
-;
-""".strip()
-
 _INSERT_ONE_SNAPSHOT_ENTRY_QUERY = """
 INSERT INTO snapshot (aggregate_uuid, aggregate_name, version, schema, data, created_at, updated_at, transaction_uuid)
 VALUES (
@@ -218,7 +216,6 @@ DO
    UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;
 """.strip()
-
 
 _DELETE_SNAPSHOT_ENTRIES_QUERY = """
 DELETE FROM snapshot

@@ -17,7 +17,7 @@ from ...exceptions import (
 )
 from ...queries import (
     _Condition,
-    _Ordering,
+    _Ordering, Condition,
 )
 from ...uuid import (
     NULL_UUID,
@@ -29,7 +29,6 @@ from .abc import (
     PostgreSqlSnapshotSetup,
 )
 from .queries import (
-    _SELECT_ENTRY_BY_UUID_QUERY,
     PostgreSqlSnapshotQueryBuilder,
 )
 
@@ -72,15 +71,13 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
-        parameters = {"aggregate_name": aggregate_name, "aggregate_uuid": uuid, "transaction_uuid": transaction_uuid}
 
-        async with self.cursor() as cursor:
-            await cursor.execute(_SELECT_ENTRY_BY_UUID_QUERY, parameters)
-            row = await cursor.fetchone()
-            if row is None:
-                raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
-
-            return SnapshotEntry(*row)
+        try:
+            return await self.find_entries(
+                aggregate_name, Condition.EQUAL("uuid", uuid), transaction_uuid=transaction_uuid, **kwargs
+            ).__anext__()
+        except StopAsyncIteration:
+            raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
 
     async def find(
         self,
@@ -138,8 +135,14 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
+        # FIXME: Extract transaction identifiers.
+        if transaction_uuid == NULL_UUID:
+            transaction_uuids = (NULL_UUID,)
+        else:
+            transaction_uuids = (NULL_UUID, transaction_uuid)
+
         qb = PostgreSqlSnapshotQueryBuilder(
-            aggregate_name, condition, ordering, limit, transaction_uuid, exclude_deleted,
+            aggregate_name, condition, ordering, limit, transaction_uuids, exclude_deleted,
         )
         query, parameters = qb.build()
 

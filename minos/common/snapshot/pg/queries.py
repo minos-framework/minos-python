@@ -60,14 +60,14 @@ class PostgreSqlSnapshotQueryBuilder:
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
-        transaction_uuid: UUID = NULL_UUID,
+        transaction_uuids: tuple[UUID, ...] = (NULL_UUID,),
         exclude_deleted: bool = False,
     ):
         self.aggregate_name = aggregate_name
         self.condition = condition
         self.ordering = ordering
         self.limit = limit
-        self.transaction_uuid = transaction_uuid
+        self.transaction_uuids = transaction_uuids
         self.exclude_deleted = exclude_deleted
         self._parameters = None
 
@@ -86,9 +86,8 @@ class PostgreSqlSnapshotQueryBuilder:
 
     def _build(self) -> Composable:
         self._parameters["aggregate_name"] = self.aggregate_name
-        self._parameters["transaction_uuid"] = self.transaction_uuid
 
-        query = SQL(" WHERE ").join([_SELECT_ENTRIES_QUERY, self._build_condition(self.condition)])
+        query = SQL(" WHERE ").join([self._build_select_from(), self._build_condition(self.condition)])
 
         if self.exclude_deleted:
             query = SQL(" AND ").join([query, _EXCLUDE_DELETED_CONDITION])
@@ -99,6 +98,21 @@ class PostgreSqlSnapshotQueryBuilder:
         if self.limit is not None:
             query = SQL(" ").join([query, self._build_limit(self.limit)])
 
+        return query
+
+    def _build_select_from(self) -> Composable:
+        from_query_parts = list()
+        for index, transaction_uuid in enumerate(self.transaction_uuids):
+            name = self.generate_random_str()
+            self._parameters[name] = transaction_uuid
+
+            from_query_parts.append(
+                _SELECT_TRANSACTION_CHUNK.format(index=Literal(index), transaction_uuid=Placeholder(name))
+            )
+
+        from_query = SQL(" UNION ALL ").join(from_query_parts)
+
+        query = _SELECT_ENTRIES_QUERY.format(from_parts=from_query)
         return query
 
     def _build_condition(self, condition: _Condition) -> Composable:
@@ -218,22 +232,15 @@ _SELECT_ENTRIES_QUERY = SQL(
     "   t2.transaction_uuid "
     "FROM ("
     "   SELECT DISTINCT ON (aggregate_uuid) t1.* "
-    "   FROM ( "
-    "           SELECT 0 AS transaction_index, * "
-    "           FROM snapshot "
-    "           WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = uuid_nil() "
-    "      UNION ALL "
-    "           SELECT 1 AS transaction_index, * "
-    "           FROM snapshot "
-    "           WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = %(transaction_uuid)s "
-    "   ) AS t1 "
+    "   FROM ( {from_parts} ) AS t1 "
     "   ORDER BY aggregate_uuid, transaction_index DESC "
     ") AS t2"
 )
 
-_EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")
-
-
-_SELECT_ENTRY_BY_UUID_QUERY = SQL(" WHERE ").join(
-    [_SELECT_ENTRIES_QUERY, SQL("aggregate_name = %(aggregate_name)s AND aggregate_uuid = %(aggregate_uuid)s")]
+_SELECT_TRANSACTION_CHUNK = SQL(
+    "SELECT {index} AS transaction_index, * "
+    "FROM snapshot "
+    "WHERE aggregate_name = %(aggregate_name)s AND transaction_uuid = {transaction_uuid} "
 )
+
+_EXCLUDE_DELETED_CONDITION = SQL("(data IS NOT NULL)")

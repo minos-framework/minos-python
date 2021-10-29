@@ -87,6 +87,7 @@ class InMemoryEventRepository(EventRepository):
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
         transaction_uuid_ne: Optional[UUID] = None,
+        transaction_uuid_in: Optional[tuple[UUID, ...]] = None,
         *args,
         **kwargs,
     ) -> AsyncIterator[EventEntry]:
@@ -120,6 +121,8 @@ class InMemoryEventRepository(EventRepository):
             if transaction_uuid is not None and transaction_uuid != entry.transaction_uuid:
                 return False
             if transaction_uuid_ne is not None and transaction_uuid_ne == entry.transaction_uuid:
+                return False
+            if transaction_uuid_in is not None and entry.transaction_uuid not in transaction_uuid_in:
                 return False
             return True
 
