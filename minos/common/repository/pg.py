@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 from typing import (
     AsyncIterator,
     Optional,
@@ -10,11 +14,14 @@ from psycopg2 import (
     IntegrityError,
 )
 
+from ..configuration import (
+    MinosConfig,
+)
 from ..database import (
     PostgreSqlMinosDatabase,
 )
 from ..exceptions import (
-    MinosRepositoryException,
+    MinosRepositoryConflictException,
 )
 from ..uuid import (
     NULL_UUID,
@@ -30,6 +37,10 @@ from .entries import (
 class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
     """PostgreSQL-based implementation of the repository class in ``Minos``."""
 
+    @classmethod
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
+        return cls(*args, **config.repository._asdict(), **kwargs)
+
     async def _setup(self):
         """Setup miscellaneous repository thing.
 
@@ -37,14 +48,12 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
 
         :return: This method does not return anything.
         """
-        await self._create_events_table()
-
-    async def _create_events_table(self):
-        await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock="aggregate_event")
         await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+
+        await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock="aggregate_event")
         await self.submit_query(_CREATE_TABLE_QUERY, lock="aggregate_event")
 
-    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
         lock = None
         if entry.aggregate_uuid != NULL_UUID:
             lock = entry.aggregate_uuid.int & (1 << 32) - 1
@@ -53,8 +62,9 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         try:
             response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
         except IntegrityError:
-            raise MinosRepositoryException(
-                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}"
+            raise MinosRepositoryConflictException(
+                f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
+                await self.offset,
             )
 
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
@@ -81,6 +91,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
+        transaction_uuid_ne: Optional[UUID] = None,
         **kwargs,
     ) -> str:
         conditions = list()
@@ -111,11 +122,17 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
             conditions.append("id >= %(id_ge)s")
         if transaction_uuid is not None:
             conditions.append("transaction_uuid = %(transaction_uuid)s")
+        if transaction_uuid_ne is not None:
+            conditions.append("transaction_uuid <> %(transaction_uuid_ne)s")
 
         if not conditions:
             return f"{_SELECT_ALL_ENTRIES_QUERY} ORDER BY id;"
 
         return f"{_SELECT_ALL_ENTRIES_QUERY} WHERE {' AND '.join(conditions)} ORDER BY id;"
+
+    @property
+    async def _offset(self) -> int:
+        return (await self.submit_query_and_fetchone(_SELECT_MAX_ID_QUERY))[0] or 0
 
 
 _CREATE_ACTION_ENUM_QUERY = """
@@ -182,3 +199,5 @@ _SELECT_ALL_ENTRIES_QUERY = """
 SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid
 FROM aggregate_event
 """.strip()
+
+_SELECT_MAX_ID_QUERY = "SELECT MAX(id) FROM aggregate_event;".strip()

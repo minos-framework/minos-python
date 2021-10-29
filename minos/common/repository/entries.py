@@ -31,6 +31,9 @@ if TYPE_CHECKING:
         AggregateDiff,
         FieldDiffContainer,
     )
+    from ..transactions import (
+        Transaction,
+    )
 
 
 class RepositoryEntry:
@@ -79,13 +82,19 @@ class RepositoryEntry:
         self.transaction_uuid = transaction_uuid
 
     @classmethod
-    def from_aggregate_diff(cls, aggregate_diff: AggregateDiff, **kwargs) -> RepositoryEntry:
+    def from_aggregate_diff(
+        cls, aggregate_diff: AggregateDiff, *, transaction: Optional[Transaction] = None, **kwargs
+    ) -> RepositoryEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate_diff: The aggregate difference.
+        :param transaction: Optional transaction.
         :param kwargs: Additional named arguments.
         :return: A new ``RepositoryEntry`` instance.
         """
+        if transaction is not None:
+            kwargs["transaction_uuid"] = transaction.uuid
+
         # noinspection PyTypeChecker
         return cls(
             aggregate_uuid=aggregate_diff.uuid,
@@ -94,6 +103,16 @@ class RepositoryEntry:
             action=aggregate_diff.action,
             **kwargs,
         )
+
+    @classmethod
+    def from_another(cls, another: RepositoryEntry, **kwargs) -> RepositoryEntry:
+        """Build a new instance from another ``RepositoryEntry``.
+
+        :param another: The ``RepositoryEntry``.
+        :param kwargs: Additional named arguments.
+        :return: A new ``RepositoryEntry`` instance.
+        """
+        return cls(**(another.as_raw() | kwargs | {"id": None}))
 
     def as_raw(self) -> dict[str, Any]:
         """Get a raw representation of the instance.
@@ -176,7 +195,7 @@ class RepositoryEntry:
         return (
             f"{type(self).__name__}("
             f"aggregate_uuid={self.aggregate_uuid!r}, aggregate_name={self.aggregate_name!r}, "
-            f"version={self.version!r}, data={self.data!r}, "
+            f"version={self.version!r}, len(data)={len(self.data)!r}, "
             f"id={self.id!r}, action={self.action!r}, created_at={self.created_at!r}, "
             f"transaction_uuid={self.transaction_uuid!r})"
         )

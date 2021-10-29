@@ -21,7 +21,7 @@ from ..datetime import (
     current_datetime,
 )
 from ..exceptions import (
-    MinosRepositoryException,
+    MinosRepositoryConflictException,
 )
 from ..uuid import (
     NULL_UUID,
@@ -43,12 +43,7 @@ class InMemoryRepository(MinosRepository):
         self._id_generator = count()
         self._next_versions = defaultdict(int)
 
-    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
-        """Store new deletion entry into de repository.
-
-        :param entry: Entry to be stored.
-        :return: This method does not return anything.
-        """
+    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
         if entry.aggregate_uuid == NULL_UUID:
             entry.aggregate_uuid = uuid4()
 
@@ -56,8 +51,9 @@ class InMemoryRepository(MinosRepository):
         if entry.version is None:
             entry.version = next_version
         if entry.version < next_version:
-            raise MinosRepositoryException(
-                f"A `RepositoryEntry` with same key (uuid, version, transaction) already exist: {entry!r}"
+            raise MinosRepositoryConflictException(
+                f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
+                await self.offset,
             )
 
         if entry.created_at is None:
@@ -90,6 +86,7 @@ class InMemoryRepository(MinosRepository):
         id_le: Optional[int] = None,
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
+        transaction_uuid_ne: Optional[UUID] = None,
         *args,
         **kwargs,
     ) -> AsyncIterator[RepositoryEntry]:
@@ -122,9 +119,15 @@ class InMemoryRepository(MinosRepository):
                 return False
             if transaction_uuid is not None and transaction_uuid != entry.transaction_uuid:
                 return False
+            if transaction_uuid_ne is not None and transaction_uuid_ne == entry.transaction_uuid:
+                return False
             return True
 
         iterable = iter(self._storage)
         iterable = filter(_fn_filter, iterable)
         for item in iterable:
             yield item
+
+    @property
+    async def _offset(self) -> int:
+        return len(self._storage)

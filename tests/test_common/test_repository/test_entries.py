@@ -7,11 +7,13 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     Action,
     AggregateDiff,
     FieldDiff,
     FieldDiffContainer,
     RepositoryEntry,
+    Transaction,
     current_datetime,
 )
 from tests.aggregate_classes import (
@@ -22,6 +24,7 @@ from tests.aggregate_classes import (
 class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.uuid = uuid4()
+        self.transaction_uuid = uuid4()
 
     def test_constructor(self):
         entry = RepositoryEntry(self.uuid, "example.Car", 0, bytes("car", "utf-8"))
@@ -32,6 +35,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(None, entry.id)
         self.assertEqual(None, entry.action)
         self.assertEqual(None, entry.created_at)
+        self.assertEqual(NULL_UUID, entry.transaction_uuid)
 
     def test_constructor_extended(self):
         entry = RepositoryEntry(
@@ -42,6 +46,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
             id=5678,
             action=Action.CREATE,
             created_at=datetime(2020, 10, 13, 8, 45, 32),
+            transaction_uuid=self.transaction_uuid,
         )
         self.assertEqual(self.uuid, entry.aggregate_uuid)
         self.assertEqual("example.Car", entry.aggregate_name)
@@ -50,6 +55,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(5678, entry.id)
         self.assertEqual(Action.CREATE, entry.action)
         self.assertEqual(datetime(2020, 10, 13, 8, 45, 32), entry.created_at)
+        self.assertEqual(self.transaction_uuid, entry.transaction_uuid)
 
     async def test_from_aggregate_diff(self):
         fields_diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
@@ -64,6 +70,47 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(None, entry.id)
         self.assertEqual(Action.CREATE, entry.action)
         self.assertEqual(None, entry.created_at)
+        self.assertEqual(NULL_UUID, entry.transaction_uuid)
+
+    async def test_from_aggregate_diff_with_transaction(self):
+        transaction = Transaction(self.transaction_uuid)
+        fields_diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
+        created_at = current_datetime()
+        aggregate_diff = AggregateDiff(self.uuid, Car.classname, 1, Action.CREATE, created_at, fields_diff)
+
+        entry = RepositoryEntry.from_aggregate_diff(aggregate_diff, transaction=transaction)
+        self.assertEqual(self.uuid, entry.aggregate_uuid)
+        self.assertEqual("tests.aggregate_classes.Car", entry.aggregate_name)
+        self.assertEqual(None, entry.version)
+        self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
+        self.assertEqual(None, entry.id)
+        self.assertEqual(Action.CREATE, entry.action)
+        self.assertEqual(None, entry.created_at)
+        self.assertEqual(self.transaction_uuid, entry.transaction_uuid)
+
+    async def test_from_another(self):
+        created_at = datetime(2020, 10, 13, 8, 45, 32)
+        another = RepositoryEntry(
+            aggregate_uuid=self.uuid,
+            aggregate_name="example.Car",
+            version=0,
+            data=bytes("car", "utf-8"),
+            id=5678,
+            action=Action.CREATE,
+            created_at=created_at,
+            transaction_uuid=self.transaction_uuid,
+        )
+        transaction_uuid = uuid4()
+        entry = RepositoryEntry.from_another(another, transaction_uuid=transaction_uuid)
+
+        self.assertEqual(self.uuid, entry.aggregate_uuid)
+        self.assertEqual("example.Car", entry.aggregate_name)
+        self.assertEqual(0, entry.version)
+        self.assertEqual(bytes("car", "utf-8"), entry.data)
+        self.assertEqual(None, entry.id)
+        self.assertEqual(Action.CREATE, entry.action)
+        self.assertEqual(created_at, entry.created_at)
+        self.assertEqual(transaction_uuid, entry.transaction_uuid)
 
     def test_aggregate_diff(self):
         field_diff_container = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
@@ -131,7 +178,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
         )
         expected = (
             f"RepositoryEntry(aggregate_uuid={self.uuid!r}, aggregate_name={aggregate_name!r}, version={version!r}, "
-            f"data={data!r}, id={id_!r}, action={action!r}, created_at={created_at!r}, "
+            f"len(data)={len(data)!r}, id={id_!r}, action={action!r}, created_at={created_at!r}, "
             f"transaction_uuid={transaction_uuid!r})"
         )
         self.assertEqual(expected, repr(entry))

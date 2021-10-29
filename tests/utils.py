@@ -1,3 +1,4 @@
+import sys
 import unittest
 from datetime import (
     timedelta,
@@ -15,25 +16,77 @@ from unittest import (
 )
 from uuid import (
     UUID,
-    uuid4,
+)
+
+from dependency_injector import (
+    containers,
+    providers,
 )
 
 from minos.common import (
     Aggregate,
     CommandReply,
-    Condition,
     Entity,
+    InMemoryRepository,
+    InMemorySnapshot,
+    InMemoryTransactionRepository,
     Lock,
     MinosBroker,
     MinosHandler,
+    MinosPool,
     MinosRepository,
     MinosSagaManager,
     MinosSnapshot,
     RepositoryEntry,
+    Transaction,
+    TransactionRepository,
     current_datetime,
 )
 
 BASE_PATH = Path(__file__).parent
+
+
+class MinosTestCase(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.event_broker = FakeBroker()
+        self.lock_pool = FakeLockPool()
+        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
+        self.repository = InMemoryRepository(
+            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+        )
+        self.snapshot = InMemorySnapshot(repository=self.repository, transaction_repository=self.transaction_repository)
+
+        self.container = containers.DynamicContainer()
+        self.container.event_broker = providers.Object(self.event_broker)
+        self.container.transaction_repository = providers.Object(self.transaction_repository)
+        self.container.lock_pool = providers.Object(self.lock_pool)
+        self.container.repository = providers.Object(self.repository)
+        self.container.snapshot = providers.Object(self.snapshot)
+        self.container.wire(modules=[sys.modules[__name__]])
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+
+        await self.event_broker.setup()
+        await self.transaction_repository.setup()
+        await self.lock_pool.setup()
+        await self.repository.setup()
+        await self.snapshot.setup()
+
+    async def asyncTearDown(self):
+        await self.snapshot.destroy()
+        await self.repository.destroy()
+        await self.lock_pool.destroy()
+        await self.transaction_repository.destroy()
+        await self.event_broker.destroy()
+
+        await super().asyncTearDown()
+
+    def tearDown(self) -> None:
+        self.container.unwire()
+        super().tearDown()
 
 
 class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
@@ -58,24 +111,16 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
 class FakeRepository(MinosRepository):
     """For testing purposes."""
 
-    def __init__(self, event_broker=None, *args, **kwargs):
-        if event_broker is None:
-            event_broker = FakeBroker()
-        super().__init__(event_broker=event_broker, *args, **kwargs)
-        self.id_counter = 0
-        self.items = set()
-
-    async def _submit(self, entry: RepositoryEntry) -> RepositoryEntry:
+    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
         """For testing purposes."""
-        self.id_counter += 1
-        entry.id = self.id_counter
-        entry.version += 1
-        entry.aggregate_uuid = uuid4()
-        entry.created_at = current_datetime()
-        return entry
 
-    async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
+    def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
         """For testing purposes."""
+
+    @property
+    async def _offset(self) -> int:
+        """For testing purposes."""
+        return 0
 
 
 class FakeBroker(MinosBroker):
@@ -152,13 +197,13 @@ class FakeLoop:
 class FakeSnapshot(MinosSnapshot):
     """For testing purposes."""
 
-    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
+    async def _get(self, *args, **kwargs) -> Aggregate:
         """For testing purposes."""
 
-    async def find(self, aggregate_name: str, condition: Condition, **kwargs) -> AsyncIterator[Aggregate]:
+    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
         """For testing purposes."""
 
-    async def synchronize(self, **kwargs) -> None:
+    async def _synchronize(self, **kwargs) -> None:
         """For testing purposes."""
 
 
@@ -166,6 +211,16 @@ class FakeEntity(Entity):
     """For testing purposes."""
 
     name: str
+
+
+class FakeTransactionRepository(TransactionRepository):
+    """For testing purposes."""
+
+    async def _submit(self, transaction: Transaction) -> None:
+        """For testing purposes."""
+
+    def _select(self, **kwargs) -> AsyncIterator[Transaction]:
+        """For testing purposes."""
 
 
 class FakeAsyncIterator:
@@ -187,5 +242,20 @@ class FakeAsyncIterator:
 class FakeLock(Lock):
     """For testing purposes."""
 
+    def __init__(self, key=None, *args, **kwargs):
+        if key is None:
+            key = "fake"
+        super().__init__(key, *args, **kwargs)
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return
+
+
+class FakeLockPool(MinosPool):
+    """For testing purposes."""
+
+    async def _create_instance(self):
+        return FakeLock()
+
+    async def _destroy_instance(self, instance) -> None:
+        """For testing purposes."""

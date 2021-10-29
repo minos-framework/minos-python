@@ -21,17 +21,19 @@ from minos.common.testing import (
 from tests.utils import (
     BASE_PATH,
     FakeAsyncIterator,
-    FakeRepository,
+    MinosTestCase,
 )
 
 
-class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
+class TestPostgreSqlSnapshot(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
 
-        self.snapshot = PostgreSqlSnapshot.from_config(self.config, repository=FakeRepository())
+        self.snapshot = PostgreSqlSnapshot.from_config(
+            self.config, repository=self.repository, transaction_repository=self.transaction_repository
+        )
 
         self.dispatch_mock = AsyncMock()
         self.get_mock = AsyncMock(return_value=1)
@@ -45,25 +47,39 @@ class TestPostgreSqlSnapshot(PostgresAsyncTestCase):
         self.assertIsInstance(self.snapshot.writer, PostgreSqlSnapshotWriter)
 
     async def test_get(self):
+        transaction_uuid = uuid4()
         uuid = uuid4()
-        observed = await self.snapshot.get("path.to.Aggregate", uuid)
+        observed = await self.snapshot.get("path.to.Aggregate", uuid, transaction_uuid)
         self.assertEqual(1, observed)
 
         self.assertEqual(1, self.dispatch_mock.call_count)
         self.assertEqual(call(), self.dispatch_mock.call_args)
 
         self.assertEqual(1, self.get_mock.call_count)
-        self.assertEqual(call("path.to.Aggregate", uuid), self.get_mock.call_args)
+        args = call(aggregate_name="path.to.Aggregate", uuid=uuid, transaction_uuid=transaction_uuid)
+        self.assertEqual(args, self.get_mock.call_args)
 
     async def test_find(self):
-        observed = [a async for a in self.snapshot.find("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10)]
+        transaction_uuid = uuid4()
+        iterable = self.snapshot.find(
+            "path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True, transaction_uuid
+        )
+        observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)
 
         self.assertEqual(1, self.dispatch_mock.call_count)
         self.assertEqual(call(), self.dispatch_mock.call_args)
 
         self.assertEqual(1, self.find_mock.call_count)
-        self.assertEqual(call("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10), self.find_mock.call_args)
+        args = call(
+            aggregate_name="path.to.Aggregate",
+            condition=Condition.TRUE,
+            ordering=Ordering.ASC("name"),
+            limit=10,
+            streaming_mode=True,
+            transaction_uuid=transaction_uuid,
+        )
+        self.assertEqual(args, self.find_mock.call_args)
 
     async def test_synchronize(self):
         await self.snapshot.synchronize()

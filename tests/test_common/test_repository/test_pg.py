@@ -17,8 +17,8 @@ from minos.common import (
     NULL_UUID,
     Action,
     FieldDiffContainer,
-    MinosBrokerNotProvidedException,
     MinosRepository,
+    MinosRepositoryConflictException,
     MinosRepositoryException,
     PostgreSqlRepository,
     RepositoryEntry,
@@ -28,38 +28,36 @@ from minos.common.testing import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeBroker,
+    MinosTestCase,
     TestRepositorySelect,
 )
 
 
-class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
+class TestPostgreSqlRepository(MinosTestCase, PostgresAsyncTestCase, TestRepositorySelect):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
         self.uuid = uuid4()
-        self.broker = FakeBroker()
+
+        self.repository = PostgreSqlRepository(
+            event_broker=self.event_broker,
+            transaction_repository=self.transaction_repository,
+            lock_pool=self.lock_pool,
+            **self.repository_db
+        )
+
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
         self.field_diff_container_patcher.start()
-
-    async def asyncSetUp(self) -> None:
-        await super().asyncSetUp()
-        self.repository = PostgreSqlRepository(event_broker=self.broker, **self.repository_db)
-        await self.repository.setup()
-
-    async def asyncTearDown(self) -> None:
-        await self.repository.destroy()
-        await super().asyncTearDown()
 
     def tearDown(self):
         self.field_diff_container_patcher.stop()
         super().tearDown()
 
     def test_constructor(self):
-        repository = PostgreSqlRepository("host", 1234, "database", "user", "password", event_broker=self.broker)
+        repository = PostgreSqlRepository("host", 1234, "database", "user", "password",)
         self.assertIsInstance(repository, MinosRepository)
         self.assertEqual("host", repository.host)
         self.assertEqual(1234, repository.port)
@@ -67,9 +65,13 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
         self.assertEqual("user", repository.user)
         self.assertEqual("password", repository.password)
 
-    async def test_constructor_raises(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
-            PostgreSqlRepository("host", 1234, "database", "user", "password")
+    def test_from_config(self):
+        repository = PostgreSqlRepository.from_config(self.config)
+        self.assertEqual(self.config.repository.database, repository.database)
+        self.assertEqual(self.config.repository.user, repository.user)
+        self.assertEqual(self.config.repository.password, repository.password)
+        self.assertEqual(self.config.repository.host, repository.host)
+        self.assertEqual(self.config.repository.port, repository.port)
 
     async def test_setup(self):
         async with aiopg.connect(**self.repository_db) as connection:
@@ -86,25 +88,6 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
         self.assertEqual(1, len(observed))
         self.assertIsInstance(observed[0].aggregate_uuid, UUID)
         self.assertNotEqual(NULL_UUID, observed[0].aggregate_uuid)
-
-    async def test_create(self):
-        await self.repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
-
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
-
-    async def test_update(self):
-        await self.repository.update(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.UPDATE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
-
-    async def test_delete(self):
-        await self.repository.delete(RepositoryEntry(self.uuid, "example.Car", 1, bytes()))
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.DELETE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
 
     async def test_submit(self):
         await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", action=Action.CREATE))
@@ -129,12 +112,17 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
 
     async def test_submit_raises_duplicate(self):
         await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(MinosRepositoryConflictException):
             await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
 
     async def test_submit_raises_no_action(self):
         with self.assertRaises(MinosRepositoryException):
             await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, "foo".encode()))
+
+    async def test_offset(self):
+        self.assertEqual(0, await self.repository.offset)
+        await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
+        self.assertEqual(1, await self.repository.offset)
 
     async def test_select_empty(self):
         expected = []
@@ -142,7 +130,7 @@ class TestPostgreSqlRepository(PostgresAsyncTestCase, TestRepositorySelect):
         self.assert_equal_repository_entries(expected, observed)
 
 
-class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, TestRepositorySelect):
+class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestRepositorySelect):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -155,7 +143,13 @@ class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, TestRepositorySelect
         self.first_transaction = uuid4()
         self.second_transaction = uuid4()
 
-        self.broker = FakeBroker()
+        self.repository = PostgreSqlRepository(
+            event_broker=self.event_broker,
+            transaction_repository=self.transaction_repository,
+            lock_pool=self.lock_pool,
+            **self.repository_db
+        )
+
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
@@ -200,37 +194,36 @@ class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, TestRepositorySelect
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.repository = await self._build_repository()
+        await self._build_repository()
 
     async def _build_repository(self):
-        repository = PostgreSqlRepository(event_broker=self.broker, **self.repository_db)
-        await repository.setup()
-        await repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
-        await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
-        await repository.create(RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
-        await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
-        await repository.delete(RepositoryEntry(self.uuid_1, "example.Car", 4))
-        await repository.update(RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
-        await repository.create(RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
-        await repository.update(
+        await self.repository.setup()
+        await self.repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
+        await self.repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
+        await self.repository.create(RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
+        await self.repository.update(RepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
+        await self.repository.delete(RepositoryEntry(self.uuid_1, "example.Car", 4))
+        await self.repository.update(RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
+        await self.repository.create(RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 3, bytes("hola", "utf-8"), transaction_uuid=self.first_transaction
             )
         )
-        await repository.update(
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 3, bytes("salut", "utf-8"), transaction_uuid=self.second_transaction
             )
         )
-        await repository.update(
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction
             )
         )
-        return repository
 
     async def asyncTearDown(self):
         await self.repository.destroy()
+        await self.lock_pool.destroy()
         await super().asyncTearDown()
 
     def tearDown(self):
@@ -327,6 +320,11 @@ class TestPostgreSqlRepositorySelect(PostgresAsyncTestCase, TestRepositorySelect
     async def test_select_transaction_uuid(self):
         expected = [self.entries[7], self.entries[9]]
         observed = [v async for v in self.repository.select(transaction_uuid=self.first_transaction)]
+        self.assert_equal_repository_entries(expected, observed)
+
+    async def test_select_transaction_uuid_ne(self):
+        expected = [self.entries[7], self.entries[8], self.entries[9]]
+        observed = [v async for v in self.repository.select(transaction_uuid_ne=NULL_UUID)]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_combined(self):

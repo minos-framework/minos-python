@@ -71,8 +71,32 @@ class MinosRepositoryException(MinosException):
     """Base repository exception."""
 
 
+class MinosRepositoryConflictException(MinosRepositoryException):
+    """Exception to be raised when some ``RepositoryEntry`` raises a conflict."""
+
+    def __init__(self, error_message: str, offset: int):
+        super().__init__(error_message)
+        self.offset = offset
+
+
 class MinosRepositoryNotProvidedException(MinosRepositoryException):
     """Exception to be raised when a repository is needed but none is set."""
+
+
+class MinosTransactionRepositoryNotProvidedException(MinosRepositoryException):
+    """Exception to be raised when a transactions repository is needed but none is set."""
+
+
+class MinosInvalidTransactionStatusException(MinosRepositoryException):
+    """Exception to be raised when a transactions has invalid status."""
+
+
+class MinosLockException(MinosException):
+    """Base lock exception"""
+
+
+class MinosLockPoolNotProvidedException(MinosException):
+    """Exception to be raised when a lock pool is needed but none is set."""
 
 
 class MinosSnapshotException(MinosException):

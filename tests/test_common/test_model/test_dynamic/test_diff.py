@@ -27,18 +27,17 @@ from tests.aggregate_classes import (
     Owner,
 )
 from tests.utils import (
-    FakeRepository,
-    FakeSnapshot,
+    MinosTestCase,
 )
 
 
-class TestFieldDiffContainer(unittest.IsolatedAsyncioTestCase):
+class TestFieldDiffContainer(MinosTestCase):
     async def asyncSetUp(self) -> None:
-        async with FakeRepository() as r, FakeSnapshot() as s:
-            self.car_one = Car(3, "blue", id=1, version=1, _repository=r, _snapshot=s)
-            self.car_two = Car(5, "red", id=1, version=2, _repository=r, _snapshot=s)
-            self.car_three = Car(5, "yellow", id=1, version=3, _repository=r, _snapshot=s)
-            self.car_four = Car(3, "blue", id=2, version=1, _repository=r, _snapshot=s)
+        await super().asyncSetUp()
+        self.car_one = Car(3, "blue", id=1, version=1, _repository=self.repository, _snapshot=self.snapshot)
+        self.car_two = Car(5, "red", id=1, version=2, _repository=self.repository, _snapshot=self.snapshot)
+        self.car_three = Car(5, "yellow", id=1, version=3, _repository=self.repository, _snapshot=self.snapshot)
+        self.car_four = Car(3, "blue", id=2, version=1, _repository=self.repository, _snapshot=self.snapshot)
 
     def test_model_type(self):
         fields = [FieldDiff("doors", int, 5), FieldDiff("color", str, "red")]

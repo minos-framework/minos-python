@@ -18,6 +18,7 @@ from dependency_injector.wiring import (
 from ...exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosRepositoryNotProvidedException,
+    MinosTransactionRepositoryNotProvidedException,
 )
 from ...importlib import (
     import_module,
@@ -25,6 +26,10 @@ from ...importlib import (
 from ...repository import (
     MinosRepository,
     RepositoryEntry,
+)
+from ...transactions import (
+    TransactionRepository,
+    TransactionStatus,
 )
 from ..entries import (
     SnapshotEntry,
@@ -44,13 +49,23 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     """Minos Snapshot Dispatcher class."""
 
     @inject
-    def __init__(self, *args, repository: MinosRepository = Provide["repository"], **kwargs):
+    def __init__(
+        self,
+        *args,
+        repository: MinosRepository = Provide["repository"],
+        transaction_repository: TransactionRepository = Provide["transaction_repository"],
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
 
         if repository is None or isinstance(repository, Provide):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
+        if transaction_repository is None or isinstance(transaction_repository, Provide):
+            raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
+
         self._repository = repository
+        self._transaction_repository = transaction_repository
 
     async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
         """Check if the snapshot has the latest version of an ``Aggregate`` instance.
@@ -71,15 +86,18 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
         :return: This method does not return anything.
         """
-        offset = await self._load_offset(**kwargs)
-        iterable = self._repository.select(id_gt=offset, **kwargs)
+        initial_offset = await self._load_offset(**kwargs)
 
-        async for event_entry in iterable:
+        offset = initial_offset
+        async for event_entry in self._repository.select(id_gt=offset, **kwargs):
             try:
                 await self._dispatch_one(event_entry, **kwargs)
             except MinosPreviousVersionSnapshotException:
                 pass
             offset = max(event_entry.id, offset)
+
+        if initial_offset < offset:
+            await self._clean_transactions(initial_offset)
 
         await self._store_offset(offset)
 
@@ -156,6 +174,14 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
 
         return snapshot_entry
 
+    async def _clean_transactions(self, offset: int, **kwargs) -> None:
+        iterable = self._transaction_repository.select(
+            event_offset_gt=offset, status_in=(TransactionStatus.COMMITTED, TransactionStatus.REJECTED), **kwargs
+        )
+        transaction_uuids = {transaction.uuid async for transaction in iterable}
+        if len(transaction_uuids):
+            await self.submit_query(_DELETE_SNAPSHOT_ENTRIES_QUERY, {"transaction_uuids": tuple(transaction_uuids)})
+
 
 _SELECT_ONE_SNAPSHOT_ENTRY_QUERY = """
 SELECT version, schema, data, created_at, updated_at
@@ -191,6 +217,12 @@ ON CONFLICT (aggregate_uuid, transaction_uuid)
 DO
    UPDATE SET version = %(version)s, schema = %(schema)s, data = %(data)s, updated_at = %(updated_at)s
 RETURNING created_at, updated_at;
+""".strip()
+
+
+_DELETE_SNAPSHOT_ENTRIES_QUERY = """
+DELETE FROM snapshot
+WHERE transaction_uuid IN %(transaction_uuids)s;
 """.strip()
 
 _SELECT_OFFSET_QUERY = """

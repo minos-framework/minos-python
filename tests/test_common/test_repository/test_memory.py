@@ -15,63 +15,38 @@ from minos.common import (
     Action,
     FieldDiffContainer,
     InMemoryRepository,
-    MinosBrokerNotProvidedException,
     MinosRepository,
+    MinosRepositoryConflictException,
     MinosRepositoryException,
     RepositoryEntry,
 )
 from tests.utils import (
-    FakeBroker,
+    MinosTestCase,
     TestRepositorySelect,
 )
 
 
-class TestInMemoryRepository(TestRepositorySelect):
+class TestInMemoryRepository(MinosTestCase, TestRepositorySelect):
     def setUp(self) -> None:
+        super().setUp()
+
         self.uuid = uuid4()
-        self.broker = FakeBroker()
+        self.repository = InMemoryRepository(
+            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+        )
+
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
         self.field_diff_container_patcher.start()
 
-    async def asyncSetUp(self) -> None:
-        await super().asyncSetUp()
-        self.repository = InMemoryRepository(self.broker)
-        await self.repository.setup()
-
-    async def asyncTearDown(self) -> None:
-        await self.repository.destroy()
-        await super().asyncTearDown()
-
     def tearDown(self):
         self.field_diff_container_patcher.stop()
+        super().tearDown()
 
     def test_constructor(self):
-        repository = InMemoryRepository(self.broker)
+        repository = InMemoryRepository()
         self.assertIsInstance(repository, MinosRepository)
-
-    async def test_constructor_raises(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
-            InMemoryRepository()
-
-    async def test_create(self):
-        await self.repository.create(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
-
-    async def test_update(self):
-        await self.repository.update(RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8")))
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.UPDATE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
-
-    async def test_delete(self):
-        await self.repository.delete(RepositoryEntry(self.uuid, "example.Car", 1, bytes()))
-        expected = [RepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.DELETE)]
-        observed = [v async for v in self.repository.select()]
-        self.assert_equal_repository_entries(expected, observed)
 
     async def test_submit(self):
         await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", action=Action.CREATE))
@@ -96,7 +71,7 @@ class TestInMemoryRepository(TestRepositorySelect):
 
     async def test_submit_raises_duplicate(self):
         await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(MinosRepositoryConflictException):
             await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
 
     async def test_submit_raises_no_action(self):
@@ -106,11 +81,18 @@ class TestInMemoryRepository(TestRepositorySelect):
     async def test_select_empty(self):
         self.assertEqual([], [v async for v in self.repository.select()])
 
+    async def test_offset(self):
+        self.assertEqual(0, await self.repository.offset)
+        await self.repository.submit(RepositoryEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
+        self.assertEqual(1, await self.repository.offset)
 
-class TestInMemoryRepositorySelect(TestRepositorySelect):
+
+class TestInMemoryRepositorySelect(MinosTestCase, TestRepositorySelect):
     def setUp(self) -> None:
         super().setUp()
+
         self.uuid = uuid4()
+
         self.uuid_1 = uuid4()
         self.uuid_2 = uuid4()
         self.uuid_4 = uuid4()
@@ -118,7 +100,10 @@ class TestInMemoryRepositorySelect(TestRepositorySelect):
         self.first_transaction = uuid4()
         self.second_transaction = uuid4()
 
-        self.broker = FakeBroker()
+        self.repository = InMemoryRepository(
+            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+        )
+
         self.field_diff_container_patcher = patch(
             "minos.common.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
         )
@@ -163,38 +148,32 @@ class TestInMemoryRepositorySelect(TestRepositorySelect):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.repository = await self._build_repository()
+        await self._build_repository()
 
     async def _build_repository(self):
-        repository = InMemoryRepository(self.broker)
-        await repository.setup()
-        await repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
-        await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
-        await repository.create(RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
-        await repository.update(RepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
-        await repository.delete(RepositoryEntry(self.uuid_1, "example.Car", 4))
-        await repository.update(RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
-        await repository.create(RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
-        await repository.update(
+        await self.repository.setup()
+        await self.repository.create(RepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
+        await self.repository.update(RepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
+        await self.repository.create(RepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
+        await self.repository.update(RepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
+        await self.repository.delete(RepositoryEntry(self.uuid_1, "example.Car", 4))
+        await self.repository.update(RepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
+        await self.repository.create(RepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 3, bytes("hola", "utf-8"), transaction_uuid=self.first_transaction
             )
         )
-        await repository.update(
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 3, bytes("salut", "utf-8"), transaction_uuid=self.second_transaction
             )
         )
-        await repository.update(
+        await self.repository.update(
             RepositoryEntry(
                 self.uuid_2, "example.Car", 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction
             )
         )
-        return repository
-
-    async def asyncTearDown(self):
-        await self.repository.destroy()
-        await super().asyncTearDown()
 
     def tearDown(self):
         self.field_diff_container_patcher.stop()
@@ -289,6 +268,11 @@ class TestInMemoryRepositorySelect(TestRepositorySelect):
     async def test_select_transaction_uuid(self):
         expected = [self.entries[7], self.entries[9]]
         observed = [v async for v in self.repository.select(transaction_uuid=self.first_transaction)]
+        self.assert_equal_repository_entries(expected, observed)
+
+    async def test_select_transaction_uuid_ne(self):
+        expected = [self.entries[7], self.entries[8], self.entries[9]]
+        observed = [v async for v in self.repository.select(transaction_uuid_ne=NULL_UUID)]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_combined(self):

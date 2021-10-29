@@ -1,4 +1,3 @@
-import sys
 import unittest
 from datetime import (
     datetime,
@@ -10,11 +9,6 @@ from uuid import (
     uuid4,
 )
 
-from dependency_injector import (
-    containers,
-    providers,
-)
-
 from minos.common import (
     SnapshotEntry,
 )
@@ -22,19 +16,15 @@ from tests.aggregate_classes import (
     Car,
 )
 from tests.utils import (
-    FakeRepository,
-    FakeSnapshot,
+    MinosTestCase,
 )
 
 
-class TestSnapshotEntry(unittest.TestCase):
+class TestSnapshotEntry(MinosTestCase):
     def setUp(self) -> None:
-        self.uuid = uuid4()
+        super().setUp()
 
-        self.container = containers.DynamicContainer()
-        self.container.repository = providers.Singleton(FakeRepository)
-        self.container.snapshot = providers.Singleton(FakeSnapshot)
-        self.container.wire(modules=[sys.modules[__name__]])
+        self.uuid = uuid4()
 
         self.schema = {
             "type": "record",
