@@ -8,7 +8,7 @@ from uuid import (
 
 from minos.common import (
     Condition,
-    EventRepositoryEntry,
+    EventEntry,
     FieldDiff,
     FieldDiffContainer,
     MinosSnapshotAggregateNotFoundException,
@@ -63,24 +63,24 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
 
-        await self.event_repository.create(EventRepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventRepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
-        await self.event_repository.create(EventRepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
-        await self.event_repository.update(EventRepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
-        await self.event_repository.delete(EventRepositoryEntry(self.uuid_1, aggregate_name, 4))
-        await self.event_repository.update(EventRepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
+        await self.event_repository.delete(EventEntry(self.uuid_1, aggregate_name, 4))
+        await self.event_repository.update(EventEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
         await self.event_repository.update(
-            EventRepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
+            EventEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
         await self.event_repository.delete(
-            EventRepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
+            EventEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
         await self.event_repository.update(
-            EventRepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
+            EventEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.event_repository.create(EventRepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
         await self.event_repository.delete(
-            EventRepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
+            EventEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
         await self.transaction_repository.submit(
             TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)

@@ -16,8 +16,8 @@ import aiopg
 from minos.common import (
     NULL_UUID,
     Action,
+    EventEntry,
     EventRepository,
-    EventRepositoryEntry,
     FieldDiffContainer,
     MinosRepositoryConflictException,
     MinosRepositoryException,
@@ -83,49 +83,45 @@ class TestPostgreSqlRepository(MinosTestCase, PostgresAsyncTestCase, TestReposit
         self.assertTrue(response)
 
     async def test_generate_uuid(self):
-        await self.event_repository.create(EventRepositoryEntry(NULL_UUID, "example.Car", 1, bytes("foo", "utf-8")))
+        await self.event_repository.create(EventEntry(NULL_UUID, "example.Car", 1, bytes("foo", "utf-8")))
         observed = [v async for v in self.event_repository.select()]
         self.assertEqual(1, len(observed))
         self.assertIsInstance(observed[0].aggregate_uuid, UUID)
         self.assertNotEqual(NULL_UUID, observed[0].aggregate_uuid)
 
     async def test_submit(self):
-        await self.event_repository.submit(EventRepositoryEntry(self.uuid, "example.Car", action=Action.CREATE))
-        expected = [EventRepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE)]
+        await self.event_repository.submit(EventEntry(self.uuid, "example.Car", action=Action.CREATE))
+        expected = [EventEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE)]
         observed = [v async for v in self.event_repository.select()]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_submit_with_version(self):
-        await self.event_repository.submit(
-            EventRepositoryEntry(self.uuid, "example.Car", version=3, action=Action.CREATE)
-        )
-        expected = [EventRepositoryEntry(self.uuid, "example.Car", 3, bytes(), 1, Action.CREATE)]
+        await self.event_repository.submit(EventEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
+        expected = [EventEntry(self.uuid, "example.Car", 3, bytes(), 1, Action.CREATE)]
         observed = [v async for v in self.event_repository.select()]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_submit_with_created_at(self):
         created_at = datetime(2021, 10, 25, 8, 30, tzinfo=timezone.utc)
         await self.event_repository.submit(
-            EventRepositoryEntry(self.uuid, "example.Car", created_at=created_at, action=Action.CREATE)
+            EventEntry(self.uuid, "example.Car", created_at=created_at, action=Action.CREATE)
         )
-        expected = [EventRepositoryEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE, created_at=created_at)]
+        expected = [EventEntry(self.uuid, "example.Car", 1, bytes(), 1, Action.CREATE, created_at=created_at)]
         observed = [v async for v in self.event_repository.select()]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_submit_raises_duplicate(self):
-        await self.event_repository.submit(EventRepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
+        await self.event_repository.submit(EventEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
         with self.assertRaises(MinosRepositoryConflictException):
-            await self.event_repository.submit(EventRepositoryEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
+            await self.event_repository.submit(EventEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
 
     async def test_submit_raises_no_action(self):
         with self.assertRaises(MinosRepositoryException):
-            await self.event_repository.submit(EventRepositoryEntry(self.uuid, "example.Car", 1, "foo".encode()))
+            await self.event_repository.submit(EventEntry(self.uuid, "example.Car", 1, "foo".encode()))
 
     async def test_offset(self):
         self.assertEqual(0, await self.event_repository.offset)
-        await self.event_repository.submit(
-            EventRepositoryEntry(self.uuid, "example.Car", version=3, action=Action.CREATE)
-        )
+        await self.event_repository.submit(EventEntry(self.uuid, "example.Car", version=3, action=Action.CREATE))
         self.assertEqual(1, await self.event_repository.offset)
 
     async def test_select_empty(self):
@@ -160,14 +156,14 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
         self.field_diff_container_patcher.start()
 
         self.entries = [
-            EventRepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE),
-            EventRepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8"), 2, Action.UPDATE),
-            EventRepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8"), 3, Action.CREATE),
-            EventRepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8"), 4, Action.UPDATE),
-            EventRepositoryEntry(self.uuid_1, "example.Car", 4, bytes(), 5, Action.DELETE),
-            EventRepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8"), 6, Action.UPDATE),
-            EventRepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
-            EventRepositoryEntry(
+            EventEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8"), 1, Action.CREATE),
+            EventEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8"), 2, Action.UPDATE),
+            EventEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8"), 3, Action.CREATE),
+            EventEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8"), 4, Action.UPDATE),
+            EventEntry(self.uuid_1, "example.Car", 4, bytes(), 5, Action.DELETE),
+            EventEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8"), 6, Action.UPDATE),
+            EventEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"), 7, Action.CREATE),
+            EventEntry(
                 self.uuid_2,
                 "example.Car",
                 3,
@@ -176,7 +172,7 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
                 Action.UPDATE,
                 transaction_uuid=self.first_transaction,
             ),
-            EventRepositoryEntry(
+            EventEntry(
                 self.uuid_2,
                 "example.Car",
                 3,
@@ -185,7 +181,7 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
                 Action.UPDATE,
                 transaction_uuid=self.second_transaction,
             ),
-            EventRepositoryEntry(
+            EventEntry(
                 self.uuid_2,
                 "example.Car",
                 4,
@@ -202,31 +198,21 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
 
     async def _build_repository(self):
         await self.event_repository.setup()
-        await self.event_repository.create(EventRepositoryEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
-        await self.event_repository.update(EventRepositoryEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
-        await self.event_repository.create(EventRepositoryEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
+        await self.event_repository.create(EventEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
+        await self.event_repository.update(EventEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
+        await self.event_repository.create(EventEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
+        await self.event_repository.update(EventEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8")))
+        await self.event_repository.delete(EventEntry(self.uuid_1, "example.Car", 4))
+        await self.event_repository.update(EventEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
+        await self.event_repository.create(EventEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8")))
         await self.event_repository.update(
-            EventRepositoryEntry(self.uuid_1, "example.Car", 3, bytes("foobar", "utf-8"))
-        )
-        await self.event_repository.delete(EventRepositoryEntry(self.uuid_1, "example.Car", 4))
-        await self.event_repository.update(EventRepositoryEntry(self.uuid_2, "example.Car", 2, bytes("bye", "utf-8")))
-        await self.event_repository.create(
-            EventRepositoryEntry(self.uuid_4, "example.MotorCycle", 1, bytes("one", "utf-8"))
-        )
-        await self.event_repository.update(
-            EventRepositoryEntry(
-                self.uuid_2, "example.Car", 3, bytes("hola", "utf-8"), transaction_uuid=self.first_transaction
-            )
+            EventEntry(self.uuid_2, "example.Car", 3, bytes("hola", "utf-8"), transaction_uuid=self.first_transaction)
         )
         await self.event_repository.update(
-            EventRepositoryEntry(
-                self.uuid_2, "example.Car", 3, bytes("salut", "utf-8"), transaction_uuid=self.second_transaction
-            )
+            EventEntry(self.uuid_2, "example.Car", 3, bytes("salut", "utf-8"), transaction_uuid=self.second_transaction)
         )
         await self.event_repository.update(
-            EventRepositoryEntry(
-                self.uuid_2, "example.Car", 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction
-            )
+            EventEntry(self.uuid_2, "example.Car", 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction)
         )
 
     async def asyncTearDown(self):

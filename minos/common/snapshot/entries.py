@@ -28,7 +28,7 @@ from ..protocol import (
     MinosJsonBinaryProtocol,
 )
 from ..repository import (
-    EventRepositoryEntry,
+    EventEntry,
 )
 from ..uuid import (
     NULL_UUID,
@@ -110,7 +110,7 @@ class SnapshotEntry:
         )
 
     @classmethod
-    def from_event_entry(cls, entry: EventRepositoryEntry) -> SnapshotEntry:
+    def from_event_entry(cls, entry: EventEntry) -> SnapshotEntry:
         """Build a new ``SnapshotEntry`` from a deletion event.
 
         :param entry: The repository entry containing the delete information.

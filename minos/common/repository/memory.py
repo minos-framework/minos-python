@@ -30,7 +30,7 @@ from .abc import (
     EventRepository,
 )
 from .entries import (
-    EventRepositoryEntry,
+    EventEntry,
 )
 
 
@@ -43,7 +43,7 @@ class InMemoryEventRepository(EventRepository):
         self._id_generator = count()
         self._next_versions = defaultdict(int)
 
-    async def _submit(self, entry: EventRepositoryEntry, **kwargs) -> EventRepositoryEntry:
+    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         if entry.aggregate_uuid == NULL_UUID:
             entry.aggregate_uuid = uuid4()
 
@@ -66,7 +66,7 @@ class InMemoryEventRepository(EventRepository):
     def _generate_next_id(self) -> int:
         return next(self._id_generator) + 1
 
-    def _get_next_version_id(self, entry: EventRepositoryEntry) -> int:
+    def _get_next_version_id(self, entry: EventEntry) -> int:
         key = (entry.aggregate_name, entry.aggregate_uuid, entry.transaction_uuid)
         self._next_versions[key] += 1
         return self._next_versions[key]
@@ -89,10 +89,10 @@ class InMemoryEventRepository(EventRepository):
         transaction_uuid_ne: Optional[UUID] = None,
         *args,
         **kwargs,
-    ) -> AsyncIterator[EventRepositoryEntry]:
+    ) -> AsyncIterator[EventEntry]:
 
         # noinspection DuplicatedCode
-        def _fn_filter(entry: EventRepositoryEntry) -> bool:
+        def _fn_filter(entry: EventEntry) -> bool:
             if aggregate_uuid is not None and aggregate_uuid != entry.aggregate_uuid:
                 return False
             if aggregate_name is not None and aggregate_name != entry.aggregate_name:

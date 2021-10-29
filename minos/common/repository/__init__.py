@@ -2,7 +2,7 @@ from .abc import (
     EventRepository,
 )
 from .entries import (
-    EventRepositoryEntry,
+    EventEntry,
 )
 from .memory import (
     InMemoryEventRepository,

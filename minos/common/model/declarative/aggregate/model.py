@@ -34,8 +34,8 @@ from ....queries import (
     _Ordering,
 )
 from ....repository import (
+    EventEntry,
     EventRepository,
-    EventRepositoryEntry,
 )
 from ....snapshot import (
     MinosSnapshot,
@@ -246,7 +246,7 @@ class Aggregate(Entity):
 
         self._update_from_repository_entry(entry)
 
-    def _update_from_repository_entry(self, entry: EventRepositoryEntry) -> None:
+    def _update_from_repository_entry(self, entry: EventEntry) -> None:
         self.uuid = entry.aggregate_uuid
         self.version = entry.version
         if entry.action.is_create:

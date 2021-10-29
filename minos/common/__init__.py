@@ -142,8 +142,8 @@ from .queries import (
     Ordering,
 )
 from .repository import (
+    EventEntry,
     EventRepository,
-    EventRepositoryEntry,
     InMemoryEventRepository,
     PostgreSqlEventRepository,
 )

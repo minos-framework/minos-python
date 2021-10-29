@@ -27,8 +27,8 @@ from minos.common import (
     Aggregate,
     CommandReply,
     Entity,
+    EventEntry,
     EventRepository,
-    EventRepositoryEntry,
     InMemoryEventRepository,
     InMemorySnapshot,
     InMemoryTransactionRepository,
@@ -92,9 +92,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
 
 class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
-    def assert_equal_repository_entries(
-        self: TestCase, expected: list[EventRepositoryEntry], observed: list[EventRepositoryEntry]
-    ) -> None:
+    def assert_equal_repository_entries(self: TestCase, expected: list[EventEntry], observed: list[EventEntry]) -> None:
         """For testing purposes."""
 
         self.assertEqual(len(expected), len(observed))
@@ -113,10 +111,10 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
 class FakeEventRepository(EventRepository):
     """For testing purposes."""
 
-    async def _submit(self, entry: EventRepositoryEntry, **kwargs) -> EventRepositoryEntry:
+    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         """For testing purposes."""
 
-    def _select(self, *args, **kwargs) -> AsyncIterator[EventRepositoryEntry]:
+    def _select(self, *args, **kwargs) -> AsyncIterator[EventEntry]:
         """For testing purposes."""
 
     @property

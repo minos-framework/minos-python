@@ -14,7 +14,7 @@ from uuid import (
 from minos.common import (
     TRANSACTION_CONTEXT_VAR,
     Action,
-    EventRepositoryEntry,
+    EventEntry,
     MinosRepositoryConflictException,
     TransactionEntry,
     TransactionStatus,
@@ -157,14 +157,14 @@ class TestTransaction(MinosTestCase):
         agg_uuid = uuid4()
 
         select_event_1 = [
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
         ]
 
         select_event_2 = [
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
         ]
 
         transaction_event_1 = []
@@ -205,14 +205,14 @@ class TestTransaction(MinosTestCase):
         agg_uuid = uuid4()
 
         select_event_1 = [
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
         ]
 
         select_event_2 = [
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE),
         ]
 
         select_transaction_1 = []
@@ -243,14 +243,14 @@ class TestTransaction(MinosTestCase):
         agg_uuid = uuid4()
 
         select_event_1 = [
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
         ]
 
         select_event_2 = [
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
         ]
 
         transaction_event_1 = [TransactionEntry(another, TransactionStatus.RESERVED)]
@@ -312,9 +312,9 @@ class TestTransaction(MinosTestCase):
         agg_uuid = uuid4()
 
         async def _fn(*args, **kwargs):
-            yield EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
-            yield EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
-            yield EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
+            yield EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
+            yield EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
+            yield EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
 
         select_mock = MagicMock(side_effect=_fn)
         submit_mock = AsyncMock()
@@ -333,15 +333,9 @@ class TestTransaction(MinosTestCase):
 
         self.assertEqual(
             [
-                call(
-                    EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid
-                ),
-                call(
-                    EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid
-                ),
-                call(
-                    EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid
-                ),
+                call(EventEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid),
+                call(EventEntry(agg_uuid, "c.Car", 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
+                call(EventEntry(agg_uuid, "c.Car", 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
             ],
             submit_mock.call_args_list,
         )

@@ -54,7 +54,7 @@ from ..transactions import (
     TransactionStatus,
 )
 from .entries import (
-    EventRepositoryEntry,
+    EventEntry,
 )
 
 if TYPE_CHECKING:
@@ -98,7 +98,7 @@ class EventRepository(ABC, MinosSetup):
         """
         return TransactionEntry(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
 
-    async def create(self, entry: Union[AggregateDiff, EventRepositoryEntry]) -> EventRepositoryEntry:
+    async def create(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
         """Store new creation entry into the repository.
 
         :param entry: Entry to be stored.
@@ -111,7 +111,7 @@ class EventRepository(ABC, MinosSetup):
         entry.action = Action.CREATE
         return await self.submit(entry)
 
-    async def update(self, entry: Union[AggregateDiff, EventRepositoryEntry]) -> EventRepositoryEntry:
+    async def update(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
         """Store new update entry into the repository.
 
         :param entry: Entry to be stored.
@@ -124,7 +124,7 @@ class EventRepository(ABC, MinosSetup):
         entry.action = Action.UPDATE
         return await self.submit(entry)
 
-    async def delete(self, entry: Union[AggregateDiff, EventRepositoryEntry]) -> EventRepositoryEntry:
+    async def delete(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
         """Store new deletion entry into the repository.
 
         :param entry: Entry to be stored.
@@ -137,7 +137,7 @@ class EventRepository(ABC, MinosSetup):
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def submit(self, entry: Union[AggregateDiff, EventRepositoryEntry], **kwargs) -> EventRepositoryEntry:
+    async def submit(self, entry: Union[AggregateDiff, EventEntry], **kwargs) -> EventEntry:
         """Store new entry into the repository.
 
         :param entry: The entry to be stored.
@@ -152,10 +152,10 @@ class EventRepository(ABC, MinosSetup):
         transaction = TRANSACTION_CONTEXT_VAR.get()
 
         if isinstance(entry, AggregateDiff):
-            entry = EventRepositoryEntry.from_aggregate_diff(entry, transaction=transaction)
+            entry = EventEntry.from_aggregate_diff(entry, transaction=transaction)
 
         if not isinstance(entry.action, Action):
-            raise MinosRepositoryException("The 'EventRepositoryEntry.action' attribute must be an 'Action' instance.")
+            raise MinosRepositoryException("The 'EventEntry.action' attribute must be an 'Action' instance.")
 
         async with self.write_lock():
             if not await self.validate(entry, **kwargs):
@@ -169,7 +169,7 @@ class EventRepository(ABC, MinosSetup):
         return entry
 
     # noinspection PyUnusedLocal
-    async def validate(self, entry: EventRepositoryEntry, transaction_uuid_ne: Optional[UUID] = None, **kwargs) -> bool:
+    async def validate(self, entry: EventEntry, transaction_uuid_ne: Optional[UUID] = None, **kwargs) -> bool:
         """Check if it is able to submit the given entry.
 
         :param entry: The entry to be validated.
@@ -194,7 +194,7 @@ class EventRepository(ABC, MinosSetup):
         return True
 
     @abstractmethod
-    async def _submit(self, entry: EventRepositoryEntry, **kwargs) -> EventRepositoryEntry:
+    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         raise NotImplementedError
 
     async def _send_events(self, aggregate_diff: AggregateDiff):
@@ -243,7 +243,7 @@ class EventRepository(ABC, MinosSetup):
         transaction_uuid: Optional[UUID] = None,
         transaction_uuid_ne: Optional[UUID] = None,
         **kwargs,
-    ) -> AsyncIterator[EventRepositoryEntry]:
+    ) -> AsyncIterator[EventEntry]:
         """Perform a selection query of entries stored in to the repository.
 
         :param aggregate_uuid: Aggregate identifier.
@@ -284,7 +284,7 @@ class EventRepository(ABC, MinosSetup):
             yield entry
 
     @abstractmethod
-    async def _select(self, *args, **kwargs) -> AsyncIterator[EventRepositoryEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[EventEntry]:
         """Perform a selection query of entries stored in to the repository."""
 
     @property

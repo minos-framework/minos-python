@@ -30,7 +30,7 @@ from .abc import (
     EventRepository,
 )
 from .entries import (
-    EventRepositoryEntry,
+    EventEntry,
 )
 
 
@@ -53,7 +53,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock="aggregate_event")
         await self.submit_query(_CREATE_TABLE_QUERY, lock="aggregate_event")
 
-    async def _submit(self, entry: EventRepositoryEntry, **kwargs) -> EventRepositoryEntry:
+    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         lock = None
         if entry.aggregate_uuid != NULL_UUID:
             lock = entry.aggregate_uuid.int & (1 << 32) - 1
@@ -70,10 +70,10 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
 
-    async def _select(self, **kwargs) -> AsyncIterator[EventRepositoryEntry]:
+    async def _select(self, **kwargs) -> AsyncIterator[EventEntry]:
         query = self._build_select_query(**kwargs)
         async for row in self.submit_query_and_iter(query, kwargs, **kwargs):
-            yield EventRepositoryEntry(*row)
+            yield EventEntry(*row)
 
     # noinspection PyUnusedLocal
     @staticmethod

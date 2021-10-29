@@ -118,11 +118,11 @@ class TransactionEntry:
 
     async def _commit(self) -> None:
         from ..repository import (
-            EventRepositoryEntry,
+            EventEntry,
         )
 
         async for entry in self._event_repository.select(transaction_uuid=self.uuid):
-            new = EventRepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
+            new = EventEntry.from_another(entry, transaction_uuid=NULL_UUID)
             await self._event_repository.submit(new, transaction_uuid_ne=self.uuid)
 
     async def reserve(self) -> None:
