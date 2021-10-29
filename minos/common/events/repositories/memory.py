@@ -17,25 +17,25 @@ from uuid import (
     uuid4,
 )
 
-from ..datetime import (
+from ...datetime import (
     current_datetime,
 )
-from ..exceptions import (
+from ...exceptions import (
     MinosRepositoryConflictException,
 )
-from ..uuid import (
+from ...uuid import (
     NULL_UUID,
+)
+from ..entries import (
+    EventEntry,
 )
 from .abc import (
     EventRepository,
 )
-from .entries import (
-    EventEntry,
-)
 
 
 class InMemoryEventRepository(EventRepository):
-    """Memory-based implementation of the repository class in ``minos``."""
+    """Memory-based implementation of the event repository class in ``minos``."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

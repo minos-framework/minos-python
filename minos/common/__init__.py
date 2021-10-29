@@ -24,6 +24,12 @@ from .datetime import (
     NULL_DATETIME,
     current_datetime,
 )
+from .events import (
+    EventEntry,
+    EventRepository,
+    InMemoryEventRepository,
+    PostgreSqlEventRepository,
+)
 from .exceptions import (
     DataDecoderException,
     DataDecoderMalformedTypeException,
@@ -140,12 +146,6 @@ from .protocol import (
 from .queries import (
     Condition,
     Ordering,
-)
-from .repository import (
-    EventEntry,
-    EventRepository,
-    InMemoryEventRepository,
-    PostgreSqlEventRepository,
 )
 from .saga import (
     MinosSagaManager,

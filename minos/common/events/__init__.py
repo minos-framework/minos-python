@@ -1,12 +1,8 @@
-from .abc import (
-    EventRepository,
-)
 from .entries import (
     EventEntry,
 )
-from .memory import (
+from .repositories import (
+    EventRepository,
     InMemoryEventRepository,
-)
-from .pg import (
     PostgreSqlEventRepository,
 )

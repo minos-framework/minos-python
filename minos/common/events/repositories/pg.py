@@ -14,28 +14,28 @@ from psycopg2 import (
     IntegrityError,
 )
 
-from ..configuration import (
+from ...configuration import (
     MinosConfig,
 )
-from ..database import (
+from ...database import (
     PostgreSqlMinosDatabase,
 )
-from ..exceptions import (
+from ...exceptions import (
     MinosRepositoryConflictException,
 )
-from ..uuid import (
+from ...uuid import (
     NULL_UUID,
+)
+from ..entries import (
+    EventEntry,
 )
 from .abc import (
     EventRepository,
 )
-from .entries import (
-    EventEntry,
-)
 
 
 class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
-    """PostgreSQL-based implementation of the repository class in ``Minos``."""
+    """PostgreSQL-based implementation of the event repository class in ``Minos``."""
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[EventRepository]:

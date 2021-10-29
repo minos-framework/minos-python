@@ -24,6 +24,10 @@ from dependency_injector.wiring import (
 from ....datetime import (
     NULL_DATETIME,
 )
+from ....events import (
+    EventEntry,
+    EventRepository,
+)
 from ....exceptions import (
     MinosRepositoryException,
     MinosRepositoryNotProvidedException,
@@ -32,10 +36,6 @@ from ....exceptions import (
 from ....queries import (
     _Condition,
     _Ordering,
-)
-from ....repository import (
-    EventEntry,
-    EventRepository,
 )
 from ....snapshot import (
     MinosSnapshot,
@@ -79,7 +79,7 @@ class Aggregate(Entity):
         super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
 
         if _repository is None or isinstance(_repository, Provide):
-            raise MinosRepositoryNotProvidedException("A repository instance is required.")
+            raise MinosRepositoryNotProvidedException("An event repository instance is required.")
         if _snapshot is None or isinstance(_snapshot, Provide):
             raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
 

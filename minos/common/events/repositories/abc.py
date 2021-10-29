@@ -28,43 +28,43 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from ..exceptions import (
+from ...exceptions import (
     MinosBrokerNotProvidedException,
     MinosLockPoolNotProvidedException,
     MinosRepositoryConflictException,
     MinosRepositoryException,
     MinosTransactionRepositoryNotProvidedException,
 )
-from ..locks import (
+from ...locks import (
     Lock,
 )
-from ..networks import (
+from ...networks import (
     MinosBroker,
 )
-from ..pools import (
+from ...pools import (
     MinosPool,
 )
-from ..setup import (
+from ...setup import (
     MinosSetup,
 )
-from ..transactions import (
+from ...transactions import (
     TRANSACTION_CONTEXT_VAR,
     TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
-from .entries import (
+from ..entries import (
     EventEntry,
 )
 
 if TYPE_CHECKING:
-    from ..model import (
+    from ...model import (
         AggregateDiff,
     )
 
 
 class EventRepository(ABC, MinosSetup):
-    """Base repository class in ``minos``."""
+    """Base event repository class in ``minos``."""
 
     @inject
     def __init__(
@@ -84,7 +84,7 @@ class EventRepository(ABC, MinosSetup):
             raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
 
         if lock_pool is None or isinstance(lock_pool, Provide):
-            raise MinosLockPoolNotProvidedException("A transaction repository instance is required.")
+            raise MinosLockPoolNotProvidedException("A lock pool instance is required.")
 
         self._event_broker = event_broker
         self._transaction_repository = transaction_repository
@@ -104,7 +104,7 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ..model import (
+        from ...model import (
             Action,
         )
 
@@ -117,7 +117,7 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ..model import (
+        from ...model import (
             Action,
         )
 
@@ -130,7 +130,7 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ..model import (
+        from ...model import (
             Action,
         )
 
@@ -144,7 +144,7 @@ class EventRepository(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: The repository entry containing the stored information.
         """
-        from ..model import (
+        from ...model import (
             Action,
             AggregateDiff,
         )
@@ -198,7 +198,7 @@ class EventRepository(ABC, MinosSetup):
         raise NotImplementedError
 
     async def _send_events(self, aggregate_diff: AggregateDiff):
-        from ..model import (
+        from ...model import (
             Action,
         )
 
@@ -212,7 +212,7 @@ class EventRepository(ABC, MinosSetup):
         futures = [self._event_broker.send(aggregate_diff, topic=topic)]
 
         if aggregate_diff.action == Action.UPDATE:
-            from ..model import (
+            from ...model import (
                 IncrementalFieldDiff,
             )
 

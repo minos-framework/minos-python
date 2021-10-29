@@ -15,6 +15,10 @@ from dependency_injector.wiring import (
     inject,
 )
 
+from ...events import (
+    EventEntry,
+    EventRepository,
+)
 from ...exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosRepositoryNotProvidedException,
@@ -22,10 +26,6 @@ from ...exceptions import (
 )
 from ...importlib import (
     import_module,
-)
-from ...repository import (
-    EventEntry,
-    EventRepository,
 )
 from ...transactions import (
     TransactionRepository,
@@ -59,7 +59,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         super().__init__(*args, **kwargs)
 
         if event_repository is None or isinstance(event_repository, Provide):
-            raise MinosRepositoryNotProvidedException("A repository instance is required.")
+            raise MinosRepositoryNotProvidedException("An event repository instance is required.")
 
         if transaction_repository is None or isinstance(transaction_repository, Provide):
             raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")

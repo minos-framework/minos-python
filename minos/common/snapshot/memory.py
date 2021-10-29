@@ -22,6 +22,9 @@ from dependency_injector.wiring import (
     inject,
 )
 
+from ..events import (
+    EventRepository,
+)
 from ..exceptions import (
     MinosRepositoryNotProvidedException,
     MinosSnapshotAggregateNotFoundException,
@@ -31,9 +34,6 @@ from ..exceptions import (
 from ..queries import (
     _Condition,
     _Ordering,
-)
-from ..repository import (
-    EventRepository,
 )
 from ..transactions import (
     TransactionRepository,
@@ -69,7 +69,7 @@ class InMemorySnapshot(MinosSnapshot):
         super().__init__(*args, **kwargs)
 
         if event_repository is None or isinstance(event_repository, Provide):
-            raise MinosRepositoryNotProvidedException("A repository instance is required.")
+            raise MinosRepositoryNotProvidedException("An event repository instance is required.")
 
         if transaction_repository is None or isinstance(transaction_repository, Provide):
             raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")

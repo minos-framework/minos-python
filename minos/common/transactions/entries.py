@@ -39,7 +39,7 @@ from .contextvars import (
 )
 
 if TYPE_CHECKING:
-    from ..repository import (
+    from ..events import (
         EventRepository,
     )
     from .repositories import (
@@ -117,7 +117,7 @@ class TransactionEntry:
             await self.save(event_offset=event_offset, status=TransactionStatus.COMMITTED)
 
     async def _commit(self) -> None:
-        from ..repository import (
+        from ..events import (
             EventEntry,
         )
 
