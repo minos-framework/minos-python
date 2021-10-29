@@ -17,8 +17,8 @@ from tests.utils import (
     BASE_PATH,
     FakeBroker,
     FakeEntrypoint,
+    FakeEventRepository,
     FakeLoop,
-    FakeRepository,
     FakeSagaManager,
 )
 
@@ -34,7 +34,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
     def setUp(self):
         super().setUp()
         self.injections = {
-            "repository": FakeRepository,
+            "event_repository": FakeEventRepository,
             "event_broker": FakeBroker,
             "command_broker": FakeBroker,
             "command_reply_broker": FakeBroker,

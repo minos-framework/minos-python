@@ -50,8 +50,8 @@ class InMemoryTransactionRepository(TransactionRepository):
             status=transaction.status,
             event_offset=transaction.event_offset,
             updated_at=transaction.updated_at,
-            event_repository=transaction.event_repository,
-            transaction_repository=transaction.transaction_repository,
+            event_repository=transaction._event_repository,
+            transaction_repository=transaction._transaction_repository,
         )
 
         return transaction

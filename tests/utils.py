@@ -27,17 +27,17 @@ from minos.common import (
     Aggregate,
     CommandReply,
     Entity,
-    InMemoryRepository,
+    EventRepository,
+    EventRepositoryEntry,
+    InMemoryEventRepository,
     InMemorySnapshot,
     InMemoryTransactionRepository,
     Lock,
     MinosBroker,
     MinosHandler,
     MinosPool,
-    MinosRepository,
     MinosSagaManager,
     MinosSnapshot,
-    RepositoryEntry,
     Transaction,
     TransactionRepository,
     current_datetime,
@@ -53,16 +53,18 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.event_broker = FakeBroker()
         self.lock_pool = FakeLockPool()
         self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
-        self.repository = InMemoryRepository(
+        self.event_repository = InMemoryEventRepository(
             event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
         )
-        self.snapshot = InMemorySnapshot(repository=self.repository, transaction_repository=self.transaction_repository)
+        self.snapshot = InMemorySnapshot(
+            event_repository=self.event_repository, transaction_repository=self.transaction_repository
+        )
 
         self.container = containers.DynamicContainer()
         self.container.event_broker = providers.Object(self.event_broker)
         self.container.transaction_repository = providers.Object(self.transaction_repository)
         self.container.lock_pool = providers.Object(self.lock_pool)
-        self.container.repository = providers.Object(self.repository)
+        self.container.event_repository = providers.Object(self.event_repository)
         self.container.snapshot = providers.Object(self.snapshot)
         self.container.wire(modules=[sys.modules[__name__]])
 
@@ -72,12 +74,12 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         await self.event_broker.setup()
         await self.transaction_repository.setup()
         await self.lock_pool.setup()
-        await self.repository.setup()
+        await self.event_repository.setup()
         await self.snapshot.setup()
 
     async def asyncTearDown(self):
         await self.snapshot.destroy()
-        await self.repository.destroy()
+        await self.event_repository.destroy()
         await self.lock_pool.destroy()
         await self.transaction_repository.destroy()
         await self.event_broker.destroy()
@@ -91,7 +93,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
 class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
     def assert_equal_repository_entries(
-        self: TestCase, expected: list[RepositoryEntry], observed: list[RepositoryEntry]
+        self: TestCase, expected: list[EventRepositoryEntry], observed: list[EventRepositoryEntry]
     ) -> None:
         """For testing purposes."""
 
@@ -108,13 +110,13 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
             self.assertAlmostEqual(e.created_at or current_datetime(), o.created_at, delta=timedelta(seconds=5))
 
 
-class FakeRepository(MinosRepository):
+class FakeEventRepository(EventRepository):
     """For testing purposes."""
 
-    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
+    async def _submit(self, entry: EventRepositoryEntry, **kwargs) -> EventRepositoryEntry:
         """For testing purposes."""
 
-    def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
+    def _select(self, *args, **kwargs) -> AsyncIterator[EventRepositoryEntry]:
         """For testing purposes."""
 
     @property

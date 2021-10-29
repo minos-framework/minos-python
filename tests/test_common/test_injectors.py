@@ -11,7 +11,7 @@ from dependency_injector.containers import (
 
 from minos.common import (
     DependencyInjector,
-    InMemoryRepository,
+    InMemoryEventRepository,
     InMemorySnapshot,
     MinosConfig,
     classname,
@@ -66,9 +66,9 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
             event_broker=FakeBroker,
             lock_pool=FakeLockPool,
             transaction_repository=InMemoryTransactionRepository,
-            repository=InMemoryRepository,
+            event_repository=InMemoryEventRepository,
         )
-        self.assertIsInstance(injector.repository, InMemoryRepository)
+        self.assertIsInstance(injector.event_repository, InMemoryEventRepository)
 
     def test_snapshot(self):
         injector = DependencyInjector(
@@ -76,7 +76,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
             event_broker=FakeBroker,
             lock_pool=FakeLockPool,
             transaction_repository=InMemoryTransactionRepository,
-            repository=InMemoryRepository,
+            event_repository=InMemoryEventRepository,
             snapsthot=InMemorySnapshot,
         )
         self.assertIsInstance(injector.snapsthot, InMemorySnapshot)
@@ -127,9 +127,9 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
             event_broker=FakeBroker,
             lock_pool=FakeLockPool,
             transaction_repository=InMemoryTransactionRepository,
-            repository=InMemoryRepository,
+            event_repository=InMemoryEventRepository,
         )
-        self.assertEqual(injector.repository, injector.container.repository())
+        self.assertEqual(injector.event_repository, injector.container.event_repository())
 
     def test_container_snapshot(self):
         injector = DependencyInjector(
@@ -137,7 +137,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
             event_broker=FakeBroker,
             lock_pool=FakeLockPool,
             transaction_repository=InMemoryTransactionRepository,
-            repository=InMemoryRepository,
+            event_repository=InMemoryEventRepository,
             snapsthot=InMemorySnapshot,
         )
         self.assertEqual(injector.snapsthot, injector.container.snapsthot())
@@ -151,7 +151,7 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
             saga_manager=FakeSagaManager,
             lock_pool=FakeLockPool,
             transaction_repository=InMemoryTransactionRepository,
-            repository=InMemoryRepository,
+            event_repository=InMemoryEventRepository,
             snapsthot=InMemorySnapshot,
         )
 

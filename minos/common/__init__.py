@@ -142,10 +142,10 @@ from .queries import (
     Ordering,
 )
 from .repository import (
-    InMemoryRepository,
-    MinosRepository,
-    PostgreSqlRepository,
-    RepositoryEntry,
+    EventRepository,
+    EventRepositoryEntry,
+    InMemoryEventRepository,
+    PostgreSqlEventRepository,
 )
 from .saga import (
     MinosSagaManager,

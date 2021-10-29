@@ -8,6 +8,7 @@ from uuid import (
 
 from minos.common import (
     Condition,
+    EventRepositoryEntry,
     FieldDiff,
     FieldDiffContainer,
     InMemorySnapshot,
@@ -17,7 +18,6 @@ from minos.common import (
     MinosSnapshotDeletedAggregateException,
     MinosTransactionRepositoryNotProvidedException,
     Ordering,
-    RepositoryEntry,
     SnapshotEntry,
     Transaction,
     TransactionStatus,
@@ -50,33 +50,33 @@ class TestInMemorySnapshot(MinosTestCase):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
-        await self.repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
-        await self.repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
-        await self.repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
-        await self.repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
-        await self.repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
-        await self.repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
-        await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
+        await self.event_repository.create(EventRepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventRepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
+        await self.event_repository.create(EventRepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventRepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
+        await self.event_repository.delete(EventRepositoryEntry(self.uuid_1, aggregate_name, 4))
+        await self.event_repository.update(EventRepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+        await self.event_repository.update(
+            EventRepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.repository.delete(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
+        await self.event_repository.delete(
+            EventRepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
-        await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
+        await self.event_repository.update(
+            EventRepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
-        await self.repository.delete(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
-        )
-        await self.transaction_repository.submit(
-            Transaction(self.transaction_1, TransactionStatus.PENDING, await self.repository.offset)
+        await self.event_repository.create(EventRepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.delete(
+            EventRepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
         await self.transaction_repository.submit(
-            Transaction(self.transaction_2, TransactionStatus.PENDING, await self.repository.offset)
+            Transaction(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
         )
         await self.transaction_repository.submit(
-            Transaction(self.transaction_3, TransactionStatus.REJECTED, await self.repository.offset)
+            Transaction(self.transaction_2, TransactionStatus.PENDING, await self.event_repository.offset)
+        )
+        await self.transaction_repository.submit(
+            Transaction(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
         )
 
     def test_type(self):
@@ -85,7 +85,7 @@ class TestInMemorySnapshot(MinosTestCase):
     def test_constructor_raises(self):
         with self.assertRaises(MinosRepositoryNotProvidedException):
             # noinspection PyTypeChecker
-            InMemorySnapshot(repository=None)
+            InMemorySnapshot(event_repository=None)
 
         with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
             # noinspection PyTypeChecker

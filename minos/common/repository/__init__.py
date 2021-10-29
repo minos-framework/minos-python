@@ -1,12 +1,12 @@
 from .abc import (
-    MinosRepository,
+    EventRepository,
 )
 from .entries import (
-    RepositoryEntry,
+    EventRepositoryEntry,
 )
 from .memory import (
-    InMemoryRepository,
+    InMemoryEventRepository,
 )
 from .pg import (
-    PostgreSqlRepository,
+    PostgreSqlEventRepository,
 )

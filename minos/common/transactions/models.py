@@ -40,7 +40,7 @@ from .contextvars import (
 
 if TYPE_CHECKING:
     from ..repository import (
-        MinosRepository,
+        EventRepository,
     )
     from .repositories import (
         TransactionRepository,
@@ -60,7 +60,7 @@ class Transaction:
         event_offset: Optional[int] = None,
         updated_at: Optional[datetime] = None,
         autocommit: bool = True,
-        event_repository: MinosRepository = Provide["repository"],
+        event_repository: EventRepository = Provide["event_repository"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
     ):
         if uuid is None:
@@ -76,8 +76,8 @@ class Transaction:
         self.event_offset = event_offset
         self.updated_at = updated_at
 
-        self.event_repository = event_repository
-        self.transaction_repository = transaction_repository
+        self._event_repository = event_repository
+        self._transaction_repository = transaction_repository
 
         self._token = None
 
@@ -110,20 +110,20 @@ class Transaction:
         if self.status != TransactionStatus.RESERVED:
             raise ValueError(f"Current status is not {TransactionStatus.RESERVED!r}. Obtained: {self.status!r}")
 
-        async with self.transaction_repository.write_lock():
+        async with self._transaction_repository.write_lock():
             await self.save(status=TransactionStatus.COMMITTING)
             await self._commit()
-            event_offset = 1 + await self.event_repository.offset
+            event_offset = 1 + await self._event_repository.offset
             await self.save(event_offset=event_offset, status=TransactionStatus.COMMITTED)
 
     async def _commit(self) -> None:
         from ..repository import (
-            RepositoryEntry,
+            EventRepositoryEntry,
         )
 
-        async for entry in self.event_repository.select(transaction_uuid=self.uuid):
-            new = RepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
-            await self.event_repository.submit(new, transaction_uuid_ne=self.uuid)
+        async for entry in self._event_repository.select(transaction_uuid=self.uuid):
+            new = EventRepositoryEntry.from_another(entry, transaction_uuid=NULL_UUID)
+            await self._event_repository.submit(new, transaction_uuid_ne=self.uuid)
 
     async def reserve(self) -> None:
         """Reserve transaction changes to be ensured that they can be applied.
@@ -133,14 +133,14 @@ class Transaction:
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
-        async with self.transaction_repository.write_lock():
-            async with self.event_repository.write_lock():
+        async with self._transaction_repository.write_lock():
+            async with self._event_repository.write_lock():
                 await self.save(status=TransactionStatus.RESERVING)
 
                 committable = await self.validate()
 
                 status = TransactionStatus.RESERVED if committable else TransactionStatus.REJECTED
-                event_offset = 1 + await self.event_repository.offset
+                event_offset = 1 + await self._event_repository.offset
                 await self.save(event_offset=event_offset, status=status)
                 if not committable:
                     raise MinosRepositoryConflictException(f"{self!r} could not be reserved!", event_offset)
@@ -151,14 +151,14 @@ class Transaction:
         :return: ``True`` if the transaction is valid or ``False`` otherwise.
         """
         entries = dict()
-        async for entry in self.event_repository.select(transaction_uuid=self.uuid):
+        async for entry in self._event_repository.select(transaction_uuid=self.uuid):
             if entry.aggregate_uuid in entries and entry.version < entries[entry.aggregate_uuid]:
                 continue
             entries[entry.aggregate_uuid] = entry.version
 
         transaction_uuids = set()
         for aggregate_uuid, version in entries.items():
-            async for entry in self.event_repository.select(aggregate_uuid=aggregate_uuid, version=version):
+            async for entry in self._event_repository.select(aggregate_uuid=aggregate_uuid, version=version):
                 if entry.transaction_uuid == NULL_UUID:
                     return False
                 if entry.transaction_uuid != self.uuid:
@@ -166,7 +166,7 @@ class Transaction:
 
         if len(transaction_uuids):
             with suppress(StopAsyncIteration):
-                iterable = self.transaction_repository.select(
+                iterable = self._transaction_repository.select(
                     uuid_in=tuple(transaction_uuids),
                     status_in=(
                         TransactionStatus.RESERVING,
@@ -192,8 +192,8 @@ class Transaction:
                 f"Obtained: {self.status!r}"
             )
 
-        async with self.transaction_repository.write_lock():
-            event_offset = 1 + await self.event_repository.offset
+        async with self._transaction_repository.write_lock():
+            event_offset = 1 + await self._event_repository.offset
             await self.save(event_offset=event_offset, status=TransactionStatus.REJECTED)
 
     async def save(self, *, event_offset: Optional[int] = None, status: Optional[TransactionStatus] = None) -> None:
@@ -209,7 +209,7 @@ class Transaction:
         if status is not None:
             self.status = status
 
-        await self.transaction_repository.submit(self)
+        await self._transaction_repository.submit(self)
 
     def __eq__(self, other: Transaction) -> bool:
         return isinstance(other, type(self)) and tuple(self) == tuple(other)

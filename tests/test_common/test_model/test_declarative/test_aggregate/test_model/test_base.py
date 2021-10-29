@@ -26,7 +26,7 @@ from tests.utils import (
 class TestAggregate(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.kwargs = {"_repository": self.repository, "_snapshot": self.snapshot}
+        self.kwargs = {"_repository": self.event_repository, "_snapshot": self.snapshot}
 
     async def test_create(self):
         observed = await Car.create(doors=3, color="blue", **self.kwargs)

@@ -27,18 +27,18 @@ from ..uuid import (
     NULL_UUID,
 )
 from .abc import (
-    MinosRepository,
+    EventRepository,
 )
 from .entries import (
-    RepositoryEntry,
+    EventRepositoryEntry,
 )
 
 
-class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
+class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
     """PostgreSQL-based implementation of the repository class in ``Minos``."""
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[MinosRepository]:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Optional[EventRepository]:
         return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def _setup(self):
@@ -53,7 +53,7 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock="aggregate_event")
         await self.submit_query(_CREATE_TABLE_QUERY, lock="aggregate_event")
 
-    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
+    async def _submit(self, entry: EventRepositoryEntry, **kwargs) -> EventRepositoryEntry:
         lock = None
         if entry.aggregate_uuid != NULL_UUID:
             lock = entry.aggregate_uuid.int & (1 << 32) - 1
@@ -70,10 +70,10 @@ class PostgreSqlRepository(PostgreSqlMinosDatabase, MinosRepository):
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
 
-    async def _select(self, **kwargs) -> AsyncIterator[RepositoryEntry]:
+    async def _select(self, **kwargs) -> AsyncIterator[EventRepositoryEntry]:
         query = self._build_select_query(**kwargs)
         async for row in self.submit_query_and_iter(query, kwargs, **kwargs):
-            yield RepositoryEntry(*row)
+            yield EventRepositoryEntry(*row)
 
     # noinspection PyUnusedLocal
     @staticmethod

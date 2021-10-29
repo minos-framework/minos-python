@@ -14,8 +14,8 @@ from uuid import (
 from minos.common import (
     TRANSACTION_CONTEXT_VAR,
     Action,
+    EventRepositoryEntry,
     MinosRepositoryConflictException,
-    RepositoryEntry,
     Transaction,
     TransactionStatus,
 )
@@ -34,8 +34,8 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(None, transaction.event_offset)
         self.assertEqual(True, transaction.autocommit)
 
-        self.assertEqual(self.repository, transaction.event_repository)
-        self.assertEqual(self.transaction_repository, transaction.transaction_repository)
+        self.assertEqual(self.event_repository, transaction._event_repository)
+        self.assertEqual(self.transaction_repository, transaction._transaction_repository)
 
     def test_constructor_extended(self):
         uuid = uuid4()
@@ -47,8 +47,8 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(event_offset, transaction.event_offset)
         self.assertEqual(False, transaction.autocommit)
 
-        self.assertEqual(self.repository, transaction.event_repository)
-        self.assertEqual(self.transaction_repository, transaction.transaction_repository)
+        self.assertEqual(self.event_repository, transaction._event_repository)
+        self.assertEqual(self.transaction_repository, transaction._transaction_repository)
 
     def test_constructor_raw_status(self):
         transaction = Transaction(status="pending")
@@ -108,7 +108,7 @@ class TestTransaction(MinosTestCase):
         transaction.save = save_mock
 
         with patch(
-            "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+            "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
         ):
             await transaction.reserve()
 
@@ -129,7 +129,7 @@ class TestTransaction(MinosTestCase):
         transaction.save = save_mock
 
         with patch(
-            "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+            "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
         ):
             with self.assertRaises(MinosRepositoryConflictException):
                 await transaction.reserve()
@@ -157,14 +157,14 @@ class TestTransaction(MinosTestCase):
         agg_uuid = uuid4()
 
         select_event_1 = [
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
         ]
 
         select_event_2 = [
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
         ]
 
         transaction_event_1 = []
@@ -174,7 +174,7 @@ class TestTransaction(MinosTestCase):
         )
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
 
-        self.repository.select = select_event_mock
+        self.event_repository.select = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = Transaction(uuid)
@@ -205,14 +205,14 @@ class TestTransaction(MinosTestCase):
         agg_uuid = uuid4()
 
         select_event_1 = [
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
         ]
 
         select_event_2 = [
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE),
         ]
 
         select_transaction_1 = []
@@ -222,7 +222,7 @@ class TestTransaction(MinosTestCase):
         )
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(select_transaction_1))
 
-        self.repository.select = select_event_mock
+        self.event_repository.select = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = Transaction(uuid)
@@ -243,14 +243,14 @@ class TestTransaction(MinosTestCase):
         agg_uuid = uuid4()
 
         select_event_1 = [
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
         ]
 
         select_event_2 = [
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
-            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
         ]
 
         transaction_event_1 = [Transaction(another, TransactionStatus.RESERVED)]
@@ -260,7 +260,7 @@ class TestTransaction(MinosTestCase):
         )
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
 
-        self.repository.select = select_event_mock
+        self.event_repository.select = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
         transaction = Transaction(uuid)
@@ -293,7 +293,7 @@ class TestTransaction(MinosTestCase):
         transaction.save = save_mock
 
         with patch(
-            "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+            "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
         ):
             await transaction.reject()
 
@@ -312,30 +312,36 @@ class TestTransaction(MinosTestCase):
         agg_uuid = uuid4()
 
         async def _fn(*args, **kwargs):
-            yield RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
-            yield RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
-            yield RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
+            yield EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid)
+            yield EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid)
+            yield EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid)
 
         select_mock = MagicMock(side_effect=_fn)
         submit_mock = AsyncMock()
         save_mock = AsyncMock()
 
-        self.repository.select = select_mock
-        self.repository.submit = submit_mock
+        self.event_repository.select = select_mock
+        self.event_repository.submit = submit_mock
 
         transaction = Transaction(uuid, TransactionStatus.RESERVED)
         transaction.save = save_mock
 
         with patch(
-            "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+            "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
         ):
             await transaction.commit()
 
         self.assertEqual(
             [
-                call(RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid),
-                call(RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
-                call(RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid),
+                call(
+                    EventRepositoryEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid
+                ),
+                call(
+                    EventRepositoryEntry(agg_uuid, "c.Car", 3, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid
+                ),
+                call(
+                    EventRepositoryEntry(agg_uuid, "c.Car", 2, bytes(), action=Action.UPDATE), transaction_uuid_ne=uuid
+                ),
             ],
             submit_mock.call_args_list,
         )
@@ -360,7 +366,7 @@ class TestTransaction(MinosTestCase):
             transaction.status = TransactionStatus.RESERVED
 
         with patch(
-            "minos.common.MinosRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
+            "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
         ), patch.object(transaction, "reserve", side_effect=_fn) as reserve_mock:
             await transaction.commit()
 

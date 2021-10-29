@@ -24,8 +24,8 @@ from ...importlib import (
     import_module,
 )
 from ...repository import (
-    MinosRepository,
-    RepositoryEntry,
+    EventRepository,
+    EventRepositoryEntry,
 )
 from ...transactions import (
     TransactionRepository,
@@ -52,19 +52,19 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     def __init__(
         self,
         *args,
-        repository: MinosRepository = Provide["repository"],
+        event_repository: EventRepository = Provide["event_repository"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
         **kwargs
     ):
         super().__init__(*args, **kwargs)
 
-        if repository is None or isinstance(repository, Provide):
+        if event_repository is None or isinstance(event_repository, Provide):
             raise MinosRepositoryNotProvidedException("A repository instance is required.")
 
         if transaction_repository is None or isinstance(transaction_repository, Provide):
             raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
 
-        self._repository = repository
+        self._event_repository = event_repository
         self._transaction_repository = transaction_repository
 
     async def is_synced(self, aggregate_name: str, **kwargs) -> bool:
@@ -74,7 +74,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         :return: ``True`` if has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset(**kwargs)
-        iterable = self._repository.select(id_gt=offset, aggregate_name=aggregate_name, **kwargs)
+        iterable = self._event_repository.select(id_gt=offset, aggregate_name=aggregate_name, **kwargs)
         try:
             await iterable.__anext__()
             return False
@@ -82,14 +82,14 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
             return True
 
     async def dispatch(self, **kwargs) -> None:
-        """Perform a dispatching step, based on the sequence of non already processed ``RepositoryEntry`` objects.
+        """Perform a dispatching step, based on the sequence of non already processed ``EventRepositoryEntry`` objects.
 
         :return: This method does not return anything.
         """
         initial_offset = await self._load_offset(**kwargs)
 
         offset = initial_offset
-        async for event_entry in self._repository.select(id_gt=offset, **kwargs):
+        async for event_entry in self._event_repository.select(id_gt=offset, **kwargs):
             try:
                 await self._dispatch_one(event_entry, **kwargs)
             except MinosPreviousVersionSnapshotException:
@@ -112,25 +112,25 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     async def _store_offset(self, offset: int) -> None:
         await self.submit_query(_INSERT_OFFSET_QUERY, {"value": offset}, lock="insert_snapshot_aux_offset")
 
-    async def _dispatch_one(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
+    async def _dispatch_one(self, event_entry: EventRepositoryEntry, **kwargs) -> SnapshotEntry:
         if event_entry.action.is_delete:
             return await self._submit_delete(event_entry, **kwargs)
 
         return await self._submit_update_or_create(event_entry, **kwargs)
 
-    async def _submit_delete(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
+    async def _submit_delete(self, event_entry: EventRepositoryEntry, **kwargs) -> SnapshotEntry:
         snapshot_entry = SnapshotEntry.from_event_entry(event_entry)
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
-    async def _submit_update_or_create(self, event_entry: RepositoryEntry, **kwargs) -> SnapshotEntry:
+    async def _submit_update_or_create(self, event_entry: EventRepositoryEntry, **kwargs) -> SnapshotEntry:
         aggregate = await self._build_instance(event_entry, **kwargs)
 
         snapshot_entry = SnapshotEntry.from_aggregate(aggregate, transaction_uuid=event_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
-    async def _build_instance(self, event_entry: RepositoryEntry, **kwargs) -> Aggregate:
+    async def _build_instance(self, event_entry: EventRepositoryEntry, **kwargs) -> Aggregate:
         diff = event_entry.aggregate_diff
         instance = await self._update_if_exists(diff, transaction_uuid=event_entry.transaction_uuid, **kwargs)
         return instance
