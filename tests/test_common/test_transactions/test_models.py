@@ -20,6 +20,7 @@ from minos.common import (
     TransactionStatus,
 )
 from tests.utils import (
+    FakeAsyncIterator,
     MinosTestCase,
 )
 
@@ -114,7 +115,6 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(1, validate_mock.call_count)
         self.assertEqual(call(), validate_mock.call_args)
 
-        self.assertEqual(2, save_mock.call_count)
         self.assertEqual(
             [call(status=TransactionStatus.RESERVING), call(event_offset=56, status=TransactionStatus.RESERVED)],
             save_mock.call_args_list,
@@ -150,9 +150,140 @@ class TestTransaction(MinosTestCase):
         with self.assertRaises(ValueError):
             await Transaction(status=TransactionStatus.REJECTED).reserve()
 
-    async def test_validate(self):
-        # TODO
-        pass
+    async def test_validate_true(self):
+        uuid = uuid4()
+        another = uuid4()
+
+        agg_uuid = uuid4()
+
+        select_event_1 = [
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+        ]
+
+        select_event_2 = [
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+        ]
+
+        transaction_event_1 = []
+
+        select_event_mock = MagicMock(
+            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
+        )
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
+
+        self.repository.select = select_event_mock
+        self.transaction_repository.select = select_transaction_mock
+
+        transaction = Transaction(uuid)
+
+        self.assertTrue(await transaction.validate())
+
+        self.assertEqual(
+            [call(transaction_uuid=uuid), call(aggregate_uuid=agg_uuid, version=3)], select_event_mock.call_args_list
+        )
+        self.assertEqual(
+            [
+                call(
+                    uuid_in=(another,),
+                    status_in=(
+                        TransactionStatus.RESERVING,
+                        TransactionStatus.RESERVED,
+                        TransactionStatus.COMMITTING,
+                        TransactionStatus.COMMITTED,
+                    ),
+                )
+            ],
+            select_transaction_mock.call_args_list,
+        )
+
+    async def test_validate_false_already_committed(self):
+        uuid = uuid4()
+
+        agg_uuid = uuid4()
+
+        select_event_1 = [
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+        ]
+
+        select_event_2 = [
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE),
+        ]
+
+        select_transaction_1 = []
+
+        select_event_mock = MagicMock(
+            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
+        )
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(select_transaction_1))
+
+        self.repository.select = select_event_mock
+        self.transaction_repository.select = select_transaction_mock
+
+        transaction = Transaction(uuid)
+
+        self.assertFalse(await transaction.validate())
+
+        self.assertEqual(
+            [call(transaction_uuid=uuid), call(aggregate_uuid=agg_uuid, version=3)], select_event_mock.call_args_list
+        )
+        self.assertEqual(
+            [], select_transaction_mock.call_args_list,
+        )
+
+    async def test_validate_false_already_reserved(self):
+        uuid = uuid4()
+        another = uuid4()
+
+        agg_uuid = uuid4()
+
+        select_event_1 = [
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+        ]
+
+        select_event_2 = [
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+        ]
+
+        transaction_event_1 = [Transaction(another, TransactionStatus.RESERVED)]
+
+        select_event_mock = MagicMock(
+            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
+        )
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
+
+        self.repository.select = select_event_mock
+        self.transaction_repository.select = select_transaction_mock
+
+        transaction = Transaction(uuid)
+
+        self.assertFalse(await transaction.validate())
+
+        self.assertEqual(
+            [call(transaction_uuid=uuid), call(aggregate_uuid=agg_uuid, version=3)], select_event_mock.call_args_list
+        )
+        self.assertEqual(
+            [
+                call(
+                    uuid_in=(another,),
+                    status_in=(
+                        TransactionStatus.RESERVING,
+                        TransactionStatus.RESERVED,
+                        TransactionStatus.COMMITTING,
+                        TransactionStatus.COMMITTED,
+                    ),
+                )
+            ],
+            select_transaction_mock.call_args_list,
+        )
 
     async def test_reject(self) -> None:
         uuid = uuid4()
@@ -200,7 +331,6 @@ class TestTransaction(MinosTestCase):
         ):
             await transaction.commit()
 
-        self.assertEqual(3, submit_mock.call_count)
         self.assertEqual(
             [
                 call(RepositoryEntry(agg_uuid, "c.Car", 1, bytes(), action=Action.CREATE), transaction_uuid_ne=uuid),
@@ -210,7 +340,6 @@ class TestTransaction(MinosTestCase):
             submit_mock.call_args_list,
         )
 
-        self.assertEqual(2, save_mock.call_count)
         self.assertEqual(
             [call(status=TransactionStatus.COMMITTING), call(event_offset=56, status=TransactionStatus.COMMITTED)],
             save_mock.call_args_list,
@@ -240,7 +369,6 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(1, commit_mock.call_count)
         self.assertEqual(call(), commit_mock.call_args)
 
-        self.assertEqual(2, save_mock.call_count)
         self.assertEqual(
             [call(status=TransactionStatus.COMMITTING), call(event_offset=56, status=TransactionStatus.COMMITTED)],
             save_mock.call_args_list,

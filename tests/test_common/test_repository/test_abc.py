@@ -235,8 +235,6 @@ class TestMinosRepository(MinosTestCase):
 
         await self.repository.submit(aggregate_diff)
 
-        self.assertEqual(2, send_mock.call_count)
-
         args = [
             call(
                 AggregateDiff(

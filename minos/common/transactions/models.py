@@ -146,9 +146,9 @@ class Transaction:
                     raise MinosRepositoryConflictException("'Transaction' could not be reserved!", event_offset)
 
     async def validate(self) -> bool:
-        """TODO
+        """Check if the transaction is committable.
 
-        :return: TODO
+        :return: ``True`` if the transaction is valid or ``False`` otherwise.
         """
         entries = dict()
         async for entry in self.event_repository.select(transaction_uuid=self.uuid):
@@ -169,8 +169,8 @@ class Transaction:
                 iterable = self.transaction_repository.select(
                     uuid_in=tuple(transaction_uuids),
                     status_in=(
-                        TransactionStatus.RESERVED,
                         TransactionStatus.RESERVING,
+                        TransactionStatus.RESERVED,
                         TransactionStatus.COMMITTING,
                         TransactionStatus.COMMITTED,
                     ),
