@@ -64,14 +64,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         if entry.aggregate_uuid != NULL_UUID:
             lock = entry.aggregate_uuid.int & (1 << 32) - 1
 
-        if entry.transaction_uuid != NULL_UUID:
-            transaction = await self._transaction_repository.select(uuid=entry.transaction_uuid).__anext__()
-            transaction_uuids = await transaction.uuids
-        else:
-            transaction_uuids = (NULL_UUID,)
-
-        query, params = self._build(transaction_uuids)
-        params |= entry.as_raw()
+        query, params = await self._build_query(entry)
 
         try:
             response = await self.submit_query_and_fetchone(query, params, lock=lock)
@@ -84,11 +77,17 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
 
-    @staticmethod
-    def _build(transaction_uuids: tuple[UUID, ...]) -> tuple[Composable, dict[str, UUID]]:
+    async def _build_query(self, entry: EventEntry) -> tuple[Composable, dict[str, UUID]]:
+        if entry.transaction_uuid != NULL_UUID:
+            # FIXME
+            transaction = await self._transaction_repository.select(uuid=entry.transaction_uuid).__anext__()
+            transaction_uuids = await transaction.uuids
+        else:
+            transaction_uuids = (NULL_UUID,)
+
         from_query_parts = list()
         parameters = dict()
-        for index, transaction_uuid in enumerate(transaction_uuids):
+        for index, transaction_uuid in enumerate(transaction_uuids, start=1):
             name = f"transaction_uuid_{index}"
             parameters[name] = transaction_uuid
 
@@ -99,7 +98,8 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         from_query = SQL(" UNION ALL ").join(from_query_parts)
 
         query = _INSERT_VALUES_QUERY.format(from_parts=from_query)
-        return query, parameters
+
+        return query, parameters | entry.as_raw()
 
     async def _select(self, **kwargs) -> AsyncIterator[EventEntry]:
         query = self._build_select_query(**kwargs)

@@ -64,7 +64,7 @@ class TransactionRepository(ABC, MinosSetup):
         uuid: Optional[UUID] = None,
         uuid_ne: Optional[UUID] = None,
         uuid_in: Optional[tuple[UUID, ...]] = None,
-        destination: Optional[UUID] = None,
+        destination_uuid: Optional[UUID] = None,
         status: Optional[TransactionStatus] = None,
         status_in: Optional[tuple[str, ...]] = None,
         event_offset: Optional[int] = None,
@@ -79,7 +79,7 @@ class TransactionRepository(ABC, MinosSetup):
         :param uuid: Transaction identifier equal to the given value.
         :param uuid_ne: Transaction identifier not equal to the given value
         :param uuid_in: Transaction identifier within the given values.
-        :param destination: TODO
+        :param destination_uuid: TODO
         :param status: Transaction status equal to the given value.
         :param status_in: Transaction status within the given values
         :param event_offset: Event offset equal to the given value.
@@ -94,7 +94,7 @@ class TransactionRepository(ABC, MinosSetup):
             uuid=uuid,
             uuid_ne=uuid_ne,
             uuid_in=uuid_in,
-            destination=destination,
+            destination_uuid=destination_uuid,
             status=status,
             status_in=status_in,
             event_offset=event_offset,

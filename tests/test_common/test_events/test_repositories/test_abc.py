@@ -280,11 +280,8 @@ class TestMinosRepository(MinosTestCase):
         aggregate_uuid = uuid4()
         transaction_uuid = uuid4()
 
-        events = [
-            EventEntry(aggregate_uuid, "example.Car", 1),
-            EventEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
-        ]
-        transactions = []
+        events = []
+        transactions = [TransactionEntry(transaction_uuid, TransactionStatus.RESERVING)]
 
         select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
         self.event_repository.select = select_event_mock
@@ -296,28 +293,29 @@ class TestMinosRepository(MinosTestCase):
 
         self.assertTrue(await self.event_repository.validate(entry))
 
-        self.assertEqual(1, select_event_mock.call_count)
-        self.assertEqual(call(aggregate_uuid=aggregate_uuid, transaction_uuid_ne=None), select_event_mock.call_args)
-
-        self.assertEqual(1, select_transaction_mock.call_count)
         self.assertEqual(
-            call(
-                uuid_in=(NULL_UUID, transaction_uuid),
-                uuid_ne=None,
-                status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
-            ),
-            select_transaction_mock.call_args,
+            [call(aggregate_uuid=aggregate_uuid, transaction_uuid_in=(transaction_uuid,))],
+            select_event_mock.call_args_list,
+        )
+
+        self.assertEqual(
+            [
+                call(
+                    destination_uuid=NULL_UUID,
+                    uuid_ne=None,
+                    status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
+                )
+            ],
+            select_transaction_mock.call_args_list,
         )
 
     async def test_validate_with_skip(self):
         aggregate_uuid = uuid4()
         transaction_uuid = uuid4()
+        another_transaction_uuid = uuid4()
 
-        events = [
-            EventEntry(aggregate_uuid, "example.Car", 1),
-            EventEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
-        ]
-        transactions = []
+        events = []
+        transactions = [TransactionEntry(another_transaction_uuid, TransactionStatus.RESERVING)]
 
         select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
         self.event_repository.select = select_event_mock
@@ -328,9 +326,20 @@ class TestMinosRepository(MinosTestCase):
         entry = EventEntry(aggregate_uuid, "example.Car")
         self.assertTrue(await self.event_repository.validate(entry, transaction_uuid_ne=transaction_uuid))
 
-        self.assertEqual(1, select_event_mock.call_count)
         self.assertEqual(
-            call(aggregate_uuid=aggregate_uuid, transaction_uuid_ne=transaction_uuid), select_event_mock.call_args
+            [
+                call(
+                    destination_uuid=NULL_UUID,
+                    uuid_ne=transaction_uuid,
+                    status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
+                )
+            ],
+            select_transaction_mock.call_args_list,
+        )
+
+        self.assertEqual(
+            [call(aggregate_uuid=aggregate_uuid, transaction_uuid_in=(another_transaction_uuid,))],
+            select_event_mock.call_args_list,
         )
 
     async def test_validate_false(self):
@@ -353,17 +362,20 @@ class TestMinosRepository(MinosTestCase):
 
         self.assertFalse(await self.event_repository.validate(entry))
 
-        self.assertEqual(1, select_event_mock.call_count)
-        self.assertEqual(call(aggregate_uuid=aggregate_uuid, transaction_uuid_ne=None), select_event_mock.call_args)
-
-        self.assertEqual(1, select_transaction_mock.call_count)
         self.assertEqual(
-            call(
-                uuid_in=(NULL_UUID, transaction_uuid),
-                uuid_ne=None,
-                status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
-            ),
-            select_transaction_mock.call_args,
+            [call(aggregate_uuid=aggregate_uuid, transaction_uuid_in=(transaction_uuid,))],
+            select_event_mock.call_args_list,
+        )
+
+        self.assertEqual(
+            [
+                call(
+                    destination_uuid=NULL_UUID,
+                    uuid_ne=None,
+                    status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING),
+                )
+            ],
+            select_transaction_mock.call_args_list,
         )
 
     def test_write_lock(self):
@@ -373,8 +385,7 @@ class TestMinosRepository(MinosTestCase):
         self.lock_pool.acquire = mock
 
         self.assertEqual(expected, self.event_repository.write_lock())
-        self.assertEqual(1, mock.call_count)
-        self.assertEqual(call("aggregate_event_write_lock"), mock.call_args)
+        self.assertEqual([call("aggregate_event_write_lock")], mock.call_args_list)
 
     async def test_select(self):
         mock = MagicMock(return_value=FakeAsyncIterator(range(5)))
@@ -406,6 +417,7 @@ class TestMinosRepository(MinosTestCase):
             id_ge=None,
             transaction_uuid=transaction_uuid,
             transaction_uuid_ne=None,
+            transaction_uuid_in=None,
         )
 
         self.assertEqual(args, mock.call_args)

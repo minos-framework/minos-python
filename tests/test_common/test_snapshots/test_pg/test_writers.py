@@ -11,6 +11,7 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     Action,
     Condition,
     EventEntry,
@@ -166,7 +167,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             Condition.TRUE,
             Ordering.ASC("updated_at"),
             exclude_deleted=False,
-            transaction_uuid=self.transaction_1,
+            transaction_uuids=(NULL_UUID, self.transaction_1,),
         )
         observed = [v async for v in iterable]
 
@@ -205,7 +206,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             Condition.TRUE,
             Ordering.ASC("updated_at"),
             exclude_deleted=False,
-            transaction_uuid=self.transaction_2,
+            transaction_uuids=(NULL_UUID, self.transaction_2,),
         )
         observed = [v async for v in iterable]
 
@@ -328,8 +329,6 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
         )
         await self.event_repository.create(entry)
-        self.assertEqual(1, mock.call_count)
-        mock.reset_mock()
 
         await self.writer.dispatch()
         self.assertEqual(1, mock.call_count)

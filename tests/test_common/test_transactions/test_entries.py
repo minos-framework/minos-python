@@ -26,7 +26,7 @@ from tests.utils import (
 )
 
 
-class TestTransaction(MinosTestCase):
+class TestTransactionEntry(MinosTestCase):
     def test_constructor(self):
         transaction = TransactionEntry()
 
@@ -95,7 +95,7 @@ class TestTransaction(MinosTestCase):
                 pass
 
         with self.assertRaises(ValueError):
-            async with TransactionEntry(destination=uuid4()):
+            async with TransactionEntry(destination_uuid=uuid4()):
                 pass
 
         transaction = TransactionEntry()
@@ -103,7 +103,6 @@ class TestTransaction(MinosTestCase):
         with self.assertRaises(ValueError):
             async with transaction:
                 pass
-
 
     async def test_reserve_success(self) -> None:
         uuid = uuid4()
@@ -200,7 +199,7 @@ class TestTransaction(MinosTestCase):
                     ),
                 ),
                 call(
-                    destination=NULL_UUID,
+                    destination_uuid=NULL_UUID,
                     uuid_in=(another,),
                     status_in=(
                         TransactionStatus.RESERVING,
@@ -240,7 +239,7 @@ class TestTransaction(MinosTestCase):
         self.event_repository.select = select_event_mock
         self.transaction_repository.select = select_transaction_mock
 
-        transaction = TransactionEntry(uuid, destination=another)
+        transaction = TransactionEntry(uuid, destination_uuid=another)
 
         self.assertFalse(await transaction.validate())
 
@@ -361,7 +360,7 @@ class TestTransaction(MinosTestCase):
                     ),
                 ),
                 call(
-                    destination=NULL_UUID,
+                    destination_uuid=NULL_UUID,
                     uuid_in=(another,),
                     status_in=(
                         TransactionStatus.RESERVING,
@@ -482,6 +481,22 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(1, submit_mock.call_count)
         self.assertEqual(call(TransactionEntry(uuid, TransactionStatus.PENDING, 56)), submit_mock.call_args)
 
+    async def test_uuids(self):
+        first = TransactionEntry()
+        await first.save()
+
+        second = TransactionEntry(destination_uuid=first.uuid)
+        await second.save()
+
+        self.assertEqual((NULL_UUID, first.uuid, second.uuid,), await second.uuids)
+
+    async def test_destination(self):
+        first = TransactionEntry()
+        await first.save()
+
+        second = TransactionEntry(destination_uuid=first.uuid)
+        self.assertEqual(first, await second.destination)
+
     def test_equals(self):
         uuid = uuid4()
         base = TransactionEntry(uuid, TransactionStatus.PENDING, 56)
@@ -492,17 +507,17 @@ class TestTransaction(MinosTestCase):
 
     def test_iter(self):
         uuid = uuid4()
-        destination = uuid4()
-        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56, destination)
-        self.assertEqual([uuid, TransactionStatus.PENDING, 56, destination, None], list(transaction))
+        destination_uuid = uuid4()
+        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56, destination_uuid)
+        self.assertEqual([uuid, TransactionStatus.PENDING, 56, destination_uuid], list(transaction))
 
     def test_repr(self):
         uuid = uuid4()
-        destination = uuid4()
-        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56, destination)
+        destination_uuid = uuid4()
+        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56, destination_uuid)
         expected = (
             f"TransactionEntry(uuid={uuid!r}, status={TransactionStatus.PENDING!r}, event_offset={56!r}, "
-            f"destination={destination!r}, updated_at={None!r})"
+            f"destination_uuid={destination_uuid!r}, updated_at={None!r})"
         )
         self.assertEqual(expected, repr(transaction))
 

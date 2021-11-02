@@ -102,8 +102,8 @@ class PostgreSqlSnapshotQueryBuilder:
 
     def _build_select_from(self) -> Composable:
         from_query_parts = list()
-        for index, transaction_uuid in enumerate(self.transaction_uuids):
-            name = self.generate_random_str()
+        for index, transaction_uuid in enumerate(self.transaction_uuids, start=1):
+            name = f"transaction_uuid_{index}"
             self._parameters[name] = transaction_uuid
 
             from_query_parts.append(

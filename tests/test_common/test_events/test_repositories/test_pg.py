@@ -22,6 +22,7 @@ from minos.common import (
     MinosRepositoryConflictException,
     MinosRepositoryException,
     PostgreSqlEventRepository,
+    TransactionEntry,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -194,10 +195,12 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self._build_repository()
+        await self._populate()
 
-    async def _build_repository(self):
-        await self.event_repository.setup()
+    async def _populate(self):
+        await self.transaction_repository.submit(TransactionEntry(self.first_transaction))
+        await self.transaction_repository.submit(TransactionEntry(self.second_transaction))
+
         await self.event_repository.create(EventEntry(self.uuid_1, "example.Car", 1, bytes("foo", "utf-8")))
         await self.event_repository.update(EventEntry(self.uuid_1, "example.Car", 2, bytes("bar", "utf-8")))
         await self.event_repository.create(EventEntry(self.uuid_2, "example.Car", 1, bytes("hello", "utf-8")))
@@ -214,11 +217,6 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
         await self.event_repository.update(
             EventEntry(self.uuid_2, "example.Car", 4, bytes("adios", "utf-8"), transaction_uuid=self.first_transaction)
         )
-
-    async def asyncTearDown(self):
-        await self.event_repository.destroy()
-        await self.lock_pool.destroy()
-        await super().asyncTearDown()
 
     def tearDown(self):
         self.field_diff_container_patcher.stop()
@@ -319,6 +317,16 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
     async def test_select_transaction_uuid_ne(self):
         expected = [self.entries[7], self.entries[8], self.entries[9]]
         observed = [v async for v in self.event_repository.select(transaction_uuid_ne=NULL_UUID)]
+        self.assert_equal_repository_entries(expected, observed)
+
+    async def test_select_transaction_uuid_in(self):
+        expected = [self.entries[7], self.entries[8], self.entries[9]]
+        observed = [
+            v
+            async for v in self.event_repository.select(
+                transaction_uuid_in=(self.first_transaction, self.second_transaction,)
+            )
+        ]
         self.assert_equal_repository_entries(expected, observed)
 
     async def test_select_combined(self):

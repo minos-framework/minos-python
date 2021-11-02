@@ -47,68 +47,43 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
     """
 
-    async def get(
-        self, aggregate_name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...] = (NULL_UUID,), **kwargs
-    ) -> Aggregate:
+    async def get(self, aggregate_name: str, uuid: UUID, **kwargs) -> Aggregate:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuids: TODO.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
-        snapshot_entry = await self.get_entry(aggregate_name, uuid, transaction_uuids, **kwargs)
+        snapshot_entry = await self.get_entry(aggregate_name, uuid, **kwargs)
         aggregate = snapshot_entry.build_aggregate(**kwargs)
         return aggregate
 
     # noinspection PyUnusedLocal
-    async def get_entry(
-        self, aggregate_name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...] = (NULL_UUID,), **kwargs
-    ) -> SnapshotEntry:
+    async def get_entry(self, aggregate_name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
         """Get an ``SnapshotEntry`` from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuids TODO.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
 
         try:
             return await self.find_entries(
-                aggregate_name, _EqualCondition("uuid", uuid), transaction_uuids=transaction_uuids, **kwargs
+                aggregate_name, _EqualCondition("uuid", uuid), **kwargs | {"exclude_deleted": False},
             ).__anext__()
         except StopAsyncIteration:
             raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
 
-    async def find(
-        self,
-        aggregate_name: str,
-        condition: _Condition,
-        ordering: Optional[_Ordering] = None,
-        limit: Optional[int] = None,
-        streaming_mode: bool = False,
-        transaction_uuids: tuple[UUID, ...] = (NULL_UUID,),
-        **kwargs,
-    ) -> AsyncIterator[Aggregate]:
+    async def find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
 
-        :param aggregate_name: Class name of the ``Aggregate``.
-        :param condition: The condition that must be satisfied by the ``Aggregate`` instances.
-        :param ordering: Optional argument to return the instance with specific ordering strategy. The default behaviour
-            is to retrieve them without any order pattern.
-        :param limit: Optional argument to return only a subset of instances. The default behaviour is to return all the
-            instances that meet the given condition.
-        :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
-            database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuids: TODO.
+        :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
-        async for snapshot_entry in self.find_entries(
-            aggregate_name, condition, ordering, limit, streaming_mode, transaction_uuids, **kwargs,
-        ):
+        async for snapshot_entry in self.find_entries(*args, **kwargs):
             yield snapshot_entry.build_aggregate(**kwargs)
 
     async def find_entries(

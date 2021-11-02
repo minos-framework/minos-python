@@ -7,6 +7,7 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     Condition,
     EventEntry,
     FieldDiff,
@@ -122,7 +123,7 @@ class TestInMemorySnapshot(MinosTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.transaction_1,
+            transaction_uuids=(NULL_UUID, self.transaction_1),
         )
         observed = [v async for v in iterable]
 
@@ -152,7 +153,7 @@ class TestInMemorySnapshot(MinosTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.transaction_2,
+            transaction_uuids=(NULL_UUID, self.transaction_2),
         )
         observed = [v async for v in iterable]
 
@@ -174,7 +175,7 @@ class TestInMemorySnapshot(MinosTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.transaction_3,
+            transaction_uuids=(NULL_UUID, self.transaction_3),
         )
         observed = [v async for v in iterable]
 
@@ -268,7 +269,7 @@ class TestInMemorySnapshot(MinosTestCase):
 
     async def test_get_with_transaction(self):
         observed = await self.snapshot.get(
-            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.transaction_1
+            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuids=(NULL_UUID, self.transaction_1,),
         )
 
         expected = Car(
@@ -284,7 +285,9 @@ class TestInMemorySnapshot(MinosTestCase):
 
     async def test_get_with_transaction_raises(self):
         with self.assertRaises(MinosSnapshotDeletedAggregateException):
-            await self.snapshot.get("tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.transaction_2)
+            await self.snapshot.get(
+                "tests.aggregate_classes.Car", self.uuid_2, transaction_uuids=(NULL_UUID, self.transaction_2,)
+            )
 
     async def test_find(self):
         condition = Condition.EQUAL("color", "blue")

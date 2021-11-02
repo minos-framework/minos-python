@@ -178,7 +178,7 @@ class EventRepository(ABC, MinosSetup):
         :return: ``True`` if the entry can be submitted or ``False`` otherwise.
         """
         iterable = self._transaction_repository.select(
-            destination=entry.transaction_uuid,
+            destination_uuid=entry.transaction_uuid,
             uuid_ne=transaction_uuid_ne,
             status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING,),
         )
