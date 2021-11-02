@@ -156,6 +156,6 @@ RETURNING updated_at;
 """.strip()
 
 _SELECT_ALL_TRANSACTIONS_QUERY = """
-SELECT uuid, destination, status, event_offset, updated_at
+SELECT uuid, status, event_offset, destination, updated_at
 FROM aggregate_transaction
 """.strip()

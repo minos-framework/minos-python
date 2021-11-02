@@ -55,25 +55,13 @@ logger = logging.getLogger(__name__)
 class TransactionEntry:
     """Transaction Entry class."""
 
-    __slots__ = (
-        "uuid",
-        "destination",
-        "status",
-        "event_offset",
-        "updated_at",
-        "_autocommit",
-        "_event_repository",
-        "_transaction_repository",
-        "_token",
-    )
-
     @inject
     def __init__(
         self,
         uuid: Optional[UUID] = None,
-        destination: Optional[UUID] = None,
         status: Union[str, TransactionStatus] = None,
         event_offset: Optional[int] = None,
+        destination: Optional[UUID] = None,
         updated_at: Optional[datetime] = None,
         autocommit: bool = True,
         event_repository: EventRepository = Provide["event_repository"],
@@ -85,12 +73,18 @@ class TransactionEntry:
             status = TransactionStatus.PENDING
         if not isinstance(status, TransactionStatus):
             status = TransactionStatus.value_of(status)
+        if destination is None:
+            outer = TRANSACTION_CONTEXT_VAR.get()
+            if outer is None:
+                destination = NULL_UUID
+            else:
+                destination = outer.uuid
 
         self.uuid = uuid
-        self.destination = destination
         self.status = status
         self.event_offset = event_offset
         self.updated_at = updated_at
+        self.destination = destination
 
         self._autocommit = autocommit
         self._event_repository = event_repository
@@ -102,17 +96,6 @@ class TransactionEntry:
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
-        outer = TRANSACTION_CONTEXT_VAR.get()
-        if outer is not None:
-            if self.destination is not None:  # TODO: check this condition.
-                raise ValueError(
-                    "Already inside a transaction. Multiple simultaneous transactions are not supported yet!"
-                )
-            destination = outer.uuid
-        else:
-            destination = NULL_UUID
-
-        self.destination = destination
         self._token = TRANSACTION_CONTEXT_VAR.set(self)
         await self.save()
         return self
@@ -283,9 +266,9 @@ class TransactionEntry:
         # noinspection PyRedundantParentheses
         yield from (
             self.uuid,
-            self.destination,
             self.status,
             self.event_offset,
+            self.destination,
         )
 
     def __repr__(self):
