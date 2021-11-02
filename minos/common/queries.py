@@ -93,7 +93,7 @@ class _NotCondition(_Condition):
 
 
 class _SimpleCondition(_Condition, ABC):
-    def __init__(self, field: str, parameter: Model):
+    def __init__(self, field: str, parameter: Any):
         self.field = field
         self.parameter = parameter
 
