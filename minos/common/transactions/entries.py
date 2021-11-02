@@ -55,6 +55,18 @@ logger = logging.getLogger(__name__)
 class TransactionEntry:
     """Transaction Entry class."""
 
+    __slots__ = (
+        "uuid",
+        "status",
+        "event_offset",
+        "destination",
+        "updated_at",
+        "_autocommit",
+        "_event_repository",
+        "_transaction_repository",
+        "_token",
+    )
+
     @inject
     def __init__(
         self,
@@ -83,8 +95,8 @@ class TransactionEntry:
         self.uuid = uuid
         self.status = status
         self.event_offset = event_offset
-        self.updated_at = updated_at
         self.destination = destination
+        self.updated_at = updated_at
 
         self._autocommit = autocommit
         self._event_repository = event_repository
@@ -95,6 +107,14 @@ class TransactionEntry:
     async def __aenter__(self):
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
+
+        destination = TRANSACTION_CONTEXT_VAR.get()
+        destination_uuid = getattr(destination, "uuid", NULL_UUID)
+
+        if destination_uuid != self.destination:
+            raise ValueError(
+                "Already inside a transaction. Multiple simultaneous transactions are not supported yet!"
+            )
 
         self._token = TRANSACTION_CONTEXT_VAR.set(self)
         await self.save()
@@ -269,12 +289,13 @@ class TransactionEntry:
             self.status,
             self.event_offset,
             self.destination,
+            self.updated_at,
         )
 
     def __repr__(self):
         return (
-            f"{type(self).__name__}(uuid={self.uuid!r}, destination={self.destination!r}, status={self.status!r}, "
-            f"event_offset={self.event_offset!r}, updated_at={self.updated_at!r})"
+            f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r}, event_offset={self.event_offset!r}, "
+            f"destination={self.destination!r}, updated_at={self.updated_at!r})"
         )
 
 
