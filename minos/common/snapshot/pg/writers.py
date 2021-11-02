@@ -168,11 +168,11 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         self, aggregate_uuid: UUID, aggregate_name: str, transaction_uuid: UUID, **kwargs
     ) -> SnapshotEntry:
 
-        # FIXME: Extract transaction identifiers.
         if transaction_uuid == NULL_UUID:
             transaction_uuids = (NULL_UUID,)
         else:
-            transaction_uuids = (NULL_UUID, transaction_uuid)
+            transaction = await self._transaction_repository.select(uuid=transaction_uuid).__anext__()
+            transaction_uuids = await transaction.uuids
 
         qb = PostgreSqlSnapshotQueryBuilder(
             aggregate_name, Condition.EQUAL("uuid", aggregate_uuid), transaction_uuids=transaction_uuids

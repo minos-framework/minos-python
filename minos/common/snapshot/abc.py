@@ -43,27 +43,27 @@ class MinosSnapshot(ABC, MinosSetup):
     """
 
     async def get(
-        self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
+        self, aggregate_name: str, uuid: UUID, transaction_uuids: Optional[tuple[UUID, ...]] = None, **kwargs
     ) -> Aggregate:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
+        :param transaction_uuids: TODO.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
 
-        if transaction_uuid is None:
+        if transaction_uuids is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()
             if transaction is not None:
-                transaction_uuid = transaction.uuid
+                transaction_uuids = await transaction.uuids
             else:
-                transaction_uuid = NULL_UUID
+                transaction_uuids = (NULL_UUID,)
 
         await self.synchronize(**kwargs)
 
-        return await self._get(aggregate_name=aggregate_name, uuid=uuid, transaction_uuid=transaction_uuid, **kwargs)
+        return await self._get(aggregate_name=aggregate_name, uuid=uuid, transaction_uuids=transaction_uuids, **kwargs)
 
     @abstractmethod
     async def _get(self, *args, **kwargs) -> Aggregate:
@@ -76,7 +76,7 @@ class MinosSnapshot(ABC, MinosSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
-        transaction_uuid: Optional[UUID] = None,
+        transaction_uuids: Optional[tuple[UUID, ...]] = None,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -89,17 +89,16 @@ class MinosSnapshot(ABC, MinosSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
+        :param transaction_uuids: TODO.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
-
-        if transaction_uuid is None:
+        if transaction_uuids is None:
             transaction = TRANSACTION_CONTEXT_VAR.get()
             if transaction is not None:
-                transaction_uuid = transaction.uuid
+                transaction_uuids = await transaction.uuids
             else:
-                transaction_uuid = NULL_UUID
+                transaction_uuids = (NULL_UUID,)
 
         await self.synchronize(**kwargs)
 
@@ -109,7 +108,7 @@ class MinosSnapshot(ABC, MinosSetup):
             ordering=ordering,
             limit=limit,
             streaming_mode=streaming_mode,
-            transaction_uuid=transaction_uuid,
+            transaction_uuids=transaction_uuids,
             **kwargs,
         )
 

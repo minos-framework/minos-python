@@ -13,6 +13,12 @@ from uuid import (
 from psycopg2 import (
     IntegrityError,
 )
+from psycopg2.sql import (
+    SQL,
+    Composable,
+    Literal,
+    Placeholder,
+)
 
 from ...configuration import (
     MinosConfig,
@@ -58,9 +64,17 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         if entry.aggregate_uuid != NULL_UUID:
             lock = entry.aggregate_uuid.int & (1 << 32) - 1
 
-        params = entry.as_raw()
+        if entry.transaction_uuid != NULL_UUID:
+            transaction = await self._transaction_repository.select(uuid=entry.transaction_uuid).__anext__()
+            transaction_uuids = await transaction.uuids
+        else:
+            transaction_uuids = (NULL_UUID,)
+
+        query, params = self._build(transaction_uuids)
+        params |= entry.as_raw()
+
         try:
-            response = await self.submit_query_and_fetchone(_INSERT_VALUES_QUERY, params, lock=lock)
+            response = await self.submit_query_and_fetchone(query, params, lock=lock)
         except IntegrityError:
             raise MinosRepositoryConflictException(
                 f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
@@ -69,6 +83,23 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
 
         entry.id, entry.aggregate_uuid, entry.version, entry.created_at = response
         return entry
+
+    @staticmethod
+    def _build(transaction_uuids: tuple[UUID, ...]) -> tuple[Composable, dict[str, UUID]]:
+        from_query_parts = list()
+        parameters = dict()
+        for index, transaction_uuid in enumerate(transaction_uuids):
+            name = f"transaction_uuid_{index}"
+            parameters[name] = transaction_uuid
+
+            from_query_parts.append(
+                _SELECT_TRANSACTION_CHUNK.format(index=Literal(index), transaction_uuid=Placeholder(name))
+            )
+
+        from_query = SQL(" UNION ALL ").join(from_query_parts)
+
+        query = _INSERT_VALUES_QUERY.format(from_parts=from_query)
+        return query, parameters
 
     async def _select(self, **kwargs) -> AsyncIterator[EventEntry]:
         query = self._build_select_query(**kwargs)
@@ -92,7 +123,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
         transaction_uuid_ne: Optional[UUID] = None,
-        transaction_uuid_in: Optional[tuple[UUID,...]] = None,
+        transaction_uuid_in: Optional[tuple[UUID, ...]] = None,
         **kwargs,
     ) -> str:
         conditions = list()
@@ -169,7 +200,8 @@ CREATE TABLE IF NOT EXISTS aggregate_event (
 );
 """.strip()
 
-_INSERT_VALUES_QUERY = """
+_INSERT_VALUES_QUERY = SQL(
+    """
 INSERT INTO aggregate_event (id, action, aggregate_uuid, aggregate_name, version, data, created_at, transaction_uuid)
 VALUES (
     default,
@@ -177,26 +209,29 @@ VALUES (
     CASE %(aggregate_uuid)s WHEN uuid_nil() THEN uuid_generate_v4() ELSE %(aggregate_uuid)s END,
     %(aggregate_name)s,
     (
-        SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(version), 0) ELSE %(version)s END)
-        FROM aggregate_event
-        WHERE aggregate_uuid = %(aggregate_uuid)s
-          AND aggregate_name = %(aggregate_name)s
-          AND transaction_uuid = (
-            CASE (
-                SELECT COUNT(*)
-                FROM aggregate_event
-                WHERE aggregate_uuid = %(aggregate_uuid)s
-                    AND aggregate_name = %(aggregate_name)s
-                    AND transaction_uuid =  %(transaction_uuid)s
-            ) WHEN 0 THEN uuid_nil() ELSE %(transaction_uuid)s END
-          )
+        SELECT (CASE WHEN %(version)s IS NULL THEN 1 + COALESCE(MAX(t2.version), 0) ELSE %(version)s END)
+        FROM (
+                 SELECT DISTINCT ON (t1.aggregate_uuid) t1.version
+                 FROM ( {from_parts} ) AS t1
+                 ORDER BY t1.aggregate_uuid, t1.transaction_index DESC
+        ) AS t2
     ),
     %(data)s,
     (CASE WHEN %(created_at)s IS NULL THEN NOW() ELSE %(created_at)s END),
     %(transaction_uuid)s
 )
 RETURNING id, aggregate_uuid, version, created_at;
-""".strip()
+    """
+)
+
+_SELECT_TRANSACTION_CHUNK = SQL(
+    """
+SELECT {index} AS transaction_index, aggregate_uuid, MAX(version) AS version
+FROM aggregate_event
+WHERE aggregate_uuid = %(aggregate_uuid)s AND transaction_uuid = {transaction_uuid}
+GROUP BY aggregate_uuid
+    """
+)
 
 _SELECT_ALL_ENTRIES_QUERY = """
 SELECT aggregate_uuid, aggregate_name, version, data, id, action, created_at, transaction_uuid

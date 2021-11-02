@@ -17,7 +17,8 @@ from ...exceptions import (
 )
 from ...queries import (
     _Condition,
-    _Ordering, Condition,
+    _EqualCondition,
+    _Ordering,
 )
 from ...uuid import (
     NULL_UUID,
@@ -46,35 +47,37 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
     """
 
-    async def get(self, aggregate_name: str, uuid: UUID, transaction_uuid: UUID = NULL_UUID, **kwargs) -> Aggregate:
+    async def get(
+        self, aggregate_name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...] = (NULL_UUID,), **kwargs
+    ) -> Aggregate:
         """Get an aggregate instance from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
+        :param transaction_uuids: TODO.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
-        snapshot_entry = await self.get_entry(aggregate_name, uuid, transaction_uuid, **kwargs)
+        snapshot_entry = await self.get_entry(aggregate_name, uuid, transaction_uuids, **kwargs)
         aggregate = snapshot_entry.build_aggregate(**kwargs)
         return aggregate
 
     # noinspection PyUnusedLocal
     async def get_entry(
-        self, aggregate_name: str, uuid: UUID, transaction_uuid: UUID = NULL_UUID, **kwargs
+        self, aggregate_name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...] = (NULL_UUID,), **kwargs
     ) -> SnapshotEntry:
         """Get an ``SnapshotEntry`` from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
+        :param transaction_uuids TODO.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
 
         try:
             return await self.find_entries(
-                aggregate_name, Condition.EQUAL("uuid", uuid), transaction_uuid=transaction_uuid, **kwargs
+                aggregate_name, _EqualCondition("uuid", uuid), transaction_uuids=transaction_uuids, **kwargs
             ).__anext__()
         except StopAsyncIteration:
             raise MinosSnapshotAggregateNotFoundException(f"Some aggregates could not be found: {uuid!s}")
@@ -86,7 +89,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
-        transaction_uuid: UUID = NULL_UUID,
+        transaction_uuids: tuple[UUID, ...] = (NULL_UUID,),
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         """Find a collection of ``Aggregate`` instances based on a ``Condition``.
@@ -99,12 +102,12 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
+        :param transaction_uuids: TODO.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
         async for snapshot_entry in self.find_entries(
-            aggregate_name, condition, ordering, limit, streaming_mode, transaction_uuid, **kwargs,
+            aggregate_name, condition, ordering, limit, streaming_mode, transaction_uuids, **kwargs,
         ):
             yield snapshot_entry.build_aggregate(**kwargs)
 
@@ -115,7 +118,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
-        transaction_uuid: UUID = NULL_UUID,
+        transaction_uuids: tuple[UUID, ...] = (NULL_UUID,),
         exclude_deleted: bool = True,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
@@ -129,18 +132,12 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuid: Optional argument to return the snapshot view within a transaction.
+        :param transaction_uuids: TODO.
         :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
             entries are filtered.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
-        # FIXME: Extract transaction identifiers.
-        if transaction_uuid == NULL_UUID:
-            transaction_uuids = (NULL_UUID,)
-        else:
-            transaction_uuids = (NULL_UUID, transaction_uuid)
-
         qb = PostgreSqlSnapshotQueryBuilder(
             aggregate_name, condition, ordering, limit, transaction_uuids, exclude_deleted,
         )

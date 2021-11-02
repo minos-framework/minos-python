@@ -6,6 +6,9 @@ import logging
 from contextlib import (
     suppress,
 )
+from contextvars import (
+    Token,
+)
 from datetime import (
     datetime,
 )
@@ -117,8 +120,32 @@ class TransactionEntry:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         TRANSACTION_CONTEXT_VAR.reset(self._token)
 
-        if self._autocommit:
+        if self._autocommit and self.status == TransactionStatus.PENDING:
             await self.commit()
+
+    @property
+    async def uuids(self) -> tuple[UUID, ...]:
+        """TODO"""
+        uuids = []
+        current = self
+        while True:
+            uuids.append(current.uuid)
+            if current._token is not None:
+                destination = current._token.old_value
+            else:
+                destination = Token.MISSING
+            if destination == Token.MISSING:
+                if current.destination == NULL_UUID:
+                    uuids.append(NULL_UUID)
+                    break
+                else:
+                    destination = await self._transaction_repository.select(uuid=current.destination).__anext__()
+
+            if destination.uuid != current.destination:
+                raise ValueError()
+            current = destination
+
+        return tuple(uuids[::-1])
 
     async def commit(self) -> None:
         """Commit transaction changes.
@@ -172,6 +199,21 @@ class TransactionEntry:
 
         :return: ``True`` if the transaction is valid or ``False`` otherwise.
         """
+        with suppress(StopAsyncIteration):
+            iterable = self._transaction_repository.select(
+                uuid=self.destination,
+                status_in=(
+                    TransactionStatus.RESERVING,
+                    TransactionStatus.RESERVED,
+                    TransactionStatus.COMMITTING,
+                    TransactionStatus.COMMITTED,
+                    TransactionStatus.REJECTED,
+                ),
+            )
+            await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
+
+            return False
+
         entries = dict()
         async for entry in self._event_repository.select(transaction_uuid=self.uuid):
             if entry.aggregate_uuid in entries and entry.version < entries[entry.aggregate_uuid]:
