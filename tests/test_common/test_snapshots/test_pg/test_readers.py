@@ -7,7 +7,6 @@ from uuid import (
 )
 
 from minos.common import (
-    NULL_UUID,
     Condition,
     EventEntry,
     FieldDiff,
@@ -93,7 +92,10 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
             TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
         )
         async with PostgreSqlSnapshotWriter.from_config(
-            self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository
+            self.config,
+            reader=self.reader,
+            event_repository=self.event_repository,
+            transaction_repository=self.transaction_repository,
         ) as writer:
             await writer.dispatch()
 
@@ -141,7 +143,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuids=(NULL_UUID, self.transaction_1,),
+            transaction=TransactionEntry(self.transaction_1),
         )
         observed = [v async for v in iterable]
 
@@ -172,7 +174,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuids=(NULL_UUID, self.transaction_2,),
+            transaction=TransactionEntry(self.transaction_2),
         )
         observed = [v async for v in iterable]
 
@@ -293,7 +295,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
     async def test_get_with_transaction(self):
 
         observed = await self.reader.get(
-            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuids=(NULL_UUID, self.transaction_1,)
+            "tests.aggregate_classes.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_1)
         )
 
         expected = Car(
@@ -312,7 +314,7 @@ class TestPostgreSqlSnapshotReader(MinosTestCase, PostgresAsyncTestCase):
 
         with self.assertRaises(MinosSnapshotDeletedAggregateException):
             await self.reader.get(
-                "tests.aggregate_classes.Car", self.uuid_2, transaction_uuids=(NULL_UUID, self.transaction_2,)
+                "tests.aggregate_classes.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_2)
             )
 
     async def test_find(self):

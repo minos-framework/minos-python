@@ -20,6 +20,9 @@ from ...queries import (
     _EqualCondition,
     _Ordering,
 )
+from ...transactions import (
+    TransactionEntry,
+)
 from ...uuid import (
     NULL_UUID,
 )
@@ -93,7 +96,7 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
         streaming_mode: bool = False,
-        transaction_uuids: tuple[UUID, ...] = (NULL_UUID,),
+        transaction: Optional[TransactionEntry] = None,
         exclude_deleted: bool = True,
         **kwargs,
     ) -> AsyncIterator[SnapshotEntry]:
@@ -107,12 +110,17 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction_uuids: TODO.
+        :param transaction: TODO.
         :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
             entries are filtered.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """
+        if transaction is None:
+            transaction_uuids = (NULL_UUID,)
+        else:
+            transaction_uuids = await transaction.uuids
+
         qb = PostgreSqlSnapshotQueryBuilder(
             aggregate_name, condition, ordering, limit, transaction_uuids, exclude_deleted,
         )

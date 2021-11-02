@@ -33,6 +33,7 @@ from ..queries import (
     _Ordering,
 )
 from ..transactions import (
+    TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
@@ -105,9 +106,14 @@ class InMemorySnapshot(MinosSnapshot):
 
     # noinspection PyMethodOverriding
     async def _get(
-        self, aggregate_name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...] = (NULL_UUID,), **kwargs
+        self, aggregate_name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
     ) -> Aggregate:
         # FIXME
+
+        if transaction is None:
+            transaction_uuids = (NULL_UUID,)
+        else:
+            transaction_uuids = await transaction.uuids
 
         while len(transaction_uuids) > 1:
             transaction = await self._transaction_repository.select(uuid=transaction_uuids[-1]).__anext__()

@@ -22,20 +22,15 @@ from ...events import (
 from ...exceptions import (
     MinosPreviousVersionSnapshotException,
     MinosRepositoryNotProvidedException,
+    MinosSnapshotAggregateNotFoundException,
     MinosTransactionRepositoryNotProvidedException,
 )
 from ...importlib import (
     import_module,
 )
-from ...queries import (
-    Condition,
-)
 from ...transactions import (
     TransactionRepository,
     TransactionStatus,
-)
-from ...uuid import (
-    NULL_UUID,
 )
 from ..entries import (
     SnapshotEntry,
@@ -43,14 +38,14 @@ from ..entries import (
 from .abc import (
     PostgreSqlSnapshotSetup,
 )
-from .queries import (
-    PostgreSqlSnapshotQueryBuilder,
-)
 
 if TYPE_CHECKING:
     from ...model import (
         Aggregate,
         AggregateDiff,
+    )
+    from .readers import (
+        PostgreSqlSnapshotReader,
     )
 
 
@@ -61,6 +56,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
     def __init__(
         self,
         *args,
+        reader: PostgreSqlSnapshotReader,
         event_repository: EventRepository = Provide["event_repository"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
         **kwargs
@@ -73,6 +69,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         if transaction_repository is None or isinstance(transaction_repository, Provide):
             raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
 
+        self._reader = reader
         self._event_repository = event_repository
         self._transaction_repository = transaction_repository
 
@@ -133,23 +130,29 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         return snapshot_entry
 
     async def _submit_update_or_create(self, event_entry: EventEntry, **kwargs) -> SnapshotEntry:
-        aggregate = await self._build_instance(event_entry, **kwargs)
+        aggregate = await self._build_aggregate(event_entry, **kwargs)
 
         snapshot_entry = SnapshotEntry.from_aggregate(aggregate, transaction_uuid=event_entry.transaction_uuid)
         snapshot_entry = await self._submit_entry(snapshot_entry, **kwargs)
         return snapshot_entry
 
-    async def _build_instance(self, event_entry: EventEntry, **kwargs) -> Aggregate:
+    async def _build_aggregate(self, event_entry: EventEntry, **kwargs) -> Aggregate:
         diff = event_entry.aggregate_diff
-        instance = await self._update_if_exists(diff, transaction_uuid=event_entry.transaction_uuid, **kwargs)
-        return instance
+
+        try:
+            transaction = await self._transaction_repository.select(uuid=event_entry.transaction_uuid).__anext__()
+        except StopAsyncIteration:
+            transaction = None
+
+        aggregate = await self._update_if_exists(diff, transaction=transaction, **kwargs)
+        return aggregate
 
     async def _update_if_exists(self, aggregate_diff: AggregateDiff, **kwargs) -> Aggregate:
         # noinspection PyBroadException
         try:
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(aggregate_diff.uuid, aggregate_diff.name, **kwargs)
-        except StopAsyncIteration:
+        except MinosSnapshotAggregateNotFoundException:
             # noinspection PyTypeChecker
             aggregate_cls: Type[Aggregate] = import_module(aggregate_diff.name)
             return aggregate_cls.from_diff(aggregate_diff, **kwargs)
@@ -161,26 +164,8 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         return previous
 
     async def _select_one_aggregate(self, aggregate_uuid: UUID, aggregate_name: str, **kwargs) -> Aggregate:
-        snapshot_entry = await self._select_one(aggregate_uuid, aggregate_name, **kwargs)
+        snapshot_entry = await self._reader.get_entry(aggregate_name, aggregate_uuid, **kwargs)
         return snapshot_entry.build_aggregate(**kwargs)
-
-    async def _select_one(
-        self, aggregate_uuid: UUID, aggregate_name: str, transaction_uuid: UUID, **kwargs
-    ) -> SnapshotEntry:
-
-        if transaction_uuid == NULL_UUID:
-            transaction_uuids = (NULL_UUID,)
-        else:
-            transaction = await self._transaction_repository.select(uuid=transaction_uuid).__anext__()
-            transaction_uuids = await transaction.uuids
-
-        qb = PostgreSqlSnapshotQueryBuilder(
-            aggregate_name, Condition.EQUAL("uuid", aggregate_uuid), transaction_uuids=transaction_uuids
-        )
-        query, parameters = qb.build()
-
-        raw = await self.submit_query_and_fetchone(query, parameters, **kwargs)
-        return SnapshotEntry(*raw)
 
     async def _submit_entry(self, snapshot_entry: SnapshotEntry, **kwargs) -> SnapshotEntry:
         params = snapshot_entry.as_raw()

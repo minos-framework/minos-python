@@ -272,8 +272,10 @@ class TransactionEntry:
             return None
 
         destination = getattr(self._token, "old_value", Token.MISSING)
+
         if destination == Token.MISSING:
             destination = await self._transaction_repository.select(uuid=self.destination_uuid).__anext__()
+
         return destination
 
     def __eq__(self, other: TransactionEntry) -> bool:

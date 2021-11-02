@@ -9,12 +9,12 @@ from uuid import (
 )
 
 from minos.common import (
-    NULL_UUID,
     Condition,
     Ordering,
     PostgreSqlSnapshot,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotWriter,
+    TransactionEntry,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -48,26 +48,21 @@ class TestPostgreSqlSnapshot(MinosTestCase, PostgresAsyncTestCase):
         self.assertIsInstance(self.snapshot.writer, PostgreSqlSnapshotWriter)
 
     async def test_get(self):
-        transaction_uuids = (NULL_UUID, uuid4())
+        transaction = TransactionEntry()
         uuid = uuid4()
-        observed = await self.snapshot.get("path.to.Aggregate", uuid, transaction_uuids)
+        observed = await self.snapshot.get("path.to.Aggregate", uuid, transaction)
         self.assertEqual(1, observed)
 
         self.assertEqual(1, self.dispatch_mock.call_count)
         self.assertEqual(call(), self.dispatch_mock.call_args)
 
         self.assertEqual(1, self.get_mock.call_count)
-        args = call(aggregate_name="path.to.Aggregate", uuid=uuid, transaction_uuids=transaction_uuids)
+        args = call(aggregate_name="path.to.Aggregate", uuid=uuid, transaction=transaction)
         self.assertEqual(args, self.get_mock.call_args)
 
     async def test_find(self):
-        transaction_uuids = (
-            NULL_UUID,
-            uuid4(),
-        )
-        iterable = self.snapshot.find(
-            "path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True, transaction_uuids
-        )
+        transaction = TransactionEntry()
+        iterable = self.snapshot.find("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True, transaction)
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)
 
@@ -81,7 +76,7 @@ class TestPostgreSqlSnapshot(MinosTestCase, PostgresAsyncTestCase):
             ordering=Ordering.ASC("name"),
             limit=10,
             streaming_mode=True,
-            transaction_uuids=transaction_uuids,
+            transaction=transaction,
         )
         self.assertEqual(args, self.find_mock.call_args)
 
