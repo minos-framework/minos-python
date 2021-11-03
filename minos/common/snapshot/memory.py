@@ -20,6 +20,7 @@ from dependency_injector.wiring import (
 )
 
 from ..events import (
+    EventEntry,
     EventRepository,
 )
 from ..exceptions import (
@@ -108,8 +109,18 @@ class InMemorySnapshot(MinosSnapshot):
     async def _get(
         self, aggregate_name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
     ) -> Aggregate:
-        # FIXME
+        transaction_uuids = await self._get_transaction_uuids(transaction)
+        entries = await self._get_event_entries(aggregate_name, uuid, transaction_uuids)
 
+        if not len(entries):
+            raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
+
+        if entries[-1].action.is_delete:
+            raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
+
+        return self._build_aggregate(entries, **kwargs)
+
+    async def _get_transaction_uuids(self, transaction: Optional[TransactionEntry]) -> tuple[UUID, ...]:
         if transaction is None:
             transaction_uuids = (NULL_UUID,)
         else:
@@ -121,13 +132,16 @@ class InMemorySnapshot(MinosSnapshot):
                 break
             transaction_uuids = tuple(transaction_uuids[:-1])
 
+        return transaction_uuids
+
+    async def _get_event_entries(
+        self, aggregate_name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...]
+    ) -> list[EventEntry]:
         entries = [
             v
             async for v in self._event_repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
             if v.transaction_uuid in transaction_uuids
         ]
-        if not len(entries):
-            raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
 
         entries.sort(key=lambda e: (e.version, transaction_uuids.index(e.transaction_uuid)))
 
@@ -137,16 +151,15 @@ class InMemorySnapshot(MinosSnapshot):
                 if e.version < new[-1].version:
                     new.append(e)
             entries = list(reversed(new))
+        return entries
 
-        if entries[-1].action.is_delete:
-            raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
-
+    @staticmethod
+    def _build_aggregate(entries: list[EventEntry], **kwargs) -> Aggregate:
         cls = entries[0].aggregate_cls
-        instance: Aggregate = cls.from_diff(entries[0].aggregate_diff, **kwargs)
+        aggregate = cls.from_diff(entries[0].aggregate_diff, **kwargs)
         for entry in entries[1:]:
-            instance.apply_diff(entry.aggregate_diff)
-
-        return instance
+            aggregate.apply_diff(entry.aggregate_diff)
+        return aggregate
 
     async def _synchronize(self, **kwargs) -> None:
         pass
