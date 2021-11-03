@@ -45,8 +45,6 @@ class InMemoryTransactionRepository(TransactionRepository):
                     f"{transaction!r} status is invalid respect to the previous one."
                 )
 
-        # TODO: Add destination_uuid validation.
-
         self._storage[transaction.uuid] = TransactionEntry(
             uuid=transaction.uuid,
             destination_uuid=transaction.destination_uuid,

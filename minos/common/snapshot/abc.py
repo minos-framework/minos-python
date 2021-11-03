@@ -47,7 +47,9 @@ class MinosSnapshot(ABC, MinosSetup):
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
-        :param transaction: TODO.
+        :param transaction: The transaction within the operation is performed. If not any value is provided, then the
+            transaction is extracted from the context var. If not any transaction is being scoped then the query is
+            performed to the global snapshot.
         :param kwargs: Additional named arguments.
         :return: The ``Aggregate`` instance.
         """
@@ -82,7 +84,9 @@ class MinosSnapshot(ABC, MinosSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction: TODO.
+        :param transaction: The transaction within the operation is performed. If not any value is provided, then the
+            transaction is extracted from the context var. If not any transaction is being scoped then the query is
+            performed to the global snapshot.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator that containing the ``Aggregate`` instances.
         """

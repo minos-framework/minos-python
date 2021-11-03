@@ -253,7 +253,10 @@ class TransactionEntry:
 
     @property
     async def uuids(self) -> tuple[UUID, ...]:
-        """TODO"""
+        """Get the sequence of transaction identifiers, from the outer one (``NULL_UUID``) to the one related with self.
+
+        :return: A tuple of ``UUID`` values.
+        """
         uuids = []
         current = self
 
@@ -266,7 +269,10 @@ class TransactionEntry:
 
     @property
     async def destination(self) -> Optional[TransactionEntry]:
-        """TODO"""
+        """Get the destination transaction if there is anyone, otherwise ``None`` is returned.
+
+        :return: A ``TransactionEntry`` or ``None``.
+        """
 
         if self.destination_uuid == NULL_UUID:
             return None

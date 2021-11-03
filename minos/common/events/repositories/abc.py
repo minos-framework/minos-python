@@ -265,7 +265,7 @@ class EventRepository(ABC, MinosSetup):
         :param id_ge: Entry identifier greater or equal to the given value.
         :param transaction_uuid: Transaction identifier.
         :param transaction_uuid_ne: Transaction identifier distinct of the given value.
-        :param transaction_uuid_in: TODO
+        :param transaction_uuid_in: Destination Transaction identifier equal to one of the given values.
         :return: A list of entries.
         """
         generator = self._select(

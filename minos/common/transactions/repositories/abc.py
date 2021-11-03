@@ -79,7 +79,7 @@ class TransactionRepository(ABC, MinosSetup):
         :param uuid: Transaction identifier equal to the given value.
         :param uuid_ne: Transaction identifier not equal to the given value
         :param uuid_in: Transaction identifier within the given values.
-        :param destination_uuid: TODO
+        :param destination_uuid: Destination Transaction identifier equal to the given value.
         :param status: Transaction status equal to the given value.
         :param status_in: Transaction status within the given values
         :param event_offset: Event offset equal to the given value.

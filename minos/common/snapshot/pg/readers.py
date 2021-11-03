@@ -110,7 +110,9 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
             instances that meet the given condition.
         :param streaming_mode: If ``True`` return the values in streaming directly from the database (keep an open
             database connection), otherwise preloads the full set of values on memory and then retrieves them.
-        :param transaction: TODO.
+        :param transaction: The transaction within the operation is performed. If not any value is provided, then the
+            transaction is extracted from the context var. If not any transaction is being scoped then the query is
+            performed to the global snapshot.
         :param exclude_deleted: If ``True``, deleted ``Aggregate`` entries are included, otherwise deleted ``Aggregate``
             entries are filtered.
         :param kwargs: Additional named arguments.
