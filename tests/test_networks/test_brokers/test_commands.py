@@ -65,6 +65,22 @@ class TestCommandBroker(PostgresAsyncTestCase):
         self.assertEqual("fake", args[0])
         self.assertEqual(Command("fake", FakeModel("foo"), saga, "OrderReply"), Command.from_avro_bytes(args[1]))
 
+    async def test_send_with_user(self):
+        mock = AsyncMock(return_value=56)
+        saga = uuid4()
+        user = uuid4()
+
+        async with CommandBroker.from_config(config=self.config) as broker:
+            broker.enqueue = mock
+            identifier = await broker.send(FakeModel("foo"), "fake", saga, "ekaf", user)
+
+        self.assertEqual(56, identifier)
+        self.assertEqual(1, mock.call_count)
+
+        args = mock.call_args.args
+        self.assertEqual("fake", args[0])
+        self.assertEqual(Command("fake", FakeModel("foo"), saga, "ekaf", user), Command.from_avro_bytes(args[1]))
+
 
 if __name__ == "__main__":
     unittest.main()

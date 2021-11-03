@@ -1,15 +1,10 @@
 import unittest
-import uuid
-from json import (
-    JSONDecodeError,
-)
 from unittest.mock import (
     PropertyMock,
     patch,
 )
-
-from yarl import (
-    URL,
+from uuid import (
+    uuid4,
 )
 
 from minos.common import (
@@ -19,26 +14,12 @@ from minos.networks import (
     RestRequest,
     RestResponse,
 )
+from tests.test_networks.test_rest.test_handlers import (
+    MockedRequest,
+)
 from tests.utils import (
     FakeModel,
 )
-
-
-class MockedRequest:
-    def __init__(self, data=None):
-        self.data = data
-        self.remote = "127.0.0.1"
-        self.rel_url = URL("localhost")
-        self.match_info = dict()
-        self.headers = {"User": str(uuid.uuid1())}
-
-    def __repr__(self):
-        return "repr"
-
-    async def json(self):
-        if self.data is None:
-            raise JSONDecodeError("", "", 1)
-        return self.data
 
 
 class TestRestRequest(unittest.IsolatedAsyncioTestCase):
@@ -58,11 +39,18 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
     def test_eq_false(self):
         self.assertNotEqual(RestRequest(MockedRequest()), RestRequest(MockedRequest()))
 
+    def test_headers(self):
+        uuid = uuid4()
+        raw_request = MockedRequest(user=uuid)
+        request = RestRequest(raw_request)
+        self.assertEqual({"User": str(uuid), "something": "123"}, request.headers)
+
     def test_user(self):
-        raw_request = MockedRequest()
+        uuid = uuid4()
+        raw_request = MockedRequest(user=uuid)
         request = RestRequest(raw_request)
         user = request.user
-        self.assertEqual(uuid.UUID(raw_request.headers["User"]), user)
+        self.assertEqual(uuid, user)
 
     async def test_content(self):
         Content = ModelType.build(

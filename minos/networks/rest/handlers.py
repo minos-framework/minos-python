@@ -29,6 +29,7 @@ from ..decorators import (
     EnrouteBuilder,
 )
 from ..messages import (
+    USER_CONTEXT_VAR,
     Response,
     ResponseException,
 )
@@ -127,6 +128,7 @@ class RestHandler(MinosSetup):
             logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")
 
             request = RestRequest(request)
+            token = USER_CONTEXT_VAR.set(request.user)
 
             try:
                 response = fn(request)
@@ -143,6 +145,8 @@ class RestHandler(MinosSetup):
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
                 raise web.HTTPInternalServerError()
+            finally:
+                USER_CONTEXT_VAR.reset(token)
 
         return _fn
 
