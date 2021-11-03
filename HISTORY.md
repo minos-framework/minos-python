@@ -109,3 +109,9 @@ History
 
 * Add `PeriodicTask`, `PeriodicTaskScheduler` and `PeriodicTaskSchedulerService`.
 * Add `@enroute.periodic.event` decorator
+
+0.0.19 (2021-11-03)
+------------------
+
+* Add `"user"` context variable to be accessible during `Request` handling (same as `Request.user`).
+* Add support for `Request.user` propagation over `CommandBroker`.
