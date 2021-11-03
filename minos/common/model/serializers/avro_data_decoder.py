@@ -32,11 +32,9 @@ from ...exceptions import (
 )
 from ..types import (
     MissingSentinel,
-    ModelRef,
     ModelType,
     NoneType,
     TypeHintBuilder,
-    is_aggregate_type,
     is_model_subclass,
     is_type_subclass,
     unpack_typevar,
@@ -245,7 +243,10 @@ class AvroDataDecoder:
             if ModelType.from_model(data) >= type_:
                 return data
 
-        raise DataDecoderTypeException(type_, data)
+        try:
+            return type_(data)
+        except Exception as exc:
+            raise DataDecoderTypeException(type_, data)
 
     def _cast_composed_value(self, type_: type, data: Any) -> Any:
         origin_type = get_origin(type_)
@@ -260,9 +261,6 @@ class AvroDataDecoder:
 
         if origin_type is dict:
             return self._cast_dict(data, type_)
-
-        if origin_type is ModelRef:
-            return self._cast_model_ref(data, type_)
 
         raise DataDecoderTypeException(type_, data)
 
@@ -294,12 +292,3 @@ class AvroDataDecoder:
 
     def _cast_iterable(self, data: Iterable, type_params: type) -> Iterable:
         return (self._cast_value(type_params, item) for item in data)
-
-    def _cast_model_ref(self, data: Any, type_: type) -> Any:
-        inner_type = get_args(type_)[0]
-        if not is_aggregate_type(inner_type):
-            raise DataDecoderMalformedTypeException(
-                f"'ModelRef[T]' T type must follow the 'Aggregate' protocol. Obtained: {inner_type!r}"
-            )
-
-        return self._cast_value(Union[inner_type, UUID], data)

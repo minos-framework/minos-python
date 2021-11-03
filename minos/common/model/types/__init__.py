@@ -17,11 +17,6 @@ from .generics import (
     GenericTypeProjector,
     unpack_typevar,
 )
-from .model_refs import (
-    ModelRef,
-    ModelRefExtractor,
-    ModelRefInjector,
-)
 from .model_types import (
     ModelType,
 )

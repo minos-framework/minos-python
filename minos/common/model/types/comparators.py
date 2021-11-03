@@ -74,18 +74,8 @@ class TypeHintComparator:
         return self._compare(self._first, self._second)
 
     def _compare(self, first: T, second: K) -> bool:
-        from .model_refs import (
-            ModelRef,
-        )
-
         if second is Any:
             return True
-
-        if get_origin(first) is ModelRef:
-            first = Union[(*get_args(first), UUID)]
-
-        if get_origin(second) is ModelRef:
-            second = Union[(*get_args(second), UUID)]
 
         if get_origin(first) is Union and all(self._compare(f, second) for f in get_args(first)):
             return True

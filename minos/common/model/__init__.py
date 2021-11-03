@@ -43,11 +43,13 @@ from .serializers import (
 from .types import (
     GenericTypeProjector,
     MissingSentinel,
-    ModelRef,
-    ModelRefExtractor,
-    ModelRefInjector,
     ModelType,
     NoneType,
     TypeHintBuilder,
     TypeHintComparator,
+)
+from .model_refs import (
+    ModelRef,
+    ModelRefExtractor,
+    ModelRefInjector,
 )

@@ -6,7 +6,6 @@ from collections import (
     defaultdict,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
     Generic,
     Iterable,
@@ -14,26 +13,40 @@ from typing import (
     TypeVar,
     Union,
     get_args,
-    get_origin,
 )
 from uuid import (
     UUID,
 )
 
-from .comparators import (
+from .abc import (
+    Model,
+)
+from .declarative import (
+    DeclarativeModel,
+)
+from .types import (
+    TypeHintBuilder,
     is_model_type,
 )
 
-if TYPE_CHECKING:
-    from ..abc import (
-        Model,
-    )
-
-T = TypeVar("T")
+MT = TypeVar("MT")
 
 
-class ModelRef(Generic[T]):
+class ModelRef(DeclarativeModel, Generic[MT]):
     """Model Reference."""
+
+    data: Union[MT, UUID]
+
+    def __init__(self, *args, **kwargs):
+        print(args, kwargs)
+        DeclarativeModel.__init__(self, *args, **kwargs)
+
+    @property
+    def uuid(self) -> UUID:
+        """TODO"""
+        if isinstance(self.data, UUID):
+            return self.data
+        return self.data.uuid
 
 
 class ModelRefExtractor:
@@ -41,10 +54,6 @@ class ModelRefExtractor:
 
     def __init__(self, value: Any, type_: Optional[type] = None):
         if type_ is None:
-            from .builders import (
-                TypeHintBuilder,
-            )
-
             type_ = TypeHintBuilder(value).build()
         self.value = value
         self.type_ = type_
@@ -66,18 +75,17 @@ class ModelRefExtractor:
             self._build_iterable(value.keys(), get_args(type_)[0], ans)
             self._build_iterable(value.values(), get_args(type_)[1], ans)
 
+        elif isinstance(value, ModelRef):
+            cls = get_args(type_)[0]
+            name = cls.__name__
+            ans[name].add(value.uuid)
+
         elif is_model_type(value):
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 
-        elif isinstance(value, UUID):
-            if get_origin(type_) is Union:
-                type_ = next((t for t in get_args(type_) if get_origin(t) is ModelRef), type_)
-
-            if get_origin(type_) is ModelRef:
-                cls = get_args(type_)[0]
-                name = cls.__name__
-                ans[name].add(value)
+        elif issubclass(type_, ModelRef) and isinstance(value, UUID):
+            self._build(ModelRef(value), type_, ans)
 
     def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[UUID]]) -> None:
         for sub_value in value:
@@ -98,19 +106,19 @@ class ModelRefInjector:
         """
         return self._build(self.value)
 
-    def _build(self, value: Any) -> None:
+    def _build(self, value: Any) -> Any:
         if isinstance(value, (tuple, list, set)):
             return type(value)(self._build(v) for v in value)
 
         if isinstance(value, dict):
             return type(value)((self._build(k), self._build(v)) for k, v in value.items())
 
+        if isinstance(value, ModelRef) and value in self.mapper:
+            return self.mapper[value.uuid]
+
         if is_model_type(value):
             for field in value.fields.values():
                 field.value = self._build(field.value)
             return value
-
-        if isinstance(value, UUID) and value in self.mapper:
-            return self.mapper[value]
 
         return value

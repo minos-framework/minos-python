@@ -11,18 +11,10 @@ from typing import (
     get_args,
     get_origin,
 )
-from uuid import (
-    UUID,
-)
 
 from .comparators import (
     TypeHintComparator,
-    is_aggregate_type,
     is_model_type,
-    is_type_subclass,
-)
-from .model_refs import (
-    ModelRef,
 )
 from .model_types import (
     ModelType,
@@ -37,12 +29,6 @@ def build_union(options: tuple[type, ...]) -> type:
     :param options: A tuple of types.
     :return: The union of types.
     """
-    aggregate_type = next(filter(is_aggregate_type, options), None)
-    uuid_type = next(filter(lambda option: is_type_subclass(option) and issubclass(option, UUID), options), None)
-
-    if aggregate_type is not None and uuid_type is not None:
-        another = tuple(option for option in options if option not in (aggregate_type, uuid_type))
-        return Union[(ModelRef[aggregate_type],) + another]
 
     return Union[options]
 
@@ -63,16 +49,15 @@ class TypeHintBuilder:
 
     def _build(self, value, type_: Optional[type]) -> type:
         if type_ is not None:
-            if get_origin(type_) is ModelRef:
-                type_ = Union[(*get_args(type_), UUID)]
-
             if get_origin(type_) is Union:
                 dynamic = self._build(value, None)
                 options = tuple(
-                    (dynamic if not len(get_args(static)) and TypeHintComparator(dynamic, static).match() else static)
-                    for static in get_args(type_)
+                    (dynamic if not len(get_args(static)) and TypeHintComparator(dynamic, static).match() else static) for static in get_args(type_)
                 )
                 return build_union(options)
+            else:
+                dynamic = self._build(value, None)
+                return dynamic if TypeHintComparator(dynamic, type_).match() else type_
 
         if isinstance(value, (tuple, list, set)):
             b1 = Any if (type_ is None or len(get_args(type_)) != 1) else get_args(type_)[0]

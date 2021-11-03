@@ -22,7 +22,6 @@ from uuid import (
 )
 
 from ..types import (
-    ModelRef,
     ModelType,
     NoneType,
     is_model_subclass,
@@ -157,9 +156,6 @@ class AvroSchemaEncoder:
         if origin_type is dict:
             return self._build_dict_schema(type_)
 
-        if origin_type is ModelRef:
-            return self._build_model_ref_schema(type_)
-
         raise ValueError(f"Given field type is not supported: {type_}")  # pragma: no cover
 
     def _build_set_schema(self, type_: type) -> dict[str, Any]:
@@ -171,9 +167,6 @@ class AvroSchemaEncoder:
 
     def _build_dict_schema(self, type_: type) -> dict[str, Any]:
         return {"type": AVRO_MAP, "values": self._build_schema(get_args(type_)[1])}
-
-    def _build_model_ref_schema(self, type_: type) -> Union[bool, Any]:
-        return self._build_schema(Union[get_args(type_)[0], UUID])
 
     @staticmethod
     def generate_random_str() -> str:
