@@ -58,7 +58,7 @@ class Model(Mapping):
     """Base class for ``minos`` model entities."""
 
     _fields: dict[str, Field]
-    __reversing_eq: bool
+    __eq_reversing: bool
 
     def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
         """Class constructor.
@@ -70,7 +70,7 @@ class Model(Mapping):
         if not isinstance(fields, dict):
             fields = {field.name: field for field in fields}
         self._fields = fields
-        self.__reversing_eq = False
+        self.__eq_reversing = False
 
     @classmethod
     def from_avro_str(cls: Type[T], raw: str, **kwargs) -> Union[T, list[T]]:
@@ -274,12 +274,12 @@ class Model(Mapping):
         if type(self) == type(other) and self.fields == other.fields:
             return True
 
-        if not self.__reversing_eq:
+        if not self.__eq_reversing:
             try:
-                self.__reversing_eq = True
+                self.__eq_reversing = True
                 return other == self
             finally:
-                self.__reversing_eq = False
+                self.__eq_reversing = False
 
         return False
 
