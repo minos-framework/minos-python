@@ -141,7 +141,7 @@ class Field:
         return AvroSchemaEncoder(self.type, self.name).build()
 
     @property
-    def avro_data(self):
+    def avro_data(self) -> Any:
         """Compute the avro data of the model.
 
         :return: A dictionary object.

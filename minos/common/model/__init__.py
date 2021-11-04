@@ -35,6 +35,7 @@ from .fields import (
     ModelField,
 )
 from .model_refs import (
+    FieldRef,
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,

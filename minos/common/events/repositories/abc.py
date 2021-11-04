@@ -53,6 +53,9 @@ from ...transactions import (
     TransactionRepository,
     TransactionStatus,
 )
+from ..contextvars import (
+    IS_SUBMITTING_EVENT_CONTEXT_VAR,
+)
 from ..entries import (
     EventEntry,
 )
@@ -149,22 +152,28 @@ class EventRepository(ABC, MinosSetup):
             AggregateDiff,
         )
 
-        transaction = TRANSACTION_CONTEXT_VAR.get()
+        try:
+            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(True)
 
-        if isinstance(entry, AggregateDiff):
-            entry = EventEntry.from_aggregate_diff(entry, transaction=transaction)
+            transaction = TRANSACTION_CONTEXT_VAR.get()
 
-        if not isinstance(entry.action, Action):
-            raise MinosRepositoryException("The 'EventEntry.action' attribute must be an 'Action' instance.")
+            if isinstance(entry, AggregateDiff):
+                entry = EventEntry.from_aggregate_diff(entry, transaction=transaction)
 
-        async with self.write_lock():
-            if not await self.validate(entry, **kwargs):
-                raise MinosRepositoryConflictException(f"{entry!r} could not be committed!", await self.offset)
+            if not isinstance(entry.action, Action):
+                raise MinosRepositoryException("The 'EventEntry.action' attribute must be an 'Action' instance.")
 
-            entry = await self._submit(entry, **kwargs)
+            async with self.write_lock():
+                if not await self.validate(entry, **kwargs):
+                    raise MinosRepositoryConflictException(f"{entry!r} could not be committed!", await self.offset)
 
-        if transaction is None:
-            await self._send_events(entry.aggregate_diff)
+                entry = await self._submit(entry, **kwargs)
+
+            if transaction is None:
+                await self._send_events(entry.aggregate_diff)
+
+        finally:
+            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(False)
 
         return entry
 

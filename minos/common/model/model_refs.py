@@ -20,11 +20,20 @@ from uuid import (
     SafeUUID,
 )
 
+from ..events import (
+    IS_SUBMITTING_EVENT_CONTEXT_VAR,
+)
 from .abc import (
     Model,
 )
 from .declarative import (
     DeclarativeModel,
+)
+from .fields import (
+    Field,
+)
+from .serializers import (
+    AvroDataEncoder,
 )
 from .types import (
     TypeHintBuilder,
@@ -34,14 +43,36 @@ from .types import (
 MT = TypeVar("MT")
 
 
+class FieldRef(Field):
+    """Ref Field class."""
+
+    @property
+    def avro_data(self) -> Any:
+        """Compute the avro data of the model.
+
+        If submitting is active then simply the identifier is used, otherwise the complete value is used.
+
+        :return: A dictionary object.
+        """
+        if not IS_SUBMITTING_EVENT_CONTEXT_VAR.get():
+            return super().avro_data
+
+        value = self.value
+        if not isinstance(value, UUID):
+            value = value.uuid
+
+        return AvroDataEncoder(value).build()
+
+
 class ModelRef(DeclarativeModel, UUID, Generic[MT]):
     """Model Reference."""
 
+    _field_cls = FieldRef
     data: Union[MT, UUID]
 
     def __init__(self, data: Union[MT, UUID], *args, **kwargs):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
-            raise ValueError()
+            raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
         DeclarativeModel.__init__(self, data, *args, **kwargs)
 
     def __getattr__(self, item: str) -> Any:

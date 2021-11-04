@@ -10,7 +10,8 @@ from uuid import (
 )
 
 from minos.common import (
-    Field,
+    IS_SUBMITTING_EVENT_CONTEXT_VAR,
+    FieldRef,
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,
@@ -70,7 +71,7 @@ class TestModelRef(unittest.TestCase):
         mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
         value = ModelRef(mt_bar(uuid=uuid4(), age=1))
 
-        self.assertEqual({"data": Field("data", Union[mt_bar, UUID], value)}, value.fields)
+        self.assertEqual({"data": FieldRef("data", Union[mt_bar, UUID], value)}, value.fields)
 
     def test_model_avro_data(self):
         mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
@@ -81,6 +82,25 @@ class TestModelRef(unittest.TestCase):
     def test_uuid_avro_data(self):
         value = uuid4()
         self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
+
+    def test_model_avro_data_submitting(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        uuid = uuid4()
+        value = mt_bar(uuid=uuid, age=1)
+
+        try:
+            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+            self.assertEqual({"data": str(uuid)}, ModelRef(value).avro_data)
+        finally:
+            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(False)
+
+    def test_uuid_avro_data_submitting(self):
+        value = uuid4()
+        try:
+            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+            self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
+        finally:
+            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(False)
 
 
 class TestModelRefExtractor(unittest.TestCase):
