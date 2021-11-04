@@ -231,7 +231,7 @@ class Model(Mapping):
             raise AttributeError(f"{type(self).__name__!r} does not contain the {key!r} field")
 
     def __getattr__(self, item: str) -> Any:
-        if item in self._fields:
+        if item != "_fields" and item in self._fields:
             return self._fields[item].value
         else:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")

@@ -19,7 +19,6 @@ from minos.common import (
     MinosMalformedAttributeException,
     ModelRef,
     ModelType,
-    TypeHintComparator,
 )
 
 
@@ -166,7 +165,7 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         }
         expected = Union[ModelRef[User], int]
         observed = AvroSchemaDecoder(schema).build()
-        self.assertTrue(TypeHintComparator(expected, observed).match())
+        self.assertTrue(expected, observed)
 
     def test_raises(self):
         with self.assertRaises(MinosMalformedAttributeException):
