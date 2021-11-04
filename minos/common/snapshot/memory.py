@@ -22,6 +22,9 @@ from dependency_injector.wiring import (
     inject,
 )
 
+from ..events import (
+    EventRepository,
+)
 from ..exceptions import (
     MinosRepositoryNotProvidedException,
     MinosSnapshotAggregateNotFoundException,
@@ -31,9 +34,6 @@ from ..exceptions import (
 from ..queries import (
     _Condition,
     _Ordering,
-)
-from ..repository import (
-    MinosRepository,
 )
 from ..transactions import (
     TransactionRepository,
@@ -62,19 +62,19 @@ class InMemorySnapshot(MinosSnapshot):
     def __init__(
         self,
         *args,
-        repository: MinosRepository = Provide["repository"],
+        event_repository: EventRepository = Provide["event_repository"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        if repository is None or isinstance(repository, Provide):
-            raise MinosRepositoryNotProvidedException("A repository instance is required.")
+        if event_repository is None or isinstance(event_repository, Provide):
+            raise MinosRepositoryNotProvidedException("An event repository instance is required.")
 
         if transaction_repository is None or isinstance(transaction_repository, Provide):
             raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
 
-        self._repository = repository
+        self._event_repository = event_repository
         self._transaction_repository = transaction_repository
 
     async def _find(
@@ -86,7 +86,7 @@ class InMemorySnapshot(MinosSnapshot):
         transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
-        uuids = {v.aggregate_uuid async for v in self._repository.select(aggregate_name=aggregate_name)}
+        uuids = {v.aggregate_uuid async for v in self._event_repository.select(aggregate_name=aggregate_name)}
 
         aggregates = list()
         for uuid in uuids:
@@ -118,7 +118,7 @@ class InMemorySnapshot(MinosSnapshot):
 
         entries = [
             v
-            async for v in self._repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
+            async for v in self._event_repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
             if v.transaction_uuid in (transaction_uuid, NULL_UUID)
         ]
         if not len(entries):

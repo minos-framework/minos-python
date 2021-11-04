@@ -28,43 +28,43 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from ..exceptions import (
+from ...exceptions import (
     MinosBrokerNotProvidedException,
     MinosLockPoolNotProvidedException,
     MinosRepositoryConflictException,
     MinosRepositoryException,
     MinosTransactionRepositoryNotProvidedException,
 )
-from ..locks import (
+from ...locks import (
     Lock,
 )
-from ..networks import (
+from ...networks import (
     MinosBroker,
 )
-from ..pools import (
+from ...pools import (
     MinosPool,
 )
-from ..setup import (
+from ...setup import (
     MinosSetup,
 )
-from ..transactions import (
+from ...transactions import (
     TRANSACTION_CONTEXT_VAR,
     TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
-from .entries import (
-    RepositoryEntry,
+from ..entries import (
+    EventEntry,
 )
 
 if TYPE_CHECKING:
-    from ..model import (
+    from ...model import (
         AggregateDiff,
     )
 
 
-class MinosRepository(ABC, MinosSetup):
-    """Base repository class in ``minos``."""
+class EventRepository(ABC, MinosSetup):
+    """Base event repository class in ``minos``."""
 
     @inject
     def __init__(
@@ -84,7 +84,7 @@ class MinosRepository(ABC, MinosSetup):
             raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
 
         if lock_pool is None or isinstance(lock_pool, Provide):
-            raise MinosLockPoolNotProvidedException("A transaction repository instance is required.")
+            raise MinosLockPoolNotProvidedException("A lock pool instance is required.")
 
         self._event_broker = event_broker
         self._transaction_repository = transaction_repository
@@ -98,53 +98,53 @@ class MinosRepository(ABC, MinosSetup):
         """
         return TransactionEntry(event_repository=self, transaction_repository=self._transaction_repository, **kwargs)
 
-    async def create(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
+    async def create(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
         """Store new creation entry into the repository.
 
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ..model import (
+        from ...model import (
             Action,
         )
 
         entry.action = Action.CREATE
         return await self.submit(entry)
 
-    async def update(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
+    async def update(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
         """Store new update entry into the repository.
 
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ..model import (
+        from ...model import (
             Action,
         )
 
         entry.action = Action.UPDATE
         return await self.submit(entry)
 
-    async def delete(self, entry: Union[AggregateDiff, RepositoryEntry]) -> RepositoryEntry:
+    async def delete(self, entry: Union[AggregateDiff, EventEntry]) -> EventEntry:
         """Store new deletion entry into the repository.
 
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ..model import (
+        from ...model import (
             Action,
         )
 
         entry.action = Action.DELETE
         return await self.submit(entry)
 
-    async def submit(self, entry: Union[AggregateDiff, RepositoryEntry], **kwargs) -> RepositoryEntry:
+    async def submit(self, entry: Union[AggregateDiff, EventEntry], **kwargs) -> EventEntry:
         """Store new entry into the repository.
 
         :param entry: The entry to be stored.
         :param kwargs: Additional named arguments.
         :return: The repository entry containing the stored information.
         """
-        from ..model import (
+        from ...model import (
             Action,
             AggregateDiff,
         )
@@ -152,10 +152,10 @@ class MinosRepository(ABC, MinosSetup):
         transaction = TRANSACTION_CONTEXT_VAR.get()
 
         if isinstance(entry, AggregateDiff):
-            entry = RepositoryEntry.from_aggregate_diff(entry, transaction=transaction)
+            entry = EventEntry.from_aggregate_diff(entry, transaction=transaction)
 
         if not isinstance(entry.action, Action):
-            raise MinosRepositoryException("The 'RepositoryEntry.action' attribute must be an 'Action' instance.")
+            raise MinosRepositoryException("The 'EventEntry.action' attribute must be an 'Action' instance.")
 
         async with self.write_lock():
             if not await self.validate(entry, **kwargs):
@@ -169,7 +169,7 @@ class MinosRepository(ABC, MinosSetup):
         return entry
 
     # noinspection PyUnusedLocal
-    async def validate(self, entry: RepositoryEntry, transaction_uuid_ne: Optional[UUID] = None, **kwargs) -> bool:
+    async def validate(self, entry: EventEntry, transaction_uuid_ne: Optional[UUID] = None, **kwargs) -> bool:
         """Check if it is able to submit the given entry.
 
         :param entry: The entry to be validated.
@@ -194,11 +194,11 @@ class MinosRepository(ABC, MinosSetup):
         return True
 
     @abstractmethod
-    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
+    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         raise NotImplementedError
 
     async def _send_events(self, aggregate_diff: AggregateDiff):
-        from ..model import (
+        from ...model import (
             Action,
         )
 
@@ -212,7 +212,7 @@ class MinosRepository(ABC, MinosSetup):
         futures = [self._event_broker.send(aggregate_diff, topic=topic)]
 
         if aggregate_diff.action == Action.UPDATE:
-            from ..model import (
+            from ...model import (
                 IncrementalFieldDiff,
             )
 
@@ -243,7 +243,7 @@ class MinosRepository(ABC, MinosSetup):
         transaction_uuid: Optional[UUID] = None,
         transaction_uuid_ne: Optional[UUID] = None,
         **kwargs,
-    ) -> AsyncIterator[RepositoryEntry]:
+    ) -> AsyncIterator[EventEntry]:
         """Perform a selection query of entries stored in to the repository.
 
         :param aggregate_uuid: Aggregate identifier.
@@ -284,7 +284,7 @@ class MinosRepository(ABC, MinosSetup):
             yield entry
 
     @abstractmethod
-    async def _select(self, *args, **kwargs) -> AsyncIterator[RepositoryEntry]:
+    async def _select(self, *args, **kwargs) -> AsyncIterator[EventEntry]:
         """Perform a selection query of entries stored in to the repository."""
 
     @property

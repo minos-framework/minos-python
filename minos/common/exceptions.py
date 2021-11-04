@@ -72,7 +72,7 @@ class MinosRepositoryException(MinosException):
 
 
 class MinosRepositoryConflictException(MinosRepositoryException):
-    """Exception to be raised when some ``RepositoryEntry`` raises a conflict."""
+    """Exception to be raised when some ``EventEntry`` raises a conflict."""
 
     def __init__(self, error_message: str, offset: int):
         super().__init__(error_message)

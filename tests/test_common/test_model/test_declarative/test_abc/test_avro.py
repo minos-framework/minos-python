@@ -158,10 +158,14 @@ class TestMinosModelAvro(MinosTestCase):
 
     async def test_avro_data_model_ref(self):
         owners = [
-            Owner("Hello", "Good Bye", uuid=uuid4(), version=1, _repository=self.repository, _snapshot=self.snapshot),
-            Owner("Foo", "Bar", uuid=uuid4(), version=1, _repository=self.repository, _snapshot=self.snapshot),
+            Owner(
+                "Hello", "Good Bye", uuid=uuid4(), version=1, _repository=self.event_repository, _snapshot=self.snapshot
+            ),
+            Owner("Foo", "Bar", uuid=uuid4(), version=1, _repository=self.event_repository, _snapshot=self.snapshot),
         ]
-        car = Car(5, "blue", owners, uuid=uuid4(), version=1, _repository=self.repository, _snapshot=self.snapshot)
+        car = Car(
+            5, "blue", owners, uuid=uuid4(), version=1, _repository=self.event_repository, _snapshot=self.snapshot
+        )
         expected = {
             "color": "blue",
             "doors": 5,
@@ -194,10 +198,10 @@ class TestMinosModelAvro(MinosTestCase):
 
     async def test_avro_bytes_model_ref(self):
         owners = [
-            Owner("Hello", "Good Bye", _repository=self.repository, _snapshot=self.snapshot),
-            Owner("Foo", "Bar", _repository=self.repository, _snapshot=self.snapshot),
+            Owner("Hello", "Good Bye", _repository=self.event_repository, _snapshot=self.snapshot),
+            Owner("Foo", "Bar", _repository=self.event_repository, _snapshot=self.snapshot),
         ]
-        car = Car(5, "blue", owners, _repository=self.repository, _snapshot=self.snapshot)
+        car = Car(5, "blue", owners, _repository=self.event_repository, _snapshot=self.snapshot)
         self.assertIsInstance(car.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):

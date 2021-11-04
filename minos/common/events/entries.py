@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     )
 
 
-class RepositoryEntry:
+class EventEntry:
     """Class that represents an entry (or row) on the events repository database which stores the aggregate changes."""
 
     __slots__ = (
@@ -84,13 +84,13 @@ class RepositoryEntry:
     @classmethod
     def from_aggregate_diff(
         cls, aggregate_diff: AggregateDiff, *, transaction: Optional[TransactionEntry] = None, **kwargs
-    ) -> RepositoryEntry:
+    ) -> EventEntry:
         """Build a new instance from an ``Aggregate``.
 
         :param aggregate_diff: The aggregate difference.
         :param transaction: Optional transaction.
         :param kwargs: Additional named arguments.
-        :return: A new ``RepositoryEntry`` instance.
+        :return: A new ``EventEntry`` instance.
         """
         if transaction is not None:
             kwargs["transaction_uuid"] = transaction.uuid
@@ -105,12 +105,12 @@ class RepositoryEntry:
         )
 
     @classmethod
-    def from_another(cls, another: RepositoryEntry, **kwargs) -> RepositoryEntry:
-        """Build a new instance from another ``RepositoryEntry``.
+    def from_another(cls, another: EventEntry, **kwargs) -> EventEntry:
+        """Build a new instance from another ``EventEntry``.
 
-        :param another: The ``RepositoryEntry``.
+        :param another: The ``EventEntry``.
         :param kwargs: Additional named arguments.
-        :return: A new ``RepositoryEntry`` instance.
+        :return: A new ``EventEntry`` instance.
         """
         return cls(**(another.as_raw() | kwargs | {"id": None}))
 
@@ -173,7 +173,7 @@ class RepositoryEntry:
 
         return FieldDiffContainer.from_avro_bytes(self.data)
 
-    def __eq__(self, other: "RepositoryEntry") -> bool:
+    def __eq__(self, other: "EventEntry") -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:

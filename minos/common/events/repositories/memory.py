@@ -17,25 +17,25 @@ from uuid import (
     uuid4,
 )
 
-from ..datetime import (
+from ...datetime import (
     current_datetime,
 )
-from ..exceptions import (
+from ...exceptions import (
     MinosRepositoryConflictException,
 )
-from ..uuid import (
+from ...uuid import (
     NULL_UUID,
 )
+from ..entries import (
+    EventEntry,
+)
 from .abc import (
-    MinosRepository,
-)
-from .entries import (
-    RepositoryEntry,
+    EventRepository,
 )
 
 
-class InMemoryRepository(MinosRepository):
-    """Memory-based implementation of the repository class in ``minos``."""
+class InMemoryEventRepository(EventRepository):
+    """Memory-based implementation of the event repository class in ``minos``."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,7 +43,7 @@ class InMemoryRepository(MinosRepository):
         self._id_generator = count()
         self._next_versions = defaultdict(int)
 
-    async def _submit(self, entry: RepositoryEntry, **kwargs) -> RepositoryEntry:
+    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
         if entry.aggregate_uuid == NULL_UUID:
             entry.aggregate_uuid = uuid4()
 
@@ -66,7 +66,7 @@ class InMemoryRepository(MinosRepository):
     def _generate_next_id(self) -> int:
         return next(self._id_generator) + 1
 
-    def _get_next_version_id(self, entry: RepositoryEntry) -> int:
+    def _get_next_version_id(self, entry: EventEntry) -> int:
         key = (entry.aggregate_name, entry.aggregate_uuid, entry.transaction_uuid)
         self._next_versions[key] += 1
         return self._next_versions[key]
@@ -89,10 +89,10 @@ class InMemoryRepository(MinosRepository):
         transaction_uuid_ne: Optional[UUID] = None,
         *args,
         **kwargs,
-    ) -> AsyncIterator[RepositoryEntry]:
+    ) -> AsyncIterator[EventEntry]:
 
         # noinspection DuplicatedCode
-        def _fn_filter(entry: RepositoryEntry) -> bool:
+        def _fn_filter(entry: EventEntry) -> bool:
             if aggregate_uuid is not None and aggregate_uuid != entry.aggregate_uuid:
                 return False
             if aggregate_name is not None and aggregate_name != entry.aggregate_name:

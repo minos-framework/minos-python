@@ -18,25 +18,25 @@ from minos.common import (
     TRANSACTION_CONTEXT_VAR,
     Action,
     AggregateDiff,
+    EventEntry,
+    EventRepository,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
     MinosBrokerNotProvidedException,
     MinosLockPoolNotProvidedException,
-    MinosRepository,
     MinosRepositoryConflictException,
     MinosRepositoryException,
     MinosSetup,
     MinosTransactionRepositoryNotProvidedException,
-    RepositoryEntry,
     TransactionEntry,
     TransactionStatus,
     current_datetime,
 )
 from tests.utils import (
     FakeAsyncIterator,
+    FakeEventRepository,
     FakeLock,
-    FakeRepository,
     MinosTestCase,
 )
 
@@ -44,17 +44,17 @@ from tests.utils import (
 class TestMinosRepository(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.repository = FakeRepository()
+        self.event_repository = FakeEventRepository()
 
     def test_subclass(self):
-        self.assertTrue(issubclass(MinosRepository, (ABC, MinosSetup)))
+        self.assertTrue(issubclass(EventRepository, (ABC, MinosSetup)))
 
     def test_abstract(self):
         # noinspection PyUnresolvedReferences
-        self.assertEqual({"_submit", "_select", "_offset"}, MinosRepository.__abstractmethods__)
+        self.assertEqual({"_submit", "_select", "_offset"}, EventRepository.__abstractmethods__)
 
     def test_constructor(self):
-        repository = FakeRepository(
+        repository = FakeEventRepository(
             event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
         )
         self.assertEqual(self.event_broker, repository._event_broker)
@@ -64,28 +64,28 @@ class TestMinosRepository(MinosTestCase):
     async def test_constructor_raises(self):
         with self.assertRaises(MinosBrokerNotProvidedException):
             # noinspection PyTypeChecker
-            FakeRepository(event_broker=None)
+            FakeEventRepository(event_broker=None)
         with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
             # noinspection PyTypeChecker
-            FakeRepository(transaction_repository=None)
+            FakeEventRepository(transaction_repository=None)
         with self.assertRaises(MinosLockPoolNotProvidedException):
             # noinspection PyTypeChecker
-            FakeRepository(lock_pool=None)
+            FakeEventRepository(lock_pool=None)
 
     def test_transaction(self):
         uuid = uuid4()
-        transaction = self.repository.transaction(uuid=uuid)
+        transaction = self.event_repository.transaction(uuid=uuid)
         self.assertEqual(TransactionEntry(uuid), transaction)
-        self.assertEqual(self.repository, transaction.event_repository)
-        self.assertEqual(self.transaction_repository, transaction.transaction_repository)
+        self.assertEqual(self.event_repository, transaction._event_repository)
+        self.assertEqual(self.transaction_repository, transaction._transaction_repository)
 
     async def test_create(self):
         mock = AsyncMock(side_effect=lambda x: x)
-        self.repository.submit = mock
+        self.event_repository.submit = mock
 
-        entry = RepositoryEntry(uuid4(), "example.Car", 0, bytes())
+        entry = EventEntry(uuid4(), "example.Car", 0, bytes())
 
-        self.assertEqual(entry, await self.repository.create(entry))
+        self.assertEqual(entry, await self.event_repository.create(entry))
 
         self.assertEqual(Action.CREATE, entry.action)
         self.assertEqual(1, mock.call_count)
@@ -93,11 +93,11 @@ class TestMinosRepository(MinosTestCase):
 
     async def test_update(self):
         mock = AsyncMock(side_effect=lambda x: x)
-        self.repository.submit = mock
+        self.event_repository.submit = mock
 
-        entry = RepositoryEntry(uuid4(), "example.Car", 0, bytes())
+        entry = EventEntry(uuid4(), "example.Car", 0, bytes())
 
-        self.assertEqual(entry, await self.repository.update(entry))
+        self.assertEqual(entry, await self.event_repository.update(entry))
 
         self.assertEqual(Action.UPDATE, entry.action)
         self.assertEqual(1, mock.call_count)
@@ -105,11 +105,11 @@ class TestMinosRepository(MinosTestCase):
 
     async def test_delete(self):
         mock = AsyncMock(side_effect=lambda x: x)
-        self.repository.submit = mock
+        self.event_repository.submit = mock
 
-        entry = RepositoryEntry(uuid4(), "example.Car", 0, bytes())
+        entry = EventEntry(uuid4(), "example.Car", 0, bytes())
 
-        self.assertEqual(entry, await self.repository.delete(entry))
+        self.assertEqual(entry, await self.event_repository.delete(entry))
 
         self.assertEqual(Action.DELETE, entry.action)
         self.assertEqual(1, mock.call_count)
@@ -120,7 +120,7 @@ class TestMinosRepository(MinosTestCase):
         id_ = 12
         field_diff_container = FieldDiffContainer([FieldDiff("color", str, "red")])
 
-        async def _fn(e: RepositoryEntry) -> RepositoryEntry:
+        async def _fn(e: EventEntry) -> EventEntry:
             e.id = id_
             e.version = 56
             e.created_at = created_at
@@ -128,8 +128,8 @@ class TestMinosRepository(MinosTestCase):
 
         submit_mock = AsyncMock(side_effect=_fn)
         send_events_mock = AsyncMock()
-        self.repository._submit = submit_mock
-        self.repository._send_events = send_events_mock
+        self.event_repository._submit = submit_mock
+        self.event_repository._send_events = send_events_mock
 
         uuid = uuid4()
         aggregate_diff = AggregateDiff(
@@ -142,13 +142,13 @@ class TestMinosRepository(MinosTestCase):
         )
 
         validate_mock = AsyncMock(return_value=True)
-        self.repository.validate = validate_mock
+        self.event_repository.validate = validate_mock
 
-        observed = await self.repository.submit(aggregate_diff)
+        observed = await self.event_repository.submit(aggregate_diff)
 
         self.assertEqual(1, send_events_mock.call_count)
 
-        self.assertIsInstance(observed, RepositoryEntry)
+        self.assertIsInstance(observed, EventEntry)
         self.assertEqual(uuid, observed.aggregate_uuid)
         self.assertEqual("example.Car", observed.aggregate_name)
         self.assertEqual(56, observed.version)
@@ -166,7 +166,7 @@ class TestMinosRepository(MinosTestCase):
 
         TRANSACTION_CONTEXT_VAR.set(transaction)
 
-        async def _fn(e: RepositoryEntry) -> RepositoryEntry:
+        async def _fn(e: EventEntry) -> EventEntry:
             e.id = id_
             e.version = 56
             e.created_at = created_at
@@ -174,8 +174,8 @@ class TestMinosRepository(MinosTestCase):
 
         submit_mock = AsyncMock(side_effect=_fn)
         send_events_mock = AsyncMock()
-        self.repository._submit = submit_mock
-        self.repository._send_events = send_events_mock
+        self.event_repository._submit = submit_mock
+        self.event_repository._send_events = send_events_mock
 
         uuid = uuid4()
         aggregate_diff = AggregateDiff(
@@ -188,13 +188,13 @@ class TestMinosRepository(MinosTestCase):
         )
 
         validate_mock = AsyncMock(return_value=True)
-        self.repository.validate = validate_mock
+        self.event_repository.validate = validate_mock
 
-        observed = await self.repository.submit(aggregate_diff)
+        observed = await self.event_repository.submit(aggregate_diff)
 
         self.assertEqual(0, send_events_mock.call_count)
 
-        self.assertIsInstance(observed, RepositoryEntry)
+        self.assertIsInstance(observed, EventEntry)
         self.assertEqual(uuid, observed.aggregate_uuid)
         self.assertEqual("example.Car", observed.aggregate_name)
         self.assertEqual(56, observed.version)
@@ -209,7 +209,7 @@ class TestMinosRepository(MinosTestCase):
         id_ = 12
         field_diff_container = FieldDiffContainer([IncrementalFieldDiff("colors", str, "red", Action.CREATE)])
 
-        async def _fn(e: RepositoryEntry) -> RepositoryEntry:
+        async def _fn(e: EventEntry) -> EventEntry:
             e.id = id_
             e.version = 56
             e.created_at = created_at
@@ -217,7 +217,7 @@ class TestMinosRepository(MinosTestCase):
 
         submit_mock = AsyncMock(side_effect=_fn)
         send_mock = AsyncMock()
-        self.repository._submit = submit_mock
+        self.event_repository._submit = submit_mock
         self.event_broker.send = send_mock
 
         uuid = uuid4()
@@ -231,9 +231,9 @@ class TestMinosRepository(MinosTestCase):
         )
 
         validate_mock = AsyncMock(return_value=True)
-        self.repository.validate = validate_mock
+        self.event_repository.validate = validate_mock
 
-        await self.repository.submit(aggregate_diff)
+        await self.event_repository.submit(aggregate_diff)
 
         args = [
             call(
@@ -263,38 +263,38 @@ class TestMinosRepository(MinosTestCase):
         self.assertEqual(args, send_mock.call_args_list)
 
     async def test_submit_raises_missing_action(self):
-        entry = RepositoryEntry(uuid4(), "example.Car", 0, bytes())
+        entry = EventEntry(uuid4(), "example.Car", 0, bytes())
         with self.assertRaises(MinosRepositoryException):
-            await self.repository.submit(entry)
+            await self.event_repository.submit(entry)
 
     async def test_submit_raises_conflict(self):
         validate_mock = AsyncMock(return_value=False)
 
-        self.repository.validate = validate_mock
+        self.event_repository.validate = validate_mock
 
-        entry = RepositoryEntry(uuid4(), "example.Car", 0, bytes(), action=Action.CREATE)
+        entry = EventEntry(uuid4(), "example.Car", 0, bytes(), action=Action.CREATE)
         with self.assertRaises(MinosRepositoryConflictException):
-            await self.repository.submit(entry)
+            await self.event_repository.submit(entry)
 
     async def test_validate_true(self):
         aggregate_uuid = uuid4()
         transaction_uuid = uuid4()
 
         events = [
-            RepositoryEntry(aggregate_uuid, "example.Car", 1),
-            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
+            EventEntry(aggregate_uuid, "example.Car", 1),
+            EventEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
         ]
         transactions = []
 
         select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
-        self.repository.select = select_event_mock
+        self.event_repository.select = select_event_mock
 
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = RepositoryEntry(aggregate_uuid, "example.Car")
+        entry = EventEntry(aggregate_uuid, "example.Car")
 
-        self.assertTrue(await self.repository.validate(entry))
+        self.assertTrue(await self.event_repository.validate(entry))
 
         self.assertEqual(1, select_event_mock.call_count)
         self.assertEqual(call(aggregate_uuid=aggregate_uuid, transaction_uuid_ne=None), select_event_mock.call_args)
@@ -314,19 +314,19 @@ class TestMinosRepository(MinosTestCase):
         transaction_uuid = uuid4()
 
         events = [
-            RepositoryEntry(aggregate_uuid, "example.Car", 1),
-            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
+            EventEntry(aggregate_uuid, "example.Car", 1),
+            EventEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
         ]
         transactions = []
 
         select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
-        self.repository.select = select_event_mock
+        self.event_repository.select = select_event_mock
 
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = RepositoryEntry(aggregate_uuid, "example.Car")
-        self.assertTrue(await self.repository.validate(entry, transaction_uuid_ne=transaction_uuid))
+        entry = EventEntry(aggregate_uuid, "example.Car")
+        self.assertTrue(await self.event_repository.validate(entry, transaction_uuid_ne=transaction_uuid))
 
         self.assertEqual(1, select_event_mock.call_count)
         self.assertEqual(
@@ -338,20 +338,20 @@ class TestMinosRepository(MinosTestCase):
         transaction_uuid = uuid4()
 
         events = [
-            RepositoryEntry(aggregate_uuid, "example.Car", 1),
-            RepositoryEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
+            EventEntry(aggregate_uuid, "example.Car", 1),
+            EventEntry(aggregate_uuid, "example.Car", 2, transaction_uuid=transaction_uuid),
         ]
         transactions = [TransactionEntry(transaction_uuid, TransactionStatus.RESERVED)]
 
         select_event_mock = MagicMock(return_value=FakeAsyncIterator(events))
-        self.repository.select = select_event_mock
+        self.event_repository.select = select_event_mock
 
         select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transactions))
         self.transaction_repository.select = select_transaction_mock
 
-        entry = RepositoryEntry(aggregate_uuid, "example.Car")
+        entry = EventEntry(aggregate_uuid, "example.Car")
 
-        self.assertFalse(await self.repository.validate(entry))
+        self.assertFalse(await self.event_repository.validate(entry))
 
         self.assertEqual(1, select_event_mock.call_count)
         self.assertEqual(call(aggregate_uuid=aggregate_uuid, transaction_uuid_ne=None), select_event_mock.call_args)
@@ -372,19 +372,19 @@ class TestMinosRepository(MinosTestCase):
 
         self.lock_pool.acquire = mock
 
-        self.assertEqual(expected, self.repository.write_lock())
+        self.assertEqual(expected, self.event_repository.write_lock())
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("aggregate_event_write_lock"), mock.call_args)
 
     async def test_select(self):
         mock = MagicMock(return_value=FakeAsyncIterator(range(5)))
-        self.repository._select = mock
+        self.event_repository._select = mock
 
         aggregate_uuid = uuid4()
         aggregate_name = "path.to.Aggregate"
 
         transaction_uuid = uuid4()
-        iterable = self.repository.select(
+        iterable = self.event_repository.select(
             aggregate_uuid=aggregate_uuid, aggregate_name=aggregate_name, id_gt=56, transaction_uuid=transaction_uuid,
         )
         observed = [a async for a in iterable]
@@ -412,9 +412,9 @@ class TestMinosRepository(MinosTestCase):
 
     async def test_offset(self):
         with patch(
-            "tests.utils.FakeRepository._offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=56)
+            "tests.utils.FakeEventRepository._offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=56)
         ) as mock:
-            self.assertEqual(56, await self.repository.offset)
+            self.assertEqual(56, await self.event_repository.offset)
             self.assertEqual(1, mock.call_count)
 
 

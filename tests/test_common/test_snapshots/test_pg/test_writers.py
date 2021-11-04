@@ -13,6 +13,7 @@ from uuid import (
 from minos.common import (
     Action,
     Condition,
+    EventEntry,
     FieldDiff,
     FieldDiffContainer,
     MinosRepositoryNotProvidedException,
@@ -22,7 +23,6 @@ from minos.common import (
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
     PostgreSqlSnapshotWriter,
-    RepositoryEntry,
     SnapshotEntry,
     TransactionEntry,
     TransactionStatus,
@@ -54,7 +54,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.transaction_3 = uuid4()
 
         self.writer = PostgreSqlSnapshotWriter.from_config(
-            self.config, repository=self.repository, transaction_repository=self.transaction_repository
+            self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
         self.reader = PostgreSqlSnapshotReader.from_config(self.config)
 
@@ -74,33 +74,33 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         # noinspection PyTypeChecker
         aggregate_name: str = Car.classname
 
-        await self.repository.create(RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
-        await self.repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
-        await self.repository.create(RepositoryEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
-        await self.repository.update(RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
-        await self.repository.delete(RepositoryEntry(self.uuid_1, aggregate_name, 4))
-        await self.repository.update(RepositoryEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
-        await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
+        await self.event_repository.create(EventEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes))
+        await self.event_repository.create(EventEntry(self.uuid_2, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.update(EventEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes))
+        await self.event_repository.delete(EventEntry(self.uuid_1, aggregate_name, 4))
+        await self.event_repository.update(EventEntry(self.uuid_2, aggregate_name, 2, diff.avro_bytes))
+        await self.event_repository.update(
+            EventEntry(self.uuid_2, aggregate_name, 3, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.repository.delete(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
+        await self.event_repository.delete(
+            EventEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_2)
         )
-        await self.repository.update(
-            RepositoryEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
+        await self.event_repository.update(
+            EventEntry(self.uuid_2, aggregate_name, 4, diff.avro_bytes, transaction_uuid=self.transaction_1)
         )
-        await self.repository.create(RepositoryEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
-        await self.repository.delete(
-            RepositoryEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
-        )
-        await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.repository.offset)
+        await self.event_repository.create(EventEntry(self.uuid_3, aggregate_name, 1, diff.avro_bytes))
+        await self.event_repository.delete(
+            EventEntry(self.uuid_2, aggregate_name, 3, bytes(), transaction_uuid=self.transaction_3)
         )
         await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_2, TransactionStatus.PENDING, await self.repository.offset)
+            TransactionEntry(self.transaction_1, TransactionStatus.PENDING, await self.event_repository.offset)
         )
         await self.transaction_repository.submit(
-            TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.repository.offset)
+            TransactionEntry(self.transaction_2, TransactionStatus.PENDING, await self.event_repository.offset)
+        )
+        await self.transaction_repository.submit(
+            TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
         )
 
     def test_type(self):
@@ -115,10 +115,12 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosRepositoryNotProvidedException):
-            PostgreSqlSnapshotWriter.from_config(self.config, repository=None)
+            PostgreSqlSnapshotWriter.from_config(self.config, event_repository=None)
 
         with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
-            PostgreSqlSnapshotWriter.from_config(self.config, repository=self.repository, transaction_repository=None)
+            PostgreSqlSnapshotWriter.from_config(
+                self.config, event_repository=self.event_repository, transaction_repository=None
+            )
 
     async def test_dispatch(self):
         await self.writer.dispatch()
@@ -275,11 +277,11 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         condition = Condition.EQUAL("uuid", self.uuid_1)
 
         async def _fn(*args, **kwargs):
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
-            yield RepositoryEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
+            yield EventEntry(self.uuid_1, aggregate_name, 1, diff.avro_bytes, 1, Action.CREATE, current_datetime())
+            yield EventEntry(self.uuid_1, aggregate_name, 3, diff.avro_bytes, 2, Action.CREATE, current_datetime())
+            yield EventEntry(self.uuid_1, aggregate_name, 2, diff.avro_bytes, 3, Action.CREATE, current_datetime())
 
-        self.repository.select = MagicMock(side_effect=_fn)
+        self.event_repository.select = MagicMock(side_effect=_fn)
         await self.writer.dispatch()
 
         observed = [v async for v in self.reader.find_entries(aggregate_name, condition)]
@@ -311,8 +313,8 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             self.assertIsInstance(obs.updated_at, datetime)
 
     async def test_dispatch_with_offset(self):
-        mock = MagicMock(side_effect=self.writer._repository.select)
-        self.writer._repository.select = mock
+        mock = MagicMock(side_effect=self.writer._event_repository.select)
+        self.writer._event_repository.select = mock
 
         await self.writer.dispatch()
         self.assertEqual(1, mock.call_count)
@@ -320,12 +322,12 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         mock.reset_mock()
 
         # noinspection PyTypeChecker
-        entry = RepositoryEntry(
+        entry = EventEntry(
             aggregate_uuid=self.uuid_3,
             aggregate_name=Car.classname,
             data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
         )
-        await self.repository.create(entry)
+        await self.event_repository.create(entry)
         self.assertEqual(1, mock.call_count)
         mock.reset_mock()
 
