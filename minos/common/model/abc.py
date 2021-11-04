@@ -13,7 +13,6 @@ from base64 import (
 from collections.abc import (
     Mapping,
 )
-from contextlib import suppress
 from typing import (
     Any,
     Iterable,
