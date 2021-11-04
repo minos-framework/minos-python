@@ -31,17 +31,29 @@ class TestModelRef(unittest.TestCase):
         another = uuid4()
         value = mt_foo(uuid=uuid4(), version=1, another=another)
 
-        self.assertEqual(ModelRef(another), value.another)
+        self.assertEqual(another, value.another)
 
     def test_model(self):
         mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
         mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[mt_bar]})
 
         another = mt_bar(uuid=uuid4(), version=1)
-
         value = mt_foo(uuid=uuid4(), version=1, another=another)
 
-        self.assertEqual(ModelRef(another), value.another)
+        self.assertEqual(another, value.another)
+
+    def test_model_uuid(self):
+        uuid = uuid4()
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
+        value = ModelRef(mt_bar(uuid=uuid, version=1))
+
+        self.assertEqual(uuid, value.uuid)
+
+    def test_model_attribute(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+
+        self.assertEqual(1, value.age)
 
 
 class TestModelRefExtractor(unittest.TestCase):
@@ -49,7 +61,7 @@ class TestModelRefExtractor(unittest.TestCase):
         mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
         value = uuid4()
 
-        expected = {"Foo": {ModelRef(value)}}
+        expected = {"Foo": {value}}
         observed = ModelRefExtractor(value, ModelRef[mt_foo]).build()
 
         self.assertEqual(expected, observed)
@@ -58,7 +70,7 @@ class TestModelRefExtractor(unittest.TestCase):
         mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
         value = [uuid4(), uuid4()]
 
-        expected = {"Foo": set(map(ModelRef, value))}
+        expected = {"Foo": set(value)}
         observed = ModelRefExtractor(value, list[ModelRef[mt_foo]]).build()
 
         self.assertEqual(expected, observed)
@@ -68,7 +80,7 @@ class TestModelRefExtractor(unittest.TestCase):
         mt_value = ModelType.build("Value", {"uuid": UUID, "version": int})
         value = {uuid4(): uuid4(), uuid4(): uuid4()}
 
-        expected = {"Key": set(map(ModelRef, value.keys())), "Value": set(map(ModelRef, value.values()))}
+        expected = {"Key": set(value.keys()), "Value": set(value.values())}
         observed = ModelRefExtractor(value, dict[ModelRef[mt_key], ModelRef[mt_value]]).build()
 
         self.assertEqual(expected, observed)
@@ -99,7 +111,7 @@ class TestModelRefExtractor(unittest.TestCase):
         mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
         value = uuid4()
 
-        expected = {"Foo": {ModelRef(value)}}
+        expected = {"Foo": {value}}
         observed = ModelRefExtractor(value, Optional[ModelRef[mt_foo]]).build()
 
         self.assertEqual(expected, observed)

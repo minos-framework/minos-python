@@ -50,7 +50,7 @@ class DataTransferObject(DynamicModel):
 
     def __eq__(self, other: DataTransferObject):
         return (
-            super(DynamicModel, self).__eq__(other)
+            super().__eq__(other)
             and self._name == other._name
             and self._namespace == other._namespace
         )

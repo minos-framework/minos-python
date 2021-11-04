@@ -17,6 +17,7 @@ from typing import (
 )
 from uuid import (
     UUID,
+    SafeUUID,
 )
 
 from .abc import (
@@ -33,7 +34,7 @@ from .types import (
 MT = TypeVar("MT")
 
 
-class ModelRef(DeclarativeModel, Generic[MT]):
+class ModelRef(DeclarativeModel, UUID, Generic[MT]):
     """Model Reference."""
 
     data: Union[MT, UUID]
@@ -42,6 +43,30 @@ class ModelRef(DeclarativeModel, Generic[MT]):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError()
         DeclarativeModel.__init__(self, data, *args, **kwargs)
+
+    def __getattr__(self, item: str) -> Any:
+        try:
+            return super().__getattr__(item)
+        except AttributeError as exc:
+            if item != "data":
+                return getattr(self.data, item)
+            raise exc
+
+    @property
+    def int(self) -> int:
+        """TODO"""
+        return self.uuid.int
+
+    @property
+    def is_safe(self) -> SafeUUID:
+        """TODO"""
+        return self.uuid.is_safe
+
+    def __eq__(self, other):
+        return super().__eq__(other) or self.uuid == other or self.data == other
+
+    def __hash__(self):
+        return hash(self.uuid)
 
     @property
     def uuid(self) -> UUID:

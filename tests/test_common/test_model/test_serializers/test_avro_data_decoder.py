@@ -233,16 +233,14 @@ class TestAvroDataDecoder(MinosTestCase):
     async def test_list_model_ref(self):
         decoder = AvroDataDecoder(list[ModelRef[Owner]])
         value = [uuid4(), Owner("Foo", "Bar", 56)]
-        expected = list(map(ModelRef, value))
         observed = decoder.build(value)
-        self.assertEqual(expected, observed)
+        self.assertEqual(value, observed)
 
     async def test_list_model_subaggregate_ref(self):
         decoder = AvroDataDecoder(list[ModelRef[CartItem]])
         value = [uuid4(), CartItem(uuid4(), 3, "Foo", 56)]
-        expected = list(map(ModelRef, value))
         observed = decoder.build(value)
-        self.assertEqual(expected, observed)
+        self.assertEqual(value, observed)
 
     def test_list_empty(self):
         decoder = AvroDataDecoder(list[int])
@@ -331,16 +329,14 @@ class TestAvroDataDecoder(MinosTestCase):
     async def test_model_ref_value(self):
         decoder = AvroDataDecoder(ModelRef[Owner])
         value = Owner("Foo", "Bar")
-        expected = ModelRef(value)
         observed = decoder.build(value)
-        self.assertEqual(expected, observed)
+        self.assertEqual(value, observed)
 
     def test_model_ref_reference(self):
         decoder = AvroDataDecoder(ModelRef[Owner])
         value = uuid4()
-        expected = ModelRef(value)
         observed = decoder.build(value)
-        self.assertEqual(expected, observed)
+        self.assertEqual(value, observed)
 
     def test_model_raises(self):
         decoder = AvroDataDecoder(User)

@@ -13,6 +13,7 @@ from base64 import (
 from collections.abc import (
     Mapping,
 )
+from contextlib import suppress
 from typing import (
     Any,
     Iterable,
@@ -58,6 +59,7 @@ class Model(Mapping):
     """Base class for ``minos`` model entities."""
 
     _fields: dict[str, Field]
+    __reversing_eq: bool
 
     def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
         """Class constructor.
@@ -69,6 +71,7 @@ class Model(Mapping):
         if not isinstance(fields, dict):
             fields = {field.name: field for field in fields}
         self._fields = fields
+        self.__reversing_eq = False
 
     @classmethod
     def from_avro_str(cls: Type[T], raw: str, **kwargs) -> Union[T, list[T]]:
@@ -269,7 +272,17 @@ class Model(Mapping):
         return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self: T, other: T) -> bool:
-        return type(self) == type(other) and self.fields == other.fields
+        if type(self) == type(other) and self.fields == other.fields:
+            return True
+
+        if isinstance(other, Model) and not self.__reversing_eq:
+            try:
+                other.__reversing_eq = True
+                return other == self
+            finally:
+                other.__reversing_eq = False
+
+        return False
 
     def __hash__(self) -> int:
         return hash(tuple(self.fields.values()))
