@@ -105,7 +105,7 @@ class ModelRefExtractor:
             self._build_iterable(value.keys(), get_args(type_)[0], ans)
             self._build_iterable(value.values(), get_args(type_)[1], ans)
 
-        elif (isinstance(value, UUID) or isinstance(value, ModelRef)) and get_origin(type_) is ModelRef:
+        elif isinstance(value, UUID) and get_origin(type_) is ModelRef:
             cls = get_args(type_)[0]
             name = cls.__name__
             if not isinstance(value, ModelRef):
