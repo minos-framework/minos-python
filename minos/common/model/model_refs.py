@@ -54,12 +54,18 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     @property
     def int(self) -> int:
-        """TODO"""
+        """Get the UUID as a 128-bit integer.
+
+        :return: An integer value.
+        """
         return self.uuid.int
 
     @property
     def is_safe(self) -> SafeUUID:
-        """TODO"""
+        """Get an enum indicating whether the UUID has been generated in a way that is safe.
+
+        :return: A ``SafeUUID`` value.
+        """
         return self.uuid.is_safe
 
     def __eq__(self, other):
@@ -70,7 +76,10 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     @property
     def uuid(self) -> UUID:
-        """TODO"""
+        """Get the UUID that identifies the ``Model``.
+
+        :return:
+        """
         if isinstance(self.data, UUID):
             return self.data
         return self.data.uuid
@@ -113,6 +122,7 @@ class ModelRefExtractor:
             ans[name].add(value)
 
         elif is_model_type(value):
+            # noinspection PyUnresolvedReferences
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 

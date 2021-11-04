@@ -2,6 +2,7 @@ import unittest
 from typing import (
     Generic,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -9,6 +10,7 @@ from uuid import (
 )
 
 from minos.common import (
+    Field,
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,
@@ -25,13 +27,22 @@ class TestModelRef(unittest.TestCase):
         self.assertTrue(issubclass(ModelRef, Generic))
 
     def test_uuid(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[mt_bar]})
+        uuid = uuid4()
+        value = ModelRef(uuid)
 
-        another = uuid4()
-        value = mt_foo(uuid=uuid4(), version=1, another=another)
+        self.assertEqual(uuid, value)
 
-        self.assertEqual(another, value.another)
+    def test_uuid_int(self):
+        uuid = uuid4()
+        value = ModelRef(uuid)
+
+        self.assertEqual(uuid.int, value.int)
+
+    def test_uuid_is_safe(self):
+        uuid = uuid4()
+        value = ModelRef(uuid)
+
+        self.assertEqual(uuid.is_safe, value.is_safe)
 
     def test_model(self):
         mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
@@ -54,6 +65,12 @@ class TestModelRef(unittest.TestCase):
         value = ModelRef(mt_bar(uuid=uuid4(), age=1))
 
         self.assertEqual(1, value.age)
+
+    def test_fields(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+
+        self.assertEqual({"data": Field("data", Union[mt_bar, UUID], value)}, value.fields)
 
 
 class TestModelRefExtractor(unittest.TestCase):

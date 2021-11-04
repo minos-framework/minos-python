@@ -274,12 +274,12 @@ class Model(Mapping):
         if type(self) == type(other) and self.fields == other.fields:
             return True
 
-        if isinstance(other, Model) and not self.__reversing_eq:
+        if not self.__reversing_eq:
             try:
-                other.__reversing_eq = True
+                self.__reversing_eq = True
                 return other == self
             finally:
-                other.__reversing_eq = False
+                self.__reversing_eq = False
 
         return False
 

@@ -10,9 +10,6 @@ from typing import (
     get_args,
     get_origin,
 )
-from uuid import (
-    UUID,
-)
 
 from .generics import (
     unpack_typevar,
@@ -45,14 +42,6 @@ def is_model_type(type_: type):
     )
 
     return isinstance(type_, Model)
-
-
-def is_aggregate_type(type_: type) -> bool:
-    """Check if the given type follows the ``Aggregate`` protocol."""
-    return (is_model_subclass(type_) or isinstance(type_, ModelType)) and {
-        "uuid": UUID,
-        "version": int,
-    }.items() <= type_.type_hints.items()
 
 
 logger = logging.getLogger(__name__)
