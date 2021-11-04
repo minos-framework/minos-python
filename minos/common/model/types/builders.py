@@ -64,11 +64,11 @@ class TypeHintBuilder:
         if type_ is not None:
             if get_origin(type_) is Union:
                 dynamic = self._build(value, None)
-                options = tuple(self._fn(dynamic, static) for static in get_args(type_))
+                options = tuple(self._build_from_dynamic(dynamic, static) for static in get_args(type_))
                 return build_union(options)
             else:
                 dynamic = self._build(value, None)
-                return self._fn(dynamic, type_)
+                return self._build_from_dynamic(dynamic, type_)
 
         return type(value)
 
@@ -81,5 +81,5 @@ class TypeHintBuilder:
         return build_union(options)
 
     @staticmethod
-    def _fn(dynamic, static):
+    def _build_from_dynamic(dynamic: type, static: Optional[type]) -> type:
         return dynamic if not len(get_args(static)) and TypeHintComparator(dynamic, static).match() else static
