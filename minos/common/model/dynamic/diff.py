@@ -51,7 +51,7 @@ class FieldDiff(Model, Generic[T]):
     value: T
 
     def __init__(self, name: str, type_: Type, value: Any):
-        super().__init__([Field("name", str, name), Field("value", type_, value)])
+        super().__init__([self._field_cls("name", str, name), self._field_cls("value", type_, value)])
 
     @classmethod
     def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> FieldDiff:
@@ -72,7 +72,14 @@ class IncrementalFieldDiff(FieldDiff, Generic[T]):
     action: Action
 
     def __init__(self, name: str, type_: Type, value: Any, action: Action):
-        Model.__init__(self, [Field("name", str, name), Field("value", type_, value), Field("action", Action, action)])
+        Model.__init__(
+            self,
+            [
+                self._field_cls("name", str, name),
+                self._field_cls("value", type_, value),
+                self._field_cls("action", Action, action),
+            ],
+        )
 
 
 class FieldDiffContainer(BucketModel):
@@ -82,7 +89,7 @@ class FieldDiffContainer(BucketModel):
         self, diffs: Iterable[FieldDiff] = None, fields: Union[Iterable[Field], dict[str, Field]] = None, **kwargs
     ):
         if diffs is not None:
-            fields = map(lambda v: Field(self.generate_random_str(), FieldDiff, v), diffs)
+            fields = map(lambda v: self._field_cls(self.generate_random_str(), FieldDiff, v), diffs)
 
         super().__init__(fields, **kwargs)
 

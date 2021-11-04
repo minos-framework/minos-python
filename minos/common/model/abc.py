@@ -57,6 +57,8 @@ logger = logging.getLogger(__name__)
 class Model(Mapping):
     """Base class for ``minos`` model entities."""
 
+    _field_cls: Type[Field] = Field
+
     _fields: dict[str, Field]
     __eq_reversing: bool
 

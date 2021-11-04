@@ -20,9 +20,6 @@ from ...meta import (
 from ..abc import (
     Model,
 )
-from ..fields import (
-    Field,
-)
 from ..types import (
     MissingSentinel,
     ModelType,
@@ -62,7 +59,7 @@ class DeclarativeModel(Model):
             if value is MissingSentinel and name in kwargs:
                 value = kwargs[name]
 
-            self._fields[name] = Field(
+            self._fields[name] = self._field_cls(
                 name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
             )
 
