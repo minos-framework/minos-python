@@ -57,7 +57,10 @@ logger = logging.getLogger(__name__)
 class Model(Mapping):
     """Base class for ``minos`` model entities."""
 
+    _field_cls: Type[Field] = Field
+
     _fields: dict[str, Field]
+    __eq_reversing: bool
 
     def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
         """Class constructor.
@@ -69,6 +72,7 @@ class Model(Mapping):
         if not isinstance(fields, dict):
             fields = {field.name: field for field in fields}
         self._fields = fields
+        self.__eq_reversing = False
 
     @classmethod
     def from_avro_str(cls: Type[T], raw: str, **kwargs) -> Union[T, list[T]]:
@@ -220,7 +224,7 @@ class Model(Mapping):
 
     def __setattr__(self, key: str, value: Any) -> None:
         if key.startswith("_"):
-            super().__setattr__(key, value)
+            object.__setattr__(self, key, value)
         elif key in self._fields:
             self._fields[key].value = value
         else:
@@ -269,7 +273,17 @@ class Model(Mapping):
         return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self: T, other: T) -> bool:
-        return type(self) == type(other) and self.fields == other.fields
+        if type(self) == type(other) and self.fields == other.fields:
+            return True
+
+        if not self.__eq_reversing:
+            try:
+                self.__eq_reversing = True
+                return other == self
+            finally:
+                self.__eq_reversing = False
+
+        return False
 
     def __hash__(self) -> int:
         return hash(tuple(self.fields.values()))

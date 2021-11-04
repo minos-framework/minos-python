@@ -2,6 +2,7 @@ import unittest
 from typing import (
     Generic,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -9,6 +10,8 @@ from uuid import (
 )
 
 from minos.common import (
+    SUBMITTING_EVENT_CONTEXT_VAR,
+    FieldRef,
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,
@@ -19,10 +22,79 @@ from tests.model_classes import (
 )
 
 
-class TestModelRef(unittest.TestCase):
+class TestModelRef(unittest.IsolatedAsyncioTestCase):
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(ModelRef, Generic))
+
+    def test_uuid(self):
+        uuid = uuid4()
+        value = ModelRef(uuid)
+
+        self.assertEqual(uuid, value)
+
+    def test_uuid_int(self):
+        uuid = uuid4()
+        value = ModelRef(uuid)
+
+        self.assertEqual(uuid.int, value.int)
+
+    def test_uuid_is_safe(self):
+        uuid = uuid4()
+        value = ModelRef(uuid)
+
+        self.assertEqual(uuid.is_safe, value.is_safe)
+
+    def test_model(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
+        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[mt_bar]})
+
+        another = mt_bar(uuid=uuid4(), version=1)
+        value = mt_foo(uuid=uuid4(), version=1, another=another)
+
+        self.assertEqual(another, value.another)
+
+    def test_model_uuid(self):
+        uuid = uuid4()
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
+        value = ModelRef(mt_bar(uuid=uuid, version=1))
+
+        self.assertEqual(uuid, value.uuid)
+
+    def test_model_attribute(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+
+        self.assertEqual(1, value.age)
+
+    def test_fields(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+
+        self.assertEqual({"data": FieldRef("data", Union[mt_bar, UUID], value)}, value.fields)
+
+    def test_model_avro_data(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = mt_bar(uuid=uuid4(), age=1)
+
+        self.assertEqual({"data": value.avro_data}, ModelRef(value).avro_data)
+
+    def test_uuid_avro_data(self):
+        value = uuid4()
+        self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
+
+    async def test_model_avro_data_submitting(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        uuid = uuid4()
+        value = mt_bar(uuid=uuid, age=1)
+
+        SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+        self.assertEqual({"data": str(uuid)}, ModelRef(value).avro_data)
+
+    async def test_uuid_avro_data_submitting(self):
+        value = uuid4()
+        SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+        self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
 
 
 class TestModelRefExtractor(unittest.TestCase):

@@ -4,9 +4,6 @@ from typing import (
     Optional,
     Union,
 )
-from uuid import (
-    UUID,
-)
 
 from minos.common import (
     Aggregate,
@@ -71,14 +68,11 @@ class TestTypeHintComparator(unittest.TestCase):
         self.assertTrue(TypeHintComparator(int, Any).match())
         self.assertFalse(TypeHintComparator(Any, int).match())
 
-    def test_model_ref_union(self):
-        self.assertTrue(TypeHintComparator(ModelRef[str], Union[str, UUID]).match())
-
     def test_nested_true(self):
-        self.assertTrue(TypeHintComparator(Optional[list[ModelRef[str]]], Optional[list[ModelRef[str]]]).match())
+        self.assertTrue(TypeHintComparator(Optional[list[ModelRef[Car]]], Optional[list[ModelRef[Car]]]).match())
 
     def test_nested_false(self):
-        self.assertFalse(TypeHintComparator(Optional[list[ModelRef[str]]], Optional[list[ModelRef[float]]]).match())
+        self.assertFalse(TypeHintComparator(Optional[list[ModelRef[Car]]], Optional[list[ModelRef[Owner]]]).match())
 
     def test_model_true(self):
         self.assertTrue(TypeHintComparator(Car, Car).match())

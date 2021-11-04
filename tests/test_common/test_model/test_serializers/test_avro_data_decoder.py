@@ -345,7 +345,7 @@ class TestAvroDataDecoder(MinosTestCase):
 
     def test_model_ref_raises(self):
         decoder = AvroDataDecoder(ModelRef[User])
-        with self.assertRaises(DataDecoderMalformedTypeException):
+        with self.assertRaises(DataDecoderTypeException):
             decoder.build(User(1234))
 
     def test_model_optional(self):
@@ -354,6 +354,7 @@ class TestAvroDataDecoder(MinosTestCase):
         self.assertIsNone(observed)
 
     def test_unsupported(self):
+        # noinspection PyUnresolvedReferences
         decoder = AvroDataDecoder(type[Any])
         with self.assertRaises(DataDecoderTypeException):
             decoder.build(AvroDataDecoder)

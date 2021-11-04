@@ -10,10 +10,10 @@ from typing import (
     get_args,
     get_origin,
 )
-from uuid import (
-    UUID,
-)
 
+from .generics import (
+    unpack_typevar,
+)
 from .model_types import (
     ModelType,
 )
@@ -44,14 +44,6 @@ def is_model_type(type_: type):
     return isinstance(type_, Model)
 
 
-def is_aggregate_type(type_: type) -> bool:
-    """Check if the given type follows the ``Aggregate`` protocol."""
-    return (is_model_subclass(type_) or isinstance(type_, ModelType)) and {
-        "uuid": UUID,
-        "version": int,
-    }.items() <= type_.type_hints.items()
-
-
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=type)
@@ -74,18 +66,14 @@ class TypeHintComparator:
         return self._compare(self._first, self._second)
 
     def _compare(self, first: T, second: K) -> bool:
-        from .model_refs import (
-            ModelRef,
-        )
+        if isinstance(first, TypeVar):
+            first = unpack_typevar(first)
+
+        if isinstance(second, TypeVar):
+            second = unpack_typevar(second)
 
         if second is Any:
             return True
-
-        if get_origin(first) is ModelRef:
-            first = Union[(*get_args(first), UUID)]
-
-        if get_origin(second) is ModelRef:
-            second = Union[(*get_args(second), UUID)]
 
         if get_origin(first) is Union and all(self._compare(f, second) for f in get_args(first)):
             return True

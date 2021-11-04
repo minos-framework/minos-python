@@ -25,6 +25,7 @@ from .datetime import (
     current_datetime,
 )
 from .events import (
+    SUBMITTING_EVENT_CONTEXT_VAR,
     EventEntry,
     EventRepository,
     InMemoryEventRepository,
@@ -110,6 +111,7 @@ from .model import (
     Field,
     FieldDiff,
     FieldDiffContainer,
+    FieldRef,
     GenericTypeProjector,
     IncrementalFieldDiff,
     IncrementalSet,

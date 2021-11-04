@@ -116,7 +116,17 @@ class ModelType(type):
         return f"{cls.namespace}.{cls.name}"
 
     def __le__(cls, other: Any) -> bool:
-        return type(cls).__eq__(cls, other) or type(cls).__lt__(cls, other)
+        from .comparators import (
+            TypeHintComparator,
+        )
+
+        return type(cls).__eq__(cls, other) or (
+            type(cls) == type(other)
+            and cls.name == other.name
+            and cls.namespace == other.namespace
+            and set(cls.type_hints.keys()) <= set(other.type_hints.keys())
+            and all(TypeHintComparator(v, other.type_hints[k]).match() for k, v in cls.type_hints.items())
+        )
 
     def __lt__(cls, other: Any) -> bool:
         from .comparators import (
@@ -132,7 +142,17 @@ class ModelType(type):
         )
 
     def __ge__(cls, other: Any) -> bool:
-        return type(cls).__eq__(cls, other) or type(cls).__gt__(cls, other)
+        from .comparators import (
+            TypeHintComparator,
+        )
+
+        return type(cls).__eq__(cls, other) or (
+            type(cls) == type(other)
+            and cls.name == other.name
+            and cls.namespace == other.namespace
+            and set(cls.type_hints.keys()) >= set(other.type_hints.keys())
+            and all(TypeHintComparator(v, cls.type_hints[k]).match() for k, v in other.type_hints.items())
+        )
 
     def __gt__(cls, other: Any) -> bool:
         from .comparators import (
