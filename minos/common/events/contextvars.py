@@ -5,4 +5,4 @@ from typing import (
     Final,
 )
 
-IS_SUBMITTING_EVENT_CONTEXT_VAR: Final[ContextVar[bool]] = ContextVar("is_submitting_event", default=False)
+SUBMITTING_EVENT_CONTEXT_VAR: Final[ContextVar[bool]] = ContextVar("submitting_event", default=False)

@@ -54,7 +54,7 @@ from ...transactions import (
     TransactionStatus,
 )
 from ..contextvars import (
-    IS_SUBMITTING_EVENT_CONTEXT_VAR,
+    SUBMITTING_EVENT_CONTEXT_VAR,
 )
 from ..entries import (
     EventEntry,
@@ -152,9 +152,8 @@ class EventRepository(ABC, MinosSetup):
             AggregateDiff,
         )
 
+        token = SUBMITTING_EVENT_CONTEXT_VAR.set(True)
         try:
-            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(True)
-
             transaction = TRANSACTION_CONTEXT_VAR.get()
 
             if isinstance(entry, AggregateDiff):
@@ -173,7 +172,7 @@ class EventRepository(ABC, MinosSetup):
                 await self._send_events(entry.aggregate_diff)
 
         finally:
-            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(False)
+            SUBMITTING_EVENT_CONTEXT_VAR.reset(token)
 
         return entry
 

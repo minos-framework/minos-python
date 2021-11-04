@@ -25,7 +25,7 @@ from .datetime import (
     current_datetime,
 )
 from .events import (
-    IS_SUBMITTING_EVENT_CONTEXT_VAR,
+    SUBMITTING_EVENT_CONTEXT_VAR,
     EventEntry,
     EventRepository,
     InMemoryEventRepository,

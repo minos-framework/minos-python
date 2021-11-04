@@ -1,5 +1,5 @@
 from .contextvars import (
-    IS_SUBMITTING_EVENT_CONTEXT_VAR,
+    SUBMITTING_EVENT_CONTEXT_VAR,
 )
 from .entries import (
     EventEntry,

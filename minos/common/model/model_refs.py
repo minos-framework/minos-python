@@ -21,7 +21,7 @@ from uuid import (
 )
 
 from ..events import (
-    IS_SUBMITTING_EVENT_CONTEXT_VAR,
+    SUBMITTING_EVENT_CONTEXT_VAR,
 )
 from .abc import (
     Model,
@@ -54,7 +54,7 @@ class FieldRef(Field):
 
         :return: A dictionary object.
         """
-        if not IS_SUBMITTING_EVENT_CONTEXT_VAR.get():
+        if not SUBMITTING_EVENT_CONTEXT_VAR.get():
             return super().avro_data
 
         value = self.value

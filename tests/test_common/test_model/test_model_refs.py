@@ -10,7 +10,7 @@ from uuid import (
 )
 
 from minos.common import (
-    IS_SUBMITTING_EVENT_CONTEXT_VAR,
+    SUBMITTING_EVENT_CONTEXT_VAR,
     FieldRef,
     ModelRef,
     ModelRefExtractor,
@@ -22,7 +22,7 @@ from tests.model_classes import (
 )
 
 
-class TestModelRef(unittest.TestCase):
+class TestModelRef(unittest.IsolatedAsyncioTestCase):
     def test_subclass(self):
         # noinspection PyTypeHints
         self.assertTrue(issubclass(ModelRef, Generic))
@@ -83,24 +83,18 @@ class TestModelRef(unittest.TestCase):
         value = uuid4()
         self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
 
-    def test_model_avro_data_submitting(self):
+    async def test_model_avro_data_submitting(self):
         mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
         uuid = uuid4()
         value = mt_bar(uuid=uuid, age=1)
 
-        try:
-            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(True)
-            self.assertEqual({"data": str(uuid)}, ModelRef(value).avro_data)
-        finally:
-            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(False)
+        SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+        self.assertEqual({"data": str(uuid)}, ModelRef(value).avro_data)
 
-    def test_uuid_avro_data_submitting(self):
+    async def test_uuid_avro_data_submitting(self):
         value = uuid4()
-        try:
-            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(True)
-            self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
-        finally:
-            IS_SUBMITTING_EVENT_CONTEXT_VAR.set(False)
+        SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+        self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
 
 
 class TestModelRefExtractor(unittest.TestCase):
