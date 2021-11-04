@@ -72,6 +72,16 @@ class TestModelRef(unittest.TestCase):
 
         self.assertEqual({"data": Field("data", Union[mt_bar, UUID], value)}, value.fields)
 
+    def test_model_avro_data(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = mt_bar(uuid=uuid4(), age=1)
+
+        self.assertEqual({"data": value.avro_data}, ModelRef(value).avro_data)
+
+    def test_uuid_avro_data(self):
+        value = uuid4()
+        self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
+
 
 class TestModelRefExtractor(unittest.TestCase):
     def test_simple(self):
