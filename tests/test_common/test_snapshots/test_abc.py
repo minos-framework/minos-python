@@ -12,15 +12,12 @@ from uuid import (
 )
 
 from minos.common import (
-    NULL_UUID,
+    TRANSACTION_CONTEXT_VAR,
     Condition,
     MinosSetup,
     MinosSnapshot,
     Ordering,
     TransactionEntry,
-)
-from minos.common.transactions import (
-    TRANSACTION_CONTEXT_VAR,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -50,23 +47,23 @@ class TestMinosSnapshot(unittest.IsolatedAsyncioTestCase):
         self.assertEqual({"_get", "_find", "_synchronize"}, MinosSnapshot.__abstractmethods__)
 
     async def test_get(self):
-        transaction_uuid = uuid4()
+        transaction = TransactionEntry()
         uuid = uuid4()
-        observed = await self.snapshot.get("path.to.Aggregate", uuid, transaction_uuid)
+        observed = await self.snapshot.get("path.to.Aggregate", uuid, transaction)
         self.assertEqual(1, observed)
 
         self.assertEqual(1, self.synchronize_mock.call_count)
         self.assertEqual(call(), self.synchronize_mock.call_args)
 
         self.assertEqual(1, self.get_mock.call_count)
-        args = call(aggregate_name="path.to.Aggregate", uuid=uuid, transaction_uuid=transaction_uuid)
+        args = call(aggregate_name="path.to.Aggregate", uuid=uuid, transaction=transaction)
         self.assertEqual(args, self.get_mock.call_args)
 
     async def test_get_transaction_null(self):
         await self.snapshot.get("path.to.Aggregate", uuid4())
 
         self.assertEqual(1, self.get_mock.call_count)
-        self.assertEqual(NULL_UUID, self.get_mock.call_args.kwargs["transaction_uuid"])
+        self.assertEqual(None, self.get_mock.call_args.kwargs["transaction"])
 
     async def test_get_transaction_context(self):
         transaction = TransactionEntry()
@@ -74,13 +71,11 @@ class TestMinosSnapshot(unittest.IsolatedAsyncioTestCase):
         await self.snapshot.get("path.to.Aggregate", uuid4())
 
         self.assertEqual(1, self.get_mock.call_count)
-        self.assertEqual(transaction.uuid, self.get_mock.call_args.kwargs["transaction_uuid"])
+        self.assertEqual(transaction, self.get_mock.call_args.kwargs["transaction"])
 
     async def test_find(self):
-        transaction_uuid = uuid4()
-        iterable = self.snapshot.find(
-            "path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True, transaction_uuid
-        )
+        transaction = TransactionEntry()
+        iterable = self.snapshot.find("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True, transaction)
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)
 
@@ -94,7 +89,7 @@ class TestMinosSnapshot(unittest.IsolatedAsyncioTestCase):
             ordering=Ordering.ASC("name"),
             limit=10,
             streaming_mode=True,
-            transaction_uuid=transaction_uuid,
+            transaction=transaction,
         )
         self.assertEqual(args, self.find_mock.call_args)
 
@@ -102,7 +97,7 @@ class TestMinosSnapshot(unittest.IsolatedAsyncioTestCase):
         [a async for a in self.snapshot.find("path.to.Aggregate", Condition.TRUE)]
 
         self.assertEqual(1, self.find_mock.call_count)
-        self.assertEqual(NULL_UUID, self.find_mock.call_args.kwargs["transaction_uuid"])
+        self.assertEqual(None, self.find_mock.call_args.kwargs["transaction"])
 
     async def test_find_transaction_context(self):
         transaction = TransactionEntry()
@@ -110,7 +105,7 @@ class TestMinosSnapshot(unittest.IsolatedAsyncioTestCase):
         [a async for a in self.snapshot.find("path.to.Aggregate", Condition.TRUE)]
 
         self.assertEqual(1, self.find_mock.call_count)
-        self.assertEqual(transaction.uuid, self.find_mock.call_args.kwargs["transaction_uuid"])
+        self.assertEqual(transaction, self.find_mock.call_args.kwargs["transaction"])
 
     async def test_synchronize(self):
         await self.snapshot.synchronize()

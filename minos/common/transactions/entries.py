@@ -6,6 +6,9 @@ import logging
 from contextlib import (
     suppress,
 )
+from contextvars import (
+    Token,
+)
 from datetime import (
     datetime,
 )
@@ -52,12 +55,25 @@ logger = logging.getLogger(__name__)
 class TransactionEntry:
     """Transaction Entry class."""
 
+    __slots__ = (
+        "uuid",
+        "status",
+        "event_offset",
+        "destination_uuid",
+        "updated_at",
+        "_autocommit",
+        "_event_repository",
+        "_transaction_repository",
+        "_token",
+    )
+
     @inject
     def __init__(
         self,
         uuid: Optional[UUID] = None,
         status: Union[str, TransactionStatus] = None,
         event_offset: Optional[int] = None,
+        destination_uuid: Optional[UUID] = None,
         updated_at: Optional[datetime] = None,
         autocommit: bool = True,
         event_repository: EventRepository = Provide["event_repository"],
@@ -70,12 +86,18 @@ class TransactionEntry:
         if not isinstance(status, TransactionStatus):
             status = TransactionStatus.value_of(status)
 
+        if destination_uuid is None:
+            outer = TRANSACTION_CONTEXT_VAR.get()
+            outer_uuid = getattr(outer, "uuid", NULL_UUID)
+            destination_uuid = outer_uuid
+
         self.uuid = uuid
-        self.autocommit = autocommit
         self.status = status
         self.event_offset = event_offset
+        self.destination_uuid = destination_uuid
         self.updated_at = updated_at
 
+        self._autocommit = autocommit
         self._event_repository = event_repository
         self._transaction_repository = transaction_repository
 
@@ -85,8 +107,10 @@ class TransactionEntry:
         if self.status != TransactionStatus.PENDING:
             raise ValueError(f"Current status is not {TransactionStatus.PENDING!r}. Obtained: {self.status!r}")
 
-        if TRANSACTION_CONTEXT_VAR.get() is not None:  # FIXME: Future implementations should not have this constraint.
-            raise ValueError("Already inside a transaction. Multiple simultaneous transactions are not supported yet!")
+        outer = TRANSACTION_CONTEXT_VAR.get()
+        outer_uuid = getattr(outer, "uuid", NULL_UUID)
+        if outer_uuid != self.destination_uuid:
+            raise ValueError(f"{self!r} requires to be run on top of {outer!r}")
 
         self._token = TRANSACTION_CONTEXT_VAR.set(self)
         await self.save()
@@ -95,7 +119,7 @@ class TransactionEntry:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         TRANSACTION_CONTEXT_VAR.reset(self._token)
 
-        if self.autocommit:
+        if self._autocommit and self.status == TransactionStatus.PENDING:
             await self.commit()
 
     async def commit(self) -> None:
@@ -122,7 +146,7 @@ class TransactionEntry:
         )
 
         async for entry in self._event_repository.select(transaction_uuid=self.uuid):
-            new = EventEntry.from_another(entry, transaction_uuid=NULL_UUID)
+            new = EventEntry.from_another(entry, transaction_uuid=self.destination_uuid)
             await self._event_repository.submit(new, transaction_uuid_ne=self.uuid)
 
     async def reserve(self) -> None:
@@ -150,6 +174,21 @@ class TransactionEntry:
 
         :return: ``True`` if the transaction is valid or ``False`` otherwise.
         """
+        with suppress(StopAsyncIteration):
+            iterable = self._transaction_repository.select(
+                uuid=self.destination_uuid,
+                status_in=(
+                    TransactionStatus.RESERVING,
+                    TransactionStatus.RESERVED,
+                    TransactionStatus.COMMITTING,
+                    TransactionStatus.COMMITTED,
+                    TransactionStatus.REJECTED,
+                ),
+            )
+            await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
+
+            return False
+
         entries = dict()
         async for entry in self._event_repository.select(transaction_uuid=self.uuid):
             if entry.aggregate_uuid in entries and entry.version < entries[entry.aggregate_uuid]:
@@ -159,7 +198,7 @@ class TransactionEntry:
         transaction_uuids = set()
         for aggregate_uuid, version in entries.items():
             async for entry in self._event_repository.select(aggregate_uuid=aggregate_uuid, version=version):
-                if entry.transaction_uuid == NULL_UUID:
+                if entry.transaction_uuid == self.destination_uuid:
                     return False
                 if entry.transaction_uuid != self.uuid:
                     transaction_uuids.add(entry.transaction_uuid)
@@ -167,6 +206,7 @@ class TransactionEntry:
         if len(transaction_uuids):
             with suppress(StopAsyncIteration):
                 iterable = self._transaction_repository.select(
+                    destination_uuid=self.destination_uuid,
                     uuid_in=tuple(transaction_uuids),
                     status_in=(
                         TransactionStatus.RESERVING,
@@ -211,6 +251,39 @@ class TransactionEntry:
 
         await self._transaction_repository.submit(self)
 
+    @property
+    async def uuids(self) -> tuple[UUID, ...]:
+        """Get the sequence of transaction identifiers, from the outer one (``NULL_UUID``) to the one related with self.
+
+        :return: A tuple of ``UUID`` values.
+        """
+        uuids = []
+        current = self
+
+        while current is not None:
+            uuids.append(current.uuid)
+            current = await current.destination
+
+        # noinspection PyRedundantParentheses
+        return (NULL_UUID, *uuids[::-1])
+
+    @property
+    async def destination(self) -> Optional[TransactionEntry]:
+        """Get the destination transaction if there is anyone, otherwise ``None`` is returned.
+
+        :return: A ``TransactionEntry`` or ``None``.
+        """
+
+        if self.destination_uuid == NULL_UUID:
+            return None
+
+        destination = getattr(self._token, "old_value", Token.MISSING)
+
+        if destination == Token.MISSING:
+            destination = await self._transaction_repository.select(uuid=self.destination_uuid).__anext__()
+
+        return destination
+
     def __eq__(self, other: TransactionEntry) -> bool:
         return isinstance(other, type(self)) and tuple(self) == tuple(other)
 
@@ -220,10 +293,14 @@ class TransactionEntry:
             self.uuid,
             self.status,
             self.event_offset,
+            self.destination_uuid,
         )
 
     def __repr__(self):
-        return f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r}, event_offset={self.event_offset!r})"
+        return (
+            f"{type(self).__name__}(uuid={self.uuid!r}, status={self.status!r}, event_offset={self.event_offset!r}, "
+            f"destination_uuid={self.destination_uuid!r}, updated_at={self.updated_at!r})"
+        )
 
 
 class TransactionStatus(str, Enum):

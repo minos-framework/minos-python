@@ -41,6 +41,7 @@ class TestInMemorySnapshot(MinosTestCase):
         self.transaction_1 = uuid4()
         self.transaction_2 = uuid4()
         self.transaction_3 = uuid4()
+        self.transaction_4 = uuid4()
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -77,6 +78,11 @@ class TestInMemorySnapshot(MinosTestCase):
         )
         await self.transaction_repository.submit(
             TransactionEntry(self.transaction_3, TransactionStatus.REJECTED, await self.event_repository.offset)
+        )
+        await self.transaction_repository.submit(
+            TransactionEntry(
+                self.transaction_4, TransactionStatus.REJECTED, await self.event_repository.offset, self.transaction_3
+            )
         )
 
     def test_type(self):
@@ -122,7 +128,7 @@ class TestInMemorySnapshot(MinosTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.transaction_1,
+            transaction=TransactionEntry(self.transaction_1),
         )
         observed = [v async for v in iterable]
 
@@ -152,7 +158,7 @@ class TestInMemorySnapshot(MinosTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.transaction_2,
+            transaction=TransactionEntry(self.transaction_2),
         )
         observed = [v async for v in iterable]
 
@@ -174,7 +180,7 @@ class TestInMemorySnapshot(MinosTestCase):
             "tests.aggregate_classes.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
-            transaction_uuid=self.transaction_3,
+            transaction=TransactionEntry(self.transaction_4),
         )
         observed = [v async for v in iterable]
 
@@ -268,7 +274,7 @@ class TestInMemorySnapshot(MinosTestCase):
 
     async def test_get_with_transaction(self):
         observed = await self.snapshot.get(
-            "tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.transaction_1
+            "tests.aggregate_classes.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_1)
         )
 
         expected = Car(
@@ -284,7 +290,9 @@ class TestInMemorySnapshot(MinosTestCase):
 
     async def test_get_with_transaction_raises(self):
         with self.assertRaises(MinosSnapshotDeletedAggregateException):
-            await self.snapshot.get("tests.aggregate_classes.Car", self.uuid_2, transaction_uuid=self.transaction_2)
+            await self.snapshot.get(
+                "tests.aggregate_classes.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_2)
+            )
 
     async def test_find(self):
         condition = Condition.EQUAL("color", "blue")

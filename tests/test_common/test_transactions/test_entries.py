@@ -12,6 +12,7 @@ from uuid import (
 )
 
 from minos.common import (
+    NULL_UUID,
     TRANSACTION_CONTEXT_VAR,
     Action,
     EventEntry,
@@ -25,14 +26,14 @@ from tests.utils import (
 )
 
 
-class TestTransaction(MinosTestCase):
+class TestTransactionEntry(MinosTestCase):
     def test_constructor(self):
         transaction = TransactionEntry()
 
         self.assertIsInstance(transaction.uuid, UUID)
         self.assertEqual(TransactionStatus.PENDING, transaction.status)
         self.assertEqual(None, transaction.event_offset)
-        self.assertEqual(True, transaction.autocommit)
+        self.assertEqual(True, transaction._autocommit)
 
         self.assertEqual(self.event_repository, transaction._event_repository)
         self.assertEqual(self.transaction_repository, transaction._transaction_repository)
@@ -45,7 +46,7 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(uuid, transaction.uuid)
         self.assertEqual(status, transaction.status)
         self.assertEqual(event_offset, transaction.event_offset)
-        self.assertEqual(False, transaction.autocommit)
+        self.assertEqual(False, transaction._autocommit)
 
         self.assertEqual(self.event_repository, transaction._event_repository)
         self.assertEqual(self.transaction_repository, transaction._transaction_repository)
@@ -93,23 +94,26 @@ class TestTransaction(MinosTestCase):
             async with TransactionEntry(status=TransactionStatus.REJECTED):
                 pass
 
+        with self.assertRaises(ValueError):
+            async with TransactionEntry(destination_uuid=uuid4()):
+                pass
+
+        transaction = TransactionEntry()
         TRANSACTION_CONTEXT_VAR.set(TransactionEntry())
         with self.assertRaises(ValueError):
-            async with TransactionEntry():
+            async with transaction:
                 pass
 
     async def test_reserve_success(self) -> None:
         uuid = uuid4()
-        validate_mock = AsyncMock(return_value=True)
-        save_mock = AsyncMock()
 
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
-        transaction.validate = validate_mock
-        transaction.save = save_mock
 
         with patch(
             "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ):
+        ), patch("minos.common.TransactionEntry.save") as save_mock, patch(
+            "minos.common.TransactionEntry.validate", return_value=True
+        ) as validate_mock:
             await transaction.reserve()
 
         self.assertEqual(1, validate_mock.call_count)
@@ -122,15 +126,13 @@ class TestTransaction(MinosTestCase):
 
     async def test_reserve_failure(self) -> None:
         uuid = uuid4()
-        validate_mock = AsyncMock(return_value=False)
-        save_mock = AsyncMock()
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
-        transaction.validate = validate_mock
-        transaction.save = save_mock
 
         with patch(
             "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ):
+        ), patch("minos.common.TransactionEntry.save") as save_mock, patch(
+            "minos.common.TransactionEntry.validate", return_value=False
+        ) as validate_mock:
             with self.assertRaises(MinosRepositoryConflictException):
                 await transaction.reserve()
 
@@ -187,12 +189,71 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(
             [
                 call(
+                    uuid=NULL_UUID,
+                    status_in=(
+                        TransactionStatus.RESERVING,
+                        TransactionStatus.RESERVED,
+                        TransactionStatus.COMMITTING,
+                        TransactionStatus.COMMITTED,
+                        TransactionStatus.REJECTED,
+                    ),
+                ),
+                call(
+                    destination_uuid=NULL_UUID,
                     uuid_in=(another,),
                     status_in=(
                         TransactionStatus.RESERVING,
                         TransactionStatus.RESERVED,
                         TransactionStatus.COMMITTING,
                         TransactionStatus.COMMITTED,
+                    ),
+                ),
+            ],
+            select_transaction_mock.call_args_list,
+        )
+
+    async def test_validate_false_destination_already(self):
+        uuid = uuid4()
+        another = uuid4()
+
+        agg_uuid = uuid4()
+
+        select_event_1 = [
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 3, bytes(), 2, Action.UPDATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 2, bytes(), 3, Action.UPDATE, transaction_uuid=uuid),
+        ]
+
+        select_event_2 = [
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=uuid),
+            EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
+        ]
+
+        transaction_event_1 = [TransactionEntry(another, TransactionStatus.RESERVED)]
+
+        select_event_mock = MagicMock(
+            side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
+        )
+        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
+
+        self.event_repository.select = select_event_mock
+        self.transaction_repository.select = select_transaction_mock
+
+        transaction = TransactionEntry(uuid, destination_uuid=another)
+
+        self.assertFalse(await transaction.validate())
+
+        self.assertEqual([], select_event_mock.call_args_list)
+        self.assertEqual(
+            [
+                call(
+                    uuid=another,
+                    status_in=(
+                        TransactionStatus.RESERVING,
+                        TransactionStatus.RESERVED,
+                        TransactionStatus.COMMITTING,
+                        TransactionStatus.COMMITTED,
+                        TransactionStatus.REJECTED,
                     ),
                 )
             ],
@@ -220,7 +281,9 @@ class TestTransaction(MinosTestCase):
         select_event_mock = MagicMock(
             side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
         )
-        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(select_transaction_1))
+        select_transaction_mock = MagicMock(
+            side_effect=[FakeAsyncIterator([]), FakeAsyncIterator(select_transaction_1)],
+        )
 
         self.event_repository.select = select_event_mock
         self.transaction_repository.select = select_transaction_mock
@@ -233,7 +296,19 @@ class TestTransaction(MinosTestCase):
             [call(transaction_uuid=uuid), call(aggregate_uuid=agg_uuid, version=3)], select_event_mock.call_args_list
         )
         self.assertEqual(
-            [], select_transaction_mock.call_args_list,
+            [
+                call(
+                    uuid=NULL_UUID,
+                    status_in=(
+                        TransactionStatus.RESERVING,
+                        TransactionStatus.RESERVED,
+                        TransactionStatus.COMMITTING,
+                        TransactionStatus.COMMITTED,
+                        TransactionStatus.REJECTED,
+                    ),
+                ),
+            ],
+            select_transaction_mock.call_args_list,
         )
 
     async def test_validate_false_already_reserved(self):
@@ -253,12 +328,14 @@ class TestTransaction(MinosTestCase):
             EventEntry(agg_uuid, "c.Car", 1, bytes(), 1, Action.CREATE, transaction_uuid=another),
         ]
 
-        transaction_event_1 = [TransactionEntry(another, TransactionStatus.RESERVED)]
+        select_transaction_1 = [TransactionEntry(another, TransactionStatus.RESERVED)]
 
         select_event_mock = MagicMock(
             side_effect=[FakeAsyncIterator(select_event_1), FakeAsyncIterator(select_event_2)]
         )
-        select_transaction_mock = MagicMock(return_value=FakeAsyncIterator(transaction_event_1))
+        select_transaction_mock = MagicMock(
+            side_effect=[FakeAsyncIterator([]), FakeAsyncIterator(select_transaction_1)],
+        )
 
         self.event_repository.select = select_event_mock
         self.transaction_repository.select = select_transaction_mock
@@ -273,6 +350,17 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(
             [
                 call(
+                    uuid=NULL_UUID,
+                    status_in=(
+                        TransactionStatus.RESERVING,
+                        TransactionStatus.RESERVED,
+                        TransactionStatus.COMMITTING,
+                        TransactionStatus.COMMITTED,
+                        TransactionStatus.REJECTED,
+                    ),
+                ),
+                call(
+                    destination_uuid=NULL_UUID,
                     uuid_in=(another,),
                     status_in=(
                         TransactionStatus.RESERVING,
@@ -280,21 +368,19 @@ class TestTransaction(MinosTestCase):
                         TransactionStatus.COMMITTING,
                         TransactionStatus.COMMITTED,
                     ),
-                )
+                ),
             ],
             select_transaction_mock.call_args_list,
         )
 
     async def test_reject(self) -> None:
         uuid = uuid4()
-        save_mock = AsyncMock()
 
         transaction = TransactionEntry(uuid, TransactionStatus.RESERVED)
-        transaction.save = save_mock
 
         with patch(
             "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ):
+        ), patch("minos.common.TransactionEntry.save") as save_mock:
             await transaction.reject()
 
         self.assertEqual(1, save_mock.call_count)
@@ -318,17 +404,15 @@ class TestTransaction(MinosTestCase):
 
         select_mock = MagicMock(side_effect=_fn)
         submit_mock = AsyncMock()
-        save_mock = AsyncMock()
 
         self.event_repository.select = select_mock
         self.event_repository.submit = submit_mock
 
         transaction = TransactionEntry(uuid, TransactionStatus.RESERVED)
-        transaction.save = save_mock
 
         with patch(
             "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ):
+        ), patch("minos.common.TransactionEntry.save") as save_mock:
             await transaction.commit()
 
         self.assertEqual(
@@ -348,20 +432,18 @@ class TestTransaction(MinosTestCase):
     async def test_commit_pending(self) -> None:
         uuid = uuid4()
 
-        commit_mock = AsyncMock()
-
-        save_mock = AsyncMock()
         transaction = TransactionEntry(uuid, TransactionStatus.PENDING)
-
-        transaction._commit = commit_mock
-        transaction.save = save_mock
 
         async def _fn():
             transaction.status = TransactionStatus.RESERVED
 
         with patch(
             "minos.common.EventRepository.offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=55)
-        ), patch.object(transaction, "reserve", side_effect=_fn) as reserve_mock:
+        ), patch("minos.common.TransactionEntry.reserve", side_effect=_fn) as reserve_mock, patch(
+            "minos.common.TransactionEntry.save"
+        ) as save_mock, patch(
+            "minos.common.TransactionEntry._commit", return_value=True
+        ) as commit_mock:
             await transaction.commit()
 
         self.assertEqual(1, reserve_mock.call_count)
@@ -399,6 +481,22 @@ class TestTransaction(MinosTestCase):
         self.assertEqual(1, submit_mock.call_count)
         self.assertEqual(call(TransactionEntry(uuid, TransactionStatus.PENDING, 56)), submit_mock.call_args)
 
+    async def test_uuids(self):
+        first = TransactionEntry()
+        await first.save()
+
+        second = TransactionEntry(destination_uuid=first.uuid)
+        await second.save()
+
+        self.assertEqual((NULL_UUID, first.uuid, second.uuid,), await second.uuids)
+
+    async def test_destination(self):
+        first = TransactionEntry()
+        await first.save()
+
+        second = TransactionEntry(destination_uuid=first.uuid)
+        self.assertEqual(first, await second.destination)
+
     def test_equals(self):
         uuid = uuid4()
         base = TransactionEntry(uuid, TransactionStatus.PENDING, 56)
@@ -409,16 +507,19 @@ class TestTransaction(MinosTestCase):
 
     def test_iter(self):
         uuid = uuid4()
-        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56)
-        self.assertEqual([uuid, TransactionStatus.PENDING, 56], list(transaction))
+        destination_uuid = uuid4()
+        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56, destination_uuid)
+        self.assertEqual([uuid, TransactionStatus.PENDING, 56, destination_uuid], list(transaction))
 
     def test_repr(self):
         uuid = uuid4()
-        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56)
-        self.assertEqual(
-            f"TransactionEntry(uuid={uuid!r}, status={TransactionStatus.PENDING!r}, event_offset={56!r})",
-            repr(transaction),
+        destination_uuid = uuid4()
+        transaction = TransactionEntry(uuid, TransactionStatus.PENDING, 56, destination_uuid)
+        expected = (
+            f"TransactionEntry(uuid={uuid!r}, status={TransactionStatus.PENDING!r}, event_offset={56!r}, "
+            f"destination_uuid={destination_uuid!r}, updated_at={None!r})"
         )
+        self.assertEqual(expected, repr(transaction))
 
 
 class TestTransactionStatus(unittest.TestCase):

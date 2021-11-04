@@ -43,6 +43,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
     async def _submit(self, transaction: TransactionEntry) -> TransactionEntry:
         params = {
             "uuid": transaction.uuid,
+            "destination_uuid": transaction.destination_uuid,
             "status": transaction.status,
             "event_offset": transaction.event_offset,
         }
@@ -68,6 +69,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
         uuid: Optional[UUID] = None,
         uuid_ne: Optional[UUID] = None,
         uuid_in: Optional[tuple[UUID]] = None,
+        destination_uuid: Optional[UUID] = None,
         status: Optional[str] = None,
         status_in: Optional[tuple[str]] = None,
         event_offset: Optional[int] = None,
@@ -85,6 +87,8 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
             conditions.append("uuid <> %(uuid_ne)s")
         if uuid_in is not None:
             conditions.append("uuid IN %(uuid_in)s")
+        if destination_uuid is not None:
+            conditions.append("destination_uuid = %(destination_uuid)s")
         if status is not None:
             conditions.append("status = %(status)s")
         if status_in is not None:
@@ -128,6 +132,7 @@ LANGUAGE plpgsql;
 _CREATE_TRANSACTION_TABLE_QUERY = """
 CREATE TABLE IF NOT EXISTS aggregate_transaction (
     uuid UUID PRIMARY KEY,
+    destination_uuid UUID NOT NULL,
     status TRANSACTION_STATUS NOT NULL,
     event_offset INTEGER,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -135,12 +140,13 @@ CREATE TABLE IF NOT EXISTS aggregate_transaction (
 """.strip()
 
 _INSERT_TRANSACTIONS_VALUES_QUERY = """
-INSERT INTO aggregate_transaction (uuid, status, event_offset)
-VALUES (%(uuid)s, %(status)s, %(event_offset)s)
+INSERT INTO aggregate_transaction (uuid, destination_uuid, status, event_offset)
+VALUES (%(uuid)s, %(destination_uuid)s, %(status)s, %(event_offset)s)
 ON CONFLICT (uuid)
 DO
    UPDATE SET status = %(status)s, event_offset = %(event_offset)s, updated_at = NOW()
-WHERE (NOT (aggregate_transaction.status = 'pending' AND %(status)s NOT IN ('reserving', 'rejected')))
+WHERE (aggregate_transaction.destination_uuid = %(destination_uuid)s)
+  AND (NOT (aggregate_transaction.status = 'pending' AND %(status)s NOT IN ('reserving', 'rejected')))
   AND (NOT (aggregate_transaction.status = 'reserving' AND %(status)s NOT IN ('reserved', 'rejected')))
   AND (NOT (aggregate_transaction.status = 'reserved' AND %(status)s NOT IN ('committing', 'rejected')))
   AND (NOT (aggregate_transaction.status = 'committing' AND %(status)s NOT IN ('committed', 'rejected')))
@@ -150,6 +156,6 @@ RETURNING updated_at;
 """.strip()
 
 _SELECT_ALL_TRANSACTIONS_QUERY = """
-SELECT uuid, status, event_offset, updated_at
+SELECT uuid, status, event_offset, destination_uuid, updated_at
 FROM aggregate_transaction
 """.strip()

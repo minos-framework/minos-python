@@ -47,6 +47,7 @@ class InMemoryTransactionRepository(TransactionRepository):
 
         self._storage[transaction.uuid] = TransactionEntry(
             uuid=transaction.uuid,
+            destination_uuid=transaction.destination_uuid,
             status=transaction.status,
             event_offset=transaction.event_offset,
             updated_at=transaction.updated_at,
@@ -61,6 +62,7 @@ class InMemoryTransactionRepository(TransactionRepository):
         uuid: Optional[UUID] = None,
         uuid_ne: Optional[UUID] = None,
         uuid_in: Optional[tuple[UUID, ...]] = None,
+        destination_uuid: Optional[UUID] = None,
         status: Optional[s] = None,
         status_in: Optional[tuple[str, ...]] = None,
         event_offset: Optional[int] = None,
@@ -78,6 +80,8 @@ class InMemoryTransactionRepository(TransactionRepository):
             if uuid_ne is not None and uuid_ne == transaction.uuid:
                 return False
             if uuid_in is not None and transaction.uuid not in uuid_in:
+                return False
+            if destination_uuid is not None and destination_uuid != transaction.destination_uuid:
                 return False
             if status is not None and status != transaction.status:
                 return False

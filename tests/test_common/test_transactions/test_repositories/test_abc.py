@@ -77,6 +77,7 @@ class TestTransactionRepository(MinosTestCase):
             uuid=uuid,
             uuid_ne=None,
             uuid_in=None,
+            destination_uuid=None,
             status=None,
             status_in=(TransactionStatus.REJECTED, TransactionStatus.COMMITTED),
             event_offset=None,

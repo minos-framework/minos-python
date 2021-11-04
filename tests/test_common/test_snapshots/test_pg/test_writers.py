@@ -53,10 +53,13 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.transaction_2 = uuid4()
         self.transaction_3 = uuid4()
 
-        self.writer = PostgreSqlSnapshotWriter.from_config(
-            self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository
-        )
         self.reader = PostgreSqlSnapshotReader.from_config(self.config)
+        self.writer = PostgreSqlSnapshotWriter.from_config(
+            self.config,
+            reader=self.reader,
+            event_repository=self.event_repository,
+            transaction_repository=self.transaction_repository,
+        )
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -115,11 +118,11 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
 
     def test_from_config_raises(self):
         with self.assertRaises(MinosRepositoryNotProvidedException):
-            PostgreSqlSnapshotWriter.from_config(self.config, event_repository=None)
+            PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader, event_repository=None)
 
         with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
             PostgreSqlSnapshotWriter.from_config(
-                self.config, event_repository=self.event_repository, transaction_repository=None
+                self.config, reader=self.reader, event_repository=self.event_repository, transaction_repository=None
             )
 
     async def test_dispatch(self):
@@ -166,7 +169,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             Condition.TRUE,
             Ordering.ASC("updated_at"),
             exclude_deleted=False,
-            transaction_uuid=self.transaction_1,
+            transaction=TransactionEntry(self.transaction_1),
         )
         observed = [v async for v in iterable]
 
@@ -205,7 +208,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             Condition.TRUE,
             Ordering.ASC("updated_at"),
             exclude_deleted=False,
-            transaction_uuid=self.transaction_2,
+            transaction=TransactionEntry(self.transaction_2),
         )
         observed = [v async for v in iterable]
 
@@ -328,8 +331,6 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             data=FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")]).avro_bytes,
         )
         await self.event_repository.create(entry)
-        self.assertEqual(1, mock.call_count)
-        mock.reset_mock()
 
         await self.writer.dispatch()
         self.assertEqual(1, mock.call_count)

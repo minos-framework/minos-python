@@ -177,16 +177,20 @@ class EventRepository(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: ``True`` if the entry can be submitted or ``False`` otherwise.
         """
-        iterable = self.select(aggregate_uuid=entry.aggregate_uuid, transaction_uuid_ne=transaction_uuid_ne, **kwargs)
-        transaction_uuids = {e.transaction_uuid async for e in iterable}
+        iterable = self._transaction_repository.select(
+            destination_uuid=entry.transaction_uuid,
+            uuid_ne=transaction_uuid_ne,
+            status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING,),
+        )
+
+        transaction_uuids = {e.uuid async for e in iterable}
 
         if len(transaction_uuids):
             with suppress(StopAsyncIteration):
-                iterable = self._transaction_repository.select(
-                    uuid_in=tuple(transaction_uuids),
-                    uuid_ne=transaction_uuid_ne,
-                    status_in=(TransactionStatus.RESERVING, TransactionStatus.RESERVED, TransactionStatus.COMMITTING,),
+                iterable = self.select(
+                    aggregate_uuid=entry.aggregate_uuid, transaction_uuid_in=tuple(transaction_uuids), **kwargs
                 )
+
                 await iterable.__anext__()  # Will raise a `StopAsyncIteration` exception if not any item.
 
                 return False
@@ -242,6 +246,7 @@ class EventRepository(ABC, MinosSetup):
         id_ge: Optional[int] = None,
         transaction_uuid: Optional[UUID] = None,
         transaction_uuid_ne: Optional[UUID] = None,
+        transaction_uuid_in: Optional[tuple[UUID, ...]] = None,
         **kwargs,
     ) -> AsyncIterator[EventEntry]:
         """Perform a selection query of entries stored in to the repository.
@@ -260,6 +265,7 @@ class EventRepository(ABC, MinosSetup):
         :param id_ge: Entry identifier greater or equal to the given value.
         :param transaction_uuid: Transaction identifier.
         :param transaction_uuid_ne: Transaction identifier distinct of the given value.
+        :param transaction_uuid_in: Destination Transaction identifier equal to one of the given values.
         :return: A list of entries.
         """
         generator = self._select(
@@ -277,6 +283,7 @@ class EventRepository(ABC, MinosSetup):
             id_ge=id_ge,
             transaction_uuid=transaction_uuid,
             transaction_uuid_ne=transaction_uuid_ne,
+            transaction_uuid_in=transaction_uuid_in,
             **kwargs,
         )
         # noinspection PyTypeChecker

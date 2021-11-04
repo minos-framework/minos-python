@@ -2,9 +2,6 @@ from __future__ import (
     annotations,
 )
 
-from itertools import (
-    chain,
-)
 from operator import (
     attrgetter,
 )
@@ -23,6 +20,7 @@ from dependency_injector.wiring import (
 )
 
 from ..events import (
+    EventEntry,
     EventRepository,
 )
 from ..exceptions import (
@@ -36,6 +34,7 @@ from ..queries import (
     _Ordering,
 )
 from ..transactions import (
+    TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
@@ -83,7 +82,6 @@ class InMemorySnapshot(MinosSnapshot):
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
-        transaction_uuid: Optional[UUID] = None,
         **kwargs,
     ) -> AsyncIterator[Aggregate]:
         uuids = {v.aggregate_uuid async for v in self._event_repository.select(aggregate_name=aggregate_name)}
@@ -91,7 +89,7 @@ class InMemorySnapshot(MinosSnapshot):
         aggregates = list()
         for uuid in uuids:
             try:
-                aggregate = await self.get(aggregate_name, uuid, transaction_uuid, **kwargs)
+                aggregate = await self.get(aggregate_name, uuid, **kwargs)
             except MinosSnapshotDeletedAggregateException:
                 continue
 
@@ -109,41 +107,59 @@ class InMemorySnapshot(MinosSnapshot):
 
     # noinspection PyMethodOverriding
     async def _get(
-        self, aggregate_name: str, uuid: UUID, transaction_uuid: Optional[UUID] = None, **kwargs
+        self, aggregate_name: str, uuid: UUID, transaction: Optional[TransactionEntry] = None, **kwargs
     ) -> Aggregate:
-        if transaction_uuid != NULL_UUID:
-            transaction = await self._transaction_repository.select(uuid=transaction_uuid).__anext__()
-            if transaction.status == TransactionStatus.REJECTED:
-                transaction_uuid = NULL_UUID
+        transaction_uuids = await self._get_transaction_uuids(transaction)
+        entries = await self._get_event_entries(aggregate_name, uuid, transaction_uuids)
 
-        entries = [
-            v
-            async for v in self._event_repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
-            if v.transaction_uuid in (transaction_uuid, NULL_UUID)
-        ]
         if not len(entries):
             raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
-
-        entries.sort(key=attrgetter("version"))
-
-        if len({e.transaction_uuid for e in entries}) > 1:
-            minimal = next(e for e in entries if e.transaction_uuid == transaction_uuid)
-            entries = list(
-                chain(
-                    (e for e in entries if e.version < minimal.version),
-                    (e for e in entries if e.transaction_uuid == transaction_uuid),
-                )
-            )
 
         if entries[-1].action.is_delete:
             raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
 
-        cls = entries[0].aggregate_cls
-        instance: Aggregate = cls.from_diff(entries[0].aggregate_diff, **kwargs)
-        for entry in entries[1:]:
-            instance.apply_diff(entry.aggregate_diff)
+        return self._build_aggregate(entries, **kwargs)
 
-        return instance
+    async def _get_transaction_uuids(self, transaction: Optional[TransactionEntry]) -> tuple[UUID, ...]:
+        if transaction is None:
+            transaction_uuids = (NULL_UUID,)
+        else:
+            transaction_uuids = await transaction.uuids
+
+        while len(transaction_uuids) > 1:
+            transaction = await self._transaction_repository.select(uuid=transaction_uuids[-1]).__anext__()
+            if transaction.status != TransactionStatus.REJECTED:
+                break
+            transaction_uuids = tuple(transaction_uuids[:-1])
+
+        return transaction_uuids
+
+    async def _get_event_entries(
+        self, aggregate_name: str, uuid: UUID, transaction_uuids: tuple[UUID, ...]
+    ) -> list[EventEntry]:
+        entries = [
+            v
+            async for v in self._event_repository.select(aggregate_name=aggregate_name, aggregate_uuid=uuid)
+            if v.transaction_uuid in transaction_uuids
+        ]
+
+        entries.sort(key=lambda e: (e.version, transaction_uuids.index(e.transaction_uuid)))
+
+        if len({e.transaction_uuid for e in entries}) > 1:
+            new = [entries.pop()]
+            for e in reversed(entries):
+                if e.version < new[-1].version:
+                    new.append(e)
+            entries = list(reversed(new))
+        return entries
+
+    @staticmethod
+    def _build_aggregate(entries: list[EventEntry], **kwargs) -> Aggregate:
+        cls = entries[0].aggregate_cls
+        aggregate = cls.from_diff(entries[0].aggregate_diff, **kwargs)
+        for entry in entries[1:]:
+            aggregate.apply_diff(entry.aggregate_diff)
+        return aggregate
 
     async def _synchronize(self, **kwargs) -> None:
         pass
