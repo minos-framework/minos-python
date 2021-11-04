@@ -69,55 +69,47 @@ class TestMinosModelAvro(MinosTestCase):
         self.assertIsInstance(shopping_list.avro_bytes, bytes)
 
     def test_avro_schema_model_ref(self):
-        # noinspection DuplicatedCode
-        expected = [
-            {
-                "fields": [
-                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                    {"name": "version", "type": "int"},
-                    {"name": "created_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
-                    {"name": "updated_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
-                    {"name": "doors", "type": "int"},
-                    {"name": "color", "type": "string"},
-                    {
-                        "name": "owner",
-                        "type": [
-                            {
-                                "items": [
-                                    {
-                                        "fields": [
-                                            {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                                            {"name": "version", "type": "int"},
-                                            {
-                                                "name": "created_at",
-                                                "type": {"logicalType": "timestamp-micros", "type": "long"},
-                                            },
-                                            {
-                                                "name": "updated_at",
-                                                "type": {"logicalType": "timestamp-micros", "type": "long"},
-                                            },
-                                            {"name": "name", "type": "string"},
-                                            {"name": "surname", "type": "string"},
-                                            {"name": "age", "type": ["int", "null"]},
-                                        ],
-                                        "name": "Owner",
-                                        "namespace": "tests.aggregate_classes.goodbye",
-                                        "type": "record",
-                                    },
-                                    {"type": "string", "logicalType": "uuid"},
-                                ],
-                                "type": "array",
-                            },
-                            "null",
-                        ],
-                    },
-                ],
-                "name": "Car",
-                "namespace": "tests.aggregate_classes.hello",
-                "type": "record",
-            }
-        ]
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello", "goodbye"]):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            expected = [
+                {
+                    "fields": [
+                        {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
+                        {"name": "version", "type": "int"},
+                        {"name": "created_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
+                        {"name": "updated_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
+                        {"name": "doors", "type": "int"},
+                        {"name": "color", "type": "string"},
+                        {
+                            "name": "owner",
+                            "type": [
+                                {
+                                    "items": [
+                                        {
+                                            "fields": [
+                                                {
+                                                    "name": "data",
+                                                    "type": [
+                                                        Owner.avro_schema[0],
+                                                        {"logicalType": "uuid", "type": "string"},
+                                                    ],
+                                                }
+                                            ],
+                                            "name": "ModelRef",
+                                            "namespace": "minos.common.model.model_refs.hello",
+                                            "type": "record",
+                                        }
+                                    ],
+                                    "type": "array",
+                                },
+                                "null",
+                            ],
+                        },
+                    ],
+                    "name": "Car",
+                    "namespace": "tests.aggregate_classes.hello",
+                    "type": "record",
+                }
+            ]
             self.assertEqual(expected, Car.avro_schema)
 
     def test_avro_schema_generics(self):
@@ -172,22 +164,26 @@ class TestMinosModelAvro(MinosTestCase):
             "uuid": str(car.uuid),
             "owner": [
                 {
-                    "age": None,
-                    "uuid": str(owners[0].uuid),
-                    "name": "Hello",
-                    "surname": "Good Bye",
-                    "version": 1,
-                    "created_at": 253402300799999999,
-                    "updated_at": 253402300799999999,
+                    "data": {
+                        "age": None,
+                        "uuid": str(owners[0].uuid),
+                        "name": "Hello",
+                        "surname": "Good Bye",
+                        "version": 1,
+                        "created_at": 253402300799999999,
+                        "updated_at": 253402300799999999,
+                    }
                 },
                 {
-                    "age": None,
-                    "uuid": str(owners[1].uuid),
-                    "name": "Foo",
-                    "surname": "Bar",
-                    "version": 1,
-                    "created_at": 253402300799999999,
-                    "updated_at": 253402300799999999,
+                    "data": {
+                        "age": None,
+                        "uuid": str(owners[1].uuid),
+                        "name": "Foo",
+                        "surname": "Bar",
+                        "version": 1,
+                        "created_at": 253402300799999999,
+                        "updated_at": 253402300799999999,
+                    }
                 },
             ],
             "version": 1,

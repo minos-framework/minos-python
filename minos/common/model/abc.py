@@ -220,7 +220,7 @@ class Model(Mapping):
 
     def __setattr__(self, key: str, value: Any) -> None:
         if key.startswith("_"):
-            super().__setattr__(key, value)
+            object.__setattr__(self, key, value)
         elif key in self._fields:
             self._fields[key].value = value
         else:

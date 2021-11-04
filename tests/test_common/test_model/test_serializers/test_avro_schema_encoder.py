@@ -11,6 +11,7 @@ from typing import (
 )
 from unittest.mock import (
     MagicMock,
+    patch,
 )
 from uuid import (
     UUID,
@@ -103,29 +104,22 @@ class TestAvroSchemaEncoder(unittest.TestCase):
         self.assertEqual(expected, observed)
 
     def test_model_ref(self):
-        expected = [
-            {
-                "fields": [
-                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                    {"name": "version", "type": "int"},
-                    {"name": "created_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
-                    {"name": "updated_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
-                    {"name": "name", "type": "string"},
-                    {"name": "surname", "type": "string"},
-                    {"name": "age", "type": ["int", "null"]},
-                ],
-                "name": "Owner",
-                "namespace": "tests.aggregate_classes.hello",
-                "type": "record",
-            },
-            {"type": "string", "logicalType": "uuid"},
-            "null",
-        ]
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            expected = [
+                {
+                    "fields": [
+                        {"name": "data", "type": [Owner.avro_schema[0], {"logicalType": "uuid", "type": "string"}]}
+                    ],
+                    "name": "ModelRef",
+                    "namespace": "minos.common.model.model_refs.hello",
+                    "type": "record",
+                },
+                "null",
+            ]
 
-        encoder = AvroSchemaEncoder(Optional[ModelRef[Owner]])
-        encoder.generate_random_str = MagicMock(return_value="hello")
+            encoder = AvroSchemaEncoder(Optional[ModelRef[Owner]])
+            observed = encoder.build()
 
-        observed = encoder.build()
         self.assertEqual(expected, observed)
 
     def test_list_model(self):

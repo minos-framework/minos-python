@@ -14,6 +14,9 @@ from uuid import (
     UUID,
 )
 
+from .generics import (
+    unpack_typevar,
+)
 from .model_types import (
     ModelType,
 )
@@ -74,6 +77,12 @@ class TypeHintComparator:
         return self._compare(self._first, self._second)
 
     def _compare(self, first: T, second: K) -> bool:
+        if isinstance(first, TypeVar):
+            first = unpack_typevar(first)
+
+        if isinstance(second, TypeVar):
+            second = unpack_typevar(second)
+
         if second is Any:
             return True
 

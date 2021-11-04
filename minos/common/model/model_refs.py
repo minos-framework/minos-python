@@ -13,6 +13,7 @@ from typing import (
     TypeVar,
     Union,
     get_args,
+    get_origin,
 )
 from uuid import (
     UUID,
@@ -37,9 +38,10 @@ class ModelRef(DeclarativeModel, Generic[MT]):
 
     data: Union[MT, UUID]
 
-    def __init__(self, *args, **kwargs):
-        print(args, kwargs)
-        DeclarativeModel.__init__(self, *args, **kwargs)
+    def __init__(self, data: Union[MT, UUID], *args, **kwargs):
+        if not isinstance(data, UUID) and not hasattr(data, "uuid"):
+            raise ValueError()
+        DeclarativeModel.__init__(self, data, *args, **kwargs)
 
     @property
     def uuid(self) -> UUID:
@@ -58,7 +60,7 @@ class ModelRefExtractor:
         self.value = value
         self.type_ = type_
 
-    def build(self) -> dict[str, set[UUID]]:
+    def build(self) -> dict[str, set[ModelRef]]:
         """Run the model reference extractor.
 
         :return: A dictionary in which the keys are the class names and the values are the identifiers.
@@ -67,7 +69,10 @@ class ModelRefExtractor:
         self._build(self.value, self.type_, ans)
         return ans
 
-    def _build(self, value: Any, type_: type, ans: dict[str, set[UUID]]) -> None:
+    def _build(self, value: Any, type_: type, ans: dict[str, set[ModelRef]]) -> None:
+        if get_origin(type_) is Union:
+            type_ = next((t for t in get_args(type_) if get_origin(t) is ModelRef), type_)
+
         if isinstance(value, (tuple, list, set)):
             self._build_iterable(value, get_args(type_)[0], ans)
 
@@ -75,19 +80,18 @@ class ModelRefExtractor:
             self._build_iterable(value.keys(), get_args(type_)[0], ans)
             self._build_iterable(value.values(), get_args(type_)[1], ans)
 
-        elif isinstance(value, ModelRef):
+        elif (isinstance(value, UUID) or isinstance(value, ModelRef)) and get_origin(type_) is ModelRef:
             cls = get_args(type_)[0]
             name = cls.__name__
-            ans[name].add(value.uuid)
+            if not isinstance(value, ModelRef):
+                value = type_(value)
+            ans[name].add(value)
 
         elif is_model_type(value):
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 
-        elif issubclass(type_, ModelRef) and isinstance(value, UUID):
-            self._build(ModelRef(value), type_, ans)
-
-    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[UUID]]) -> None:
+    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[ModelRef]]) -> None:
         for sub_value in value:
             self._build(sub_value, value_, ans)
 
@@ -113,8 +117,8 @@ class ModelRefInjector:
         if isinstance(value, dict):
             return type(value)((self._build(k), self._build(v)) for k, v in value.items())
 
-        if isinstance(value, ModelRef) and value in self.mapper:
-            return self.mapper[value.uuid]
+        if isinstance(value, UUID) and value in self.mapper:
+            return self.mapper[value]
 
         if is_model_type(value):
             for field in value.fields.values():

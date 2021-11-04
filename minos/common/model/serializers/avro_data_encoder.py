@@ -44,6 +44,13 @@ class AvroDataEncoder:
         if value is None:
             return None
 
+        from ..abc import (
+            Model,
+        )
+
+        if isinstance(value, Model):
+            return {name: field.avro_data for name, field in value.fields.items()}
+
         if isinstance(value, (str, int, bool, float, bytes)):
             return value
 
@@ -73,13 +80,6 @@ class AvroDataEncoder:
 
         if isinstance(value, dict):
             return {k: self._to_avro_raw(v) for k, v in value.items()}
-
-        from ..abc import (
-            Model,
-        )
-
-        if isinstance(value, Model):
-            return {name: field.avro_data for name, field in value.fields.items()}
 
         raise MinosMalformedAttributeException(f"Given type is not supported: {type(value)!r} ({value!r})")
 

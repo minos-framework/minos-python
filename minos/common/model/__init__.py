@@ -34,6 +34,11 @@ from .fields import (
     Field,
     ModelField,
 )
+from .model_refs import (
+    ModelRef,
+    ModelRefExtractor,
+    ModelRefInjector,
+)
 from .serializers import (
     AvroDataDecoder,
     AvroDataEncoder,
@@ -47,9 +52,4 @@ from .types import (
     NoneType,
     TypeHintBuilder,
     TypeHintComparator,
-)
-from .model_refs import (
-    ModelRef,
-    ModelRefExtractor,
-    ModelRefInjector,
 )

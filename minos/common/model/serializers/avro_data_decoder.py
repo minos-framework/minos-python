@@ -7,6 +7,9 @@ from collections.abc import (
     Iterable,
     Mapping,
 )
+from contextlib import (
+    suppress,
+)
 from datetime import (
     date,
     datetime,
@@ -68,10 +71,8 @@ class AvroDataDecoder:
     def _cast_union_value(self, type_: type, data: Any) -> Any:
         alternatives = get_args(type_)
         for alternative_type in alternatives:
-            try:
+            with suppress(Exception):
                 return self._cast_single_value(alternative_type, data)
-            except (DataDecoderTypeException, DataDecoderRequiredValueException):
-                pass
 
         if type_ is not NoneType:
             if data is None:
@@ -225,14 +226,9 @@ class AvroDataDecoder:
     def _cast_model(self, type_: type, data: Any) -> Any:
         if is_type_subclass(type_) and isinstance(data, type_):
             return data
-        # noinspection PyUnresolvedReferences
         return self._cast_model_type(ModelType.from_model(type_), data)
 
     def _cast_model_type(self, type_: ModelType, data: Any) -> Any:
-        if isinstance(data, dict):
-            data |= {k: self._cast_value(v, data.get(k, None)) for k, v in type_.type_hints.items()}
-            return type_(**data)
-
         if hasattr(data, "model_type"):
             from ..declarative import (
                 IncrementalSet,
@@ -243,10 +239,16 @@ class AvroDataDecoder:
             if ModelType.from_model(data) >= type_:
                 return data
 
-        try:
-            return type_(data)
-        except Exception as exc:
-            raise DataDecoderTypeException(type_, data)
+        if isinstance(data, dict):
+            decoded_data = {n: AvroDataDecoder(t).build(data.get(n, None)) for n, t in type_.type_hints.items()}
+            return type_(**decoded_data)
+
+        with suppress(Exception):
+            decoded_data = data if isinstance(data, (list, tuple)) else (data,)
+            decoded_data = (AvroDataDecoder(t).build(d) for d, t in zip(decoded_data, type_.type_hints.values()))
+            return type_(*decoded_data)
+
+        raise DataDecoderTypeException(type_, data)
 
     def _cast_composed_value(self, type_: type, data: Any) -> Any:
         origin_type = get_origin(type_)

@@ -19,6 +19,7 @@ from minos.common import (
     MinosMalformedAttributeException,
     ModelRef,
     ModelType,
+    TypeHintComparator,
 )
 
 
@@ -150,7 +151,7 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         # noinspection PyPep8Naming
         User = ModelType.build("User", {"uuid": UUID, "version": int, "username": str})
         schema = {
-            "type": [AvroSchemaEncoder(User).build(), {"name": "uuid", "type": "string", "logicalType": "uuid"}],
+            "type": [AvroSchemaEncoder(ModelRef[User]).build()],
         }
 
         expected = ModelRef[ModelType.build("User", {"uuid": UUID, "version": int, "username": str})]
@@ -161,15 +162,11 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         # noinspection PyPep8Naming
         User = ModelType.build("User", {"uuid": UUID, "version": int, "username": str})
         schema = {
-            "type": [
-                "int",
-                AvroSchemaEncoder(User).build(),
-                {"name": "uuid", "type": "string", "logicalType": "uuid"},
-            ],
+            "type": [AvroSchemaEncoder(ModelRef[User]).build(), "int"],
         }
         expected = Union[ModelRef[User], int]
         observed = AvroSchemaDecoder(schema).build()
-        self.assertEqual(expected, observed)
+        self.assertTrue(TypeHintComparator(expected, observed).match())
 
     def test_raises(self):
         with self.assertRaises(MinosMalformedAttributeException):
