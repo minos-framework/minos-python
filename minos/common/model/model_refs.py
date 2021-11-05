@@ -5,6 +5,9 @@ from __future__ import (
 from collections import (
     defaultdict,
 )
+from operator import (
+    attrgetter,
+)
 from typing import (
     Any,
     Generic,
@@ -115,23 +118,39 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
             return self.data
         return self.data.uuid
 
+    @property
+    def model_cls(self) -> Optional[type]:
+        """Get model class if available.
+
+        :return: A model type.
+        """
+        args = get_args(self.type_hints["data"])
+        if args:
+            return args[0]
+        return None
+
 
 class ModelRefExtractor:
     """Model Reference Extractor class."""
 
-    def __init__(self, value: Any, type_: Optional[type] = None):
+    def __init__(self, value: Any, type_: Optional[type] = None, as_uuids: bool = True):
         if type_ is None:
             type_ = TypeHintBuilder(value).build()
         self.value = value
         self.type_ = type_
+        self.as_uuids = as_uuids
 
-    def build(self) -> dict[str, set[ModelRef]]:
+    def build(self) -> dict[str, set[UUID]]:
         """Run the model reference extractor.
 
         :return: A dictionary in which the keys are the class names and the values are the identifiers.
         """
         ans = defaultdict(set)
         self._build(self.value, self.type_, ans)
+
+        if self.as_uuids:
+            ans = {k: set(map(attrgetter("uuid"), v)) for k, v in ans.items()}
+
         return ans
 
     def _build(self, value: Any, type_: type, ans: dict[str, set[ModelRef]]) -> None:
@@ -145,11 +164,9 @@ class ModelRefExtractor:
             self._build_iterable(value.keys(), get_args(type_)[0], ans)
             self._build_iterable(value.values(), get_args(type_)[1], ans)
 
-        elif isinstance(value, UUID) and get_origin(type_) is ModelRef:
-            cls = get_args(type_)[0]
+        elif isinstance(value, ModelRef):
+            cls = value.model_cls or get_args(type_)[0]
             name = cls.__name__
-            if not isinstance(value, ModelRef):
-                value = type_(value)
             ans[name].add(value)
 
         elif is_model_type(value):

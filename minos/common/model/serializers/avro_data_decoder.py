@@ -241,12 +241,12 @@ class AvroDataDecoder:
 
         if isinstance(data, dict):
             decoded_data = {n: AvroDataDecoder(t).build(data.get(n, None)) for n, t in type_.type_hints.items()}
-            return type_(**decoded_data)
+            return type_(**decoded_data, additional_type_hints=type_.type_hints)
 
         with suppress(Exception):
             decoded_data = data if isinstance(data, (list, tuple)) else (data,)
             decoded_data = (AvroDataDecoder(t).build(d) for d, t in zip(decoded_data, type_.type_hints.values()))
-            return type_(*decoded_data)
+            return type_(*decoded_data, additional_type_hints=type_.type_hints)
 
         raise DataDecoderTypeException(type_, data)
 

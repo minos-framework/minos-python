@@ -62,7 +62,7 @@ class Model(Mapping):
     _fields: dict[str, Field]
     __eq_reversing: bool
 
-    def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
+    def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None, **kwargs):
         """Class constructor.
 
         :param fields: Dictionary that contains the ``Field`` instances of the model indexed by name.
@@ -231,7 +231,7 @@ class Model(Mapping):
             raise AttributeError(f"{type(self).__name__!r} does not contain the {key!r} field")
 
     def __getattr__(self, item: str) -> Any:
-        if item in self._fields:
+        if item != "_fields" and item in self._fields:
             return self._fields[item].value
         else:
             raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")

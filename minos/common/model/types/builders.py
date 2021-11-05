@@ -48,6 +48,13 @@ class TypeHintBuilder:
         return self._build(self.value, self.type_)
 
     def _build(self, value, type_: Optional[type]) -> type:
+
+        if type_ is not None:
+            if get_origin(type_) is Union:
+                dynamic = self._build(value, None)
+                options = tuple(self._build_from_dynamic(dynamic, static) for static in get_args(type_))
+                return build_union(options)
+
         if isinstance(value, (tuple, list, set)):
             b1 = Any if (type_ is None or len(get_args(type_)) != 1) else get_args(type_)[0]
             return type(value)[self._build_from_iterable(value, b1)]
@@ -62,13 +69,8 @@ class TypeHintBuilder:
             return ModelType.from_model(value)
 
         if type_ is not None:
-            if get_origin(type_) is Union:
-                dynamic = self._build(value, None)
-                options = tuple(self._build_from_dynamic(dynamic, static) for static in get_args(type_))
-                return build_union(options)
-            else:
-                dynamic = self._build(value, None)
-                return self._build_from_dynamic(dynamic, type_)
+            dynamic = self._build(value, None)
+            return self._build_from_dynamic(dynamic, type_)
 
         return type(value)
 
