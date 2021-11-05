@@ -5,6 +5,9 @@ from __future__ import (
 from collections import (
     defaultdict,
 )
+from operator import (
+    attrgetter,
+)
 from typing import (
     Any,
     Generic,
@@ -115,15 +118,27 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
             return self.data
         return self.data.uuid
 
+    @property
+    def model_cls(self) -> Optional[type]:
+        """Get model class if available.
+
+        :return: A model type.
+        """
+        args = get_args(self.type_hints["data"])
+        if args:
+            return args[0]
+        return None
+
 
 class ModelRefExtractor:
     """Model Reference Extractor class."""
 
-    def __init__(self, value: Any, type_: Optional[type] = None):
+    def __init__(self, value: Any, type_: Optional[type] = None, as_uuids: bool = True):
         if type_ is None:
             type_ = TypeHintBuilder(value).build()
         self.value = value
         self.type_ = type_
+        self.as_uuids = as_uuids
 
     def build(self) -> dict[str, set[UUID]]:
         """Run the model reference extractor.
@@ -132,9 +147,13 @@ class ModelRefExtractor:
         """
         ans = defaultdict(set)
         self._build(self.value, self.type_, ans)
+
+        if self.as_uuids:
+            ans = {k: set(map(attrgetter("uuid"), v)) for k, v in ans.items()}
+
         return ans
 
-    def _build(self, value: Any, type_: type, ans: dict[str, set[UUID]]) -> None:
+    def _build(self, value: Any, type_: type, ans: dict[str, set[ModelRef]]) -> None:
         if get_origin(type_) is Union:
             type_ = next((t for t in get_args(type_) if get_origin(t) is ModelRef), type_)
 
@@ -145,11 +164,9 @@ class ModelRefExtractor:
             self._build_iterable(value.keys(), get_args(type_)[0], ans)
             self._build_iterable(value.values(), get_args(type_)[1], ans)
 
-        elif isinstance(value, UUID) and get_origin(type_) is ModelRef:
-            cls = get_args(type_)[0]
+        elif isinstance(value, ModelRef):
+            cls = value.model_cls or get_args(type_)[0]
             name = cls.__name__
-            if isinstance(value, ModelRef):
-                value = value.uuid
             ans[name].add(value)
 
         elif is_model_type(value):
@@ -157,7 +174,7 @@ class ModelRefExtractor:
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 
-    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[UUID]]) -> None:
+    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[ModelRef]]) -> None:
         for sub_value in value:
             self._build(sub_value, value_, ans)
 

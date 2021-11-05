@@ -50,8 +50,8 @@ class FieldDiff(Model, Generic[T]):
     name: str
     value: T
 
-    def __init__(self, name: str, type_: Type, value: Any):
-        super().__init__([self._field_cls("name", str, name), self._field_cls("value", type_, value)])
+    def __init__(self, name: str, type_: Type, value: Any, **kwargs):
+        super().__init__([self._field_cls("name", str, name), self._field_cls("value", type_, value)], **kwargs)
 
     @classmethod
     def from_model_type(cls, model_type: ModelType, *args, **kwargs) -> FieldDiff:
@@ -71,7 +71,7 @@ class IncrementalFieldDiff(FieldDiff, Generic[T]):
 
     action: Action
 
-    def __init__(self, name: str, type_: Type, value: Any, action: Action):
+    def __init__(self, name: str, type_: Type, value: Any, action: Action, **kwargs):
         Model.__init__(
             self,
             [
@@ -79,6 +79,7 @@ class IncrementalFieldDiff(FieldDiff, Generic[T]):
                 self._field_cls("value", type_, value),
                 self._field_cls("action", Action, action),
             ],
+            **kwargs,
         )
 
 

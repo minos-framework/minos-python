@@ -62,7 +62,7 @@ class Model(Mapping):
     _fields: dict[str, Field]
     __eq_reversing: bool
 
-    def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None):
+    def __init__(self, fields: Union[Iterable[Field], dict[str, Field]] = None, **kwargs):
         """Class constructor.
 
         :param fields: Dictionary that contains the ``Field`` instances of the model indexed by name.
