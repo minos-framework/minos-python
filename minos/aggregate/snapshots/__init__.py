@@ -1,16 +1,16 @@
 from .abc import (
-    MinosSnapshot,
+    SnapshotRepository,
 )
 from .entries import (
     SnapshotEntry,
 )
 from .memory import (
-    InMemorySnapshot,
+    InMemorySnapshotRepository,
 )
 from .pg import (
-    PostgreSqlSnapshot,
     PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotReader,
+    PostgreSqlSnapshotRepository,
     PostgreSqlSnapshotSetup,
     PostgreSqlSnapshotWriter,
 )

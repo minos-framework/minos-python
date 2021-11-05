@@ -21,7 +21,7 @@ from minos.aggregate import (
     Ordering,
     PostgreSqlSnapshotQueryBuilder,
 )
-from minos.aggregate.snapshot.pg.queries import (
+from minos.aggregate.snapshots.pg.queries import (
     _SELECT_ENTRIES_QUERY,
     _SELECT_TRANSACTION_CHUNK,
 )

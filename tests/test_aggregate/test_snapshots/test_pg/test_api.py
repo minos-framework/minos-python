@@ -11,8 +11,8 @@ from uuid import (
 from minos.aggregate import (
     Condition,
     Ordering,
-    PostgreSqlSnapshot,
     PostgreSqlSnapshotReader,
+    PostgreSqlSnapshotRepository,
     PostgreSqlSnapshotWriter,
     TransactionEntry,
 )
@@ -26,31 +26,31 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlSnapshot(MinosTestCase, PostgresAsyncTestCase):
+class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
 
-        self.snapshot = PostgreSqlSnapshot.from_config(
+        self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(
             self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
 
         self.dispatch_mock = AsyncMock()
         self.get_mock = AsyncMock(return_value=1)
         self.find_mock = MagicMock(return_value=FakeAsyncIterator(range(5)))
-        self.snapshot.reader.get = self.get_mock
-        self.snapshot.reader.find = self.find_mock
-        self.snapshot.writer.dispatch = self.dispatch_mock
+        self.snapshot_repository.reader.get = self.get_mock
+        self.snapshot_repository.reader.find = self.find_mock
+        self.snapshot_repository.writer.dispatch = self.dispatch_mock
 
     def test_from_config(self):
-        self.assertIsInstance(self.snapshot.reader, PostgreSqlSnapshotReader)
-        self.assertIsInstance(self.snapshot.writer, PostgreSqlSnapshotWriter)
+        self.assertIsInstance(self.snapshot_repository.reader, PostgreSqlSnapshotReader)
+        self.assertIsInstance(self.snapshot_repository.writer, PostgreSqlSnapshotWriter)
 
     async def test_get(self):
         transaction = TransactionEntry()
         uuid = uuid4()
-        observed = await self.snapshot.get("path.to.Aggregate", uuid, transaction)
+        observed = await self.snapshot_repository.get("path.to.Aggregate", uuid, transaction)
         self.assertEqual(1, observed)
 
         self.assertEqual(1, self.dispatch_mock.call_count)
@@ -62,7 +62,9 @@ class TestPostgreSqlSnapshot(MinosTestCase, PostgresAsyncTestCase):
 
     async def test_find(self):
         transaction = TransactionEntry()
-        iterable = self.snapshot.find("path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True, transaction)
+        iterable = self.snapshot_repository.find(
+            "path.to.Aggregate", Condition.TRUE, Ordering.ASC("name"), 10, True, transaction
+        )
         observed = [a async for a in iterable]
         self.assertEqual(list(range(5)), observed)
 
@@ -81,7 +83,7 @@ class TestPostgreSqlSnapshot(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(args, self.find_mock.call_args)
 
     async def test_synchronize(self):
-        await self.snapshot.synchronize()
+        await self.snapshot_repository.synchronize()
 
         self.assertEqual(1, self.dispatch_mock.call_count)
         self.assertEqual(call(), self.dispatch_mock.call_args)

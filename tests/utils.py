@@ -29,9 +29,9 @@ from minos.aggregate import (
     EventEntry,
     EventRepository,
     InMemoryEventRepository,
-    InMemorySnapshot,
+    InMemorySnapshotRepository,
     InMemoryTransactionRepository,
-    MinosSnapshot,
+    SnapshotRepository,
     TransactionEntry,
     TransactionRepository,
 )
@@ -58,7 +58,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.event_repository = InMemoryEventRepository(
             event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
         )
-        self.snapshot = InMemorySnapshot(
+        self.snapshot_repository = InMemorySnapshotRepository(
             event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
 
@@ -67,7 +67,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.container.transaction_repository = providers.Object(self.transaction_repository)
         self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.event_repository = providers.Object(self.event_repository)
-        self.container.snapshot = providers.Object(self.snapshot)
+        self.container.snapshot_repository = providers.Object(self.snapshot_repository)
         self.container.wire(modules=[sys.modules[__name__]])
 
     async def asyncSetUp(self):
@@ -77,10 +77,10 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         await self.transaction_repository.setup()
         await self.lock_pool.setup()
         await self.event_repository.setup()
-        await self.snapshot.setup()
+        await self.snapshot_repository.setup()
 
     async def asyncTearDown(self):
-        await self.snapshot.destroy()
+        await self.snapshot_repository.destroy()
         await self.event_repository.destroy()
         await self.lock_pool.destroy()
         await self.transaction_repository.destroy()
@@ -196,7 +196,7 @@ class FakeLoop:
         """For testing purposes."""
 
 
-class FakeSnapshot(MinosSnapshot):
+class FakeSnapshotRepository(SnapshotRepository):
     """For testing purposes."""
 
     async def _get(self, *args, **kwargs) -> Aggregate:

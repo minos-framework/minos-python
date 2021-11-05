@@ -39,8 +39,8 @@ from ....queries import (
     _Condition,
     _Ordering,
 )
-from ....snapshot import (
-    MinosSnapshot,
+from ....snapshots import (
+    SnapshotRepository,
 )
 from ...diff import (
     IncrementalFieldDiff,
@@ -71,7 +71,7 @@ class Aggregate(Entity):
         created_at: datetime = NULL_DATETIME,
         updated_at: datetime = NULL_DATETIME,
         _repository: EventRepository = Provide["event_repository"],
-        _snapshot: MinosSnapshot = Provide["snapshot"],
+        _snapshot: SnapshotRepository = Provide["snapshot_repository"],
         **kwargs,
     ):
 
@@ -87,7 +87,9 @@ class Aggregate(Entity):
 
     @classmethod
     @inject
-    async def get(cls: Type[T], uuid: UUID, _snapshot: MinosSnapshot = Provide["snapshot"], **kwargs) -> T:
+    async def get(
+        cls: Type[T], uuid: UUID, _snapshot: SnapshotRepository = Provide["snapshot_repository"], **kwargs
+    ) -> T:
         """Get one instance from the database based on its identifier.
 
         :param uuid: The identifier of the instance.
@@ -107,7 +109,7 @@ class Aggregate(Entity):
         condition: _Condition,
         ordering: Optional[_Ordering] = None,
         limit: Optional[int] = None,
-        _snapshot: MinosSnapshot = Provide["snapshot"],
+        _snapshot: SnapshotRepository = Provide["snapshot_repository"],
         **kwargs,
     ) -> AsyncIterator[T]:
         """Find a collection of instances based on a given ``Condition``.

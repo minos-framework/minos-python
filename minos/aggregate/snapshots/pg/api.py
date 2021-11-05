@@ -13,7 +13,7 @@ from minos.common import (
 )
 
 from ..abc import (
-    MinosSnapshot,
+    SnapshotRepository,
 )
 from .readers import (
     PostgreSqlSnapshotReader,
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     )
 
 
-class PostgreSqlSnapshot(MinosSnapshot):
+class PostgreSqlSnapshotRepository(SnapshotRepository):
     """PostgreSQL Snapshot class.
 
    The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.
@@ -43,7 +43,7 @@ class PostgreSqlSnapshot(MinosSnapshot):
         self.writer = writer
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshot:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlSnapshotRepository:
         if "reader" not in kwargs:
             kwargs["reader"] = PostgreSqlSnapshotReader.from_config(config, **kwargs)
 
