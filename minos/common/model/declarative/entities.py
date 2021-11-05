@@ -11,6 +11,7 @@ from typing import (
     Optional,
     TypeVar,
     Union,
+    get_args,
 )
 from uuid import (
     UUID,
@@ -105,3 +106,12 @@ class EntitySet(IncrementalSet[T]):
         :return: The difference between both entity sets.
         """
         return IncrementalSetDiff.from_difference(self, another, get_fn=attrgetter("uuid"))
+
+    @property
+    def data_cls(self) -> Optional[type]:
+        """Get data class if available.
+
+        :return: A model type.
+        """
+        args = get_args(self.type_hints["data"])
+        return args[1]

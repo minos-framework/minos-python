@@ -117,6 +117,11 @@ class TestEntitySet(unittest.TestCase):
 
         self.assertEqual(observed, expected)
 
+    def test_data_cls(self):
+        raw = [FakeEntity("John"), FakeEntity("Michael")]
+        entities = EntitySet(raw)
+        self.assertEqual(FakeEntity, entities.data_cls)
+
 
 class TestEntitySetDiff(unittest.TestCase):
     def setUp(self) -> None:

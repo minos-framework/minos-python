@@ -72,6 +72,11 @@ class TestIncrementalSet(unittest.TestCase):
 
         self.assertEqual(observed, expected)
 
+    def test_data_cls(self):
+        raw = [1, 2]
+        entities = IncrementalSet(raw)
+        self.assertEqual(int, entities.data_cls)
+
 
 class TestIncrementalSetDiff(unittest.TestCase):
     def setUp(self) -> None:

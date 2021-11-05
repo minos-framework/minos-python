@@ -17,7 +17,6 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    get_args,
 )
 from uuid import (
     uuid4,
@@ -189,7 +188,7 @@ class FieldDiffContainer(BucketModel):
                     diffs = a_field.value.diff(b[a_name].value).diffs
                     for diff in diffs:
                         differences.append(
-                            IncrementalFieldDiff(a_name, get_args(a_field.type)[0], diff.entity, diff.action)
+                            IncrementalFieldDiff(a_name, a_field.value.data_cls, diff.entity, diff.action)
                         )
                 else:
                     differences.append(FieldDiff(a_name, a_field.type, a_field.value))

@@ -13,6 +13,7 @@ from typing import (
     Iterator,
     Optional,
     TypeVar,
+    get_args,
 )
 
 from ..actions import (
@@ -74,6 +75,15 @@ class IncrementalSet(DeclarativeModel, MutableSet, Generic[T]):
         :return: The difference between both entity sets.
         """
         return IncrementalSetDiff.from_difference(self, another)
+
+    @property
+    def data_cls(self) -> Optional[type]:
+        """Get data class if available.
+
+        :return: A model type.
+        """
+        args = get_args(self.type_hints["data"])
+        return args[0]
 
 
 IncrementalSetDiffEntry = ModelType.build("SetDiffEntry", {"action": Action, "entity": Any})

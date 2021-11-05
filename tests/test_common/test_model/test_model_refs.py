@@ -161,11 +161,11 @@ class TestModelRefExtractor(unittest.TestCase):
         mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int})
 
         value = ModelRef(mt_foo(uuid4(), 1))
-        self.assertEqual(mt_foo, value.model_cls)
+        self.assertEqual(mt_foo, value.data_cls)
 
     def test_model_cls_none(self):
         value = ModelRef(uuid4())
-        self.assertEqual(None, value.model_cls)
+        self.assertEqual(None, value.data_cls)
 
 
 class TestModelRefInjector(unittest.TestCase):

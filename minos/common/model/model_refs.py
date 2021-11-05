@@ -119,8 +119,8 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         return self.data.uuid
 
     @property
-    def model_cls(self) -> Optional[type]:
-        """Get model class if available.
+    def data_cls(self) -> Optional[type]:
+        """Get data class if available.
 
         :return: A model type.
         """
@@ -165,7 +165,7 @@ class ModelRefExtractor:
             self._build_iterable(value.values(), get_args(type_)[1], ans)
 
         elif isinstance(value, ModelRef):
-            cls = value.model_cls or get_args(type_)[0]
+            cls = value.data_cls or get_args(type_)[0]
             name = cls.__name__
             ans[name].add(value)
 

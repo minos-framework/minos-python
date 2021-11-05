@@ -230,12 +230,6 @@ class AvroDataDecoder:
 
     def _cast_model_type(self, type_: ModelType, data: Any) -> Any:
         if hasattr(data, "model_type"):
-            from ..declarative import (
-                IncrementalSet,
-            )
-
-            if isinstance(data, IncrementalSet) and not len(data):
-                return data
             if ModelType.from_model(data) >= type_:
                 return data
 
