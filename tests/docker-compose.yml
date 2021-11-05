@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+    postgres:
+        image: postgres:alpine
+        restart: always
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: minos
+            POSTGRES_PASSWORD: min0s
+            POSTGRES_DB: order_db
+
+    zookeeper:
+        image: zookeeper
+        restart: always
+        networks:
+            - kafka-net
+
+    kafka:
+        image: wurstmeister/kafka:latest
+        restart: always
+        depends_on:
+            - zookeeper
+        ports:
+            - "9092:9092"
+        environment:
+            KAFKA_ADVERTISED_HOST_NAME: localhost
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        networks:
+            - kafka-net
+
+networks:
+    kafka-net:
+
