@@ -7,44 +7,41 @@ from aiomisc.service.periodic import (
     PeriodicService,
 )
 
-from minos.common.testing import (
-    PostgresAsyncTestCase,
+from minos.aggregate import (
+    InMemorySnapshot,
 )
 from minos.networks import (
     SnapshotService,
 )
 from tests.utils import (
-    BASE_PATH,
-    FakeSnapshot,
+    MinosTestCase,
 )
 
 
-class TestSnapshotService(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
+class TestSnapshotService(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.snapshot = FakeSnapshot()
+        self.snapshot = InMemorySnapshot()
 
     def test_is_instance(self):
-        service = SnapshotService(self.snapshot, interval=0.1, config=self.config)
+        service = SnapshotService(self.snapshot, interval=0.1)
         self.assertIsInstance(service, PeriodicService)
 
     def test_dispatcher_config(self):
-        service = SnapshotService(self.snapshot, interval=0.1, config=self.config)
-        snapshot = service.snapshot
-        self.assertEqual(snapshot, self.snapshot)
+        snapshot = InMemorySnapshot()
+        service = SnapshotService(snapshot, interval=0.1)
+        self.assertEqual(snapshot, service.snapshot)
         self.assertFalse(snapshot.already_setup)
 
     async def test_start(self):
-        service = SnapshotService(self.snapshot, interval=0.1, loop=None, config=self.config)
+        service = SnapshotService(self.snapshot, interval=0.1, loop=None)
         service.snapshot.setup = MagicMock(side_effect=service.snapshot.setup)
         await service.start()
         self.assertTrue(1, service.snapshot.setup.call_count)
         await service.stop()
 
     async def test_callback(self):
-        service = SnapshotService(self.snapshot, interval=0.1, config=self.config)
+        service = SnapshotService(self.snapshot, interval=0.1)
         await service.snapshot.setup()
         mock = MagicMock(side_effect=service.snapshot.synchronize)
         service.snapshot.synchronize = mock
