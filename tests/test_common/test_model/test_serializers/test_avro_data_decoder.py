@@ -23,15 +23,10 @@ from minos.common import (
     DataDecoderRequiredValueException,
     DataDecoderTypeException,
     DataTransferObject,
-    EntitySet,
     Field,
     MissingSentinel,
-    ModelRef,
     ModelType,
     current_datetime,
-)
-from tests.aggregate_classes import (
-    Owner,
 )
 from tests.model_classes import (
     Analytics,
@@ -39,11 +34,7 @@ from tests.model_classes import (
     GenericUser,
     User,
 )
-from tests.subaggregate_classes import (
-    CartItem,
-)
 from tests.utils import (
-    FakeEntity,
     MinosTestCase,
 )
 
@@ -230,18 +221,6 @@ class TestAvroDataDecoder(MinosTestCase):
         observed = decoder.build(value)
         self.assertEqual(value, observed)
 
-    async def test_list_model_ref(self):
-        decoder = AvroDataDecoder(list[ModelRef[Owner]])
-        value = [uuid4(), Owner("Foo", "Bar", 56)]
-        observed = decoder.build(value)
-        self.assertEqual(value, observed)
-
-    async def test_list_model_subaggregate_ref(self):
-        decoder = AvroDataDecoder(list[ModelRef[CartItem]])
-        value = [uuid4(), CartItem(uuid4(), 3, "Foo", 56)]
-        observed = decoder.build(value)
-        self.assertEqual(value, observed)
-
     def test_list_empty(self):
         decoder = AvroDataDecoder(list[int])
         observed = decoder.build([])
@@ -326,27 +305,10 @@ class TestAvroDataDecoder(MinosTestCase):
         observed = decoder.build({"id": 1234})
         self.assertEqual(value, observed)
 
-    async def test_model_ref_value(self):
-        decoder = AvroDataDecoder(ModelRef[Owner])
-        value = Owner("Foo", "Bar")
-        observed = decoder.build(value)
-        self.assertEqual(value, observed)
-
-    def test_model_ref_reference(self):
-        decoder = AvroDataDecoder(ModelRef[Owner])
-        value = uuid4()
-        observed = decoder.build(value)
-        self.assertEqual(value, observed)
-
     def test_model_raises(self):
         decoder = AvroDataDecoder(User)
         with self.assertRaises(DataDecoderTypeException):
             decoder.build("foo")
-
-    def test_model_ref_raises(self):
-        decoder = AvroDataDecoder(ModelRef[User])
-        with self.assertRaises(DataDecoderTypeException):
-            decoder.build(User(1234))
 
     def test_model_optional(self):
         decoder = AvroDataDecoder(Optional[User])
@@ -392,14 +354,6 @@ class TestAvroDataDecoder(MinosTestCase):
         with self.assertRaises(DataDecoderTypeException):
             decoder.build(value)
 
-    def test_entity_set(self):
-        raw = {FakeEntity("John"), FakeEntity("Michael")}
-        entities = EntitySet(raw)
-        decoder = AvroDataDecoder(EntitySet[FakeEntity])
-        observed = decoder.build(entities)
-
-        self.assertEqual(entities, observed)
-
     def test_container_inheritance(self):
         Container = ModelType.build("Container", {"data": list[Base]})
         raw = Container([User(1, "John"), Analytics(2, dict()), User(3, "John"), Analytics(4, dict())])
@@ -407,20 +361,6 @@ class TestAvroDataDecoder(MinosTestCase):
         observed = decoder.build(raw)
 
         self.assertEqual(raw, observed)
-
-    def test_entity_set_empty(self):
-        entities = EntitySet()
-        decoder = AvroDataDecoder(EntitySet[FakeEntity])
-        observed = decoder.build(entities)
-
-        self.assertEqual(entities, observed)
-
-    def test_entity_set_raises(self):
-        raw = {FakeEntity("John"), FakeEntity("Michael")}
-        entities = EntitySet(raw)
-        decoder = AvroDataDecoder(EntitySet[Base])
-        with self.assertRaises(DataDecoderTypeException):
-            decoder.build(entities)
 
 
 if __name__ == "__main__":

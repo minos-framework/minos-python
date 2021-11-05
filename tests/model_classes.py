@@ -161,3 +161,19 @@ class Auth(DeclarativeModel):
     """For testing purposes."""
 
     user: GenericUser[str]
+
+
+class Owner(DeclarativeModel):
+    """For testing purposes."""
+
+    name: str
+    surname: str
+    age: Optional[int]
+
+
+class Car(DeclarativeModel):
+    """For testing purposes."""
+
+    doors: int
+    color: str
+    owner: Optional[list[Owner]]

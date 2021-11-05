@@ -16,9 +16,6 @@ from uuid import (
 from .abc import (
     DeclarativeModel,
 )
-from .aggregate import (
-    AggregateDiff,
-)
 
 
 class Command(DeclarativeModel):
@@ -52,4 +49,4 @@ class Event(DeclarativeModel):
     """Base Event class."""
 
     topic: str
-    data: AggregateDiff
+    data: Any

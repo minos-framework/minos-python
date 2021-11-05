@@ -24,22 +24,12 @@ from dependency_injector import (
 )
 
 from minos.common import (
-    Aggregate,
     CommandReply,
-    Entity,
-    EventEntry,
-    EventRepository,
-    InMemoryEventRepository,
-    InMemorySnapshot,
-    InMemoryTransactionRepository,
     Lock,
     MinosBroker,
     MinosHandler,
     MinosPool,
     MinosSagaManager,
-    MinosSnapshot,
-    TransactionEntry,
-    TransactionRepository,
     current_datetime,
 )
 
@@ -52,36 +42,19 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
         self.event_broker = FakeBroker()
         self.lock_pool = FakeLockPool()
-        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
-        self.event_repository = InMemoryEventRepository(
-            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
-        )
-        self.snapshot = InMemorySnapshot(
-            event_repository=self.event_repository, transaction_repository=self.transaction_repository
-        )
-
         self.container = containers.DynamicContainer()
         self.container.event_broker = providers.Object(self.event_broker)
-        self.container.transaction_repository = providers.Object(self.transaction_repository)
         self.container.lock_pool = providers.Object(self.lock_pool)
-        self.container.event_repository = providers.Object(self.event_repository)
-        self.container.snapshot = providers.Object(self.snapshot)
         self.container.wire(modules=[sys.modules[__name__]])
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
 
         await self.event_broker.setup()
-        await self.transaction_repository.setup()
         await self.lock_pool.setup()
-        await self.event_repository.setup()
-        await self.snapshot.setup()
 
     async def asyncTearDown(self):
-        await self.snapshot.destroy()
-        await self.event_repository.destroy()
         await self.lock_pool.destroy()
-        await self.transaction_repository.destroy()
         await self.event_broker.destroy()
 
         await super().asyncTearDown()
@@ -89,38 +62,6 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     def tearDown(self) -> None:
         self.container.unwire()
         super().tearDown()
-
-
-class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
-    def assert_equal_repository_entries(self: TestCase, expected: list[EventEntry], observed: list[EventEntry]) -> None:
-        """For testing purposes."""
-
-        self.assertEqual(len(expected), len(observed))
-
-        for e, o in zip(expected, observed):
-            self.assertEqual(type(e), type(o))
-            self.assertEqual(e.aggregate_uuid, o.aggregate_uuid)
-            self.assertEqual(e.aggregate_name, o.aggregate_name)
-            self.assertEqual(e.version, o.version)
-            self.assertEqual(e.data, o.data)
-            self.assertEqual(e.id, o.id)
-            self.assertEqual(e.action, o.action)
-            self.assertAlmostEqual(e.created_at or current_datetime(), o.created_at, delta=timedelta(seconds=5))
-
-
-class FakeEventRepository(EventRepository):
-    """For testing purposes."""
-
-    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
-        """For testing purposes."""
-
-    def _select(self, *args, **kwargs) -> AsyncIterator[EventEntry]:
-        """For testing purposes."""
-
-    @property
-    async def _offset(self) -> int:
-        """For testing purposes."""
-        return 0
 
 
 class FakeBroker(MinosBroker):
@@ -191,35 +132,6 @@ class FakeLoop:
         """For testing purposes."""
 
     def run_until_complete(self, *args, **kwargs):
-        """For testing purposes."""
-
-
-class FakeSnapshot(MinosSnapshot):
-    """For testing purposes."""
-
-    async def _get(self, *args, **kwargs) -> Aggregate:
-        """For testing purposes."""
-
-    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
-        """For testing purposes."""
-
-    async def _synchronize(self, **kwargs) -> None:
-        """For testing purposes."""
-
-
-class FakeEntity(Entity):
-    """For testing purposes."""
-
-    name: str
-
-
-class FakeTransactionRepository(TransactionRepository):
-    """For testing purposes."""
-
-    async def _submit(self, transaction: TransactionEntry) -> None:
-        """For testing purposes."""
-
-    def _select(self, **kwargs) -> AsyncIterator[TransactionEntry]:
         """For testing purposes."""
 
 
