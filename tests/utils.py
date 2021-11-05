@@ -17,12 +17,14 @@ from cached_property import (
     cached_property,
 )
 
-from minos.common import (
+from minos.aggregate import (
     Aggregate,
     AggregateRef,
+    ModelRef,
+)
+from minos.common import (
     CommandReply,
     MinosSagaManager,
-    ModelRef,
 )
 from minos.cqrs import (
     CommandService,

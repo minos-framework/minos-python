@@ -32,9 +32,10 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.9"
 dependency-injector = "^4.34.0"
-minos-microservice-common = "^0.1.13"
+minos-microservice-common = { git = "https://github.com/clariteia/minos_microservice_common.git", branch = "issue-635-move-to-minos-aggregate" }
+minos-microservice-aggregate = { git = "https://github.com/clariteia/minos_microservice_aggregate.git", branch = "issue-1-migrate-from-minos-common" }
 minos-microservice-saga = "^0.1.1"
-minos-microservice-networks = ">=0.0.16<0.1"
+minos-microservice-networks = { git = "https://github.com/clariteia/minos_microservice_networks.git", branch = "issue-424-support-minos-aggregate" }
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"
