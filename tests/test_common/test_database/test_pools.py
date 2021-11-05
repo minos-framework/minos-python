@@ -4,6 +4,7 @@ from unittest.mock import (
     patch,
 )
 
+import aiopg
 from aiopg import (
     Connection,
 )
@@ -47,11 +48,27 @@ class TestPostgreSqlPool(PostgresAsyncTestCase):
         self.assertEqual(self.config.repository.port, self.pool.port)
 
     async def test_acquire(self):
-        async with self.pool.acquire() as connection:
-            self.assertIsInstance(connection, Connection)
+        async with self.pool.acquire() as c1:
+            self.assertIsInstance(c1, Connection)
+        async with self.pool.acquire() as c2:
+            self.assertEqual(c1, c2)
 
     async def test_acquire_with_error(self):
         with patch("aiopg.Connection.isolation_level", new_callable=PropertyMock, side_effect=(OperationalError, None)):
+            async with self.pool.acquire() as connection:
+                self.assertIsInstance(connection, Connection)
+
+    async def test_acquire_with_connection_error(self):
+        executed = [False]
+        original = aiopg.connect
+
+        def _side_effect(*args, **kwargs):
+            if not executed[0]:
+                executed[0] = True
+                raise OperationalError
+            return original(*args, **kwargs)
+
+        with patch("aiopg.connect", side_effect=_side_effect):
             async with self.pool.acquire() as connection:
                 self.assertIsInstance(connection, Connection)
 

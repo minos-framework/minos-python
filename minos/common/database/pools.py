@@ -1,6 +1,12 @@
 import logging
+from asyncio import (
+    sleep,
+)
 from collections.abc import (
     Hashable,
+)
+from typing import (
+    Optional,
 )
 
 import aiopg
@@ -39,10 +45,16 @@ class PostgreSqlPool(MinosPool[ContextManager]):
     def _from_config(cls, *args, config, **kwargs):
         return cls(*args, **config.repository._asdict(), **kwargs)
 
-    async def _create_instance(self) -> Connection:
-        connection = await aiopg.connect(
-            host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
-        )
+    async def _create_instance(self) -> Optional[Connection]:
+        try:
+            connection = await aiopg.connect(
+                host=self.host, port=self.port, dbname=self.database, user=self.user, password=self.password
+            )
+        except OperationalError as exc:
+            logger.warning(f"There was an {exc!r} while trying to get a database connection.")
+            await sleep(1)
+            return None
+
         logger.info(f"Created {self.database!r} database connection identified by {id(connection)}!")
         return connection
 
@@ -51,7 +63,10 @@ class PostgreSqlPool(MinosPool[ContextManager]):
             await instance.close()
         logger.info(f"Destroyed {self.database!r} database connection identified by {id(instance)}!")
 
-    async def _check_instance(self, instance: Connection) -> bool:
+    async def _check_instance(self, instance: Optional[Connection]) -> bool:
+        if instance is None:
+            return False
+
         try:
             # This operation connects to the database and raises an exception if something goes wrong.
             instance.isolation_level
