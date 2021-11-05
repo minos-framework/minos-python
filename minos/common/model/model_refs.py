@@ -125,7 +125,7 @@ class ModelRefExtractor:
         self.value = value
         self.type_ = type_
 
-    def build(self) -> dict[str, set[ModelRef]]:
+    def build(self) -> dict[str, set[UUID]]:
         """Run the model reference extractor.
 
         :return: A dictionary in which the keys are the class names and the values are the identifiers.
@@ -134,7 +134,7 @@ class ModelRefExtractor:
         self._build(self.value, self.type_, ans)
         return ans
 
-    def _build(self, value: Any, type_: type, ans: dict[str, set[ModelRef]]) -> None:
+    def _build(self, value: Any, type_: type, ans: dict[str, set[UUID]]) -> None:
         if get_origin(type_) is Union:
             type_ = next((t for t in get_args(type_) if get_origin(t) is ModelRef), type_)
 
@@ -148,8 +148,8 @@ class ModelRefExtractor:
         elif isinstance(value, UUID) and get_origin(type_) is ModelRef:
             cls = get_args(type_)[0]
             name = cls.__name__
-            if not isinstance(value, ModelRef):
-                value = type_(value)
+            if isinstance(value, ModelRef):
+                value = value.uuid
             ans[name].add(value)
 
         elif is_model_type(value):
@@ -157,7 +157,7 @@ class ModelRefExtractor:
             for field in value.fields.values():
                 self._build(field.value, field.type, ans)
 
-    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[ModelRef]]) -> None:
+    def _build_iterable(self, value: Iterable, value_: type, ans: dict[str, set[UUID]]) -> None:
         for sub_value in value:
             self._build(sub_value, value_, ans)
 
