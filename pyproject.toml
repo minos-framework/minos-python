@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { path = "../minos_microservice_common", develop = true }
+minos-microservice-common = { git = "https://github.com/clariteia/minos_microservice_common.git", branch = "issue-635-move-to-minos-aggregate" }
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"
