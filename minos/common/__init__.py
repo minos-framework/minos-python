@@ -121,10 +121,6 @@ from .protocol import (
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
 )
-from .queries import (
-    Condition,
-    Ordering,
-)
 from .saga import (
     MinosSagaManager,
 )
