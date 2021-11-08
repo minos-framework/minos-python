@@ -7,7 +7,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.aggregate import (
-    MinosSnapshot,
+    SnapshotRepository,
 )
 
 
@@ -15,7 +15,7 @@ class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
     @inject
-    def __init__(self, snapshot: MinosSnapshot = Provide["snapshot"], interval: float = 60, **kwargs):
+    def __init__(self, snapshot: SnapshotRepository = Provide["snapshot"], interval: float = 60, **kwargs):
         super().__init__(interval=interval, **kwargs)
 
         self.snapshot = snapshot

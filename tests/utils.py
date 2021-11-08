@@ -28,7 +28,7 @@ from minos.aggregate import (
     FieldDiff,
     FieldDiffContainer,
     InMemoryEventRepository,
-    InMemorySnapshot,
+    InMemorySnapshotRepository,
     InMemoryTransactionRepository,
 )
 from minos.common import (
@@ -66,7 +66,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.event_repository = InMemoryEventRepository(
             event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
         )
-        self.snapshot = InMemorySnapshot(
+        self.snapshot = InMemorySnapshotRepository(
             event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
 

@@ -351,7 +351,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "identify"
-version = "2.3.3"
+version = "2.3.4"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -472,17 +472,17 @@ python-versions = "^3.9"
 develop = false
 
 [package.dependencies]
-minos-microservice-common = {git = "https://github.com/clariteia/minos_microservice_common.git", branch = "issue-635-move-to-minos-aggregate"}
+minos-microservice-common = {git = "https://github.com/clariteia/minos_microservice_common.git", branch = "0.2.0"}
 
 [package.source]
 type = "git"
 url = "https://github.com/clariteia/minos_microservice_aggregate.git"
 reference = "issue-1-migrate-from-minos-common"
-resolved_reference = "da7908672d19227bf3297d51a64bf0cd62bd8a4b"
+resolved_reference = "6f06892fe0ee84dd7cf12872f3c40f5296b9e0eb"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.1.17"
+version = "0.2.0"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
@@ -502,8 +502,8 @@ PyYAML = "^5.4.1"
 [package.source]
 type = "git"
 url = "https://github.com/clariteia/minos_microservice_common.git"
-reference = "issue-635-move-to-minos-aggregate"
-resolved_reference = "ed3a4fe8b5ecde82b2db7addf0c4e2061775f06d"
+reference = "0.2.0"
+resolved_reference = "f4eb38f43bfcb02e04aa6540868f0bab57a9e9c9"
 
 [[package]]
 name = "mistune"
@@ -630,7 +630,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pycparser"
-version = "2.20"
+version = "2.21"
 description = "C parser in Python"
 category = "main"
 optional = false
@@ -954,7 +954,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "4879dfbe5dafcac4a007be2a3c8aa6763005585de9934fef3542051ad0803dec"
+content-hash = "8cbda6de152235900da1533469a022e040c4de9ae5070ba3aad2ca80c27899b1"
 
 [metadata.files]
 aiohttp = [
@@ -1386,8 +1386,8 @@ frozenlist = [
     {file = "frozenlist-1.2.0.tar.gz", hash = "sha256:68201be60ac56aff972dc18085800b6ee07973c49103a8aba669dee3d71079de"},
 ]
 identify = [
-    {file = "identify-2.3.3-py2.py3-none-any.whl", hash = "sha256:ffab539d9121b386ffdea84628ff3eefda15f520f392ce11b393b0a909632cdf"},
-    {file = "identify-2.3.3.tar.gz", hash = "sha256:b9ffbeb7ed87e96ce017c66b80ca04fda3adbceb5c74e54fc7d99281d27d0859"},
+    {file = "identify-2.3.4-py2.py3-none-any.whl", hash = "sha256:4de55a93e0ba72bf917c840b3794eb1055a67272a1732351c557c88ec42011b1"},
+    {file = "identify-2.3.4.tar.gz", hash = "sha256:595283a1c3a078ac5774ad4dc4d1bdd0c1602f60bcf11ae673b64cb2b1945762"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
@@ -1696,8 +1696,8 @@ pycodestyle = [
     {file = "pycodestyle-2.7.0.tar.gz", hash = "sha256:c389c1d06bf7904078ca03399a4816f974a1d590090fecea0c63ec26ebaf1cef"},
 ]
 pycparser = [
-    {file = "pycparser-2.20-py2.py3-none-any.whl", hash = "sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705"},
-    {file = "pycparser-2.20.tar.gz", hash = "sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0"},
+    {file = "pycparser-2.21-py2.py3-none-any.whl", hash = "sha256:8ee45429555515e1f6b185e78100aea234072576aa43ab53aefcae078162fca9"},
+    {file = "pycparser-2.21.tar.gz", hash = "sha256:e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206"},
 ]
 pyflakes = [
     {file = "pyflakes-2.3.1-py2.py3-none-any.whl", hash = "sha256:7893783d01b8a89811dd72d7dfd4d84ff098e5eed95cfa8905b22bbffe52efc3"},

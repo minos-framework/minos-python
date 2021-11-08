@@ -8,7 +8,7 @@ from aiomisc.service.periodic import (
 )
 
 from minos.aggregate import (
-    InMemorySnapshot,
+    InMemorySnapshotRepository,
 )
 from minos.networks import (
     SnapshotService,
@@ -21,14 +21,14 @@ from tests.utils import (
 class TestSnapshotService(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.snapshot = InMemorySnapshot()
+        self.snapshot = InMemorySnapshotRepository()
 
     def test_is_instance(self):
         service = SnapshotService(self.snapshot, interval=0.1)
         self.assertIsInstance(service, PeriodicService)
 
     def test_dispatcher_config(self):
-        snapshot = InMemorySnapshot()
+        snapshot = InMemorySnapshotRepository()
         service = SnapshotService(snapshot, interval=0.1)
         self.assertEqual(snapshot, service.snapshot)
         self.assertFalse(snapshot.already_setup)
