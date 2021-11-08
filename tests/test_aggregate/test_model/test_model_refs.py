@@ -17,6 +17,7 @@ from minos.aggregate import (
     ModelRefInjector,
 )
 from minos.common import (
+    DeclarativeModel,
     ModelType,
 )
 from tests.model_classes import (
@@ -27,7 +28,11 @@ from tests.model_classes import (
 class TestModelRef(unittest.IsolatedAsyncioTestCase):
     def test_subclass(self):
         # noinspection PyTypeHints
-        self.assertTrue(issubclass(ModelRef, Generic))
+        self.assertTrue(issubclass(ModelRef, (DeclarativeModel, UUID, Generic)))
+
+    def test_raises(self):
+        with self.assertRaises(ValueError):
+            ModelRef(56)
 
     def test_uuid(self):
         uuid = uuid4()
