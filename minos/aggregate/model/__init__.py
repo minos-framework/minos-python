@@ -1,30 +1,30 @@
 from .actions import (
     Action,
 )
+from .aggregates import (
+    Aggregate,
+    AggregateRef,
+)
 from .collections import (
     IncrementalSet,
     IncrementalSetDiff,
     IncrementalSetDiffEntry,
 )
-from .aggregates import (
-    Aggregate,
+from .diffs import (
     AggregateDiff,
-    AggregateRef,
-)
-from .diff import (
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
+)
+from .entities import (
+    Entity,
+    EntitySet,
 )
 from .refs import (
     FieldRef,
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,
-)
-from .entities import (
-    Entity,
-    EntitySet,
 )
 from .value_objects import (
     ValueObject,

@@ -25,13 +25,13 @@ from minos.common import (
 from ..actions import (
     Action,
 )
-from ..diff import (
+from .fields import (
     FieldDiff,
     FieldDiffContainer,
 )
 
 if TYPE_CHECKING:
-    from .model import (
+    from ..aggregates import (
         Aggregate,
     )
 

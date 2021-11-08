@@ -1,6 +1,3 @@
-from .diff import (
-    AggregateDiff,
-)
 from .model import (
     Aggregate,
 )

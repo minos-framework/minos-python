@@ -41,14 +41,12 @@ from ...queries import (
 from ...snapshots import (
     SnapshotRepository,
 )
-from ..diff import (
+from ..diffs import (
+    AggregateDiff,
     IncrementalFieldDiff,
 )
 from ..entities import (
     Entity,
-)
-from .diff import (
-    AggregateDiff,
 )
 
 logger = logging.getLogger(__name__)
