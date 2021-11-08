@@ -464,21 +464,14 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.0.1"
+version = "0.1.0"
 description = "Python Package for Minos Microservices containing all the Aggregate stuff"
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-minos-microservice-common = {git = "https://github.com/clariteia/minos_microservice_common.git", branch = "0.2.0"}
-
-[package.source]
-type = "git"
-url = "https://github.com/clariteia/minos_microservice_aggregate.git"
-reference = "issue-1-migrate-from-minos-common"
-resolved_reference = "6f06892fe0ee84dd7cf12872f3c40f5296b9e0eb"
+minos-microservice-common = ">=0.2.0,<0.3.0"
 
 [[package]]
 name = "minos-microservice-common"
@@ -486,68 +479,47 @@ version = "0.2.0"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-aiomisc = "^14.0.3"
-aiopg = "^1.2.1"
-cached-property = "^1.5.2"
-dependency-injector = "^4.32.2"
-fastavro = "^1.4.0"
-lmdb = "^1.2.1"
-orjson = "^3.5.2"
-PyYAML = "^5.4.1"
-
-[package.source]
-type = "git"
-url = "https://github.com/clariteia/minos_microservice_common.git"
-reference = "0.2.0"
-resolved_reference = "f4eb38f43bfcb02e04aa6540868f0bab57a9e9c9"
+aiomisc = ">=14.0.3,<15.0.0"
+aiopg = ">=1.2.1,<2.0.0"
+cached-property = ">=1.5.2,<2.0.0"
+dependency-injector = ">=4.32.2,<5.0.0"
+fastavro = ">=1.4.0,<2.0.0"
+lmdb = ">=1.2.1,<2.0.0"
+orjson = ">=3.5.2,<4.0.0"
+PyYAML = ">=5.4.1,<6.0.0"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.0.19"
+version = "0.1.0"
 description = "Python Package with the common network classes and utilities used in Minos Microservice."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-aiohttp = "^3.7.4"
-aiokafka = "^0.7.0"
-aiomisc = "^14.0.3"
-aiopg = "^1.2.1"
-crontab = "^0.23.0"
-dependency-injector = "^4.32.2"
-minos-microservice-aggregate = {git = "https://github.com/clariteia/minos_microservice_aggregate.git", branch = "issue-1-migrate-from-minos-common"}
-minos-microservice-common = {git = "https://github.com/clariteia/minos_microservice_common.git", branch = "0.2.0"}
-
-[package.source]
-type = "git"
-url = "https://github.com/clariteia/minos_microservice_networks.git"
-reference = "issue-424-support-minos-aggregate"
-resolved_reference = "3d0b7113549d32ca9079a39fa09e4af77ad17a50"
+aiohttp = ">=3.7.4,<4.0.0"
+aiokafka = ">=0.7.0,<0.8.0"
+aiomisc = ">=14.0.3,<15.0.0"
+aiopg = ">=1.2.1,<2.0.0"
+crontab = ">=0.23.0,<0.24.0"
+dependency-injector = ">=4.32.2,<5.0.0"
+minos-microservice-aggregate = ">=0.1.0,<0.2.0"
+minos-microservice-common = ">=0.2.0,<0.3.0"
 
 [[package]]
 name = "minos-microservice-saga"
-version = "0.1.1"
+version = "0.2.0"
 description = "Saga Library for MinOS project."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-dependency-injector = "^4.32.2"
-minos-microservice-common = {git = "https://github.com/clariteia/minos_microservice_common.git", branch = "0.2.0"}
-
-[package.source]
-type = "git"
-url = "https://github.com/clariteia/minos_microservice_saga.git"
-reference = "issue-212-be-compatible-minos-aggregate"
-resolved_reference = "e298e5103e1e166201db974933d12109c809b642"
+dependency-injector = ">=4.32.2,<5.0.0"
+minos-microservice-common = ">=0.2.0,<0.3.0"
 
 [[package]]
 name = "mistune"
@@ -998,7 +970,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "78fa51b4e6cf1f35ae211e6c365a42d14e9e8e6f15c28aeb3b9cc3b9ef55e965"
+content-hash = "e931d41721ffc0b5996a3c4cc40d7983cffadf20e50558c2b166049adacf4b38"
 
 [metadata.files]
 aiohttp = [
@@ -1560,10 +1532,22 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-microservice-aggregate = []
-minos-microservice-common = []
-minos-microservice-networks = []
-minos-microservice-saga = []
+minos-microservice-aggregate = [
+    {file = "minos_microservice_aggregate-0.1.0-py3-none-any.whl", hash = "sha256:1141288d0c2f46fae88330e8140c9fc2e5e0a9bac5fa23f1111c2e0210a01c15"},
+    {file = "minos_microservice_aggregate-0.1.0.tar.gz", hash = "sha256:51c6c76a5fa84a08a91aedfc7e207a957814787bc34dc9f64673ea1d505edf16"},
+]
+minos-microservice-common = [
+    {file = "minos_microservice_common-0.2.0-py3-none-any.whl", hash = "sha256:a5f57f3af35ce40c36ed15c0d390af42e109db8bb204dff6115f517980c3e3bb"},
+    {file = "minos_microservice_common-0.2.0.tar.gz", hash = "sha256:a33fd6ba6146da1361f562e5a69fc8b9f68148705e0ebe704c03474aa58f116e"},
+]
+minos-microservice-networks = [
+    {file = "minos_microservice_networks-0.1.0-py3-none-any.whl", hash = "sha256:a20cbcde74cbc49cabfe8ca0d4a06b0f834dbe579504b116a69259687892d269"},
+    {file = "minos_microservice_networks-0.1.0.tar.gz", hash = "sha256:bb0a5e964d1071504c3462ba1417c3303566b0c374fbc366ac0f110bb28dea7c"},
+]
+minos-microservice-saga = [
+    {file = "minos_microservice_saga-0.2.0-py3-none-any.whl", hash = "sha256:b5fd3a7acc8052ba4aea4b6273a3386a60c5defe262d00dcb7fa1c3991cf531b"},
+    {file = "minos_microservice_saga-0.2.0.tar.gz", hash = "sha256:c26c4e6c4edbc8478a666dcf6f33e0bff7e19fde9746eb7f0b5f839d3224c403"},
+]
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
     {file = "mistune-0.8.4.tar.gz", hash = "sha256:59a3429db53c50b5c6bcc8a07f8848cb00d7dc8bdb431a4ab41920d201d4756e"},
