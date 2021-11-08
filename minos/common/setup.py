@@ -23,7 +23,7 @@ from .configuration import (
     MinosConfig,
 )
 from .exceptions import (
-    MinosConfigNotProvidedException,
+    NotProvidedException,
 )
 
 logger = logging.getLogger(__name__)
@@ -71,7 +71,7 @@ class MinosSetup:
     @inject
     def _get_config(config: MinosConfig = Provide["config"]) -> MinosConfig:
         if isinstance(config, Provide):
-            raise MinosConfigNotProvidedException("The config object must be provided.")
+            raise NotProvidedException("The config object must be provided.")
         return config
 
     @classmethod

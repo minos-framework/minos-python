@@ -4,24 +4,14 @@ from minos.common import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
     MinosBrokerException,
-    MinosBrokerNotProvidedException,
     MinosConfigException,
-    MinosConfigNotProvidedException,
     MinosException,
     MinosHandlerException,
-    MinosHandlerNotProvidedException,
     MinosMalformedAttributeException,
     MinosModelAttributeException,
     MinosModelException,
     MinosParseAttributeException,
-    MinosRepositoryException,
-    MinosRepositoryNotProvidedException,
     MinosReqAttributeException,
-    MinosSagaManagerException,
-    MinosSagaManagerNotProvidedException,
-    MinosSnapshotAggregateNotFoundException,
-    MinosSnapshotDeletedAggregateException,
-    MinosSnapshotException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
 )
@@ -42,35 +32,11 @@ class TestExceptions(unittest.TestCase):
     def test_config(self):
         self.assertTrue(issubclass(MinosConfigException, MinosException))
 
-    def test_config_not_set(self):
-        self.assertTrue(issubclass(MinosConfigNotProvidedException, MinosException))
-
     def test_broker(self):
         self.assertTrue(issubclass(MinosBrokerException, MinosException))
 
-    def test_broker_not_set(self):
-        self.assertTrue(issubclass(MinosBrokerNotProvidedException, MinosBrokerException))
-
     def test_handler(self):
         self.assertTrue(issubclass(MinosHandlerException, MinosException))
-
-    def test_handler_not_set(self):
-        self.assertTrue(issubclass(MinosHandlerNotProvidedException, MinosHandlerException))
-
-    def test_repository(self):
-        self.assertTrue(issubclass(MinosRepositoryException, MinosException))
-
-    def test_repository_not_set(self):
-        self.assertTrue(issubclass(MinosRepositoryNotProvidedException, MinosRepositoryException))
-
-    def test_snapshot(self):
-        self.assertTrue(issubclass(MinosSnapshotException, MinosException))
-
-    def test_snapshot_aggregate_not_found(self):
-        self.assertTrue(issubclass(MinosSnapshotAggregateNotFoundException, MinosSnapshotException))
-
-    def test_snapshot_deleted_aggregate(self):
-        self.assertTrue(issubclass(MinosSnapshotDeletedAggregateException, MinosSnapshotException))
 
     def test_model(self):
         self.assertTrue(issubclass(MinosModelException, MinosException))
@@ -119,12 +85,6 @@ class TestExceptions(unittest.TestCase):
         exception = MinosAttributeValidationException("foo", 34)
         message = "MinosAttributeValidationException(message=\"34 value does not pass the 'foo' field validation.\")"
         self.assertEqual(message, repr(exception))
-
-    def test_saga_manager(self):
-        self.assertTrue(issubclass(MinosSagaManagerException, MinosException))
-
-    def test_saga_manager_not_provided(self):
-        self.assertTrue(issubclass(MinosSagaManagerNotProvidedException, MinosSagaManagerException))
 
 
 if __name__ == "__main__":
