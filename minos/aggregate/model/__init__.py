@@ -6,7 +6,7 @@ from .collections import (
     IncrementalSetDiff,
     IncrementalSetDiffEntry,
 )
-from .aggregate import (
+from .aggregates import (
     Aggregate,
     AggregateDiff,
     AggregateRef,
