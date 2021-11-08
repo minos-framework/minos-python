@@ -30,24 +30,24 @@ class TestSnapshotService(MinosTestCase):
     def test_dispatcher_config(self):
         snapshot = InMemorySnapshotRepository()
         service = SnapshotService(snapshot, interval=0.1)
-        self.assertEqual(snapshot, service.snapshot)
+        self.assertEqual(snapshot, service.snapshot_repository)
         self.assertFalse(snapshot.already_setup)
 
     async def test_start(self):
         service = SnapshotService(self.snapshot, interval=0.1, loop=None)
-        service.snapshot.setup = MagicMock(side_effect=service.snapshot.setup)
+        service.snapshot_repository.setup = MagicMock(side_effect=service.snapshot_repository.setup)
         await service.start()
-        self.assertTrue(1, service.snapshot.setup.call_count)
+        self.assertTrue(1, service.snapshot_repository.setup.call_count)
         await service.stop()
 
     async def test_callback(self):
         service = SnapshotService(self.snapshot, interval=0.1)
-        await service.snapshot.setup()
-        mock = MagicMock(side_effect=service.snapshot.synchronize)
-        service.snapshot.synchronize = mock
+        await service.snapshot_repository.setup()
+        mock = MagicMock(side_effect=service.snapshot_repository.synchronize)
+        service.snapshot_repository.synchronize = mock
         await service.callback()
         self.assertEqual(1, mock.call_count)
-        await service.snapshot.destroy()
+        await service.snapshot_repository.destroy()
 
 
 if __name__ == "__main__":
