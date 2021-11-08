@@ -11,7 +11,6 @@ from typing import (
 )
 from unittest.mock import (
     MagicMock,
-    patch,
 )
 from uuid import (
     UUID,
@@ -19,11 +18,7 @@ from uuid import (
 
 from minos.common import (
     AvroSchemaEncoder,
-    ModelRef,
     ModelType,
-)
-from tests.aggregate_classes import (
-    Owner,
 )
 from tests.model_classes import (
     User,
@@ -101,25 +96,6 @@ class TestAvroSchemaEncoder(unittest.TestCase):
     def test_dict(self):
         expected = {"type": "map", "values": "int"}
         observed = AvroSchemaEncoder(dict[str, int]).build()
-        self.assertEqual(expected, observed)
-
-    def test_model_ref(self):
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
-            expected = [
-                {
-                    "fields": [
-                        {"name": "data", "type": [Owner.avro_schema[0], {"logicalType": "uuid", "type": "string"}]}
-                    ],
-                    "name": "ModelRef",
-                    "namespace": "minos.common.model.model_refs.hello",
-                    "type": "record",
-                },
-                "null",
-            ]
-
-            encoder = AvroSchemaEncoder(Optional[ModelRef[Owner]])
-            observed = encoder.build()
-
         self.assertEqual(expected, observed)
 
     def test_list_model(self):

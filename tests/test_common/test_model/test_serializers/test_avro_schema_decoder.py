@@ -15,9 +15,7 @@ from uuid import (
 
 from minos.common import (
     AvroSchemaDecoder,
-    AvroSchemaEncoder,
     MinosMalformedAttributeException,
-    ModelRef,
     ModelType,
 )
 
@@ -145,27 +143,6 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         expected = list[Union[int, str]]
         observed = AvroSchemaDecoder({"name": "example", "type": "array", "items": ["int", "string"]}).build()
         self.assertEqual(expected, observed)
-
-    def test_model_ref(self):
-        # noinspection PyPep8Naming
-        User = ModelType.build("User", {"uuid": UUID, "version": int, "username": str})
-        schema = {
-            "type": [AvroSchemaEncoder(ModelRef[User]).build()],
-        }
-
-        expected = ModelRef[ModelType.build("User", {"uuid": UUID, "version": int, "username": str})]
-        observed = AvroSchemaDecoder(schema).build()
-        self.assertEqual(expected, observed)
-
-    def test_union_model_ref(self):
-        # noinspection PyPep8Naming
-        User = ModelType.build("User", {"uuid": UUID, "version": int, "username": str})
-        schema = {
-            "type": [AvroSchemaEncoder(ModelRef[User]).build(), "int"],
-        }
-        expected = Union[ModelRef[User], int]
-        observed = AvroSchemaDecoder(schema).build()
-        self.assertTrue(expected, observed)
 
     def test_raises(self):
         with self.assertRaises(MinosMalformedAttributeException):

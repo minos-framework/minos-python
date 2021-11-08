@@ -3,20 +3,13 @@ from typing import (
     Any,
     Union,
 )
-from uuid import (
-    uuid4,
-)
 
 from minos.common import (
-    ModelRef,
     ModelType,
     TypeHintBuilder,
 )
 from tests.model_classes import (
     Foo,
-)
-from tests.subaggregate_classes import (
-    CartItem,
 )
 
 
@@ -46,11 +39,6 @@ class TestTypeHintBuilder(unittest.TestCase):
         one = ModelType.build("tests.model_classes.Foo", {"text": str})
         v = [Foo("hello"), one(text="bye")]
         self.assertEqual(list[one], TypeHintBuilder(v).build())
-
-    def test_model_ref(self):
-        expected = list[ModelRef[CartItem]]
-        observed = TypeHintBuilder([uuid4(), uuid4()], list[ModelRef[CartItem]]).build()
-        self.assertEqual(expected, observed)
 
     def test_union_any(self):
         expected = list[int]
