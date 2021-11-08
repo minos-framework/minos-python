@@ -4,7 +4,8 @@ from minos.aggregate import (
     EntitySet,
     MinosSnapshotDeletedAggregateException,
     PostgreSqlEventRepository,
-    PostgreSqlSnapshot,
+    PostgreSqlSnapshotRepository,
+    PostgreSqlTransactionRepository,
     ValueObjectSet,
 )
 from minos.common.testing import (
@@ -28,19 +29,23 @@ class TestAggregateWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
     def setUp(self):
         super().setUp()
 
+        self.transaction_repository = PostgreSqlTransactionRepository.from_config(
+            self.config, event_broker=self.event_broker, lock_pool=self.lock_pool,
+        )
+
         self.event_repository = PostgreSqlEventRepository.from_config(
             self.config,
             event_broker=self.event_broker,
             transaction_repository=self.transaction_repository,
             lock_pool=self.lock_pool,
         )
-        self.snapshot = PostgreSqlSnapshot.from_config(
+        self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(
             self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
 
         self.kwargs = {
             "_repository": self.event_repository,
-            "_snapshot": self.snapshot,
+            "_snapshot": self.snapshot_repository,
         }
 
     async def test_create_update_delete(self):

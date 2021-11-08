@@ -2,7 +2,7 @@ from .abc import (
     PostgreSqlSnapshotSetup,
 )
 from .api import (
-    PostgreSqlSnapshot,
+    PostgreSqlSnapshotRepository,
 )
 from .queries import (
     PostgreSqlSnapshotQueryBuilder,

@@ -43,7 +43,7 @@ from ..transactions import (
     TransactionStatus,
 )
 from .abc import (
-    MinosSnapshot,
+    SnapshotRepository,
 )
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     )
 
 
-class InMemorySnapshot(MinosSnapshot):
+class InMemorySnapshotRepository(SnapshotRepository):
     """InMemory Snapshot class.
 
     The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.

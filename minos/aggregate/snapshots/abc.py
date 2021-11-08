@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     )
 
 
-class MinosSnapshot(ABC, MinosSetup):
+class SnapshotRepository(ABC, MinosSetup):
     """Base Snapshot class.
 
     The snapshot provides a direct accessor to the aggregate instances stored as events by the event repository class.

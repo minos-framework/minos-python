@@ -73,15 +73,15 @@ from .queries import (
     Condition,
     Ordering,
 )
-from .snapshot import (
-    InMemorySnapshot,
-    MinosSnapshot,
-    PostgreSqlSnapshot,
+from .snapshots import (
+    InMemorySnapshotRepository,
     PostgreSqlSnapshotQueryBuilder,
     PostgreSqlSnapshotReader,
+    PostgreSqlSnapshotRepository,
     PostgreSqlSnapshotSetup,
     PostgreSqlSnapshotWriter,
     SnapshotEntry,
+    SnapshotRepository,
 )
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,

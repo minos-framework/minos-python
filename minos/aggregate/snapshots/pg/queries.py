@@ -1,5 +1,3 @@
-"""minos.common.snapshot.pg.queries module."""
-
 from __future__ import (
     annotations,
 )
