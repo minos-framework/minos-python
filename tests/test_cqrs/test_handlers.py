@@ -7,12 +7,14 @@ from uuid import (
     uuid4,
 )
 
-from minos.common import (
+from minos.aggregate import (
     Action,
     AggregateDiff,
     FieldDiff,
     FieldDiffContainer,
     ModelRef,
+)
+from minos.common import (
     current_datetime,
 )
 from minos.cqrs import (
@@ -116,7 +118,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             await PreEventHandler.handle(self.diff, self.saga_manager)
 
     def test_build_saga(self):
-        with patch("minos.common.ModelRefExtractor.build") as mock:
+        with patch("minos.aggregate.ModelRefExtractor.build") as mock:
             mock.return_value = {"Bar": [b.uuid for b in self.bars]}
             observed = PreEventHandler.build_saga(self.diff)
 

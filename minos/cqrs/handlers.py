@@ -10,9 +10,8 @@ from uuid import (
     UUID,
 )
 
-from minos.common import (
+from minos.aggregate import (
     AggregateDiff,
-    MinosSagaManager,
     ModelRefExtractor,
     ModelRefInjector,
 )
@@ -21,6 +20,7 @@ from minos.saga import (
     Saga,
     SagaContext,
     SagaExecution,
+    SagaManager,
     SagaOperation,
     SagaRequest,
     SagaResponse,
@@ -38,7 +38,7 @@ class PreEventHandler:
 
     @classmethod
     async def handle(
-        cls, diff: T, saga_manager: MinosSagaManager, user: Optional[UUID] = None, resolve_references: bool = True
+        cls, diff: T, saga_manager: SagaManager, user: Optional[UUID] = None, resolve_references: bool = True
     ) -> T:
         """Handle pre event function.
 
