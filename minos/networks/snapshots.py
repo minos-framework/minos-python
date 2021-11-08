@@ -6,8 +6,8 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from minos.common import (
-    MinosSnapshot,
+from minos.aggregate import (
+    SnapshotRepository,
 )
 
 
@@ -15,17 +15,19 @@ class SnapshotService(PeriodicService):
     """Minos Snapshot Service class."""
 
     @inject
-    def __init__(self, snapshot: MinosSnapshot = Provide["snapshot"], interval: float = 60, **kwargs):
+    def __init__(
+        self, snapshot_repository: SnapshotRepository = Provide["snapshot_repository"], interval: float = 60, **kwargs
+    ):
         super().__init__(interval=interval, **kwargs)
 
-        self.snapshot = snapshot
+        self.snapshot_repository = snapshot_repository
 
     async def start(self) -> None:
         """Start the service execution.
 
         :return: This method does not return anything.
         """
-        await self.snapshot.setup()
+        await self.snapshot_repository.setup()
         await super().start()
 
     async def callback(self) -> None:
@@ -33,7 +35,7 @@ class SnapshotService(PeriodicService):
 
         :return: This method does not return anything.
         """
-        await self.snapshot.synchronize()
+        await self.snapshot_repository.synchronize()
 
     async def stop(self, err: Exception = None) -> None:
         """Stop the service execution.
@@ -42,4 +44,4 @@ class SnapshotService(PeriodicService):
         :return: This method does not return anything.
         """
         await super().stop(err)
-        await self.snapshot.destroy()
+        await self.snapshot_repository.destroy()

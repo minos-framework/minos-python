@@ -7,50 +7,47 @@ from aiomisc.service.periodic import (
     PeriodicService,
 )
 
-from minos.common.testing import (
-    PostgresAsyncTestCase,
+from minos.aggregate import (
+    InMemorySnapshotRepository,
 )
 from minos.networks import (
     SnapshotService,
 )
 from tests.utils import (
-    BASE_PATH,
-    FakeSnapshot,
+    MinosTestCase,
 )
 
 
-class TestSnapshotService(PostgresAsyncTestCase):
-    CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
-
+class TestSnapshotService(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.snapshot = FakeSnapshot()
+        self.snapshot = InMemorySnapshotRepository()
 
     def test_is_instance(self):
-        service = SnapshotService(self.snapshot, interval=0.1, config=self.config)
+        service = SnapshotService(self.snapshot, interval=0.1)
         self.assertIsInstance(service, PeriodicService)
 
     def test_dispatcher_config(self):
-        service = SnapshotService(self.snapshot, interval=0.1, config=self.config)
-        snapshot = service.snapshot
-        self.assertEqual(snapshot, self.snapshot)
+        snapshot = InMemorySnapshotRepository()
+        service = SnapshotService(snapshot, interval=0.1)
+        self.assertEqual(snapshot, service.snapshot_repository)
         self.assertFalse(snapshot.already_setup)
 
     async def test_start(self):
-        service = SnapshotService(self.snapshot, interval=0.1, loop=None, config=self.config)
-        service.snapshot.setup = MagicMock(side_effect=service.snapshot.setup)
+        service = SnapshotService(self.snapshot, interval=0.1, loop=None)
+        service.snapshot_repository.setup = MagicMock(side_effect=service.snapshot_repository.setup)
         await service.start()
-        self.assertTrue(1, service.snapshot.setup.call_count)
+        self.assertTrue(1, service.snapshot_repository.setup.call_count)
         await service.stop()
 
     async def test_callback(self):
-        service = SnapshotService(self.snapshot, interval=0.1, config=self.config)
-        await service.snapshot.setup()
-        mock = MagicMock(side_effect=service.snapshot.synchronize)
-        service.snapshot.synchronize = mock
+        service = SnapshotService(self.snapshot, interval=0.1)
+        await service.snapshot_repository.setup()
+        mock = MagicMock(side_effect=service.snapshot_repository.synchronize)
+        service.snapshot_repository.synchronize = mock
         await service.callback()
         self.assertEqual(1, mock.call_count)
-        await service.snapshot.destroy()
+        await service.snapshot_repository.destroy()
 
 
 if __name__ == "__main__":
