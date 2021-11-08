@@ -27,24 +27,24 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ....events import (
+from ...events import (
     EventEntry,
     EventRepository,
 )
-from ....exceptions import (
+from ...exceptions import (
     EventRepositoryException,
 )
-from ....queries import (
+from ...queries import (
     _Condition,
     _Ordering,
 )
-from ....snapshots import (
+from ...snapshots import (
     SnapshotRepository,
 )
-from ...diff import (
+from ..diff import (
     IncrementalFieldDiff,
 )
-from ...entities import (
+from ..entities import (
     Entity,
 )
 from .diff import (

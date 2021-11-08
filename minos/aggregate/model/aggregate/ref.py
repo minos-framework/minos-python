@@ -7,7 +7,7 @@ from uuid import (
     UUID,
 )
 
-from ...entities import (
+from ..entities import (
     Entity,
 )
 

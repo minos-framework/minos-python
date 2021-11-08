@@ -22,10 +22,10 @@ from minos.common import (
     DeclarativeModel,
 )
 
-from ...actions import (
+from ..actions import (
     Action,
 )
-from ...diff import (
+from ..diff import (
     FieldDiff,
     FieldDiffContainer,
 )
