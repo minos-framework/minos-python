@@ -23,8 +23,8 @@ from minos.common import (
     CommandReply,
     CommandStatus,
     MinosConfig,
-    MinosHandlerNotProvidedException,
     MinosSagaManager,
+    NotProvidedException,
 )
 from minos.saga import (
     SagaContext,
@@ -59,7 +59,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.user = uuid4()
         _USER_CONTEXT_VAR.set(self.user)
         # noinspection PyTypeChecker
-        self.manager: SagaManager = SagaManager.from_config(dynamic_handler_pool=self.pool, config=self.config)
+        self.manager: SagaManager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
@@ -69,8 +69,8 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(self.manager, MinosSagaManager)
 
     def test_constructor_without_handler(self):
-        with self.assertRaises(MinosHandlerNotProvidedException):
-            SagaManager.from_config(handler=None, config=self.config)
+        with self.assertRaises(NotProvidedException):
+            SagaManager.from_config(self.config, handler=None)
 
     def test_from_config_with_user_context_var(self):
         _USER_CONTEXT_VAR.set(None)
