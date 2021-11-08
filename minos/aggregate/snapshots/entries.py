@@ -32,7 +32,7 @@ from ..exceptions import (
 )
 
 if TYPE_CHECKING:
-    from ..model import (
+    from ..models import (
         Aggregate,
     )
 
@@ -166,7 +166,7 @@ class SnapshotEntry:
         :param kwargs: Additional named arguments.
         :return: A ``Aggregate`` instance.
         """
-        from ..model import (
+        from ..models import (
             Aggregate,
         )
 

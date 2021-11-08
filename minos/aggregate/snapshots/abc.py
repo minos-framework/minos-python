@@ -30,7 +30,7 @@ from ..transactions import (
 )
 
 if TYPE_CHECKING:
-    from ..model import (
+    from ..models import (
         Aggregate,
     )
 

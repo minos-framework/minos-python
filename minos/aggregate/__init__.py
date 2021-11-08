@@ -21,7 +21,7 @@ from .exceptions import (
     TransactionRepositoryException,
     ValueObjectException,
 )
-from .model import (
+from .models import (
     Action,
     Aggregate,
     AggregateDiff,

@@ -23,7 +23,7 @@ from minos.common import (
 )
 
 if TYPE_CHECKING:
-    from ..model import (
+    from ..models import (
         Action,
         Aggregate,
         AggregateDiff,
@@ -63,7 +63,7 @@ class EventEntry:
         if isinstance(data, memoryview):
             data = data.tobytes()
         if action is not None and isinstance(action, str):
-            from ..model import (
+            from ..models import (
                 Action,
             )
 
@@ -143,7 +143,7 @@ class EventEntry:
 
         :return: An ``AggregateDiff`` instance.
         """
-        from ..model import (
+        from ..models import (
             AggregateDiff,
         )
 
@@ -162,7 +162,7 @@ class EventEntry:
 
         :return: A ``FieldDiffContainer`` instance.
         """
-        from ..model import (
+        from ..models import (
             FieldDiffContainer,
         )
 

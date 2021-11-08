@@ -54,7 +54,7 @@ from ..entries import (
 )
 
 if TYPE_CHECKING:
-    from ...model import (
+    from ...models import (
         AggregateDiff,
     )
 
@@ -100,7 +100,7 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ...model import (
+        from ...models import (
             Action,
         )
 
@@ -113,7 +113,7 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ...model import (
+        from ...models import (
             Action,
         )
 
@@ -126,7 +126,7 @@ class EventRepository(ABC, MinosSetup):
         :param entry: Entry to be stored.
         :return: The repository entry containing the stored information.
         """
-        from ...model import (
+        from ...models import (
             Action,
         )
 
@@ -140,7 +140,7 @@ class EventRepository(ABC, MinosSetup):
         :param kwargs: Additional named arguments.
         :return: The repository entry containing the stored information.
         """
-        from ...model import (
+        from ...models import (
             Action,
             AggregateDiff,
         )
@@ -203,7 +203,7 @@ class EventRepository(ABC, MinosSetup):
         raise NotImplementedError
 
     async def _send_events(self, aggregate_diff: AggregateDiff):
-        from ...model import (
+        from ...models import (
             Action,
         )
 
@@ -217,7 +217,7 @@ class EventRepository(ABC, MinosSetup):
         futures = [self._event_broker.send(aggregate_diff, topic=topic)]
 
         if aggregate_diff.action == Action.UPDATE:
-            from ...model import (
+            from ...models import (
                 IncrementalFieldDiff,
             )
 

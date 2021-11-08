@@ -3,7 +3,6 @@ from .actions import (
 )
 from .aggregates import (
     Aggregate,
-    AggregateRef,
 )
 from .collections import (
     IncrementalSet,
@@ -21,6 +20,7 @@ from .entities import (
     EntitySet,
 )
 from .refs import (
+    AggregateRef,
     FieldRef,
     ModelRef,
     ModelRefExtractor,

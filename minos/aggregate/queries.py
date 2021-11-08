@@ -15,16 +15,14 @@ from operator import (
     attrgetter,
 )
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Iterable,
 )
 
-if TYPE_CHECKING:
-    from .model import (
-        Model,
-    )
+from minos.common import (
+    Model,
+)
 
 
 class _Condition(ABC):

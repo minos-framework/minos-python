@@ -35,8 +35,20 @@ from minos.common import (
 from ..events import (
     SUBMITTING_EVENT_CONTEXT_VAR,
 )
+from .entities import (
+    Entity,
+)
 
 MT = TypeVar("MT")
+
+
+class AggregateRef(Entity):
+    """Aggregate Ref class."""
+
+    version: int
+
+    def __init__(self, uuid: UUID, *args, **kwargs):
+        super().__init__(uuid=uuid, *args, **kwargs)
 
 
 class FieldRef(Field):

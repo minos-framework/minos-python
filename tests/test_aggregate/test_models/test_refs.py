@@ -11,6 +11,7 @@ from uuid import (
 
 from minos.aggregate import (
     SUBMITTING_EVENT_CONTEXT_VAR,
+    AggregateRef,
     FieldRef,
     ModelRef,
     ModelRefExtractor,
@@ -23,6 +24,24 @@ from minos.common import (
 from tests.model_classes import (
     Foo,
 )
+
+
+class Product(AggregateRef):
+    """For testing purposes."""
+
+    title: str
+    quantity: int
+
+
+class TestSubAggregate(unittest.TestCase):
+    def test_values(self):
+        uuid = uuid4()
+        product = Product(uuid, 3, "apple", 3028)
+
+        self.assertEqual(uuid, product.uuid)
+        self.assertEqual(3, product.version)
+        self.assertEqual("apple", product.title)
+        self.assertEqual(3028, product.quantity)
 
 
 class TestModelRef(unittest.IsolatedAsyncioTestCase):
