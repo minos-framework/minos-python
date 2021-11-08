@@ -25,9 +25,9 @@ from minos.common import (
     CommandReply,
     MinosConfig,
     MinosHandler,
-    MinosHandlerNotProvidedException,
     MinosPool,
     MinosSagaManager,
+    NotProvidedException,
 )
 
 from .context import (
@@ -68,7 +68,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
         self.storage = storage
 
         if dynamic_handler_pool is None or isinstance(dynamic_handler_pool, Provide):
-            raise MinosHandlerNotProvidedException("A handler pool instance is required.")
+            raise NotProvidedException("A handler pool instance is required.")
 
         self.dynamic_handler_pool = dynamic_handler_pool
         self.user_context_var = user_context_var

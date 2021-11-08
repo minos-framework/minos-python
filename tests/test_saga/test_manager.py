@@ -23,8 +23,8 @@ from minos.common import (
     CommandReply,
     CommandStatus,
     MinosConfig,
-    MinosHandlerNotProvidedException,
     MinosSagaManager,
+    NotProvidedException,
 )
 from minos.saga import (
     SagaContext,
@@ -69,7 +69,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(self.manager, MinosSagaManager)
 
     def test_constructor_without_handler(self):
-        with self.assertRaises(MinosHandlerNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             SagaManager.from_config(self.config, handler=None)
 
     def test_from_config_with_user_context_var(self):

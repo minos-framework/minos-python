@@ -8,7 +8,7 @@ from uuid import (
 )
 
 from minos.common import (
-    MinosBrokerNotProvidedException,
+    NotProvidedException,
 )
 from minos.saga import (
     Executor,
@@ -42,7 +42,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.broker, self.executor.broker)
 
     def test_constructor_without_broker(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             RequestExecutor(reply_topic="AddFoo", execution_uuid=self.execution_uuid, user=self.user)
 
     async def test_exec(self):
