@@ -20,7 +20,7 @@ from .diff import (
     FieldDiffContainer,
     IncrementalFieldDiff,
 )
-from .model_refs import (
+from .refs import (
     FieldRef,
     ModelRef,
     ModelRefExtractor,
