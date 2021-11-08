@@ -23,7 +23,7 @@ from minos.common import (
     Model,
 )
 
-from ..collections import (
+from .collections import (
     IncrementalSet,
     IncrementalSetDiff,
 )

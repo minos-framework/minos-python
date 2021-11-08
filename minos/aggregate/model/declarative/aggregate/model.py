@@ -44,7 +44,7 @@ from ....snapshots import (
 from ...diff import (
     IncrementalFieldDiff,
 )
-from ..entities import (
+from ...entities import (
     Entity,
 )
 from .diff import (

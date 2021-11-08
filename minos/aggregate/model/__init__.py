@@ -10,10 +10,6 @@ from .declarative import (
     Aggregate,
     AggregateDiff,
     AggregateRef,
-    Entity,
-    EntitySet,
-    ValueObject,
-    ValueObjectSet,
 )
 from .diff import (
     FieldDiff,
@@ -25,4 +21,12 @@ from .refs import (
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,
+)
+from .entities import (
+    Entity,
+    EntitySet,
+)
+from .value_objects import (
+    ValueObject,
+    ValueObjectSet,
 )

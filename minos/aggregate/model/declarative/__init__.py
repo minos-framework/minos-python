@@ -3,11 +3,3 @@ from .aggregate import (
     AggregateDiff,
     AggregateRef,
 )
-from .entities import (
-    Entity,
-    EntitySet,
-)
-from .value_objects import (
-    ValueObject,
-    ValueObjectSet,
-)
