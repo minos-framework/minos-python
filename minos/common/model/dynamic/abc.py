@@ -45,8 +45,8 @@ class DynamicModel(Model):
         fields = cls._build_fields(model_type.type_hints, *args, **kwargs)
         return cls(fields=fields)
 
-    @staticmethod
-    def _build_fields(type_hints: dict[str, type], *args, **kwargs) -> dict[str, Field]:
+    @classmethod
+    def _build_fields(cls, type_hints: dict[str, type], *args, **kwargs) -> dict[str, Field]:
         fields = dict()
         for (name, type_val), value in zip_longest(type_hints.items(), args, fillvalue=MissingSentinel):
             if name in kwargs and value is not MissingSentinel:
@@ -55,7 +55,7 @@ class DynamicModel(Model):
             if value is MissingSentinel and name in kwargs:
                 value = kwargs[name]
 
-            fields[name] = Field(name, type_val, value)
+            fields[name] = cls._field_cls(name, type_val, value)
         return fields
 
 

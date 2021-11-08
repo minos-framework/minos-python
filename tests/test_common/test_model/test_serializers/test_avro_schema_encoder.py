@@ -18,11 +18,7 @@ from uuid import (
 
 from minos.common import (
     AvroSchemaEncoder,
-    ModelRef,
     ModelType,
-)
-from tests.aggregate_classes import (
-    Owner,
 )
 from tests.model_classes import (
     User,
@@ -100,32 +96,6 @@ class TestAvroSchemaEncoder(unittest.TestCase):
     def test_dict(self):
         expected = {"type": "map", "values": "int"}
         observed = AvroSchemaEncoder(dict[str, int]).build()
-        self.assertEqual(expected, observed)
-
-    def test_model_ref(self):
-        expected = [
-            {
-                "fields": [
-                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                    {"name": "version", "type": "int"},
-                    {"name": "created_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
-                    {"name": "updated_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
-                    {"name": "name", "type": "string"},
-                    {"name": "surname", "type": "string"},
-                    {"name": "age", "type": ["int", "null"]},
-                ],
-                "name": "Owner",
-                "namespace": "tests.aggregate_classes.hello",
-                "type": "record",
-            },
-            {"type": "string", "logicalType": "uuid"},
-            "null",
-        ]
-
-        encoder = AvroSchemaEncoder(Optional[ModelRef[Owner]])
-        encoder.generate_random_str = MagicMock(return_value="hello")
-
-        observed = encoder.build()
         self.assertEqual(expected, observed)
 
     def test_list_model(self):

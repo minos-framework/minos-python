@@ -1,6 +1,10 @@
 from .abc import (
     PostgreSqlMinosDatabase,
 )
-from .pool import (
+from .locks import (
+    PostgreSqlLock,
+)
+from .pools import (
+    PostgreSqlLockPool,
     PostgreSqlPool,
 )

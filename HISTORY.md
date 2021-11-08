@@ -215,3 +215,15 @@ History
   * Now `ValueObjectSet` and `EntitySet` inherit from `IncrementalSet`.
 * Refactor `ValueObjectSet` to be implemented on top of a `set` instead of a `dict`.
 * Fix bug related with `list`, `set` and `dict` in combination with `Any` and the `avro` schemas.
+
+0.2.0 (2021-11-08)
+--------------------
+
+* Migrate all Aggregate-related stuff to the brand-new `minos.aggregate` package.
+  * Move `Aggregate`, `Entity`, `ValueObject`, etc. model classes and related utility classes (`AggregateDiff`, `FieldDiff`, Action`, `ModelRef`, etc.).
+  * Move `minos.common.repository` module.
+  * Move `minos.common.snapshot` module.
+  * Move `minos.common.queries` module.
+* Add `Lock` class as an abstract class to implement application-level locking in `minos`.
+  * Add `PostgreSqlLock` and `PostgreSqlLockPool`
+* Replace the `MinosPool` instance creation strategy, from "create if possible or get or wait" to "get or create if possible or wait".

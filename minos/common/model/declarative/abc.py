@@ -9,6 +9,7 @@ from itertools import (
 from typing import (
     Any,
     Iterator,
+    Optional,
     Type,
     TypeVar,
     get_type_hints,
@@ -20,12 +21,10 @@ from ...meta import (
 from ..abc import (
     Model,
 )
-from ..fields import (
-    Field,
-)
 from ..types import (
     MissingSentinel,
     ModelType,
+    TypeHintComparator,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,32 +53,40 @@ class DeclarativeModel(Model):
         """
         return cls(*args, **kwargs)
 
-    def _build_fields(self, *args, **kwargs) -> None:
-        for (name, type_val), value in zip_longest(self._type_hints(), args, fillvalue=MissingSentinel):
+    def _build_fields(self, *args, additional_type_hints: Optional[dict[str, type]] = None, **kwargs) -> None:
+        for (name, type_val), value in zip_longest(
+            self._type_hints(additional_type_hints), args, fillvalue=MissingSentinel
+        ):
             if name in kwargs and value is not MissingSentinel:
                 raise TypeError(f"got multiple values for argument {repr(name)}")
 
             if value is MissingSentinel and name in kwargs:
                 value = kwargs[name]
 
-            self._fields[name] = Field(
+            self._fields[name] = self._field_cls(
                 name, type_val, value, getattr(self, f"parse_{name}", None), getattr(self, f"validate_{name}", None)
             )
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def _type_hints(self_or_cls) -> Iterator[tuple[str, Any]]:
-        fields = dict()
+    def _type_hints(self_or_cls, additional_type_hints: Optional[dict[str, type]] = None) -> Iterator[tuple[str, Any]]:
+        type_hints = dict()
         if isinstance(self_or_cls, type):
             cls = self_or_cls
         else:
             cls = type(self_or_cls)
         for b in cls.__mro__[::-1]:
             list_fields = {k: v for k, v in get_type_hints(b).items() if not k.startswith("_")}
-            fields |= list_fields
-        logger.debug(f"The obtained fields are: {fields!r}")
-        fields |= super()._type_hints()
-        yield from fields.items()
+            type_hints |= list_fields
+        logger.debug(f"The obtained type hints are: {type_hints!r}")
+
+        if additional_type_hints:
+            for name, hint in additional_type_hints.items():
+                if name not in type_hints or TypeHintComparator(hint, type_hints[name]).match():
+                    type_hints[name] = hint
+
+        type_hints |= super()._type_hints()
+        yield from type_hints.items()
 
 
 T = TypeVar("T", bound=DeclarativeModel)

@@ -4,8 +4,8 @@ import unittest
 from minos.common import (
     DependencyInjector,
     MinosConfig,
-    MinosConfigNotProvidedException,
     MinosSetup,
+    NotProvidedException,
 )
 from tests.utils import (
     BASE_PATH,
@@ -74,7 +74,7 @@ class TestMinosSetup(unittest.IsolatedAsyncioTestCase):
         await injector.unwire()
 
     def test_from_config_raises(self):
-        with self.assertRaises(MinosConfigNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             _MinosSetupMock.from_config()
 
     def test_del(self):

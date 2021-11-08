@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import (
     AsyncMock,
     call,
@@ -17,7 +18,6 @@ from tests.utils import (
     FakeBroker,
     FakeEntrypoint,
     FakeLoop,
-    FakeRepository,
     FakeSagaManager,
 )
 
@@ -33,7 +33,6 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
     def setUp(self):
         super().setUp()
         self.injections = {
-            "repository": FakeRepository,
             "event_broker": FakeBroker,
             "command_broker": FakeBroker,
             "command_reply_broker": FakeBroker,
@@ -47,7 +46,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
         )
 
     def test_from_config(self):
-        launcher = EntrypointLauncher.from_config(config=self.config)
+        launcher = EntrypointLauncher.from_config(self.config)
         self.assertIsInstance(launcher, EntrypointLauncher)
         self.assertEqual(self.config, launcher.config)
         self.assertEqual(dict(), launcher.injector.injections)
@@ -118,7 +117,11 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
             with patch("minos.common.launchers._create_entrypoint") as mock_entrypoint:
                 entrypoint = FakeEntrypoint()
                 mock_entrypoint.return_value = entrypoint
-                self.launcher.launch()
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+
+                    self.launcher.launch()
 
         self.assertEqual(1, mock_entrypoint.call_count)
         self.assertEqual(1, mock_loop.call_count)

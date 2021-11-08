@@ -4,22 +4,16 @@ from typing import (
     Optional,
     Union,
 )
-from uuid import (
-    UUID,
-)
 
 from minos.common import (
-    Aggregate,
-    ModelRef,
+    Model,
     ModelType,
     TypeHintComparator,
 )
-from tests.aggregate_classes import (
-    Car,
-    Owner,
-)
 from tests.model_classes import (
+    Car,
     Foo,
+    Owner,
 )
 
 
@@ -71,14 +65,11 @@ class TestTypeHintComparator(unittest.TestCase):
         self.assertTrue(TypeHintComparator(int, Any).match())
         self.assertFalse(TypeHintComparator(Any, int).match())
 
-    def test_model_ref_union(self):
-        self.assertTrue(TypeHintComparator(ModelRef[str], Union[str, UUID]).match())
-
     def test_nested_true(self):
-        self.assertTrue(TypeHintComparator(Optional[list[ModelRef[str]]], Optional[list[ModelRef[str]]]).match())
+        self.assertTrue(TypeHintComparator(Optional[list[Car]], Optional[list[Car]]).match())
 
     def test_nested_false(self):
-        self.assertFalse(TypeHintComparator(Optional[list[ModelRef[str]]], Optional[list[ModelRef[float]]]).match())
+        self.assertFalse(TypeHintComparator(Optional[list[Car]], Optional[list[Owner]]).match())
 
     def test_model_true(self):
         self.assertTrue(TypeHintComparator(Car, Car).match())
@@ -101,11 +92,11 @@ class TestTypeHintComparator(unittest.TestCase):
         self.assertFalse(TypeHintComparator(list[Car], list[Owner]).match())
 
     def test_model_inherited(self):
-        self.assertTrue(TypeHintComparator(list[Car], list[Aggregate]).match())
-        self.assertFalse(TypeHintComparator(list[Aggregate], list[Car]).match())
+        self.assertTrue(TypeHintComparator(list[Car], list[Model]).match())
+        self.assertFalse(TypeHintComparator(list[Model], list[Car]).match())
 
-        self.assertTrue(TypeHintComparator(list[Car.model_type], list[Aggregate]).match())
-        self.assertTrue(TypeHintComparator(list[Aggregate], list[Car.model_type]).match())
+        self.assertTrue(TypeHintComparator(list[Car.model_type], list[Model]).match())
+        self.assertTrue(TypeHintComparator(list[Model], list[Car.model_type]).match())
 
     def test_model_type_inequality_true(self):
         one = ModelType.build("Foo", {"text": int}, namespace_="bar")

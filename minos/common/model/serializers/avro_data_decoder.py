@@ -7,6 +7,9 @@ from collections.abc import (
     Iterable,
     Mapping,
 )
+from contextlib import (
+    suppress,
+)
 from datetime import (
     date,
     datetime,
@@ -32,11 +35,9 @@ from ...exceptions import (
 )
 from ..types import (
     MissingSentinel,
-    ModelRef,
     ModelType,
     NoneType,
     TypeHintBuilder,
-    is_aggregate_type,
     is_model_subclass,
     is_type_subclass,
     unpack_typevar,
@@ -70,10 +71,8 @@ class AvroDataDecoder:
     def _cast_union_value(self, type_: type, data: Any) -> Any:
         alternatives = get_args(type_)
         for alternative_type in alternatives:
-            try:
+            with suppress(Exception):
                 return self._cast_single_value(alternative_type, data)
-            except (DataDecoderTypeException, DataDecoderRequiredValueException):
-                pass
 
         if type_ is not NoneType:
             if data is None:
@@ -227,23 +226,21 @@ class AvroDataDecoder:
     def _cast_model(self, type_: type, data: Any) -> Any:
         if is_type_subclass(type_) and isinstance(data, type_):
             return data
-        # noinspection PyUnresolvedReferences
         return self._cast_model_type(ModelType.from_model(type_), data)
 
     def _cast_model_type(self, type_: ModelType, data: Any) -> Any:
-        if isinstance(data, dict):
-            data |= {k: self._cast_value(v, data.get(k, None)) for k, v in type_.type_hints.items()}
-            return type_(**data)
-
         if hasattr(data, "model_type"):
-            from ..declarative import (
-                IncrementalSet,
-            )
-
-            if isinstance(data, IncrementalSet) and not len(data):
-                return data
             if ModelType.from_model(data) >= type_:
                 return data
+
+        if isinstance(data, dict):
+            decoded_data = {n: AvroDataDecoder(t).build(data.get(n, None)) for n, t in type_.type_hints.items()}
+            return type_(**decoded_data, additional_type_hints=type_.type_hints)
+
+        with suppress(Exception):
+            decoded_data = data if isinstance(data, (list, tuple)) else (data,)
+            decoded_data = (AvroDataDecoder(t).build(d) for d, t in zip(decoded_data, type_.type_hints.values()))
+            return type_(*decoded_data, additional_type_hints=type_.type_hints)
 
         raise DataDecoderTypeException(type_, data)
 
@@ -260,9 +257,6 @@ class AvroDataDecoder:
 
         if origin_type is dict:
             return self._cast_dict(data, type_)
-
-        if origin_type is ModelRef:
-            return self._cast_model_ref(data, type_)
 
         raise DataDecoderTypeException(type_, data)
 
@@ -294,12 +288,3 @@ class AvroDataDecoder:
 
     def _cast_iterable(self, data: Iterable, type_params: type) -> Iterable:
         return (self._cast_value(type_params, item) for item in data)
-
-    def _cast_model_ref(self, data: Any, type_: type) -> Any:
-        inner_type = get_args(type_)[0]
-        if not is_aggregate_type(inner_type):
-            raise DataDecoderMalformedTypeException(
-                f"'ModelRef[T]' T type must follow the 'Aggregate' protocol. Obtained: {inner_type!r}"
-            )
-
-        return self._cast_value(Union[inner_type, UUID], data)

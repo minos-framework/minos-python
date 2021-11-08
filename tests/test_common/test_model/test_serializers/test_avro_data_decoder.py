@@ -23,16 +23,10 @@ from minos.common import (
     DataDecoderRequiredValueException,
     DataDecoderTypeException,
     DataTransferObject,
-    EntitySet,
     Field,
-    InMemorySnapshot,
     MissingSentinel,
-    ModelRef,
     ModelType,
     current_datetime,
-)
-from tests.aggregate_classes import (
-    Owner,
 )
 from tests.model_classes import (
     Analytics,
@@ -40,17 +34,12 @@ from tests.model_classes import (
     GenericUser,
     User,
 )
-from tests.subaggregate_classes import (
-    CartItem,
-)
 from tests.utils import (
-    FakeBroker,
-    FakeEntity,
-    FakeRepository,
+    MinosTestCase,
 )
 
 
-class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
+class TestAvroDataDecoder(MinosTestCase):
     def test_model_type(self):
         observed = AvroDataDecoder(ModelType.build("Foo", {"bar": str})).build({"bar": "foobar"})
 
@@ -232,20 +221,6 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         observed = decoder.build(value)
         self.assertEqual(value, observed)
 
-    async def test_list_model_ref(self):
-        decoder = AvroDataDecoder(list[ModelRef[Owner]])
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
-            value = [uuid4(), Owner("Foo", "Bar", 56, _broker=b, _repository=r, _snapshot=s)]
-            observed = decoder.build(value)
-            self.assertEqual(value, observed)
-
-    async def test_list_model_subaggregate_ref(self):
-        decoder = AvroDataDecoder(list[ModelRef[CartItem]])
-        async with FakeBroker():
-            value = [uuid4(), CartItem(uuid4(), 3, "Foo", 56)]
-            observed = decoder.build(value)
-            self.assertEqual(value, observed)
-
     def test_list_empty(self):
         decoder = AvroDataDecoder(list[int])
         observed = decoder.build([])
@@ -330,28 +305,10 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         observed = decoder.build({"id": 1234})
         self.assertEqual(value, observed)
 
-    async def test_model_ref_value(self):
-        decoder = AvroDataDecoder(ModelRef[Owner])
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
-            value = Owner("Foo", "Bar", _broker=b, _repository=r, _snapshot=s)
-            observed = decoder.build(value)
-            self.assertEqual(value, observed)
-
-    def test_model_ref_reference(self):
-        decoder = AvroDataDecoder(ModelRef[Owner])
-        value = uuid4()
-        observed = decoder.build(value)
-        self.assertEqual(value, observed)
-
     def test_model_raises(self):
         decoder = AvroDataDecoder(User)
         with self.assertRaises(DataDecoderTypeException):
             decoder.build("foo")
-
-    def test_model_ref_raises(self):
-        decoder = AvroDataDecoder(ModelRef[User])
-        with self.assertRaises(DataDecoderMalformedTypeException):
-            decoder.build(User(1234))
 
     def test_model_optional(self):
         decoder = AvroDataDecoder(Optional[User])
@@ -359,6 +316,7 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(observed)
 
     def test_unsupported(self):
+        # noinspection PyUnresolvedReferences
         decoder = AvroDataDecoder(type[Any])
         with self.assertRaises(DataDecoderTypeException):
             decoder.build(AvroDataDecoder)
@@ -396,14 +354,6 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(DataDecoderTypeException):
             decoder.build(value)
 
-    def test_entity_set(self):
-        raw = {FakeEntity("John"), FakeEntity("Michael")}
-        entities = EntitySet(raw)
-        decoder = AvroDataDecoder(EntitySet[FakeEntity])
-        observed = decoder.build(entities)
-
-        self.assertEqual(entities, observed)
-
     def test_container_inheritance(self):
         Container = ModelType.build("Container", {"data": list[Base]})
         raw = Container([User(1, "John"), Analytics(2, dict()), User(3, "John"), Analytics(4, dict())])
@@ -411,20 +361,6 @@ class TestAvroDataDecoder(unittest.IsolatedAsyncioTestCase):
         observed = decoder.build(raw)
 
         self.assertEqual(raw, observed)
-
-    def test_entity_set_empty(self):
-        entities = EntitySet()
-        decoder = AvroDataDecoder(EntitySet[FakeEntity])
-        observed = decoder.build(entities)
-
-        self.assertEqual(entities, observed)
-
-    def test_entity_set_raises(self):
-        raw = {FakeEntity("John"), FakeEntity("Michael")}
-        entities = EntitySet(raw)
-        decoder = AvroDataDecoder(EntitySet[Base])
-        with self.assertRaises(DataDecoderTypeException):
-            decoder.build(entities)
 
 
 if __name__ == "__main__":

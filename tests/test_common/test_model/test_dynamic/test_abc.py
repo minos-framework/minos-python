@@ -21,6 +21,11 @@ class TestDynamicModel(unittest.TestCase):
         self.assertEqual("hello", decoded[0].text)
         self.assertEqual("bye", decoded[1].text)
 
+    def test_from_model_type(self):
+        # noinspection PyTypeChecker
+        model = DynamicModel.from_model_type(Foo.model_type, text="test")
+        self.assertEqual(DynamicModel({Field("text", str, "test")}), model)
+
     def test_from_avro(self):
         data = {"text": "test"}
         schema = {

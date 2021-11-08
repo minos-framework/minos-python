@@ -49,7 +49,7 @@ class DependencyInjector:
                 raw = import_module(raw)
             if isinstance(raw, type):
                 # noinspection PyUnresolvedReferences
-                return raw.from_config(config=self.config, **injections)
+                return raw.from_config(self.config, **injections)
             return raw
 
         for key, value in self._raw_injections.items():

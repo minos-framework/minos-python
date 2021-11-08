@@ -273,6 +273,18 @@ class TestDeclarativeModel(unittest.TestCase):
     def test_type_hints_parameters_empty(self):
         self.assertEqual(tuple(), User.type_hints_parameters)
 
+    def test_additional_type_hints_applied(self):
+        user = GenericUser(username=1, type_hints={"username": int})
+
+        self.assertEqual(1, user.username)
+        self.assertEqual(int, user.type_hints["username"])
+
+    def test_additional_type_hints_ignored(self):
+        user = GenericUser(username=3.14, type_hints={"username": float})
+
+        self.assertEqual(3, user.username)
+        self.assertEqual(int, user.type_hints["username"])
+
 
 if __name__ == "__main__":
     unittest.main()

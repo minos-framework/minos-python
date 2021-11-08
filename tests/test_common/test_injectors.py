@@ -17,7 +17,7 @@ from minos.common import (
 from tests.utils import (
     BASE_PATH,
     FakeBroker,
-    FakeRepository,
+    FakeLockPool,
     FakeSagaManager,
 )
 
@@ -28,12 +28,8 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.config = MinosConfig(path=str(self.config_file_path))
 
     def test_from_str(self):
-        injector = DependencyInjector(self.config, repository=classname(FakeRepository))
-        self.assertIsInstance(injector.repository, FakeRepository)
-
-    def test_repository(self):
-        injector = DependencyInjector(self.config, repository=FakeRepository)
-        self.assertIsInstance(injector.repository, FakeRepository)
+        injector = DependencyInjector(self.config, event_broker=classname(FakeBroker))
+        self.assertIsInstance(injector.event_broker, FakeBroker)
 
     def test_event_broker(self):
         injector = DependencyInjector(self.config, event_broker=FakeBroker)
@@ -51,6 +47,10 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(self.config, saga_manager=FakeSagaManager)
         self.assertIsInstance(injector.saga_manager, FakeSagaManager)
 
+    def test_lock_pool(self):
+        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
+        self.assertIsInstance(injector.lock_pool, FakeLockPool)
+
     def test_another(self):
         injector = DependencyInjector(self.config, foo=1)
         self.assertEqual(1, injector.foo)
@@ -64,10 +64,6 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(self.config)
         self.assertIsInstance(injector.container, Container)
         self.assertEqual(self.config, injector.container.config())
-
-    def test_container_repository(self):
-        injector = DependencyInjector(self.config, repository=FakeRepository)
-        self.assertEqual(injector.repository, injector.container.repository())
 
     def test_container_event_broker(self):
         injector = DependencyInjector(self.config, event_broker=FakeBroker)
@@ -85,14 +81,18 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         injector = DependencyInjector(self.config, saga_manager=FakeSagaManager)
         self.assertEqual(injector.saga_manager, injector.container.saga_manager())
 
+    def test_container_lock_pool(self):
+        injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
+        self.assertEqual(injector.lock_pool, injector.container.lock_pool())
+
     async def test_wire_unwire(self):
         injector = DependencyInjector(
             self.config,
-            repository=FakeRepository,
             event_broker=FakeBroker,
             command_broker=FakeBroker,
             command_reply_broker=FakeBroker,
             saga_manager=FakeSagaManager,
+            lock_pool=FakeLockPool,
         )
 
         mock = MagicMock()

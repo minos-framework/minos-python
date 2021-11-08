@@ -3,16 +3,9 @@ from __future__ import (
 )
 
 from typing import (
-    TYPE_CHECKING,
     Any,
     Type,
 )
-
-if TYPE_CHECKING:
-    from .model import (
-        Aggregate,
-        AggregateDiff,
-    )
 
 
 class MinosException(Exception):
@@ -31,6 +24,10 @@ class MinosException(Exception):
         return self._message
 
 
+class NotProvidedException(MinosException):
+    """Exception to be raised when a dependency is needed but not provided."""
+
+
 class MinosImportException(MinosException):
     pass
 
@@ -47,68 +44,16 @@ class MinosConfigException(MinosException):
     """Base config exception."""
 
 
-class MinosConfigNotProvidedException(MinosConfigException):
-    """Exception to be raised when a config is needed but none is set."""
-
-
 class MinosBrokerException(MinosException):
     """Base broker exception"""
-
-
-class MinosBrokerNotProvidedException(MinosBrokerException):
-    """Exception to be raised when a broker is needed but none is set."""
 
 
 class MinosHandlerException(MinosException):
     """Base handler exception"""
 
 
-class MinosHandlerNotProvidedException(MinosHandlerException):
-    """Exception to be raised when a handler is needed but none is set."""
-
-
-class MinosRepositoryException(MinosException):
-    """Base repository exception."""
-
-
-class MinosRepositoryNotProvidedException(MinosRepositoryException):
-    """Exception to be raised when a repository is needed but none is set."""
-
-
-class MinosSnapshotException(MinosException):
-    """Base snapshot exception."""
-
-
-class MinosSnapshotNotProvidedException(MinosSnapshotException):
-    """Exception to be raised when a snapshot is needed but none is set."""
-
-
-class MinosPreviousVersionSnapshotException(MinosSnapshotException):
-    """Exception to be raised when current version is newer than the one to be processed."""
-
-    def __init__(self, previous: Aggregate, aggregate_diff: AggregateDiff):
-        self.previous = previous
-        self.aggregate_diff = aggregate_diff
-        super().__init__(
-            f"Version for {repr(previous.classname)} aggregate must be "
-            f"greater than {previous.version}. Obtained: {aggregate_diff.version}"
-        )
-
-
-class MinosSnapshotAggregateNotFoundException(MinosSnapshotException):
-    """Exception to be raised when some aggregate is not found on the repository."""
-
-
-class MinosSnapshotDeletedAggregateException(MinosSnapshotException):
-    """Exception to be raised when some aggregate is already deleted from the repository."""
-
-
-class MinosSagaManagerException(MinosException):
-    """Base Saga Manager exception"""
-
-
-class MinosSagaManagerNotProvidedException(MinosSagaManagerException):
-    """Exception to be raised when a SAGA Manager is not provided."""
+class MinosLockException(MinosException):
+    """Base lock exception"""
 
 
 class MinosModelException(MinosException):
@@ -131,12 +76,6 @@ class MultiTypeMinosModelSequenceException(MinosModelException):
 
 class MinosModelAttributeException(MinosException):
     """Base model attributes exception."""
-
-    pass
-
-
-class MinosImmutableClassException(MinosException):
-    """If an attribute of an immutable class is modified, this exception will be raised"""
 
     pass
 

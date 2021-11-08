@@ -8,12 +8,7 @@ from uuid import (
 
 from minos.common import (
     EmptyMinosModelSequenceException,
-    InMemorySnapshot,
     MultiTypeMinosModelSequenceException,
-)
-from tests.aggregate_classes import (
-    Car,
-    Owner,
 )
 from tests.model_classes import (
     Auth,
@@ -26,12 +21,11 @@ from tests.model_classes import (
     User,
 )
 from tests.utils import (
-    FakeBroker,
-    FakeRepository,
+    MinosTestCase,
 )
 
 
-class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
+class TestMinosModelAvro(MinosTestCase):
     def test_avro_schema(self):
         expected = [
             {
@@ -70,58 +64,6 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         shopping_list = ShoppingList(User(1234))
         self.assertIsInstance(shopping_list.avro_bytes, bytes)
 
-    def test_avro_schema_model_ref(self):
-        # noinspection DuplicatedCode
-        expected = [
-            {
-                "fields": [
-                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                    {"name": "version", "type": "int"},
-                    {"name": "created_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
-                    {"name": "updated_at", "type": {"logicalType": "timestamp-micros", "type": "long"}},
-                    {"name": "doors", "type": "int"},
-                    {"name": "color", "type": "string"},
-                    {
-                        "name": "owner",
-                        "type": [
-                            {
-                                "items": [
-                                    {
-                                        "fields": [
-                                            {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                                            {"name": "version", "type": "int"},
-                                            {
-                                                "name": "created_at",
-                                                "type": {"logicalType": "timestamp-micros", "type": "long"},
-                                            },
-                                            {
-                                                "name": "updated_at",
-                                                "type": {"logicalType": "timestamp-micros", "type": "long"},
-                                            },
-                                            {"name": "name", "type": "string"},
-                                            {"name": "surname", "type": "string"},
-                                            {"name": "age", "type": ["int", "null"]},
-                                        ],
-                                        "name": "Owner",
-                                        "namespace": "tests.aggregate_classes.goodbye",
-                                        "type": "record",
-                                    },
-                                    {"type": "string", "logicalType": "uuid"},
-                                ],
-                                "type": "array",
-                            },
-                            "null",
-                        ],
-                    },
-                ],
-                "name": "Car",
-                "namespace": "tests.aggregate_classes.hello",
-                "type": "record",
-            }
-        ]
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello", "goodbye"]):
-            self.assertEqual(expected, Car.avro_schema)
-
     def test_avro_schema_generics(self):
         expected = [
             {
@@ -157,52 +99,6 @@ class TestMinosModelAvro(unittest.IsolatedAsyncioTestCase):
         ]
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello", "goodbye"]):
             self.assertEqual(expected, Auth.avro_schema)
-
-    async def test_avro_data_model_ref(self):
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
-            owners = [
-                Owner("Hello", "Good Bye", uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s),
-                Owner("Foo", "Bar", uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s),
-            ]
-            car = Car(5, "blue", owners, uuid=uuid4(), version=1, _broker=b, _repository=r, _snapshot=s)
-            expected = {
-                "color": "blue",
-                "doors": 5,
-                "uuid": str(car.uuid),
-                "owner": [
-                    {
-                        "age": None,
-                        "uuid": str(owners[0].uuid),
-                        "name": "Hello",
-                        "surname": "Good Bye",
-                        "version": 1,
-                        "created_at": 253402300799999999,
-                        "updated_at": 253402300799999999,
-                    },
-                    {
-                        "age": None,
-                        "uuid": str(owners[1].uuid),
-                        "name": "Foo",
-                        "surname": "Bar",
-                        "version": 1,
-                        "created_at": 253402300799999999,
-                        "updated_at": 253402300799999999,
-                    },
-                ],
-                "version": 1,
-                "created_at": 253402300799999999,
-                "updated_at": 253402300799999999,
-            }
-            self.assertEqual(expected, car.avro_data)
-
-    async def test_avro_bytes_model_ref(self):
-        async with FakeBroker() as b, FakeRepository() as r, InMemorySnapshot(r) as s:
-            owners = [
-                Owner("Hello", "Good Bye", _broker=b, _repository=r, _snapshot=s),
-                Owner("Foo", "Bar", _broker=b, _repository=r, _snapshot=s),
-            ]
-            car = Car(5, "blue", owners, _broker=b, _repository=r, _snapshot=s)
-            self.assertIsInstance(car.avro_bytes, bytes)
 
     def test_avro_schema_simple(self):
         customer = Customer(1234)

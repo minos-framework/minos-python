@@ -1,4 +1,4 @@
-__version__ = "0.1.17"
+__version__ = "0.2.0"
 
 from .configuration import (
     BROKER,
@@ -15,6 +15,8 @@ from .configuration import (
     MinosConfigAbstract,
 )
 from .database import (
+    PostgreSqlLock,
+    PostgreSqlLockPool,
     PostgreSqlMinosDatabase,
     PostgreSqlPool,
 )
@@ -30,32 +32,21 @@ from .exceptions import (
     EmptyMinosModelSequenceException,
     MinosAttributeValidationException,
     MinosBrokerException,
-    MinosBrokerNotProvidedException,
     MinosConfigException,
-    MinosConfigNotProvidedException,
     MinosException,
     MinosHandlerException,
-    MinosHandlerNotProvidedException,
-    MinosImmutableClassException,
     MinosImportException,
+    MinosLockException,
     MinosMalformedAttributeException,
     MinosMessageException,
     MinosModelAttributeException,
     MinosModelException,
     MinosParseAttributeException,
-    MinosPreviousVersionSnapshotException,
     MinosProtocolException,
-    MinosRepositoryException,
-    MinosRepositoryNotProvidedException,
     MinosReqAttributeException,
-    MinosSagaManagerException,
-    MinosSagaManagerNotProvidedException,
-    MinosSnapshotAggregateNotFoundException,
-    MinosSnapshotDeletedAggregateException,
-    MinosSnapshotException,
-    MinosSnapshotNotProvidedException,
     MinosTypeAttributeException,
     MultiTypeMinosModelSequenceException,
+    NotProvidedException,
 )
 from .importlib import (
     classname,
@@ -67,16 +58,15 @@ from .injectors import (
 from .launchers import (
     EntrypointLauncher,
 )
+from .locks import (
+    Lock,
+)
 from .meta import (
     classproperty,
     property_or_classproperty,
     self_or_classmethod,
 )
 from .model import (
-    Action,
-    Aggregate,
-    AggregateDiff,
-    AggregateRef,
     AvroDataDecoder,
     AvroDataEncoder,
     AvroSchemaDecoder,
@@ -88,30 +78,18 @@ from .model import (
     DataTransferObject,
     DeclarativeModel,
     DynamicModel,
-    Entity,
-    EntitySet,
     Event,
     Field,
-    FieldDiff,
-    FieldDiffContainer,
     GenericTypeProjector,
-    IncrementalFieldDiff,
-    IncrementalSet,
-    IncrementalSetDiff,
-    IncrementalSetDiffEntry,
     MinosModel,
     MissingSentinel,
     Model,
     ModelField,
-    ModelRef,
-    ModelRefExtractor,
-    ModelRefInjector,
     ModelType,
     NoneType,
     TypeHintBuilder,
     TypeHintComparator,
-    ValueObject,
-    ValueObjectSet,
+    is_model_type,
 )
 from .networks import (
     MinosBroker,
@@ -127,31 +105,11 @@ from .protocol import (
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
 )
-from .queries import (
-    Condition,
-    Ordering,
-)
-from .repository import (
-    InMemoryRepository,
-    MinosRepository,
-    PostgreSqlRepository,
-    RepositoryEntry,
-)
 from .saga import (
     MinosSagaManager,
 )
 from .setup import (
     MinosSetup,
-)
-from .snapshot import (
-    InMemorySnapshot,
-    MinosSnapshot,
-    PostgreSqlSnapshot,
-    PostgreSqlSnapshotQueryBuilder,
-    PostgreSqlSnapshotReader,
-    PostgreSqlSnapshotSetup,
-    PostgreSqlSnapshotWriter,
-    SnapshotEntry,
 )
 from .storage import (
     MinosStorage,
