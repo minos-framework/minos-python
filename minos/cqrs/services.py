@@ -27,10 +27,11 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from minos.common import (
+from minos.aggregate import (
     Aggregate,
+)
+from minos.common import (
     MinosConfig,
-    MinosSagaManager,
     ModelType,
     import_module,
 )
@@ -41,6 +42,9 @@ from minos.networks import (
     ResponseException,
     WrappedRequest,
     enroute,
+)
+from minos.saga import (
+    SagaManager,
 )
 
 from .exceptions import (
@@ -59,7 +63,7 @@ class Service(ABC):
         self,
         *args,
         config: MinosConfig = Provide["config"],
-        saga_manager: MinosSagaManager = Provide["saga_manager"],
+        saga_manager: SagaManager = Provide["saga_manager"],
         **kwargs,
     ):
         self.config = config

@@ -32,3 +32,7 @@
 ## 0.0.7 (2021-10-19)
 
 * Be compatible with the `^0.1.1` version of `minos-microservice-saga`.
+
+## 0.0.7 (2021-11-08)
+
+* Add `minos-microservice-common>=0.2.0` compatibility.
