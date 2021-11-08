@@ -16,7 +16,7 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosBroker,
-    MinosBrokerNotProvidedException,
+    NotProvidedException,
 )
 
 from ...context import (
@@ -61,7 +61,7 @@ class RequestExecutor(Executor):
         self.user = user
 
         if broker is None or isinstance(broker, Provide):
-            raise MinosBrokerNotProvidedException("A broker instance is required.")
+            raise NotProvidedException("A broker instance is required.")
 
         self.broker = broker
 
