@@ -115,3 +115,8 @@ History
 
 * Add `"user"` context variable to be accessible during `Request` handling (same as `Request.user`).
 * Add support for `Request.user` propagation over `CommandBroker`.
+
+0.1.0 (2021-11-08)
+------------------
+
+* Add `minos-microservice-common>=0.2.0` compatibility.

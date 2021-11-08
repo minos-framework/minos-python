@@ -16,11 +16,13 @@ from uuid import (
 
 import aiopg
 
-from minos.common import (
+from minos.aggregate import (
     Action,
     AggregateDiff,
-    Event,
     FieldDiffContainer,
+)
+from minos.common import (
+    Event,
     current_datetime,
 )
 from minos.common.testing import (

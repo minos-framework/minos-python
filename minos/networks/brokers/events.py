@@ -4,8 +4,10 @@ from __future__ import (
 
 import logging
 
-from minos.common import (
+from minos.aggregate import (
     AggregateDiff,
+)
+from minos.common import (
     Event,
     MinosConfig,
 )

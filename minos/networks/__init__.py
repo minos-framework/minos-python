@@ -1,4 +1,6 @@
-__version__ = "0.0.19"
+__author__ = """Clariteia Devs"""
+__email__ = "devs@clariteia.com"
+__version__ = "0.1.0"
 
 from .brokers import (
     Broker,
