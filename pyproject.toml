@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_saga"
-version = "0.1.1"
+version = "0.2.0"
 description = "Saga Library for MinOS project."
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_saga"

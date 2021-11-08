@@ -99,3 +99,8 @@ History
 * Support dynamic `user` setup through a `ContextVar[Optional[UUID]]` variable.
 * Add `user` propagation from `SagaManager` to `RequestExecutor`.
 * Improve `SagaContext` behaviour, allowing to dynamically change field types and also delete them as in any `dict` instance.
+
+0.2.0 (2021-11-08)
+------------------
+
+* Add compatibility to `minos-microservice-common>=0.2.0`.
