@@ -21,6 +21,7 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     NULL_UUID,
+    NotProvidedException,
 )
 
 from ..events import (
@@ -28,10 +29,8 @@ from ..events import (
     EventRepository,
 )
 from ..exceptions import (
-    MinosRepositoryNotProvidedException,
-    MinosSnapshotAggregateNotFoundException,
-    MinosSnapshotDeletedAggregateException,
-    MinosTransactionRepositoryNotProvidedException,
+    AggregateNotFoundException,
+    DeletedAggregateException,
 )
 from ..queries import (
     _Condition,
@@ -69,10 +68,10 @@ class InMemorySnapshotRepository(SnapshotRepository):
         super().__init__(*args, **kwargs)
 
         if event_repository is None or isinstance(event_repository, Provide):
-            raise MinosRepositoryNotProvidedException("An event repository instance is required.")
+            raise NotProvidedException("An event repository instance is required.")
 
         if transaction_repository is None or isinstance(transaction_repository, Provide):
-            raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
+            raise NotProvidedException("A transaction repository instance is required.")
 
         self._event_repository = event_repository
         self._transaction_repository = transaction_repository
@@ -91,7 +90,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
         for uuid in uuids:
             try:
                 aggregate = await self.get(aggregate_name, uuid, **kwargs)
-            except MinosSnapshotDeletedAggregateException:
+            except DeletedAggregateException:
                 continue
 
             if condition.evaluate(aggregate):
@@ -114,10 +113,10 @@ class InMemorySnapshotRepository(SnapshotRepository):
         entries = await self._get_event_entries(aggregate_name, uuid, transaction_uuids)
 
         if not len(entries):
-            raise MinosSnapshotAggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
+            raise AggregateNotFoundException(f"Not found any entries for the {uuid!r} id.")
 
         if entries[-1].action.is_delete:
-            raise MinosSnapshotDeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
+            raise DeletedAggregateException(f"The {uuid!r} id points to an already deleted aggregate.")
 
         return self._build_aggregate(entries, **kwargs)
 

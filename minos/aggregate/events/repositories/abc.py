@@ -33,14 +33,12 @@ from minos.common import (
     MinosBroker,
     MinosPool,
     MinosSetup,
+    NotProvidedException,
 )
 
 from ...exceptions import (
-    MinosBrokerNotProvidedException,
-    MinosLockPoolNotProvidedException,
-    MinosRepositoryConflictException,
-    MinosRepositoryException,
-    MinosTransactionRepositoryNotProvidedException,
+    EventRepositoryConflictException,
+    EventRepositoryException,
 )
 from ...transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -76,13 +74,13 @@ class EventRepository(ABC, MinosSetup):
         super().__init__(*args, **kwargs)
 
         if event_broker is None or isinstance(event_broker, Provide):
-            raise MinosBrokerNotProvidedException("A broker instance is required.")
+            raise NotProvidedException("A broker instance is required.")
 
         if transaction_repository is None or isinstance(transaction_repository, Provide):
-            raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
+            raise NotProvidedException("A transaction repository instance is required.")
 
         if lock_pool is None or isinstance(lock_pool, Provide):
-            raise MinosLockPoolNotProvidedException("A lock pool instance is required.")
+            raise NotProvidedException("A lock pool instance is required.")
 
         self._event_broker = event_broker
         self._transaction_repository = transaction_repository
@@ -155,11 +153,11 @@ class EventRepository(ABC, MinosSetup):
                 entry = EventEntry.from_aggregate_diff(entry, transaction=transaction)
 
             if not isinstance(entry.action, Action):
-                raise MinosRepositoryException("The 'EventEntry.action' attribute must be an 'Action' instance.")
+                raise EventRepositoryException("The 'EventEntry.action' attribute must be an 'Action' instance.")
 
             async with self.write_lock():
                 if not await self.validate(entry, **kwargs):
-                    raise MinosRepositoryConflictException(f"{entry!r} could not be committed!", await self.offset)
+                    raise EventRepositoryConflictException(f"{entry!r} could not be committed!", await self.offset)
 
                 entry = await self._submit(entry, **kwargs)
 

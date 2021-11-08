@@ -36,7 +36,7 @@ from minos.common import (
 )
 
 from ..exceptions import (
-    MinosRepositoryConflictException,
+    EventRepositoryConflictException,
 )
 from .contextvars import (
     TRANSACTION_CONTEXT_VAR,
@@ -168,7 +168,7 @@ class TransactionEntry:
                 event_offset = 1 + await self._event_repository.offset
                 await self.save(event_offset=event_offset, status=status)
                 if not committable:
-                    raise MinosRepositoryConflictException(f"{self!r} could not be reserved!", event_offset)
+                    raise EventRepositoryConflictException(f"{self!r} could not be reserved!", event_offset)
 
     async def validate(self) -> bool:
         """Check if the transaction is committable.

@@ -15,7 +15,7 @@ from minos.aggregate import (
     TRANSACTION_CONTEXT_VAR,
     Action,
     EventEntry,
-    MinosRepositoryConflictException,
+    EventRepositoryConflictException,
     TransactionEntry,
     TransactionStatus,
 )
@@ -135,7 +135,7 @@ class TestTransactionEntry(MinosTestCase):
         ), patch("minos.aggregate.TransactionEntry.save") as save_mock, patch(
             "minos.aggregate.TransactionEntry.validate", return_value=False
         ) as validate_mock:
-            with self.assertRaises(MinosRepositoryConflictException):
+            with self.assertRaises(EventRepositoryConflictException):
                 await transaction.reserve()
 
         self.assertEqual(1, validate_mock.call_count)

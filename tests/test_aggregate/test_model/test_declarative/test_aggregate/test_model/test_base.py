@@ -7,10 +7,10 @@ from uuid import (
 )
 
 from minos.aggregate import (
+    AggregateNotFoundException,
     Condition,
-    MinosRepositoryException,
-    MinosSnapshotAggregateNotFoundException,
-    MinosSnapshotDeletedAggregateException,
+    DeletedAggregateException,
+    EventRepositoryException,
     Ordering,
 )
 from minos.common import (
@@ -44,13 +44,13 @@ class TestAggregate(MinosTestCase):
         self.assertEqual(expected, observed)
 
     async def test_create_raises(self):
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car.create(uuid=uuid4(), doors=3, color="blue", **self.kwargs)
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car.create(version=1, doors=3, color="blue", **self.kwargs)
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car.create(created_at=current_datetime(), doors=3, color="blue", **self.kwargs)
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car.create(updated_at=current_datetime(), doors=3, color="blue", **self.kwargs)
 
     async def test_classname(self):
@@ -79,7 +79,7 @@ class TestAggregate(MinosTestCase):
         self.assertEqual(original, recovered)
 
     async def test_get_raises(self):
-        with self.assertRaises(MinosSnapshotAggregateNotFoundException):
+        with self.assertRaises(AggregateNotFoundException):
             await Car.get(NULL_UUID, **self.kwargs)
 
     async def test_update(self):
@@ -110,11 +110,11 @@ class TestAggregate(MinosTestCase):
         self.assertEqual(car, await Car.get(car.uuid, **self.kwargs))
 
     async def test_update_raises(self):
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car(3, "blue", **self.kwargs).update(version=1)
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car(3, "blue", **self.kwargs).update(created_at=current_datetime())
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car(3, "blue", **self.kwargs).update(updated_at=current_datetime())
 
     async def test_refresh(self):
@@ -140,7 +140,7 @@ class TestAggregate(MinosTestCase):
         car.color = "red"
         car.doors = 5
 
-        with self.assertRaises(MinosSnapshotAggregateNotFoundException):
+        with self.assertRaises(AggregateNotFoundException):
             await car.refresh()
 
         await car.save()
@@ -180,15 +180,15 @@ class TestAggregate(MinosTestCase):
         )
 
     async def test_save_raises(self):
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car(3, "blue", uuid=uuid4(), **self.kwargs).save()
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await Car(3, "blue", version=1, **self.kwargs).save()
 
     async def test_delete(self):
         car = await Car.create(doors=3, color="blue", **self.kwargs)
         await car.delete()
-        with self.assertRaises(MinosSnapshotDeletedAggregateException):
+        with self.assertRaises(DeletedAggregateException):
             await Car.get(car.uuid, **self.kwargs)
 
 

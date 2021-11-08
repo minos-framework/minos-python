@@ -23,7 +23,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    MinosRepositoryConflictException,
+    EventRepositoryConflictException,
 )
 from ..entries import (
     EventEntry,
@@ -50,7 +50,7 @@ class InMemoryEventRepository(EventRepository):
         if entry.version is None:
             entry.version = next_version
         if entry.version < next_version:
-            raise MinosRepositoryConflictException(
+            raise EventRepositoryConflictException(
                 f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
                 await self.offset,
             )

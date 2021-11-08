@@ -19,20 +19,18 @@ from minos.aggregate import (
     AggregateDiff,
     EventEntry,
     EventRepository,
+    EventRepositoryConflictException,
+    EventRepositoryException,
     FieldDiff,
     FieldDiffContainer,
     IncrementalFieldDiff,
-    MinosBrokerNotProvidedException,
-    MinosLockPoolNotProvidedException,
-    MinosRepositoryConflictException,
-    MinosRepositoryException,
-    MinosTransactionRepositoryNotProvidedException,
     TransactionEntry,
     TransactionStatus,
 )
 from minos.common import (
     NULL_UUID,
     MinosSetup,
+    NotProvidedException,
     current_datetime,
 )
 from tests.utils import (
@@ -64,13 +62,13 @@ class TestMinosRepository(MinosTestCase):
         self.assertEqual(self.lock_pool, repository._lock_pool)
 
     async def test_constructor_raises(self):
-        with self.assertRaises(MinosBrokerNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             FakeEventRepository(event_broker=None)
-        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             FakeEventRepository(transaction_repository=None)
-        with self.assertRaises(MinosLockPoolNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             FakeEventRepository(lock_pool=None)
 
@@ -266,7 +264,7 @@ class TestMinosRepository(MinosTestCase):
 
     async def test_submit_raises_missing_action(self):
         entry = EventEntry(uuid4(), "example.Car", 0, bytes())
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await self.event_repository.submit(entry)
 
     async def test_submit_raises_conflict(self):
@@ -275,7 +273,7 @@ class TestMinosRepository(MinosTestCase):
         self.event_repository.validate = validate_mock
 
         entry = EventEntry(uuid4(), "example.Car", 0, bytes(), action=Action.CREATE)
-        with self.assertRaises(MinosRepositoryConflictException):
+        with self.assertRaises(EventRepositoryConflictException):
             await self.event_repository.submit(entry)
 
     async def test_validate_true(self):

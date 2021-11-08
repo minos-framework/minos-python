@@ -2,7 +2,6 @@ import unittest
 
 from minos.aggregate import (
     Action,
-    MinosModelException,
 )
 
 
@@ -13,7 +12,7 @@ class TestAction(unittest.TestCase):
         self.assertEqual(Action.DELETE, Action.value_of("delete"))
 
     def test_value_of_raises(self):
-        with self.assertRaises(MinosModelException):
+        with self.assertRaises(ValueError):
             Action.value_of("foo")
 
     def test_is_create(self):

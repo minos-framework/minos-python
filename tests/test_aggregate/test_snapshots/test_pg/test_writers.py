@@ -13,12 +13,10 @@ from uuid import (
 from minos.aggregate import (
     Action,
     Condition,
+    DeletedAggregateException,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
-    MinosRepositoryNotProvidedException,
-    MinosSnapshotDeletedAggregateException,
-    MinosTransactionRepositoryNotProvidedException,
     Ordering,
     PostgreSqlSnapshotReader,
     PostgreSqlSnapshotSetup,
@@ -28,6 +26,7 @@ from minos.aggregate import (
     TransactionStatus,
 )
 from minos.common import (
+    NotProvidedException,
     current_datetime,
 )
 from minos.common.testing import (
@@ -119,10 +118,10 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(self.config.snapshot.password, self.writer.password)
 
     def test_from_config_raises(self):
-        with self.assertRaises(MinosRepositoryNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader, event_repository=None)
 
-        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             PostgreSqlSnapshotWriter.from_config(
                 self.config, reader=self.reader, event_repository=self.event_repository, transaction_repository=None
             )
@@ -309,7 +308,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             if exp.data is None:
-                with self.assertRaises(MinosSnapshotDeletedAggregateException):
+                with self.assertRaises(DeletedAggregateException):
                     # noinspection PyStatementEffect
                     obs.build_aggregate()
             else:

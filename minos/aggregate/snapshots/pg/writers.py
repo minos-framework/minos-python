@@ -16,6 +16,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
+    NotProvidedException,
     import_module,
 )
 
@@ -24,10 +25,8 @@ from ...events import (
     EventRepository,
 )
 from ...exceptions import (
-    MinosPreviousVersionSnapshotException,
-    MinosRepositoryNotProvidedException,
-    MinosSnapshotAggregateNotFoundException,
-    MinosTransactionRepositoryNotProvidedException,
+    AggregateNotFoundException,
+    SnapshotRepositoryConflictException,
 )
 from ...transactions import (
     TransactionRepository,
@@ -65,10 +64,10 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         super().__init__(*args, **kwargs)
 
         if event_repository is None or isinstance(event_repository, Provide):
-            raise MinosRepositoryNotProvidedException("An event repository instance is required.")
+            raise NotProvidedException("An event repository instance is required.")
 
         if transaction_repository is None or isinstance(transaction_repository, Provide):
-            raise MinosTransactionRepositoryNotProvidedException("A transaction repository instance is required.")
+            raise NotProvidedException("A transaction repository instance is required.")
 
         self._reader = reader
         self._event_repository = event_repository
@@ -99,7 +98,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         async for event_entry in self._event_repository.select(id_gt=offset, **kwargs):
             try:
                 await self._dispatch_one(event_entry, **kwargs)
-            except MinosPreviousVersionSnapshotException:
+            except SnapshotRepositoryConflictException:
                 pass
             offset = max(event_entry.id, offset)
 
@@ -153,13 +152,13 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         try:
             # noinspection PyTypeChecker
             previous = await self._select_one_aggregate(aggregate_diff.uuid, aggregate_diff.name, **kwargs)
-        except MinosSnapshotAggregateNotFoundException:
+        except AggregateNotFoundException:
             # noinspection PyTypeChecker
             aggregate_cls: Type[Aggregate] = import_module(aggregate_diff.name)
             return aggregate_cls.from_diff(aggregate_diff, **kwargs)
 
         if previous.version >= aggregate_diff.version:
-            raise MinosPreviousVersionSnapshotException(previous, aggregate_diff)
+            raise SnapshotRepositoryConflictException(previous, aggregate_diff)
 
         previous.apply_diff(aggregate_diff)
         return previous

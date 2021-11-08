@@ -5,9 +5,9 @@ from uuid import (
 
 from minos.aggregate import (
     InMemoryTransactionRepository,
-    MinosInvalidTransactionStatusException,
     TransactionEntry,
     TransactionRepository,
+    TransactionRepositoryConflictException,
     TransactionStatus,
 )
 from tests.utils import (
@@ -40,38 +40,38 @@ class TestInMemoryTransactionRepository(MinosTestCase):
 
     async def test_submit_pending_raises(self):
         await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
 
     async def test_submit_reserved_raises(self):
         await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
 
     async def test_submit_committed_raises(self):
         await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
     async def test_submit_rejected_raises(self):
         await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.event_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
     async def test_select_empty(self):

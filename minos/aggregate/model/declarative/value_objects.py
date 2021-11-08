@@ -13,7 +13,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    MinosImmutableClassException,
+    ValueObjectException,
 )
 from ..collections import (
     IncrementalSet,
@@ -27,7 +27,7 @@ class ValueObject(DeclarativeModel):
         if key.startswith("_"):
             super().__setattr__(key, value)
         else:
-            raise MinosImmutableClassException("modification of an immutable value object not allowed")
+            raise ValueObjectException("modification of an immutable value object not allowed")
 
 
 T = TypeVar("T", bound=Model)

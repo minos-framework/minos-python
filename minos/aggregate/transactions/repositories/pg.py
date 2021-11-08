@@ -16,7 +16,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    MinosInvalidTransactionStatusException,
+    TransactionRepositoryConflictException,
 )
 from ..entries import (
     TransactionEntry,
@@ -51,7 +51,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
                 _INSERT_TRANSACTIONS_VALUES_QUERY, params, lock=transaction.uuid.int & (1 << 32) - 1,
             )
         except StopAsyncIteration:
-            raise MinosInvalidTransactionStatusException(
+            raise TransactionRepositoryConflictException(
                 f"{transaction!r} status is invalid respect to the previous one."
             )
         transaction.updated_at = updated_at

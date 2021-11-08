@@ -19,11 +19,9 @@ from minos.common import (
     Lock,
     MinosPool,
     MinosSetup,
+    NotProvidedException,
 )
 
-from ...exceptions import (
-    MinosLockPoolNotProvidedException,
-)
 from ..entries import (
     TransactionEntry,
     TransactionStatus,
@@ -40,7 +38,7 @@ class TransactionRepository(ABC, MinosSetup):
         super().__init__(*args, **kwargs)
 
         if lock_pool is None or isinstance(lock_pool, Provide):
-            raise MinosLockPoolNotProvidedException("A transaction repository instance is required.")
+            raise NotProvidedException("A transaction repository instance is required.")
 
         self._lock_pool = lock_pool
 

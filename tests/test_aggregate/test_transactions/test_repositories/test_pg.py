@@ -6,10 +6,10 @@ from uuid import (
 import aiopg
 
 from minos.aggregate import (
-    MinosInvalidTransactionStatusException,
     PostgreSqlTransactionRepository,
     TransactionEntry,
     TransactionRepository,
+    TransactionRepositoryConflictException,
     TransactionStatus,
 )
 from minos.common.testing import (
@@ -79,38 +79,38 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
 
     async def test_submit_pending_raises(self):
         await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
 
     async def test_submit_reserved_raises(self):
         await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
 
     async def test_submit_committed_raises(self):
         await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
     async def test_submit_rejected_raises(self):
         await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
-        with self.assertRaises(MinosInvalidTransactionStatusException):
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
 

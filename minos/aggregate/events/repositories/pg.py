@@ -27,7 +27,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    MinosRepositoryConflictException,
+    EventRepositoryConflictException,
 )
 from ..entries import (
     EventEntry,
@@ -66,7 +66,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
         try:
             response = await self.submit_query_and_fetchone(query, params, lock=lock)
         except IntegrityError:
-            raise MinosRepositoryConflictException(
+            raise EventRepositoryConflictException(
                 f"{entry!r} could not be submitted due to a key (uuid, version, transaction) collision",
                 await self.offset,
             )

@@ -24,6 +24,7 @@ from dependency_injector.wiring import (
 from minos.common import (
     NULL_DATETIME,
     NULL_UUID,
+    NotProvidedException,
 )
 
 from ....events import (
@@ -31,9 +32,7 @@ from ....events import (
     EventRepository,
 )
 from ....exceptions import (
-    MinosRepositoryException,
-    MinosRepositoryNotProvidedException,
-    MinosSnapshotNotProvidedException,
+    EventRepositoryException,
 )
 from ....queries import (
     _Condition,
@@ -78,9 +77,9 @@ class Aggregate(Entity):
         super().__init__(version, created_at, updated_at, *args, uuid=uuid, **kwargs)
 
         if _repository is None or isinstance(_repository, Provide):
-            raise MinosRepositoryNotProvidedException("An event repository instance is required.")
+            raise NotProvidedException("An event repository instance is required.")
         if _snapshot is None or isinstance(_snapshot, Provide):
-            raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
+            raise NotProvidedException("A snapshot instance is required.")
 
         self._repository = _repository
         self._snapshot = _snapshot
@@ -97,7 +96,7 @@ class Aggregate(Entity):
         :return: A list of aggregate instances.
         """
         if _snapshot is None or isinstance(_snapshot, Provide):
-            raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
+            raise NotProvidedException("A snapshot instance is required.")
 
         # noinspection PyTypeChecker
         return await _snapshot.get(cls.classname, uuid, _snapshot=_snapshot, **kwargs)
@@ -124,7 +123,7 @@ class Aggregate(Entity):
         :return: An aggregate instance.
         """
         if _snapshot is None or isinstance(_snapshot, Provide):
-            raise MinosSnapshotNotProvidedException("A snapshot instance is required.")
+            raise NotProvidedException("A snapshot instance is required.")
         # noinspection PyTypeChecker
         iterable = _snapshot.find(cls.classname, condition, ordering, limit, _snapshot=_snapshot, **kwargs)
         # noinspection PyTypeChecker
@@ -140,19 +139,19 @@ class Aggregate(Entity):
         :return: A new ``Aggregate`` instance.
         """
         if "uuid" in kwargs:
-            raise MinosRepositoryException(
+            raise EventRepositoryException(
                 f"The identifier must be computed internally on the repository. Obtained: {kwargs['uuid']}"
             )
         if "version" in kwargs:
-            raise MinosRepositoryException(
+            raise EventRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
         if "created_at" in kwargs:
-            raise MinosRepositoryException(
+            raise EventRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['created_at']}"
             )
         if "updated_at" in kwargs:
-            raise MinosRepositoryException(
+            raise EventRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
 
@@ -174,15 +173,15 @@ class Aggregate(Entity):
         """
 
         if "version" in kwargs:
-            raise MinosRepositoryException(
+            raise EventRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['version']}"
             )
         if "created_at" in kwargs:
-            raise MinosRepositoryException(
+            raise EventRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['created_at']}"
             )
         if "updated_at" in kwargs:
-            raise MinosRepositoryException(
+            raise EventRepositoryException(
                 f"The version must be computed internally on the repository. Obtained: {kwargs['updated_at']}"
             )
 
@@ -208,11 +207,11 @@ class Aggregate(Entity):
         is_creation = self.uuid == NULL_UUID
         if is_creation != (self.version == 0):
             if is_creation:
-                raise MinosRepositoryException(
+                raise EventRepositoryException(
                     f"The version must be computed internally on the repository. Obtained: {self.version}"
                 )
             else:
-                raise MinosRepositoryException(
+                raise EventRepositoryException(
                     f"The uuid must be computed internally on the repository. Obtained: {self.uuid}"
                 )
 

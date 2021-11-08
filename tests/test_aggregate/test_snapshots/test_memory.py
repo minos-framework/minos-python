@@ -7,20 +7,21 @@ from uuid import (
 )
 
 from minos.aggregate import (
+    AggregateNotFoundException,
     Condition,
+    DeletedAggregateException,
     EventEntry,
     FieldDiff,
     FieldDiffContainer,
     InMemorySnapshotRepository,
-    MinosRepositoryNotProvidedException,
-    MinosSnapshotAggregateNotFoundException,
-    MinosSnapshotDeletedAggregateException,
-    MinosTransactionRepositoryNotProvidedException,
     Ordering,
     SnapshotEntry,
     SnapshotRepository,
     TransactionEntry,
     TransactionStatus,
+)
+from minos.common import (
+    NotProvidedException,
 )
 from tests.aggregate_classes import (
     Car,
@@ -89,11 +90,11 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         self.assertTrue(issubclass(InMemorySnapshotRepository, SnapshotRepository))
 
     def test_constructor_raises(self):
-        with self.assertRaises(MinosRepositoryNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             InMemorySnapshotRepository(event_repository=None)
 
-        with self.assertRaises(MinosTransactionRepositoryNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             InMemorySnapshotRepository(transaction_repository=None)
 
@@ -287,13 +288,13 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         self.assertEqual(expected, observed)
 
     async def test_get_raises(self):
-        with self.assertRaises(MinosSnapshotDeletedAggregateException):
+        with self.assertRaises(DeletedAggregateException):
             await self.snapshot_repository.get("tests.aggregate_classes.Car", self.uuid_1)
-        with self.assertRaises(MinosSnapshotAggregateNotFoundException):
+        with self.assertRaises(AggregateNotFoundException):
             await self.snapshot_repository.get("tests.aggregate_classes.Car", uuid4())
 
     async def test_get_with_transaction_raises(self):
-        with self.assertRaises(MinosSnapshotDeletedAggregateException):
+        with self.assertRaises(DeletedAggregateException):
             await self.snapshot_repository.get(
                 "tests.aggregate_classes.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_2)
             )
@@ -355,7 +356,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         self.assertEqual(len(expected), len(observed))
         for exp, obs in zip(expected, observed):
             if exp.data is None:
-                with self.assertRaises(MinosSnapshotDeletedAggregateException):
+                with self.assertRaises(DeletedAggregateException):
                     # noinspection PyStatementEffect
                     obs.build_aggregate()
             else:

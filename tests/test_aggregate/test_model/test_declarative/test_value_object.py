@@ -7,8 +7,8 @@ from minos.aggregate import (
     Action,
     IncrementalSetDiff,
     IncrementalSetDiffEntry,
-    MinosImmutableClassException,
     ValueObject,
+    ValueObjectException,
     ValueObjectSet,
 )
 from tests.value_objects import (
@@ -31,7 +31,7 @@ class TestValueObject(TestCase):
         self.assertEqual(42042, self.address.zip_code)
 
     def test_raise_when_accessed(self):
-        with self.assertRaises(MinosImmutableClassException):
+        with self.assertRaises(ValueObjectException):
             self.address.street = "this assignment must raise"
 
 

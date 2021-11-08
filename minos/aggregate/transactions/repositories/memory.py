@@ -11,7 +11,7 @@ from minos.common import (
 )
 
 from ...exceptions import (
-    MinosInvalidTransactionStatusException,
+    TransactionRepositoryConflictException,
 )
 from ..entries import (
     TransactionEntry,
@@ -42,7 +42,7 @@ class InMemoryTransactionRepository(TransactionRepository):
                 or (status == s.COMMITTED)
                 or (status == s.REJECTED)
             ):
-                raise MinosInvalidTransactionStatusException(
+                raise TransactionRepositoryConflictException(
                     f"{transaction!r} status is invalid respect to the previous one."
                 )
 

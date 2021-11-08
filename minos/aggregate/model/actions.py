@@ -6,10 +6,6 @@ from enum import (
     Enum,
 )
 
-from ..exceptions import (
-    MinosModelException,
-)
-
 
 class Action(str, Enum):
     """Enum class that describes the actions."""
@@ -24,7 +20,7 @@ class Action(str, Enum):
         for item in cls.__members__.values():
             if item.value == value:
                 return item
-        raise MinosModelException(f"The given value does not match with any enum items. Obtained {value}")
+        raise ValueError(f"The given value does not match with any enum items. Obtained {value}")
 
     @property
     def is_create(self) -> bool:

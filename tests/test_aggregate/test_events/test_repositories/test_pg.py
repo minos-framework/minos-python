@@ -17,9 +17,9 @@ from minos.aggregate import (
     Action,
     EventEntry,
     EventRepository,
+    EventRepositoryConflictException,
+    EventRepositoryException,
     FieldDiffContainer,
-    MinosRepositoryConflictException,
-    MinosRepositoryException,
     PostgreSqlEventRepository,
     TransactionEntry,
 )
@@ -115,11 +115,11 @@ class TestPostgreSqlRepository(MinosTestCase, PostgresAsyncTestCase, TestReposit
 
     async def test_submit_raises_duplicate(self):
         await self.event_repository.submit(EventEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
-        with self.assertRaises(MinosRepositoryConflictException):
+        with self.assertRaises(EventRepositoryConflictException):
             await self.event_repository.submit(EventEntry(self.uuid, "example.Car", 1, action=Action.CREATE))
 
     async def test_submit_raises_no_action(self):
-        with self.assertRaises(MinosRepositoryException):
+        with self.assertRaises(EventRepositoryException):
             await self.event_repository.submit(EventEntry(self.uuid, "example.Car", 1, "foo".encode()))
 
     async def test_offset(self):

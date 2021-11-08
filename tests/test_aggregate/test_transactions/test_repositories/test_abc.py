@@ -12,13 +12,13 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    MinosLockPoolNotProvidedException,
     TransactionEntry,
     TransactionRepository,
     TransactionStatus,
 )
 from minos.common import (
     MinosSetup,
+    NotProvidedException,
 )
 from tests.utils import (
     FakeAsyncIterator,
@@ -34,7 +34,7 @@ class TestTransactionRepository(MinosTestCase):
         self.transaction_repository = FakeTransactionRepository()
 
     async def test_constructor_raises(self):
-        with self.assertRaises(MinosLockPoolNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             FakeTransactionRepository(lock_pool=None)
 

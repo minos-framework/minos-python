@@ -69,6 +69,13 @@ class TestModelRef(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(1, value.age)
 
+    def test_model_attribute_raises(self):
+        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+
+        with self.assertRaises(AttributeError):
+            value.year
+
     def test_fields(self):
         mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
         value = ModelRef(mt_bar(uuid=uuid4(), age=1))

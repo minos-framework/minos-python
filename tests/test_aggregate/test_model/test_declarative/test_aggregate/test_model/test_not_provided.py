@@ -5,8 +5,9 @@ from uuid import (
 
 from minos.aggregate import (
     Condition,
-    MinosRepositoryNotProvidedException,
-    MinosSnapshotNotProvidedException,
+)
+from minos.common import (
+    NotProvidedException,
 )
 from tests.aggregate_classes import (
     Car,
@@ -18,18 +19,18 @@ from tests.utils import (
 
 class TestAggregateNotProvided(MinosTestCase):
     async def test_create_raises(self):
-        with self.assertRaises(MinosRepositoryNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             await Car.create(doors=3, color="blue", _repository=None)
-        with self.assertRaises(MinosSnapshotNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             await Car.create(doors=3, color="blue", _snapshot=None)
 
     async def test_get_raises(self):
-        with self.assertRaises(MinosSnapshotNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             await Car.get(uuid4(), _snapshot=None)
 
     async def test_find_raises(self):
-        with self.assertRaises(MinosSnapshotNotProvidedException):
+        with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
             [c async for c in Car.find(Condition.TRUE, _snapshot=None)]
 
