@@ -80,7 +80,20 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
     async def test_submit_pending_raises(self):
         await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
+
+    async def test_submit_reserving_raises(self):
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
 
@@ -89,14 +102,33 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
         with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+
+    async def test_submit_committing_raises(self):
+        await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.REJECTED, 34))
 
     async def test_submit_committed_raises(self):
         await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
@@ -107,7 +139,11 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
         with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.PENDING, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVING, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.RESERVED, 34))
+        with self.assertRaises(TransactionRepositoryConflictException):
+            await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTING, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
             await self.transaction_repository.submit(TransactionEntry(self.uuid, TransactionStatus.COMMITTED, 34))
         with self.assertRaises(TransactionRepositoryConflictException):
