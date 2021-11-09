@@ -3,9 +3,6 @@ from unittest.mock import (
     AsyncMock,
 )
 
-from minos.common import (
-    CommandStatus,
-)
 from minos.saga import (
     Executor,
     ResponseExecutor,
@@ -13,6 +10,7 @@ from minos.saga import (
     SagaFailedExecutionStepException,
     SagaOperation,
     SagaResponse,
+    SagaResponseStatus,
 )
 from tests.utils import (
     Foo,
@@ -34,13 +32,13 @@ class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     async def test_exec_raises(self):
-        response = SagaResponse(status=CommandStatus.ERROR)
+        response = SagaResponse(status=SagaResponseStatus.ERROR)
         operation = SagaOperation(AsyncMock(side_effect=ValueError))
         with self.assertRaises(SagaFailedExecutionStepException):
             await self.executor.exec(operation, SagaContext(), response=response)
 
     async def test_exec_return_exception_raises(self):
-        response = SagaResponse(status=CommandStatus.ERROR)
+        response = SagaResponse(status=SagaResponseStatus.ERROR)
         operation = SagaOperation(AsyncMock(return_value=ValueError("This is an example")))
         with self.assertRaises(SagaFailedExecutionStepException):
             await self.executor.exec(operation, SagaContext(), response=response)

@@ -87,15 +87,13 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         send_mock = AsyncMock()
         self.broker.send = send_mock
 
-        reply_topic = "TheReplyTopic"
-
         Message = namedtuple("Message", ["data"])
         expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
         with patch("uuid.uuid4", return_value=expected_uuid):
             self.handler.get_one = AsyncMock(
                 side_effect=[
-                    Message(CommandReply(reply_topic, [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
-                    Message(CommandReply(reply_topic, [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
+                    Message(CommandReply("topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
+                    Message(CommandReply("topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
                 ]
             )
 
@@ -111,14 +109,12 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
                     topic="CreateOrder",
                     data=Foo("create_order!"),
                     saga=expected_uuid,
-                    reply_topic=reply_topic,
                     user=self.user,
                 ),
                 call(
                     topic="CreateTicket",
                     data=Foo("create_ticket!"),
                     saga=expected_uuid,
-                    reply_topic=reply_topic,
                     user=self.user,
                 ),
             ],
@@ -160,14 +156,12 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
                     topic="CreateOrder",
                     data=Foo("create_order!"),
                     saga=execution.uuid,
-                    reply_topic=None,
                     user=self.user,
                 ),
                 call(
                     topic="CreateTicket",
                     data=Foo("create_ticket!"),
                     saga=execution.uuid,
-                    reply_topic=None,
                     user=self.user,
                 ),
             ],

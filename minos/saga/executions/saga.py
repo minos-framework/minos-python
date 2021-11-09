@@ -155,7 +155,7 @@ class SagaExecution:
     async def execute(self, response: Optional[SagaResponse] = None, *args, **kwargs) -> SagaContext:
         """Execute the ``Saga`` definition.
 
-        :param response: An optional ``CommandReply`` to be consumed by the immediately next executed step.
+        :param response: An optional ``SagaResponse`` to be consumed by the immediately next executed step.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
@@ -214,10 +214,9 @@ class SagaExecution:
             self.status = SagaStatus.Errored
             raise SagaFailedCommitCallbackException(exc.exception)
 
-    async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> None:
+    async def rollback(self, *args, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.
 
-        :param reply_topic: The topic in which to receive the future replies.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: The updated execution context.
@@ -230,7 +229,7 @@ class SagaExecution:
         for execution_step in reversed(self.executed_steps):
             try:
                 self.context = await execution_step.rollback(
-                    self.context, reply_topic=reply_topic, user=self.user, execution_uuid=self.uuid, *args, **kwargs
+                    self.context, user=self.user, execution_uuid=self.uuid, *args, **kwargs
                 )
             except SagaStepExecutionException as exc:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")

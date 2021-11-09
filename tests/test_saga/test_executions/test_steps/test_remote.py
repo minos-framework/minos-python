@@ -36,7 +36,6 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.execute_kwargs = {
             "execution_uuid": uuid4(),
             "broker": self.broker,
-            "reply_topic": "FooAdd",
             "user": uuid4(),
         }
 

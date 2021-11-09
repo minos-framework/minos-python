@@ -158,14 +158,14 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
         async with self.dynamic_handler_pool.acquire() as handler:
             while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                 try:
-                    await execution.execute(response=response, **(kwargs | {"reply_topic": handler.topic}))
+                    await execution.execute(response=response, **kwargs)
                 except SagaPausedExecutionStepException:
                     response = await self._get_response(handler, execution, **kwargs)
                 self.storage.store(execution)
 
     @staticmethod
     async def _get_response(handler: MinosHandler, execution: SagaExecution, **kwargs) -> SagaResponse:
-        reply = None
+        reply: Optional[CommandReply] = None
         while reply is None or reply.saga != execution.uuid:
             try:
                 entry = await handler.get_one(**kwargs)
