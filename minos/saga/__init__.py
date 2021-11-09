@@ -54,6 +54,7 @@ from .executions import (
     SagaStatus,
     SagaStepExecution,
     SagaStepStatus,
+    TransactionManager,
 )
 from .manager import (
     SagaManager,
