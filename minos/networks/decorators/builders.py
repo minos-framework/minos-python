@@ -5,7 +5,7 @@ from collections import (
     defaultdict,
 )
 from inspect import (
-    iscoroutinefunction,
+    isawaitable,
 )
 from typing import (
     Awaitable,
@@ -112,34 +112,30 @@ class EnrouteBuilder:
 
         for name, decorators in mapping.items():
             for decorator in decorators:
-                ans[decorator].add(self._build_one_method(class_, name, decorator.pre_fn_name))
+                ans[decorator].add(self._build_one_method(class_, name, decorator.pre_fn_name, decorator.post_fn_name))
 
     @staticmethod
-    def _build_one_method(class_: type, name: str, pref_fn_name: str, **kwargs) -> Handler:
+    def _build_one_method(class_: type, name: str, pref_fn_name: str, post_fn_name: str, **kwargs) -> Handler:
         instance = class_(**kwargs)
         fn = getattr(instance, name)
         pre_fn = getattr(instance, pref_fn_name, None)
+        post_fn = getattr(instance, post_fn_name, None)
 
-        if iscoroutinefunction(fn):
-            _awaitable_fn = fn
-        else:
+        async def _wrapped_fn(request: Request) -> Optional[Response]:
+            if pre_fn is not None:
+                request = pre_fn(request)
+                if isawaitable(request):
+                    request = await request
 
-            async def _awaitable_fn(request: Request) -> Optional[Response]:
-                return fn(request)
+            response = fn(request)
+            if isawaitable(response):
+                response = await response
 
-        if pre_fn is None:
-            _wrapped_fn = _awaitable_fn
-        else:
-            if iscoroutinefunction(pre_fn):
+            if post_fn is not None:
+                response = post_fn(response)
+                if isawaitable(response):
+                    response = await response
 
-                async def _wrapped_fn(request: Request) -> Optional[Response]:
-                    request = await pre_fn(request)
-                    return await _awaitable_fn(request)
-
-            else:
-
-                async def _wrapped_fn(request: Request) -> Optional[Response]:
-                    request = pre_fn(request)
-                    return await _awaitable_fn(request)
+            return response
 
         return _wrapped_fn
