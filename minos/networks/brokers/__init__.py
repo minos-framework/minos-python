@@ -6,6 +6,7 @@ from .command_replies import (
     CommandReplyBroker,
 )
 from .commands import (
+    REPLY_TOPIC_CONTEXT_VAR,
     CommandBroker,
 )
 from .events import (

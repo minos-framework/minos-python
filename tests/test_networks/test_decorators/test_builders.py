@@ -37,7 +37,7 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         handlers = self.builder.get_rest_command_query()
         self.assertEqual(3, len(handlers))
 
-        expected = Response("Get Tickets: test")
+        expected = Response("(Get Tickets: test)")
         observed = await handlers[RestQueryEnrouteDecorator("tickets/", "GET")](self.request)
         self.assertEqual(expected, observed)
 
@@ -70,7 +70,7 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         handlers = self.builder.get_broker_command_query()
         self.assertEqual(4, len(handlers))
 
-        expected = Response("Get Tickets: test")
+        expected = Response("(Get Tickets: test)")
         observed = await handlers[BrokerQueryEnrouteDecorator("GetTickets")](self.request)
         self.assertEqual(expected, observed)
 
