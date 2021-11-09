@@ -49,7 +49,7 @@ class RequestExecutor(Executor):
         self,
         *args,
         execution_uuid: UUID,
-        reply_topic: Optional[str],
+        reply_topic: Optional[str] = None,
         user: Optional[UUID],
         broker: MinosBroker = Provide["command_broker"],
         **kwargs,

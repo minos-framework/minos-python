@@ -6,22 +6,20 @@ from uuid import (
     uuid4,
 )
 
-from minos.common import (
-    CommandStatus,
-)
 from minos.saga import (
     RemoteSagaStep,
     RemoteSagaStepExecution,
     SagaContext,
     SagaFailedExecutionStepException,
     SagaPausedExecutionStepException,
+    SagaResponse,
+    SagaResponseStatus,
     SagaRollbackExecutionStepException,
     SagaStepStatus,
 )
 from tests.utils import (
     Foo,
     NaiveBroker,
-    fake_reply,
     handle_ticket_error,
     handle_ticket_error_raises,
     handle_ticket_success,
@@ -73,16 +71,16 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStepStatus.ErroredOnExecute, execution.status)
         self.assertEqual(0, rollback_mock.call_count)
 
-    async def test_errored_reply(self):
+    async def test_errored_response(self):
         step = RemoteSagaStep(send_create_ticket)
         context = SagaContext()
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        reply = fake_reply(status=CommandStatus.SYSTEM_ERROR)
+        response = SagaResponse(status=SagaResponseStatus.SYSTEM_ERROR)
 
         with self.assertRaises(SagaFailedExecutionStepException):
-            await execution.execute(context, reply=reply, **self.execute_kwargs)
+            await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.ErroredByOnExecute, execution.status)
         self.assertEqual(0, rollback_mock.call_count)
@@ -93,9 +91,9 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        reply = fake_reply(Foo("foo"), status=CommandStatus.SUCCESS)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS)
 
-        await execution.execute(context, reply=reply, **self.execute_kwargs)
+        await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
 
@@ -105,9 +103,9 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        reply = fake_reply(Foo("foo"), status=CommandStatus.SUCCESS)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS)
 
-        await execution.execute(context, reply=reply, **self.execute_kwargs)
+        await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
         self.assertEqual(0, rollback_mock.call_count)
@@ -118,10 +116,10 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        reply = fake_reply(Foo("foo"), status=CommandStatus.SUCCESS)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS)
 
         with self.assertRaises(SagaFailedExecutionStepException):
-            await execution.execute(context, reply=reply, **self.execute_kwargs)
+            await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.ErroredOnSuccess, execution.status)
         self.assertEqual(1, rollback_mock.call_count)
@@ -132,9 +130,9 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        reply = fake_reply(Foo("foo"), status=CommandStatus.ERROR)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR)
 
-        await execution.execute(context, reply=reply, **self.execute_kwargs)
+        await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
         self.assertEqual(0, rollback_mock.call_count)
@@ -145,9 +143,9 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        reply = fake_reply(Foo("foo"), status=CommandStatus.ERROR)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR)
 
-        await execution.execute(context, reply=reply, **self.execute_kwargs)
+        await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
         self.assertEqual(0, rollback_mock.call_count)
@@ -158,10 +156,10 @@ class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        reply = fake_reply(Foo("foo"), status=CommandStatus.ERROR)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR)
 
         with self.assertRaises(SagaFailedExecutionStepException):
-            await execution.execute(context, reply=reply, **self.execute_kwargs)
+            await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.ErroredOnError, execution.status)
         self.assertEqual(1, rollback_mock.call_count)

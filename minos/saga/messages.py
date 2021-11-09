@@ -59,7 +59,7 @@ class SagaResponse:
         "_status",
     )
 
-    def __init__(self, content: Any, status: Optional[Union[int, SagaResponseStatus]] = None):
+    def __init__(self, content: Any = None, status: Optional[Union[int, SagaResponseStatus]] = None):
         if status is None:
             status = SagaResponseStatus.SUCCESS
         if not isinstance(status, SagaResponseStatus):
