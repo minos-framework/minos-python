@@ -120,3 +120,9 @@ History
 ------------------
 
 * Add `minos-microservice-common>=0.2.0` compatibility.
+
+0.1.1 (2021-11-09)
+------------------
+
+* Add `REPLY_TOPIC_CONTEXT_VAR` and integrate with `DynamicHandlerPool`.
+* Add support for `post_fn` callbacks following the same strategy as in `pre_fn` callbacks.
