@@ -391,6 +391,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "minos-microservice-aggregate"
+version = "0.1.0"
+description = "Python Package for Minos Microservices containing all the Aggregate stuff"
+category = "main"
+optional = false
+python-versions = ">=3.9,<4.0"
+
+[package.dependencies]
+minos-microservice-common = ">=0.2.0,<0.3.0"
+
+[[package]]
 name = "minos-microservice-common"
 version = "0.2.0"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
@@ -837,7 +848,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "0c039b4f0b65c7b2ecf8557c64122693f37a67d5c7efb83b1bb0da900bed9c09"
+content-hash = "160c603b4dd484aeea17540fa5a5076ea07ddde8119af8520d18fbc0003a10ff"
 
 [metadata.files]
 aiomisc = [
@@ -1216,6 +1227,10 @@ markupsafe = [
 mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
+]
+minos-microservice-aggregate = [
+    {file = "minos_microservice_aggregate-0.1.0-py3-none-any.whl", hash = "sha256:1141288d0c2f46fae88330e8140c9fc2e5e0a9bac5fa23f1111c2e0210a01c15"},
+    {file = "minos_microservice_aggregate-0.1.0.tar.gz", hash = "sha256:51c6c76a5fa84a08a91aedfc7e207a957814787bc34dc9f64673ea1d505edf16"},
 ]
 minos-microservice-common = [
     {file = "minos_microservice_common-0.2.0-py3-none-any.whl", hash = "sha256:a5f57f3af35ce40c36ed15c0d390af42e109db8bb204dff6115f517980c3e3bb"},
