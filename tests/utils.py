@@ -65,7 +65,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.event_repository = providers.Object(self.event_repository)
         self.container.snapshot_repository = providers.Object(self.snapshot_repository)
-        self.container.wire(modules=[sys.modules["minos.aggregate"]])
+        self.container.wire(modules=[sys.modules["minos.aggregate"], sys.modules["minos.common"]])
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
