@@ -41,7 +41,7 @@ class TransactionRepository(ABC, MinosSetup):
         super().__init__(*args, **kwargs)
 
         if lock_pool is None or isinstance(lock_pool, Provide):
-            raise NotProvidedException("A transaction repository instance is required.")
+            raise NotProvidedException("A lock pool instance is required.")
 
         self._lock_pool = lock_pool
 
