@@ -145,10 +145,10 @@ ON CONFLICT (uuid)
 DO
    UPDATE SET status = %(status)s, event_offset = %(event_offset)s, updated_at = NOW()
 WHERE (aggregate_transaction.destination_uuid = %(destination_uuid)s)
-  AND (NOT (aggregate_transaction.status = 'pending' AND %(status)s NOT IN ('reserving', 'rejected')))
+  AND (NOT (aggregate_transaction.status = 'pending' AND %(status)s NOT IN ('pending', 'reserving', 'rejected')))
   AND (NOT (aggregate_transaction.status = 'reserving' AND %(status)s NOT IN ('reserved', 'rejected')))
   AND (NOT (aggregate_transaction.status = 'reserved' AND %(status)s NOT IN ('committing', 'rejected')))
-  AND (NOT (aggregate_transaction.status = 'committing' AND %(status)s NOT IN ('committed', 'rejected')))
+  AND (NOT (aggregate_transaction.status = 'committing' AND %(status)s NOT IN ('committed')))
   AND (NOT (aggregate_transaction.status = 'committed'))
   AND (NOT (aggregate_transaction.status = 'rejected'))
 RETURNING updated_at;
