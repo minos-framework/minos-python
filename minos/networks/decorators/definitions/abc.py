@@ -81,3 +81,11 @@ class EnrouteDecorator(ABC):
         :return: A string value containing the function name.
         """
         return self.KIND.pre_fn_name
+
+    @property
+    def post_fn_name(self) -> str:
+        """Get the post execution function name.
+
+        :return: A string value containing the function name.
+        """
+        return self.KIND.post_fn_name

@@ -232,6 +232,14 @@ class FakeService:
     async def _pre_event_handle(request: Request) -> Request:
         return WrappedRequest(request, lambda content: f"[{content}]")
 
+    @staticmethod
+    def _post_command_handle(response: Response) -> Response:
+        return response
+
+    @staticmethod
+    async def _post_query_handle(response: Response) -> Response:
+        return Response(f"({await response.content()})")
+
     # noinspection PyUnusedLocal
     @enroute.rest.command(url="orders/", method="GET")
     @enroute.broker.command(topic="CreateTicket")

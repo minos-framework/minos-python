@@ -66,6 +66,12 @@ class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(MinosMultipleEnrouteDecoratorKindsException):
             another(self.decorator(_fn))
 
+    def test_pre_fn_name(self):
+        self.assertEqual("_pre_command_handle", self.decorator.pre_fn_name)
+
+    def test_post_fn_name(self):
+        self.assertEqual("_post_command_handle", self.decorator.post_fn_name)
+
 
 if __name__ == "__main__":
     unittest.main()

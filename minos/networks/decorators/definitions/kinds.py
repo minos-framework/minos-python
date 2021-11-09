@@ -23,3 +23,16 @@ class EnrouteDecoratorKind(Enum):
             self.Event: "_pre_event_handle",
         }
         return mapping[self]
+
+    @property
+    def post_fn_name(self) -> str:
+        """Get the post execution function name.
+
+        :return: A string value containing the function name.
+        """
+        mapping = {
+            self.Command: "_post_command_handle",
+            self.Query: "_post_query_handle",
+            self.Event: "_post_event_handle",
+        }
+        return mapping[self]
