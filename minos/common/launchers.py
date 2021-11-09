@@ -3,6 +3,8 @@ from __future__ import (
 )
 
 import logging
+import re
+import sys
 from asyncio import (
     AbstractEventLoop,
 )
@@ -175,42 +177,7 @@ class EntrypointLauncher(MinosSetup):
 
     @property
     def _internal_modules(self) -> list[ModuleType]:
-        from minos import (
-            common,
-        )
-
-        modules = [common]
-        try:
-            # noinspection PyUnresolvedReferences
-            from minos import (
-                networks,
-            )
-
-            modules += [networks]  # pragma: no cover
-        except ImportError:
-            pass
-
-        try:
-            # noinspection PyUnresolvedReferences
-            from minos import (
-                saga,
-            )
-
-            modules += [saga]  # pragma: no cover
-        except ImportError:
-            pass
-
-        try:
-            # noinspection PyUnresolvedReferences
-            from minos import (
-                cqrs,
-            )
-
-            modules += [cqrs]  # pragma: no cover
-        except ImportError:
-            pass
-
-        return modules
+        return [v for k, v in sys.modules.items() if re.fullmatch(r"minos\.\w+", k)]
 
     async def _destroy(self) -> None:
         """Unwire the injected dependencies and destroys it.

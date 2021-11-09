@@ -227,3 +227,8 @@ History
 * Add `Lock` class as an abstract class to implement application-level locking in `minos`.
   * Add `PostgreSqlLock` and `PostgreSqlLockPool`
 * Replace the `MinosPool` instance creation strategy, from "create if possible or get or wait" to "get or create if possible or wait".
+
+0.2.1 (2021-11-09)
+--------------------
+
+* Fix bug related with dependency injections over `minos.*` modules.
