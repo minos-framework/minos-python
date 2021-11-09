@@ -35,10 +35,10 @@ class InMemoryTransactionRepository(TransactionRepository):
         if transaction.uuid in self._storage:
             status = self._storage[transaction.uuid].status
             if (
-                (status == s.PENDING and transaction.status not in (s.RESERVING, s.REJECTED))
+                (status == s.PENDING and transaction.status not in (s.PENDING, s.RESERVING, s.REJECTED))
                 or (status == s.RESERVING and transaction.status not in (s.RESERVED, s.REJECTED))
                 or (status == s.RESERVED and transaction.status not in (s.COMMITTING, s.REJECTED))
-                or (status == s.COMMITTING and transaction.status not in (s.COMMITTED, s.REJECTED))
+                or (status == s.COMMITTING and transaction.status not in (s.COMMITTED,))
                 or (status == s.COMMITTED)
                 or (status == s.REJECTED)
             ):

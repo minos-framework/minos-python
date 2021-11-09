@@ -76,7 +76,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
 
     async def _build_query(self, entry: EventEntry) -> tuple[Composable, dict[str, UUID]]:
         if entry.transaction_uuid != NULL_UUID:
-            transaction = await self._transaction_repository.select(uuid=entry.transaction_uuid).__anext__()
+            transaction = await self._transaction_repository.get(uuid=entry.transaction_uuid)
             transaction_uuids = await transaction.uuids
         else:
             transaction_uuids = (NULL_UUID,)

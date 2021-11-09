@@ -65,12 +65,12 @@ class PostgreSqlSnapshotReader(PostgreSqlSnapshotSetup):
 
     # noinspection PyUnusedLocal
     async def get_entry(self, aggregate_name: str, uuid: UUID, **kwargs) -> SnapshotEntry:
-        """Get an ``SnapshotEntry`` from its identifier.
+        """Get a ``SnapshotEntry`` from its identifier.
 
         :param aggregate_name: Class name of the ``Aggregate``.
         :param uuid: Identifier of the ``Aggregate``.
         :param kwargs: Additional named arguments.
-        :return: The ``Aggregate`` instance.
+        :return: The ``SnapshotEntry`` instance.
         """
 
         try:

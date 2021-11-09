@@ -32,11 +32,9 @@ from minos.common import (
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
-from tests.aggregate_classes import (
-    Car,
-)
 from tests.utils import (
     BASE_PATH,
+    Car,
     MinosTestCase,
 )
 
@@ -55,12 +53,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self.transaction_3 = uuid4()
 
         self.reader = PostgreSqlSnapshotReader.from_config(self.config)
-        self.writer = PostgreSqlSnapshotWriter.from_config(
-            self.config,
-            reader=self.reader,
-            event_repository=self.event_repository,
-            transaction_repository=self.transaction_repository,
-        )
+        self.writer = PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -122,9 +115,7 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
             PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader, event_repository=None)
 
         with self.assertRaises(NotProvidedException):
-            PostgreSqlSnapshotWriter.from_config(
-                self.config, reader=self.reader, event_repository=self.event_repository, transaction_repository=None
-            )
+            PostgreSqlSnapshotWriter.from_config(self.config, reader=self.reader, transaction_repository=None)
 
     async def test_dispatch(self):
         await self.writer.dispatch()
@@ -270,9 +261,9 @@ class TestPostgreSqlSnapshotWriter(MinosTestCase, PostgresAsyncTestCase):
         self._assert_equal_snapshot_entries(expected, observed)
 
     async def test_is_synced(self):
-        self.assertFalse(await self.writer.is_synced("tests.aggregate_classes.Car"))
+        self.assertFalse(await self.writer.is_synced("tests.utils.Car"))
         await self.writer.dispatch()
-        self.assertTrue(await self.writer.is_synced("tests.aggregate_classes.Car"))
+        self.assertTrue(await self.writer.is_synced("tests.utils.Car"))
 
     async def test_dispatch_ignore_previous_version(self):
         diff = FieldDiffContainer([FieldDiff("doors", int, 3), FieldDiff("color", str, "blue")])

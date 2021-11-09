@@ -12,10 +12,8 @@ from minos.aggregate import (
 from minos.common import (
     current_datetime,
 )
-from tests.aggregate_classes import (
-    Car,
-)
 from tests.utils import (
+    Car,
     MinosTestCase,
 )
 

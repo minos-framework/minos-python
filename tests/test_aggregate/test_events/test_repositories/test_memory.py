@@ -28,14 +28,12 @@ from tests.utils import (
 )
 
 
-class TestInMemoryRepository(MinosTestCase, TestRepositorySelect):
+class TestInMemoryEventRepository(MinosTestCase, TestRepositorySelect):
     def setUp(self) -> None:
         super().setUp()
 
         self.uuid = uuid4()
-        self.event_repository = InMemoryEventRepository(
-            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
-        )
+        self.event_repository = InMemoryEventRepository()
 
         self.field_diff_container_patcher = patch(
             "minos.aggregate.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
@@ -102,9 +100,7 @@ class TestInMemoryRepositorySelect(MinosTestCase, TestRepositorySelect):
         self.first_transaction = uuid4()
         self.second_transaction = uuid4()
 
-        self.event_repository = InMemoryEventRepository(
-            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
-        )
+        self.event_repository = InMemoryEventRepository()
 
         self.field_diff_container_patcher = patch(
             "minos.aggregate.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()

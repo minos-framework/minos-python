@@ -27,6 +27,7 @@ from ...events import (
 from ...exceptions import (
     AggregateNotFoundException,
     SnapshotRepositoryConflictException,
+    TransactionNotFoundException,
 )
 from ...transactions import (
     TransactionRepository,
@@ -140,8 +141,8 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         diff = event_entry.aggregate_diff
 
         try:
-            transaction = await self._transaction_repository.select(uuid=event_entry.transaction_uuid).__anext__()
-        except StopAsyncIteration:
+            transaction = await self._transaction_repository.get(uuid=event_entry.transaction_uuid)
+        except TransactionNotFoundException:
             transaction = None
 
         aggregate = await self._update_if_exists(diff, transaction=transaction, **kwargs)

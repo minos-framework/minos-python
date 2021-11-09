@@ -2,6 +2,9 @@ import unittest
 from abc import (
     ABC,
 )
+from collections.abc import (
+    AsyncIterator,
+)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -13,6 +16,7 @@ from uuid import (
 
 from minos.aggregate import (
     TransactionEntry,
+    TransactionNotFoundException,
     TransactionRepository,
     TransactionStatus,
 )
@@ -23,20 +27,29 @@ from minos.common import (
 from tests.utils import (
     FakeAsyncIterator,
     FakeLock,
-    FakeTransactionRepository,
     MinosTestCase,
 )
+
+
+class _TransactionRepository(TransactionRepository):
+    """For testing purposes."""
+
+    async def _submit(self, transaction: TransactionEntry) -> None:
+        """For testing purposes."""
+
+    def _select(self, **kwargs) -> AsyncIterator[TransactionEntry]:
+        """For testing purposes."""
 
 
 class TestTransactionRepository(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.transaction_repository = FakeTransactionRepository()
+        self.transaction_repository = _TransactionRepository()
 
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            FakeTransactionRepository(lock_pool=None)
+            _TransactionRepository(lock_pool=None)
 
     def test_abstract(self):
         self.assertTrue(issubclass(TransactionRepository, (ABC, MinosSetup)))
@@ -61,6 +74,22 @@ class TestTransactionRepository(MinosTestCase):
         self.assertEqual(expected, self.transaction_repository.write_lock())
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("aggregate_transaction_write_lock"), mock.call_args)
+
+    async def test_get(self):
+        mock = MagicMock(return_value=FakeAsyncIterator([1]))
+        self.transaction_repository.select = mock
+        uuid = uuid4()
+
+        observed = await self.transaction_repository.get(uuid)
+
+        self.assertEqual(1, observed)
+        self.assertEqual([call(uuid=uuid)], mock.call_args_list)
+
+    async def test_get_raises(self):
+        mock = MagicMock(return_value=FakeAsyncIterator([]))
+        self.transaction_repository.select = mock
+        with self.assertRaises(TransactionNotFoundException):
+            await self.transaction_repository.get(uuid4())
 
     async def test_select(self):
         uuid = uuid4()

@@ -17,10 +17,8 @@ from minos.common import (
     NULL_UUID,
     current_datetime,
 )
-from tests.aggregate_classes import (
-    Car,
-)
 from tests.utils import (
+    Car,
     MinosTestCase,
 )
 
@@ -54,7 +52,7 @@ class TestAggregate(MinosTestCase):
             await Car.create(updated_at=current_datetime(), doors=3, color="blue", **self.kwargs)
 
     async def test_classname(self):
-        self.assertEqual("tests.aggregate_classes.Car", Car.classname)
+        self.assertEqual("tests.utils.Car", Car.classname)
 
     async def test_find(self):
         originals = set(
