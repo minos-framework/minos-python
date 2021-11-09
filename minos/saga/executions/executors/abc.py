@@ -3,6 +3,16 @@ from typing import (
     Any,
     Callable,
 )
+from uuid import (
+    UUID,
+)
+
+from minos.aggregate import (
+    TransactionEntry,
+)
+from minos.common import (
+    NULL_UUID,
+)
 
 from ...definitions import (
     SagaOperation,
@@ -15,8 +25,8 @@ from ...exceptions import (
 class Executor:
     """Executor class."""
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, execution_uuid: UUID = NULL_UUID, *args, **kwargs):
+        self.execution_uuid = execution_uuid
 
     async def exec(self, operation: SagaOperation, *args, **kwargs) -> Any:
         """Execute the given operation.
@@ -32,8 +42,7 @@ class Executor:
 
         return await self.exec_function(operation.callback, *args, **kwargs)
 
-    @staticmethod
-    async def exec_function(func: Callable, *args, **kwargs) -> Any:
+    async def exec_function(self, func: Callable, *args, **kwargs) -> Any:
         """Execute a function.
 
         :param func: Function to be executed.
@@ -42,9 +51,15 @@ class Executor:
         :return: The ``func`` result.
         """
         try:
-            result = func(*args, **kwargs)
-            if inspect.isawaitable(result):
-                result = await result
+            if self.execution_uuid != NULL_UUID:  # FIXME: Rewrite this code more cleanly.
+                async with TransactionEntry(uuid=self.execution_uuid, autocommit=False):
+                    result = func(*args, **kwargs)
+                    if inspect.isawaitable(result):
+                        result = await result
+            else:
+                result = func(*args, **kwargs)
+                if inspect.isawaitable(result):
+                    result = await result
         except Exception as exc:
             raise ExecutorException(exc)
         return result

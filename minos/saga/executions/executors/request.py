@@ -48,7 +48,6 @@ class RequestExecutor(Executor):
     def __init__(
         self,
         *args,
-        execution_uuid: UUID,
         reply_topic: Optional[str],
         user: Optional[UUID],
         command_broker: MinosBroker = Provide["command_broker"],
@@ -56,7 +55,6 @@ class RequestExecutor(Executor):
     ):
         super().__init__(*args, **kwargs)
 
-        self.execution_uuid = execution_uuid
         self.reply_topic = reply_topic
         self.user = user
 
