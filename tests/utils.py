@@ -10,11 +10,6 @@ from pathlib import (
 )
 from typing import (
     Any,
-    Optional,
-)
-from uuid import (
-    UUID,
-    uuid4,
 )
 
 from aiomisc.pool import (
@@ -31,8 +26,6 @@ from minos.aggregate import (
     InMemoryTransactionRepository,
 )
 from minos.common import (
-    CommandReply,
-    CommandStatus,
     Lock,
     MinosBroker,
     MinosHandler,
@@ -308,13 +301,3 @@ class FakePool(MinosPool):
 
     async def _destroy_instance(self, instance: t.Any) -> None:
         """For testing purposes."""
-
-
-def fake_reply(data: Any = None, uuid: Optional[UUID] = None, status: Optional[CommandStatus] = None) -> CommandReply:
-    """For testing purposes."""
-
-    if uuid is None:
-        uuid = uuid4()
-    if status is None:
-        status = CommandStatus.SUCCESS
-    return CommandReply("FooCreated", data, uuid, status=status)

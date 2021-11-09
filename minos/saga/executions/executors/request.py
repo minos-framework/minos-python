@@ -46,16 +46,10 @@ class RequestExecutor(Executor):
 
     @inject
     def __init__(
-        self,
-        *args,
-        reply_topic: Optional[str],
-        user: Optional[UUID],
-        command_broker: MinosBroker = Provide["command_broker"],
-        **kwargs,
+        self, *args, user: Optional[UUID], command_broker: MinosBroker = Provide["command_broker"], **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        self.reply_topic = reply_topic
         self.user = user
 
         if command_broker is None or isinstance(command_broker, Provide):
@@ -87,6 +81,5 @@ class RequestExecutor(Executor):
         topic = request.target
         data = await request.content()
         saga = self.execution_uuid
-        reply_topic = self.reply_topic
         user = self.user
-        await self.exec_function(fn, topic=topic, data=data, saga=saga, reply_topic=reply_topic, user=user)
+        await self.exec_function(fn, topic=topic, data=data, saga=saga, user=user)
