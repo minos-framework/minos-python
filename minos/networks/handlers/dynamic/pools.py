@@ -3,6 +3,13 @@ from __future__ import (
 )
 
 import logging
+from contextvars import (
+    Token,
+)
+from typing import (
+    AsyncContextManager,
+    Optional,
+)
 from uuid import (
     uuid4,
 )
@@ -23,6 +30,9 @@ from minos.common import (
     MinosPool,
 )
 
+from ...brokers import (
+    REPLY_TOPIC_CONTEXT_VAR,
+)
 from ..consumers import (
     Consumer,
 )
@@ -82,3 +92,27 @@ class DynamicHandlerPool(MinosPool):
 
     async def _unsubscribe_reply_topic(self, topic: str) -> None:
         await self.consumer.remove_topic(topic)
+
+    def acquire(self, *args, **kwargs) -> AsyncContextManager:
+        """Acquire a new instance wrapped on an asynchronous context manager.
+
+        :return: An asynchronous context manager.
+        """
+        return _ReplyTopicContextManager(super().acquire())
+
+
+class _ReplyTopicContextManager:
+    _token: Optional[Token]
+
+    def __init__(self, wrapper: AsyncContextManager[DynamicHandler]):
+        self.wrapper = wrapper
+        self._token = None
+
+    async def __aenter__(self) -> DynamicHandler:
+        handler = await self.wrapper.__aenter__()
+        self._token = REPLY_TOPIC_CONTEXT_VAR.set(handler.topic)
+        return handler
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
+        await self.wrapper.__aexit__(exc_type, exc_val, exc_tb)

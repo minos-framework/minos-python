@@ -3,8 +3,12 @@ from __future__ import (
 )
 
 import logging
+from contextvars import (
+    ContextVar,
+)
 from typing import (
     Any,
+    Final,
     Optional,
 )
 from uuid import (
@@ -21,6 +25,8 @@ from .abc import (
 )
 
 logger = logging.getLogger(__name__)
+
+REPLY_TOPIC_CONTEXT_VAR: Final[ContextVar[Optional[str]]] = ContextVar("reply_topic", default=None)
 
 
 class CommandBroker(Broker):
@@ -58,7 +64,10 @@ class CommandBroker(Broker):
         :return: This method does not return anything.
         """
         if reply_topic is None:
+            reply_topic = REPLY_TOPIC_CONTEXT_VAR.get()
+        if reply_topic is None:
             reply_topic = self.default_reply_topic
+
         command = Command(topic, data, saga, reply_topic, user)
         logger.info(f"Sending '{command!s}'...")
         return await self.enqueue(command.topic, command.avro_bytes)

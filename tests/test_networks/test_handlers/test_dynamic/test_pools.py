@@ -8,6 +8,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    REPLY_TOPIC_CONTEXT_VAR,
     Consumer,
     DynamicHandler,
     DynamicHandlerPool,
@@ -45,6 +46,15 @@ class TestDynamicHandlerPool(PostgresAsyncTestCase):
             async with self.pool.acquire() as handler:
                 self.assertIsInstance(handler, DynamicHandler)
                 self.assertIn(handler.topic, self.pool.client.list_topics())
+
+    async def test_acquire_reply_topic_context_var(self):
+        self.assertEqual(None, REPLY_TOPIC_CONTEXT_VAR.get())
+
+        async with self.consumer, self.pool:
+            async with self.pool.acquire() as handler:
+                self.assertEqual(handler.topic, REPLY_TOPIC_CONTEXT_VAR.get())
+
+        self.assertEqual(None, REPLY_TOPIC_CONTEXT_VAR.get())
 
 
 if __name__ == "__main__":
