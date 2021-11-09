@@ -13,24 +13,24 @@ from tests.utils import (
     ADD_ORDER,
     BASE_PATH,
     Foo,
-    NaiveBroker,
+    MinosTestCase,
     fake_reply,
 )
 
 
-class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
+class TestSagaExecutionStorage(MinosTestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     async def asyncSetUp(self) -> None:
-        self.broker = NaiveBroker()
+        await super().asyncSetUp()
 
         execution = SagaExecution.from_definition(ADD_ORDER)
         with self.assertRaises(SagaPausedExecutionStepException):
-            await execution.execute(broker=self.broker)
+            await execution.execute()
 
         reply = fake_reply(Foo("hola"))
         with self.assertRaises(SagaPausedExecutionStepException):
-            await execution.execute(reply=reply, broker=self.broker)
+            await execution.execute(reply=reply)
 
         self.execution = execution
 

@@ -2,7 +2,9 @@ from __future__ import (
     annotations,
 )
 
+import sys
 import typing as t
+import unittest
 from pathlib import (
     Path,
 )
@@ -18,10 +20,20 @@ from uuid import (
 from aiomisc.pool import (
     T,
 )
+from dependency_injector import (
+    containers,
+    providers,
+)
 
+from minos.aggregate import (
+    InMemoryEventRepository,
+    InMemorySnapshotRepository,
+    InMemoryTransactionRepository,
+)
 from minos.common import (
     CommandReply,
     CommandStatus,
+    Lock,
     MinosBroker,
     MinosHandler,
     MinosModel,
@@ -35,6 +47,77 @@ from minos.saga import (
 )
 
 BASE_PATH = Path(__file__).parent
+
+
+class MinosTestCase(unittest.IsolatedAsyncioTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.event_broker = NaiveBroker()
+        self.command_broker = NaiveBroker()
+        self.lock_pool = FakeLockPool()
+        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
+        self.event_repository = InMemoryEventRepository(
+            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+        )
+        self.snapshot_repository = InMemorySnapshotRepository(
+            event_repository=self.event_repository, transaction_repository=self.transaction_repository
+        )
+
+        self.container = containers.DynamicContainer()
+        self.container.event_broker = providers.Object(self.event_broker)
+        self.container.command_broker = providers.Object(self.command_broker)
+        self.container.transaction_repository = providers.Object(self.transaction_repository)
+        self.container.lock_pool = providers.Object(self.lock_pool)
+        self.container.event_repository = providers.Object(self.event_repository)
+        self.container.snapshot_repository = providers.Object(self.snapshot_repository)
+        self.container.wire(
+            modules=[sys.modules["minos.saga"], sys.modules["minos.aggregate"], sys.modules["minos.common"]]
+        )
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+
+        await self.event_broker.setup()
+        await self.transaction_repository.setup()
+        await self.lock_pool.setup()
+        await self.event_repository.setup()
+        await self.snapshot_repository.setup()
+
+    async def asyncTearDown(self):
+        await self.snapshot_repository.destroy()
+        await self.event_repository.destroy()
+        await self.lock_pool.destroy()
+        await self.transaction_repository.destroy()
+        await self.event_broker.destroy()
+
+        await super().asyncTearDown()
+
+    def tearDown(self) -> None:
+        self.container.unwire()
+        super().tearDown()
+
+
+class FakeLock(Lock):
+    """For testing purposes."""
+
+    def __init__(self, key=None, *args, **kwargs):
+        if key is None:
+            key = "fake"
+        super().__init__(key, *args, **kwargs)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        return
+
+
+class FakeLockPool(MinosPool):
+    """For testing purposes."""
+
+    async def _create_instance(self):
+        return FakeLock()
+
+    async def _destroy_instance(self, instance) -> None:
+        """For testing purposes."""
 
 
 class Foo(MinosModel):
@@ -151,14 +234,14 @@ def commit_callback_raises(context: SagaContext) -> SagaContext:
 ADD_ORDER = (
     Saga()
         .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
+        .on_success(handle_order_success)
+        .on_failure(send_delete_order)
         .local_step(create_payment)
-            .on_failure(delete_payment)
+        .on_failure(delete_payment)
         .remote_step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+        .on_success(handle_ticket_success)
+        .on_error(handle_ticket_error)
+        .on_failure(send_delete_ticket)
         .commit()
 )
 
@@ -166,9 +249,9 @@ ADD_ORDER = (
 DELETE_ORDER = (
     Saga()
         .remote_step(send_delete_order)
-            .on_success(handle_order_success)
+        .on_success(handle_order_success)
         .remote_step(send_delete_ticket)
-            .on_success(handle_ticket_success_raises)
+        .on_success(handle_ticket_success_raises)
         .commit()
 )
 
@@ -176,7 +259,7 @@ DELETE_ORDER = (
 CREATE_PAYMENT = (
     Saga()
         .local_step(create_payment)
-            .on_failure(delete_payment)
+        .on_failure(delete_payment)
         .commit()
 )
 

@@ -19,22 +19,20 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    NaiveBroker,
+    MinosTestCase,
     send_create_product,
 )
 
 
-class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
+class TestRequestExecutor(MinosTestCase):
     def setUp(self) -> None:
+        super().setUp()
+
         self.reply_topic = "AddFoo"
-        self.command_broker = NaiveBroker()
         self.execution_uuid = uuid4()
         self.user = uuid4()
         self.executor = RequestExecutor(
-            reply_topic=self.reply_topic,
-            execution_uuid=self.execution_uuid,
-            user=self.user,
-            command_broker=self.command_broker,
+            reply_topic=self.reply_topic, execution_uuid=self.execution_uuid, user=self.user,
         )
 
     def test_constructor(self):
@@ -46,7 +44,9 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
 
     def test_constructor_without_broker(self):
         with self.assertRaises(NotProvidedException):
-            RequestExecutor(reply_topic="AddFoo", execution_uuid=self.execution_uuid, user=self.user)
+            RequestExecutor(
+                reply_topic="AddFoo", command_broker=None, execution_uuid=self.execution_uuid, user=self.user
+            )
 
     async def test_exec(self):
         operation = SagaOperation(send_create_product)
@@ -67,9 +67,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_none_reply_topic(self):
-        executor = RequestExecutor(
-            reply_topic=None, execution_uuid=self.execution_uuid, user=self.user, command_broker=self.command_broker
-        )
+        executor = RequestExecutor(reply_topic=None, execution_uuid=self.execution_uuid, user=self.user)
         operation = SagaOperation(send_create_product)
         context = SagaContext(product=Foo("create_product!"))
 
@@ -88,12 +86,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_none_user(self):
-        executor = RequestExecutor(
-            reply_topic=self.reply_topic,
-            execution_uuid=self.execution_uuid,
-            user=None,
-            command_broker=self.command_broker,
-        )
+        executor = RequestExecutor(reply_topic=self.reply_topic, execution_uuid=self.execution_uuid, user=None,)
         operation = SagaOperation(send_create_product)
         context = SagaContext(product=Foo("create_product!"))
 

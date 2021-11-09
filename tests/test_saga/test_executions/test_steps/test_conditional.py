@@ -24,7 +24,7 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    NaiveBroker,
+    MinosTestCase,
     commit_callback_raises,
     fake_reply,
     handle_order_success,
@@ -44,12 +44,12 @@ def _is_two(context):
     return context["option"] == 2
 
 
-class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
+class TestConditionalSageStepExecution(MinosTestCase):
     def setUp(self) -> None:
-        self.broker = NaiveBroker()
+        super().setUp()
         self.execute_kwargs = {
             "execution_uuid": uuid4(),
-            "broker": self.broker,
+            "broker": self.command_broker,
             "reply_topic": "FooAdd",
             "user": uuid4(),
         }
