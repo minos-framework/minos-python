@@ -17,7 +17,6 @@ from .definitions import (
 from .exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
-    CommandReplyFailedException,
     EmptySagaException,
     EmptySagaStepException,
     MultipleElseThenException,
@@ -35,6 +34,7 @@ from .exceptions import (
     SagaNotCommittedException,
     SagaNotDefinedException,
     SagaPausedExecutionStepException,
+    SagaResponseException,
     SagaRollbackExecutionException,
     SagaRollbackExecutionStepException,
     SagaStepException,

@@ -18,6 +18,7 @@ from minos.saga import (
     SagaContext,
     SagaFailedExecutionStepException,
     SagaPausedExecutionStepException,
+    SagaResponse,
     SagaRollbackExecutionStepException,
     SagaStepExecution,
     SagaStepStatus,
@@ -26,7 +27,6 @@ from tests.utils import (
     Foo,
     MinosTestCase,
     commit_callback_raises,
-    fake_reply,
     handle_order_success,
     handle_ticket_success,
     handle_ticket_success_raises,
@@ -50,7 +50,6 @@ class TestConditionalSageStepExecution(MinosTestCase):
         self.execute_kwargs = {
             "execution_uuid": uuid4(),
             "broker": self.command_broker,
-            "reply_topic": "FooAdd",
             "user": uuid4(),
         }
 
@@ -89,8 +88,8 @@ class TestConditionalSageStepExecution(MinosTestCase):
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=1), context)
 
-        reply = fake_reply(Foo("order"))
-        context = await self.execution.execute(context, reply=reply, **self.execute_kwargs)
+        response = SagaResponse(Foo("order"))
+        context = await self.execution.execute(context, response=response, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.Finished, self.execution.status)
         self.assertEqual(SagaContext(option=1, order=Foo("order")), context)
 
@@ -102,10 +101,10 @@ class TestConditionalSageStepExecution(MinosTestCase):
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=2), context)
 
-        reply = fake_reply(Foo("ticket"))
+        response = SagaResponse(Foo("ticket"))
         with patch("minos.saga.SagaExecution.rollback") as mock:
             with self.assertRaises(SagaFailedExecutionStepException):
-                context = await self.execution.execute(context, reply=reply, **self.execute_kwargs)
+                context = await self.execution.execute(context, response=response, **self.execute_kwargs)
             self.assertEqual(SagaStepStatus.ErroredByOnExecute, self.execution.status)
             self.assertEqual(SagaContext(option=2), context)
             self.assertEqual(1, mock.call_count)
@@ -118,10 +117,10 @@ class TestConditionalSageStepExecution(MinosTestCase):
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=3), context)
 
-        reply = fake_reply(Foo("ticket"))
+        response = SagaResponse(Foo("ticket"))
         with patch("minos.saga.SagaExecution.rollback") as mock:
             with self.assertRaises(SagaFailedExecutionStepException):
-                context = await self.execution.execute(context, reply=reply, **self.execute_kwargs)
+                context = await self.execution.execute(context, response=response, **self.execute_kwargs)
             self.assertEqual(SagaStepStatus.ErroredByOnExecute, self.execution.status)
             self.assertEqual(SagaContext(option=3), context)
         self.assertEqual(1, mock.call_count)
@@ -135,7 +134,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
     async def test_rollback(self):
         with suppress(SagaPausedExecutionStepException):
             await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
-        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), **self.execute_kwargs)
+        await self.execution.execute(SagaContext(), response=SagaResponse(Foo("order")), **self.execute_kwargs)
         with patch("minos.saga.SagaExecution.rollback") as mock:
             await self.execution.rollback(SagaContext(), **self.execute_kwargs)
         self.assertEqual(1, mock.call_count)
@@ -147,7 +146,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
     async def test_rollback_raises_already(self):
         with suppress(SagaPausedExecutionStepException):
             await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
-        await self.execution.execute(SagaContext(), reply=fake_reply(Foo("order")), **self.execute_kwargs)
+        await self.execution.execute(SagaContext(), response=SagaResponse(Foo("order")), **self.execute_kwargs)
 
         await self.execution.rollback(SagaContext(), **self.execute_kwargs)
         with self.assertRaises(SagaRollbackExecutionStepException):
@@ -206,7 +205,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
         context = SagaContext(option=1)
         with suppress(SagaPausedExecutionStepException):
             context = await self.execution.execute(context, **self.execute_kwargs)
-        await self.execution.execute(context, reply=fake_reply(Foo("order")), **self.execute_kwargs)
+        await self.execution.execute(context, response=SagaResponse(Foo("order")), **self.execute_kwargs)
 
         expected = {
             "already_rollback": False,

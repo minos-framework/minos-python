@@ -12,12 +12,12 @@ from minos.saga import (
     SagaContext,
     SagaExecution,
     SagaPausedExecutionStepException,
+    SagaResponse,
 )
 from tests.utils import (
     ADD_ORDER,
     Foo,
     MinosTestCase,
-    fake_reply,
 )
 
 
@@ -254,9 +254,9 @@ class TestSagaExecution(MinosTestCase):
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute()
 
-            reply = fake_reply(Foo("hola"))
+            response = SagaResponse(Foo("hola"))
             with self.assertRaises(SagaPausedExecutionStepException):
-                await expected.execute(reply=reply)
+                await expected.execute(response)
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)

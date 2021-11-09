@@ -8,13 +8,13 @@ from minos.saga import (
     SagaExecutionNotFoundException,
     SagaExecutionStorage,
     SagaPausedExecutionStepException,
+    SagaResponse,
 )
 from tests.utils import (
     ADD_ORDER,
     BASE_PATH,
     Foo,
     MinosTestCase,
-    fake_reply,
 )
 
 
@@ -28,9 +28,9 @@ class TestSagaExecutionStorage(MinosTestCase):
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
 
-        reply = fake_reply(Foo("hola"))
+        response = SagaResponse(Foo("hola"))
         with self.assertRaises(SagaPausedExecutionStepException):
-            await execution.execute(reply=reply)
+            await execution.execute(response)
 
         self.execution = execution
 
