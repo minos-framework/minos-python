@@ -22,6 +22,9 @@ from minos.common import (
     NotProvidedException,
 )
 
+from ...exceptions import (
+    TransactionNotFoundException,
+)
 from ..entries import (
     TransactionEntry,
     TransactionStatus,
@@ -53,6 +56,19 @@ class TransactionRepository(ABC, MinosSetup):
     @abstractmethod
     async def _submit(self, transaction: TransactionEntry) -> TransactionEntry:
         raise NotImplementedError
+
+    # noinspection PyUnusedLocal
+    async def get(self, uuid: UUID, **kwargs) -> TransactionEntry:
+        """Get a ``TransactionEntry`` from its identifier.
+
+        :param uuid: Identifier of the ``Aggregate``.
+        :param kwargs: Additional named arguments.
+        :return: The ``TransactionEntry`` instance.
+        """
+        try:
+            return await self.select(uuid=uuid).__anext__()
+        except StopAsyncIteration:
+            raise TransactionNotFoundException(f"Transaction identified by {uuid!r} does not exist.")
 
     async def select(
         self,

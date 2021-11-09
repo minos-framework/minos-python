@@ -17,6 +17,7 @@ from .exceptions import (
     EventRepositoryException,
     SnapshotRepositoryConflictException,
     SnapshotRepositoryException,
+    TransactionNotFoundException,
     TransactionRepositoryConflictException,
     TransactionRepositoryException,
     ValueObjectException,
