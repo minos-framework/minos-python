@@ -36,19 +36,14 @@ from tests.utils import (
 )
 
 
-class TestPostgreSqlRepository(MinosTestCase, PostgresAsyncTestCase, TestRepositorySelect):
+class TestPostgreSqlEventRepository(MinosTestCase, PostgresAsyncTestCase, TestRepositorySelect):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
         super().setUp()
         self.uuid = uuid4()
 
-        self.event_repository = PostgreSqlEventRepository(
-            event_broker=self.event_broker,
-            transaction_repository=self.transaction_repository,
-            lock_pool=self.lock_pool,
-            **self.repository_db
-        )
+        self.event_repository = PostgreSqlEventRepository(**self.repository_db)
 
         self.field_diff_container_patcher = patch(
             "minos.aggregate.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()
@@ -146,12 +141,7 @@ class TestPostgreSqlRepositorySelect(MinosTestCase, PostgresAsyncTestCase, TestR
         self.first_transaction = uuid4()
         self.second_transaction = uuid4()
 
-        self.event_repository = PostgreSqlEventRepository(
-            event_broker=self.event_broker,
-            transaction_repository=self.transaction_repository,
-            lock_pool=self.lock_pool,
-            **self.repository_db
-        )
+        self.event_repository = PostgreSqlEventRepository(**self.repository_db)
 
         self.field_diff_container_patcher = patch(
             "minos.aggregate.FieldDiffContainer.from_avro_bytes", return_value=FieldDiffContainer.empty()

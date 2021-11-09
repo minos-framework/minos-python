@@ -12,10 +12,8 @@ from uuid import (
 from minos.aggregate import (
     SnapshotEntry,
 )
-from tests.aggregate_classes import (
-    Car,
-)
 from tests.utils import (
+    Car,
     MinosTestCase,
 )
 

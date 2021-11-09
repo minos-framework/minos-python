@@ -23,10 +23,8 @@ from minos.aggregate import (
 from minos.common import (
     NotProvidedException,
 )
-from tests.aggregate_classes import (
-    Car,
-)
 from tests.utils import (
+    Car,
     MinosTestCase,
 )
 
@@ -100,9 +98,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
 
     async def test_find_by_uuid(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
-        iterable = self.snapshot_repository.find(
-            "tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at")
-        )
+        iterable = self.snapshot_repository.find("tests.utils.Car", condition, ordering=Ordering.ASC("updated_at"))
         observed = [v async for v in iterable]
 
         expected = [
@@ -128,7 +124,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
     async def test_find_with_transaction(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
         iterable = self.snapshot_repository.find(
-            "tests.aggregate_classes.Car",
+            "tests.utils.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
             transaction=TransactionEntry(self.transaction_1),
@@ -158,7 +154,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
     async def test_find_with_transaction_delete(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
         iterable = self.snapshot_repository.find(
-            "tests.aggregate_classes.Car",
+            "tests.utils.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
             transaction=TransactionEntry(self.transaction_2),
@@ -180,7 +176,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
     async def test_find_with_transaction_reverted(self):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
         iterable = self.snapshot_repository.find(
-            "tests.aggregate_classes.Car",
+            "tests.utils.Car",
             condition,
             ordering=Ordering.ASC("updated_at"),
             transaction=TransactionEntry(self.transaction_4),
@@ -211,7 +207,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         condition = Condition.IN("uuid", [self.uuid_2, self.uuid_3])
 
         iterable = self.snapshot_repository.find(
-            "tests.aggregate_classes.Car", condition, streaming_mode=True, ordering=Ordering.ASC("updated_at")
+            "tests.utils.Car", condition, streaming_mode=True, ordering=Ordering.ASC("updated_at")
         )
         observed = [v async for v in iterable]
 
@@ -238,9 +234,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
     async def test_find_with_duplicates(self):
         uuids = [self.uuid_2, self.uuid_2, self.uuid_3]
         condition = Condition.IN("uuid", uuids)
-        iterable = self.snapshot_repository.find(
-            "tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at")
-        )
+        iterable = self.snapshot_repository.find("tests.utils.Car", condition, ordering=Ordering.ASC("updated_at"))
         observed = [v async for v in iterable]
 
         expected = [
@@ -264,13 +258,13 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         self.assertEqual(expected, observed)
 
     async def test_find_empty(self):
-        observed = {v async for v in self.snapshot_repository.find("tests.aggregate_classes.Car", Condition.FALSE)}
+        observed = {v async for v in self.snapshot_repository.find("tests.utils.Car", Condition.FALSE)}
 
         expected = set()
         self.assertEqual(expected, observed)
 
     async def test_get(self):
-        observed = await self.snapshot_repository.get("tests.aggregate_classes.Car", self.uuid_2)
+        observed = await self.snapshot_repository.get("tests.utils.Car", self.uuid_2)
 
         expected = Car(
             3, "blue", uuid=self.uuid_2, version=2, created_at=observed.created_at, updated_at=observed.updated_at,
@@ -279,7 +273,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
 
     async def test_get_with_transaction(self):
         observed = await self.snapshot_repository.get(
-            "tests.aggregate_classes.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_1)
+            "tests.utils.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_1)
         )
 
         expected = Car(
@@ -289,21 +283,19 @@ class TestInMemorySnapshotRepository(MinosTestCase):
 
     async def test_get_raises(self):
         with self.assertRaises(DeletedAggregateException):
-            await self.snapshot_repository.get("tests.aggregate_classes.Car", self.uuid_1)
+            await self.snapshot_repository.get("tests.utils.Car", self.uuid_1)
         with self.assertRaises(AggregateNotFoundException):
-            await self.snapshot_repository.get("tests.aggregate_classes.Car", uuid4())
+            await self.snapshot_repository.get("tests.utils.Car", uuid4())
 
     async def test_get_with_transaction_raises(self):
         with self.assertRaises(DeletedAggregateException):
             await self.snapshot_repository.get(
-                "tests.aggregate_classes.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_2)
+                "tests.utils.Car", self.uuid_2, transaction=TransactionEntry(self.transaction_2)
             )
 
     async def test_find(self):
         condition = Condition.EQUAL("color", "blue")
-        iterable = self.snapshot_repository.find(
-            "tests.aggregate_classes.Car", condition, ordering=Ordering.ASC("updated_at")
-        )
+        iterable = self.snapshot_repository.find("tests.utils.Car", condition, ordering=Ordering.ASC("updated_at"))
         observed = [v async for v in iterable]
 
         expected = [
@@ -327,9 +319,7 @@ class TestInMemorySnapshotRepository(MinosTestCase):
         self.assertEqual(expected, observed)
 
     async def test_find_all(self):
-        iterable = self.snapshot_repository.find(
-            "tests.aggregate_classes.Car", Condition.TRUE, Ordering.ASC("updated_at")
-        )
+        iterable = self.snapshot_repository.find("tests.utils.Car", Condition.TRUE, Ordering.ASC("updated_at"))
         observed = [v async for v in iterable]
 
         expected = [

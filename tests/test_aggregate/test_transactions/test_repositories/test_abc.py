@@ -2,6 +2,9 @@ import unittest
 from abc import (
     ABC,
 )
+from collections.abc import (
+    AsyncIterator,
+)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -24,20 +27,29 @@ from minos.common import (
 from tests.utils import (
     FakeAsyncIterator,
     FakeLock,
-    FakeTransactionRepository,
     MinosTestCase,
 )
+
+
+class _TransactionRepository(TransactionRepository):
+    """For testing purposes."""
+
+    async def _submit(self, transaction: TransactionEntry) -> None:
+        """For testing purposes."""
+
+    def _select(self, **kwargs) -> AsyncIterator[TransactionEntry]:
+        """For testing purposes."""
 
 
 class TestTransactionRepository(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.transaction_repository = FakeTransactionRepository()
+        self.transaction_repository = _TransactionRepository()
 
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            FakeTransactionRepository(lock_pool=None)
+            _TransactionRepository(lock_pool=None)
 
     def test_abstract(self):
         self.assertTrue(issubclass(TransactionRepository, (ABC, MinosSetup)))

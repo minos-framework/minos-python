@@ -10,12 +10,10 @@ from minos.aggregate import (
     FieldDiffContainer,
     ModelRef,
 )
-from tests.aggregate_classes import (
-    Car,
-    Owner,
-)
 from tests.utils import (
+    Car,
     MinosTestCase,
+    Owner,
 )
 
 

@@ -2,6 +2,9 @@ import unittest
 from abc import (
     ABC,
 )
+from collections.abc import (
+    AsyncIterator,
+)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -35,16 +38,30 @@ from minos.common import (
 )
 from tests.utils import (
     FakeAsyncIterator,
-    FakeEventRepository,
     FakeLock,
     MinosTestCase,
 )
 
 
-class TestMinosRepository(MinosTestCase):
+class _EventRepository(EventRepository):
+    """For testing purposes."""
+
+    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
+        """For testing purposes."""
+
+    def _select(self, *args, **kwargs) -> AsyncIterator[EventEntry]:
+        """For testing purposes."""
+
+    @property
+    async def _offset(self) -> int:
+        """For testing purposes."""
+        return 0
+
+
+class TestEventRepository(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.event_repository = FakeEventRepository()
+        self.event_repository = _EventRepository()
 
     def test_subclass(self):
         self.assertTrue(issubclass(EventRepository, (ABC, MinosSetup)))
@@ -54,9 +71,7 @@ class TestMinosRepository(MinosTestCase):
         self.assertEqual({"_submit", "_select", "_offset"}, EventRepository.__abstractmethods__)
 
     def test_constructor(self):
-        repository = FakeEventRepository(
-            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
-        )
+        repository = _EventRepository()
         self.assertEqual(self.event_broker, repository._event_broker)
         self.assertEqual(self.transaction_repository, repository._transaction_repository)
         self.assertEqual(self.lock_pool, repository._lock_pool)
@@ -64,13 +79,13 @@ class TestMinosRepository(MinosTestCase):
     async def test_constructor_raises(self):
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            FakeEventRepository(event_broker=None)
+            _EventRepository(event_broker=None)
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            FakeEventRepository(transaction_repository=None)
+            _EventRepository(transaction_repository=None)
         with self.assertRaises(NotProvidedException):
             # noinspection PyTypeChecker
-            FakeEventRepository(lock_pool=None)
+            _EventRepository(lock_pool=None)
 
     def test_transaction(self):
         uuid = uuid4()
@@ -424,7 +439,7 @@ class TestMinosRepository(MinosTestCase):
 
     async def test_offset(self):
         with patch(
-            "tests.utils.FakeEventRepository._offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=56)
+            f"{__name__}._EventRepository._offset", new_callable=PropertyMock, side_effect=AsyncMock(return_value=56)
         ) as mock:
             self.assertEqual(56, await self.event_repository.offset)
             self.assertEqual(1, mock.call_count)
