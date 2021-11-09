@@ -21,8 +21,9 @@ from minos.common import (
     DeclarativeModel,
     ModelType,
 )
-from tests.model_classes import (
-    Foo,
+from tests.utils import (
+    Car,
+    MinosTestCase,
 )
 
 
@@ -201,34 +202,31 @@ class TestModelRefExtractor(unittest.TestCase):
         self.assertEqual(None, value.data_cls)
 
 
-class TestModelRefInjector(unittest.TestCase):
-    def test_simple(self):
-        uuid = uuid4()
-        model = Foo("test")
-        mapper = {uuid: model}
+class TestModelRefInjector(MinosTestCase):
+    async def test_simple(self):
+        model = await Car.create(3, "test")
+        mapper = {model.uuid: model}
 
         expected = model
-        observed = ModelRefInjector(uuid, mapper).build()
+        observed = ModelRefInjector(model.uuid, mapper).build()
 
         self.assertEqual(expected, observed)
 
-    def test_list(self):
-        uuid = uuid4()
-        model = Foo("test")
-        mapper = {uuid: model}
+    async def test_list(self):
+        model = await Car.create(3, "test")
+        mapper = {model.uuid: model}
 
         expected = [model, model, model]
-        observed = ModelRefInjector([uuid, uuid, uuid], mapper).build()
+        observed = ModelRefInjector([model.uuid, model.uuid, model.uuid], mapper).build()
 
         self.assertEqual(expected, observed)
 
-    def test_dict(self):
-        uuid = uuid4()
-        model = Foo("test")
-        mapper = {uuid: model}
+    async def test_dict(self):
+        model = await Car.create(3, "test")
+        mapper = {model.uuid: model}
 
         expected = {model: model}
-        observed = ModelRefInjector({uuid: uuid}, mapper).build()
+        observed = ModelRefInjector({model.uuid: model.uuid}, mapper).build()
 
         self.assertEqual(expected, observed)
 

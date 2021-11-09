@@ -2,6 +2,9 @@ import unittest
 from abc import (
     ABC,
 )
+from collections.abc import (
+    AsyncIterator,
+)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -13,6 +16,7 @@ from uuid import (
 
 from minos.aggregate import (
     TRANSACTION_CONTEXT_VAR,
+    Aggregate,
     Condition,
     Ordering,
     SnapshotRepository,
@@ -23,15 +27,27 @@ from minos.common import (
 )
 from tests.utils import (
     FakeAsyncIterator,
-    FakeSnapshotRepository,
 )
+
+
+class _SnapshotRepository(SnapshotRepository):
+    """For testing purposes."""
+
+    async def _get(self, *args, **kwargs) -> Aggregate:
+        """For testing purposes."""
+
+    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
+        """For testing purposes."""
+
+    async def _synchronize(self, **kwargs) -> None:
+        """For testing purposes."""
 
 
 class TestSnapshotRepository(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.snapshot_repository = FakeSnapshotRepository()
+        self.snapshot_repository = _SnapshotRepository()
 
         self.synchronize_mock = AsyncMock()
         self.get_mock = AsyncMock(return_value=1)

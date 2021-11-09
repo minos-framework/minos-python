@@ -18,7 +18,7 @@ from minos.common import (
     NULL_UUID,
     current_datetime,
 )
-from tests.aggregate_classes import (
+from tests.utils import (
     Car,
 )
 
@@ -66,7 +66,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
         entry = EventEntry.from_aggregate_diff(aggregate_diff)
         self.assertEqual(self.uuid, entry.aggregate_uuid)
-        self.assertEqual("tests.aggregate_classes.Car", entry.aggregate_name)
+        self.assertEqual("tests.utils.Car", entry.aggregate_name)
         self.assertEqual(None, entry.version)
         self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
         self.assertEqual(None, entry.id)
@@ -82,7 +82,7 @@ class TestRepositoryEntry(unittest.IsolatedAsyncioTestCase):
 
         entry = EventEntry.from_aggregate_diff(aggregate_diff, transaction=transaction)
         self.assertEqual(self.uuid, entry.aggregate_uuid)
-        self.assertEqual("tests.aggregate_classes.Car", entry.aggregate_name)
+        self.assertEqual("tests.utils.Car", entry.aggregate_name)
         self.assertEqual(None, entry.version)
         self.assertEqual(fields_diff, FieldDiffContainer.from_avro_bytes(entry.data))
         self.assertEqual(None, entry.id)

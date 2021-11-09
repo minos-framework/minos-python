@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 import sys
 import unittest
 from datetime import (
@@ -8,14 +12,10 @@ from pathlib import (
 )
 from typing import (
     Any,
-    AsyncIterator,
     Optional,
 )
 from unittest import (
     TestCase,
-)
-from uuid import (
-    UUID,
 )
 
 from dependency_injector import (
@@ -26,22 +26,19 @@ from dependency_injector import (
 from minos.aggregate import (
     Aggregate,
     Entity,
+    EntitySet,
     EventEntry,
-    EventRepository,
     InMemoryEventRepository,
     InMemorySnapshotRepository,
     InMemoryTransactionRepository,
-    SnapshotRepository,
-    TransactionEntry,
-    TransactionRepository,
+    ModelRef,
+    ValueObject,
+    ValueObjectSet,
 )
 from minos.common import (
-    CommandReply,
     Lock,
     MinosBroker,
-    MinosHandler,
     MinosPool,
-    MinosSagaManager,
     current_datetime,
 )
 
@@ -68,7 +65,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.event_repository = providers.Object(self.event_repository)
         self.container.snapshot_repository = providers.Object(self.snapshot_repository)
-        self.container.wire(modules=[sys.modules[__name__]])
+        self.container.wire(modules=[sys.modules["minos.aggregate"]])
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -110,21 +107,6 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
             self.assertAlmostEqual(e.created_at or current_datetime(), o.created_at, delta=timedelta(seconds=5))
 
 
-class FakeEventRepository(EventRepository):
-    """For testing purposes."""
-
-    async def _submit(self, entry: EventEntry, **kwargs) -> EventEntry:
-        """For testing purposes."""
-
-    def _select(self, *args, **kwargs) -> AsyncIterator[EventEntry]:
-        """For testing purposes."""
-
-    @property
-    async def _offset(self) -> int:
-        """For testing purposes."""
-        return 0
-
-
 class FakeBroker(MinosBroker):
     """For testing purposes."""
 
@@ -148,81 +130,6 @@ class FakeBroker(MinosBroker):
     def reset_mock(self):
         self.call_count = 0
         self.calls_kwargs = list()
-
-
-class FakeHandler(MinosHandler):
-    """For testing purposes."""
-
-    async def get_one(self, *args, **kwargs) -> Any:
-        """For testing purposes."""
-
-    async def get_many(self, *args, **kwargs) -> list[Any]:
-        """For testing purposes."""
-
-
-class FakeSagaManager(MinosSagaManager):
-    """For testing purposes."""
-
-    async def _run_new(self, name: str, **kwargs) -> UUID:
-        """For testing purposes."""
-
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
-        """For testing purposes."""
-
-
-class FakeEntrypoint:
-    """For testing purposes."""
-
-    def __init__(self, *args, **kwargs):
-        """For testing purposes."""
-
-    async def __aenter__(self):
-        """For testing purposes."""
-
-    async def graceful_shutdown(*args, **kwargs):
-        """For testing purposes."""
-
-
-class FakeLoop:
-    """For testing purposes."""
-
-    def __init__(self):
-        """For testing purposes."""
-
-    def run_forever(self):
-        """For testing purposes."""
-
-    def run_until_complete(self, *args, **kwargs):
-        """For testing purposes."""
-
-
-class FakeSnapshotRepository(SnapshotRepository):
-    """For testing purposes."""
-
-    async def _get(self, *args, **kwargs) -> Aggregate:
-        """For testing purposes."""
-
-    def _find(self, *args, **kwargs) -> AsyncIterator[Aggregate]:
-        """For testing purposes."""
-
-    async def _synchronize(self, **kwargs) -> None:
-        """For testing purposes."""
-
-
-class FakeEntity(Entity):
-    """For testing purposes."""
-
-    name: str
-
-
-class FakeTransactionRepository(TransactionRepository):
-    """For testing purposes."""
-
-    async def _submit(self, transaction: TransactionEntry) -> None:
-        """For testing purposes."""
-
-    def _select(self, **kwargs) -> AsyncIterator[TransactionEntry]:
-        """For testing purposes."""
 
 
 class FakeAsyncIterator:
@@ -261,3 +168,38 @@ class FakeLockPool(MinosPool):
 
     async def _destroy_instance(self, instance) -> None:
         """For testing purposes."""
+
+
+class Owner(Aggregate):
+    """Aggregate ``Owner`` class for testing purposes."""
+
+    name: str
+    surname: str
+    age: Optional[int]
+
+
+class Car(Aggregate):
+    """Aggregate ``Car`` class for testing purposes."""
+
+    doors: int
+    color: str
+    owner: Optional[list[ModelRef[Owner]]]
+
+
+class Order(Aggregate):
+    """For testing purposes"""
+
+    products: EntitySet[OrderItem]
+    reviews: ValueObjectSet[Review]
+
+
+class OrderItem(Entity):
+    """For testing purposes"""
+
+    amount: int
+
+
+class Review(ValueObject):
+    """For testing purposes."""
+
+    message: str

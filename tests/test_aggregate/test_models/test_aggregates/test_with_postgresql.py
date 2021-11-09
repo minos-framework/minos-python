@@ -11,15 +11,13 @@ from minos.aggregate import (
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
-from tests.aggregate_classes import (
+from tests.utils import (
+    BASE_PATH,
     Car,
+    MinosTestCase,
     Order,
     OrderItem,
     Review,
-)
-from tests.utils import (
-    BASE_PATH,
-    MinosTestCase,
 )
 
 
@@ -29,15 +27,10 @@ class TestAggregateWithPostgreSql(MinosTestCase, PostgresAsyncTestCase):
     def setUp(self):
         super().setUp()
 
-        self.transaction_repository = PostgreSqlTransactionRepository.from_config(
-            self.config, event_broker=self.event_broker, lock_pool=self.lock_pool,
-        )
+        self.transaction_repository = PostgreSqlTransactionRepository.from_config(self.config)
 
         self.event_repository = PostgreSqlEventRepository.from_config(
-            self.config,
-            event_broker=self.event_broker,
-            transaction_repository=self.transaction_repository,
-            lock_pool=self.lock_pool,
+            self.config, transaction_repository=self.transaction_repository,
         )
         self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(
             self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository

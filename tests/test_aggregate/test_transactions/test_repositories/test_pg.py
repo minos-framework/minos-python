@@ -26,11 +26,13 @@ class TestPostgreSqlTransactionRepository(MinosTestCase, PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
+
+        self.transaction_repository = PostgreSqlTransactionRepository(**self.repository_db)
+
         self.uuid = uuid4()
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.transaction_repository = PostgreSqlTransactionRepository(**self.repository_db)
         await self.transaction_repository.setup()
 
     async def asyncTearDown(self) -> None:

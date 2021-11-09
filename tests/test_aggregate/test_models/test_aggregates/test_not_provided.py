@@ -9,10 +9,8 @@ from minos.aggregate import (
 from minos.common import (
     NotProvidedException,
 )
-from tests.aggregate_classes import (
-    Car,
-)
 from tests.utils import (
+    Car,
     MinosTestCase,
 )
 

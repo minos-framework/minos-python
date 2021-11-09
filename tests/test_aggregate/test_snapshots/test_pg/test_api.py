@@ -32,9 +32,7 @@ class TestPostgreSqlSnapshotRepository(MinosTestCase, PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(
-            self.config, event_repository=self.event_repository, transaction_repository=self.transaction_repository
-        )
+        self.snapshot_repository = PostgreSqlSnapshotRepository.from_config(self.config)
 
         self.dispatch_mock = AsyncMock()
         self.get_mock = AsyncMock(return_value=1)
