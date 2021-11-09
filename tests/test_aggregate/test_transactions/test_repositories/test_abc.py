@@ -13,6 +13,7 @@ from uuid import (
 
 from minos.aggregate import (
     TransactionEntry,
+    TransactionNotFoundException,
     TransactionRepository,
     TransactionStatus,
 )
@@ -61,6 +62,22 @@ class TestTransactionRepository(MinosTestCase):
         self.assertEqual(expected, self.transaction_repository.write_lock())
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("aggregate_transaction_write_lock"), mock.call_args)
+
+    async def test_get(self):
+        mock = MagicMock(return_value=FakeAsyncIterator([1]))
+        self.transaction_repository.select = mock
+        uuid = uuid4()
+
+        observed = await self.transaction_repository.get(uuid)
+
+        self.assertEqual(1, observed)
+        self.assertEqual([call(uuid=uuid)], mock.call_args_list)
+
+    async def test_get_raises(self):
+        mock = MagicMock(return_value=FakeAsyncIterator([]))
+        self.transaction_repository.select = mock
+        with self.assertRaises(TransactionNotFoundException):
+            await self.transaction_repository.get(uuid4())
 
     async def test_select(self):
         uuid = uuid4()

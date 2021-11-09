@@ -127,7 +127,7 @@ class InMemorySnapshotRepository(SnapshotRepository):
             transaction_uuids = await transaction.uuids
 
         while len(transaction_uuids) > 1:
-            transaction = await self._transaction_repository.select(uuid=transaction_uuids[-1]).__anext__()
+            transaction = await self._transaction_repository.get(uuid=transaction_uuids[-1])
             if transaction.status != TransactionStatus.REJECTED:
                 break
             transaction_uuids = tuple(transaction_uuids[:-1])

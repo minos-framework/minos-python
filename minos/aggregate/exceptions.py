@@ -41,6 +41,10 @@ class TransactionRepositoryConflictException(TransactionRepositoryException):
     """Exception to be raised when a transactions has invalid status."""
 
 
+class TransactionNotFoundException(TransactionRepositoryException):
+    """Exception to be raised when some transaction is not found on the repository."""
+
+
 class SnapshotRepositoryException(AggregateException):
     """Base snapshot exception."""
 
