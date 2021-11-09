@@ -81,9 +81,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             await execution.execute(broker=self.broker)
 
         self.assertEqual(1, self.publish_mock.call_count)
-        args = call(
-            topic="CreateOrder", data=Foo(foo="create_order!"), saga=execution.uuid, user=user,
-        )
+        args = call(topic="CreateOrder", data=Foo(foo="create_order!"), saga=execution.uuid, user=user,)
         self.assertEqual(args, self.publish_mock.call_args)
         self.assertEqual(SagaStatus.Paused, execution.status)
 

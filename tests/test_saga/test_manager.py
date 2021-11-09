@@ -105,18 +105,8 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(
-                    topic="CreateOrder",
-                    data=Foo("create_order!"),
-                    saga=expected_uuid,
-                    user=self.user,
-                ),
-                call(
-                    topic="CreateTicket",
-                    data=Foo("create_ticket!"),
-                    saga=expected_uuid,
-                    user=self.user,
-                ),
+                call(topic="CreateOrder", data=Foo("create_order!"), saga=expected_uuid, user=self.user,),
+                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=expected_uuid, user=self.user,),
             ],
             send_mock.call_args_list,
         )
@@ -152,18 +142,8 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(
-                    topic="CreateOrder",
-                    data=Foo("create_order!"),
-                    saga=execution.uuid,
-                    user=self.user,
-                ),
-                call(
-                    topic="CreateTicket",
-                    data=Foo("create_ticket!"),
-                    saga=execution.uuid,
-                    user=self.user,
-                ),
+                call(topic="CreateOrder", data=Foo("create_order!"), saga=execution.uuid, user=self.user,),
+                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=execution.uuid, user=self.user,),
             ],
             send_mock.call_args_list,
         )

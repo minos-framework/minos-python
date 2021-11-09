@@ -50,12 +50,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         await self.executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
-        args = call(
-            data=Foo("create_product!"),
-            topic="CreateProduct",
-            saga=self.execution_uuid,
-            user=self.user,
-        )
+        args = call(data=Foo("create_product!"), topic="CreateProduct", saga=self.execution_uuid, user=self.user,)
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_none_user(self):
@@ -68,12 +63,7 @@ class TestRequestExecutor(unittest.IsolatedAsyncioTestCase):
         await executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
-        args = call(
-            data=Foo("create_product!"),
-            topic="CreateProduct",
-            saga=self.execution_uuid,
-            user=None,
-        )
+        args = call(data=Foo("create_product!"), topic="CreateProduct", saga=self.execution_uuid, user=None,)
         self.assertEqual(args, mock.call_args)
 
     async def test_exec_raises(self):
