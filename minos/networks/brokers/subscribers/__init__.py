@@ -16,10 +16,6 @@ from .dynamic import (
 from .entries import (
     HandlerEntry,
 )
-from .events import (
-    EventHandler,
-    EventHandlerService,
-)
 from .messages import (
     HandlerRequest,
     HandlerResponse,

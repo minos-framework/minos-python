@@ -67,7 +67,7 @@ class CommandHandler(Handler):
     @staticmethod
     def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
         builder = EnrouteBuilder(*config.services)
-        decorators = builder.get_broker_command_query(config=config, **kwargs)
+        decorators = builder.get_broker_command_query_event(config=config, **kwargs)
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers
 
@@ -83,7 +83,8 @@ class CommandHandler(Handler):
         command = entry.data
         items, status = await fn(command)
 
-        await self.broker.send(items, topic=command.reply_topic, saga=command.identifier, status=status)
+        if command.reply_topic is not None:
+            await self.broker.send(items, topic=command.reply_topic, saga=command.identifier, status=status)
 
     @staticmethod
     def get_callback(
