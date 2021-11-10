@@ -69,7 +69,7 @@ class Consumer(HandlerSetup):
         topics = set()
 
         for name in config.services:
-            decorators = EnrouteAnalyzer(name).get_broker_command_query_event()
+            decorators = EnrouteAnalyzer(name, config).get_broker_command_query_event()
             topics |= {decorator.topic for decorator in chain(*decorators.values())}
 
         # noinspection PyProtectedMember
