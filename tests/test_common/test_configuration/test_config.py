@@ -47,13 +47,8 @@ class TestMinosConfig(unittest.TestCase):
         self.assertEqual(10, queue.records)
         self.assertEqual(2, queue.retry)
 
-    def test_config_commands_service(self):
-        commands = self.config.commands
-        self.assertEqual("minos.services.OrderService", commands.service)
-
-    def test_config_queries_service(self):
-        query = self.config.queries
-        self.assertEqual("minos.services.OrderQueryService", query.service)
+    def test_services(self):
+        self.assertEqual(["tests.services.OrderService", "tests.services.OrderQueryService"], self.config.services)
 
     def test_config_saga_storage(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)

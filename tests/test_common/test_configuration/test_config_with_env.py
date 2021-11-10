@@ -28,18 +28,6 @@ class TestMinosConfigWithEnvironment(unittest.TestCase):
         repository = self.config.repository
         self.assertEqual("order_db", repository.database)
 
-    @mock.patch.dict(os.environ, {"MINOS_QUERIES_SERVICE": "src.Test"})
-    def test_config_queries_service(self):
-        query = self.config.queries
-
-        self.assertEqual("src.Test", query.service)
-
-    @mock.patch.dict(os.environ, {"MINOS_COMMANDS_SERVICE": "src.Test"})
-    def test_config_commands_service(self):
-        commands = self.config.commands
-
-        self.assertEqual("src.Test", commands.service)
-
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_CLIENT": "some-type"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_HOST": "some-host"})
     @mock.patch.dict(os.environ, {"MINOS_DISCOVERY_PORT": "333"})

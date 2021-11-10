@@ -27,10 +27,9 @@ broker:
     port: 5432
     records: 10
     retry: 2
-commands:
-    service: minos.services.OrderService
-queries:
-    service: minos.services.OrderQueryService
+services:
+    - tests.services.OrderService
+    - tests.services.OrderQueryService
 saga:
     storage:
         path: "./order.lmdb"
