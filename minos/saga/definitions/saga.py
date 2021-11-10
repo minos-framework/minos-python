@@ -184,8 +184,11 @@ class Saga:
 
         if callback is None:
             callback = identity_fn
+        else:
+            warnings.warn(f"Commit callback is being deprecated. Use {self.local_step!r} instead", DeprecationWarning)
+            self.local_step(callback, parameters=parameters, **kwargs)
 
-        self.commit_operation = SagaOperation(callback, parameters=parameters, **kwargs)
+        self.commit_operation = SagaOperation(identity_fn)
         return self
 
     def validate(self) -> None:
