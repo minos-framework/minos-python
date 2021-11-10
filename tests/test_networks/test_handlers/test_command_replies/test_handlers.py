@@ -7,16 +7,14 @@ from uuid import (
     uuid4,
 )
 
-from minos.common import (
-    CommandReply,
-    CommandStatus,
-)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     CommandReplyHandler,
     HandlerEntry,
+    PublishResponse,
+    PublishResponseStatus,
 )
 from tests.utils import (
     BASE_PATH,
@@ -43,16 +41,15 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.password, handler.password)
         self.assertEqual(saga_manager, handler.saga_manager)
 
-    def test_entry_model_cls(self):
-        self.assertEqual(CommandReply, CommandReplyHandler.ENTRY_MODEL_CLS)
-
     async def test_dispatch(self):
         saga_manager = FakeSagaManager()
         mock = AsyncMock()
         saga_manager._load_and_run = mock
 
         saga = uuid4()
-        command = CommandReply("TicketAdded", [FakeModel("foo")], saga, CommandStatus.SUCCESS)
+        command = PublishResponse(
+            "TicketAdded", [FakeModel("foo")], saga, PublishResponseStatus.SUCCESS, self.config.service.name
+        )
         entry = HandlerEntry(1, "TicketAdded", 0, command.avro_bytes, 1)
 
         async with CommandReplyHandler.from_config(config=self.config, saga_manager=saga_manager) as handler:

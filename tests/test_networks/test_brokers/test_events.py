@@ -4,13 +4,14 @@ from unittest.mock import (
 )
 
 from minos.common import (
-    Event,
+    Model,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     EventBroker,
+    PublishRequest,
 )
 from tests.utils import (
     BASE_PATH,
@@ -38,7 +39,7 @@ class TestEventBroker(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(Event("fake", FAKE_AGGREGATE_DIFF), Event.from_avro_bytes(args[1]))
+        self.assertEqual(PublishRequest("fake", FAKE_AGGREGATE_DIFF), Model.from_avro_bytes(args[1]))
 
 
 if __name__ == "__main__":

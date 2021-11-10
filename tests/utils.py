@@ -32,8 +32,6 @@ from minos.aggregate import (
     InMemoryTransactionRepository,
 )
 from minos.common import (
-    CommandReply,
-    CommandStatus,
     Lock,
     MinosBroker,
     MinosModel,
@@ -43,6 +41,7 @@ from minos.common import (
 )
 from minos.networks import (
     EnrouteDecorator,
+    PublishResponseStatus,
     Request,
     Response,
     WrappedRequest,
@@ -187,7 +186,7 @@ class FakeSagaManager(MinosSagaManager):
     async def _run_new(self, name: str, **kwargs) -> None:
         """For testing purposes."""
 
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> None:
+    async def _load_and_run(self, reply, **kwargs) -> None:
         """For testing purposes."""
 
 
@@ -199,7 +198,7 @@ class FakeBroker(MinosBroker):
         self.call_count = 0
         self.items = None
         self.topic = None
-        self.saga = None
+        self.identifier = None
         self.reply_topic = None
         self.status = None
 
@@ -209,14 +208,14 @@ class FakeBroker(MinosBroker):
         topic: str = None,
         saga: str = None,
         reply_topic: str = None,
-        status: CommandStatus = None,
+        status: PublishResponseStatus = None,
         **kwargs,
     ) -> None:
         """For testing purposes."""
         self.call_count += 1
         self.items = items
         self.topic = topic
-        self.saga = saga
+        self.identifier = saga
         self.reply_topic = reply_topic
         self.status = status
 

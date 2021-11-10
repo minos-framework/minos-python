@@ -11,11 +11,13 @@ from uuid import (
 )
 
 from minos.common import (
-    CommandReply,
-    CommandStatus,
     MinosConfig,
 )
 
+from ..broker_messages import (
+    PublishResponse,
+    PublishResponseStatus,
+)
 from .abc import (
     Broker,
 )
@@ -28,21 +30,25 @@ class CommandReplyBroker(Broker):
 
     ACTION = "commandReply"
 
+    def __init__(self, *args, service_name: str, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.service_name = service_name
+
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyBroker:
-        return cls(*args, **config.broker.queue._asdict(), **kwargs)
+        return cls(*args, service_name=config.service.name, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding
-    async def send(self, data: Any, topic: str, saga: UUID, status: CommandStatus, **kwargs) -> int:
+    async def send(self, data: Any, topic: str, saga: UUID, status: PublishResponseStatus, **kwargs) -> int:
         """Send a ``CommandReply``.
 
         :param data: The data to be send.
         :param topic: Topic in which the message will be published.
         :param saga: Saga identifier.
-        :param status: Command status.
+        :param status: command status.
         :return: This method does not return anything.
         """
 
-        command_reply = CommandReply(topic, data, saga, status)
-        logger.info(f"Sending '{command_reply!s}'...")
-        return await self.enqueue(command_reply.topic, command_reply.avro_bytes)
+        request = PublishResponse(topic, data, saga, status, self.service_name)
+        logger.info(f"Sending '{request!s}'...")
+        return await self.enqueue(request.topic, request.avro_bytes)

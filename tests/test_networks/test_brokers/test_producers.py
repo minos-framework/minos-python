@@ -14,9 +14,6 @@ from uuid import (
 
 import aiopg
 
-from minos.common import (
-    CommandStatus,
-)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -26,6 +23,7 @@ from minos.networks import (
     Consumer,
     EventBroker,
     Producer,
+    PublishResponseStatus,
 )
 from tests.utils import (
     BASE_PATH,
@@ -140,7 +138,7 @@ class TestProducer(PostgresAsyncTestCase):
 
         for x in range(0, 20):
             async with command_reply_broker:
-                await command_reply_broker.send(model, "TestDeleteReply", saga, CommandStatus.SUCCESS)
+                await command_reply_broker.send(model, "TestDeleteReply", saga, PublishResponseStatus.SUCCESS)
 
             async with command_broker:
                 await command_broker.send(model, "CommandBroker-Delete", saga, "TestDeleteReply")
@@ -187,8 +185,8 @@ class TestProducer(PostgresAsyncTestCase):
         saga = uuid4()
 
         async with CommandReplyBroker.from_config(config=self.config) as broker:
-            queue_id_1 = await broker.send(model, "TestDeleteOrderReply", saga, CommandStatus.SUCCESS)
-            queue_id_2 = await broker.send(model, "TestDeleteOrderReply", saga, CommandStatus.SUCCESS)
+            queue_id_1 = await broker.send(model, "TestDeleteOrderReply", saga, PublishResponseStatus.SUCCESS)
+            queue_id_2 = await broker.send(model, "TestDeleteOrderReply", saga, PublishResponseStatus.SUCCESS)
 
         async with self.producer:
             self.producer.publish = AsyncMock(return_value=False)

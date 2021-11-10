@@ -22,7 +22,6 @@ from minos.aggregate import (
     FieldDiffContainer,
 )
 from minos.common import (
-    Event,
     current_datetime,
 )
 from minos.common.testing import (
@@ -33,6 +32,7 @@ from minos.networks import (
     HandlerEntry,
     HandlerRequest,
     HandlerResponseException,
+    PublishRequest,
     Request,
 )
 from tests.utils import (
@@ -61,7 +61,7 @@ class TestEventHandler(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.handler = EventHandler.from_config(config=self.config)
-        self.event = Event("TicketAdded", FAKE_AGGREGATE_DIFF)
+        self.event = PublishRequest("TicketAdded", FAKE_AGGREGATE_DIFF)
 
     def test_from_config(self):
         self.assertIsInstance(self.handler, EventHandler)
@@ -83,15 +83,12 @@ class TestEventHandler(PostgresAsyncTestCase):
         )
         self.assertEqual("ticket_deleted", await self.handler.handlers["TicketDeleted"](None))
 
-    def test_entry_model_cls(self):
-        self.assertEqual(Event, EventHandler.ENTRY_MODEL_CLS)
-
     async def test_dispatch_one(self):
         callback_mock = AsyncMock()
         lookup_mock = MagicMock(return_value=callback_mock)
 
         topic = "TicketAdded"
-        event = Event(topic, FAKE_AGGREGATE_DIFF)
+        event = PublishRequest(topic, FAKE_AGGREGATE_DIFF)
         entry = HandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         async with self.handler:
@@ -130,11 +127,11 @@ class TestEventHandler(PostgresAsyncTestCase):
         for i in range(1, 6):
             events.extend(
                 [
-                    Event(
+                    PublishRequest(
                         "TicketAdded",
                         AggregateDiff(uuid1, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
                     ),
-                    Event(
+                    PublishRequest(
                         "TicketAdded",
                         AggregateDiff(uuid2, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
                     ),

@@ -13,7 +13,6 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    CommandReply,
     MinosConfig,
     MinosSagaManager,
 )
@@ -31,8 +30,6 @@ logger = logging.getLogger(__name__)
 class CommandReplyHandler(Handler):
     """Command Reply Handler class."""
 
-    ENTRY_MODEL_CLS = CommandReply
-
     @inject
     def __init__(self, saga_manager: MinosSagaManager = Provide["saga_manager"], **kwargs: Any):
         super().__init__(**kwargs)
@@ -45,7 +42,7 @@ class CommandReplyHandler(Handler):
         # noinspection PyProtectedMember
         return cls(*args, handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
-    async def dispatch_one(self, entry: HandlerEntry[CommandReply]) -> None:
+    async def dispatch_one(self, entry: HandlerEntry) -> None:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.

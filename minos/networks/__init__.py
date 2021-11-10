@@ -2,6 +2,11 @@ __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
 __version__ = "0.1.1"
 
+from .broker_messages import (
+    PublishRequest,
+    PublishResponse,
+    PublishResponseStatus,
+)
 from .brokers import (
     REPLY_TOPIC_CONTEXT_VAR,
     Broker,

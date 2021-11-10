@@ -22,10 +22,12 @@ from typing import (
 )
 
 from minos.common import (
-    Event,
     MinosConfig,
 )
 
+from ...broker_messages import (
+    PublishRequest,
+)
 from ...decorators import (
     EnrouteBuilder,
 )
@@ -49,8 +51,6 @@ version_getter = attrgetter("data.data.version")
 class EventHandler(Handler):
     """Event Handler class."""
 
-    ENTRY_MODEL_CLS = Event
-
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
         handlers = cls._handlers_from_config(config, **kwargs)
@@ -64,7 +64,7 @@ class EventHandler(Handler):
         handlers = {decorator.topic: fn for decorator, fn in handlers.items()}
         return handlers
 
-    async def _dispatch_entries(self, entries: list[HandlerEntry[Event]]) -> None:
+    async def _dispatch_entries(self, entries: list[HandlerEntry]) -> None:
         grouped = defaultdict(list)
         for entry in entries:
             grouped[uuid_getter(entry)].append(entry)
@@ -75,11 +75,11 @@ class EventHandler(Handler):
         futures = (self._dispatch_group(group) for group in grouped.values())
         await gather(*futures)
 
-    async def _dispatch_group(self, entries: list[HandlerEntry[Event]]):
+    async def _dispatch_group(self, entries: list[HandlerEntry]):
         for entry in entries:
             await self._dispatch_one(entry)
 
-    async def dispatch_one(self, entry: HandlerEntry[Event]) -> None:
+    async def dispatch_one(self, entry: HandlerEntry) -> None:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.
@@ -91,16 +91,18 @@ class EventHandler(Handler):
         await fn(entry.data)
 
     @staticmethod
-    def get_callback(fn: Callable[[HandlerRequest], Optional[Awaitable[None]]]) -> Callable[[Event], Awaitable[None]]:
+    def get_callback(
+        fn: Callable[[HandlerRequest], Optional[Awaitable[None]]]
+    ) -> Callable[[PublishRequest], Awaitable[None]]:
         """Get the handler function to be used by the Event Handler.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the Event Handler API.
         """
 
-        async def _fn(event: Event) -> None:
+        async def _fn(raw: PublishRequest) -> None:
             try:
-                request = HandlerRequest(event)
+                request = HandlerRequest(raw)
                 response = fn(request)
                 if isawaitable(response):
                     await response

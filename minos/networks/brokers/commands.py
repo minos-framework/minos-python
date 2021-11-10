@@ -16,10 +16,12 @@ from uuid import (
 )
 
 from minos.common import (
-    Command,
     MinosConfig,
 )
 
+from ..broker_messages import (
+    PublishRequest,
+)
 from .abc import (
     Broker,
 )
@@ -48,7 +50,7 @@ class CommandBroker(Broker):
         self,
         data: Any,
         topic: str,
-        saga: UUID,
+        saga: Optional[UUID] = None,
         reply_topic: Optional[str] = None,
         user: Optional[UUID] = None,
         **kwargs,
@@ -68,6 +70,6 @@ class CommandBroker(Broker):
         if reply_topic is None:
             reply_topic = self.default_reply_topic
 
-        command = Command(topic, data, saga, reply_topic, user)
-        logger.info(f"Sending '{command!s}'...")
-        return await self.enqueue(command.topic, command.avro_bytes)
+        request = PublishRequest(topic, data, saga, reply_topic, user)
+        logger.info(f"Sending '{request!s}'...")
+        return await self.enqueue(request.topic, request.avro_bytes)

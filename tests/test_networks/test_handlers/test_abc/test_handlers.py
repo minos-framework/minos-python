@@ -31,6 +31,7 @@ from minos.networks import (
     Handler,
     HandlerResponse,
     MinosActionNotFoundException,
+    PublishRequest,
 )
 from minos.networks.handlers import (
     HandlerEntry,
@@ -127,11 +128,7 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(0, mock.call_count)
 
     async def test_dispatch(self):
-        from minos.common import (
-            Event,
-        )
-
-        instance = Event("AddOrder", FAKE_AGGREGATE_DIFF)
+        instance = PublishRequest("AddOrder", FAKE_AGGREGATE_DIFF)
 
         async with self.handler:
             queue_id = await self._insert_one(instance)
@@ -141,13 +138,9 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(1, self.handler.call_count)
 
     async def test_dispatch_wrong(self):
-        from minos.common import (
-            Event,
-        )
-
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = Event("DeleteOrder", FAKE_AGGREGATE_DIFF)
-        instance_3 = Event("NoActionTopic", FAKE_AGGREGATE_DIFF)
+        instance_2 = PublishRequest("DeleteOrder", FAKE_AGGREGATE_DIFF)
+        instance_3 = PublishRequest("NoActionTopic", FAKE_AGGREGATE_DIFF)
 
         async with self.handler:
             queue_id_1 = await self._insert_one(instance_1)
@@ -159,16 +152,13 @@ class TestHandler(PostgresAsyncTestCase):
             self.assertFalse(await self._is_processed(queue_id_3))
 
     async def test_dispatch_concurrent(self):
-        from minos.common import (
-            Command,
-        )
         from tests.utils import (
             FakeModel,
         )
 
         saga = uuid4()
 
-        instance = Command("AddOrder", [FakeModel("foo")], saga, "UpdateTicket")
+        instance = PublishRequest("AddOrder", [FakeModel("foo")], saga, "UpdateTicket")
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         async with self.handler:

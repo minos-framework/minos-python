@@ -7,7 +7,7 @@ from uuid import (
 )
 
 from minos.common import (
-    Command,
+    Model,
 )
 from minos.common.testing import (
     PostgresAsyncTestCase,
@@ -15,6 +15,7 @@ from minos.common.testing import (
 from minos.networks import (
     REPLY_TOPIC_CONTEXT_VAR,
     CommandBroker,
+    PublishRequest,
 )
 from tests.utils import (
     BASE_PATH,
@@ -49,7 +50,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(Command("fake", FakeModel("foo"), saga, "ekaf"), Command.from_avro_bytes(args[1]))
+        self.assertEqual(PublishRequest("fake", FakeModel("foo"), saga, "ekaf"), Model.from_avro_bytes(args[1]))
 
     async def test_send_with_default_reply_topic(self):
         mock = AsyncMock(return_value=56)
@@ -64,7 +65,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(Command("fake", FakeModel("foo"), saga, "OrderReply"), Command.from_avro_bytes(args[1]))
+        self.assertEqual(PublishRequest("fake", FakeModel("foo"), saga, "OrderReply"), Model.from_avro_bytes(args[1]))
 
     async def test_send_with_reply_topic_context_var(self):
         mock = AsyncMock(return_value=56)
@@ -81,7 +82,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(Command("fake", FakeModel("foo"), saga, "onetwothree"), Command.from_avro_bytes(args[1]))
+        self.assertEqual(PublishRequest("fake", FakeModel("foo"), saga, "onetwothree"), Model.from_avro_bytes(args[1]))
 
     async def test_send_with_user(self):
         mock = AsyncMock(return_value=56)
@@ -97,7 +98,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(Command("fake", FakeModel("foo"), saga, "ekaf", user), Command.from_avro_bytes(args[1]))
+        self.assertEqual(PublishRequest("fake", FakeModel("foo"), saga, "ekaf", user), Model.from_avro_bytes(args[1]))
 
 
 if __name__ == "__main__":

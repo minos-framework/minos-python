@@ -17,7 +17,6 @@ from typing import (
     KeysView,
     NoReturn,
     Optional,
-    Type,
 )
 
 from aiopg import (
@@ -29,10 +28,6 @@ from cached_property import (
 from psycopg2.sql import (
     SQL,
     Identifier,
-)
-
-from minos.common import (
-    MinosModel,
 )
 
 from ...exceptions import (
@@ -58,8 +53,6 @@ class Handler(HandlerSetup):
     """
 
     __slots__ = "_handlers", "_records", "_retry"
-
-    ENTRY_MODEL_CLS: Type[MinosModel]
 
     def __init__(self, records: int, handlers: dict[str, Optional[Callable]], retry: int, **kwargs: Any):
         super().__init__(**kwargs)
@@ -170,7 +163,7 @@ class Handler(HandlerSetup):
         }
 
     def _build_entries(self, rows: list[tuple]) -> list[HandlerEntry]:
-        kwargs = {"callback_lookup": self.get_action, "data_cls": self.ENTRY_MODEL_CLS}
+        kwargs = {"callback_lookup": self.get_action}
         return [HandlerEntry(*row, **kwargs) for row in rows]
 
     async def _dispatch_entries(self, entries: list[HandlerEntry]) -> None:
@@ -186,7 +179,7 @@ class Handler(HandlerSetup):
             entry.exception = exc
 
     @abstractmethod
-    async def dispatch_one(self, entry: HandlerEntry[ENTRY_MODEL_CLS]) -> None:
+    async def dispatch_one(self, entry: HandlerEntry) -> None:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.
