@@ -29,11 +29,11 @@ from ..exceptions import (
     SagaRollbackExecutionException,
     SagaStepExecutionException,
 )
-from .commit import (
-    TransactionManager,
-)
 from ..messages import (
     SagaResponse,
+)
+from .commit import (
+    TransactionManager,
 )
 from .executors import (
     LocalExecutor,
@@ -42,7 +42,6 @@ from .status import (
     SagaStatus,
 )
 from .steps import (
-    RemoteSagaStepExecution,
     SagaStepExecution,
 )
 
@@ -218,9 +217,7 @@ class SagaExecution:
             self.status = SagaStatus.Errored
             raise SagaFailedCommitCallbackException(exc.exception)
 
-        count = sum(isinstance(executed_step, RemoteSagaStepExecution) for executed_step in self.executed_steps)
-
-        await TransactionManager(count=count, execution_uuid=self.uuid, *args, **kwargs).commit()
+        await TransactionManager(self.executed_steps, execution_uuid=self.uuid, *args, **kwargs).commit()
 
     async def rollback(self, *args, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.
@@ -243,7 +240,7 @@ class SagaExecution:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
                 raised_exception = True
 
-        await TransactionManager(count=0, execution_uuid=self.uuid, *args, **kwargs).reject()
+        await TransactionManager(self.executed_steps, execution_uuid=self.uuid, *args, **kwargs).reject()
 
         if raised_exception:
             raise SagaRollbackExecutionException("Some execution steps failed to rollback.")

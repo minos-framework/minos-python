@@ -174,6 +174,6 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
                 raise SagaFailedExecutionException(exc)
             reply = entry.data
 
-        response = SagaResponse(reply.data, reply.status)
+        response = SagaResponse(reply.data, reply.status, reply.service_name)
 
         return response

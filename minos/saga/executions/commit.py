@@ -1,7 +1,4 @@
 import logging
-from typing import (
-    Optional,
-)
 from uuid import (
     UUID,
 )
@@ -12,16 +9,16 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    CommandReply,
     MinosBroker,
     MinosHandler,
     MinosPool,
-    ModelType,
+)
+
+from .steps import (
+    SagaStepExecution,
 )
 
 logger = logging.getLogger(__name__)
-
-TransactionRequest = ModelType.build("TransactionRequest", {"transaction_uuid": UUID, "reply_topic": Optional[str]})
 
 
 class TransactionManager:
@@ -30,15 +27,14 @@ class TransactionManager:
     @inject
     def __init__(
         self,
+        executed_steps: list[SagaStepExecution],
         execution_uuid: UUID,
-        count: int,
         dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"],
         command_broker: MinosBroker = Provide["command_broker"],
         **kwargs,
     ):
+        self.executed_steps = executed_steps
         self.execution_uuid = execution_uuid
-
-        self.count = count
 
         self.dynamic_handler_pool = dynamic_handler_pool
         self.command_broker = command_broker
@@ -47,34 +43,46 @@ class TransactionManager:
     async def commit(self, **kwargs) -> None:
         """TODO"""
         logger.info("committing!")
-        if await self._can_commit(**kwargs):
+        if await self._reserve():
             await self._commit()
         else:
             await self.reject()
 
-    async def _can_commit(self, **kwargs) -> bool:
+    async def _reserve(self) -> bool:
         async with self.dynamic_handler_pool.acquire() as handler:
-            content = TransactionRequest(self.execution_uuid, handler.topic)
-            await self.command_broker.send(content, topic="SagaCommitted")
+            for executed_step in self.executed_steps:
 
-            count = 0
-            for _ in range(self.count + 1):
-                reply = await self._get_reply(handler, **kwargs)
-                if reply.status == "reserved":
-                    count += 1
-            return count == self.count + 1
-
-    async def _get_reply(self, handler: MinosHandler, **kwargs) -> CommandReply:
-        reply = None
-        while reply is None or reply["transaction_uuid"] != self.execution_uuid:
-            entry = await handler.get_one(**kwargs)
-            reply = entry.data.data
-        return reply
+                await self.command_broker.send(
+                    self.execution_uuid, topic=f"Reserve{executed_step.service_name.title()}Transaction"
+                )
+                response = await self._get_response(handler)
+                if not response.ok:
+                    return False
+        return True
 
     async def _commit(self) -> None:
-        content = TransactionRequest(self.execution_uuid)
-        await self.command_broker.send(content, topic="TransactionCommitted")
+        async with self.dynamic_handler_pool.acquire() as handler:
+            for executed_step in self.executed_steps:
+                await self.command_broker.send(
+                    self.execution_uuid, topic=f"Commit{executed_step.service_name.title()}Transaction"
+                )
+                await self._get_response(handler)
+        logger.info("Successfully committed!")
 
     async def reject(self) -> None:
-        content = TransactionRequest(self.execution_uuid)
-        await self.command_broker.send(content, topic="TransactionRejected")
+        """TODO"""
+        async with self.dynamic_handler_pool.acquire() as handler:
+            for executed_step in self.executed_steps:
+
+                await self.command_broker.send(
+                    self.execution_uuid, topic=f"Reject{executed_step.service_name.title()}Transaction"
+                )
+                await self._get_response(handler)
+
+        logger.info("Successfully rejected!")
+
+    @staticmethod
+    async def _get_response(handler: MinosHandler, **kwargs):
+        handler_entry = await handler.get_one(**kwargs)
+        response = handler_entry.data
+        return response
