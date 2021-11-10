@@ -40,7 +40,6 @@ class TestConsumer(PostgresAsyncTestCase):
             "AddOrder",
             "DeleteOrder",
             "GetOrder",
-            "OrderReply",
             "TicketAdded",
             "TicketDeleted",
             "UpdateOrder",

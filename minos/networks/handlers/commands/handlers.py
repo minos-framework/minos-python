@@ -66,7 +66,7 @@ class CommandHandler(Handler):
 
     @staticmethod
     def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
-        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        builder = EnrouteBuilder(*config.services)
         decorators = builder.get_broker_command_query(config=config, **kwargs)
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers
