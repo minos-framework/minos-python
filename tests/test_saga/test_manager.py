@@ -23,7 +23,6 @@ from minos.common import (
     CommandReply,
     CommandStatus,
     MinosConfig,
-    MinosSagaManager,
     NotProvidedException,
 )
 from minos.saga import (
@@ -67,7 +66,7 @@ class TestSagaManager(MinosTestCase):
 
     def test_constructor(self):
         self.assertIsInstance(self.manager.storage, SagaExecutionStorage)
-        self.assertIsInstance(self.manager, MinosSagaManager)
+        self.assertIsInstance(self.manager, SagaManager)
 
     def test_constructor_without_handler(self):
         with self.assertRaises(NotProvidedException):
@@ -132,11 +131,11 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = CommandReply("AddOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
-        execution = await self.manager.run(reply=reply, pause_on_disk=True)
+        execution = await self.manager.run(response=reply, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = CommandReply("AddOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
-        execution = await self.manager.run(reply=reply, pause_on_disk=True)
+        execution = await self.manager.run(response=reply, pause_on_disk=True)
         with self.assertRaises(SagaExecutionNotFoundException):
             self.manager.storage.load(execution.uuid)
 
@@ -166,11 +165,11 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = CommandReply("DeleteOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
-        execution = await self.manager.run(reply=reply, pause_on_disk=True)
+        execution = await self.manager.run(response=reply, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         reply = CommandReply("DeleteOrderReply", [Foo("foo")], execution.uuid, status=CommandStatus.SUCCESS)
-        execution = await self.manager.run(reply=reply, pause_on_disk=True, raise_on_error=False)
+        execution = await self.manager.run(response=reply, pause_on_disk=True, raise_on_error=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
 
     async def test_run_with_user_context_var(self):
