@@ -7,14 +7,12 @@ from abc import (
     abstractmethod,
 )
 from typing import (
+    Any,
     Generic,
     Optional,
     TypeVar,
 )
 
-from .model import (
-    CommandReply,
-)
 from .setup import (
     MinosSetup,
 )
@@ -25,7 +23,7 @@ T = TypeVar("T")
 class MinosSagaManager(ABC, MinosSetup, Generic[T]):
     """Base class for saga manager implementations."""
 
-    async def run(self, *args, reply: Optional[CommandReply] = None, **kwargs) -> T:
+    async def run(self, *args, reply: Optional[Any] = None, **kwargs) -> T:
         """Perform a run of a ``Saga``.
 
         The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
@@ -45,5 +43,5 @@ class MinosSagaManager(ABC, MinosSetup, Generic[T]):
         raise NotImplementedError
 
     @abstractmethod
-    async def _load_and_run(self, *args, reply: CommandReply, **kwargs) -> T:
+    async def _load_and_run(self, *args, reply: Any, **kwargs) -> T:
         raise NotImplementedError

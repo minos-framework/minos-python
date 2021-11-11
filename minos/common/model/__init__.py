@@ -2,11 +2,7 @@ from .abc import (
     Model,
 )
 from .declarative import (
-    Command,
-    CommandReply,
-    CommandStatus,
     DeclarativeModel,
-    Event,
     MinosModel,
 )
 from .dynamic import (

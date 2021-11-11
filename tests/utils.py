@@ -1,18 +1,11 @@
 import sys
 import unittest
-from datetime import (
-    timedelta,
-)
 from pathlib import (
     Path,
 )
 from typing import (
     Any,
-    AsyncIterator,
     Optional,
-)
-from unittest import (
-    TestCase,
 )
 from uuid import (
     UUID,
@@ -24,13 +17,11 @@ from dependency_injector import (
 )
 
 from minos.common import (
-    CommandReply,
     Lock,
     MinosBroker,
     MinosHandler,
     MinosPool,
     MinosSagaManager,
-    current_datetime,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -105,7 +96,7 @@ class FakeSagaManager(MinosSagaManager):
     async def _run_new(self, name: str, **kwargs) -> UUID:
         """For testing purposes."""
 
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
+    async def _load_and_run(self, reply: Any, **kwargs) -> UUID:
         """For testing purposes."""
 
 
