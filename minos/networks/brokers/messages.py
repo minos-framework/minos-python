@@ -45,7 +45,10 @@ class CommandReply(DeclarativeModel):
 
     @property
     def ok(self) -> bool:
-        """TODO"""
+        """Check if the reply is okay or not.
+
+        :return: ``True`` if the reply is okay or ``False`` otherwise.
+        """
         return self.status == CommandStatus.SUCCESS
 
 
