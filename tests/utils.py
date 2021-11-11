@@ -34,10 +34,11 @@ from minos.aggregate import (
 from minos.common import (
     Lock,
     MinosBroker,
-    MinosModel,
+    DeclarativeModel,
     MinosPool,
     MinosSagaManager,
     current_datetime,
+    Model,
 )
 from minos.networks import (
     CommandStatus,
@@ -122,7 +123,7 @@ class FakeLockPool(MinosPool):
         """For testing purposes."""
 
 
-class FakeModel(MinosModel):
+class FakeModel(DeclarativeModel):
     """For testing purposes"""
 
     text: str
@@ -204,7 +205,7 @@ class FakeBroker(MinosBroker):
 
     async def send(
         self,
-        items: list[MinosModel],
+        items: list[Model],
         topic: str = None,
         saga: str = None,
         reply_topic: str = None,
