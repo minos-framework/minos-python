@@ -1,15 +1,24 @@
 import unittest
+from uuid import (
+    uuid4,
+)
 
 from minos.saga import (
     Executor,
     SagaContext,
     SagaOperation,
 )
+from tests.utils import (
+    MinosTestCase,
+)
 
 
-class TestExecutor(unittest.IsolatedAsyncioTestCase):
+class TestExecutor(MinosTestCase):
     def setUp(self) -> None:
-        self.executor = Executor()
+        super().setUp()
+
+        self.execution_uuid = uuid4()
+        self.executor = Executor(self.execution_uuid)
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, Executor)

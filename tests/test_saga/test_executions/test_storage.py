@@ -36,6 +36,7 @@ class TestSagaExecutionStorage(MinosTestCase):
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
+        super().tearDown()
 
     def test_store(self):
         storage = SagaExecutionStorage(path=self.DB_PATH)

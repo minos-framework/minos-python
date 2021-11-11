@@ -2,6 +2,9 @@ import unittest
 from unittest.mock import (
     AsyncMock,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.saga import (
     Executor,
@@ -12,14 +15,18 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
+    MinosTestCase,
     create_payment,
     create_payment_raises,
 )
 
 
-class TestLocalExecutor(unittest.IsolatedAsyncioTestCase):
+class TestLocalExecutor(MinosTestCase):
     def setUp(self) -> None:
-        self.executor = LocalExecutor()
+        super().setUp()
+
+        self.execution_uuid = uuid4()
+        self.executor = LocalExecutor(self.execution_uuid)
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, Executor)
