@@ -33,6 +33,14 @@ class TestSaga(unittest.TestCase):
         saga = Saga()
         self.assertEqual(False, saga.committed)
 
+    def test_commit_constructor_define_callback(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            saga = Saga(commit=create_payment)
+
+        self.assertEqual([LocalSagaStep(SagaOperation(create_payment))], saga.steps)
+        self.assertEqual(True, saga.committed)
+
     def test_commit(self):
         saga = Saga()
         observed = saga.commit()
@@ -44,6 +52,7 @@ class TestSaga(unittest.TestCase):
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyTypeChecker
             observed = saga.commit(create_payment)
         self.assertEqual(saga, observed)
         self.assertEqual([LocalSagaStep(SagaOperation(create_payment))], saga.steps)
