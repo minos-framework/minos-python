@@ -32,6 +32,9 @@ from ..exceptions import (
 from ..messages import (
     SagaResponse,
 )
+from .commit import (
+    TransactionCommitter,
+)
 from .status import (
     SagaStatus,
 )
@@ -203,8 +206,7 @@ class SagaExecution:
 
     async def _execute_commit(self, *args, **kwargs) -> None:
         try:
-            # TODO: This method will contain transaction commit logic.
-            logger.info("Committed!")
+            await TransactionCommitter(execution_uuid=self.uuid, *args, **kwargs).commit()
         except Exception as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
@@ -230,6 +232,8 @@ class SagaExecution:
             except SagaStepExecutionException as exc:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
                 raised_exception = True
+
+        await TransactionCommitter(execution_uuid=self.uuid, *args, **kwargs).reject()
 
         if raised_exception:
             raise SagaRollbackExecutionException("Some execution steps failed to rollback.")

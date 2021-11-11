@@ -169,11 +169,7 @@ class TestSagaExecution(MinosTestCase):
             await execution.execute(response)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        def _fn(msg):
-            if msg == "Committed!":
-                raise ValueError()
-
-        with patch("logging.Logger.info", side_effect=_fn):
+        with patch("minos.saga.TransactionCommitter.commit", side_effect=ValueError):
             response = SagaResponse(Foo("order2"))
             with self.assertRaises(SagaFailedCommitCallbackException):
                 await execution.execute(response)
@@ -187,13 +183,15 @@ class TestSagaExecution(MinosTestCase):
             .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
+            .remote_step(send_create_order)
             .commit()
         )
         execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
         response = SagaResponse(Foo("order1"))
-        await execution.execute(response)
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute(response)
 
         self.publish_mock.reset_mock()
         await execution.rollback()
@@ -210,13 +208,15 @@ class TestSagaExecution(MinosTestCase):
             .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
+            .remote_step(send_create_order)
             .commit()
         )
         execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
         response = SagaResponse(Foo("order1"))
-        await execution.execute(response)
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute(response)
 
         async def _fn(*args, **kwargs):
             raise ValueError("This is an exception")
