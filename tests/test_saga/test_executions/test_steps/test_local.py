@@ -12,13 +12,14 @@ from minos.saga import (
     SagaStepStatus,
 )
 from tests.utils import (
+    MinosTestCase,
     create_payment,
     create_payment_raises,
     delete_payment,
 )
 
 
-class TestLocalSagaStepExecution(unittest.IsolatedAsyncioTestCase):
+class TestLocalSagaStepExecution(MinosTestCase):
     async def test_execute(self):
         step = LocalSagaStep(create_payment)
         execution = LocalSagaStepExecution(step)

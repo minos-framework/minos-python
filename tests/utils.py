@@ -28,6 +28,7 @@ from minos.aggregate import (
 from minos.common import (
     Lock,
     MinosBroker,
+    MinosConfig,
     MinosHandler,
     MinosModel,
     MinosPool,
@@ -46,6 +47,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
 
+        self.config = MinosConfig(BASE_PATH / "config.yml")
         self.event_broker = NaiveBroker()
         self.command_broker = NaiveBroker()
         self.lock_pool = FakeLockPool()
@@ -58,6 +60,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
         self.container = containers.DynamicContainer()
+        self.container.config = providers.Object(self.config)
         self.container.event_broker = providers.Object(self.event_broker)
         self.container.command_broker = providers.Object(self.command_broker)
         self.container.transaction_repository = providers.Object(self.transaction_repository)

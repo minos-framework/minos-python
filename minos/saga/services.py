@@ -11,6 +11,7 @@ from minos.common import (
     MinosConfig,
 )
 from minos.networks import (
+    CommandReply,
     EnrouteDecorator,
     HandlerRequest,
     ResponseException,
@@ -67,6 +68,6 @@ class SagaService:
         await transaction.commit()
 
     async def __saga_reply__(self, request: HandlerRequest) -> None:
-        raw = request.raw
-        response = SagaResponse(raw.data, raw.status, raw.service_name, raw.identifier)
+        raw: CommandReply = request.raw
+        response = SagaResponse(raw.data, raw.status, raw.service_name, raw.saga)
         await self.saga_manager.run(response=response, pause_on_disk=True, raise_on_error=False, return_execution=False)

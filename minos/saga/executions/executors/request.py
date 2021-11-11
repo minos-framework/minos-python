@@ -15,8 +15,12 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosBroker,
+    MinosConfig,
     NotProvidedException,
+)
+from minos.networks import (
+    REPLY_TOPIC_CONTEXT_VAR,
+    CommandBroker,
 )
 
 from ...context import (
@@ -39,23 +43,36 @@ from .abc import (
 
 
 class RequestExecutor(Executor):
-    """Request class.
+    """Request Executor class.
 
     This class has the responsibility to publish command on the corresponding broker's queue.
     """
 
     @inject
     def __init__(
-        self, *args, user: Optional[UUID], command_broker: MinosBroker = Provide["command_broker"], **kwargs,
+        self,
+        *args,
+        user: Optional[UUID],
+        config: MinosConfig = Provide["config"],
+        command_broker: CommandBroker = Provide["command_broker"],
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
         self.user = user
 
+        if config is None or isinstance(config, Provide):
+            raise NotProvidedException("A config instance is required.")
         if command_broker is None or isinstance(command_broker, Provide):
             raise NotProvidedException("A broker instance is required.")
 
+        self.config = config
         self.command_broker = command_broker
+
+    @property
+    def default_reply_topic(self) -> str:
+        """TODO"""
+        return f"{self.config.service.name}Reply"
 
     # noinspection PyMethodOverriding
     async def exec(self, operation: Optional[SagaOperation[RequestCallBack]], context: SagaContext) -> SagaContext:
@@ -77,9 +94,13 @@ class RequestExecutor(Executor):
         return context
 
     async def _publish(self, request: SagaRequest) -> None:
+        reply_topic = REPLY_TOPIC_CONTEXT_VAR.get()
+        if reply_topic is None:
+            reply_topic = self.default_reply_topic
+
         fn = self.command_broker.send
         topic = request.target
         data = await request.content()
         saga = self.execution_uuid
         user = self.user
-        await self.exec_function(fn, topic=topic, data=data, saga=saga, user=user)
+        await self.exec_function(fn, topic=topic, data=data, saga=saga, user=user, reply_topic=reply_topic)

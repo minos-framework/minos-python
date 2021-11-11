@@ -9,9 +9,13 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosBroker,
-    MinosHandler,
-    MinosPool,
+    NULL_UUID,
+)
+from minos.networks import (
+    CommandBroker,
+    CommandReply,
+    DynamicHandler,
+    DynamicHandlerPool,
 )
 
 from .steps import (
@@ -29,8 +33,8 @@ class TransactionManager:
         self,
         executed_steps: list[SagaStepExecution],
         execution_uuid: UUID,
-        dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"],
-        command_broker: MinosBroker = Provide["command_broker"],
+        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
+        command_broker: CommandBroker = Provide["command_broker"],
         **kwargs,
     ):
         self.executed_steps = executed_steps
@@ -42,18 +46,23 @@ class TransactionManager:
     # noinspection PyUnusedCommit,PyMethodOverriding
     async def commit(self, **kwargs) -> None:
         """TODO"""
-        logger.info("committing!")
+        logger.info("committing...")
+
         if await self._reserve():
             await self._commit()
         else:
             await self.reject()
+            raise ValueError("Some transactions could not be committed.")
 
     async def _reserve(self) -> bool:
         async with self.dynamic_handler_pool.acquire() as handler:
             for executed_step in self.executed_steps:
 
                 await self.command_broker.send(
-                    self.execution_uuid, topic=f"Reserve{executed_step.service_name.title()}Transaction"
+                    data=self.execution_uuid,
+                    topic=f"Reserve{executed_step.service_name.title()}Transaction",
+                    saga=NULL_UUID,
+                    reply_topic=handler.topic,
                 )
                 response = await self._get_response(handler)
                 if not response.ok:
@@ -64,7 +73,10 @@ class TransactionManager:
         async with self.dynamic_handler_pool.acquire() as handler:
             for executed_step in self.executed_steps:
                 await self.command_broker.send(
-                    self.execution_uuid, topic=f"Commit{executed_step.service_name.title()}Transaction"
+                    data=self.execution_uuid,
+                    topic=f"Commit{executed_step.service_name.title()}Transaction",
+                    saga=NULL_UUID,
+                    reply_topic=handler.topic,
                 )
                 await self._get_response(handler)
         logger.info("Successfully committed!")
@@ -75,14 +87,17 @@ class TransactionManager:
             for executed_step in self.executed_steps:
 
                 await self.command_broker.send(
-                    self.execution_uuid, topic=f"Reject{executed_step.service_name.title()}Transaction"
+                    data=self.execution_uuid,
+                    topic=f"Reject{executed_step.service_name.title()}Transaction",
+                    saga=NULL_UUID,
+                    reply_topic=handler.topic,
                 )
                 await self._get_response(handler)
 
         logger.info("Successfully rejected!")
 
     @staticmethod
-    async def _get_response(handler: MinosHandler, **kwargs):
+    async def _get_response(handler: DynamicHandler, **kwargs) -> CommandReply:
         handler_entry = await handler.get_one(**kwargs)
         response = handler_entry.data
         return response
