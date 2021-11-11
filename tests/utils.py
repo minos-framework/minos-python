@@ -32,13 +32,13 @@ from minos.aggregate import (
     InMemoryTransactionRepository,
 )
 from minos.common import (
+    DeclarativeModel,
     Lock,
     MinosBroker,
-    DeclarativeModel,
     MinosPool,
     MinosSagaManager,
-    current_datetime,
     Model,
+    current_datetime,
 )
 from minos.networks import (
     CommandStatus,
