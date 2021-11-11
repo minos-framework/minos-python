@@ -10,9 +10,6 @@ from uuid import (
 from minos.aggregate import (
     TransactionEntry,
 )
-from minos.common import (
-    NULL_UUID,
-)
 
 from ...definitions import (
     SagaOperation,
@@ -25,7 +22,7 @@ from ...exceptions import (
 class Executor:
     """Executor class."""
 
-    def __init__(self, execution_uuid: UUID = NULL_UUID, *args, **kwargs):
+    def __init__(self, execution_uuid: UUID, *args, **kwargs):
         self.execution_uuid = execution_uuid
 
     async def exec(self, operation: SagaOperation, *args, **kwargs) -> Any:
@@ -51,12 +48,7 @@ class Executor:
         :return: The ``func`` result.
         """
         try:
-            if self.execution_uuid != NULL_UUID:  # FIXME: Rewrite this code more cleanly.
-                async with TransactionEntry(uuid=self.execution_uuid, autocommit=False):
-                    result = func(*args, **kwargs)
-                    if inspect.isawaitable(result):
-                        result = await result
-            else:
+            async with TransactionEntry(uuid=self.execution_uuid, autocommit=False):
                 result = func(*args, **kwargs)
                 if inspect.isawaitable(result):
                     result = await result

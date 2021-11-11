@@ -77,9 +77,9 @@ class RequestExecutor(Executor):
         return context
 
     async def _publish(self, request: SagaRequest) -> None:
-        fn = self.command_broker.send
-        topic = request.target
-        data = await request.content()
-        saga = self.execution_uuid
-        user = self.user
-        await self.exec_function(fn, topic=topic, data=data, saga=saga, user=user)
+        try:
+            await self.command_broker.send(
+                topic=request.target, data=await request.content(), saga=self.execution_uuid, user=self.user
+            )
+        except Exception as exc:
+            raise ExecutorException(exc)

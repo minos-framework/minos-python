@@ -1,6 +1,5 @@
 from .operations import (
     SagaOperation,
-    identity_fn,
 )
 from .saga import (
     Saga,
