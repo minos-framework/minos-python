@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import (
     AsyncMock,
     call,
+    patch,
 )
 from uuid import (
     uuid4,
@@ -22,8 +23,6 @@ from minos.saga import (
 from tests.utils import (
     Foo,
     MinosTestCase,
-    commit_callback,
-    commit_callback_raises,
     handle_order_success,
     handle_ticket_success,
     handle_ticket_success_raises,
@@ -120,7 +119,7 @@ class TestSagaExecution(MinosTestCase):
         with self.assertRaises(SagaExecutionAlreadyExecutedException):
             await execution.execute()
 
-    async def test_execute_commit(self):
+    async def test_execute_commit(self):  # FIXME: This test must be rewritten according to transactions integration
         saga = (
             Saga()
             .remote_step(send_create_order)
@@ -128,7 +127,7 @@ class TestSagaExecution(MinosTestCase):
             .on_failure(send_delete_order)
             .remote_step(send_create_ticket)
             .on_success(handle_ticket_success)
-            .commit(commit_callback)
+            .commit()
         )
         execution = SagaExecution.from_definition(saga)
 
@@ -145,9 +144,10 @@ class TestSagaExecution(MinosTestCase):
         context = await execution.execute(response)
 
         self.assertEqual(SagaStatus.Finished, execution.status)
-        self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket"), status="Finished!"), context)
+        self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
         self.assertEqual(2, self.publish_mock.call_count)
 
+    # FIXME: This test must be rewritten according to transactions integration
     async def test_execute_commit_raises(self):
         saga = (
             Saga()
@@ -156,7 +156,7 @@ class TestSagaExecution(MinosTestCase):
             .on_failure(send_delete_order)
             .remote_step(send_create_ticket)
             .on_success(handle_ticket_success)
-            .commit(commit_callback_raises)
+            .commit()
         )
         execution = SagaExecution.from_definition(saga)
 
@@ -169,9 +169,10 @@ class TestSagaExecution(MinosTestCase):
             await execution.execute(response)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("order2"))
-        with self.assertRaises(SagaFailedCommitCallbackException):
-            await execution.execute(response)
+        with patch("minos.saga.TransactionCommitter.commit", side_effect=ValueError):
+            response = SagaResponse(Foo("order2"))
+            with self.assertRaises(SagaFailedCommitCallbackException):
+                await execution.execute(response)
 
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual(3, self.publish_mock.call_count)
@@ -182,13 +183,15 @@ class TestSagaExecution(MinosTestCase):
             .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
+            .remote_step(send_create_order)
             .commit()
         )
         execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
         response = SagaResponse(Foo("order1"))
-        await execution.execute(response)
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute(response)
 
         self.publish_mock.reset_mock()
         await execution.rollback()
@@ -205,13 +208,15 @@ class TestSagaExecution(MinosTestCase):
             .remote_step(send_create_order)
             .on_success(handle_order_success)
             .on_failure(send_delete_order)
+            .remote_step(send_create_order)
             .commit()
         )
         execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
         response = SagaResponse(Foo("order1"))
-        await execution.execute(response)
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute(response)
 
         async def _fn(*args, **kwargs):
             raise ValueError("This is an exception")

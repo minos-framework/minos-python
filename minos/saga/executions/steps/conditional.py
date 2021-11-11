@@ -93,7 +93,7 @@ class ConditionalSagaStepExecution(SagaStepExecution):
             SagaExecution,
         )
 
-        executor = Executor()
+        executor = Executor(execution_uuid=execution_uuid)
 
         definition = None
         for alternative in self.definition.if_then_alternatives:

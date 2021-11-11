@@ -1,5 +1,5 @@
 from .commit import (
-    TransactionManager,
+    TransactionCommitter,
 )
 from .executors import (
     Executor,

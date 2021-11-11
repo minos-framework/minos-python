@@ -25,14 +25,14 @@ from .steps import (
 logger = logging.getLogger(__name__)
 
 
-class TransactionManager:
-    """Commit Executor class."""
+class TransactionCommitter:
+    """Transaction Committer class."""
 
     @inject
     def __init__(
         self,
-        executed_steps: list[SagaStepExecution],
         execution_uuid: UUID,
+        executed_steps: list[SagaStepExecution],
         dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
         command_broker: CommandBroker = Provide["command_broker"],
         **kwargs,
@@ -45,7 +45,11 @@ class TransactionManager:
 
     # noinspection PyUnusedCommit,PyMethodOverriding
     async def commit(self, **kwargs) -> None:
-        """TODO"""
+        """Commit the transaction.
+
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
         logger.info("committing...")
 
         if await self._reserve():
@@ -82,10 +86,12 @@ class TransactionManager:
         logger.info("Successfully committed!")
 
     async def reject(self) -> None:
-        """TODO"""
+        """Reject the transaction.
+
+        :return:
+        """
         async with self.dynamic_handler_pool.acquire() as handler:
             for executed_step in self.executed_steps:
-
                 await self.command_broker.send(
                     data=self.execution_uuid,
                     topic=f"Reject{executed_step.service_name.title()}Transaction",

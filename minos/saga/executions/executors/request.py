@@ -98,9 +98,13 @@ class RequestExecutor(Executor):
         if reply_topic is None:
             reply_topic = self.default_reply_topic
 
-        fn = self.command_broker.send
-        topic = request.target
-        data = await request.content()
-        saga = self.execution_uuid
-        user = self.user
-        await self.exec_function(fn, topic=topic, data=data, saga=saga, user=user, reply_topic=reply_topic)
+        try:
+            await self.command_broker.send(
+                topic=request.target,
+                data=await request.content(),
+                saga=self.execution_uuid,
+                user=self.user,
+                reply_topic=reply_topic
+            )
+        except Exception as exc:
+            raise ExecutorException(exc)

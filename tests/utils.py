@@ -214,18 +214,6 @@ def delete_payment(context: SagaContext) -> SagaContext:
     return context
 
 
-def commit_callback(context: SagaContext) -> SagaContext:
-    """For testing purposes."""
-    context["status"] = "Finished!"
-    return context
-
-
-# noinspection PyUnusedLocal
-def commit_callback_raises(context: SagaContext) -> SagaContext:
-    """For testing purposes."""
-    raise ValueError()
-
-
 # fmt: off
 ADD_ORDER = (
     Saga()
