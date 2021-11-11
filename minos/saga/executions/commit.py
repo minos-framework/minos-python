@@ -9,6 +9,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
+    NULL_UUID,
     MinosBroker,
     MinosHandler,
     MinosPool,
@@ -42,18 +43,22 @@ class TransactionManager:
     # noinspection PyUnusedCommit,PyMethodOverriding
     async def commit(self, **kwargs) -> None:
         """TODO"""
-        logger.info("committing!")
+        logger.info("committing...")
+
         if await self._reserve():
             await self._commit()
         else:
             await self.reject()
+            raise ValueError("Some transactions could not be committed.")
 
     async def _reserve(self) -> bool:
         async with self.dynamic_handler_pool.acquire() as handler:
             for executed_step in self.executed_steps:
 
                 await self.command_broker.send(
-                    self.execution_uuid, topic=f"Reserve{executed_step.service_name.title()}Transaction"
+                    data=self.execution_uuid,
+                    topic=f"Reserve{executed_step.service_name.title()}Transaction",
+                    saga=NULL_UUID,
                 )
                 response = await self._get_response(handler)
                 if not response.ok:
@@ -64,7 +69,9 @@ class TransactionManager:
         async with self.dynamic_handler_pool.acquire() as handler:
             for executed_step in self.executed_steps:
                 await self.command_broker.send(
-                    self.execution_uuid, topic=f"Commit{executed_step.service_name.title()}Transaction"
+                    data=self.execution_uuid,
+                    topic=f"Commit{executed_step.service_name.title()}Transaction",
+                    saga=NULL_UUID,
                 )
                 await self._get_response(handler)
         logger.info("Successfully committed!")
@@ -73,9 +80,10 @@ class TransactionManager:
         """TODO"""
         async with self.dynamic_handler_pool.acquire() as handler:
             for executed_step in self.executed_steps:
-
                 await self.command_broker.send(
-                    self.execution_uuid, topic=f"Reject{executed_step.service_name.title()}Transaction"
+                    data=self.execution_uuid,
+                    topic=f"Reject{executed_step.service_name.title()}Transaction",
+                    saga=NULL_UUID,
                 )
                 await self._get_response(handler)
 

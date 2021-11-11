@@ -217,7 +217,10 @@ class SagaExecution:
             self.status = SagaStatus.Errored
             raise SagaFailedCommitCallbackException(exc.exception)
 
-        await TransactionManager(self.executed_steps, execution_uuid=self.uuid, *args, **kwargs).commit()
+        try:
+            await TransactionManager(self.executed_steps, execution_uuid=self.uuid, *args, **kwargs).commit()
+        except Exception as exc:
+            raise SagaFailedCommitCallbackException(exc)
 
     async def rollback(self, *args, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.
