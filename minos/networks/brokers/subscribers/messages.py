@@ -15,9 +15,6 @@ from ...messages import (
     Response,
     ResponseException,
 )
-from ..messages import (
-    BrokerMessage,
-)
 
 
 class HandlerRequest(Request):
@@ -25,7 +22,7 @@ class HandlerRequest(Request):
 
     __slots__ = "raw"
 
-    def __init__(self, raw: BrokerMessage):
+    def __init__(self, raw: Any):
         self.raw = raw
 
     def __eq__(self, other: HandlerRequest) -> bool:

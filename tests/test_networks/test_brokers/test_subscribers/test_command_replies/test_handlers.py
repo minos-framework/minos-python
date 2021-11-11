@@ -11,9 +11,9 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerMessage,
-    BrokerMessageStatus,
+    CommandReply,
     CommandReplyHandler,
+    CommandStatus,
     HandlerEntry,
 )
 from tests.utils import (
@@ -47,11 +47,11 @@ class TestCommandReplyHandler(PostgresAsyncTestCase):
         saga_manager._load_and_run = mock
 
         saga = uuid4()
-        command = BrokerMessage(
+        command = CommandReply(
             "TicketAdded",
             [FakeModel("foo")],
-            identifier=saga,
-            status=BrokerMessageStatus.SUCCESS,
+            saga=saga,
+            status=CommandStatus.SUCCESS,
             service_name=self.config.service.name,
         )
         entry = HandlerEntry(1, "TicketAdded", 0, command.avro_bytes, 1)

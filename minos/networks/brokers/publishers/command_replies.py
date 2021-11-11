@@ -15,8 +15,8 @@ from minos.common import (
 )
 
 from ..messages import (
-    BrokerMessage,
-    BrokerMessageStatus,
+    CommandReply,
+    CommandStatus,
 )
 from .abc import (
     Broker,
@@ -39,7 +39,7 @@ class CommandReplyBroker(Broker):
         return cls(*args, service_name=config.service.name, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding
-    async def send(self, data: Any, topic: str, saga: UUID, status: BrokerMessageStatus, **kwargs) -> int:
+    async def send(self, data: Any, topic: str, saga: UUID, status: CommandStatus, **kwargs) -> int:
         """Send a ``CommandReply``.
 
         :param data: The data to be send.
@@ -49,6 +49,6 @@ class CommandReplyBroker(Broker):
         :return: This method does not return anything.
         """
 
-        request = BrokerMessage(topic, data, identifier=saga, status=status, service_name=self.service_name)
-        logger.info(f"Sending '{request!s}'...")
-        return await self.enqueue(request.topic, request.avro_bytes)
+        command_reply = CommandReply(topic, data, saga=saga, status=status, service_name=self.service_name)
+        logger.info(f"Sending '{command_reply!s}'...")
+        return await self.enqueue(command_reply.topic, command_reply.avro_bytes)

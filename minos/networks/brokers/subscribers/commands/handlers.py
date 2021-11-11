@@ -21,7 +21,6 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosBroker,
     MinosConfig,
 )
 
@@ -34,8 +33,11 @@ from ....messages import (
     ResponseException,
 )
 from ...messages import (
-    BrokerMessage,
-    BrokerMessageStatus,
+    Command,
+    CommandStatus,
+)
+from ...publishers import (
+    CommandReplyBroker,
 )
 from ..abc import (
     Handler,
@@ -54,9 +56,9 @@ class CommandHandler(Handler):
     """Command Handler class."""
 
     @inject
-    def __init__(self, broker: MinosBroker = Provide["command_reply_broker"], **kwargs: Any):
+    def __init__(self, command_reply_broker: CommandReplyBroker = Provide["command_reply_broker"], **kwargs: Any):
         super().__init__(**kwargs)
-        self.broker = broker
+        self.command_reply_broker = command_reply_broker
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
@@ -83,19 +85,19 @@ class CommandHandler(Handler):
         command = entry.data
         items, status = await fn(command)
 
-        await self.broker.send(items, topic=command.reply_topic, saga=command.identifier, status=status)
+        await self.command_reply_broker.send(items, topic=command.reply_topic, saga=command.saga, status=status)
 
     @staticmethod
     def get_callback(
         fn: Callable[[HandlerRequest], Union[Optional[HandlerRequest], Awaitable[Optional[HandlerRequest]]]]
-    ) -> Callable[[BrokerMessage], Awaitable[Tuple[Any, BrokerMessageStatus]]]:
+    ) -> Callable[[Command], Awaitable[Tuple[Any, CommandStatus]]]:
         """Get the handler function to be used by the Command Handler.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the Command Handler API.
         """
 
-        async def _fn(raw: BrokerMessage) -> Tuple[Any, BrokerMessageStatus]:
+        async def _fn(raw: Command) -> Tuple[Any, CommandStatus]:
             request = HandlerRequest(raw)
             token = USER_CONTEXT_VAR.set(request.user)
 
@@ -105,13 +107,13 @@ class CommandHandler(Handler):
                     response = await response
                 if isinstance(response, Response):
                     response = await response.content()
-                return response, BrokerMessageStatus.SUCCESS
+                return response, CommandStatus.SUCCESS
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
-                return repr(exc), BrokerMessageStatus.ERROR
+                return repr(exc), CommandStatus.ERROR
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
-                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR
+                return repr(exc), CommandStatus.SYSTEM_ERROR
             finally:
                 USER_CONTEXT_VAR.reset(token)
 

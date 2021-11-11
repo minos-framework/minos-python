@@ -32,7 +32,7 @@ from ....messages import (
     ResponseException,
 )
 from ...messages import (
-    BrokerMessage,
+    Event,
 )
 from ..abc import (
     Handler,
@@ -93,16 +93,14 @@ class EventHandler(Handler):
         await fn(entry.data)
 
     @staticmethod
-    def get_callback(
-        fn: Callable[[HandlerRequest], Optional[Awaitable[None]]]
-    ) -> Callable[[BrokerMessage], Awaitable[None]]:
+    def get_callback(fn: Callable[[HandlerRequest], Optional[Awaitable[None]]]) -> Callable[[Event], Awaitable[None]]:
         """Get the handler function to be used by the Event Handler.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the Event Handler API.
         """
 
-        async def _fn(raw: BrokerMessage) -> None:
+        async def _fn(raw: Event) -> None:
             try:
                 request = HandlerRequest(raw)
                 response = fn(request)

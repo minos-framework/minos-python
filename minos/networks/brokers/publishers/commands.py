@@ -17,7 +17,7 @@ from minos.common import (
 
 from ..messages import (
     REPLY_TOPIC_CONTEXT_VAR,
-    BrokerMessage,
+    Command,
 )
 from .abc import (
     Broker,
@@ -65,6 +65,6 @@ class CommandBroker(Broker):
         if reply_topic is None:
             reply_topic = self.default_reply_topic
 
-        request = BrokerMessage(topic, data, identifier=saga, reply_topic=reply_topic, user=user)
-        logger.info(f"Sending '{request!s}'...")
-        return await self.enqueue(request.topic, request.avro_bytes)
+        command = Command(topic, data, saga, reply_topic, user)
+        logger.info(f"Sending '{command!s}'...")
+        return await self.enqueue(command.topic, command.avro_bytes)

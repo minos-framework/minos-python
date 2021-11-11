@@ -40,7 +40,7 @@ from minos.common import (
     current_datetime,
 )
 from minos.networks import (
-    BrokerMessageStatus,
+    CommandStatus,
     EnrouteDecorator,
     Request,
     Response,
@@ -198,7 +198,7 @@ class FakeBroker(MinosBroker):
         self.call_count = 0
         self.items = None
         self.topic = None
-        self.identifier = None
+        self.saga = None
         self.reply_topic = None
         self.status = None
 
@@ -208,14 +208,14 @@ class FakeBroker(MinosBroker):
         topic: str = None,
         saga: str = None,
         reply_topic: str = None,
-        status: BrokerMessageStatus = None,
+        status: CommandStatus = None,
         **kwargs,
     ) -> None:
         """For testing purposes."""
         self.call_count += 1
         self.items = items
         self.topic = topic
-        self.identifier = saga
+        self.saga = saga
         self.reply_topic = reply_topic
         self.status = status
 

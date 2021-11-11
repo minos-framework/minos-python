@@ -4,7 +4,7 @@ from uuid import (
 )
 
 from minos.networks import (
-    BrokerMessage,
+    Command,
     HandlerRequest,
     HandlerResponse,
 )
@@ -17,7 +17,7 @@ class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.data = [FakeModel("foo"), FakeModel("bar")]
         self.saga = uuid4()
-        self.raw = BrokerMessage("FooCreated", self.data, identifier=self.saga, reply_topic="AddOrderReply")
+        self.raw = Command("FooCreated", self.data, saga=self.saga, reply_topic="AddOrderReply")
 
     def test_repr(self):
         request = HandlerRequest(self.raw)
@@ -28,9 +28,7 @@ class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(HandlerRequest(self.raw), HandlerRequest(self.raw))
 
     def test_eq_false(self):
-        another = HandlerRequest(
-            BrokerMessage("FooUpdated", self.data, identifier=self.saga, reply_topic="AddOrderReply")
-        )
+        another = HandlerRequest(Command("FooUpdated", self.data, saga=self.saga, reply_topic="AddOrderReply"))
         self.assertNotEqual(HandlerRequest(self.raw), another)
 
     def test_no_user(self):
@@ -46,13 +44,11 @@ class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.data, await request.content())
 
     async def test_content_single(self):
-        request = HandlerRequest(
-            BrokerMessage("FooCreated", self.data[0], identifier=self.saga, reply_topic="AddOrderReply")
-        )
+        request = HandlerRequest(Command("FooCreated", self.data[0], saga=self.saga, reply_topic="AddOrderReply"))
         self.assertEqual(self.data[0], await request.content())
 
     async def test_content_simple(self):
-        request = HandlerRequest(BrokerMessage("FooCreated", 1234, identifier=self.saga, reply_topic="AddOrderReply"))
+        request = HandlerRequest(Command("FooCreated", 1234, saga=self.saga, reply_topic="AddOrderReply"))
         self.assertEqual(1234, await request.content())
 
 

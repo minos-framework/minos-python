@@ -28,7 +28,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerMessage,
+    Event,
     EventHandler,
     HandlerEntry,
     HandlerRequest,
@@ -61,7 +61,7 @@ class TestEventHandler(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.handler = EventHandler.from_config(config=self.config)
-        self.event = BrokerMessage("TicketAdded", FAKE_AGGREGATE_DIFF)
+        self.event = Event("TicketAdded", FAKE_AGGREGATE_DIFF)
 
     def test_from_config(self):
         self.assertIsInstance(self.handler, EventHandler)
@@ -88,7 +88,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         lookup_mock = MagicMock(return_value=callback_mock)
 
         topic = "TicketAdded"
-        event = BrokerMessage(topic, FAKE_AGGREGATE_DIFF)
+        event = Event(topic, FAKE_AGGREGATE_DIFF)
         entry = HandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         async with self.handler:
@@ -127,11 +127,11 @@ class TestEventHandler(PostgresAsyncTestCase):
         for i in range(1, 6):
             events.extend(
                 [
-                    BrokerMessage(
+                    Event(
                         "TicketAdded",
                         AggregateDiff(uuid1, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
                     ),
-                    BrokerMessage(
+                    Event(
                         "TicketAdded",
                         AggregateDiff(uuid2, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
                     ),

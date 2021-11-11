@@ -12,7 +12,7 @@ from minos.common import (
 )
 
 from ..messages import (
-    BrokerMessage,
+    Event,
 )
 from .abc import (
     Broker,
@@ -38,6 +38,6 @@ class EventBroker(Broker):
         :param topic: Topic in which the message will be published.
         :return: This method does not return anything.
         """
-        request = BrokerMessage(topic, data)
-        logger.info(f"Sending '{request!s}'...")
-        return await self.enqueue(request.topic, request.avro_bytes)
+        event = Event(topic, data)
+        logger.info(f"Sending '{event!s}'...")
+        return await self.enqueue(event.topic, event.avro_bytes)

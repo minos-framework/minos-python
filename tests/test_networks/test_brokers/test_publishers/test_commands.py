@@ -14,7 +14,7 @@ from minos.common.testing import (
 )
 from minos.networks import (
     REPLY_TOPIC_CONTEXT_VAR,
-    BrokerMessage,
+    Command,
     CommandBroker,
 )
 from tests.utils import (
@@ -51,7 +51,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(
-            BrokerMessage("fake", FakeModel("foo"), identifier=saga, reply_topic="ekaf"), Model.from_avro_bytes(args[1])
+            Command("fake", FakeModel("foo"), saga=saga, reply_topic="ekaf"), Model.from_avro_bytes(args[1])
         )
 
     async def test_send_with_default_reply_topic(self):
@@ -68,8 +68,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(
-            BrokerMessage("fake", FakeModel("foo"), identifier=saga, reply_topic="OrderReply"),
-            Model.from_avro_bytes(args[1]),
+            Command("fake", FakeModel("foo"), saga=saga, reply_topic="OrderReply"), Model.from_avro_bytes(args[1]),
         )
 
     async def test_send_with_reply_topic_context_var(self):
@@ -88,8 +87,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(
-            BrokerMessage("fake", FakeModel("foo"), identifier=saga, reply_topic="onetwothree"),
-            Model.from_avro_bytes(args[1]),
+            Command("fake", FakeModel("foo"), saga=saga, reply_topic="onetwothree"), Model.from_avro_bytes(args[1]),
         )
 
     async def test_send_with_user(self):
@@ -107,8 +105,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(
-            BrokerMessage("fake", FakeModel("foo"), identifier=saga, reply_topic="ekaf", user=user),
-            Model.from_avro_bytes(args[1]),
+            Command("fake", FakeModel("foo"), saga=saga, reply_topic="ekaf", user=user), Model.from_avro_bytes(args[1]),
         )
 
 
