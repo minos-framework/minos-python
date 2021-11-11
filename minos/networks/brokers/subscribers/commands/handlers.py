@@ -54,7 +54,7 @@ class CommandHandler(Handler):
     """Command Handler class."""
 
     @inject
-    def __init__(self, broker: MinosBroker = Provide["command_broker"], **kwargs: Any):
+    def __init__(self, broker: MinosBroker = Provide["command_reply_broker"], **kwargs: Any):
         super().__init__(**kwargs)
         self.broker = broker
 

@@ -2,6 +2,10 @@ from .abc import (
     Handler,
     HandlerSetup,
 )
+from .command_replies import (
+    CommandReplyHandler,
+    CommandReplyHandlerService,
+)
 from .commands import (
     CommandHandler,
     CommandHandlerService,
