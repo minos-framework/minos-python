@@ -16,6 +16,8 @@ from .brokers import (
     DynamicHandler,
     DynamicHandlerPool,
     EventBroker,
+    EventHandler,
+    EventHandlerService,
     Handler,
     HandlerEntry,
     HandlerRequest,
