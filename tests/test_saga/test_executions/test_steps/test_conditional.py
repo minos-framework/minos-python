@@ -49,7 +49,6 @@ class TestConditionalSageStepExecution(MinosTestCase):
         super().setUp()
         self.execute_kwargs = {
             "execution_uuid": uuid4(),
-            "broker": self.command_broker,
             "user": uuid4(),
         }
 
