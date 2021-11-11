@@ -104,7 +104,7 @@ class RequestExecutor(Executor):
                 data=await request.content(),
                 saga=self.execution_uuid,
                 user=self.user,
-                reply_topic=reply_topic
+                reply_topic=reply_topic,
             )
         except Exception as exc:
             raise ExecutorException(exc)
