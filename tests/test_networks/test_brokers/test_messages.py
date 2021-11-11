@@ -50,6 +50,11 @@ class TestCommandReply(unittest.TestCase):
         self.assertEqual(self.saga, command_reply.saga)
         self.assertEqual(self.status, command_reply.status)
 
+    def test_ok(self):
+        self.assertTrue(CommandReply(self.topic, self.data, self.saga, CommandStatus.SUCCESS).ok)
+        self.assertFalse(CommandReply(self.topic, self.data, self.saga, CommandStatus.ERROR).ok)
+        self.assertFalse(CommandReply(self.topic, self.data, self.saga, CommandStatus.SYSTEM_ERROR).ok)
+
     def test_avro_serialization(self):
         command_reply = CommandReply(self.topic, self.data, self.saga, self.status)
         decoded_command = CommandReply.from_avro_bytes(command_reply.avro_bytes)
