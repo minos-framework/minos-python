@@ -12,7 +12,6 @@ from .definitions import (
     Saga,
     SagaOperation,
     SagaStep,
-    identity_fn,
 )
 from .exceptions import (
     AlreadyCommittedException,

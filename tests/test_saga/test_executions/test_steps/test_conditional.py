@@ -26,7 +26,6 @@ from minos.saga import (
 from tests.utils import (
     Foo,
     MinosTestCase,
-    commit_callback_raises,
     handle_order_success,
     handle_ticket_success,
     handle_ticket_success_raises,
@@ -72,7 +71,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
                     .remote_step(send_create_ticket)
                     .on_success(handle_ticket_success)
                     .on_failure(send_delete_ticket)
-                    .commit(commit_callback_raises)
+                    .commit()
                 )
             ),
         )
@@ -108,6 +107,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
             self.assertEqual(SagaContext(option=2), context)
             self.assertEqual(1, mock.call_count)
 
+    # FIXME: This test must be rewritten according to transactions integration
     async def test_execute_raises_commit(self):
         context = SagaContext(option=3)
 
@@ -116,10 +116,15 @@ class TestConditionalSageStepExecution(MinosTestCase):
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=3), context)
 
+        def _fn(msg):
+            if msg == "Committed!":
+                raise ValueError()
+
         response = SagaResponse(Foo("ticket"))
         with patch("minos.saga.SagaExecution.rollback") as mock:
             with self.assertRaises(SagaFailedExecutionStepException):
-                context = await self.execution.execute(context, response=response, **self.execute_kwargs)
+                with patch("logging.Logger.info", side_effect=_fn):
+                    context = await self.execution.execute(context, response=response, **self.execute_kwargs)
             self.assertEqual(SagaStepStatus.ErroredByOnExecute, self.execution.status)
             self.assertEqual(SagaContext(option=3), context)
         self.assertEqual(1, mock.call_count)

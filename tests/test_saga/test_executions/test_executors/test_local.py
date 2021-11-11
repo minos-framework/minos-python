@@ -12,8 +12,8 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    commit_callback,
-    commit_callback_raises,
+    create_payment,
+    create_payment_raises,
 )
 
 
@@ -25,12 +25,12 @@ class TestLocalExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(self.executor, Executor)
 
     async def test_exec(self):
-        operation = SagaOperation(commit_callback)
+        operation = SagaOperation(create_payment)
         initial = SagaContext(product=Foo("create_product!"))
 
         observed = await self.executor.exec(operation, initial)
 
-        self.assertEqual(SagaContext(product=Foo("create_product!"), status="Finished!"), observed)
+        self.assertEqual(SagaContext(product=Foo("create_product!"), payment="payment"), observed)
         self.assertEqual(SagaContext(product=Foo("create_product!")), initial)
 
     async def test_exec_not_defined(self):
@@ -49,7 +49,7 @@ class TestLocalExecutor(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(initial, observed)
 
     async def test_exec_raises(self):
-        operation = SagaOperation(commit_callback_raises)
+        operation = SagaOperation(create_payment_raises)
         context = SagaContext(product=Foo("create_product!"))
 
         with self.assertRaises(SagaFailedExecutionStepException):
