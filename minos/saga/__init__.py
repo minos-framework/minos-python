@@ -12,7 +12,6 @@ from .definitions import (
     Saga,
     SagaOperation,
     SagaStep,
-    identity_fn,
 )
 from .exceptions import (
     AlreadyCommittedException,
@@ -54,7 +53,7 @@ from .executions import (
     SagaStatus,
     SagaStepExecution,
     SagaStepStatus,
-    TransactionManager,
+    TransactionCommitter,
 )
 from .manager import (
     SagaManager,

@@ -2,6 +2,9 @@ import unittest
 from unittest.mock import (
     AsyncMock,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.saga import (
     Executor,
@@ -14,13 +17,17 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
+    MinosTestCase,
     handle_ticket_success,
 )
 
 
-class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
+class TestResponseExecutor(MinosTestCase):
     def setUp(self) -> None:
-        self.executor = ResponseExecutor()
+        super().setUp()
+
+        self.execution_uuid = uuid4()
+        self.executor = ResponseExecutor(self.execution_uuid)
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, Executor)

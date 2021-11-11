@@ -48,7 +48,7 @@ class TestSagaExecution(MinosTestCase):
             "already_rollback": False,
             "context": SagaContext().avro_str,
             "definition": {
-                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "committed": True,
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -91,7 +91,7 @@ class TestSagaExecution(MinosTestCase):
             "already_rollback": False,
             "context": SagaContext().avro_str,
             "definition": {
-                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "committed": True,
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -131,7 +131,7 @@ class TestSagaExecution(MinosTestCase):
             "already_rollback": False,
             "context": SagaContext().avro_str,
             "definition": {
-                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "committed": True,
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -185,7 +185,7 @@ class TestSagaExecution(MinosTestCase):
             "already_rollback": False,
             "context": SagaContext(order=Foo("hola"), payment="payment").avro_str,
             "definition": {
-                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "committed": True,
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
