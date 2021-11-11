@@ -128,30 +128,18 @@ def delete_payment(context: SagaContext) -> SagaContext:
     return context
 
 
-def commit_callback(context: SagaContext) -> SagaContext:
-    """For testing purposes."""
-    context["status"] = "Finished!"
-    return context
-
-
-# noinspection PyUnusedLocal
-def commit_callback_raises(context: SagaContext) -> SagaContext:
-    """For testing purposes."""
-    raise ValueError()
-
-
 # fmt: off
 ADD_ORDER = (
     Saga()
         .remote_step(send_create_order)
-            .on_success(handle_order_success)
-            .on_failure(send_delete_order)
+        .on_success(handle_order_success)
+        .on_failure(send_delete_order)
         .local_step(create_payment)
-            .on_failure(delete_payment)
+        .on_failure(delete_payment)
         .remote_step(send_create_ticket)
-            .on_success(handle_ticket_success)
-            .on_error(handle_ticket_error)
-            .on_failure(send_delete_ticket)
+        .on_success(handle_ticket_success)
+        .on_error(handle_ticket_error)
+        .on_failure(send_delete_ticket)
         .commit()
 )
 
@@ -159,9 +147,9 @@ ADD_ORDER = (
 DELETE_ORDER = (
     Saga()
         .remote_step(send_delete_order)
-            .on_success(handle_order_success)
+        .on_success(handle_order_success)
         .remote_step(send_delete_ticket)
-            .on_success(handle_ticket_success_raises)
+        .on_success(handle_ticket_success_raises)
         .commit()
 )
 
@@ -169,7 +157,7 @@ DELETE_ORDER = (
 CREATE_PAYMENT = (
     Saga()
         .local_step(create_payment)
-            .on_failure(delete_payment)
+        .on_failure(delete_payment)
         .commit()
 )
 

@@ -18,7 +18,7 @@ from minos.saga import (
     SagaStep,
 )
 from tests.utils import (
-    commit_callback,
+    create_payment,
     send_create_ticket,
 )
 
@@ -99,9 +99,9 @@ class TestSagaStep(unittest.TestCase):
         step = RemoteSagaStep(send_create_ticket, saga=saga)
         mock = MagicMock(return_value=56)
         saga.commit = mock
-        observed = step.commit(commit_callback)
+        observed = step.commit(create_payment)
         self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(commit_callback), mock.call_args)
+        self.assertEqual(call(create_payment), mock.call_args)
         self.assertEqual(56, observed)
 
     def test_commit_validate(self):

@@ -24,15 +24,6 @@ from ..context import (
 T = TypeVar("T", bound=Callable)
 
 
-def identity_fn(x: SagaContext) -> SagaContext:
-    """A identity function, that returns the same value without any transformation.
-
-    :param x: The input value.
-    :return: This function return the input value without any transformation.
-    """
-    return x
-
-
 class SagaOperation(Generic[T]):
     """Saga Step Operation class."""
 

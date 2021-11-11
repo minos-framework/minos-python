@@ -32,9 +32,6 @@ from ..exceptions import (
 from ..messages import (
     SagaResponse,
 )
-from .executors import (
-    LocalExecutor,
-)
 from .status import (
     SagaStatus,
 )
@@ -205,14 +202,13 @@ class SagaExecution:
             raise exc
 
     async def _execute_commit(self, *args, **kwargs) -> None:
-        executor = LocalExecutor(*args, **kwargs)
-
         try:
-            self.context = await executor.exec(self.definition.commit_operation, self.context)
-        except SagaFailedExecutionStepException as exc:
+            # TODO: This method will contain transaction commit logic.
+            logger.info("Committed!")
+        except Exception as exc:
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
-            raise SagaFailedCommitCallbackException(exc.exception)
+            raise SagaFailedCommitCallbackException(exc)
 
     async def rollback(self, *args, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.

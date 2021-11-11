@@ -18,11 +18,9 @@ from minos.saga import (
     SagaNotCommittedException,
     SagaOperation,
     SagaStep,
-    identity_fn,
 )
 from tests.utils import (
     ADD_ORDER,
-    commit_callback,
     create_payment,
     send_create_order,
     send_delete_order,
@@ -32,20 +30,24 @@ from tests.utils import (
 
 class TestSaga(unittest.TestCase):
     def test_commit_constructor(self):
-        saga = Saga(commit=identity_fn)
-        self.assertEqual(SagaOperation(identity_fn), saga.commit_operation)
+        saga = Saga()
+        self.assertEqual(False, saga.committed)
 
     def test_commit(self):
         saga = Saga()
         observed = saga.commit()
         self.assertEqual(saga, observed)
-        self.assertEqual(SagaOperation(identity_fn), saga.commit_operation)
+        self.assertEqual(True, saga.committed)
 
     def test_commit_define_callback(self):
         saga = Saga()
-        observed = saga.commit(commit_callback)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            observed = saga.commit(create_payment)
         self.assertEqual(saga, observed)
-        self.assertEqual(SagaOperation(commit_callback), saga.commit_operation)
+        self.assertEqual([LocalSagaStep(SagaOperation(create_payment))], saga.steps)
+        self.assertEqual(True, saga.committed)
 
     def test_commit_raises(self):
         saga = Saga().commit()
@@ -53,8 +55,7 @@ class TestSaga(unittest.TestCase):
             saga.commit()
 
     def test_committed_true(self):
-        saga = Saga()
-        saga.commit_operation = SagaOperation(identity_fn)
+        saga = Saga(committed=True)
         self.assertTrue(saga.committed)
 
     def test_committed_false(self):
@@ -121,6 +122,7 @@ class TestSaga(unittest.TestCase):
 
     def test_step(self):
         saga = Saga()
+        # noinspection DuplicatedCode
         mock = MagicMock(side_effect=saga.remote_step)
         saga.remote_step = mock
         with warnings.catch_warnings():
@@ -196,7 +198,7 @@ class TestSaga(unittest.TestCase):
     def test_raw(self):
         saga = ADD_ORDER
         expected = {
-            "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+            "committed": True,
             "steps": [
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -223,7 +225,7 @@ class TestSaga(unittest.TestCase):
 
     def test_from_raw(self):
         raw = {
-            "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+            "committed": True,
             "steps": [
                 {
                     "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",

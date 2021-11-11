@@ -179,7 +179,7 @@ class TestSagaManager(unittest.IsolatedAsyncioTestCase):
         saga_manager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
 
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
+            warnings.simplefilter("ignore", RuntimeWarning)
             # noinspection PyUnresolvedReferences
             await saga_manager.run(ADD_ORDER, user=uuid4(), broker=self.broker, pause_on_disk=True)
 
