@@ -41,13 +41,18 @@ class Saga:
 
     # noinspection PyUnusedLocal
     def __init__(
-        self, *args, steps: list[SagaStep] = None, committed: bool = False, **kwargs,
+        self, *args, steps: list[SagaStep] = None, committed: bool = False, commit: None = None, **kwargs,
     ):
         if steps is None:
             steps = list()
 
         self.steps = steps
         self.committed = committed
+
+        if commit is not None:
+            warnings.warn(f"Commit callback is being deprecated. Use {self.local_step!r} instead", DeprecationWarning)
+            self.local_step(commit)
+            self.committed = True
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
