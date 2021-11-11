@@ -14,10 +14,6 @@ from uuid import (
     UUID,
 )
 
-from minos.common import (
-    CommandReply,
-)
-
 from ..context import (
     SagaContext,
 )
@@ -32,6 +28,9 @@ from ..exceptions import (
     SagaPausedExecutionStepException,
     SagaRollbackExecutionException,
     SagaStepExecutionException,
+)
+from ..messages import (
+    SagaResponse,
 )
 from .executors import (
     LocalExecutor,
@@ -153,13 +152,10 @@ class SagaExecution:
 
         return cls(definition, uuid, context, *args, **kwargs)
 
-    async def execute(
-        self, reply: Optional[CommandReply] = None, reply_topic: Optional[str] = None, *args, **kwargs,
-    ) -> SagaContext:
+    async def execute(self, response: Optional[SagaResponse] = None, *args, **kwargs) -> SagaContext:
         """Execute the ``Saga`` definition.
 
-        :param reply: An optional ``CommandReply`` to be consumed by the immediately next executed step.
-        :param reply_topic: The topic in which to receive the future replies.
+        :param response: An optional ``SagaResponse`` to be consumed by the immediately next executed step.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
@@ -169,25 +165,25 @@ class SagaExecution:
                 f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
             )
         if self.status == SagaStatus.Errored:
-            if reply is None or reply.saga != self.uuid:
+            if response is None:
                 raise SagaExecutionAlreadyExecutedException(
                     f"The {self.uuid!s} execution cannot be executed because is in {self.status!r} status."
                 )
 
-            logger.info(f"Received 'on_failure' reply: {reply!s}")
+            logger.info(f"Received 'on_failure': {response!s}")
             return self.context
 
         self.status = SagaStatus.Running
         if self.paused_step is not None:
             try:
-                await self._execute_one(self.paused_step, reply=reply, reply_topic=reply_topic, *args, **kwargs)
+                await self._execute_one(self.paused_step, response=response, *args, **kwargs)
             finally:
                 if self.status != SagaStatus.Paused:
                     self.paused_step = None
 
         for step in self._pending_steps:
             execution_step = SagaStepExecution.from_definition(step)
-            await self._execute_one(execution_step, reply_topic=reply_topic, *args, **kwargs)
+            await self._execute_one(execution_step, *args, **kwargs)
 
         await self._execute_commit(*args, **kwargs)
         self.status = SagaStatus.Finished
@@ -218,10 +214,9 @@ class SagaExecution:
             self.status = SagaStatus.Errored
             raise SagaFailedCommitCallbackException(exc.exception)
 
-    async def rollback(self, reply_topic: Optional[str] = None, *args, **kwargs) -> None:
+    async def rollback(self, *args, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.
 
-        :param reply_topic: The topic in which to receive the future replies.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: The updated execution context.
@@ -234,7 +229,7 @@ class SagaExecution:
         for execution_step in reversed(self.executed_steps):
             try:
                 self.context = await execution_step.rollback(
-                    self.context, reply_topic=reply_topic, user=self.user, execution_uuid=self.uuid, *args, **kwargs
+                    self.context, user=self.user, execution_uuid=self.uuid, *args, **kwargs
                 )
             except SagaStepExecutionException as exc:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")

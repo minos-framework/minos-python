@@ -12,12 +12,12 @@ from minos.saga import (
     SagaContext,
     SagaExecution,
     SagaPausedExecutionStepException,
+    SagaResponse,
 )
 from tests.utils import (
     ADD_ORDER,
     Foo,
     NaiveBroker,
-    fake_reply,
 )
 
 
@@ -254,9 +254,9 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(broker=self.broker)
 
-            reply = fake_reply(Foo("hola"))
+            response = SagaResponse(Foo("hola"))
             with self.assertRaises(SagaPausedExecutionStepException):
-                await expected.execute(reply=reply, broker=self.broker)
+                await expected.execute(response, broker=self.broker)
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)
