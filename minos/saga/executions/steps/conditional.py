@@ -18,6 +18,11 @@ from uuid import (
     UUID,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
 from ...context import (
     SagaContext,
 )
@@ -83,8 +88,13 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         if self.inner is not None:
             context = await self._execute_inner(context, *args, **kwargs)
 
+        self.service_name = self._get_service_name()
         self.status = SagaStepStatus.Finished
         return context
+
+    @inject
+    def _get_service_name(self, config=Provide["config"]) -> str:
+        return config.service.name
 
     async def _create_inner(
         self, context: SagaContext, user: Optional[UUID] = None, execution_uuid: Optional[UUID] = None, *args, **kwargs

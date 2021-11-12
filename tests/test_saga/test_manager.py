@@ -3,9 +3,6 @@ import warnings
 from collections import (
     namedtuple,
 )
-from contextvars import (
-    ContextVar,
-)
 from shutil import (
     rmtree,
 )
@@ -20,10 +17,11 @@ from uuid import (
 )
 
 from minos.common import (
-    MinosConfig,
+    NULL_UUID,
     NotProvidedException,
 )
 from minos.networks import (
+    USER_CONTEXT_VAR,
     CommandReply,
     CommandStatus,
 )
@@ -42,13 +40,9 @@ from tests.utils import (
     ADD_ORDER,
     BASE_PATH,
     DELETE_ORDER,
-    FakeHandler,
-    FakePool,
     Foo,
     MinosTestCase,
 )
-
-_USER_CONTEXT_VAR = ContextVar("user")
 
 
 class TestSagaManager(MinosTestCase):
@@ -56,13 +50,10 @@ class TestSagaManager(MinosTestCase):
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.config = MinosConfig(BASE_PATH / "config.yml")
-        self.handler = FakeHandler("TheReplyTopic")
-        self.pool = FakePool(self.handler)
+
         self.user = uuid4()
-        _USER_CONTEXT_VAR.set(self.user)
-        # noinspection PyTypeChecker
-        self.manager: SagaManager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
+        USER_CONTEXT_VAR.set(self.user)
+        self.manager: SagaManager = SagaManager.from_config(self.config)
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
@@ -74,14 +65,7 @@ class TestSagaManager(MinosTestCase):
 
     def test_constructor_without_handler(self):
         with self.assertRaises(NotProvidedException):
-            SagaManager.from_config(self.config, handler=None)
-
-    def test_from_config_with_user_context_var(self):
-        _USER_CONTEXT_VAR.set(None)
-        saga_manager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
-
-        # noinspection PyUnresolvedReferences
-        self.assertEqual(_USER_CONTEXT_VAR, saga_manager.user_context_var)
+            SagaManager.from_config(self.config, dynamic_handler_pool=None)
 
     async def test_context_manager(self):
         async with self.manager as saga_manager:
@@ -96,8 +80,20 @@ class TestSagaManager(MinosTestCase):
         with patch("uuid.uuid4", return_value=expected_uuid):
             self.handler.get_one = AsyncMock(
                 side_effect=[
-                    Message(CommandReply("topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
-                    Message(CommandReply("topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS)),
+                    Message(
+                        CommandReply(
+                            "topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS, service_name="foo"
+                        )
+                    ),
+                    Message(
+                        CommandReply(
+                            "topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS, service_name="foo"
+                        )
+                    ),
+                    Message(CommandReply("", None, NULL_UUID, status=CommandStatus.SUCCESS, service_name="foo")),
+                    Message(CommandReply("", None, NULL_UUID, status=CommandStatus.SUCCESS, service_name="order")),
+                    Message(CommandReply("", None, NULL_UUID, status=CommandStatus.SUCCESS, service_name="foo")),
+                    Message(CommandReply("", None, NULL_UUID, status=CommandStatus.SUCCESS, service_name="order")),
                 ]
             )
 
@@ -106,11 +102,14 @@ class TestSagaManager(MinosTestCase):
             with self.assertRaises(SagaExecutionNotFoundException):
                 self.manager.storage.load(execution.uuid)
 
-        self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(topic="CreateOrder", data=Foo("create_order!"), saga=expected_uuid, user=self.user,),
-                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=expected_uuid, user=self.user,),
+                call(topic="CreateOrder", data=Foo("create_order!"), saga=expected_uuid, user=self.user),
+                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=expected_uuid, user=self.user),
+                call(topic="ReserveFooTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(topic="ReserveOrderTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(topic="CommitFooTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(topic="CommitOrderTransaction", data=execution.uuid, saga=NULL_UUID),
             ],
             send_mock.call_args_list,
         )
@@ -131,23 +130,32 @@ class TestSagaManager(MinosTestCase):
         send_mock = AsyncMock()
         self.command_broker.send = send_mock
 
+        get_mock = AsyncMock()
+        get_mock.return_value.data.ok = True
+        self.handler.get_one = get_mock
+
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS)
+        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        )
         execution = await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS)
+        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        )
         execution = await self.manager.run(response=response, pause_on_disk=True)
         with self.assertRaises(SagaExecutionNotFoundException):
             self.manager.storage.load(execution.uuid)
 
-        self.assertEqual(2, send_mock.call_count)
         self.assertEqual(
             [
-                call(topic="CreateOrder", data=Foo("create_order!"), saga=execution.uuid, user=self.user,),
-                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=execution.uuid, user=self.user,),
+                call(topic="CreateOrder", data=Foo("create_order!"), saga=execution.uuid, user=self.user),
+                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=execution.uuid, user=self.user),
+                call(topic="ReserveFooTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(topic="ReserveOrderTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(topic="CommitFooTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(topic="CommitOrderTransaction", data=execution.uuid, saga=NULL_UUID),
             ],
             send_mock.call_args_list,
         )
@@ -165,22 +173,29 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(context, execution.context)
 
     async def test_run_with_pause_on_disk_with_error(self):
+
+        get_mock = AsyncMock()
+        get_mock.return_value.data.ok = True
+        self.handler.get_one = get_mock
+
         execution = await self.manager.run(DELETE_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS)
+        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        )
         execution = await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS)
+        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        )
         execution = await self.manager.run(response=response, pause_on_disk=True, raise_on_error=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
 
-    async def test_run_with_user_context_var(self):
+    async def test_run_withUSER_CONTEXT_VAR(self):
         send_mock = AsyncMock()
         self.command_broker.send = send_mock
 
-        saga_manager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
+        saga_manager = SagaManager.from_config(self.config)
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)

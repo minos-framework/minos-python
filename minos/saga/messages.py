@@ -77,6 +77,8 @@ class SagaResponse:
             status = SagaResponseStatus.SUCCESS
         if not isinstance(status, SagaResponseStatus):
             status = SagaResponseStatus.from_raw(status)
+        if service_name is None:
+            raise ValueError("'service_name' must be set.")
 
         self._content = content
         self._status = status

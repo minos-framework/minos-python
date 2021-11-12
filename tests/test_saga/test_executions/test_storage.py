@@ -28,7 +28,7 @@ class TestSagaExecutionStorage(MinosTestCase):
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
 
-        response = SagaResponse(Foo("hola"))
+        response = SagaResponse(Foo("hola"), service_name="ticket")
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
 
