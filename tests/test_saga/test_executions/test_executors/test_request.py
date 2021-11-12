@@ -56,7 +56,7 @@ class TestRequestExecutor(MinosTestCase):
             topic="CreateProduct",
             saga=self.execution_uuid,
             user=self.user,
-            reply_topic="OrderReply",
+            reply_topic="orderReply",
         )
         self.assertEqual(args, mock.call_args)
 
@@ -75,7 +75,7 @@ class TestRequestExecutor(MinosTestCase):
             topic="CreateProduct",
             saga=self.execution_uuid,
             user=None,
-            reply_topic="OrderReply",
+            reply_topic="orderReply",
         )
         self.assertEqual(args, mock.call_args)
 

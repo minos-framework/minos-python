@@ -65,7 +65,9 @@ class TransactionCommitter:
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
                 await self.command_broker.send(
-                    data=uuid, topic=f"Reserve{service_name.title()}Transaction", saga=NULL_UUID,
+                    data=uuid,
+                    topic=f"Reserve{service_name.title()}Transaction",
+                    saga=NULL_UUID,
                     reply_topic=handler.topic,
                 )
                 response = await self._get_response(handler)
@@ -77,7 +79,9 @@ class TransactionCommitter:
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
                 await self.command_broker.send(
-                    data=uuid, topic=f"Commit{service_name.title()}Transaction", saga=NULL_UUID,
+                    data=uuid,
+                    topic=f"Commit{service_name.title()}Transaction",
+                    saga=NULL_UUID,
                     reply_topic=handler.topic,
                 )
                 await self._get_response(handler)
@@ -91,7 +95,9 @@ class TransactionCommitter:
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
                 await self.command_broker.send(
-                    data=uuid, topic=f"Reject{service_name.title()}Transaction", saga=NULL_UUID,
+                    data=uuid,
+                    topic=f"Reject{service_name.title()}Transaction",
+                    saga=NULL_UUID,
                     reply_topic=handler.topic,
                 )
                 await self._get_response(handler)

@@ -104,12 +104,24 @@ class TestSagaManager(MinosTestCase):
 
         self.assertEqual(
             [
-                call(topic="CreateOrder", data=Foo("create_order!"), saga=expected_uuid, user=self.user),
-                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=expected_uuid, user=self.user),
-                call(topic="ReserveFooTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="ReserveOrderTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="CommitFooTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="CommitOrderTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(
+                    topic="CreateOrder",
+                    data=Foo("create_order!"),
+                    saga=expected_uuid,
+                    user=self.user,
+                    reply_topic="TheReplyTopic",
+                ),
+                call(
+                    topic="CreateTicket",
+                    data=Foo("create_ticket!"),
+                    saga=expected_uuid,
+                    user=self.user,
+                    reply_topic="TheReplyTopic",
+                ),
+                call(topic="ReserveFooTransaction", data=execution.uuid, saga=NULL_UUID, reply_topic="TheReplyTopic"),
+                call(topic="ReserveOrderTransaction", data=execution.uuid, saga=NULL_UUID, reply_topic="TheReplyTopic"),
+                call(topic="CommitFooTransaction", data=execution.uuid, saga=NULL_UUID, reply_topic="TheReplyTopic"),
+                call(topic="CommitOrderTransaction", data=execution.uuid, saga=NULL_UUID, reply_topic="TheReplyTopic"),
             ],
             send_mock.call_args_list,
         )
@@ -137,12 +149,14 @@ class TestSagaManager(MinosTestCase):
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        response = SagaResponse(
+            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
         )
         execution = await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        response = SagaResponse(
+            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
         )
         execution = await self.manager.run(response=response, pause_on_disk=True)
         with self.assertRaises(SagaExecutionNotFoundException):
@@ -150,12 +164,24 @@ class TestSagaManager(MinosTestCase):
 
         self.assertEqual(
             [
-                call(topic="CreateOrder", data=Foo("create_order!"), saga=execution.uuid, user=self.user),
-                call(topic="CreateTicket", data=Foo("create_ticket!"), saga=execution.uuid, user=self.user),
-                call(topic="ReserveFooTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="ReserveOrderTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="CommitFooTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="CommitOrderTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(
+                    topic="CreateOrder",
+                    data=Foo("create_order!"),
+                    saga=execution.uuid,
+                    user=self.user,
+                    reply_topic="orderReply",
+                ),
+                call(
+                    topic="CreateTicket",
+                    data=Foo("create_ticket!"),
+                    saga=execution.uuid,
+                    user=self.user,
+                    reply_topic="orderReply",
+                ),
+                call(topic="ReserveFooTransaction", data=execution.uuid, saga=NULL_UUID, reply_topic="TheReplyTopic"),
+                call(topic="ReserveOrderTransaction", data=execution.uuid, saga=NULL_UUID, reply_topic="TheReplyTopic"),
+                call(topic="CommitFooTransaction", data=execution.uuid, saga=NULL_UUID, reply_topic="TheReplyTopic"),
+                call(topic="CommitOrderTransaction", data=execution.uuid, saga=NULL_UUID, reply_topic="TheReplyTopic"),
             ],
             send_mock.call_args_list,
         )
@@ -181,12 +207,14 @@ class TestSagaManager(MinosTestCase):
         execution = await self.manager.run(DELETE_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        response = SagaResponse(
+            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
         )
         execution = await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse([Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        response = SagaResponse(
+            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
         )
         execution = await self.manager.run(response=response, pause_on_disk=True, raise_on_error=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
