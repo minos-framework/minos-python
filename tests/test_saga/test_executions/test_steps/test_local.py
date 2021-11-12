@@ -36,6 +36,7 @@ class TestLocalSagaStepExecution(MinosTestCase):
 
         self.assertEqual(SagaContext(payment="payment"), observed)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
+        self.assertEqual(self.config.service.name, execution.service_name)
 
     async def test_execute_raises(self):
         step = LocalSagaStep(create_payment_raises).on_failure(delete_payment)

@@ -22,7 +22,6 @@ from uuid import (
 from minos.common import (
     CommandReply,
     CommandStatus,
-    MinosConfig,
     MinosSagaManager,
     NotProvidedException,
 )
@@ -39,8 +38,6 @@ from tests.utils import (
     ADD_ORDER,
     BASE_PATH,
     DELETE_ORDER,
-    FakeHandler,
-    FakePool,
     Foo,
     MinosTestCase,
 )
@@ -53,13 +50,10 @@ class TestSagaManager(MinosTestCase):
 
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
-        self.config = MinosConfig(BASE_PATH / "config.yml")
-        self.handler = FakeHandler("TheReplyTopic")
-        self.pool = FakePool(self.handler)
+
         self.user = uuid4()
         _USER_CONTEXT_VAR.set(self.user)
-        # noinspection PyTypeChecker
-        self.manager: SagaManager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
+        self.manager: SagaManager = SagaManager.from_config(self.config)
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
@@ -71,11 +65,11 @@ class TestSagaManager(MinosTestCase):
 
     def test_constructor_without_handler(self):
         with self.assertRaises(NotProvidedException):
-            SagaManager.from_config(self.config, handler=None)
+            SagaManager.from_config(self.config, dynamic_handler_pool=None)
 
     def test_from_config_with_user_context_var(self):
         _USER_CONTEXT_VAR.set(None)
-        saga_manager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
+        saga_manager = SagaManager.from_config(self.config)
 
         # noinspection PyUnresolvedReferences
         self.assertEqual(_USER_CONTEXT_VAR, saga_manager.user_context_var)
@@ -177,7 +171,7 @@ class TestSagaManager(MinosTestCase):
         send_mock = AsyncMock()
         self.command_broker.send = send_mock
 
-        saga_manager = SagaManager.from_config(self.config, dynamic_handler_pool=self.pool)
+        saga_manager = SagaManager.from_config(self.config)
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)

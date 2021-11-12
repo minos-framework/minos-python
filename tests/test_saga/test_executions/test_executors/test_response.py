@@ -35,17 +35,18 @@ class TestResponseExecutor(MinosTestCase):
     async def test_exec(self):
         operation = SagaOperation(handle_ticket_success)
         expected = SagaContext(one=1, ticket=Foo("text"))
-        observed = await self.executor.exec(operation, SagaContext(one=1), response=SagaResponse(Foo("text")))
+        response = SagaResponse(Foo("text"), service_name="ticket")
+        observed = await self.executor.exec(operation, SagaContext(one=1), response=response)
         self.assertEqual(expected, observed)
 
     async def test_exec_raises(self):
-        response = SagaResponse(status=SagaResponseStatus.ERROR)
+        response = SagaResponse(status=SagaResponseStatus.ERROR, service_name="ticket")
         operation = SagaOperation(AsyncMock(side_effect=ValueError))
         with self.assertRaises(SagaFailedExecutionStepException):
             await self.executor.exec(operation, SagaContext(), response=response)
 
     async def test_exec_return_exception_raises(self):
-        response = SagaResponse(status=SagaResponseStatus.ERROR)
+        response = SagaResponse(status=SagaResponseStatus.ERROR, service_name="ticket")
         operation = SagaOperation(AsyncMock(return_value=ValueError("This is an example")))
         with self.assertRaises(SagaFailedExecutionStepException):
             await self.executor.exec(operation, SagaContext(), response=response)

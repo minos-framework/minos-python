@@ -3,6 +3,9 @@ from uuid import (
     UUID,
 )
 
+from cached_property import (
+    cached_property,
+)
 from dependency_injector.wiring import (
     Provide,
     inject,
@@ -57,12 +60,9 @@ class TransactionCommitter:
 
     async def _reserve(self) -> bool:
         async with self.dynamic_handler_pool.acquire() as handler:
-            for executed_step in self.executed_steps:
-
+            for (uuid, service_name) in self.transactions:
                 await self.command_broker.send(
-                    data=self.execution_uuid,
-                    topic=f"Reserve{executed_step.service_name.title()}Transaction",
-                    saga=NULL_UUID,
+                    data=uuid, topic=f"Reserve{service_name.title()}Transaction", saga=NULL_UUID,
                 )
                 response = await self._get_response(handler)
                 if not response.ok:
@@ -71,11 +71,9 @@ class TransactionCommitter:
 
     async def _commit(self) -> None:
         async with self.dynamic_handler_pool.acquire() as handler:
-            for executed_step in self.executed_steps:
+            for (uuid, service_name) in self.transactions:
                 await self.command_broker.send(
-                    data=self.execution_uuid,
-                    topic=f"Commit{executed_step.service_name.title()}Transaction",
-                    saga=NULL_UUID,
+                    data=uuid, topic=f"Commit{service_name.title()}Transaction", saga=NULL_UUID,
                 )
                 await self._get_response(handler)
         logger.info("Successfully committed!")
@@ -86,11 +84,9 @@ class TransactionCommitter:
         :return:
         """
         async with self.dynamic_handler_pool.acquire() as handler:
-            for executed_step in self.executed_steps:
+            for (uuid, service_name) in self.transactions:
                 await self.command_broker.send(
-                    data=self.execution_uuid,
-                    topic=f"Reject{executed_step.service_name.title()}Transaction",
-                    saga=NULL_UUID,
+                    data=uuid, topic=f"Reject{service_name.title()}Transaction", saga=NULL_UUID,
                 )
                 await self._get_response(handler)
 
@@ -101,3 +97,18 @@ class TransactionCommitter:
         handler_entry = await handler.get_one(**kwargs)
         response = handler_entry.data
         return response
+
+    @cached_property
+    def transactions(self) -> list[tuple[UUID, str]]:
+        """TODO"""
+        transactions = list()
+        uniques = set()
+
+        for executed_step in self.executed_steps:
+            pair = (self.execution_uuid, executed_step.service_name)
+            if pair in uniques:
+                continue
+            transactions.append(pair)
+            uniques.add(pair)
+
+        return transactions

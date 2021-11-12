@@ -28,6 +28,7 @@ from minos.aggregate import (
 from minos.common import (
     Lock,
     MinosBroker,
+    MinosConfig,
     MinosHandler,
     MinosModel,
     MinosPool,
@@ -46,9 +47,17 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
 
+        self.config = MinosConfig(BASE_PATH / "config.yml")
+
+        self.handler = FakeHandler("TheReplyTopic")
+        self.dynamic_handler_pool = FakePool(self.handler)
+
+        self.lock = FakeLock()
+        self.lock_pool = FakePool(self.lock)
+
         self.event_broker = NaiveBroker()
         self.command_broker = NaiveBroker()
-        self.lock_pool = FakeLockPool()
+
         self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
         self.event_repository = InMemoryEventRepository(
             event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
@@ -58,10 +67,12 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         )
 
         self.container = containers.DynamicContainer()
+        self.container.config = providers.Object(self.config)
+        self.container.dynamic_handler_pool = providers.Object(self.dynamic_handler_pool)
+        self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.event_broker = providers.Object(self.event_broker)
         self.container.command_broker = providers.Object(self.command_broker)
         self.container.transaction_repository = providers.Object(self.transaction_repository)
-        self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.event_repository = providers.Object(self.event_repository)
         self.container.snapshot_repository = providers.Object(self.snapshot_repository)
         self.container.wire(
@@ -101,16 +112,6 @@ class FakeLock(Lock):
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return
-
-
-class FakeLockPool(MinosPool):
-    """For testing purposes."""
-
-    async def _create_instance(self):
-        return FakeLock()
-
-    async def _destroy_instance(self, instance) -> None:
-        """For testing purposes."""
 
 
 class Foo(MinosModel):
