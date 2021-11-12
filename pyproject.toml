@@ -31,9 +31,10 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.2.0"
+minos-microservice-common = { git = "https://github.com/Clariteia/minos_microservice_common.git", branch = "issue-651-remove-command-commandreply-event" }
 dependency-injector = "^4.32.2"
 minos-microservice-aggregate = "^0.1.1"
+minos-microservice-networks = { git = "https://github.com/Clariteia/minos_microservice_networks.git", branch = "issue-434-integration-command-command-reply-event" }
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"

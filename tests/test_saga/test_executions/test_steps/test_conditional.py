@@ -246,7 +246,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
                 "uuid": str(self.execute_kwargs["execution_uuid"]),
             },
             "status": "finished",
-            "service_name": None,
+            "service_name": "order",
         }
         observed = self.execution.raw
 

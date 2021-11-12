@@ -2,16 +2,6 @@ from typing import (
     Optional,
 )
 
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
-from minos.common import (
-    MinosConfig,
-    NotProvidedException,
-)
-
 from ...context import (
     SagaContext,
 )
@@ -30,21 +20,6 @@ from .abc import (
 
 class LocalExecutor(Executor):
     """Local Executor class."""
-
-    @inject
-    def __init__(
-        self, *args, config: MinosConfig = Provide["config"], **kwargs,
-    ):
-        super().__init__(*args, **kwargs)
-
-        if config is None or isinstance(config, Provide):
-            raise NotProvidedException("A config instance is required.")
-
-        self.config = config
-
-    @property
-    def service_name(self) -> str:
-        return self.config.service.name
 
     # noinspection PyUnusedLocal,PyMethodOverriding
     async def exec(

@@ -102,6 +102,13 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         super().tearDown()
 
 
+class NaiveBroker(MinosBroker):
+    """For testing purposes."""
+
+    async def send(self, data: Any, **kwargs) -> None:
+        """For testing purposes."""
+
+
 class FakeLock(Lock):
     """For testing purposes."""
 
@@ -110,8 +117,51 @@ class FakeLock(Lock):
             key = "fake"
         super().__init__(key, *args, **kwargs)
 
+    async def __aenter__(self):
+        """For testing purposes."""
+        return self
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        return
+        """For testing purposes."""
+
+
+class FakeHandler(MinosHandler):
+    """For testing purposes."""
+
+    def __init__(self, topic):
+        super().__init__()
+        self.topic = topic
+
+    async def get_one(self, *args, **kwargs) -> Any:
+        """For testing purposes."""
+
+    async def get_many(self, *args, **kwargs) -> list[Any]:
+        """For testing purposes."""
+
+    async def __aenter__(self):
+        """For testing purposes."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """For testing purposes."""
+
+
+class FakePool(MinosPool):
+    """For testing purposes."""
+
+    def __init__(self, instance):
+        super().__init__()
+        self.instance = instance
+
+    def acquire(self, *args, **kwargs):
+        """For testing purposes."""
+        return self.instance
+
+    async def _create_instance(self) -> T:
+        """For testing purposes."""
+
+    async def _destroy_instance(self, instance: t.Any) -> None:
+        """For testing purposes."""
 
 
 class Foo(MinosModel):
@@ -254,39 +304,3 @@ def add_order_condition(context: SagaContext) -> bool:
 def delete_order_condition(context: SagaContext) -> bool:
     """For testing purposes."""
     return "b" in context
-
-
-class NaiveBroker(MinosBroker):
-    """For testing purposes."""
-
-    async def send(self, data: Any, **kwargs) -> None:
-        """For testing purposes."""
-
-
-class FakeHandler(MinosHandler):
-    """For testing purposes."""
-
-    def __init__(self, topic):
-        super().__init__()
-        self.topic = topic
-
-    async def get_one(self, *args, **kwargs) -> Any:
-        """For testing purposes."""
-
-    async def get_many(self, *args, **kwargs) -> list[Any]:
-        """For testing purposes."""
-
-
-class FakePool(MinosPool):
-    """For testing purposes."""
-
-    def __init__(self, instance):
-        super().__init__()
-        self.instance = instance
-
-    async def _create_instance(self) -> T:
-        """For testing purposes."""
-        return self.instance
-
-    async def _destroy_instance(self, instance: t.Any) -> None:
-        """For testing purposes."""
