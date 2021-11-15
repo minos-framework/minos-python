@@ -3,6 +3,10 @@ from dependency_injector.wiring import (
     inject,
 )
 
+from minos.common import (
+    MinosConfig,
+)
+
 from ...context import (
     SagaContext,
 )
@@ -56,6 +60,10 @@ class LocalSagaStepExecution(SagaStepExecution):
         self.status = SagaStepStatus.Finished
         return context
 
+    @inject
+    def _get_service_name(self, config: MinosConfig = Provide["config"]) -> str:
+        return config.service.name
+
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
         """Rollback the local saga context.
 
@@ -76,7 +84,3 @@ class LocalSagaStepExecution(SagaStepExecution):
 
         self.already_rollback = True
         return context
-
-    @inject
-    def _get_service_name(self, config=Provide["config"]) -> str:
-        return config.service.name

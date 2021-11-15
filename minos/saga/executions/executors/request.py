@@ -50,29 +50,16 @@ class RequestExecutor(Executor):
 
     @inject
     def __init__(
-        self,
-        *args,
-        user: Optional[UUID],
-        config: MinosConfig = Provide["config"],
-        command_broker: CommandBroker = Provide["command_broker"],
-        **kwargs,
+        self, *args, user: Optional[UUID], command_broker: CommandBroker = Provide["command_broker"], **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
         self.user = user
 
-        if config is None or isinstance(config, Provide):
-            raise NotProvidedException("A config instance is required.")
         if command_broker is None or isinstance(command_broker, Provide):
             raise NotProvidedException("A broker instance is required.")
 
-        self.config = config
         self.command_broker = command_broker
-
-    @property
-    def default_reply_topic(self) -> str:
-        """TODO"""
-        return f"{self.config.service.name}Reply"
 
     # noinspection PyMethodOverriding
     async def exec(self, operation: Optional[SagaOperation[RequestCallBack]], context: SagaContext) -> SagaContext:
@@ -93,10 +80,11 @@ class RequestExecutor(Executor):
             raise SagaFailedExecutionStepException(exc.exception)
         return context
 
+    # noinspection PyMethodOverriding
     async def _publish(self, request: SagaRequest) -> None:
         reply_topic = REPLY_TOPIC_CONTEXT_VAR.get()
         if reply_topic is None:
-            reply_topic = self.default_reply_topic
+            reply_topic = self._get_default_reply_topic()
 
         try:
             await self.command_broker.send(
@@ -108,3 +96,7 @@ class RequestExecutor(Executor):
             )
         except Exception as exc:
             raise ExecutorException(exc)
+
+    @inject
+    def _get_default_reply_topic(self, config: MinosConfig = Provide["config"]) -> str:
+        return f"{config.service.name}Reply"
