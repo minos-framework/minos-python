@@ -1,6 +1,6 @@
 __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 from .events import (
     SUBMITTING_EVENT_CONTEXT_VAR,
@@ -55,6 +55,7 @@ from .snapshots import (
     PostgreSqlSnapshotWriter,
     SnapshotEntry,
     SnapshotRepository,
+    SnapshotService,
 )
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -62,5 +63,6 @@ from .transactions import (
     PostgreSqlTransactionRepository,
     TransactionEntry,
     TransactionRepository,
+    TransactionService,
     TransactionStatus,
 )
