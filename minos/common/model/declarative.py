@@ -15,13 +15,13 @@ from typing import (
     get_type_hints,
 )
 
-from ...meta import (
+from ..meta import (
     self_or_classmethod,
 )
-from ..abc import (
+from .abc import (
     Model,
 )
-from ..types import (
+from .types import (
     MissingSentinel,
     ModelType,
     TypeHintComparator,
