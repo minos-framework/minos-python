@@ -4,7 +4,9 @@ from asyncio import (
 from collections import (
     defaultdict,
 )
-from functools import partial
+from functools import (
+    partial,
+)
 from inspect import (
     isawaitable,
 )
