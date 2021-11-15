@@ -7,6 +7,7 @@ from pathlib import (
     Path,
 )
 from typing import (
+    Callable,
     Optional,
 )
 from uuid import (
@@ -219,6 +220,14 @@ class FakeBroker(MinosBroker):
         self.saga = saga
         self.reply_topic = reply_topic
         self.status = status
+
+
+async def fake_middleware(request: Request, inner: Callable) -> Optional[Response]:
+    """For testing purposes."""
+    response = await inner(request)
+    if response is not None:
+        return Response(f"_{await response.content()}_")
+    return response
 
 
 class FakeService:
