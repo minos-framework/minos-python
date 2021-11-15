@@ -16,9 +16,7 @@ from minos.common import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeBroker,
     FakeLockPool,
-    FakeSagaManager,
 )
 
 
@@ -28,24 +26,8 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.config = MinosConfig(path=str(self.config_file_path))
 
     def test_from_str(self):
-        injector = DependencyInjector(self.config, event_broker=classname(FakeBroker))
-        self.assertIsInstance(injector.event_broker, FakeBroker)
-
-    def test_event_broker(self):
-        injector = DependencyInjector(self.config, event_broker=FakeBroker)
-        self.assertIsInstance(injector.event_broker, FakeBroker)
-
-    def test_command_broker(self):
-        injector = DependencyInjector(self.config, command_broker=FakeBroker)
-        self.assertIsInstance(injector.command_broker, FakeBroker)
-
-    def test_command_reply_broker(self):
-        injector = DependencyInjector(self.config, command_reply_broker=FakeBroker)
-        self.assertIsInstance(injector.container.command_reply_broker(), FakeBroker)
-
-    def test_saga_manager(self):
-        injector = DependencyInjector(self.config, saga_manager=FakeSagaManager)
-        self.assertIsInstance(injector.saga_manager, FakeSagaManager)
+        injector = DependencyInjector(self.config, lock_pool=classname(FakeLockPool))
+        self.assertIsInstance(injector.lock_pool, FakeLockPool)
 
     def test_lock_pool(self):
         injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
@@ -65,35 +47,12 @@ class TestMinosDependencyInjector(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(injector.container, Container)
         self.assertEqual(self.config, injector.container.config())
 
-    def test_container_event_broker(self):
-        injector = DependencyInjector(self.config, event_broker=FakeBroker)
-        self.assertEqual(injector.event_broker, injector.container.event_broker())
-
-    def test_container_command_broker(self):
-        injector = DependencyInjector(self.config, command_broker=FakeBroker)
-        self.assertEqual(injector.command_broker, injector.container.command_broker())
-
-    def test_container_command_reply_broker(self):
-        injector = DependencyInjector(self.config, command_reply_broker=FakeBroker)
-        self.assertEqual(injector.command_reply_broker, injector.container.command_reply_broker())
-
-    def test_container_saga_manager(self):
-        injector = DependencyInjector(self.config, saga_manager=FakeSagaManager)
-        self.assertEqual(injector.saga_manager, injector.container.saga_manager())
-
     def test_container_lock_pool(self):
         injector = DependencyInjector(self.config, lock_pool=FakeLockPool)
         self.assertEqual(injector.lock_pool, injector.container.lock_pool())
 
     async def test_wire_unwire(self):
-        injector = DependencyInjector(
-            self.config,
-            event_broker=FakeBroker,
-            command_broker=FakeBroker,
-            command_reply_broker=FakeBroker,
-            saga_manager=FakeSagaManager,
-            lock_pool=FakeLockPool,
-        )
+        injector = DependencyInjector(self.config, lock_pool=FakeLockPool,)
 
         mock = MagicMock()
         injector.container.wire = mock

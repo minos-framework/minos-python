@@ -1,8 +1,9 @@
-__version__ = "0.2.1"
+__author__ = """Clariteia Devs"""
+__email__ = "devs@clariteia.com"
+__version__ = "0.3.0"
 
 from .configuration import (
     BROKER,
-    COMMANDS,
     DISCOVERY,
     QUEUE,
     REPOSITORY,
@@ -72,13 +73,9 @@ from .model import (
     AvroSchemaDecoder,
     AvroSchemaEncoder,
     BucketModel,
-    Command,
-    CommandReply,
-    CommandStatus,
     DataTransferObject,
     DeclarativeModel,
     DynamicModel,
-    Event,
     Field,
     GenericTypeProjector,
     MinosModel,
@@ -91,10 +88,6 @@ from .model import (
     TypeHintComparator,
     is_model_type,
 )
-from .networks import (
-    MinosBroker,
-    MinosHandler,
-)
 from .pools import (
     MinosPool,
 )
@@ -104,9 +97,6 @@ from .protocol import (
     MinosAvroProtocol,
     MinosBinaryProtocol,
     MinosJsonBinaryProtocol,
-)
-from .saga import (
-    MinosSagaManager,
 )
 from .setup import (
     MinosSetup,
