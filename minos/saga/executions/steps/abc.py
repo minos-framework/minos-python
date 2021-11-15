@@ -9,6 +9,7 @@ from abc import (
 from typing import (
     Any,
     Iterable,
+    Optional,
     Union,
 )
 
@@ -35,11 +36,17 @@ class SagaStepExecution(ABC):
     """Saga Step Execution class."""
 
     def __init__(
-        self, definition: SagaStep, status: SagaStepStatus = SagaStepStatus.Created, already_rollback: bool = False,
+        self,
+        definition: SagaStep,
+        status: SagaStepStatus = SagaStepStatus.Created,
+        service_name: Optional[str] = None,
+        already_rollback: bool = False,
     ):
         self.definition = definition
         self.status = status
         self.already_rollback = already_rollback
+
+        self.service_name = service_name
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStepExecution], **kwargs) -> SagaStepExecution:
@@ -129,6 +136,7 @@ class SagaStepExecution(ABC):
             "cls": classname(type(self)),
             "definition": self.definition.raw,
             "status": self.status.raw,
+            "service_name": self.service_name,
             "already_rollback": self.already_rollback,
         }
 
@@ -139,5 +147,6 @@ class SagaStepExecution(ABC):
         yield from (
             self.definition,
             self.status,
+            self.service_name,
             self.already_rollback,
         )

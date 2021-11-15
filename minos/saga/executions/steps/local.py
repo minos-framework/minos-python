@@ -1,3 +1,8 @@
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
 from ...context import (
     SagaContext,
 )
@@ -47,6 +52,7 @@ class LocalSagaStepExecution(SagaStepExecution):
             self.status = SagaStepStatus.ErroredOnExecute
             raise exc
 
+        self.service_name = self._get_service_name()
         self.status = SagaStepStatus.Finished
         return context
 
@@ -70,3 +76,7 @@ class LocalSagaStepExecution(SagaStepExecution):
 
         self.already_rollback = True
         return context
+
+    @inject
+    def _get_service_name(self, config=Provide["config"]) -> str:
+        return config.service.name

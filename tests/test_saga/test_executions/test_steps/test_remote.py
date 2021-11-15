@@ -75,7 +75,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        response = SagaResponse(status=SagaResponseStatus.SYSTEM_ERROR)
+        response = SagaResponse(status=SagaResponseStatus.SYSTEM_ERROR, service_name="ticket")
 
         with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, response, **self.execute_kwargs)
@@ -89,7 +89,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS, service_name="ticket")
 
         await execution.execute(context, response, **self.execute_kwargs)
 
@@ -101,7 +101,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS, service_name="ticket")
 
         await execution.execute(context, response, **self.execute_kwargs)
 
@@ -114,7 +114,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.SUCCESS, service_name="ticket")
 
         with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, response, **self.execute_kwargs)
@@ -128,7 +128,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR, service_name="ticket")
 
         await execution.execute(context, response, **self.execute_kwargs)
 
@@ -141,7 +141,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR, service_name="ticket")
 
         await execution.execute(context, response, **self.execute_kwargs)
 
@@ -154,7 +154,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         execution = RemoteSagaStepExecution(step, status=SagaStepStatus.PausedByOnExecute)
         rollback_mock = AsyncMock()
         execution.rollback = rollback_mock
-        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR)
+        response = SagaResponse(Foo("foo"), SagaResponseStatus.ERROR, service_name="ticket")
 
         with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(context, response, **self.execute_kwargs)

@@ -206,8 +206,9 @@ class SagaExecution:
 
     async def _execute_commit(self, *args, **kwargs) -> None:
         try:
-            await TransactionCommitter(execution_uuid=self.uuid, *args, **kwargs).commit()
-        except Exception as exc:
+            await TransactionCommitter(self.uuid, self.executed_steps, *args, **kwargs).commit()
+        except Exception as exc:  # FIXME: Exception is too broad
+            logger.warning(f"There was an exception on {TransactionCommitter.__name__!r} commit: {exc!r}")
             await self.rollback(*args, **kwargs)
             self.status = SagaStatus.Errored
             raise SagaFailedCommitCallbackException(exc)
@@ -233,7 +234,11 @@ class SagaExecution:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
                 raised_exception = True
 
-        await TransactionCommitter(execution_uuid=self.uuid, *args, **kwargs).reject()
+        try:
+            await TransactionCommitter(self.uuid, self.executed_steps, *args, **kwargs).reject()
+        except Exception as exc:
+            logger.warning(f"There was an exception on {TransactionCommitter.__name__!r} rejection: {exc!r}")
+            raised_exception = True
 
         if raised_exception:
             raise SagaRollbackExecutionException("Some execution steps failed to rollback.")

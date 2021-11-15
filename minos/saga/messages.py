@@ -57,16 +57,27 @@ class SagaResponse:
     __slots__ = (
         "_content",
         "_status",
+        "_service_name",
     )
 
-    def __init__(self, content: Any = None, status: Optional[Union[int, SagaResponseStatus]] = None):
+    def __init__(
+        self,
+        content: Any = None,
+        status: Optional[Union[int, SagaResponseStatus]] = None,
+        service_name: Optional[str] = None,
+        *args,
+        **kwargs,
+    ):
         if status is None:
             status = SagaResponseStatus.SUCCESS
         if not isinstance(status, SagaResponseStatus):
             status = SagaResponseStatus.from_raw(status)
+        if service_name is None:
+            raise ValueError("'service_name' must be set.")
 
         self._content = content
         self._status = status
+        self._service_name = service_name
 
     # noinspection PyUnusedLocal
     async def content(self, **kwargs) -> Any:
@@ -93,14 +104,27 @@ class SagaResponse:
         """
         return self._status
 
+    @property
+    def service_name(self) -> str:
+        """Get the microservice name that generated the response.
+
+        :return: An string value containing the microservice name.
+        """
+        return self._service_name
+
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, type(self)) and self._content == other._content and self._status == other._status
+        return (
+            isinstance(other, type(self))
+            and self._content == other._content
+            and self._status == other._status
+            and self._service_name == other._service_name
+        )
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._content!r}, {self._status!r})"
+        return f"{type(self).__name__}({self._content!r}, {self._status!r}, {self._service_name!r})"
 
     def __hash__(self):
-        return hash((self._content, self._status))
+        return hash((self._content, self._status, self._service_name))
 
 
 class SagaResponseStatus(IntEnum):

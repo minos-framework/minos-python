@@ -1,5 +1,6 @@
 service:
-    name: Order
+    name: order
+    aggregate: src.aggregates.Order
 saga:
     storage:
         path: "./order.lmdb"

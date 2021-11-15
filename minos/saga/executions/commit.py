@@ -3,9 +3,22 @@ from uuid import (
     UUID,
 )
 
-from minos.aggregate import (
-    EventRepositoryConflictException,
-    TransactionEntry,
+from cached_property import (
+    cached_property,
+)
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
+from minos.networks import (
+    CommandBroker,
+    DynamicHandler,
+    DynamicHandlerPool,
+)
+
+from .steps import (
+    SagaStepExecution,
 )
 
 logger = logging.getLogger(__name__)
@@ -14,8 +27,20 @@ logger = logging.getLogger(__name__)
 class TransactionCommitter:
     """Transaction Committer class."""
 
-    def __init__(self, execution_uuid: UUID, *args, **kwargs):
+    @inject
+    def __init__(
+        self,
+        execution_uuid: UUID,
+        executed_steps: list[SagaStepExecution],
+        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
+        command_broker: CommandBroker = Provide["command_broker"],
+        **kwargs,
+    ):
+        self.executed_steps = executed_steps
         self.execution_uuid = execution_uuid
+
+        self.dynamic_handler_pool = dynamic_handler_pool
+        self.command_broker = command_broker
 
     # noinspection PyUnusedCommit,PyMethodOverriding
     async def commit(self, **kwargs) -> None:
@@ -26,30 +51,63 @@ class TransactionCommitter:
         """
         logger.info("committing...")
 
-        transaction = TransactionEntry(self.execution_uuid)
-
-        if await self._reserve(transaction):
-            await self._commit(transaction)
+        if await self._reserve():
+            await self._commit()
         else:
             await self.reject()
             raise ValueError("Some transactions could not be committed.")
 
-    @staticmethod
-    async def _reserve(transaction: TransactionEntry) -> bool:
-        try:
-            await transaction.reserve()
-            return True
-        except EventRepositoryConflictException:
-            return False
+    async def _reserve(self) -> bool:
+        async with self.dynamic_handler_pool.acquire() as handler:
+            for (uuid, service_name) in self.transactions:
+                await self.command_broker.send(data=uuid, topic=f"Reserve{service_name.title()}Transaction")
+                response = await self._get_response(handler)
+                if not response.ok:
+                    return False
+        return True
 
-    @staticmethod
-    async def _commit(transaction: TransactionEntry) -> None:
-        await transaction.commit()
+    async def _commit(self) -> None:
+        async with self.dynamic_handler_pool.acquire() as handler:
+            for (uuid, service_name) in self.transactions:
+                await self.command_broker.send(
+                    data=uuid, topic=f"Commit{service_name.title()}Transaction",
+                )
+                await self._get_response(handler)
+        logger.info("Successfully committed!")
 
     async def reject(self) -> None:
         """Reject the transaction.
 
         :return:
         """
-        transaction = TransactionEntry(self.execution_uuid)
-        await transaction.reject()
+        async with self.dynamic_handler_pool.acquire() as handler:
+            for (uuid, service_name) in self.transactions:
+                await self.command_broker.send(data=uuid, topic=f"Reject{service_name.title()}Transaction")
+                await self._get_response(handler)
+
+        logger.info("Successfully rejected!")
+
+    @staticmethod
+    async def _get_response(handler: DynamicHandler, **kwargs):
+        handler_entry = await handler.get_one(**kwargs)
+        response = handler_entry.data
+        return response
+
+    @cached_property
+    def transactions(self) -> list[tuple[UUID, str]]:
+        """Get the list of transactions used during the saga execution.
+
+        :return: A list of tuples in which the first value is the identifier of the transaction and the second one is
+            the name of the microservice in which the saga was executed.
+        """
+        transactions = list()
+        uniques = set()
+
+        for executed_step in self.executed_steps:
+            pair = (self.execution_uuid, executed_step.service_name)
+            if pair in uniques:
+                continue
+            transactions.append(pair)
+            uniques.add(pair)
+
+        return transactions

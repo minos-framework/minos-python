@@ -219,6 +219,7 @@ class TestSagaExecution(MinosTestCase):
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     "status": "finished",
+                    "service_name": "ticket",
                     "already_rollback": False,
                 },
                 {
@@ -229,6 +230,7 @@ class TestSagaExecution(MinosTestCase):
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     "status": "finished",
+                    "service_name": "order",
                     "already_rollback": False,
                 },
             ],
@@ -243,6 +245,7 @@ class TestSagaExecution(MinosTestCase):
                 },
                 "status": "paused-by-on-execute",
                 "already_rollback": False,
+                "service_name": None,
             },
             "user": str(self.user),
             "status": "paused",
@@ -254,7 +257,7 @@ class TestSagaExecution(MinosTestCase):
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute()
 
-            response = SagaResponse(Foo("hola"))
+            response = SagaResponse(Foo("hola"), service_name="ticket")
             with self.assertRaises(SagaPausedExecutionStepException):
                 await expected.execute(response)
 
