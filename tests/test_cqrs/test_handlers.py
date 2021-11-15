@@ -33,7 +33,6 @@ from minos.saga import (
 )
 from tests.utils import (
     Bar,
-    FakeSagaManager,
 )
 
 
@@ -50,7 +49,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             self.now,
             FieldDiffContainer([FieldDiff("bars", list[ModelRef[Bar]], [b.uuid for b in self.bars])]),
         )
-        self.saga_manager = FakeSagaManager()
+        self.saga_manager = AsyncMock()
 
     async def test_handle(self):
         execution = SagaExecution.from_definition(
@@ -58,7 +57,8 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
                 Saga()
                 .remote_step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
                 .on_success(PreEventHandler.on_success, name="Bar")
-                .commit(PreEventHandler.commit, diff=self.diff)
+                .local_step(PreEventHandler.commit, diff=self.diff)
+                .commit()
             ),
             status=SagaStatus.Finished,
             context=SagaContext(
@@ -107,7 +107,8 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
                 Saga()
                 .remote_step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
                 .on_success(PreEventHandler.on_success, name="Bar")
-                .commit(PreEventHandler.commit, diff=self.diff)
+                .local_step(PreEventHandler.commit, diff=self.diff)
+                .commit()
             ),
             status=SagaStatus.Errored,
         )
@@ -126,7 +127,8 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
             Saga()
             .remote_step(PreEventHandler.on_execute, name="Bar", uuids=[b.uuid for b in self.bars])
             .on_success(PreEventHandler.on_success, name="Bar")
-            .commit(PreEventHandler.commit, diff=self.diff)
+            .local_step(PreEventHandler.commit, diff=self.diff)
+            .commit()
         )
         self.assertEqual(expected, observed)
 
@@ -144,7 +146,7 @@ class TestPreEventHandler(unittest.IsolatedAsyncioTestCase):
     async def test_on_success(self):
         context = SagaContext()
         values = [1, 2, 3, 4]
-        response = SagaResponse(values, SagaResponseStatus.SUCCESS)
+        response = SagaResponse(values, SagaResponseStatus.SUCCESS, "ticket")
         observed = await PreEventHandler.on_success(context, response, "Foo")
         self.assertEqual(SagaContext(foos=values), observed)
 
