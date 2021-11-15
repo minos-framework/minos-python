@@ -119,8 +119,11 @@ class SagaResponse:
         return self._service_name
 
     @property
-    def uuid(self):
-        """TODO"""
+    def uuid(self) -> UUID:
+        """Get the identifier of the saga execution that must receive the response.
+
+        :return: An ``UUID`` value.
+        """
         return self._uuid
 
     def __eq__(self, other: Any) -> bool:

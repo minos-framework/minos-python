@@ -51,6 +51,9 @@ class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             SagaResponse(56)
 
+    def test_uuid(self):
+        self.assertEqual(self.uuid, self.response.uuid)
+
     def test_ok(self):
         self.assertTrue(SagaResponse(56, SagaResponseStatus.SUCCESS, service_name="ticket").ok)
         self.assertFalse(SagaResponse(56, SagaResponseStatus.ERROR, service_name="ticket").ok)
