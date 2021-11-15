@@ -30,6 +30,8 @@ broker:
 services:
     - tests.services.OrderService
     - tests.services.OrderQueryService
+middleware:
+    - tests.middleware.performance_tracking
 saga:
     storage:
         path: "./order.lmdb"

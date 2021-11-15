@@ -226,6 +226,17 @@ class MinosConfig(MinosConfigAbstract):
         return self._get("services")
 
     @property
+    def middleware(self) -> list[str]:
+        """Get the commands config.
+
+        :return: A list containing the service class names as string values..
+        """
+        try:
+            return self._get("middleware")
+        except MinosConfigException:
+            return list()
+
+    @property
     def saga(self) -> SAGA:
         """Get the sagas config.
 

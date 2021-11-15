@@ -1,4 +1,7 @@
 import unittest
+from unittest.mock import (
+    patch,
+)
 
 from minos.common import (
     MinosConfig,
@@ -49,6 +52,13 @@ class TestMinosConfig(unittest.TestCase):
 
     def test_services(self):
         self.assertEqual(["tests.services.OrderService", "tests.services.OrderQueryService"], self.config.services)
+
+    def test_middleware(self):
+        self.assertEqual(["tests.middleware.performance_tracking"], self.config.middleware)
+
+    def test_middleware_not_defined(self):
+        with patch("minos.common.MinosConfig._get", side_effect=MinosConfigException("")):
+            self.assertEqual([], self.config.middleware)
 
     def test_config_saga_storage(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
