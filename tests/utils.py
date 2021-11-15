@@ -32,16 +32,16 @@ from minos.aggregate import (
     InMemoryTransactionRepository,
 )
 from minos.common import (
-    CommandReply,
-    CommandStatus,
+    DeclarativeModel,
     Lock,
     MinosBroker,
-    MinosModel,
     MinosPool,
     MinosSagaManager,
+    Model,
     current_datetime,
 )
 from minos.networks import (
+    CommandStatus,
     EnrouteDecorator,
     Request,
     Response,
@@ -123,7 +123,7 @@ class FakeLockPool(MinosPool):
         """For testing purposes."""
 
 
-class FakeModel(MinosModel):
+class FakeModel(DeclarativeModel):
     """For testing purposes"""
 
     text: str
@@ -187,7 +187,7 @@ class FakeSagaManager(MinosSagaManager):
     async def _run_new(self, name: str, **kwargs) -> None:
         """For testing purposes."""
 
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> None:
+    async def _load_and_run(self, reply, **kwargs) -> None:
         """For testing purposes."""
 
 
@@ -205,7 +205,7 @@ class FakeBroker(MinosBroker):
 
     async def send(
         self,
-        items: list[MinosModel],
+        items: list[Model],
         topic: str = None,
         saga: str = None,
         reply_topic: str = None,
