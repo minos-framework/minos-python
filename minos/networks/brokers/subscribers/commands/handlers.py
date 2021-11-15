@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from functools import (
-    partial,
-)
 from inspect import (
     isawaitable,
 )
@@ -25,7 +22,6 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosConfig,
-    import_module,
 )
 
 from ....decorators import (
@@ -67,10 +63,8 @@ class CommandHandler(Handler):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandHandler:
         handlers = cls._handlers_from_config(config, **kwargs)
-        middleware = list(map(import_module, config.middleware))
-
         # noinspection PyProtectedMember
-        return cls(middleware=middleware, handlers=handlers, **config.broker.queue._asdict(), **kwargs)
+        return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
     @staticmethod
     def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
@@ -93,16 +87,15 @@ class CommandHandler(Handler):
 
         await self.command_reply_broker.send(items, topic=command.reply_topic, saga=command.saga, status=status)
 
+    @staticmethod
     def get_callback(
-        self, fn: Callable[[HandlerRequest], Union[Optional[HandlerRequest], Awaitable[Optional[HandlerRequest]]]]
+        fn: Callable[[HandlerRequest], Union[Optional[HandlerRequest], Awaitable[Optional[HandlerRequest]]]]
     ) -> Callable[[Command], Awaitable[Tuple[Any, CommandStatus]]]:
         """Get the handler function to be used by the Command Handler.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the Command Handler API.
         """
-        for f in reversed(self._middleware):
-            fn = partial(f, inner=fn)
 
         async def _fn(raw: Command) -> Tuple[Any, CommandStatus]:
             request = HandlerRequest(raw)

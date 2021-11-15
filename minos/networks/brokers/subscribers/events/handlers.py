@@ -9,9 +9,6 @@ from asyncio import (
 from collections import (
     defaultdict,
 )
-from functools import (
-    partial,
-)
 from inspect import (
     isawaitable,
 )
@@ -26,7 +23,6 @@ from typing import (
 
 from minos.common import (
     MinosConfig,
-    import_module,
 )
 
 from ....decorators import (
@@ -60,9 +56,8 @@ class EventHandler(Handler):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventHandler:
         handlers = cls._handlers_from_config(config, **kwargs)
-        middleware = list(map(import_module, config.middleware))
         # noinspection PyProtectedMember
-        return cls(handlers=handlers, middleware=middleware, **config.broker.queue._asdict(), **kwargs)
+        return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
 
     @staticmethod
     def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
@@ -97,16 +92,13 @@ class EventHandler(Handler):
         fn = self.get_callback(entry.callback)
         await fn(entry.data)
 
-    def get_callback(
-        self, fn: Callable[[HandlerRequest], Optional[Awaitable[None]]]
-    ) -> Callable[[Event], Awaitable[None]]:
+    @staticmethod
+    def get_callback(fn: Callable[[HandlerRequest], Optional[Awaitable[None]]]) -> Callable[[Event], Awaitable[None]]:
         """Get the handler function to be used by the Event Handler.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the Event Handler API.
         """
-        for f in reversed(self._middleware):
-            fn = partial(f, inner=fn)
 
         async def _fn(raw: Event) -> None:
             try:

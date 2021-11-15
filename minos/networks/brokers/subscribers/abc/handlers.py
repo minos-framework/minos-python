@@ -52,19 +52,11 @@ class Handler(HandlerSetup):
 
     """
 
-    __slots__ = "_handlers", "_middleware", "_records", "_retry"
+    __slots__ = "_handlers", "_records", "_retry"
 
-    def __init__(
-        self,
-        records: int,
-        handlers: dict[str, Optional[Callable]],
-        middleware: list[Callable],
-        retry: int,
-        **kwargs: Any,
-    ):
+    def __init__(self, records: int, handlers: dict[str, Optional[Callable]], retry: int, **kwargs: Any):
         super().__init__(**kwargs)
         self._handlers = handlers
-        self._middleware = middleware
         self._records = records
         self._retry = retry
 
