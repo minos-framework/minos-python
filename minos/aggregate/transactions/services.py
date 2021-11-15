@@ -17,6 +17,7 @@ from minos.networks import (
 
 from ..exceptions import (
     EventRepositoryConflictException,
+    TransactionNotFoundException,
 )
 from .repositories import (
     TransactionRepository,
@@ -39,25 +40,40 @@ class TransactionService:
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
         service_name = config.service.name
         return {
-            cls.__reserve_transaction__.__name__: {enroute.broker.command(f"Reserve{service_name.title()}Transaction")},
-            cls.__reject_transaction__.__name__: {enroute.broker.command(f"Reject{service_name.title()}Transaction")},
-            cls.__commit_transaction__.__name__: {enroute.broker.command(f"Commit{service_name.title()}Transaction")},
+            cls.__reserve__.__name__: {enroute.broker.command(f"Reserve{service_name.title()}Transaction")},
+            cls.__reject__.__name__: {enroute.broker.command(f"Reject{service_name.title()}Transaction")},
+            cls.__commit__.__name__: {enroute.broker.command(f"Commit{service_name.title()}Transaction")},
         }
 
-    async def __reserve_transaction__(self, request: Request) -> None:
+    async def __reserve__(self, request: Request) -> None:
         uuid = await request.content()
-        transaction = await self.transaction_repository.get(uuid)
+
+        try:
+            transaction = await self.transaction_repository.get(uuid)
+        except TransactionNotFoundException:
+            raise ResponseException(f"The transaction identified by {uuid!r} does not exist.")
+
         try:
             await transaction.reserve()
         except EventRepositoryConflictException:
             raise ResponseException("The transaction could not be reserved.")
 
-    async def __reject_transaction__(self, request: Request) -> None:
+    async def __reject__(self, request: Request) -> None:
         uuid = await request.content()
-        transaction = await self.transaction_repository.get(uuid)
+
+        try:
+            transaction = await self.transaction_repository.get(uuid)
+        except TransactionNotFoundException:
+            raise ResponseException(f"The transaction identified by {uuid!r} does not exist.")
+
         await transaction.reject()
 
-    async def __commit_transaction__(self, request: Request) -> None:
+    async def __commit__(self, request: Request) -> None:
         uuid = await request.content()
-        transaction = await self.transaction_repository.get(uuid)
+
+        try:
+            transaction = await self.transaction_repository.get(uuid)
+        except TransactionNotFoundException:
+            raise ResponseException(f"The transaction identified by {uuid!r} does not exist.")
+
         await transaction.commit()

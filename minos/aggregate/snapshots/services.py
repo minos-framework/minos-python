@@ -32,7 +32,6 @@ from minos.networks import (
     Request,
     Response,
     ResponseException,
-    ScheduledRequest,
     enroute,
 )
 
@@ -67,12 +66,12 @@ class SnapshotService:
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
         aggregate_name = config.service.aggregate.rsplit(".", 1)[-1]
         return {
-            cls.__get_aggregate__.__name__: {enroute.broker.command(f"Get{aggregate_name}")},
-            cls.__get_aggregates__.__name__: {enroute.broker.command(f"Get{aggregate_name}s")},
+            cls.__get_one__.__name__: {enroute.broker.command(f"Get{aggregate_name}")},
+            cls.__get_many__.__name__: {enroute.broker.command(f"Get{aggregate_name}s")},
             cls.__synchronize__.__name__: {enroute.periodic.event("* * * * *")},
         }
 
-    async def __get_aggregate__(self, request: Request) -> Response:
+    async def __get_one__(self, request: Request) -> Response:
         """Get aggregate.
 
         :param request: The ``Request`` instance that contains the aggregate identifier.
@@ -90,7 +89,7 @@ class SnapshotService:
 
         return Response(aggregate)
 
-    async def __get_aggregates__(self, request: Request) -> Response:
+    async def __get_many__(self, request: Request) -> Response:
         """Get aggregates.
 
         :param request: The ``Request`` instance that contains the product identifiers.
@@ -114,7 +113,7 @@ class SnapshotService:
         return import_module(self.config.service.aggregate)
 
     # noinspection PyUnusedLocal
-    async def __synchronize__(self, request: ScheduledRequest) -> None:
+    async def __synchronize__(self, request: Request) -> None:
         """Performs a Snapshot synchronization every minute.
 
         :param request: A request containing information related with scheduling.

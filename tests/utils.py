@@ -17,7 +17,14 @@ from typing import (
 from unittest import (
     TestCase,
 )
+from uuid import (
+    UUID,
+    uuid4,
+)
 
+from cached_property import (
+    cached_property,
+)
 from dependency_injector import (
     containers,
     providers,
@@ -37,9 +44,13 @@ from minos.aggregate import (
 )
 from minos.common import (
     Lock,
+    MinosConfig,
     MinosPool,
     MinosSetup,
     current_datetime,
+)
+from minos.networks import (
+    Request,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -65,7 +76,9 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.event_repository = providers.Object(self.event_repository)
         self.container.snapshot_repository = providers.Object(self.snapshot_repository)
-        self.container.wire(modules=[sys.modules["minos.aggregate"], sys.modules["minos.common"]])
+        self.container.wire(
+            modules=[sys.modules["minos.aggregate"], sys.modules["minos.networks"], sys.modules["minos.common"]]
+        )
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -168,6 +181,29 @@ class FakeLockPool(MinosPool):
 
     async def _destroy_instance(self, instance) -> None:
         """For testing purposes."""
+
+
+class FakeRequest(Request):
+    """For testing purposes"""
+
+    def __init__(self, content):
+        super().__init__()
+        self._content = content
+
+    @cached_property
+    def user(self) -> Optional[UUID]:
+        """For testing purposes"""
+        return uuid4()
+
+    async def content(self, **kwargs):
+        """For testing purposes"""
+        return self._content
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, type(self)) and self._content == other._content
+
+    def __repr__(self) -> str:
+        return f"FakeRequest({self._content!r})"
 
 
 class Owner(Aggregate):
