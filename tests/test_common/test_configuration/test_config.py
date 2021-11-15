@@ -57,6 +57,13 @@ class TestMinosConfig(unittest.TestCase):
         with patch("minos.common.MinosConfig._get", side_effect=MinosConfigException("")):
             self.assertEqual([], self.config.services)
 
+    def test_middleware(self):
+        self.assertEqual(["tests.middleware.performance_tracking"], self.config.middleware)
+
+    def test_middleware_not_defined(self):
+        with patch("minos.common.MinosConfig._get", side_effect=MinosConfigException("")):
+            self.assertEqual([], self.config.middleware)
+
     def test_config_saga_storage(self):
         config = MinosConfig(path=self.config_file_path, with_environment=False)
         saga = config.saga
