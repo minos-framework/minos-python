@@ -14,28 +14,29 @@ from tests.utils import (
     ADD_ORDER,
     BASE_PATH,
     Foo,
-    NaiveBroker,
+    MinosTestCase,
 )
 
 
-class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
+class TestSagaExecutionStorage(MinosTestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     async def asyncSetUp(self) -> None:
-        self.broker = NaiveBroker()
+        await super().asyncSetUp()
 
         execution = SagaExecution.from_definition(ADD_ORDER)
         with self.assertRaises(SagaPausedExecutionStepException):
-            await execution.execute(broker=self.broker)
+            await execution.execute()
 
         response = SagaResponse(Foo("hola"))
         with self.assertRaises(SagaPausedExecutionStepException):
-            await execution.execute(response, broker=self.broker)
+            await execution.execute(response)
 
         self.execution = execution
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
+        super().tearDown()
 
     def test_store(self):
         storage = SagaExecutionStorage(path=self.DB_PATH)

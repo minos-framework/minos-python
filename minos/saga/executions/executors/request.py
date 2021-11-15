@@ -46,22 +46,16 @@ class RequestExecutor(Executor):
 
     @inject
     def __init__(
-        self,
-        *args,
-        execution_uuid: UUID,
-        user: Optional[UUID],
-        broker: MinosBroker = Provide["command_broker"],
-        **kwargs,
+        self, *args, user: Optional[UUID], command_broker: MinosBroker = Provide["command_broker"], **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        self.execution_uuid = execution_uuid
         self.user = user
 
-        if broker is None or isinstance(broker, Provide):
+        if command_broker is None or isinstance(command_broker, Provide):
             raise NotProvidedException("A broker instance is required.")
 
-        self.broker = broker
+        self.command_broker = command_broker
 
     # noinspection PyMethodOverriding
     async def exec(self, operation: Optional[SagaOperation[RequestCallBack]], context: SagaContext) -> SagaContext:
@@ -83,9 +77,9 @@ class RequestExecutor(Executor):
         return context
 
     async def _publish(self, request: SagaRequest) -> None:
-        fn = self.broker.send
-        topic = request.target
-        data = await request.content()
-        saga = self.execution_uuid
-        user = self.user
-        await self.exec_function(fn, topic=topic, data=data, saga=saga, user=user)
+        try:
+            await self.command_broker.send(
+                topic=request.target, data=await request.content(), saga=self.execution_uuid, user=self.user
+            )
+        except Exception as exc:
+            raise ExecutorException(exc)

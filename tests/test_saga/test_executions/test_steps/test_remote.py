@@ -19,7 +19,7 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    NaiveBroker,
+    MinosTestCase,
     handle_ticket_error,
     handle_ticket_error_raises,
     handle_ticket_success,
@@ -30,17 +30,16 @@ from tests.utils import (
 )
 
 
-class TestRemoteSagaStepExecution(unittest.IsolatedAsyncioTestCase):
+class TestRemoteSagaStepExecution(MinosTestCase):
     def setUp(self) -> None:
-        self.broker = NaiveBroker()
+        super().setUp()
         self.execute_kwargs = {
             "execution_uuid": uuid4(),
-            "broker": self.broker,
             "user": uuid4(),
         }
 
         self.publish_mock = AsyncMock()
-        self.broker.send = self.publish_mock
+        self.command_broker.send = self.publish_mock
 
     async def test_on_execute(self):
         step = RemoteSagaStep(send_create_ticket)

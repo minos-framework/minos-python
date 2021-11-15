@@ -2,6 +2,9 @@ import unittest
 from unittest.mock import (
     AsyncMock,
 )
+from uuid import (
+    uuid4,
+)
 
 from minos.saga import (
     LocalSagaStep,
@@ -12,18 +15,24 @@ from minos.saga import (
     SagaStepStatus,
 )
 from tests.utils import (
+    MinosTestCase,
     create_payment,
     create_payment_raises,
     delete_payment,
 )
 
 
-class TestLocalSagaStepExecution(unittest.IsolatedAsyncioTestCase):
+class TestLocalSagaStepExecution(MinosTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.execute_kwargs = {"execution_uuid": uuid4()}
+
     async def test_execute(self):
         step = LocalSagaStep(create_payment)
         execution = LocalSagaStepExecution(step)
 
-        observed = await execution.execute(SagaContext())
+        observed = await execution.execute(SagaContext(), **self.execute_kwargs)
 
         self.assertEqual(SagaContext(payment="payment"), observed)
         self.assertEqual(SagaStepStatus.Finished, execution.status)
@@ -36,7 +45,7 @@ class TestLocalSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         execution.rollback = rollback_mock
 
         with self.assertRaises(SagaFailedExecutionStepException):
-            await execution.execute(context)
+            await execution.execute(context, **self.execute_kwargs)
 
         self.assertEqual(SagaContext(), context)
         self.assertEqual(SagaStepStatus.ErroredOnExecute, execution.status)
@@ -47,20 +56,20 @@ class TestLocalSagaStepExecution(unittest.IsolatedAsyncioTestCase):
         step = LocalSagaStep(mock)
         execution = LocalSagaStepExecution(step)
 
-        await execution.execute(SagaContext())
+        await execution.execute(SagaContext(), **self.execute_kwargs)
         self.assertEqual(1, mock.call_count)
 
         mock.reset_mock()
-        await execution.execute(SagaContext())
+        await execution.execute(SagaContext(), **self.execute_kwargs)
         self.assertEqual(0, mock.call_count)
 
     async def test_rollback(self):
         step = LocalSagaStep(create_payment).on_failure(delete_payment)
         execution = LocalSagaStepExecution(step)
 
-        await execution.execute(SagaContext())
+        await execution.execute(SagaContext(), **self.execute_kwargs)
 
-        observed = await execution.rollback(SagaContext(payment="payment"))
+        observed = await execution.rollback(SagaContext(payment="payment"), **self.execute_kwargs)
 
         self.assertEqual(SagaContext(payment=None), observed)
 

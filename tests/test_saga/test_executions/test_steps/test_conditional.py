@@ -25,7 +25,7 @@ from minos.saga import (
 )
 from tests.utils import (
     Foo,
-    NaiveBroker,
+    MinosTestCase,
     handle_order_success,
     handle_ticket_success,
     handle_ticket_success_raises,
@@ -43,12 +43,11 @@ def _is_two(context):
     return context["option"] == 2
 
 
-class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
+class TestConditionalSageStepExecution(MinosTestCase):
     def setUp(self) -> None:
-        self.broker = NaiveBroker()
+        super().setUp()
         self.execute_kwargs = {
             "execution_uuid": uuid4(),
-            "broker": self.broker,
             "user": uuid4(),
         }
 
@@ -117,14 +116,10 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=3), context)
 
-        def _fn(msg):
-            if msg == "Committed!":
-                raise ValueError()
-
         response = SagaResponse(Foo("ticket"))
         with patch("minos.saga.SagaExecution.rollback") as mock:
             with self.assertRaises(SagaFailedExecutionStepException):
-                with patch("logging.Logger.info", side_effect=_fn):
+                with patch("minos.saga.TransactionCommitter.commit", side_effect=ValueError):
                     context = await self.execution.execute(context, response=response, **self.execute_kwargs)
             self.assertEqual(SagaStepStatus.ErroredByOnExecute, self.execution.status)
             self.assertEqual(SagaContext(option=3), context)
@@ -151,7 +146,6 @@ class TestConditionalSageStepExecution(unittest.IsolatedAsyncioTestCase):
     async def test_rollback_raises_already(self):
         with suppress(SagaPausedExecutionStepException):
             await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
-        await self.execution.execute(SagaContext(), response=SagaResponse(Foo("order")), **self.execute_kwargs)
 
         await self.execution.rollback(SagaContext(), **self.execute_kwargs)
         with self.assertRaises(SagaRollbackExecutionStepException):

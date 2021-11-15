@@ -17,16 +17,16 @@ from minos.saga import (
 from tests.utils import (
     ADD_ORDER,
     Foo,
-    NaiveBroker,
+    MinosTestCase,
 )
 
 
-class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
+class TestSagaExecution(MinosTestCase):
     def setUp(self) -> None:
-        self.broker = NaiveBroker()
+        super().setUp()
         self.user = uuid4()
-        self.publish_mock = MagicMock(side_effect=self.broker.send)
-        self.broker.send = self.publish_mock
+        self.publish_mock = MagicMock(side_effect=self.command_broker.send)
+        self.command_broker.send = self.publish_mock
 
     def test_from_raw(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
@@ -175,7 +175,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
-                await expected.execute(broker=self.broker)
+                await expected.execute()
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)
@@ -252,11 +252,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
-                await expected.execute(broker=self.broker)
+                await expected.execute()
 
             response = SagaResponse(Foo("hola"))
             with self.assertRaises(SagaPausedExecutionStepException):
-                await expected.execute(response, broker=self.broker)
+                await expected.execute(response)
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)
