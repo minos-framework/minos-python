@@ -5,6 +5,7 @@ from __future__ import (
 import logging
 from functools import (
     cached_property,
+    partial,
 )
 from inspect import (
     isawaitable,
@@ -23,6 +24,7 @@ from aiohttp import (
 from minos.common import (
     MinosConfig,
     MinosSetup,
+    import_module,
 )
 
 from ..decorators import (
@@ -44,11 +46,14 @@ logger = logging.getLogger(__name__)
 class RestHandler(MinosSetup):
     """Rest Handler class."""
 
-    def __init__(self, host: str, port: int, endpoints: dict[(str, str), Callable], **kwargs):
+    def __init__(
+        self, host: str, port: int, endpoints: dict[(str, str), Callable], middleware: list[Callable], **kwargs
+    ):
         super().__init__(**kwargs)
         self._host = host
         self._port = port
         self._endpoints = endpoints
+        self._middleware = middleware
 
     @property
     def endpoints(self) -> dict[(str, str), Callable]:
@@ -63,8 +68,9 @@ class RestHandler(MinosSetup):
         host = config.rest.host
         port = config.rest.port
         endpoints = cls._endpoints_from_config(config)
+        middleware = list(map(import_module, config.middleware))
 
-        return cls(host=host, port=port, endpoints=endpoints, **kwargs)
+        return cls(host=host, port=port, endpoints=endpoints, middleware=middleware, **kwargs)
 
     @staticmethod
     def _endpoints_from_config(config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
@@ -114,15 +120,17 @@ class RestHandler(MinosSetup):
         handler = self.get_callback(action)
         app.router.add_route(method, url, handler)
 
-    @staticmethod
     def get_callback(
-        fn: Callable[[RestRequest], Union[Optional[RestResponse], Awaitable[Optional[RestResponse]]]]
+        self, fn: Callable[[RestRequest], Union[Optional[RestResponse], Awaitable[Optional[RestResponse]]]]
     ) -> Callable[[web.Request], Awaitable[web.Response]]:
         """Get the handler function to be used by the ``aiohttp`` Controller.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the ``aiohttp`` Controller.
         """
+
+        for f in reversed(self._middleware):
+            fn = partial(f, inner=fn)
 
         async def _fn(request: web.Request) -> web.Response:
             logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")

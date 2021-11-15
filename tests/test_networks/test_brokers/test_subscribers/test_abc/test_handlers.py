@@ -73,7 +73,8 @@ class TestHandler(PostgresAsyncTestCase):
         super().setUp()
         handlers = self.handlers()
         handlers["empty"] = None
-        self.handler = _FakeHandler(handlers=handlers, **self.config.broker.queue._asdict())
+        middleware = list()
+        self.handler = _FakeHandler(handlers=handlers, middleware=middleware, **self.config.broker.queue._asdict())
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
@@ -116,7 +117,7 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(3, mock_count.call_count)
 
     async def test_dispatch_forever_without_topics(self):
-        handler = _FakeHandler(handlers=dict(), **self.config.broker.queue._asdict())
+        handler = _FakeHandler(handlers=dict(), middleware=list(), **self.config.broker.queue._asdict())
         mock = AsyncMock()
         async with handler:
             handler.dispatch = mock

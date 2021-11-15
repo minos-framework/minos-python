@@ -15,6 +15,7 @@ from dependency_injector.wiring import (
 from minos.common import (
     MinosConfig,
     MinosSagaManager,
+    import_module,
 )
 
 from ..abc import (
@@ -39,8 +40,10 @@ class CommandReplyHandler(Handler):
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyHandler:
         handlers = {f"{config.service.name}Reply": None}
+        middleware = list(map(import_module, config.middleware))
+
         # noinspection PyProtectedMember
-        return cls(*args, handlers=handlers, **config.broker.queue._asdict(), **kwargs)
+        return cls(*args, handlers=handlers, middleware=middleware, **config.broker.queue._asdict(), **kwargs)
 
     async def dispatch_one(self, entry: HandlerEntry) -> None:
         """Dispatch one row.
