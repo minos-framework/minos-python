@@ -33,6 +33,14 @@
 
 * Be compatible with the `^0.1.1` version of `minos-microservice-saga`.
 
-## 0.0.7 (2021-11-08)
+## 0.1.0 (2021-11-08)
 
 * Add `minos-microservice-common>=0.2.0` compatibility.
+
+## 0.2.0 (2021-11-15)
+
+* Migrate "Get Aggregate" handler functions (previously defined on `CommandService`) to `minos.aggregate.SnapshotService`.
+* Add compatibility with `minos-microservice-common^=0.3.0`
+* Add compatibility with `minos-microservice-networks^=0.2.0`
+* Add compatibility with `minos-microservice-saga^=0.3.0`
+* Add compatibility with `minos-microservice-aggregate^=0.2.0`

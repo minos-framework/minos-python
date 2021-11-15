@@ -16,6 +16,7 @@ from minos.aggregate import (
     ModelRefInjector,
 )
 from minos.saga import (
+    LocalSagaStep,
     RemoteSagaStep,
     Saga,
     SagaContext,
@@ -81,9 +82,10 @@ class PreEventHandler:
             )
             for name, uuids in missing.items()
         ]
-        commit = SagaOperation(cls.commit, diff=diff)
+        # noinspection PyTypeChecker
+        steps.append(LocalSagaStep(on_execute=SagaOperation(cls.commit, diff=diff)))
 
-        saga = Saga(steps=steps, commit=commit)
+        saga = Saga(steps=steps, committed=True)
 
         return saga
 

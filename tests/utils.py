@@ -22,16 +22,13 @@ from minos.aggregate import (
     AggregateRef,
     ModelRef,
 )
-from minos.common import (
-    CommandReply,
-    MinosSagaManager,
-)
 from minos.cqrs import (
     CommandService,
     QueryService,
     Service,
 )
 from minos.networks import (
+    CommandReply,
     Request,
     Response,
     enroute,
@@ -58,16 +55,6 @@ class FakeCommandService(CommandService):
     @enroute.broker.command("CreateFoo")
     def create_foo(self, request: Request) -> Response:
         """For testing purpose"""
-
-
-class FakeSagaManager(MinosSagaManager):
-    """For testing purposes."""
-
-    async def _run_new(self, name: str, **kwargs) -> UUID:
-        """For testing purposes."""
-
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> UUID:
-        """For testing purposes."""
 
 
 class FakeRequest(Request):
