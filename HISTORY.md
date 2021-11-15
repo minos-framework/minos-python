@@ -232,3 +232,11 @@ History
 --------------------
 
 * Fix bug related with dependency injections over `minos.*` modules.
+
+0.3.0 (2021-11-15)
+--------------------
+
+* Add `services` and `middleware` sections to `MinosConfig`.
+* Remove `Command`, `CommandReply`, `CommandStatus` and `Event` (moved to `minos.networks`).
+* Remove `MinosBroker` and `MinosHandler` (moved to `minos.networks`).
+* Remove `MinosSagaManager` (moved to `minos.saga`).
