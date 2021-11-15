@@ -18,6 +18,15 @@ from uuid import (
     UUID,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
+from minos.common import (
+    MinosConfig,
+)
+
 from ...context import (
     SagaContext,
 )
@@ -83,8 +92,13 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         if self.inner is not None:
             context = await self._execute_inner(context, *args, **kwargs)
 
+        self.service_name = self._get_service_name()
         self.status = SagaStepStatus.Finished
         return context
+
+    @inject
+    def _get_service_name(self, config: MinosConfig = Provide["config"]) -> str:
+        return config.service.name
 
     async def _create_inner(
         self, context: SagaContext, user: Optional[UUID] = None, execution_uuid: Optional[UUID] = None, *args, **kwargs
@@ -93,7 +107,7 @@ class ConditionalSagaStepExecution(SagaStepExecution):
             SagaExecution,
         )
 
-        executor = Executor()
+        executor = Executor(execution_uuid=execution_uuid)
 
         definition = None
         for alternative in self.definition.if_then_alternatives:

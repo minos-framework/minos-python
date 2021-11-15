@@ -12,21 +12,21 @@ from minos.saga import (
     SagaContext,
     SagaExecution,
     SagaPausedExecutionStepException,
+    SagaResponse,
 )
 from tests.utils import (
     ADD_ORDER,
     Foo,
-    NaiveBroker,
-    fake_reply,
+    MinosTestCase,
 )
 
 
-class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
+class TestSagaExecution(MinosTestCase):
     def setUp(self) -> None:
-        self.broker = NaiveBroker()
+        super().setUp()
         self.user = uuid4()
-        self.publish_mock = MagicMock(side_effect=self.broker.send)
-        self.broker.send = self.publish_mock
+        self.publish_mock = MagicMock(side_effect=self.command_broker.send)
+        self.command_broker.send = self.publish_mock
 
     def test_from_raw(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
@@ -48,7 +48,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "already_rollback": False,
             "context": SagaContext().avro_str,
             "definition": {
-                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "committed": True,
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -91,7 +91,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "already_rollback": False,
             "context": SagaContext().avro_str,
             "definition": {
-                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "committed": True,
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -131,7 +131,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "already_rollback": False,
             "context": SagaContext().avro_str,
             "definition": {
-                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "committed": True,
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -175,7 +175,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
-                await expected.execute(broker=self.broker)
+                await expected.execute()
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)
@@ -185,7 +185,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
             "already_rollback": False,
             "context": SagaContext(order=Foo("hola"), payment="payment").avro_str,
             "definition": {
-                "commit": {"callback": "minos.saga.definitions.operations.identity_fn"},
+                "committed": True,
                 "steps": [
                     {
                         "cls": "minos.saga.definitions.steps.remote.RemoteSagaStep",
@@ -219,6 +219,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     "status": "finished",
+                    "service_name": "ticket",
                     "already_rollback": False,
                 },
                 {
@@ -229,6 +230,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                         "on_failure": {"callback": "tests.utils.delete_payment"},
                     },
                     "status": "finished",
+                    "service_name": "order",
                     "already_rollback": False,
                 },
             ],
@@ -243,6 +245,7 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
                 },
                 "status": "paused-by-on-execute",
                 "already_rollback": False,
+                "service_name": None,
             },
             "user": str(self.user),
             "status": "paused",
@@ -252,11 +255,11 @@ class TestSagaExecution(unittest.IsolatedAsyncioTestCase):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
             expected = SagaExecution.from_definition(ADD_ORDER, user=self.user)
             with self.assertRaises(SagaPausedExecutionStepException):
-                await expected.execute(broker=self.broker)
+                await expected.execute()
 
-            reply = fake_reply(Foo("hola"))
+            response = SagaResponse(Foo("hola"), service_name="ticket")
             with self.assertRaises(SagaPausedExecutionStepException):
-                await expected.execute(reply=reply, broker=self.broker)
+                await expected.execute(response)
 
         observed = SagaExecution.from_raw(raw)
         self.assertEqual(expected, observed)

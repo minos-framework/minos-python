@@ -176,5 +176,5 @@ class SagaFailedCommitCallbackException(SagaFailedExecutionException):
     """Exception to be raised when a saga commit callback raises some exception"""
 
 
-class CommandReplyFailedException(SagaException):
+class SagaResponseException(SagaException):
     """Exception to be used when ``CommandStatus`` is not ``SUCCESS``"""

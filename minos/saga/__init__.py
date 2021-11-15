@@ -1,4 +1,6 @@
-__version__ = "0.2.0"
+__author__ = """Clariteia Devs"""
+__email__ = "devs@clariteia.com"
+__version__ = "0.3.0"
 
 from .context import (
     SagaContext,
@@ -12,12 +14,10 @@ from .definitions import (
     Saga,
     SagaOperation,
     SagaStep,
-    identity_fn,
 )
 from .exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
-    CommandReplyFailedException,
     EmptySagaException,
     EmptySagaStepException,
     MultipleElseThenException,
@@ -35,6 +35,7 @@ from .exceptions import (
     SagaNotCommittedException,
     SagaNotDefinedException,
     SagaPausedExecutionStepException,
+    SagaResponseException,
     SagaRollbackExecutionException,
     SagaRollbackExecutionStepException,
     SagaStepException,
@@ -54,6 +55,7 @@ from .executions import (
     SagaStatus,
     SagaStepExecution,
     SagaStepStatus,
+    TransactionCommitter,
 )
 from .manager import (
     SagaManager,
@@ -62,4 +64,10 @@ from .messages import (
     SagaRequest,
     SagaResponse,
     SagaResponseStatus,
+)
+from .middleware import (
+    transactional_command,
+)
+from .services import (
+    SagaService,
 )

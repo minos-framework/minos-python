@@ -8,34 +8,35 @@ from minos.saga import (
     SagaExecutionNotFoundException,
     SagaExecutionStorage,
     SagaPausedExecutionStepException,
+    SagaResponse,
 )
 from tests.utils import (
     ADD_ORDER,
     BASE_PATH,
     Foo,
-    NaiveBroker,
-    fake_reply,
+    MinosTestCase,
 )
 
 
-class TestSagaExecutionStorage(unittest.IsolatedAsyncioTestCase):
+class TestSagaExecutionStorage(MinosTestCase):
     DB_PATH = BASE_PATH / "test_db.lmdb"
 
     async def asyncSetUp(self) -> None:
-        self.broker = NaiveBroker()
+        await super().asyncSetUp()
 
         execution = SagaExecution.from_definition(ADD_ORDER)
         with self.assertRaises(SagaPausedExecutionStepException):
-            await execution.execute(broker=self.broker)
+            await execution.execute()
 
-        reply = fake_reply(Foo("hola"))
+        response = SagaResponse(Foo("hola"), service_name="ticket")
         with self.assertRaises(SagaPausedExecutionStepException):
-            await execution.execute(reply=reply, broker=self.broker)
+            await execution.execute(response)
 
         self.execution = execution
 
     def tearDown(self) -> None:
         rmtree(self.DB_PATH, ignore_errors=True)
+        super().tearDown()
 
     def test_store(self):
         storage = SagaExecutionStorage(path=self.DB_PATH)

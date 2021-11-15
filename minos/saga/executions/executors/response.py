@@ -2,10 +2,6 @@ from typing import (
     Optional,
 )
 
-from minos.common import (
-    CommandReply,
-)
-
 from ...context import (
     SagaContext,
 )
@@ -33,7 +29,7 @@ class ResponseExecutor(Executor):
         self,
         operation: Optional[SagaOperation[ResponseCallBack]],
         context: SagaContext,
-        reply: CommandReply,
+        response: SagaResponse,
         *args,
         **kwargs
     ) -> SagaContext:
@@ -41,7 +37,7 @@ class ResponseExecutor(Executor):
 
         :param operation: Operation to be executed.
         :param context: Actual execution context.
-        :param reply: Command Reply which contains the response.
+        :param response: SagaResponse containing the response content.
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: An updated context instance.
@@ -50,7 +46,6 @@ class ResponseExecutor(Executor):
             return context
 
         try:
-            response = SagaResponse(reply.data, reply.status)
             context = SagaContext(**context)  # Needed to avoid mutability issues.
             context = await super().exec(operation, context, response)
         except ExecutorException as exc:

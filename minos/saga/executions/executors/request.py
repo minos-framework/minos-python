@@ -15,8 +15,12 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosBroker,
+    MinosConfig,
     NotProvidedException,
+)
+from minos.networks import (
+    REPLY_TOPIC_CONTEXT_VAR,
+    CommandBroker,
 )
 
 from ...context import (
@@ -39,31 +43,23 @@ from .abc import (
 
 
 class RequestExecutor(Executor):
-    """Request class.
+    """Request Executor class.
 
     This class has the responsibility to publish command on the corresponding broker's queue.
     """
 
     @inject
     def __init__(
-        self,
-        *args,
-        execution_uuid: UUID,
-        reply_topic: Optional[str],
-        user: Optional[UUID],
-        broker: MinosBroker = Provide["command_broker"],
-        **kwargs,
+        self, *args, user: Optional[UUID], command_broker: CommandBroker = Provide["command_broker"], **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        self.execution_uuid = execution_uuid
-        self.reply_topic = reply_topic
         self.user = user
 
-        if broker is None or isinstance(broker, Provide):
+        if command_broker is None or isinstance(command_broker, Provide):
             raise NotProvidedException("A broker instance is required.")
 
-        self.broker = broker
+        self.command_broker = command_broker
 
     # noinspection PyMethodOverriding
     async def exec(self, operation: Optional[SagaOperation[RequestCallBack]], context: SagaContext) -> SagaContext:
@@ -84,11 +80,23 @@ class RequestExecutor(Executor):
             raise SagaFailedExecutionStepException(exc.exception)
         return context
 
+    # noinspection PyMethodOverriding
     async def _publish(self, request: SagaRequest) -> None:
-        fn = self.broker.send
-        topic = request.target
-        data = await request.content()
-        saga = self.execution_uuid
-        reply_topic = self.reply_topic
-        user = self.user
-        await self.exec_function(fn, topic=topic, data=data, saga=saga, reply_topic=reply_topic, user=user)
+        reply_topic = REPLY_TOPIC_CONTEXT_VAR.get()
+        if reply_topic is None:
+            reply_topic = self._get_default_reply_topic()
+
+        try:
+            await self.command_broker.send(
+                topic=request.target,
+                data=await request.content(),
+                saga=self.execution_uuid,
+                user=self.user,
+                reply_topic=reply_topic,
+            )
+        except Exception as exc:
+            raise ExecutorException(exc)
+
+    @inject
+    def _get_default_reply_topic(self, config: MinosConfig = Provide["config"]) -> str:
+        return f"{config.service.name}Reply"

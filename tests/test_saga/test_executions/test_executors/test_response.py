@@ -2,27 +2,32 @@ import unittest
 from unittest.mock import (
     AsyncMock,
 )
-
-from minos.common import (
-    CommandStatus,
+from uuid import (
+    uuid4,
 )
+
 from minos.saga import (
     Executor,
     ResponseExecutor,
     SagaContext,
     SagaFailedExecutionStepException,
     SagaOperation,
+    SagaResponse,
+    SagaResponseStatus,
 )
 from tests.utils import (
     Foo,
-    fake_reply,
+    MinosTestCase,
     handle_ticket_success,
 )
 
 
-class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
+class TestResponseExecutor(MinosTestCase):
     def setUp(self) -> None:
-        self.executor = ResponseExecutor()
+        super().setUp()
+
+        self.execution_uuid = uuid4()
+        self.executor = ResponseExecutor(self.execution_uuid)
 
     def test_constructor(self):
         self.assertIsInstance(self.executor, Executor)
@@ -30,20 +35,21 @@ class TestResponseExecutor(unittest.IsolatedAsyncioTestCase):
     async def test_exec(self):
         operation = SagaOperation(handle_ticket_success)
         expected = SagaContext(one=1, ticket=Foo("text"))
-        observed = await self.executor.exec(operation, SagaContext(one=1), reply=fake_reply(Foo("text")))
+        response = SagaResponse(Foo("text"), service_name="ticket")
+        observed = await self.executor.exec(operation, SagaContext(one=1), response=response)
         self.assertEqual(expected, observed)
 
     async def test_exec_raises(self):
-        reply = fake_reply(status=CommandStatus.ERROR)
+        response = SagaResponse(status=SagaResponseStatus.ERROR, service_name="ticket")
         operation = SagaOperation(AsyncMock(side_effect=ValueError))
         with self.assertRaises(SagaFailedExecutionStepException):
-            await self.executor.exec(operation, SagaContext(), reply=reply)
+            await self.executor.exec(operation, SagaContext(), response=response)
 
     async def test_exec_return_exception_raises(self):
-        reply = fake_reply(status=CommandStatus.ERROR)
+        response = SagaResponse(status=SagaResponseStatus.ERROR, service_name="ticket")
         operation = SagaOperation(AsyncMock(return_value=ValueError("This is an example")))
         with self.assertRaises(SagaFailedExecutionStepException):
-            await self.executor.exec(operation, SagaContext(), reply=reply)
+            await self.executor.exec(operation, SagaContext(), response=response)
 
 
 if __name__ == "__main__":

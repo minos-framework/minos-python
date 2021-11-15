@@ -12,9 +12,6 @@ from typing import (
     Union,
 )
 
-from ..context import (
-    SagaContext,
-)
 from ..exceptions import (
     AlreadyCommittedException,
     AlreadyOnSagaException,
@@ -23,7 +20,6 @@ from ..exceptions import (
 )
 from .operations import (
     SagaOperation,
-    identity_fn,
 )
 from .steps import (
     ConditionalSagaStep,
@@ -45,19 +41,18 @@ class Saga:
 
     # noinspection PyUnusedLocal
     def __init__(
-        self,
-        *args,
-        steps: list[SagaStep] = None,
-        commit: Optional[Union[LocalCallback, SagaOperation[LocalCallback]]] = None,
-        **kwargs,
+        self, *args, steps: list[SagaStep] = None, committed: bool = False, commit: None = None, **kwargs,
     ):
         if steps is None:
             steps = list()
-        if commit is not None and not isinstance(commit, SagaOperation):
-            commit = SagaOperation(commit)
 
         self.steps = steps
-        self.commit_operation = commit
+        self.committed = committed
+
+        if commit is not None:
+            warnings.warn(f"Commit callback is being deprecated. Use {self.local_step!r} instead", DeprecationWarning)
+            self.local_step(commit)
+            self.committed = True
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], Saga], **kwargs) -> Saga:
@@ -72,13 +67,9 @@ class Saga:
 
         current = raw | kwargs
 
-        commit = current.pop("commit", None)
-        if commit is not None:
-            commit = SagaOperation.from_raw(commit)
-
         steps = [SagaStep.from_raw(step) for step in current.pop("steps")]
 
-        instance = cls(steps=steps, commit=commit, **current)
+        instance = cls(steps=steps, **current)
 
         return instance
 
@@ -154,7 +145,7 @@ class Saga:
         """
         ans = {
             "steps": [step.raw for step in self.steps],
-            "commit": None if self.commit_operation is None else self.commit_operation.raw,
+            "committed": self.committed,
         }
         return ans
 
@@ -164,28 +155,24 @@ class Saga:
     def __iter__(self) -> Iterable:
         yield from (
             self.steps,
-            self.commit_operation,
+            self.committed,
         )
 
-    # noinspection PyUnusedLocal
-    def commit(
-        self, callback: Optional[LocalCallback] = None, parameters: Optional[SagaContext] = None, **kwargs
-    ) -> Saga:
+    def commit(self, callback: None = None, **kwargs) -> Saga:
         """Commit the instance to be ready for execution.
 
-        :param callback: Optional function to be called at the end of execution.
-        :param parameters: A mapping of named parameters to be passed to the callback.
-        :param kwargs: A set of named arguments to be passed to the callback. ``parameters`` has priority if it is not
-            ``None``.
+        :param callback: Deprecated argument.
+        :param kwargs: Additional named arguments.
         :return: A ``Saga`` instance.
         """
         if self.committed:
             raise AlreadyCommittedException("It is not possible to commit a saga multiple times.")
 
-        if callback is None:
-            callback = identity_fn
+        if callback is not None:
+            warnings.warn(f"Commit callback is being deprecated. Use {self.local_step!r} instead", DeprecationWarning)
+            self.local_step(callback, **kwargs)
 
-        self.commit_operation = SagaOperation(callback, parameters=parameters, **kwargs)
+        self.committed = True
         return self
 
     def validate(self) -> None:
@@ -202,14 +189,6 @@ class Saga:
 
         if not self.committed:
             raise SagaNotCommittedException()
-
-    @property
-    def committed(self) -> bool:
-        """Check if the instance is already committed.
-
-        :return: A boolean value.
-        """
-        return self.commit_operation is not None
 
 
 T = TypeVar("T")

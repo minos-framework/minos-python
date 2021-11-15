@@ -4,10 +4,6 @@ from __future__ import (
 
 import logging
 import warnings
-from contextvars import (
-    ContextVar,
-    copy_context,
-)
 from typing import (
     Optional,
     Union,
@@ -22,12 +18,15 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    CommandReply,
     MinosConfig,
-    MinosHandler,
-    MinosPool,
-    MinosSagaManager,
+    MinosSetup,
     NotProvidedException,
+)
+from minos.networks import (
+    USER_CONTEXT_VAR,
+    CommandReply,
+    DynamicHandler,
+    DynamicHandlerPool,
 )
 
 from .context import (
@@ -45,11 +44,14 @@ from .executions import (
     SagaExecutionStorage,
     SagaStatus,
 )
+from .messages import (
+    SagaResponse,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
+class SagaManager(MinosSetup):
     """Saga Manager implementation class.
 
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
@@ -59,8 +61,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     def __init__(
         self,
         storage: SagaExecutionStorage,
-        dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"],
-        user_context_var: Optional[ContextVar[Optional[UUID]]] = None,
+        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
         *args,
         **kwargs,
     ):
@@ -71,7 +72,6 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
             raise NotProvidedException("A handler pool instance is required.")
 
         self.dynamic_handler_pool = dynamic_handler_pool
-        self.user_context_var = user_context_var
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
@@ -82,36 +82,43 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
         :param kwargs: Additional named arguments.
         :return: A new ``SagaManager`` instance.
         """
-        user_context_var = cls._user_context_var_from_config(config)
         storage = SagaExecutionStorage.from_config(config, **kwargs)
-        return cls(storage=storage, user_context_var=user_context_var, **kwargs)
+        return cls(storage=storage, **kwargs)
 
-    @staticmethod
-    def _user_context_var_from_config(*args, **kwargs) -> Optional[ContextVar]:
-        context = copy_context()
-        for var in context:
-            if var.name == "user":
-                return var
-        return None
+    async def run(self, *args, response: Optional[SagaResponse] = None, **kwargs) -> Union[UUID, SagaExecution]:
+        """Perform a run of a ``Saga``.
+
+        The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
+
+        :param response: The reply that relaunches a saga execution.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
+
+        if response is not None:
+            return await self._load_and_run(*args, response, **kwargs)
+
+        return await self._run_new(*args, **kwargs)
 
     async def _run_new(
         self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs,
     ) -> Union[UUID, SagaExecution]:
-        if self.user_context_var is not None:
+        if USER_CONTEXT_VAR.get() is not None:
             if user is not None:
                 warnings.warn("The `user` Argument will be ignored in favor of the `user` ContextVar", RuntimeWarning)
-            user = self.user_context_var.get()
+            user = USER_CONTEXT_VAR.get()
 
         execution = SagaExecution.from_definition(definition, context=context, user=user)
         return await self._run(execution, **kwargs)
 
+    # noinspection PyUnusedLocal
     async def _load_and_run(
-        self, reply: CommandReply, user: Optional[UUID] = None, **kwargs
+        self, response: SagaResponse, user: Optional[UUID] = None, **kwargs
     ) -> Union[UUID, SagaExecution]:
         # NOTE: ``user`` is consumed here to avoid its injection on already started sagas.
 
-        execution = self.storage.load(reply.saga)
-        return await self._run(execution, reply=reply, **kwargs)
+        execution = self.storage.load(response.uuid)
+        return await self._run(execution, response=response, **kwargs)
 
     async def _run(
         self,
@@ -147,21 +154,21 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
             self.storage.store(execution)
 
     async def _run_with_pause_on_memory(
-        self, execution: SagaExecution, reply: Optional[CommandReply] = None, **kwargs
+        self, execution: SagaExecution, response: Optional[SagaResponse] = None, **kwargs
     ) -> None:
 
         # noinspection PyUnresolvedReferences
         async with self.dynamic_handler_pool.acquire() as handler:
             while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                 try:
-                    await execution.execute(reply=reply, **(kwargs | {"reply_topic": handler.topic}))
+                    await execution.execute(response=response, **kwargs)
                 except SagaPausedExecutionStepException:
-                    reply = await self._get_reply(handler, execution, **kwargs)
+                    response = await self._get_response(handler, execution, **kwargs)
                 self.storage.store(execution)
 
     @staticmethod
-    async def _get_reply(handler: MinosHandler, execution: SagaExecution, **kwargs) -> CommandReply:
-        reply = None
+    async def _get_response(handler: DynamicHandler, execution: SagaExecution, **kwargs) -> SagaResponse:
+        reply: Optional[CommandReply] = None
         while reply is None or reply.saga != execution.uuid:
             try:
                 entry = await handler.get_one(**kwargs)
@@ -169,4 +176,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
                 execution.status = SagaStatus.Errored
                 raise SagaFailedExecutionException(exc)
             reply = entry.data
-        return reply
+
+        response = SagaResponse(reply.data, reply.status, reply.service_name)
+
+        return response

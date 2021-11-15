@@ -6,11 +6,6 @@ from typing import (
     Optional,
 )
 
-from minos.common import (
-    CommandReply,
-    CommandStatus,
-)
-
 from ...context import (
     SagaContext,
 )
@@ -18,10 +13,14 @@ from ...definitions import (
     RemoteSagaStep,
 )
 from ...exceptions import (
-    CommandReplyFailedException,
     SagaFailedExecutionStepException,
     SagaPausedExecutionStepException,
+    SagaResponseException,
     SagaRollbackExecutionStepException,
+)
+from ...messages import (
+    SagaResponse,
+    SagaResponseStatus,
 )
 from ..executors import (
     RequestExecutor,
@@ -40,11 +39,13 @@ class RemoteSagaStepExecution(SagaStepExecution):
 
     definition: RemoteSagaStep
 
-    async def execute(self, context: SagaContext, reply: Optional[CommandReply] = None, *args, **kwargs) -> SagaContext:
+    async def execute(
+        self, context: SagaContext, response: Optional[SagaResponse] = None, *args, **kwargs
+    ) -> SagaContext:
         """Execution the remote step.
 
         :param context: The execution context to be used during the execution.
-        :param reply: An optional command reply instance (to be consumed by the on_success method).
+        :param response: An optional command response instance (to be consumed by the on_success method).
         :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: The updated context.
@@ -52,20 +53,21 @@ class RemoteSagaStepExecution(SagaStepExecution):
 
         await self._execute_on_execute(context, *args, **kwargs)
 
-        if reply is None:
+        if response is None:
             self.status = SagaStepStatus.PausedByOnExecute
             raise SagaPausedExecutionStepException()
 
-        if reply.status == CommandStatus.SYSTEM_ERROR:
+        if response.status == SagaResponseStatus.SYSTEM_ERROR:
             self.status = SagaStepStatus.ErroredByOnExecute
-            exc = CommandReplyFailedException(f"CommandReply failed with {reply.status!s} status: {reply.data!s}")
+            exc = SagaResponseException(f"Failed with {response.status!s} status: {await response.content()!s}")
             raise SagaFailedExecutionStepException(exc)
 
-        if reply.status == CommandStatus.SUCCESS:
-            context = await self._execute_on_success(context, reply, *args, **kwargs)
+        if response.status == SagaResponseStatus.SUCCESS:
+            context = await self._execute_on_success(context, response, *args, **kwargs)
         else:
-            context = await self._execute_on_error(context, reply, *args, **kwargs)
+            context = await self._execute_on_error(context, response, *args, **kwargs)
 
+        self.service_name = response.service_name
         self.status = SagaStepStatus.Finished
         return context
 
@@ -82,12 +84,12 @@ class RemoteSagaStepExecution(SagaStepExecution):
             raise exc
         self.status = SagaStepStatus.FinishedOnExecute
 
-    async def _execute_on_success(self, context: SagaContext, reply: CommandReply, *args, **kwargs) -> SagaContext:
+    async def _execute_on_success(self, context: SagaContext, response: SagaResponse, *args, **kwargs) -> SagaContext:
         self.status = SagaStepStatus.RunningOnSuccess
         executor = ResponseExecutor(*args, **kwargs)
 
         try:
-            context = await executor.exec(self.definition.on_success_operation, context, reply)
+            context = await executor.exec(self.definition.on_success_operation, context, response)
         except SagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredOnSuccess
             await self.rollback(context, *args, **kwargs)
@@ -95,12 +97,12 @@ class RemoteSagaStepExecution(SagaStepExecution):
 
         return context
 
-    async def _execute_on_error(self, context: SagaContext, reply: CommandReply, *args, **kwargs) -> SagaContext:
+    async def _execute_on_error(self, context: SagaContext, response: SagaResponse, *args, **kwargs) -> SagaContext:
         self.status = SagaStepStatus.RunningOnError
         executor = ResponseExecutor(*args, **kwargs)
 
         try:
-            context = await executor.exec(self.definition.on_error_operation, context, reply)
+            context = await executor.exec(self.definition.on_error_operation, context, response)
         except SagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredOnError
             await self.rollback(context, *args, **kwargs)
