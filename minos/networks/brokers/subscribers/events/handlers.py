@@ -3,17 +3,14 @@ from __future__ import (
 )
 
 import logging
-from asyncio import (
-    gather,
+from contextlib import (
+    suppress,
 )
-from collections import (
-    defaultdict,
+from functools import (
+    cmp_to_key,
 )
 from inspect import (
     isawaitable,
-)
-from operator import (
-    attrgetter,
 )
 from typing import (
     Awaitable,
@@ -46,9 +43,6 @@ from ..messages import (
 
 logger = logging.getLogger(__name__)
 
-uuid_getter = attrgetter("data.data.uuid")
-version_getter = attrgetter("data.data.version")
-
 
 class EventHandler(Handler):
     """Event Handler class."""
@@ -66,18 +60,16 @@ class EventHandler(Handler):
         handlers = {decorator.topic: fn for decorator, fn in handlers.items()}
         return handlers
 
-    async def _dispatch_entries(self, entries: list[HandlerEntry]) -> None:
-        grouped = defaultdict(list)
-        for entry in entries:
-            grouped[uuid_getter(entry)].append(entry)
+    async def _dispatch_entries(self, entries: list[HandlerEntry[Event]]) -> None:
+        def _fn(a: HandlerEntry[Event], b: HandlerEntry[Event]):
+            with suppress(TypeError):
+                if a.data.data < b.data.data:
+                    return -1
+                elif a.data.data > b.data.data:
+                    return 1
+            return 0
 
-        for group in grouped.values():
-            group.sort(key=version_getter)
-
-        futures = (self._dispatch_group(group) for group in grouped.values())
-        await gather(*futures)
-
-    async def _dispatch_group(self, entries: list[HandlerEntry]):
+        entries.sort(key=cmp_to_key(_fn))
         for entry in entries:
             await self._dispatch_one(entry)
 

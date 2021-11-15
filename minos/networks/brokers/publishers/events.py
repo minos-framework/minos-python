@@ -3,10 +3,10 @@ from __future__ import (
 )
 
 import logging
-
-from minos.aggregate import (
-    AggregateDiff,
+from typing import (
+    Any,
 )
+
 from minos.common import (
     MinosConfig,
 )
@@ -31,7 +31,7 @@ class EventBroker(Broker):
         return cls(*args, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding
-    async def send(self, data: AggregateDiff, topic: str, **kwargs) -> int:
+    async def send(self, data: Any, topic: str, **kwargs) -> int:
         """Send an ``Event``.
 
         :param data: The data to be send.

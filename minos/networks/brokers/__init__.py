@@ -17,8 +17,6 @@ from .publishers import (
 from .subscribers import (
     CommandHandler,
     CommandHandlerService,
-    CommandReplyHandler,
-    CommandReplyHandlerService,
     Consumer,
     ConsumerService,
     DynamicHandler,

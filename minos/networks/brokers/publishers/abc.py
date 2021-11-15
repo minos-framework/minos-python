@@ -7,7 +7,6 @@ from psycopg2.sql import (
 )
 
 from minos.common import (
-    MinosBroker,
     PostgreSqlMinosDatabase,
 )
 
@@ -22,7 +21,7 @@ class BrokerSetup(PostgreSqlMinosDatabase):
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("producer_queue"))
 
 
-class Broker(MinosBroker, BrokerSetup, ABC):
+class Broker(BrokerSetup, ABC):
     """Minos Broker Class."""
 
     ACTION: str

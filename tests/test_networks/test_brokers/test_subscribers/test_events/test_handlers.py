@@ -10,20 +10,9 @@ from unittest.mock import (
     MagicMock,
     call,
 )
-from uuid import (
-    uuid4,
-)
 
 import aiopg
 
-from minos.aggregate import (
-    Action,
-    AggregateDiff,
-    FieldDiffContainer,
-)
-from minos.common import (
-    current_datetime,
-)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -38,6 +27,7 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FAKE_AGGREGATE_DIFF,
+    FakeModel,
 )
 
 
@@ -112,31 +102,38 @@ class TestEventHandler(PostgresAsyncTestCase):
         fn = self.handler.get_callback(_Cls._fn_raises_exception)
         await fn(self.event)
 
+    async def test_dispatch_without_sorting(self):
+        observed = list()
+
+        async def _fn2(request):
+            content = await request.content()
+            observed.append(content)
+
+        self.handler.get_action = MagicMock(return_value=_fn2)
+
+        events = [Event("TicketAdded", FakeModel("uuid1")), Event("TicketAdded", FakeModel("uuid2"))]
+
+        async with self.handler:
+            for event in events:
+                await self._insert_one(event)
+
+            await self.handler.dispatch()
+
+        expected = [FakeModel("uuid1"), FakeModel("uuid2")]
+        self.assertEqual(expected, observed)
+
     async def test_dispatch_concurrent(self):
         observed = defaultdict(list)
 
         async def _fn2(request):
-            diff = await request.content()
-            observed[diff.uuid].append(diff.version)
+            content = await request.content()
+            observed[content[0]].append(content[1])
 
         self.handler.get_action = MagicMock(return_value=_fn2)
 
-        uuid1, uuid2 = uuid4(), uuid4()
-
         events = list()
         for i in range(1, 6):
-            events.extend(
-                [
-                    Event(
-                        "TicketAdded",
-                        AggregateDiff(uuid1, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
-                    ),
-                    Event(
-                        "TicketAdded",
-                        AggregateDiff(uuid2, "Foo", i, Action.CREATE, current_datetime(), FieldDiffContainer.empty()),
-                    ),
-                ]
-            )
+            events.extend([Event("TicketAdded", ["uuid1", i]), Event("TicketAdded", ["uuid2", i])])
         shuffle(events)
 
         async with self.handler:
@@ -145,7 +142,7 @@ class TestEventHandler(PostgresAsyncTestCase):
 
             await self.handler.dispatch()
 
-        expected = {uuid1: list(range(1, 6)), uuid2: list(range(1, 6))}
+        expected = {"uuid1": list(range(1, 6)), "uuid2": list(range(1, 6))}
         self.assertEqual(expected, observed)
 
     async def _insert_one(self, instance):
