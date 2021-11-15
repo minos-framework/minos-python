@@ -495,8 +495,8 @@ PyYAML = "^5.4.1"
 [package.source]
 type = "git"
 url = "https://github.com/Clariteia/minos_microservice_common.git"
-reference = "issue-651-remove-command-commandreply-event"
-resolved_reference = "78996b750b19fac968d6ea85e865f1620adab278"
+reference = "issue-653-middleware-config"
+resolved_reference = "43e4e20375747153bdd7271e64fa1d32efc2f6b6"
 
 [[package]]
 name = "mistune"
@@ -947,7 +947,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "894386b0f0dfe216edca09cb51175e136d4742ac92629c6f3fd2e5fb21dcc2ca"
+content-hash = "d84e72b1022b7173d28142839a37627dfdac164236af7ee962dc2499168931d8"
 
 [metadata.files]
 aiohttp = [
