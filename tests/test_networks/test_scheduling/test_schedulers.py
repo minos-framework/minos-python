@@ -1,5 +1,6 @@
 import asyncio
 import unittest
+import warnings
 from unittest.mock import (
     AsyncMock,
     call,
@@ -88,7 +89,9 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.periodic.started)
 
         with patch("asyncio.create_task", return_value="test") as mock_create:
-            await self.periodic.start()
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)
+                await self.periodic.start()
             self.assertEqual(1, mock_create.call_count)
             self.assertEqual("run_forever", mock_create.call_args.args[0].__name__)
             self.assertTrue(self.periodic.started)
@@ -98,7 +101,9 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
         mock = AsyncMock()
         self.periodic._task = mock
         with patch("asyncio.wait_for") as mock_wait:
-            await self.periodic.stop()
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)
+                await self.periodic.stop()
             self.assertEqual(1, mock_wait.call_count)
             self.assertEqual(call(mock, None), mock_wait.call_args)
 

@@ -46,9 +46,13 @@ Handler = Callable[[Request], Awaitable[Optional[Response]]]
 class EnrouteBuilder:
     """Enroute builder class."""
 
-    def __init__(self, *classes: Union[str, Type], middleware: Optional[list[Union[str, Callable]]] = None):
+    def __init__(
+        self, *classes: Union[str, Type], middleware: Optional[Union[str, Callable, list[Union[str, Callable]]]] = None
+    ):
         if middleware is None:
-            middleware = list()
+            middleware = tuple()
+        if not isinstance(middleware, (tuple, list)):
+            middleware = [middleware]
 
         middleware = list(map(lambda fn: fn if not isinstance(fn, str) else import_module(fn), middleware))
 
