@@ -463,17 +463,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "minos-microservice-aggregate"
-version = "0.1.1"
-description = "Python Package for Minos Microservices containing all the Aggregate stuff"
-category = "main"
-optional = false
-python-versions = ">=3.9,<4.0"
-
-[package.dependencies]
-minos-microservice-common = ">=0.2.0,<0.3.0"
-
-[[package]]
 name = "minos-microservice-common"
 version = "0.2.1"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
@@ -947,7 +936,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "d84e72b1022b7173d28142839a37627dfdac164236af7ee962dc2499168931d8"
+content-hash = "89b5e8c3dc0af181de2056f326e15b3344bf654298c401795ec5619643d36e0a"
 
 [metadata.files]
 aiohttp = [
@@ -1508,10 +1497,6 @@ markupsafe = [
 mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
-]
-minos-microservice-aggregate = [
-    {file = "minos_microservice_aggregate-0.1.1-py3-none-any.whl", hash = "sha256:077315ed09a5478e4c85dd7caa9f2876d6089d0eb3a0e69bfbe4bafa934db2ab"},
-    {file = "minos_microservice_aggregate-0.1.1.tar.gz", hash = "sha256:9ef4e17479254eb4bd59c9fd3b3295a806a81e858c6228637611314edd5c663c"},
 ]
 minos-microservice-common = []
 mistune = [
