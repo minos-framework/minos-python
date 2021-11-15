@@ -15,6 +15,7 @@ from minos.networks import (
     USER_CONTEXT_VAR,
     Command,
     CommandHandler,
+    CommandReplyBroker,
     CommandStatus,
     HandlerEntry,
     HandlerRequest,
@@ -25,7 +26,6 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeBroker,
     FakeModel,
 )
 
@@ -53,15 +53,24 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.command_reply_broker = FakeBroker()
-        self.handler = CommandHandler.from_config(config=self.config, command_reply_broker=self.command_reply_broker)
+        self.command_reply_broker = CommandReplyBroker.from_config(self.config)
+        self.handler = CommandHandler.from_config(self.config, command_reply_broker=self.command_reply_broker)
         self.saga = uuid4()
         self.user = uuid4()
         self.command = Command("AddOrder", FakeModel("foo"), saga=self.saga, user=self.user, reply_topic="UpdateTicket")
 
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.command_reply_broker.setup()
+        await self.handler.setup()
+
+    async def asyncTearDown(self):
+        await self.handler.destroy()
+        await self.command_reply_broker.destroy()
+        await super().asyncTearDown()
+
     def test_from_config(self):
-        broker = FakeBroker()
-        handler = CommandHandler.from_config(config=self.config, command_reply_broker=broker)
+        handler = CommandHandler.from_config(self.config, command_reply_broker=self.command_reply_broker)
         self.assertIsInstance(handler, CommandHandler)
 
         self.assertEqual({"GetOrder", "AddOrder", "DeleteOrder", "UpdateOrder"}, set(handler.handlers.keys()))
@@ -72,25 +81,25 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.database, handler.database)
         self.assertEqual(self.config.broker.queue.user, handler.user)
         self.assertEqual(self.config.broker.queue.password, handler.password)
-        self.assertEqual(broker, handler.command_reply_broker)
+        self.assertEqual(self.command_reply_broker, handler.command_reply_broker)
 
     async def test_dispatch(self):
         callback_mock = AsyncMock(return_value=Response("add_order"))
         lookup_mock = MagicMock(return_value=callback_mock)
         entry = HandlerEntry(1, "AddOrder", 0, self.command.avro_bytes, 1, callback_lookup=lookup_mock)
 
-        async with self.handler:
-            await self.handler.dispatch_one(entry)
+        send_mock = AsyncMock()
+        self.command_reply_broker.send = send_mock
+
+        await self.handler.dispatch_one(entry)
 
         self.assertEqual(1, lookup_mock.call_count)
         self.assertEqual(call("AddOrder"), lookup_mock.call_args)
 
-        self.assertEqual(1, self.command_reply_broker.call_count)
-        self.assertEqual("add_order", self.command_reply_broker.items)
-        self.assertEqual("UpdateTicket", self.command_reply_broker.topic)
-        self.assertEqual(self.command.saga, self.command_reply_broker.saga)
-        self.assertEqual(None, self.command_reply_broker.reply_topic)
-        self.assertEqual(CommandStatus.SUCCESS, self.command_reply_broker.status)
+        self.assertEqual(
+            [call("add_order", topic="UpdateTicket", saga=self.command.saga, status=CommandStatus.SUCCESS)],
+            send_mock.call_args_list,
+        )
 
         self.assertEqual(1, callback_mock.call_count)
         observed = callback_mock.call_args[0][0]
