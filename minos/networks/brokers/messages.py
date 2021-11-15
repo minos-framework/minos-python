@@ -29,7 +29,7 @@ class Command(DeclarativeModel):
 
     topic: str
     data: Any
-    saga: UUID
+    saga: Optional[UUID]
     reply_topic: str
     user: Optional[UUID]
 
@@ -39,7 +39,7 @@ class CommandReply(DeclarativeModel):
 
     topic: str
     data: Any
-    saga: UUID
+    saga: Optional[UUID]
     status: CommandStatus
     service_name: Optional[str]
 

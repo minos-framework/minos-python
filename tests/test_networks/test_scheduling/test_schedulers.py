@@ -3,6 +3,7 @@ import unittest
 import warnings
 from unittest.mock import (
     AsyncMock,
+    MagicMock,
     call,
     patch,
 )
@@ -87,15 +88,15 @@ class TestPeriodicTask(unittest.IsolatedAsyncioTestCase):
 
     async def test_start(self) -> None:
         self.assertFalse(self.periodic.started)
+        run_mock = MagicMock()
+        self.periodic.run_forever = run_mock
 
-        with patch("asyncio.create_task", return_value="test") as mock_create:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", RuntimeWarning)
-                await self.periodic.start()
-            self.assertEqual(1, mock_create.call_count)
-            self.assertEqual("run_forever", mock_create.call_args.args[0].__name__)
-            self.assertTrue(self.periodic.started)
-            self.assertEqual("test", self.periodic.task)
+        with patch("asyncio.create_task", return_value="test"):
+            await self.periodic.start()
+
+        self.assertTrue(self.periodic.started)
+        self.assertEqual("test", self.periodic.task)
+        self.assertEqual(1, run_mock.call_count)
 
     async def test_stop(self) -> None:
         mock = AsyncMock()
