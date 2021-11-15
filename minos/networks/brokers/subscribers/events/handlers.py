@@ -61,7 +61,7 @@ class EventHandler(Handler):
 
     @staticmethod
     def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
-        builder = EnrouteBuilder(*config.services)
+        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
         handlers = builder.get_broker_event(config=config, **kwargs)
         handlers = {decorator.topic: fn for decorator, fn in handlers.items()}
         return handlers
