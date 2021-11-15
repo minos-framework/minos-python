@@ -111,8 +111,11 @@ class SagaResponse:
         return self._status
 
     @property
-    def service_name(self) -> Optional[str]:
-        """TODO"""
+    def service_name(self) -> str:
+        """Get the microservice name that generated the response.
+
+        :return: An string value containing the microservice name.
+        """
         return self._service_name
 
     @property

@@ -100,7 +100,11 @@ class TransactionCommitter:
 
     @cached_property
     def transactions(self) -> list[tuple[UUID, str]]:
-        """TODO"""
+        """Get the list of transactions used during the saga execution.
+
+        :return: A list of tuples in which the first value is the identifier of the transaction and the second one is
+            the name of the microservice in which the saga was executed.
+        """
         transactions = list()
         uniques = set()
 
