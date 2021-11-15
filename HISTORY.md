@@ -13,3 +13,10 @@
 * Do not raise a `TransactionRepositoryConflictException` exception when `TransactionStatus.PENDING` status do not change.
 * Add `TransactionRepository.get(uuid: UUID)` method
 * Clean tests.
+
+## 0.2.0 (2021-11-15)
+
+* Add `SnapshotService` containing `Get${AGGREGATE_NAME}`, `Get${AGGREGATE_NAME}s` and the periodic event to synchronize the snapshot if reads are received for a long time.
+* Add `TransactionService` containing `Reserve${MICROSERVICE_NAME}Transaction`, `Reject${MICROSERVICE_NAME}Transaction` and `Commit{MICROSERVICE_NAME}Transaction`.
+* Be compatible with `minos-microservice-common=^0.3.0`.
+* Add `minos-microservice-networks` as dependency.
