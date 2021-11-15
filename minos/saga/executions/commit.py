@@ -11,11 +11,10 @@ from dependency_injector.wiring import (
     inject,
 )
 
-from minos.common import (
-    NULL_UUID,
-    MinosBroker,
-    MinosHandler,
-    MinosPool,
+from minos.networks import (
+    CommandBroker,
+    DynamicHandler,
+    DynamicHandlerPool,
 )
 
 from .steps import (
@@ -33,8 +32,8 @@ class TransactionCommitter:
         self,
         execution_uuid: UUID,
         executed_steps: list[SagaStepExecution],
-        dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"],
-        command_broker: MinosBroker = Provide["command_broker"],
+        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
+        command_broker: CommandBroker = Provide["command_broker"],
         **kwargs,
     ):
         self.executed_steps = executed_steps
@@ -61,9 +60,7 @@ class TransactionCommitter:
     async def _reserve(self) -> bool:
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
-                await self.command_broker.send(
-                    data=uuid, topic=f"Reserve{service_name.title()}Transaction", saga=NULL_UUID,
-                )
+                await self.command_broker.send(data=uuid, topic=f"Reserve{service_name.title()}Transaction")
                 response = await self._get_response(handler)
                 if not response.ok:
                     return False
@@ -73,7 +70,7 @@ class TransactionCommitter:
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
                 await self.command_broker.send(
-                    data=uuid, topic=f"Commit{service_name.title()}Transaction", saga=NULL_UUID,
+                    data=uuid, topic=f"Commit{service_name.title()}Transaction",
                 )
                 await self._get_response(handler)
         logger.info("Successfully committed!")
@@ -85,15 +82,13 @@ class TransactionCommitter:
         """
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
-                await self.command_broker.send(
-                    data=uuid, topic=f"Reject{service_name.title()}Transaction", saga=NULL_UUID,
-                )
+                await self.command_broker.send(data=uuid, topic=f"Reject{service_name.title()}Transaction")
                 await self._get_response(handler)
 
         logger.info("Successfully rejected!")
 
     @staticmethod
-    async def _get_response(handler: MinosHandler, **kwargs):
+    async def _get_response(handler: DynamicHandler, **kwargs):
         handler_entry = await handler.get_one(**kwargs)
         response = handler_entry.data
         return response

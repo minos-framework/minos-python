@@ -19,14 +19,14 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosConfig,
-    MinosHandler,
-    MinosPool,
-    MinosSagaManager,
+    MinosSetup,
     NotProvidedException,
 )
 from minos.networks import (
     USER_CONTEXT_VAR,
     CommandReply,
+    DynamicHandler,
+    DynamicHandlerPool,
 )
 
 from .context import (
@@ -51,7 +51,7 @@ from .messages import (
 logger = logging.getLogger(__name__)
 
 
-class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
+class SagaManager(MinosSetup):
     """Saga Manager implementation class.
 
     The purpose of this class is to manage the running process for new or paused``SagaExecution`` instances.
@@ -61,7 +61,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
     def __init__(
         self,
         storage: SagaExecutionStorage,
-        dynamic_handler_pool: MinosPool[MinosHandler] = Provide["dynamic_handler_pool"],
+        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
         *args,
         **kwargs,
     ):
@@ -84,6 +84,19 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
         """
         storage = SagaExecutionStorage.from_config(config, **kwargs)
         return cls(storage=storage, **kwargs)
+
+    async def run(self, *args, reply: Optional[CommandReply] = None, **kwargs) -> Union[UUID, SagaExecution]:
+        """Perform a run of a ``Saga``.
+        The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
+        :param reply: The reply that relaunches a saga execution.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
+
+        if reply is not None:
+            return await self._load_and_run(*args, reply, **kwargs)
+
+        return await self._run_new(*args, **kwargs)
 
     async def _run_new(
         self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs,
@@ -152,7 +165,7 @@ class SagaManager(MinosSagaManager[Union[SagaExecution, UUID]]):
                 self.storage.store(execution)
 
     @staticmethod
-    async def _get_response(handler: MinosHandler, execution: SagaExecution, **kwargs) -> SagaResponse:
+    async def _get_response(handler: DynamicHandler, execution: SagaExecution, **kwargs) -> SagaResponse:
         reply: Optional[CommandReply] = None
         while reply is None or reply.saga != execution.uuid:
             try:

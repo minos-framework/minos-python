@@ -18,7 +18,7 @@ from uuid import (
 
 from minos.common import (
     NULL_UUID,
-    MinosSagaManager,
+    MinosSetup,
     NotProvidedException,
 )
 from minos.networks import (
@@ -60,7 +60,7 @@ class TestSagaManager(MinosTestCase):
 
     def test_constructor(self):
         self.assertIsInstance(self.manager.storage, SagaExecutionStorage)
-        self.assertIsInstance(self.manager, MinosSagaManager)
+        self.assertIsInstance(self.manager, MinosSetup)
 
     def test_constructor_without_handler(self):
         with self.assertRaises(NotProvidedException):
@@ -105,10 +105,10 @@ class TestSagaManager(MinosTestCase):
             [
                 call(topic="CreateOrder", data=Foo("create_order!"), saga=expected_uuid, user=self.user),
                 call(topic="CreateTicket", data=Foo("create_ticket!"), saga=expected_uuid, user=self.user),
-                call(topic="ReserveFooTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="ReserveOrderTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="CommitFooTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="CommitOrderTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(topic="ReserveFooTransaction", data=execution.uuid),
+                call(topic="ReserveOrderTransaction", data=execution.uuid),
+                call(topic="CommitFooTransaction", data=execution.uuid),
+                call(topic="CommitOrderTransaction", data=execution.uuid),
             ],
             send_mock.call_args_list,
         )
@@ -153,10 +153,10 @@ class TestSagaManager(MinosTestCase):
             [
                 call(topic="CreateOrder", data=Foo("create_order!"), saga=execution.uuid, user=self.user),
                 call(topic="CreateTicket", data=Foo("create_ticket!"), saga=execution.uuid, user=self.user),
-                call(topic="ReserveFooTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="ReserveOrderTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="CommitFooTransaction", data=execution.uuid, saga=NULL_UUID),
-                call(topic="CommitOrderTransaction", data=execution.uuid, saga=NULL_UUID),
+                call(topic="ReserveFooTransaction", data=execution.uuid),
+                call(topic="ReserveOrderTransaction", data=execution.uuid),
+                call(topic="CommitFooTransaction", data=execution.uuid),
+                call(topic="CommitOrderTransaction", data=execution.uuid),
             ],
             send_mock.call_args_list,
         )

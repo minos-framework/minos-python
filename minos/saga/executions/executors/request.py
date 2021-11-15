@@ -15,8 +15,10 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    MinosBroker,
     NotProvidedException,
+)
+from minos.networks import (
+    CommandBroker,
 )
 
 from ...context import (
@@ -46,7 +48,7 @@ class RequestExecutor(Executor):
 
     @inject
     def __init__(
-        self, *args, user: Optional[UUID], command_broker: MinosBroker = Provide["command_broker"], **kwargs,
+        self, *args, user: Optional[UUID], command_broker: CommandBroker = Provide["command_broker"], **kwargs,
     ):
         super().__init__(*args, **kwargs)
 

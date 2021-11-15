@@ -10,9 +10,6 @@ from minos.aggregate import (
     TransactionNotFoundException,
     TransactionStatus,
 )
-from minos.common import (
-    NULL_UUID,
-)
 from minos.networks import (
     HandlerRequest,
     Request,
@@ -35,7 +32,7 @@ Raw = namedtuple("Raw", ["saga", "data"])
 
 class TestMiddleware(MinosTestCase):
     async def test_transactional_command_unused(self):
-        uuid = NULL_UUID
+        uuid = None
         request = HandlerRequest(Raw(uuid, "foo"))
         response = await transactional_command(request, _fn)
 

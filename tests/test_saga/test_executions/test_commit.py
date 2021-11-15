@@ -7,9 +7,6 @@ from uuid import (
     uuid4,
 )
 
-from minos.common import (
-    NULL_UUID,
-)
 from minos.saga import (
     ConditionalSagaStepExecution,
     LocalSagaStep,
@@ -49,10 +46,10 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="ReserveFooTransaction", saga=NULL_UUID),
-                call(data=self.execution_uuid, topic="ReserveBarTransaction", saga=NULL_UUID),
-                call(data=self.execution_uuid, topic="CommitFooTransaction", saga=NULL_UUID),
-                call(data=self.execution_uuid, topic="CommitBarTransaction", saga=NULL_UUID),
+                call(data=self.execution_uuid, topic="ReserveFooTransaction"),
+                call(data=self.execution_uuid, topic="ReserveBarTransaction"),
+                call(data=self.execution_uuid, topic="CommitFooTransaction"),
+                call(data=self.execution_uuid, topic="CommitBarTransaction"),
             ],
             send_mock.call_args_list,
         )
@@ -70,9 +67,9 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="ReserveFooTransaction", saga=NULL_UUID),
-                call(data=self.execution_uuid, topic="RejectFooTransaction", saga=NULL_UUID),
-                call(data=self.execution_uuid, topic="RejectBarTransaction", saga=NULL_UUID),
+                call(data=self.execution_uuid, topic="ReserveFooTransaction"),
+                call(data=self.execution_uuid, topic="RejectFooTransaction"),
+                call(data=self.execution_uuid, topic="RejectBarTransaction"),
             ],
             send_mock.call_args_list,
         )
@@ -88,8 +85,8 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="RejectFooTransaction", saga=NULL_UUID),
-                call(data=self.execution_uuid, topic="RejectBarTransaction", saga=NULL_UUID),
+                call(data=self.execution_uuid, topic="RejectFooTransaction"),
+                call(data=self.execution_uuid, topic="RejectBarTransaction"),
             ],
             send_mock.call_args_list,
         )
