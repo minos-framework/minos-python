@@ -68,16 +68,9 @@ class Consumer(HandlerSetup):
     def _from_config(cls, config: MinosConfig, **kwargs) -> Consumer:
         topics = set()
 
-        # commands
-        decorators = EnrouteAnalyzer(config.commands.service, config).get_broker_command_query_event()
-        topics |= {decorator.topic for decorator in chain(*decorators.values())}
-
-        # queries
-        decorators = EnrouteAnalyzer(config.queries.service, config).get_broker_command_query_event()
-        topics |= {decorator.topic for decorator in chain(*decorators.values())}
-
-        # replies
-        topics |= {f"{config.service.name}Reply"}
+        for name in config.services:
+            decorators = EnrouteAnalyzer(name, config).get_broker_command_query_event()
+            topics |= {decorator.topic for decorator in chain(*decorators.values())}
 
         # noinspection PyProtectedMember
         return cls(

@@ -1,6 +1,9 @@
 service:
     name: Order
     aggregate: tests.utils.Order
+services:
+    - tests.services.commands.CommandService
+    - tests.services.queries.QueryService
 rest:
     host: localhost
     port: 8080
@@ -27,10 +30,6 @@ broker:
     port: 5432
     records: 10
     retry: 2
-commands:
-    service: tests.services.commands.CommandService
-queries:
-    service: tests.services.queries.QueryService
 saga:
     storage:
         path: "./order.lmdb"

@@ -78,12 +78,13 @@ class DiscoveryConnector(MinosSetup):
 
     @staticmethod
     def _endpoints_from_config(config: MinosConfig) -> list[dict[str, Any]]:
-        command_decorators = EnrouteAnalyzer(config.commands.service, config).get_rest_command_query()
-        query_decorators = EnrouteAnalyzer(config.queries.service, config).get_rest_command_query()
+        endpoints = list()
+        for name in config.services:
+            decorators = EnrouteAnalyzer(name, config).get_rest_command_query()
+            endpoints += [
+                {"url": decorator.url, "method": decorator.method} for decorator in set(chain(*decorators.values()))
+            ]
 
-        endpoints = chain(chain(*command_decorators.values()), chain(*query_decorators.values()))
-        endpoints = set(endpoints)
-        endpoints = [{"url": decorator.url, "method": decorator.method} for decorator in endpoints]
         endpoints.sort(key=itemgetter("url", "method"))
         return endpoints
 

@@ -65,7 +65,7 @@ class TestHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def handlers(self):
-        decorators = EnrouteBuilder(self.config.commands.service).get_broker_command_query()
+        decorators = EnrouteBuilder(*self.config.services).get_broker_command_query()
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers
 
