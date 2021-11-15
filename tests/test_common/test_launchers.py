@@ -15,10 +15,8 @@ from minos.common.testing import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeBroker,
     FakeEntrypoint,
     FakeLoop,
-    FakeSagaManager,
 )
 
 
@@ -32,12 +30,7 @@ class TestEntrypointLauncher(PostgresAsyncTestCase):
 
     def setUp(self):
         super().setUp()
-        self.injections = {
-            "event_broker": FakeBroker,
-            "command_broker": FakeBroker,
-            "command_reply_broker": FakeBroker,
-            "saga_manager": FakeSagaManager,
-        }
+        self.injections = {}
         self.services = [1, 2, Foo, classname(Foo)]
         import tests
 
