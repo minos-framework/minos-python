@@ -31,7 +31,8 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.2.0"
+minos-microservice-common = "^0.3.0"
+minos-microservice-networks = { git = "https://github.com/Clariteia/minos_microservice_networks.git", branch = "issue-443-remove-aggregate-dependency" }
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b"

@@ -55,6 +55,7 @@ from .snapshots import (
     PostgreSqlSnapshotWriter,
     SnapshotEntry,
     SnapshotRepository,
+    SnapshotService,
 )
 from .transactions import (
     TRANSACTION_CONTEXT_VAR,
@@ -62,5 +63,6 @@ from .transactions import (
     PostgreSqlTransactionRepository,
     TransactionEntry,
     TransactionRepository,
+    TransactionService,
     TransactionStatus,
 )

@@ -37,8 +37,8 @@ from minos.aggregate import (
 )
 from minos.common import (
     Lock,
-    MinosBroker,
     MinosPool,
+    MinosSetup,
     current_datetime,
 )
 
@@ -107,7 +107,7 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
             self.assertAlmostEqual(e.created_at or current_datetime(), o.created_at, delta=timedelta(seconds=5))
 
 
-class FakeBroker(MinosBroker):
+class FakeBroker(MinosSetup):
     """For testing purposes."""
 
     def __init__(self, **kwargs):
