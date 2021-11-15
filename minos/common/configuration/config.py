@@ -223,7 +223,10 @@ class MinosConfig(MinosConfigAbstract):
 
         :return: A list containing the service class names as string values..
         """
-        return self._get("services")
+        try:
+            return self._get("services")
+        except MinosConfigException:
+            return list()
 
     @property
     def saga(self) -> SAGA:
