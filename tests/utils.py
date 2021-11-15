@@ -27,11 +27,10 @@ from minos.aggregate import (
 )
 from minos.common import (
     Lock,
-    MinosBroker,
     MinosConfig,
-    MinosHandler,
     MinosModel,
     MinosPool,
+    MinosSetup,
 )
 from minos.networks import (
     REPLY_TOPIC_CONTEXT_VAR,
@@ -105,7 +104,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         super().tearDown()
 
 
-class NaiveBroker(MinosBroker):
+class NaiveBroker(MinosSetup):
     """For testing purposes."""
 
     async def send(self, data: Any, **kwargs) -> None:
@@ -128,7 +127,7 @@ class FakeLock(Lock):
         """For testing purposes."""
 
 
-class FakeHandler(MinosHandler):
+class FakeHandler:
     """For testing purposes."""
 
     def __init__(self, topic):
