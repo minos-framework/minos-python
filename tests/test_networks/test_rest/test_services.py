@@ -2,7 +2,6 @@ import unittest
 
 from aiohttp.test_utils import (
     AioHTTPTestCase,
-    unittest_run_loop,
 )
 
 from minos.common import (
@@ -28,7 +27,6 @@ class TestRestService(AioHTTPTestCase):
 
         return await rest_interface.create_application()
 
-    @unittest_run_loop
     async def test_methods(self):
         url = "/order"
         resp = await self.client.request("GET", url)

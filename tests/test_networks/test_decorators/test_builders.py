@@ -18,13 +18,14 @@ from minos.networks import (
 from tests.utils import (
     FakeRequest,
     FakeService,
+    fake_middleware,
 )
 
 
 class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.request = FakeRequest("test")
-        self.builder = EnrouteBuilder(FakeService)
+        self.builder = EnrouteBuilder(FakeService, middleware=fake_middleware)
 
     def test_classes(self):
         self.assertEqual((FakeService,), self.builder.classes)
@@ -37,11 +38,11 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         handlers = self.builder.get_rest_command_query()
         self.assertEqual(3, len(handlers))
 
-        expected = Response("(Get Tickets: test)")
+        expected = Response("_(Get Tickets: test)_")
         observed = await handlers[RestQueryEnrouteDecorator("tickets/", "GET")](self.request)
         self.assertEqual(expected, observed)
 
-        expected = Response("Create Ticket")
+        expected = Response("_Create Ticket_")
         observed = await handlers[RestCommandEnrouteDecorator("orders/", "GET")](self.request)
         self.assertEqual(expected, observed)
 
@@ -53,7 +54,7 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         handlers = self.builder.get_broker_event()
         self.assertEqual(1, len(handlers))
 
-        expected = Response("Ticket Added: [test]")
+        expected = Response("_Ticket Added: [test]_")
         observed = await handlers[BrokerEventEnrouteDecorator("TicketAdded")](self.request)
         self.assertEqual(expected, observed)
 
@@ -61,7 +62,7 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         handlers = self.builder.get_periodic_event()
         self.assertEqual(1, len(handlers))
 
-        expected = {Response("newsletter sent!"), Response("checked inactive users!")}
+        expected = {Response("_newsletter sent!_"), Response("_checked inactive users!_")}
         # noinspection PyTypeChecker
         observed = set(await handlers[PeriodicEventEnrouteDecorator("@daily")](self.request))
         self.assertEqual(expected, observed)
@@ -70,15 +71,15 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         handlers = self.builder.get_broker_command_query()
         self.assertEqual(4, len(handlers))
 
-        expected = Response("(Get Tickets: test)")
+        expected = Response("_(Get Tickets: test)_")
         observed = await handlers[BrokerQueryEnrouteDecorator("GetTickets")](self.request)
         self.assertEqual(expected, observed)
 
-        expected = Response("Create Ticket")
+        expected = Response("_Create Ticket_")
         observed = await handlers[BrokerCommandEnrouteDecorator("CreateTicket")](self.request)
         self.assertEqual(expected, observed)
 
-        expected = Response("Create Ticket")
+        expected = Response("_Create Ticket_")
         observed = await handlers[BrokerCommandEnrouteDecorator("AddTicket")](self.request)
         self.assertEqual(expected, observed)
 

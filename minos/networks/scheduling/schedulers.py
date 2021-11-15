@@ -58,7 +58,7 @@ class PeriodicTaskScheduler(MinosSetup):
 
     @staticmethod
     def _tasks_from_config(config: MinosConfig, **kwargs) -> set[PeriodicTask]:
-        builder = EnrouteBuilder(*config.services)
+        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
         decorators = builder.get_periodic_event(config=config, **kwargs)
         tasks = {PeriodicTask(decorator.crontab, fn) for decorator, fn in decorators.items()}
         return tasks
