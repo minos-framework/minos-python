@@ -1,4 +1,7 @@
 import unittest
+from uuid import (
+    uuid4,
+)
 
 from minos.saga import (
     SagaRequest,
@@ -35,7 +38,8 @@ class TestSagaRequest(unittest.IsolatedAsyncioTestCase):
 
 class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.response = SagaResponse(56, service_name="ticket")
+        self.uuid = uuid4()
+        self.response = SagaResponse(56, service_name="ticket", uuid=self.uuid)
 
     async def test_content(self):
         self.assertEqual(56, await self.response.content())
@@ -46,6 +50,9 @@ class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
     def test_service_name_raises(self):
         with self.assertRaises(ValueError):
             SagaResponse(56)
+
+    def test_uuid(self):
+        self.assertEqual(self.uuid, self.response.uuid)
 
     def test_ok(self):
         self.assertTrue(SagaResponse(56, SagaResponseStatus.SUCCESS, service_name="ticket").ok)
@@ -63,12 +70,14 @@ class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SagaResponseStatus.SUCCESS, response.status)
 
     def test_eq(self):
-        self.assertEqual(SagaResponse(56, service_name="ticket"), self.response)
+        self.assertEqual(SagaResponse(56, service_name="ticket", uuid=self.uuid), self.response)
         self.assertNotEqual(SagaResponse(42, service_name="ticket"), self.response)
         self.assertNotEqual(SagaResponse(56, SagaResponseStatus.SYSTEM_ERROR, service_name="ticket"), self.response)
 
     def test_repr(self):
-        self.assertEqual("SagaResponse(56, <SagaResponseStatus.SUCCESS: 200>, 'ticket')", repr(self.response))
+        self.assertEqual(
+            f"SagaResponse(56, {SagaResponseStatus.SUCCESS!r}, 'ticket', {self.uuid!r})", repr(self.response)
+        )
 
     def test_hash(self):
         self.assertIsInstance(hash(self.response), int)

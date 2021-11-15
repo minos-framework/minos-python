@@ -89,7 +89,9 @@ class TestSagaExecution(MinosTestCase):
             await execution.execute()
 
         self.assertEqual(1, self.publish_mock.call_count)
-        args = call(topic="CreateOrder", data=Foo(foo="create_order!"), saga=execution.uuid, user=user,)
+        args = call(
+            topic="CreateOrder", data=Foo(foo="create_order!"), saga=execution.uuid, user=user, reply_topic="orderReply"
+        )
         self.assertEqual(args, self.publish_mock.call_args)
         self.assertEqual(SagaStatus.Paused, execution.status)
 

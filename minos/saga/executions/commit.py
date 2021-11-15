@@ -13,6 +13,7 @@ from dependency_injector.wiring import (
 
 from minos.networks import (
     CommandBroker,
+    CommandReply,
     DynamicHandler,
     DynamicHandlerPool,
 )
@@ -60,7 +61,9 @@ class TransactionCommitter:
     async def _reserve(self) -> bool:
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
-                await self.command_broker.send(data=uuid, topic=f"Reserve{service_name.title()}Transaction")
+                await self.command_broker.send(
+                    data=uuid, topic=f"Reserve{service_name.title()}Transaction", reply_topic=handler.topic,
+                )
                 response = await self._get_response(handler)
                 if not response.ok:
                     return False
@@ -70,7 +73,7 @@ class TransactionCommitter:
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
                 await self.command_broker.send(
-                    data=uuid, topic=f"Commit{service_name.title()}Transaction",
+                    data=uuid, topic=f"Commit{service_name.title()}Transaction", reply_topic=handler.topic,
                 )
                 await self._get_response(handler)
         logger.info("Successfully committed!")
@@ -82,13 +85,15 @@ class TransactionCommitter:
         """
         async with self.dynamic_handler_pool.acquire() as handler:
             for (uuid, service_name) in self.transactions:
-                await self.command_broker.send(data=uuid, topic=f"Reject{service_name.title()}Transaction")
+                await self.command_broker.send(
+                    data=uuid, topic=f"Reject{service_name.title()}Transaction", reply_topic=handler.topic,
+                )
                 await self._get_response(handler)
 
         logger.info("Successfully rejected!")
 
     @staticmethod
-    async def _get_response(handler: DynamicHandler, **kwargs):
+    async def _get_response(handler: DynamicHandler, **kwargs) -> CommandReply:
         handler_entry = await handler.get_one(**kwargs)
         response = handler_entry.data
         return response

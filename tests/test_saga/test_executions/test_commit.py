@@ -46,10 +46,10 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="ReserveFooTransaction"),
-                call(data=self.execution_uuid, topic="ReserveBarTransaction"),
-                call(data=self.execution_uuid, topic="CommitFooTransaction"),
-                call(data=self.execution_uuid, topic="CommitBarTransaction"),
+                call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="ReserveBarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="CommitFooTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="CommitBarTransaction", reply_topic="TheReplyTopic"),
             ],
             send_mock.call_args_list,
         )
@@ -67,9 +67,9 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="ReserveFooTransaction"),
-                call(data=self.execution_uuid, topic="RejectFooTransaction"),
-                call(data=self.execution_uuid, topic="RejectBarTransaction"),
+                call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="RejectFooTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="RejectBarTransaction", reply_topic="TheReplyTopic"),
             ],
             send_mock.call_args_list,
         )
@@ -85,8 +85,8 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="RejectFooTransaction"),
-                call(data=self.execution_uuid, topic="RejectBarTransaction"),
+                call(data=self.execution_uuid, topic="RejectFooTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="RejectBarTransaction", reply_topic="TheReplyTopic"),
             ],
             send_mock.call_args_list,
         )

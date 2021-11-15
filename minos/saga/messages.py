@@ -10,6 +10,9 @@ from typing import (
     Optional,
     Union,
 )
+from uuid import (
+    UUID,
+)
 
 
 class SagaRequest:
@@ -58,6 +61,7 @@ class SagaResponse:
         "_content",
         "_status",
         "_service_name",
+        "_uuid",
     )
 
     def __init__(
@@ -65,6 +69,7 @@ class SagaResponse:
         content: Any = None,
         status: Optional[Union[int, SagaResponseStatus]] = None,
         service_name: Optional[str] = None,
+        uuid: Optional[UUID] = None,
         *args,
         **kwargs,
     ):
@@ -78,6 +83,7 @@ class SagaResponse:
         self._content = content
         self._status = status
         self._service_name = service_name
+        self._uuid = uuid
 
     # noinspection PyUnusedLocal
     async def content(self, **kwargs) -> Any:
@@ -112,19 +118,28 @@ class SagaResponse:
         """
         return self._service_name
 
+    @property
+    def uuid(self) -> UUID:
+        """Get the identifier of the saga execution that must receive the response.
+
+        :return: An ``UUID`` value.
+        """
+        return self._uuid
+
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, type(self))
             and self._content == other._content
             and self._status == other._status
             and self._service_name == other._service_name
+            and self._uuid == other._uuid
         )
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._content!r}, {self._status!r}, {self._service_name!r})"
+        return f"{type(self).__name__}({self._content!r}, {self._status!r}, {self._service_name!r}, {self._uuid!r})"
 
     def __hash__(self):
-        return hash((self._content, self._status, self._service_name))
+        return hash((self._content, self._status, self._service_name, self._uuid))
 
 
 class SagaResponseStatus(IntEnum):

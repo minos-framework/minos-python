@@ -85,16 +85,18 @@ class SagaManager(MinosSetup):
         storage = SagaExecutionStorage.from_config(config, **kwargs)
         return cls(storage=storage, **kwargs)
 
-    async def run(self, *args, reply: Optional[CommandReply] = None, **kwargs) -> Union[UUID, SagaExecution]:
+    async def run(self, *args, response: Optional[SagaResponse] = None, **kwargs) -> Union[UUID, SagaExecution]:
         """Perform a run of a ``Saga``.
+
         The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
-        :param reply: The reply that relaunches a saga execution.
+
+        :param response: The reply that relaunches a saga execution.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
 
-        if reply is not None:
-            return await self._load_and_run(*args, reply, **kwargs)
+        if response is not None:
+            return await self._load_and_run(*args, response, **kwargs)
 
         return await self._run_new(*args, **kwargs)
 
@@ -109,13 +111,13 @@ class SagaManager(MinosSetup):
         execution = SagaExecution.from_definition(definition, context=context, user=user)
         return await self._run(execution, **kwargs)
 
+    # noinspection PyUnusedLocal
     async def _load_and_run(
-        self, reply: CommandReply, user: Optional[UUID] = None, **kwargs
+        self, response: SagaResponse, user: Optional[UUID] = None, **kwargs
     ) -> Union[UUID, SagaExecution]:
         # NOTE: ``user`` is consumed here to avoid its injection on already started sagas.
 
-        execution = self.storage.load(reply.saga)
-        response = SagaResponse(reply.data, reply.status, reply.service_name)
+        execution = self.storage.load(response.uuid)
         return await self._run(execution, response=response, **kwargs)
 
     async def _run(

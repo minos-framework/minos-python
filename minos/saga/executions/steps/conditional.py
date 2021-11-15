@@ -23,6 +23,10 @@ from dependency_injector.wiring import (
     inject,
 )
 
+from minos.common import (
+    MinosConfig,
+)
+
 from ...context import (
     SagaContext,
 )
@@ -93,7 +97,7 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         return context
 
     @inject
-    def _get_service_name(self, config=Provide["config"]) -> str:
+    def _get_service_name(self, config: MinosConfig = Provide["config"]) -> str:
         return config.service.name
 
     async def _create_inner(

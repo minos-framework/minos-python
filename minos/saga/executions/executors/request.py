@@ -15,9 +15,11 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
+    MinosConfig,
     NotProvidedException,
 )
 from minos.networks import (
+    REPLY_TOPIC_CONTEXT_VAR,
     CommandBroker,
 )
 
@@ -41,7 +43,7 @@ from .abc import (
 
 
 class RequestExecutor(Executor):
-    """Request class.
+    """Request Executor class.
 
     This class has the responsibility to publish command on the corresponding broker's queue.
     """
@@ -78,10 +80,23 @@ class RequestExecutor(Executor):
             raise SagaFailedExecutionStepException(exc.exception)
         return context
 
+    # noinspection PyMethodOverriding
     async def _publish(self, request: SagaRequest) -> None:
+        reply_topic = REPLY_TOPIC_CONTEXT_VAR.get()
+        if reply_topic is None:
+            reply_topic = self._get_default_reply_topic()
+
         try:
             await self.command_broker.send(
-                topic=request.target, data=await request.content(), saga=self.execution_uuid, user=self.user
+                topic=request.target,
+                data=await request.content(),
+                saga=self.execution_uuid,
+                user=self.user,
+                reply_topic=reply_topic,
             )
         except Exception as exc:
             raise ExecutorException(exc)
+
+    @inject
+    def _get_default_reply_topic(self, config: MinosConfig = Provide["config"]) -> str:
+        return f"{config.service.name}Reply"

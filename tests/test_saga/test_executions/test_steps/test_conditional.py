@@ -95,6 +95,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
         response = SagaResponse(Foo("order"), service_name="order")
         context = await self.execution.execute(context, response=response, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.Finished, self.execution.status)
+        self.assertEqual(self.config.service.name, self.execution.service_name)
         self.assertEqual(SagaContext(option=1, order=Foo("order")), context)
 
     async def test_execute_raises_step(self):
