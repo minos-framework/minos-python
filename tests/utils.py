@@ -1,5 +1,3 @@
-import sys
-import unittest
 from collections import (
     namedtuple,
 )
@@ -7,6 +5,7 @@ from pathlib import (
     Path,
 )
 from typing import (
+    Callable,
     Optional,
 )
 from uuid import (
@@ -17,29 +16,9 @@ from uuid import (
 from cached_property import (
     cached_property,
 )
-from dependency_injector import (
-    containers,
-    providers,
-)
 
-from minos.aggregate import (
-    Action,
-    AggregateDiff,
-    FieldDiff,
-    FieldDiffContainer,
-    InMemoryEventRepository,
-    InMemorySnapshotRepository,
-    InMemoryTransactionRepository,
-)
 from minos.common import (
-    CommandReply,
-    CommandStatus,
-    Lock,
-    MinosBroker,
-    MinosModel,
-    MinosPool,
-    MinosSagaManager,
-    current_datetime,
+    DeclarativeModel,
 )
 from minos.networks import (
     EnrouteDecorator,
@@ -51,83 +30,14 @@ from minos.networks import (
 
 BASE_PATH = Path(__file__).parent
 
-FAKE_AGGREGATE_DIFF = AggregateDiff(
-    uuid4(), "Foo", 3, Action.CREATE, current_datetime(), FieldDiffContainer({FieldDiff("doors", int, 5)})
-)
 
-
-class MinosTestCase(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.event_broker = FakeBroker()
-        self.lock_pool = FakeLockPool()
-        self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
-        self.event_repository = InMemoryEventRepository(
-            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
-        )
-        self.snapshot = InMemorySnapshotRepository(
-            event_repository=self.event_repository, transaction_repository=self.transaction_repository
-        )
-
-        self.container = containers.DynamicContainer()
-        self.container.event_broker = providers.Object(self.event_broker)
-        self.container.transaction_repository = providers.Object(self.transaction_repository)
-        self.container.lock_pool = providers.Object(self.lock_pool)
-        self.container.event_repository = providers.Object(self.event_repository)
-        self.container.snapshot = providers.Object(self.snapshot)
-        self.container.wire(modules=[sys.modules[__name__]])
-
-    async def asyncSetUp(self):
-        await super().asyncSetUp()
-
-        await self.event_broker.setup()
-        await self.transaction_repository.setup()
-        await self.lock_pool.setup()
-        await self.event_repository.setup()
-        await self.snapshot.setup()
-
-    async def asyncTearDown(self):
-        await self.snapshot.destroy()
-        await self.event_repository.destroy()
-        await self.lock_pool.destroy()
-        await self.transaction_repository.destroy()
-        await self.event_broker.destroy()
-
-        await super().asyncTearDown()
-
-    def tearDown(self) -> None:
-        self.container.unwire()
-        super().tearDown()
-
-
-class FakeLock(Lock):
-    """For testing purposes."""
-
-    def __init__(self, key=None, *args, **kwargs):
-        if key is None:
-            key = "fake"
-        super().__init__(key, *args, **kwargs)
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        return
-
-
-class FakeLockPool(MinosPool):
-    """For testing purposes."""
-
-    async def _create_instance(self):
-        return FakeLock()
-
-    async def _destroy_instance(self, instance) -> None:
-        """For testing purposes."""
-
-
-class FakeModel(MinosModel):
+class FakeModel(DeclarativeModel):
     """For testing purposes"""
 
     text: str
 
+
+FAKE_AGGREGATE_DIFF = FakeModel("Foo")
 
 Message = namedtuple("Message", ["topic", "partition", "value"])
 
@@ -181,44 +91,12 @@ class FakeDispatcher:
         self.setup_destroy += 1
 
 
-class FakeSagaManager(MinosSagaManager):
+async def fake_middleware(request: Request, inner: Callable) -> Optional[Response]:
     """For testing purposes."""
-
-    async def _run_new(self, name: str, **kwargs) -> None:
-        """For testing purposes."""
-
-    async def _load_and_run(self, reply: CommandReply, **kwargs) -> None:
-        """For testing purposes."""
-
-
-class FakeBroker(MinosBroker):
-    """For testing purposes."""
-
-    def __init__(self):
-        super().__init__()
-        self.call_count = 0
-        self.items = None
-        self.topic = None
-        self.saga = None
-        self.reply_topic = None
-        self.status = None
-
-    async def send(
-        self,
-        items: list[MinosModel],
-        topic: str = None,
-        saga: str = None,
-        reply_topic: str = None,
-        status: CommandStatus = None,
-        **kwargs,
-    ) -> None:
-        """For testing purposes."""
-        self.call_count += 1
-        self.items = items
-        self.topic = topic
-        self.saga = saga
-        self.reply_topic = reply_topic
-        self.status = status
+    response = await inner(request)
+    if response is not None:
+        return Response(f"_{await response.content()}_")
+    return response
 
 
 class FakeService:

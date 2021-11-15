@@ -126,3 +126,12 @@ History
 
 * Add `REPLY_TOPIC_CONTEXT_VAR` and integrate with `DynamicHandlerPool`.
 * Add support for `post_fn` callbacks following the same strategy as in `pre_fn` callbacks.
+
+0.2.0 (2021-11-15)
+------------------
+
+* Remove dependency to `minos-microservice-aggregate` (now `minos.aggregate` package will require `minos.networks`).
+* Add support for middleware functions.
+* Add support variable number of services (previously only `CommandService` and `QueryService` were allowed).
+* Migrate `Command`, `CommandReply`, `CommandStatus` and `Event` from `minos.common` to `minos.networks`.
+* Add support for `minos-microservice-common=^0.3.0`

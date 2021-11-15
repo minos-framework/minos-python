@@ -68,7 +68,7 @@ class RestHandler(MinosSetup):
 
     @staticmethod
     def _endpoints_from_config(config: MinosConfig, **kwargs) -> dict[(str, str), Callable]:
-        builder = EnrouteBuilder(config.commands.service, config.queries.service)
+        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
         decorators = builder.get_rest_command_query(config=config, **kwargs)
         endpoints = {(decorator.url, decorator.method): fn for decorator, fn in decorators.items()}
         return endpoints

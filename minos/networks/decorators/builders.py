@@ -4,6 +4,9 @@ from asyncio import (
 from collections import (
     defaultdict,
 )
+from functools import (
+    partial,
+)
 from inspect import (
     isawaitable,
 )
@@ -43,10 +46,20 @@ Handler = Callable[[Request], Awaitable[Optional[Response]]]
 class EnrouteBuilder:
     """Enroute builder class."""
 
-    def __init__(self, *classes: Union[str, Type]):
+    def __init__(
+        self, *classes: Union[str, Type], middleware: Optional[Union[str, Callable, list[Union[str, Callable]]]] = None
+    ):
+        if middleware is None:
+            middleware = tuple()
+        if not isinstance(middleware, (tuple, list)):
+            middleware = [middleware]
+
+        middleware = list(map(lambda fn: fn if not isinstance(fn, str) else import_module(fn), middleware))
+
         classes = tuple((class_ if not isinstance(class_, str) else import_module(class_)) for class_ in classes)
 
         self.classes = classes
+        self.middleware = middleware
 
     def get_rest_command_query(self, **kwargs) -> dict[RestEnrouteDecorator, Handler]:
         """Get the rest handlers for commands and queries.
@@ -114,8 +127,7 @@ class EnrouteBuilder:
             for decorator in decorators:
                 ans[decorator].add(self._build_one_method(class_, name, decorator.pre_fn_name, decorator.post_fn_name))
 
-    @staticmethod
-    def _build_one_method(class_: type, name: str, pref_fn_name: str, post_fn_name: str, **kwargs) -> Handler:
+    def _build_one_method(self, class_: type, name: str, pref_fn_name: str, post_fn_name: str, **kwargs) -> Handler:
         instance = class_(**kwargs)
         fn = getattr(instance, name)
         pre_fn = getattr(instance, pref_fn_name, None)
@@ -137,5 +149,8 @@ class EnrouteBuilder:
                     response = await response
 
             return response
+
+        for middleware_fn in reversed(self.middleware):
+            _wrapped_fn = partial(middleware_fn, inner=_wrapped_fn)
 
         return _wrapped_fn
