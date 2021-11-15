@@ -104,3 +104,16 @@ History
 ------------------
 
 * Add compatibility to `minos-microservice-common>=0.2.0`.
+
+0.3.0 (2021-11-15)
+------------------
+
+* Add `SagaService` class (containing the reply handling logic).
+* Add `transactional_command` middleware (to extend the saga transactionality to remote steps).
+* Add `TransactionCommitter` class with the responsibility to orchestrate the transaction commitment process of the saga.
+* Add `minos-microservice-networks` and `minos-microservice-aggregate` as dependencies.
+* Be compatible with `minos-microservice-common=^0.3.0`
+* Integrate `minos.aggregate.transaction` into `Executor`.
+* Replace `reply: CommandReply` by `response: SagaResponse`.
+* Store `service_name: str` as part of `SagaStepExecution` metadata.
+* Deprecate callback argument on `Saga.commit` method in favor of `Saga.local_step`.
