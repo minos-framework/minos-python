@@ -28,9 +28,9 @@ class SagaService:
 
     @classmethod
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
-        return {cls.__saga_reply__.__name__: {enroute.broker.command(f"{config.service.name}Reply")}}
+        return {cls.__reply__.__name__: {enroute.broker.command(f"{config.service.name}Reply")}}
 
-    async def __saga_reply__(self, request: HandlerRequest) -> None:
+    async def __reply__(self, request: HandlerRequest) -> None:
         raw: CommandReply = request.raw
         response = SagaResponse(raw.data, raw.status, raw.service_name, raw.saga)
         await self.saga_manager.run(response=response, pause_on_disk=True, raise_on_error=False, return_execution=False)
