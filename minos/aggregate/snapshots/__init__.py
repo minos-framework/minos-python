@@ -14,3 +14,6 @@ from .pg import (
     PostgreSqlSnapshotSetup,
     PostgreSqlSnapshotWriter,
 )
+from .services import (
+    SnapshotService,
+)

@@ -30,10 +30,12 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     Lock,
-    MinosBroker,
     MinosPool,
     MinosSetup,
     NotProvidedException,
+)
+from minos.networks import (
+    EventBroker,
 )
 
 from ...exceptions import (
@@ -65,7 +67,7 @@ class EventRepository(ABC, MinosSetup):
     @inject
     def __init__(
         self,
-        event_broker: MinosBroker = Provide["event_broker"],
+        event_broker: EventBroker = Provide["event_broker"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
         lock_pool: MinosPool[Lock] = Provide["lock_pool"],
         *args,

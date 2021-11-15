@@ -10,3 +10,6 @@ from .repositories import (
     PostgreSqlTransactionRepository,
     TransactionRepository,
 )
+from .services import (
+    TransactionService,
+)
