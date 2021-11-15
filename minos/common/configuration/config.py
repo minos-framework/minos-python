@@ -26,8 +26,6 @@ QUEUE = namedtuple("Queue", "database user password host port records retry")
 SERVICE = namedtuple("Service", "name aggregate injections services")
 STORAGE = namedtuple("Storage", "path")
 
-COMMANDS = namedtuple("Commands", "service")
-QUERIES = namedtuple("Queries", "service")
 SAGA = namedtuple("Saga", "storage")
 REST = namedtuple("Rest", "host port")
 REPOSITORY = namedtuple("Repository", "database user password host port")
@@ -220,21 +218,15 @@ class MinosConfig(MinosConfigAbstract):
         )
 
     @property
-    def commands(self) -> COMMANDS:
+    def services(self) -> list[str]:
         """Get the commands config.
 
-        :return: A ``COMMAND`` NamedTuple instance.
+        :return: A list containing the service class names as string values..
         """
-        service = self._get("commands.service")
-        return COMMANDS(service=service)
-
-    @property
-    def queries(self) -> QUERIES:
-        """Get the queries config.
-
-        :return: A ``QUERIES`` NamedTuple instance.
-        """
-        return QUERIES(service=self._get("queries.service"))
+        try:
+            return self._get("services")
+        except MinosConfigException:
+            return list()
 
     @property
     def saga(self) -> SAGA:
