@@ -1,6 +1,6 @@
 __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from .events import (
     SUBMITTING_EVENT_CONTEXT_VAR,

@@ -2,6 +2,9 @@ from __future__ import (
     annotations,
 )
 
+from datetime import (
+    datetime,
+)
 from typing import (
     AsyncIterator,
     Optional,
@@ -76,6 +79,11 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
         event_offset_gt: Optional[int] = None,
         event_offset_le: Optional[int] = None,
         event_offset_ge: Optional[int] = None,
+        updated_at: Optional[datetime] = None,
+        updated_at_lt: Optional[datetime] = None,
+        updated_at_gt: Optional[datetime] = None,
+        updated_at_le: Optional[datetime] = None,
+        updated_at_ge: Optional[datetime] = None,
         **kwargs,
     ) -> str:
         conditions = list()
@@ -102,6 +110,16 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
             conditions.append("event_offset <= %(event_offset_le)s")
         if event_offset_ge is not None:
             conditions.append("event_offset >= %(event_offset_ge)s")
+        if updated_at is not None:
+            conditions.append("updated_at = %(updated_at)s")
+        if updated_at_lt is not None:
+            conditions.append("updated_at < %(updated_at_lt)s")
+        if updated_at_gt is not None:
+            conditions.append("updated_at > %(updated_at_gt)s")
+        if updated_at_le is not None:
+            conditions.append("updated_at <= %(updated_at_le)s")
+        if updated_at_ge is not None:
+            conditions.append("updated_at >= %(updated_at_ge)s")
 
         if not conditions:
             return f"{_SELECT_ALL_TRANSACTIONS_QUERY} ORDER BY event_offset;"

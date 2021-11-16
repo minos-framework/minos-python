@@ -20,3 +20,9 @@
 * Add `TransactionService` containing `Reserve${MICROSERVICE_NAME}Transaction`, `Reject${MICROSERVICE_NAME}Transaction` and `Commit{MICROSERVICE_NAME}Transaction`.
 * Be compatible with `minos-microservice-common=^0.3.0`.
 * Add `minos-microservice-networks` as dependency.
+
+## 0.2.1 (2021-11-16)
+
+* Add periodic event handler on `TransactionService` to reject `TransactionEntry` instances that are blocked (for more than a minute on `TransactionStatus.RESERVED` status).
+* Add ordering capabilities to `AggregateDiff` instances.
+* Add `updated_at` filter into `TransactionRepository.select`

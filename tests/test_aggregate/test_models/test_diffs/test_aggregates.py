@@ -53,6 +53,23 @@ class TestAggregateDiff(MinosTestCase):
     def test_simplified_name(self):
         self.assertEqual("Car", self.diff.simplified_name)
 
+    def test_total_ordering(self):
+        observed = [
+            AggregateDiff.from_aggregate(Car(3, "blue", version=4)),
+            AggregateDiff.from_aggregate(Car(3, "blue", version=1)),
+            AggregateDiff.from_aggregate(Car(3, "blue", version=3)),
+            AggregateDiff.from_aggregate(Car(3, "blue", version=2)),
+        ]
+        observed.sort()
+
+        expected = [
+            AggregateDiff.from_aggregate(Car(3, "blue", version=1)),
+            AggregateDiff.from_aggregate(Car(3, "blue", version=2)),
+            AggregateDiff.from_aggregate(Car(3, "blue", version=3)),
+            AggregateDiff.from_aggregate(Car(3, "blue", version=4)),
+        ]
+        self.assertEqual(expected, observed)
+
     def test_from_aggregate(self):
         observed = AggregateDiff.from_aggregate(self.initial)
         self.assertEqual(self.diff, observed)

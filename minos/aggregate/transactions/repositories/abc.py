@@ -2,6 +2,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from datetime import (
+    datetime,
+)
 from typing import (
     AsyncIterator,
     Optional,
@@ -83,6 +86,11 @@ class TransactionRepository(ABC, MinosSetup):
         event_offset_gt: Optional[int] = None,
         event_offset_le: Optional[int] = None,
         event_offset_ge: Optional[int] = None,
+        updated_at: Optional[datetime] = None,
+        updated_at_lt: Optional[datetime] = None,
+        updated_at_gt: Optional[datetime] = None,
+        updated_at_le: Optional[datetime] = None,
+        updated_at_ge: Optional[datetime] = None,
         **kwargs,
     ) -> AsyncIterator[TransactionEntry]:
         """Get a transaction from the repository.
@@ -98,6 +106,11 @@ class TransactionRepository(ABC, MinosSetup):
         :param event_offset_gt: Event Offset greater than the given value
         :param event_offset_le: Event Offset lower or equal to the given value
         :param event_offset_ge: Event Offset greater or equal to the given value
+        :param updated_at: Updated at equal to the given value.
+        :param updated_at_lt: Updated at lower than the given value.
+        :param updated_at_gt: Updated at greater than the given value.
+        :param updated_at_le: Updated at lower or equal to the given value.
+        :param updated_at_ge: Updated at greater or equal to the given value.
         :param kwargs: Additional named arguments.
         :return: An asynchronous iterator.
         """
@@ -113,6 +126,11 @@ class TransactionRepository(ABC, MinosSetup):
             event_offset_gt=event_offset_gt,
             event_offset_le=event_offset_le,
             event_offset_ge=event_offset_ge,
+            updated_at=updated_at,
+            updated_at_lt=updated_at_lt,
+            updated_at_gt=updated_at_gt,
+            updated_at_le=updated_at_le,
+            updated_at_ge=updated_at_ge,
             **kwargs,
         )
         # noinspection PyTypeChecker

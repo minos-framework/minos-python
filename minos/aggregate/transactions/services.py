@@ -1,4 +1,7 @@
 import logging
+from datetime import (
+    timedelta,
+)
 
 from dependency_injector.wiring import (
     Provide,
@@ -7,6 +10,7 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     MinosConfig,
+    current_datetime,
 )
 from minos.networks import (
     EnrouteDecorator,
@@ -18,6 +22,9 @@ from minos.networks import (
 from ..exceptions import (
     EventRepositoryConflictException,
     TransactionNotFoundException,
+)
+from .entries import (
+    TransactionStatus,
 )
 from .repositories import (
     TransactionRepository,
@@ -43,6 +50,7 @@ class TransactionService:
             cls.__reserve__.__name__: {enroute.broker.command(f"Reserve{service_name.title()}Transaction")},
             cls.__reject__.__name__: {enroute.broker.command(f"Reject{service_name.title()}Transaction")},
             cls.__commit__.__name__: {enroute.broker.command(f"Commit{service_name.title()}Transaction")},
+            cls.__reject_blocked__.__name__: {enroute.periodic.event("* * * * *")},
         }
 
     async def __reserve__(self, request: Request) -> None:
@@ -77,3 +85,11 @@ class TransactionService:
             raise ResponseException(f"The transaction identified by {uuid!r} does not exist.")
 
         await transaction.commit()
+
+    # noinspection PyUnusedLocal
+    async def __reject_blocked__(self, request: Request) -> None:
+        status_in = (TransactionStatus.RESERVED,)
+        updated_at_lt = current_datetime() - timedelta(minutes=1)
+        async for transaction in self.transaction_repository.select(status_in=status_in, updated_at_lt=updated_at_lt):
+            logger.info(f"Rejecting {transaction.uuid!r} transaction as it has been reserved for a long time...")
+            await transaction.reject()
