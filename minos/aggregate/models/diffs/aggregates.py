@@ -6,6 +6,9 @@ import logging
 from datetime import (
     datetime,
 )
+from functools import (
+    total_ordering,
+)
 from operator import (
     attrgetter,
 )
@@ -38,6 +41,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+@total_ordering
 class AggregateDiff(DeclarativeModel):
     """Aggregate Diff class."""
 
@@ -56,6 +60,9 @@ class AggregateDiff(DeclarativeModel):
         :return: An string value.
         """
         return self.name.rsplit(".", 1)[-1]
+
+    def __lt__(self, other: Any) -> bool:
+        return isinstance(other, type(self)) and self.version < other.version
 
     def __getattr__(self, item: str) -> Any:
         try:
