@@ -218,6 +218,41 @@ class TestInMemoryTransactionRepositorySelect(MinosTestCase):
         observed = [v async for v in self.transaction_repository.select(event_offset_ge=15)]
         self.assertEqual(expected, observed)
 
+    async def test_select_updated_at(self):
+        updated_at = (await self.transaction_repository.get(self.uuid_3)).updated_at
+
+        expected = [self.entries[2]]
+        observed = [v async for v in self.transaction_repository.select(updated_at=updated_at)]
+        self.assertEqual(expected, observed)
+
+    async def test_select_updated_at_lt(self):
+        updated_at = (await self.transaction_repository.get(self.uuid_3)).updated_at
+
+        expected = [self.entries[0], self.entries[1]]
+        observed = [v async for v in self.transaction_repository.select(updated_at_lt=updated_at)]
+        self.assertEqual(expected, observed)
+
+    async def test_select_updated_at_gt(self):
+        updated_at = (await self.transaction_repository.get(self.uuid_3)).updated_at
+
+        expected = [self.entries[3], self.entries[4]]
+        observed = [v async for v in self.transaction_repository.select(updated_at_gt=updated_at)]
+        self.assertEqual(expected, observed)
+
+    async def test_select_updated_at_le(self):
+        updated_at = (await self.transaction_repository.get(self.uuid_3)).updated_at
+
+        expected = [self.entries[0], self.entries[1], self.entries[2]]
+        observed = [v async for v in self.transaction_repository.select(updated_at_le=updated_at)]
+        self.assertEqual(expected, observed)
+
+    async def test_select_updated_at_ge(self):
+        updated_at = (await self.transaction_repository.get(self.uuid_3)).updated_at
+
+        expected = [self.entries[2], self.entries[3], self.entries[4]]
+        observed = [v async for v in self.transaction_repository.select(updated_at_ge=updated_at)]
+        self.assertEqual(expected, observed)
+
 
 if __name__ == "__main__":
     unittest.main()

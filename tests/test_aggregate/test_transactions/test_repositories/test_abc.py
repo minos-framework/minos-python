@@ -116,6 +116,11 @@ class TestTransactionRepository(MinosTestCase):
             event_offset_gt=56,
             event_offset_le=None,
             event_offset_ge=None,
+            updated_at=None,
+            updated_at_lt=None,
+            updated_at_gt=None,
+            updated_at_le=None,
+            updated_at_ge=None,
         )
         self.assertEqual(args, mock.call_args)
 

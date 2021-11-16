@@ -1,3 +1,6 @@
+from datetime import (
+    datetime,
+)
 from typing import (
     AsyncIterator,
     Optional,
@@ -71,6 +74,11 @@ class InMemoryTransactionRepository(TransactionRepository):
         event_offset_gt: Optional[int] = None,
         event_offset_le: Optional[int] = None,
         event_offset_ge: Optional[int] = None,
+        updated_at: Optional[datetime] = None,
+        updated_at_lt: Optional[datetime] = None,
+        updated_at_gt: Optional[datetime] = None,
+        updated_at_le: Optional[datetime] = None,
+        updated_at_ge: Optional[datetime] = None,
         **kwargs,
     ) -> AsyncIterator[TransactionEntry]:
 
@@ -97,6 +105,16 @@ class InMemoryTransactionRepository(TransactionRepository):
             if event_offset_le is not None and event_offset_le < transaction.event_offset:
                 return False
             if event_offset_ge is not None and event_offset_ge > transaction.event_offset:
+                return False
+            if updated_at is not None and updated_at != transaction.updated_at:
+                return False
+            if updated_at_lt is not None and updated_at_lt <= transaction.updated_at:
+                return False
+            if updated_at_gt is not None and updated_at_gt >= transaction.updated_at:
+                return False
+            if updated_at_le is not None and updated_at_le < transaction.updated_at:
+                return False
+            if updated_at_ge is not None and updated_at_ge > transaction.updated_at:
                 return False
             return True
 
