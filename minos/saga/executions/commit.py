@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 class TransactionCommitter:
     """Transaction Committer class."""
 
+    # noinspection PyUnusedLocal
     @inject
     def __init__(
         self,
@@ -51,44 +52,45 @@ class TransactionCommitter:
         :return: This method does not return anything.
         """
         logger.info("committing...")
-
-        if await self._reserve():
-            await self._commit()
-        else:
-            await self.reject()
-            raise ValueError("Some transactions could not be committed.")
-
-    async def _reserve(self) -> bool:
         async with self.dynamic_handler_pool.acquire() as handler:
-            for (uuid, service_name) in self.transactions:
-                await self.command_broker.send(
-                    data=uuid, topic=f"Reserve{service_name.title()}Transaction", reply_topic=handler.topic,
-                )
-                response = await self._get_response(handler)
-                if not response.ok:
-                    return False
+            if await self._reserve(handler):
+                await self._commit(handler)
+            else:
+                await self._reject(handler)
+                raise ValueError("Some transactions could not be committed.")
+
+    async def _reserve(self, handler: DynamicHandler) -> bool:
+        for (uuid, service_name) in self.transactions:
+            await self.command_broker.send(
+                data=uuid, topic=f"Reserve{service_name.title()}Transaction", reply_topic=handler.topic,
+            )
+            response = await self._get_response(handler)
+            if not response.ok:
+                return False
         return True
 
-    async def _commit(self) -> None:
-        async with self.dynamic_handler_pool.acquire() as handler:
-            for (uuid, service_name) in self.transactions:
-                await self.command_broker.send(
-                    data=uuid, topic=f"Commit{service_name.title()}Transaction", reply_topic=handler.topic,
-                )
-                await self._get_response(handler)
+    async def _commit(self, handler: DynamicHandler) -> None:
+        for (uuid, service_name) in self.transactions:
+            await self.command_broker.send(
+                data=uuid, topic=f"Commit{service_name.title()}Transaction", reply_topic=handler.topic,
+            )
+            await self._get_response(handler)
         logger.info("Successfully committed!")
 
     async def reject(self) -> None:
         """Reject the transaction.
 
-        :return:
+        :return: This method does not return anything.
         """
         async with self.dynamic_handler_pool.acquire() as handler:
-            for (uuid, service_name) in self.transactions:
-                await self.command_broker.send(
-                    data=uuid, topic=f"Reject{service_name.title()}Transaction", reply_topic=handler.topic,
-                )
-                await self._get_response(handler)
+            await self._reject(handler)
+
+    async def _reject(self, handler: DynamicHandler) -> None:
+        for (uuid, service_name) in self.transactions:
+            await self.command_broker.send(
+                data=uuid, topic=f"Reject{service_name.title()}Transaction", reply_topic=handler.topic,
+            )
+            await self._get_response(handler)
 
         logger.info("Successfully rejected!")
 
