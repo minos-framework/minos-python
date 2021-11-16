@@ -186,7 +186,7 @@ class PeriodicTask:
             now = current_datetime()
 
         request = ScheduledRequest(now)
-        logger.info("Running periodic task...")
+        logger.debug("Running periodic task...")
         try:
             self._running = True
             with suppress(asyncio.CancelledError):
