@@ -19,6 +19,7 @@ from minos.networks import (
 )
 
 from .steps import (
+    ConditionalSagaStepExecution,
     SagaStepExecution,
 )
 
@@ -110,11 +111,17 @@ class TransactionCommitter:
         transactions = list()
         uniques = set()
 
-        for executed_step in self.executed_steps:
-            pair = (self.execution_uuid, executed_step.service_name)
-            if pair in uniques:
-                continue
-            transactions.append(pair)
-            uniques.add(pair)
+        def _fn(uuid: UUID, steps: list[SagaStepExecution]) -> None:
+            for step in steps:
+                if isinstance(step, ConditionalSagaStepExecution):
+                    inner = step.inner
+                    return _fn(inner.uuid, inner.executed_steps)
 
+                pair = (uuid, step.service_name)
+                if pair in uniques:
+                    continue
+                transactions.append(pair)
+                uniques.add(pair)
+
+        _fn(self.execution_uuid, self.executed_steps)
         return transactions

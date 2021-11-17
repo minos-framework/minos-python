@@ -12,6 +12,9 @@ from minos.saga import (
     LocalSagaStep,
     LocalSagaStepExecution,
     RemoteSagaStepExecution,
+    Saga,
+    SagaContext,
+    SagaExecution,
     TransactionCommitter,
 )
 from tests.utils import (
@@ -25,14 +28,35 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.execution_uuid = uuid4()
 
-        definition = LocalSagaStep()
+        # noinspection PyTypeChecker
+        definition = LocalSagaStep(on_execute=LocalSagaStep)
         self.executed_steps = [
             RemoteSagaStepExecution(definition, service_name="foo"),
             LocalSagaStepExecution(definition, service_name="bar"),
-            ConditionalSagaStepExecution(definition, service_name="bar"),
+            ConditionalSagaStepExecution(
+                definition,
+                inner=SagaExecution(
+                    Saga(steps=[definition], committed=True),
+                    self.execution_uuid,
+                    SagaContext(),
+                    steps=[
+                        RemoteSagaStepExecution(definition, service_name="foo"),
+                        RemoteSagaStepExecution(definition, service_name="foobar"),
+                    ],
+                ),
+                service_name="bar",
+            ),
         ]
 
         self.committer = TransactionCommitter(self.execution_uuid, self.executed_steps)
+
+    def test_transactions(self):
+        expected = [
+            (self.execution_uuid, "foo"),
+            (self.execution_uuid, "bar"),
+            (self.execution_uuid, "foobar"),
+        ]
+        self.assertEqual(expected, self.committer.transactions)
 
     async def test_commit_true(self):
         get_mock = AsyncMock()
@@ -48,8 +72,10 @@ class TestTransactionCommitter(MinosTestCase):
             [
                 call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="ReserveBarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="ReserveFoobarTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="CommitFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="CommitBarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="CommitFoobarTransaction", reply_topic="TheReplyTopic"),
             ],
             send_mock.call_args_list,
         )
@@ -70,6 +96,7 @@ class TestTransactionCommitter(MinosTestCase):
                 call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="RejectFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="RejectBarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="RejectFoobarTransaction", reply_topic="TheReplyTopic"),
             ],
             send_mock.call_args_list,
         )
@@ -87,6 +114,7 @@ class TestTransactionCommitter(MinosTestCase):
             [
                 call(data=self.execution_uuid, topic="RejectFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="RejectBarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="RejectFoobarTransaction", reply_topic="TheReplyTopic"),
             ],
             send_mock.call_args_list,
         )
