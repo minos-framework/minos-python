@@ -53,10 +53,11 @@ class DynamicHandlerPool(MinosPool):
         client: KafkaAdminClient,
         maxsize: int = 5,
         consumer: Consumer = Provide["consumer"],
+        recycle: Optional[int] = 3600,
         *args,
         **kwargs,
     ):
-        super().__init__(maxsize=maxsize, *args, **kwargs)
+        super().__init__(maxsize=maxsize, recycle=recycle, *args, **kwargs)
         self.config = config
         self.client = client
         self.consumer = consumer
