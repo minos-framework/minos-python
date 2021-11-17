@@ -201,24 +201,10 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(context, execution.context)
 
     async def test_run_with_pause_on_disk_with_error(self):
-        get_mock = AsyncMock()
-        get_mock.return_value.data.ok = True
-        self.handler.get_one = get_mock
+        self.command_broker.send = AsyncMock(side_effect=ValueError)
 
-        execution = await self.manager.run(DELETE_ORDER, pause_on_disk=True)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        response = SagaResponse(
-            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
-        )
-        execution = await self.manager.run(response=response, pause_on_disk=True)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        response = SagaResponse(
-            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
-        )
         with patch("minos.saga.SagaExecution.reject") as reject_mock:
-            execution = await self.manager.run(response=response, pause_on_disk=True, raise_on_error=False)
+            execution = await self.manager.run(DELETE_ORDER, pause_on_disk=True, raise_on_error=False)
 
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual([call()], reject_mock.call_args_list)
