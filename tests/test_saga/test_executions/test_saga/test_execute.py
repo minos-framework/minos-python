@@ -165,7 +165,35 @@ class TestSagaExecution(MinosTestCase):
         self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
         self.assertEqual(2, self.publish_mock.call_count)
 
-    # FIXME: This test must be rewritten according to transactions integration
+    async def test_execute_commit_without_autocommit(self):
+        saga = (
+            Saga()
+            .remote_step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .remote_step(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .commit()
+        )
+        execution = SagaExecution.from_definition(saga)
+
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute()
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        response = SagaResponse(Foo("order"), service_name="ticket")
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute(response)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        response = SagaResponse(Foo("ticket"), service_name="ticket")
+        self.publish_mock.reset_mock()
+        context = await execution.execute(response, autocommit=False)
+
+        self.assertEqual(SagaStatus.Finished, execution.status)
+        self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
+        self.assertEqual(0, self.publish_mock.call_count)
+
     async def test_execute_commit_raises(self):
         saga = (
             Saga()
@@ -194,7 +222,22 @@ class TestSagaExecution(MinosTestCase):
                 await execution.execute(response)
 
         self.assertEqual(SagaStatus.Errored, execution.status)
-        self.assertEqual(2, self.publish_mock.call_count)
+        self.assertEqual(1, self.publish_mock.call_count)
+
+    async def test_commit_raises(self):
+        saga = (
+            Saga()
+            .remote_step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .remote_step(send_create_ticket)
+            .on_success(handle_ticket_success)
+            .commit()
+        )
+        execution = SagaExecution.from_definition(saga)
+
+        with self.assertRaises(ValueError):
+            await execution.commit()
 
     async def test_rollback(self):
         saga = (
@@ -220,6 +263,26 @@ class TestSagaExecution(MinosTestCase):
         with self.assertRaises(SagaRollbackExecutionException):
             await execution.rollback()
         self.assertEqual(0, self.publish_mock.call_count)
+
+    async def test_rollback_without_autoreject(self):
+        saga = (
+            Saga()
+            .remote_step(send_create_order)
+            .on_success(handle_order_success)
+            .on_failure(send_delete_order)
+            .remote_step(send_create_order)
+            .commit()
+        )
+        execution = SagaExecution.from_definition(saga)
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute()
+        response = SagaResponse(Foo("order1"), service_name="ticket")
+        with self.assertRaises(SagaPausedExecutionStepException):
+            await execution.execute(response)
+
+        self.publish_mock.reset_mock()
+        await execution.rollback(autoreject=False)
+        self.assertEqual(1, self.publish_mock.call_count)
 
     async def test_rollback_raises(self):
         saga = (

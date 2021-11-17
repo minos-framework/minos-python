@@ -35,7 +35,6 @@ from ...definitions import (
 )
 from ...exceptions import (
     SagaExecutionAlreadyExecutedException,
-    SagaFailedCommitCallbackException,
     SagaFailedExecutionStepException,
     SagaPausedExecutionStepException,
     SagaRollbackExecutionStepException,
@@ -59,6 +58,7 @@ if TYPE_CHECKING:
 class ConditionalSagaStepExecution(SagaStepExecution):
     """Conditional Saga Step Execution class."""
 
+    inner: Optional[SagaExecution]
     definition: ConditionalSagaStep
 
     def __init__(self, *args, inner: Optional[SagaExecution] = None, **kwargs):
@@ -137,16 +137,13 @@ class ConditionalSagaStepExecution(SagaStepExecution):
 
         try:
             with suppress(SagaExecutionAlreadyExecutedException):
-                await self.inner.execute(*args, **kwargs)
+                await self.inner.execute(*args, **(kwargs | {"autocommit": False}))
         except SagaPausedExecutionStepException as exc:
             self.status = SagaStepStatus.PausedByOnExecute
             raise exc
         except SagaFailedExecutionStepException as exc:
             self.status = SagaStepStatus.ErroredByOnExecute
             raise exc
-        except SagaFailedCommitCallbackException as exc:
-            self.status = SagaStepStatus.ErroredByOnExecute
-            raise SagaFailedExecutionStepException(exc.exception)
 
         return execution.context
 
@@ -180,7 +177,7 @@ class ConditionalSagaStepExecution(SagaStepExecution):
             execution.user = user
         execution.context = context
 
-        await execution.rollback(*args, **kwargs)
+        await execution.rollback(*args, **(kwargs | {"autoreject": False}))
 
         return execution.context
 
