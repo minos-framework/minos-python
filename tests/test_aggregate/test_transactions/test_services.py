@@ -14,6 +14,7 @@ from minos.aggregate import (
     EventRepositoryConflictException,
     TransactionEntry,
     TransactionNotFoundException,
+    TransactionRepositoryConflictException,
     TransactionService,
     TransactionStatus,
 )
@@ -82,10 +83,29 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
         self.assertEqual([call()], reject_mock.call_args_list)
         self.assertEqual(None, response)
 
+    async def test_reject_already(self):
+        uuid = uuid4()
+        with patch("minos.aggregate.TransactionEntry.reject") as reject_mock:
+            with patch(
+                "minos.aggregate.TransactionRepository.get",
+                return_value=TransactionEntry(uuid, status=TransactionStatus.REJECTED),
+            ) as get_mock:
+                response = await self.service.__reject__(FakeRequest(uuid))
+        self.assertEqual([call(uuid)], get_mock.call_args_list)
+        self.assertEqual([], reject_mock.call_args_list)
+        self.assertEqual(None, response)
+
     async def test_reject_raises(self):
         with patch("minos.aggregate.TransactionRepository.get", side_effect=TransactionNotFoundException("")):
             with self.assertRaises(ResponseException):
                 await self.service.__reject__(FakeRequest(None))
+
+        with patch("minos.aggregate.TransactionRepository.get", return_value=TransactionEntry()):
+            with patch(
+                "minos.aggregate.TransactionEntry.reject", side_effect=TransactionRepositoryConflictException("")
+            ):
+                with self.assertRaises(ResponseException):
+                    await self.service.__reject__(FakeRequest(None))
 
     async def test_commit(self):
         uuid = uuid4()
@@ -100,6 +120,13 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
         with patch("minos.aggregate.TransactionRepository.get", side_effect=TransactionNotFoundException("")):
             with self.assertRaises(ResponseException):
                 await self.service.__commit__(FakeRequest(None))
+
+        with patch("minos.aggregate.TransactionRepository.get", return_value=TransactionEntry()):
+            with patch(
+                "minos.aggregate.TransactionEntry.commit", side_effect=TransactionRepositoryConflictException("")
+            ):
+                with self.assertRaises(ResponseException):
+                    await self.service.__commit__(FakeRequest(None))
 
     async def test_reject_blocked(self):
         uuid = uuid4()
@@ -118,6 +145,20 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
         )
 
         self.assertEqual([call()], reject_mock.call_args_list)
+        self.assertEqual(None, response)
+
+    async def test_reject_blocked_raises(self):
+        uuid = uuid4()
+        with patch(
+            "minos.aggregate.TransactionEntry.reject", side_effect=[None, TransactionRepositoryConflictException("")]
+        ) as reject_mock:
+            with patch(
+                "minos.aggregate.TransactionRepository.select",
+                return_value=FakeAsyncIterator([TransactionEntry(uuid), TransactionEntry(uuid)]),
+            ):
+                response = await self.service.__reject_blocked__(FakeRequest(uuid))
+
+        self.assertEqual([call(), call()], reject_mock.call_args_list)
         self.assertEqual(None, response)
 
 
