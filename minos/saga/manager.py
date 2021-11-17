@@ -157,14 +157,19 @@ class SagaManager(MinosSetup):
         self, execution: SagaExecution, response: Optional[SagaResponse] = None, **kwargs
     ) -> None:
 
-        # noinspection PyUnresolvedReferences
-        async with self.dynamic_handler_pool.acquire() as handler:
-            while execution.status in (SagaStatus.Created, SagaStatus.Paused):
-                try:
-                    await execution.execute(response=response, **kwargs)
-                except SagaPausedExecutionStepException:
-                    response = await self._get_response(handler, execution, **kwargs)
-                self.storage.store(execution)
+        try:
+            # noinspection PyUnresolvedReferences
+            async with self.dynamic_handler_pool.acquire() as handler:
+                while execution.status in (SagaStatus.Created, SagaStatus.Paused):
+                    try:
+                        await execution.execute(response=response, autocommit=False, **kwargs)
+                    except SagaPausedExecutionStepException:
+                        response = await self._get_response(handler, execution, **kwargs)
+                    self.storage.store(execution)
+            await execution.commit(**kwargs)
+        except SagaFailedExecutionException as exc:
+            await execution.reject(**kwargs)
+            raise exc
 
     @staticmethod
     async def _get_response(handler: DynamicHandler, execution: SagaExecution, **kwargs) -> SagaResponse:
