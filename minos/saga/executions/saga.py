@@ -156,14 +156,14 @@ class SagaExecution:
         return cls(definition, uuid, context, *args, **kwargs)
 
     async def execute(
-        self, response: Optional[SagaResponse] = None, autocommit: bool = True, *args, **kwargs
+        self, response: Optional[SagaResponse] = None, *args, autocommit: bool = True, **kwargs
     ) -> SagaContext:
         """Execute the ``Saga`` definition.
 
         :param response: An optional ``SagaResponse`` to be consumed by the immediately next executed step.
+        :param args: Additional positional arguments.
         :param autocommit: If ``True`` the commit process is performed automatically, otherwise must be performed
             manually.
-        :param args: Additional positional arguments.
         :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
         """
