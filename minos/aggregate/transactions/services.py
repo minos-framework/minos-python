@@ -22,6 +22,7 @@ from minos.networks import (
 from ..exceptions import (
     EventRepositoryConflictException,
     TransactionNotFoundException,
+    TransactionRepositoryConflictException,
 )
 from .entries import (
     TransactionStatus,
@@ -74,7 +75,13 @@ class TransactionService:
         except TransactionNotFoundException:
             raise ResponseException(f"The transaction identified by {uuid!r} does not exist.")
 
-        await transaction.reject()
+        if transaction.status == TransactionStatus.REJECTED:
+            return
+
+        try:
+            await transaction.reject()
+        except TransactionRepositoryConflictException as exc:
+            raise ResponseException(f"{exc!s}")
 
     async def __commit__(self, request: Request) -> None:
         uuid = await request.content()
@@ -84,7 +91,10 @@ class TransactionService:
         except TransactionNotFoundException:
             raise ResponseException(f"The transaction identified by {uuid!r} does not exist.")
 
-        await transaction.commit()
+        try:
+            await transaction.commit()
+        except TransactionRepositoryConflictException as exc:
+            raise ResponseException(f"{exc!s}")
 
     # noinspection PyUnusedLocal
     async def __reject_blocked__(self, request: Request) -> None:
@@ -92,4 +102,7 @@ class TransactionService:
         updated_at_lt = current_datetime() - timedelta(minutes=1)
         async for transaction in self.transaction_repository.select(status_in=status_in, updated_at_lt=updated_at_lt):
             logger.info(f"Rejecting {transaction.uuid!r} transaction as it has been reserved for a long time...")
-            await transaction.reject()
+            try:
+                await transaction.reject()
+            except TransactionRepositoryConflictException as exc:
+                logger.warning(f"Raised an exception while trying to reject a blocked transaction: {exc!r}")
