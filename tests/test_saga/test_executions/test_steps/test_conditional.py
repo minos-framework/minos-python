@@ -28,10 +28,8 @@ from tests.utils import (
     Foo,
     MinosTestCase,
     handle_order_success,
-    handle_ticket_success,
     handle_ticket_success_raises,
     send_create_order,
-    send_create_ticket,
     send_delete_ticket,
 )
 
@@ -61,20 +59,12 @@ class TestConditionalSageStepExecution(MinosTestCase):
                 IfThenAlternative(
                     _is_one, Saga().remote_step(send_create_order).on_success(handle_order_success).commit()
                 ),
-                IfThenAlternative(
-                    _is_two,
-                    Saga()
-                    .remote_step(send_create_order)
-                    .on_success(handle_ticket_success_raises)
-                    .on_failure(send_delete_ticket)
-                    .commit(),
-                ),
             ],
             ElseThenAlternative(
                 (
                     Saga()
-                    .remote_step(send_create_ticket)
-                    .on_success(handle_ticket_success)
+                    .remote_step(send_create_order)
+                    .on_success(handle_ticket_success_raises)
                     .on_failure(send_delete_ticket)
                     .commit()
                 )
@@ -93,10 +83,12 @@ class TestConditionalSageStepExecution(MinosTestCase):
         self.assertEqual(None, self.execution.service_name)
 
         response = SagaResponse(Foo("order"), service_name="order")
-        context = await self.execution.execute(context, response=response, **self.execute_kwargs)
+        with patch("minos.saga.SagaExecution.commit") as commit_mock:
+            context = await self.execution.execute(context, response=response, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.Finished, self.execution.status)
         self.assertEqual(self.config.service.name, self.execution.service_name)
         self.assertEqual(SagaContext(option=1, order=Foo("order")), context)
+        self.assertEqual(0, commit_mock.call_count)
 
     async def test_execute_raises_step(self):
         context = SagaContext(option=2)
@@ -114,24 +106,6 @@ class TestConditionalSageStepExecution(MinosTestCase):
             self.assertEqual(SagaContext(option=2), context)
             self.assertEqual(1, mock.call_count)
 
-    # FIXME: This test must be rewritten according to transactions integration
-    async def test_execute_raises_commit(self):
-        context = SagaContext(option=3)
-
-        with self.assertRaises(SagaPausedExecutionStepException):
-            context = await self.execution.execute(context, **self.execute_kwargs)
-        self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
-        self.assertEqual(SagaContext(option=3), context)
-
-        response = SagaResponse(Foo("ticket"), service_name="ticket")
-        with patch("minos.saga.SagaExecution.rollback") as mock:
-            with self.assertRaises(SagaFailedExecutionStepException):
-                with patch("minos.saga.TransactionCommitter.commit", side_effect=ValueError):
-                    context = await self.execution.execute(context, response=response, **self.execute_kwargs)
-            self.assertEqual(SagaStepStatus.ErroredByOnExecute, self.execution.status)
-            self.assertEqual(SagaContext(option=3), context)
-        self.assertEqual(1, mock.call_count)
-
     async def test_execute_empty(self):
         execution = ConditionalSagaStepExecution(ConditionalSagaStep())
         context = await execution.execute(SagaContext(one=1))
@@ -143,9 +117,12 @@ class TestConditionalSageStepExecution(MinosTestCase):
             await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
         response = SagaResponse(Foo("order"), service_name="order")
         await self.execution.execute(SagaContext(), response=response, **self.execute_kwargs)
-        with patch("minos.saga.SagaExecution.rollback") as mock:
+        with patch("minos.saga.SagaExecution.rollback") as rollback_mock, patch(
+            "minos.saga.SagaExecution.commit"
+        ) as reject_mock:
             await self.execution.rollback(SagaContext(), **self.execute_kwargs)
-        self.assertEqual(1, mock.call_count)
+        self.assertEqual(1, rollback_mock.call_count)
+        self.assertEqual(0, reject_mock.call_count)
 
     async def test_rollback_raises_create(self):
         with self.assertRaises(SagaRollbackExecutionStepException):
