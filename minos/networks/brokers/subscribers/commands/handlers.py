@@ -27,7 +27,7 @@ from minos.common import (
 from ....decorators import (
     EnrouteBuilder,
 )
-from ....messages import (
+from ....requests import (
     USER_CONTEXT_VAR,
     Response,
     ResponseException,
@@ -45,7 +45,7 @@ from ..abc import (
 from ..entries import (
     HandlerEntry,
 )
-from ..messages import (
+from ..requests import (
     HandlerRequest,
 )
 

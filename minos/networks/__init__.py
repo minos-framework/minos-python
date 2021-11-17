@@ -62,7 +62,7 @@ from .exceptions import (
     MinosNetworkException,
     MinosRedefinedEnrouteDecoratorException,
 )
-from .messages import (
+from .requests import (
     USER_CONTEXT_VAR,
     Request,
     Response,

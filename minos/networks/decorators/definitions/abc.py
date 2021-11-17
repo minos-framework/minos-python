@@ -21,7 +21,7 @@ from typing import (
 from ...exceptions import (
     MinosMultipleEnrouteDecoratorKindsException,
 )
-from ...messages import (
+from ...requests import (
     Request,
     Response,
 )

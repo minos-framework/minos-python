@@ -20,7 +20,7 @@ from .events import (
     EventHandler,
     EventHandlerService,
 )
-from .messages import (
+from .requests import (
     HandlerRequest,
     HandlerResponse,
     HandlerResponseException,

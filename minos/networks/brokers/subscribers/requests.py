@@ -10,7 +10,7 @@ from uuid import (
     UUID,
 )
 
-from ...messages import (
+from ...requests import (
     Request,
     Response,
     ResponseException,

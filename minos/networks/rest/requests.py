@@ -33,7 +33,7 @@ from minos.common import (
     import_module,
 )
 
-from ..messages import (
+from ..requests import (
     Request,
     Response,
     ResponseException,
