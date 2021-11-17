@@ -25,7 +25,7 @@ from minos.common import (
 from ..exceptions import (
     MinosRedefinedEnrouteDecoratorException,
 )
-from ..messages import (
+from ..requests import (
     Request,
     Response,
 )

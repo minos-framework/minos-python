@@ -34,10 +34,10 @@ from minos.common import (
 from ..decorators import (
     EnrouteBuilder,
 )
-from ..messages import (
+from ..requests import (
     ResponseException,
 )
-from .messages import (
+from .requests import (
     ScheduledRequest,
 )
 

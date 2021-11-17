@@ -16,7 +16,7 @@ from minos.common import (
     DeclarativeModel,
 )
 
-from ..messages import (
+from ..requests import (
     Request,
     ResponseException,
 )

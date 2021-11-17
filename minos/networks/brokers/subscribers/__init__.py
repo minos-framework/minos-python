@@ -14,7 +14,7 @@ from .entries import (
 from .handlers import (
     Handler,
 )
-from .messages import (
+from .requests import (
     HandlerRequest,
     HandlerResponse,
     HandlerResponseException,
