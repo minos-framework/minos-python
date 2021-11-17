@@ -117,3 +117,10 @@ History
 * Replace `reply: CommandReply` by `response: SagaResponse`.
 * Store `service_name: str` as part of `SagaStepExecution` metadata.
 * Deprecate callback argument on `Saga.commit` method in favor of `Saga.local_step`.
+
+0.3.1 (2021-11-17)
+------------------
+
+* Improve integration between `ConditionalSagaStep` and `TransactionCommitter`
+* Add `SagaExecution.commit(...)` and `SagaExecution.reject(...)` methods and `autocommit: bool` and `autoreject: bool` into `SagaExecution.execute(...)` and `SagaExecution.rollback(...)` methods respectively.
+* Fix concurrent blocks related with a limited amount of `minos.networks.DynamicHandler` instances on the `minos.networks.DynamicHandlerPool`.
