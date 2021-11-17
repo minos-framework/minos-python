@@ -147,14 +147,20 @@ class SagaManager(MinosSetup):
 
         return execution.uuid
 
-    async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> None:
+    async def _run_with_pause_on_disk(self, execution: SagaExecution, autocommit: bool = True, **kwargs) -> None:
         try:
-            await execution.execute(**kwargs)
+            await execution.execute(autocommit=False, **kwargs)
+            if autocommit:
+                await execution.commit(**kwargs)
         except SagaPausedExecutionStepException:
             self.storage.store(execution)
+        except SagaFailedExecutionException as exc:
+            if autocommit:
+                await execution.reject(**kwargs)
+            raise exc
 
     async def _run_with_pause_on_memory(
-        self, execution: SagaExecution, response: Optional[SagaResponse] = None, **kwargs
+        self, execution: SagaExecution, response: Optional[SagaResponse] = None, autocommit: bool = True, **kwargs
     ) -> None:
 
         try:
@@ -166,9 +172,11 @@ class SagaManager(MinosSetup):
                     except SagaPausedExecutionStepException:
                         response = await self._get_response(handler, execution, **kwargs)
                     self.storage.store(execution)
-            await execution.commit(**kwargs)
+            if autocommit:
+                await execution.commit(**kwargs)
         except SagaFailedExecutionException as exc:
-            await execution.reject(**kwargs)
+            if autocommit:
+                await execution.reject(**kwargs)
             raise exc
 
     @staticmethod
