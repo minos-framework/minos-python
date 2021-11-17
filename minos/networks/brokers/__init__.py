@@ -21,8 +21,6 @@ from .subscribers import (
     ConsumerService,
     DynamicHandler,
     DynamicHandlerPool,
-    EventHandler,
-    EventHandlerService,
     Handler,
     HandlerEntry,
     HandlerRequest,
