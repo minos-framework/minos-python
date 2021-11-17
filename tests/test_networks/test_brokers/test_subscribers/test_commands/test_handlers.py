@@ -13,14 +13,14 @@ from minos.common.testing import (
 )
 from minos.networks import (
     USER_CONTEXT_VAR,
+    BrokerHandler,
+    BrokerHandlerEntry,
+    BrokerRequest,
+    BrokerResponse,
+    BrokerResponseException,
     Command,
-    CommandReplyBroker,
+    CommandReplyBrokerPublisher,
     CommandStatus,
-    Handler,
-    HandlerEntry,
-    HandlerRequest,
-    HandlerResponse,
-    HandlerResponseException,
     Request,
     Response,
 )
@@ -33,7 +33,7 @@ from tests.utils import (
 class _Cls:
     @staticmethod
     async def _fn(request: Request) -> Response:
-        return HandlerResponse(await request.content())
+        return BrokerResponse(await request.content())
 
     @staticmethod
     async def _fn_none(request: Request):
@@ -41,7 +41,7 @@ class _Cls:
 
     @staticmethod
     async def _fn_raises_response(request: Request) -> Response:
-        raise HandlerResponseException("foo")
+        raise BrokerResponseException("foo")
 
     @staticmethod
     async def _fn_raises_exception(request: Request) -> Response:
@@ -53,8 +53,8 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.command_reply_broker = CommandReplyBroker.from_config(self.config)
-        self.handler = Handler.from_config(self.config, command_reply_broker=self.command_reply_broker)
+        self.command_reply_broker = CommandReplyBrokerPublisher.from_config(self.config)
+        self.handler = BrokerHandler.from_config(self.config, command_reply_broker=self.command_reply_broker)
         self.saga = uuid4()
         self.user = uuid4()
         self.command = Command("AddOrder", FakeModel("foo"), saga=self.saga, user=self.user, reply_topic="UpdateTicket")
@@ -70,8 +70,8 @@ class TestCommandHandler(PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config(self):
-        handler = Handler.from_config(self.config, command_reply_broker=self.command_reply_broker)
-        self.assertIsInstance(handler, Handler)
+        handler = BrokerHandler.from_config(self.config, command_reply_broker=self.command_reply_broker)
+        self.assertIsInstance(handler, BrokerHandler)
 
         self.assertEqual(
             {"AddOrder", "DeleteOrder", "GetOrder", "TicketAdded", "TicketDeleted", "UpdateOrder"},
@@ -89,7 +89,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
     async def test_dispatch(self):
         callback_mock = AsyncMock(return_value=Response("add_order"))
         lookup_mock = MagicMock(return_value=callback_mock)
-        entry = HandlerEntry(1, "AddOrder", 0, self.command.avro_bytes, 1, callback_lookup=lookup_mock)
+        entry = BrokerHandlerEntry(1, "AddOrder", 0, self.command.avro_bytes, 1, callback_lookup=lookup_mock)
 
         send_mock = AsyncMock()
         self.command_reply_broker.send = send_mock
@@ -106,7 +106,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
         self.assertEqual(1, callback_mock.call_count)
         observed = callback_mock.call_args[0][0]
-        self.assertIsInstance(observed, HandlerRequest)
+        self.assertIsInstance(observed, BrokerRequest)
         self.assertEqual(FakeModel("foo"), await observed.content())
 
     async def test_get_callback(self):
@@ -119,7 +119,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
-        expected = (repr(HandlerResponseException("foo")), CommandStatus.ERROR)
+        expected = (repr(BrokerResponseException("foo")), CommandStatus.ERROR)
         self.assertEqual(expected, await fn(self.command))
 
     async def test_get_callback_raises_exception(self):

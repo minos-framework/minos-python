@@ -17,12 +17,12 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandReplyBroker,
+    BrokerHandler,
+    BrokerHandlerEntry,
+    BrokerRequest,
+    BrokerResponseException,
+    CommandReplyBrokerPublisher,
     Event,
-    Handler,
-    HandlerEntry,
-    HandlerRequest,
-    HandlerResponseException,
     Request,
 )
 from tests.utils import (
@@ -39,7 +39,7 @@ class _Cls:
 
     @staticmethod
     async def _fn_raises_response(request: Request):
-        raise HandlerResponseException("")
+        raise BrokerResponseException("")
 
     @staticmethod
     async def _fn_raises_exception(request: Request):
@@ -51,8 +51,8 @@ class TestEventHandler(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.command_reply_broker = CommandReplyBroker.from_config(self.config)
-        self.handler = Handler.from_config(config=self.config, command_reply_broker=self.command_reply_broker)
+        self.command_reply_broker = CommandReplyBrokerPublisher.from_config(self.config)
+        self.handler = BrokerHandler.from_config(config=self.config, command_reply_broker=self.command_reply_broker)
         self.event = Event("TicketAdded", FAKE_AGGREGATE_DIFF)
 
     async def asyncSetUp(self):
@@ -66,7 +66,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config(self):
-        self.assertIsInstance(self.handler, Handler)
+        self.assertIsInstance(self.handler, BrokerHandler)
 
         self.assertEqual(
             {"AddOrder", "DeleteOrder", "GetOrder", "TicketAdded", "TicketDeleted", "UpdateOrder"},
@@ -94,7 +94,7 @@ class TestEventHandler(PostgresAsyncTestCase):
 
         topic = "TicketAdded"
         event = Event(topic, FAKE_AGGREGATE_DIFF)
-        entry = HandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
+        entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         await self.handler.dispatch_one(entry)
 
@@ -102,7 +102,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         self.assertEqual(call("TicketAdded"), lookup_mock.call_args)
 
         self.assertEqual(1, callback_mock.call_count)
-        self.assertEqual(call(HandlerRequest(event)), callback_mock.call_args)
+        self.assertEqual(call(BrokerRequest(event)), callback_mock.call_args)
 
     async def test_get_callback(self):
         fn = self.handler.get_callback(_Cls._fn)

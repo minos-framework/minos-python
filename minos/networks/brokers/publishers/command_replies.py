@@ -19,13 +19,13 @@ from ..messages import (
     CommandStatus,
 )
 from .abc import (
-    Broker,
+    BrokerPublisher,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class CommandReplyBroker(Broker):
+class CommandReplyBrokerPublisher(BrokerPublisher):
     """Minos Command Broker Class."""
 
     ACTION = "commandReply"
@@ -35,7 +35,7 @@ class CommandReplyBroker(Broker):
         self.service_name = service_name
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyBroker:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandReplyBrokerPublisher:
         return cls(*args, service_name=config.service.name, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding

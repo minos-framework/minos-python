@@ -11,8 +11,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    Producer,
-    ProducerService,
+    BrokerProducer,
+    BrokerProducerService,
 )
 from tests.utils import (
     BASE_PATH,
@@ -23,15 +23,15 @@ class TestProducerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
-        service = ProducerService(config=self.config)
+        service = BrokerProducerService(config=self.config)
         self.assertIsInstance(service, Service)
 
     def test_dispatcher(self):
-        service = ProducerService(config=self.config)
-        self.assertIsInstance(service.dispatcher, Producer)
+        service = BrokerProducerService(config=self.config)
+        self.assertIsInstance(service.dispatcher, BrokerProducer)
 
     async def test_start_stop(self):
-        service = ProducerService(config=self.config)
+        service = BrokerProducerService(config=self.config)
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()

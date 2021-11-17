@@ -7,7 +7,7 @@ from minos.common import (
 )
 
 
-class HandlerSetup(PostgreSqlMinosDatabase):
+class BrokerHandlerSetup(PostgreSqlMinosDatabase):
     """Minos Broker Setup Class"""
 
     def __init__(self, *args, **kwargs):

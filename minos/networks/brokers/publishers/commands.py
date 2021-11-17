@@ -20,13 +20,13 @@ from ..messages import (
     Command,
 )
 from .abc import (
-    Broker,
+    BrokerPublisher,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class CommandBroker(Broker):
+class CommandBrokerPublisher(BrokerPublisher):
     """Minos Command Broker Class."""
 
     ACTION = "command"
@@ -36,7 +36,7 @@ class CommandBroker(Broker):
         self.default_reply_topic = default_reply_topic
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandBroker:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> CommandBrokerPublisher:
         default_reply_topic = f"{config.service.name}Reply"
         return cls(*args, **config.broker.queue._asdict(), default_reply_topic=default_reply_topic, **kwargs)
 

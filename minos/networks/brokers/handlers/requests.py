@@ -17,7 +17,7 @@ from ...requests import (
 )
 
 
-class HandlerRequest(Request):
+class BrokerRequest(Request):
     """Handler Request class."""
 
     __slots__ = "raw"
@@ -25,7 +25,7 @@ class HandlerRequest(Request):
     def __init__(self, raw: Any):
         self.raw = raw
 
-    def __eq__(self, other: HandlerRequest) -> bool:
+    def __eq__(self, other: BrokerRequest) -> bool:
         return type(self) == type(other) and self.raw == other.raw
 
     def __repr__(self) -> str:
@@ -48,9 +48,9 @@ class HandlerRequest(Request):
         return data
 
 
-class HandlerResponse(Response):
+class BrokerResponse(Response):
     """Handler Response class."""
 
 
-class HandlerResponseException(ResponseException):
+class BrokerResponseException(ResponseException):
     """Handler Response Exception class."""

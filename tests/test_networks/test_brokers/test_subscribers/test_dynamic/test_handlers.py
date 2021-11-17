@@ -13,9 +13,9 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    DynamicHandler,
-    HandlerEntry,
-    HandlerSetup,
+    BrokerHandlerEntry,
+    BrokerHandlerSetup,
+    DynamicBrokerHandler,
     MinosHandlerNotFoundEnoughEntriesException,
 )
 from tests.utils import (
@@ -34,7 +34,7 @@ class TestDynamicHandler(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.handler = DynamicHandler.from_config(config=self.config, topic=self.topic)
+        self.handler = DynamicBrokerHandler.from_config(config=self.config, topic=self.topic)
 
     async def test_setup_destroy(self):
         self.assertFalse(self.handler.already_setup)
@@ -43,10 +43,10 @@ class TestDynamicHandler(PostgresAsyncTestCase):
         self.assertTrue(self.handler.already_destroyed)
 
     def test_base_classes(self):
-        self.assertIsInstance(self.handler, HandlerSetup)
+        self.assertIsInstance(self.handler, BrokerHandlerSetup)
 
     async def test_get_one(self):
-        expected = HandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)
+        expected = BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)
         async with self.handler:
             await self._insert_one(Message("fooReply", 0, FakeModel("test1").avro_bytes))
             await self._insert_one(Message("fooReply", 0, FakeModel("test2").avro_bytes))
@@ -57,10 +57,10 @@ class TestDynamicHandler(PostgresAsyncTestCase):
 
     async def test_get_many(self):
         expected = [
-            HandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes),
-            HandlerEntry(2, "fooReply", 0, FakeModel("test2").avro_bytes),
-            HandlerEntry(3, "fooReply", 0, FakeModel("test3").avro_bytes),
-            HandlerEntry(4, "fooReply", 0, FakeModel("test4").avro_bytes),
+            BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes),
+            BrokerHandlerEntry(2, "fooReply", 0, FakeModel("test2").avro_bytes),
+            BrokerHandlerEntry(3, "fooReply", 0, FakeModel("test3").avro_bytes),
+            BrokerHandlerEntry(4, "fooReply", 0, FakeModel("test4").avro_bytes),
         ]
 
         async def _fn():

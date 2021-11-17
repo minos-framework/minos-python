@@ -33,16 +33,16 @@ from ....utils import (
     consume_queue,
 )
 from ..abc import (
-    HandlerSetup,
+    BrokerHandlerSetup,
 )
 from ..entries import (
-    HandlerEntry,
+    BrokerHandlerEntry,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicHandler(HandlerSetup):
+class DynamicBrokerHandler(BrokerHandlerSetup):
     """Dynamic Handler class."""
 
     def __init__(self, topic, **kwargs):
@@ -51,7 +51,7 @@ class DynamicHandler(HandlerSetup):
         self.topic = topic
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandler:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicBrokerHandler:
         # noinspection PyProtectedMember
         return cls(handlers=dict(), **config.broker.queue._asdict(), **kwargs)
 
@@ -61,7 +61,7 @@ class DynamicHandler(HandlerSetup):
     async def _destroy(self) -> None:
         await super()._destroy()
 
-    async def get_one(self, *args, **kwargs) -> HandlerEntry:
+    async def get_one(self, *args, **kwargs) -> BrokerHandlerEntry:
         """Get one handler entry from the given topics.
 
         :param args: Additional positional parameters to be passed to get_many.
@@ -70,7 +70,7 @@ class DynamicHandler(HandlerSetup):
         """
         return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
 
-    async def get_many(self, count: int, timeout: float = 60, **kwargs) -> list[HandlerEntry]:
+    async def get_many(self, count: int, timeout: float = 60, **kwargs) -> list[BrokerHandlerEntry]:
         """Get multiple handler entries from the given topics.
 
         :param timeout: Maximum time in seconds to wait for messages.
@@ -88,7 +88,7 @@ class DynamicHandler(HandlerSetup):
 
         return entries
 
-    async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[HandlerEntry]:
+    async def _get_many(self, count: int, max_wait: Optional[float] = 10.0) -> list[BrokerHandlerEntry]:
         result = list()
         async with self.cursor() as cursor:
 
@@ -118,7 +118,7 @@ class DynamicHandler(HandlerSetup):
         count = (await cursor.fetchone())[0]
         return count
 
-    async def _get_entries(self, cursor: Cursor, count: int) -> list[HandlerEntry]:
+    async def _get_entries(self, cursor: Cursor, count: int) -> list[BrokerHandlerEntry]:
         entries = list()
         async with cursor.begin():
             await cursor.execute(self._queries["select_not_processed"], (self.topic, count))
@@ -139,8 +139,8 @@ class DynamicHandler(HandlerSetup):
         }
 
     @staticmethod
-    def _build_entries(rows: list[tuple]) -> list[HandlerEntry]:
-        return [HandlerEntry(*row) for row in rows]
+    def _build_entries(rows: list[tuple]) -> list[BrokerHandlerEntry]:
+        return [BrokerHandlerEntry(*row) for row in rows]
 
 
 _LISTEN_QUERY = SQL("LISTEN {}")

@@ -14,7 +14,7 @@ from minos.common.testing import (
 )
 from minos.networks import (
     CommandReply,
-    CommandReplyBroker,
+    CommandReplyBrokerPublisher,
     CommandStatus,
 )
 from tests.utils import (
@@ -27,17 +27,17 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):
-        broker = CommandReplyBroker.from_config(config=self.config)
-        self.assertIsInstance(broker, CommandReplyBroker)
+        broker = CommandReplyBrokerPublisher.from_config(config=self.config)
+        self.assertIsInstance(broker, CommandReplyBrokerPublisher)
 
     def test_action(self):
-        self.assertEqual("commandReply", CommandReplyBroker.ACTION)
+        self.assertEqual("commandReply", CommandReplyBrokerPublisher.ACTION)
 
     async def test_send(self):
         mock = AsyncMock(return_value=56)
         saga = uuid4()
         reply_topic = "fakeReply"
-        async with CommandReplyBroker.from_config(config=self.config) as broker:
+        async with CommandReplyBrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
             identifier = await broker.send(FakeModel("foo"), saga=saga, topic=reply_topic, status=CommandStatus.SUCCESS)
 

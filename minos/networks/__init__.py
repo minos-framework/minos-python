@@ -4,28 +4,28 @@ __version__ = "0.2.0"
 
 from .brokers import (
     REPLY_TOPIC_CONTEXT_VAR,
-    Broker,
-    BrokerSetup,
+    BrokerConsumer,
+    BrokerConsumerService,
+    BrokerHandler,
+    BrokerHandlerEntry,
+    BrokerHandlerService,
+    BrokerHandlerSetup,
+    BrokerProducer,
+    BrokerProducerService,
+    BrokerPublisher,
+    BrokerPublisherSetup,
+    BrokerRequest,
+    BrokerResponse,
+    BrokerResponseException,
     Command,
-    CommandBroker,
+    CommandBrokerPublisher,
     CommandReply,
-    CommandReplyBroker,
+    CommandReplyBrokerPublisher,
     CommandStatus,
-    Consumer,
-    ConsumerService,
-    DynamicHandler,
-    DynamicHandlerPool,
+    DynamicBrokerHandler,
+    DynamicBrokerHandlerPool,
     Event,
-    EventBroker,
-    Handler,
-    HandlerEntry,
-    HandlerRequest,
-    HandlerResponse,
-    HandlerResponseException,
-    HandlerService,
-    HandlerSetup,
-    Producer,
-    ProducerService,
+    EventBrokerPublisher,
 )
 from .decorators import (
     BrokerCommandEnrouteDecorator,
@@ -87,3 +87,13 @@ from .utils import (
     get_host_name,
     get_ip,
 )
+
+# FIXME: Only compatibility reasons, remove these lines as soon as possible.
+HandlerRequest = BrokerRequest
+HandlerResponse = BrokerResponse
+BrokerResponseException = BrokerResponseException
+DynamicHandler = DynamicBrokerHandler
+DynamicHandlerPool = DynamicBrokerHandlerPool
+EventBroker = EventBrokerPublisher
+CommandBroker = CommandBrokerPublisher
+CommandReplyBroker = CommandReplyBrokerPublisher

@@ -18,12 +18,12 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandBroker,
-    CommandReplyBroker,
+    BrokerConsumer,
+    BrokerProducer,
+    CommandBrokerPublisher,
+    CommandReplyBrokerPublisher,
     CommandStatus,
-    Consumer,
-    EventBroker,
-    Producer,
+    EventBrokerPublisher,
 )
 from tests.utils import (
     BASE_PATH,
@@ -38,11 +38,11 @@ class TestProducer(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.consumer = Consumer.from_config(config=self.config)
-        self.producer = Producer.from_config(config=self.config, consumer=self.consumer)
+        self.consumer = BrokerConsumer.from_config(config=self.config)
+        self.producer = BrokerProducer.from_config(config=self.config, consumer=self.consumer)
 
     def test_from_config_default(self):
-        self.assertIsInstance(self.producer, Producer)
+        self.assertIsInstance(self.producer, BrokerProducer)
 
     async def test_dispatch_one_internal_true(self):
         mock = AsyncMock()
@@ -132,9 +132,9 @@ class TestProducer(PostgresAsyncTestCase):
         model = FakeModel("foo")
         saga = uuid4()
 
-        command_broker = CommandBroker.from_config(config=self.config)
-        command_reply_broker = CommandReplyBroker.from_config(config=self.config)
-        event_broker = EventBroker.from_config(config=self.config)
+        command_broker = CommandBrokerPublisher.from_config(config=self.config)
+        command_reply_broker = CommandReplyBrokerPublisher.from_config(config=self.config)
+        event_broker = EventBrokerPublisher.from_config(config=self.config)
 
         for x in range(0, 20):
             async with command_reply_broker:
@@ -164,7 +164,7 @@ class TestProducer(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_commands_was_deleted(self):
-        async with EventBroker.from_config(config=self.config) as broker:
+        async with EventBrokerPublisher.from_config(config=self.config) as broker:
             queue_id_1 = await broker.send(FAKE_AGGREGATE_DIFF, "TestDeleteReply")
             queue_id_2 = await broker.send(FAKE_AGGREGATE_DIFF, "TestDeleteReply")
 
@@ -184,7 +184,7 @@ class TestProducer(PostgresAsyncTestCase):
         model = FakeModel("foo")
         saga = uuid4()
 
-        async with CommandReplyBroker.from_config(config=self.config) as broker:
+        async with CommandReplyBrokerPublisher.from_config(config=self.config) as broker:
             queue_id_1 = await broker.send(model, "TestDeleteOrderReply", saga, CommandStatus.SUCCESS)
             queue_id_2 = await broker.send(model, "TestDeleteOrderReply", saga, CommandStatus.SUCCESS)
 

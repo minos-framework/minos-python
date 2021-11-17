@@ -36,13 +36,13 @@ from ...decorators import (
     EnrouteAnalyzer,
 )
 from .abc import (
-    HandlerSetup,
+    BrokerHandlerSetup,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class Consumer(HandlerSetup):
+class BrokerConsumer(BrokerHandlerSetup):
     """
     Handler Server
 
@@ -69,7 +69,7 @@ class Consumer(HandlerSetup):
         self._group_id = group_id
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> Consumer:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerConsumer:
         topics = set()
 
         for name in config.services:

@@ -37,17 +37,17 @@ from minos.common import (
 from ...utils import (
     consume_queue,
 )
-from ..subscribers import (
-    Consumer,
+from ..handlers import (
+    BrokerConsumer,
 )
 from .abc import (
-    BrokerSetup,
+    BrokerPublisherSetup,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class Producer(BrokerSetup):
+class BrokerProducer(BrokerPublisherSetup):
     """Minos Queue Dispatcher Class."""
 
     @inject
@@ -59,7 +59,7 @@ class Producer(BrokerSetup):
         retry: int,
         records: int,
         client: Optional[AIOKafkaProducer] = None,
-        consumer: Consumer = Provide["consumer"],
+        consumer: BrokerConsumer = Provide["consumer"],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -71,7 +71,7 @@ class Producer(BrokerSetup):
         self.consumer = consumer
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerProducer:
         # noinspection PyProtectedMember
         return cls(
             *args,

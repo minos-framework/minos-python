@@ -15,20 +15,20 @@ from dependency_injector.wiring import (
 )
 
 from .consumers import (
-    Consumer,
+    BrokerConsumer,
 )
 from .handlers import (
-    Handler,
+    BrokerHandler,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class ConsumerService(Service):
+class BrokerConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
     @inject
-    def __init__(self, dispatcher: Consumer = Provide["consumer"], **kwargs):
+    def __init__(self, dispatcher: BrokerConsumer = Provide["consumer"], **kwargs):
         super().__init__(**kwargs)
         self.dispatcher = dispatcher
 
@@ -55,7 +55,7 @@ class ConsumerService(Service):
         await self.dispatcher.destroy()
 
 
-class HandlerService(Service):
+class BrokerHandlerService(Service):
     """TODO"""
 
     def __init__(self, **kwargs):
@@ -85,9 +85,9 @@ class HandlerService(Service):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self) -> Handler:
+    def dispatcher(self) -> BrokerHandler:
         """Get the service dispatcher.
 
         :return: A ``Handler`` instance.
         """
-        return Handler.from_config(**self._init_kwargs)
+        return BrokerHandler.from_config(**self._init_kwargs)

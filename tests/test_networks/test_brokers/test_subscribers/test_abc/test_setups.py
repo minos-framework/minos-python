@@ -6,14 +6,14 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    HandlerSetup,
+    BrokerHandlerSetup,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class _FakeHandlerSetup(HandlerSetup):
+class _FakeBrokerHandlerSetup(BrokerHandlerSetup):
     TABLE_NAME = "fake"
 
 
@@ -21,7 +21,7 @@ class TestHandlerSetup(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     async def test_if_queue_table_exists(self):
-        async with _FakeHandlerSetup(**self.broker_queue_db):
+        async with _FakeBrokerHandlerSetup(**self.broker_queue_db):
             pass
 
         async with aiopg.connect(**self.broker_queue_db) as connect:

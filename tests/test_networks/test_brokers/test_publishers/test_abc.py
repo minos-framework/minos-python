@@ -16,15 +16,15 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    Broker,
-    BrokerSetup,
+    BrokerPublisher,
+    BrokerPublisherSetup,
 )
 from tests.utils import (
     BASE_PATH,
 )
 
 
-class _FakeBroker(Broker):
+class _FakeBrokerPublisher(BrokerPublisher):
     ACTION = "fake"
 
     async def send(self, items: list[Model], **kwargs) -> None:
@@ -36,7 +36,7 @@ class TestBrokerSetup(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.broker_setup = BrokerSetup(**self.config.broker.queue._asdict())
+        self.broker_setup = BrokerPublisherSetup(**self.config.broker.queue._asdict())
 
     async def test_setup(self):
         async with self.broker_setup:
@@ -61,7 +61,7 @@ class TestBroker(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.broker = _FakeBroker(**self.broker_queue_db)
+        self.broker = _FakeBrokerPublisher(**self.broker_queue_db)
 
     async def test_enqueue(self):
         query = SQL("INSERT INTO producer_queue (topic, data, action) VALUES (%s, %s, %s) RETURNING id")

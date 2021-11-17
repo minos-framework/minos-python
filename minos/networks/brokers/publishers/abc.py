@@ -11,7 +11,7 @@ from minos.common import (
 )
 
 
-class BrokerSetup(PostgreSqlMinosDatabase):
+class BrokerPublisherSetup(PostgreSqlMinosDatabase):
     """Minos Broker Setup Class"""
 
     async def _setup(self) -> None:
@@ -21,7 +21,7 @@ class BrokerSetup(PostgreSqlMinosDatabase):
         await self.submit_query(_CREATE_TABLE_QUERY, lock=hash("producer_queue"))
 
 
-class Broker(BrokerSetup, ABC):
+class BrokerPublisher(BrokerPublisherSetup, ABC):
     """Minos Broker Class."""
 
     ACTION: str

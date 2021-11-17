@@ -11,7 +11,7 @@ from minos.common.testing import (
 )
 from minos.networks import (
     Event,
-    EventBroker,
+    EventBrokerPublisher,
 )
 from tests.utils import (
     BASE_PATH,
@@ -23,14 +23,14 @@ class TestEventBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):
-        self.assertIsInstance(EventBroker.from_config(config=self.config), EventBroker)
+        self.assertIsInstance(EventBrokerPublisher.from_config(config=self.config), EventBrokerPublisher)
 
     def test_action(self):
-        self.assertEqual("event", EventBroker.ACTION)
+        self.assertEqual("event", EventBrokerPublisher.ACTION)
 
     async def test_send(self):
         mock = AsyncMock(return_value=56)
-        async with EventBroker.from_config(config=self.config) as broker:
+        async with EventBrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
             identifier = await broker.send(FAKE_AGGREGATE_DIFF, topic="fake")
 

@@ -62,23 +62,23 @@ from ..messages import (
     Event,
 )
 from ..publishers import (
-    CommandReplyBroker,
+    CommandReplyBrokerPublisher,
 )
 from .abc import (
-    HandlerSetup,
+    BrokerHandlerSetup,
 )
 from .entries import (
-    HandlerEntry,
+    BrokerHandlerEntry,
 )
 from .requests import (
-    HandlerRequest,
-    HandlerResponse,
+    BrokerRequest,
+    BrokerResponse,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class Handler(HandlerSetup):
+class BrokerHandler(BrokerHandlerSetup):
     """TODO"""
 
     __slots__ = "_handlers", "_records", "_retry", "_queue", "_consumers", "_consumer_concurrency"
@@ -90,7 +90,7 @@ class Handler(HandlerSetup):
         handlers: dict[str, Optional[Callable]],
         retry: int,
         consumer_concurrency: int = 15,
-        command_reply_broker: CommandReplyBroker = Provide["command_reply_broker"],
+        command_reply_broker: CommandReplyBrokerPublisher = Provide["command_reply_broker"],
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
@@ -105,7 +105,7 @@ class Handler(HandlerSetup):
         self.command_reply_broker = command_reply_broker
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Handler:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerHandler:
         handlers = cls._handlers_from_config(config, **kwargs)
         # noinspection PyProtectedMember
         return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
@@ -113,7 +113,7 @@ class Handler(HandlerSetup):
     @staticmethod
     def _handlers_from_config(
         config: MinosConfig, **kwargs
-    ) -> dict[str, Callable[[HandlerRequest], Awaitable[Optional[HandlerResponse]]]]:
+    ) -> dict[str, Callable[[BrokerRequest], Awaitable[Optional[BrokerResponse]]]]:
         builder = EnrouteBuilder(*config.services, middleware=config.middleware)
         decorators = builder.get_broker_command_query_event(config=config, **kwargs)
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
@@ -236,11 +236,11 @@ class Handler(HandlerSetup):
         if not is_external_cursor:
             await cursor.__aexit__(None, None, None)
 
-    def _build_entries(self, rows: list[tuple]) -> list[HandlerEntry]:
+    def _build_entries(self, rows: list[tuple]) -> list[BrokerHandlerEntry]:
         kwargs = {"callback_lookup": self.get_action}
-        return [HandlerEntry(*row, **kwargs) for row in rows]
+        return [BrokerHandlerEntry(*row, **kwargs) for row in rows]
 
-    async def _dispatch_one(self, entry: HandlerEntry) -> None:
+    async def _dispatch_one(self, entry: BrokerHandlerEntry) -> None:
         logger.debug(f"Dispatching '{entry!r}'...")
         try:
             await self.dispatch_one(entry)
@@ -251,7 +251,7 @@ class Handler(HandlerSetup):
             query_id = "delete_processed" if entry.success else "update_not_processed"
             await self.submit_query(self._queries[query_id], (entry.id,))
 
-    async def dispatch_one(self, entry: HandlerEntry) -> None:
+    async def dispatch_one(self, entry: BrokerHandlerEntry) -> None:
         """Dispatch one row.
 
         :param entry: Entry to be dispatched.
@@ -268,7 +268,7 @@ class Handler(HandlerSetup):
 
     @staticmethod
     def get_callback(
-        fn: Callable[[HandlerRequest], Union[Optional[HandlerRequest], Awaitable[Optional[HandlerRequest]]]]
+        fn: Callable[[BrokerRequest], Union[Optional[BrokerRequest], Awaitable[Optional[BrokerRequest]]]]
     ) -> Callable[[Union[Event, Command]], Awaitable[tuple[Any, CommandStatus]]]:
         """Get the handler function to be used by the Command Handler.
 
@@ -277,7 +277,7 @@ class Handler(HandlerSetup):
         """
 
         async def _fn(raw: Union[Event, Command]) -> tuple[Any, CommandStatus]:
-            request = HandlerRequest(raw)
+            request = BrokerRequest(raw)
             token = USER_CONTEXT_VAR.set(request.user)
 
             try:

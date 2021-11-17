@@ -4,7 +4,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    ConsumerService,
+    BrokerConsumerService,
 )
 from tests.utils import (
     BASE_PATH,
@@ -21,7 +21,7 @@ class TestConsumerService(PostgresAsyncTestCase):
 
     async def test_start(self):
         # noinspection PyTypeChecker
-        service = ConsumerService(config=self.config, dispatcher=self.dispatcher)
+        service = BrokerConsumerService(config=self.config, dispatcher=self.dispatcher)
 
         self.assertEqual(0, self.dispatcher.setup_count)
         self.assertEqual(0, self.dispatcher.setup_dispatch)

@@ -15,19 +15,19 @@ from ..messages import (
     Event,
 )
 from .abc import (
-    Broker,
+    BrokerPublisher,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class EventBroker(Broker):
+class EventBrokerPublisher(BrokerPublisher):
     """Minos Event broker class."""
 
     ACTION = "event"
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventBroker:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> EventBrokerPublisher:
         return cls(*args, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding

@@ -1,19 +1,19 @@
 from .abc import (
-    Broker,
-    BrokerSetup,
+    BrokerPublisher,
+    BrokerPublisherSetup,
 )
 from .command_replies import (
-    CommandReplyBroker,
+    CommandReplyBrokerPublisher,
 )
 from .commands import (
-    CommandBroker,
+    CommandBrokerPublisher,
 )
 from .events import (
-    EventBroker,
+    EventBrokerPublisher,
 )
 from .producers import (
-    Producer,
+    BrokerProducer,
 )
 from .services import (
-    ProducerService,
+    BrokerProducerService,
 )

@@ -34,16 +34,16 @@ from ...messages import (
     REPLY_TOPIC_CONTEXT_VAR,
 )
 from ..consumers import (
-    Consumer,
+    BrokerConsumer,
 )
 from .handlers import (
-    DynamicHandler,
+    DynamicBrokerHandler,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicHandlerPool(MinosPool):
+class DynamicBrokerHandlerPool(MinosPool):
     """Dynamic Handler Pool class."""
 
     @inject
@@ -52,7 +52,7 @@ class DynamicHandlerPool(MinosPool):
         config: MinosConfig,
         client: KafkaAdminClient,
         maxsize: int = 5,
-        consumer: Consumer = Provide["consumer"],
+        consumer: BrokerConsumer = Provide["consumer"],
         recycle: Optional[int] = 3600,
         *args,
         **kwargs,
@@ -63,19 +63,19 @@ class DynamicHandlerPool(MinosPool):
         self.consumer = consumer
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicHandlerPool:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicBrokerHandlerPool:
         client = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
         return cls(config, client, **kwargs)
 
-    async def _create_instance(self) -> DynamicHandler:
+    async def _create_instance(self) -> DynamicBrokerHandler:
         topic = str(uuid4()).replace("-", "")
         await self._create_reply_topic(topic)
         await self._subscribe_reply_topic(topic)
-        instance = DynamicHandler.from_config(config=self.config, topic=topic)
+        instance = DynamicBrokerHandler.from_config(config=self.config, topic=topic)
         await instance.setup()
         return instance
 
-    async def _destroy_instance(self, instance: DynamicHandler):
+    async def _destroy_instance(self, instance: DynamicBrokerHandler):
         await instance.destroy()
         await self._unsubscribe_reply_topic(instance.topic)
         await self._delete_reply_topic(instance.topic)
@@ -105,11 +105,11 @@ class DynamicHandlerPool(MinosPool):
 class _ReplyTopicContextManager:
     _token: Optional[Token]
 
-    def __init__(self, wrapper: AsyncContextManager[DynamicHandler]):
+    def __init__(self, wrapper: AsyncContextManager[DynamicBrokerHandler]):
         self.wrapper = wrapper
         self._token = None
 
-    async def __aenter__(self) -> DynamicHandler:
+    async def __aenter__(self) -> DynamicBrokerHandler:
         handler = await self.wrapper.__aenter__()
         self._token = REPLY_TOPIC_CONTEXT_VAR.set(handler.topic)
         return handler

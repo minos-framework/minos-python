@@ -27,12 +27,12 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    BrokerHandler,
+    BrokerHandlerEntry,
+    BrokerResponse,
     Command,
     EnrouteBuilder,
     Event,
-    Handler,
-    HandlerEntry,
-    HandlerResponse,
     MinosActionNotFoundException,
 )
 from tests.utils import (
@@ -42,7 +42,7 @@ from tests.utils import (
 )
 
 
-class _FakeHandler(Handler):
+class _FakeBrokerHandler(BrokerHandler):
     ENTRY_MODEL_CLS = DataTransferObject
 
     def __init__(self, *args, **kwargs):
@@ -50,7 +50,7 @@ class _FakeHandler(Handler):
         self.call_count = 0
         self.call_args = None
 
-    async def dispatch_one(self, entry: HandlerEntry) -> None:
+    async def dispatch_one(self, entry: BrokerHandlerEntry) -> None:
         """For testing purposes."""
         self.call_count += 1
         self.call_args = (entry,)
@@ -68,7 +68,7 @@ class TestHandler(PostgresAsyncTestCase):
         super().setUp()
         handlers = self._get_handlers()
         handlers["empty"] = None
-        self.handler = _FakeHandler(handlers=handlers, **self.config.broker.queue._asdict())
+        self.handler = _FakeBrokerHandler(handlers=handlers, **self.config.broker.queue._asdict())
 
     def _get_handlers(self):
         decorators = EnrouteBuilder(*self.config.services).get_broker_command_query()
@@ -85,7 +85,7 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual(HandlerResponse("add_order"), await action(FakeRequest("test")))
+        self.assertEqual(BrokerResponse("add_order"), await action(FakeRequest("test")))
 
     async def test_get_action_none(self):
         action = self.handler.get_action(topic="empty")
@@ -122,7 +122,7 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(3, mock_count.call_count)
 
     async def test_dispatch_forever_without_topics(self):
-        handler = _FakeHandler(handlers=dict(), **self.config.broker.queue._asdict())
+        handler = _FakeBrokerHandler(handlers=dict(), **self.config.broker.queue._asdict())
         mock = AsyncMock()
         async with handler:
             handler.dispatch = mock

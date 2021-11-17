@@ -15,7 +15,7 @@ from minos.common.testing import (
 from minos.networks import (
     REPLY_TOPIC_CONTEXT_VAR,
     Command,
-    CommandBroker,
+    CommandBrokerPublisher,
 )
 from tests.utils import (
     BASE_PATH,
@@ -27,21 +27,21 @@ class TestCommandBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):
-        broker = CommandBroker.from_config(config=self.config)
-        self.assertIsInstance(broker, CommandBroker)
+        broker = CommandBrokerPublisher.from_config(config=self.config)
+        self.assertIsInstance(broker, CommandBrokerPublisher)
 
     def test_action(self):
-        self.assertEqual("command", CommandBroker.ACTION)
+        self.assertEqual("command", CommandBrokerPublisher.ACTION)
 
     def test_default_reply_topic(self):
-        broker = CommandBroker.from_config(config=self.config)
+        broker = CommandBrokerPublisher.from_config(config=self.config)
         self.assertEqual("OrderReply", broker.default_reply_topic)
 
     async def test_send(self):
         mock = AsyncMock(return_value=56)
         saga = uuid4()
 
-        async with CommandBroker.from_config(config=self.config) as broker:
+        async with CommandBrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
             identifier = await broker.send(FakeModel("foo"), "fake", saga, "ekaf")
 
@@ -58,7 +58,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         mock = AsyncMock(return_value=56)
         saga = uuid4()
 
-        async with CommandBroker.from_config(config=self.config) as broker:
+        async with CommandBrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
             identifier = await broker.send(FakeModel("foo"), "fake", saga)
 
@@ -77,7 +77,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
 
         REPLY_TOPIC_CONTEXT_VAR.set("onetwothree")
 
-        async with CommandBroker.from_config(config=self.config) as broker:
+        async with CommandBrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
             identifier = await broker.send(FakeModel("foo"), "fake", saga)
 
@@ -95,7 +95,7 @@ class TestCommandBroker(PostgresAsyncTestCase):
         saga = uuid4()
         user = uuid4()
 
-        async with CommandBroker.from_config(config=self.config) as broker:
+        async with CommandBrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
             identifier = await broker.send(FakeModel("foo"), "fake", saga, "ekaf", user)
 

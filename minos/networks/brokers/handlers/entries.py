@@ -33,7 +33,7 @@ T = TypeVar("T")
 
 
 @total_ordering
-class HandlerEntry(Generic[T]):
+class BrokerHandlerEntry(Generic[T]):
     """Handler Entry class."""
 
     def __init__(

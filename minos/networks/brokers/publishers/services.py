@@ -12,13 +12,13 @@ from cached_property import (
 )
 
 from .producers import (
-    Producer,
+    BrokerProducer,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class ProducerService(Service):
+class BrokerProducerService(Service):
     """ProducerService class."""
 
     def __init__(self, **kwargs):
@@ -48,9 +48,9 @@ class ProducerService(Service):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self) -> Producer:
+    def dispatcher(self) -> BrokerProducer:
         """Get the service dispatcher.
 
         :return: A ``Producer`` instance.
         """
-        return Producer.from_config(**self._init_kwargs)
+        return BrokerProducer.from_config(**self._init_kwargs)

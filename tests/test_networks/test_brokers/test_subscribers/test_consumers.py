@@ -13,7 +13,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    Consumer,
+    BrokerConsumer,
 )
 from tests.utils import (
     BASE_PATH,
@@ -61,7 +61,7 @@ class TestConsumer(PostgresAsyncTestCase):
 
         self.client = _ConsumerClient([Message(topic="AddOrder", partition=0, value=b"test")])
         # noinspection PyTypeChecker
-        self.consumer = Consumer(
+        self.consumer = BrokerConsumer(
             topics={f"{self.config.service.name}Reply"},
             broker=self.config.broker,
             client=self.client,
@@ -78,8 +78,8 @@ class TestConsumer(PostgresAsyncTestCase):
             "UpdateOrder",
         }
 
-        consumer = Consumer.from_config(config=self.config)
-        self.assertIsInstance(consumer, Consumer)
+        consumer = BrokerConsumer.from_config(config=self.config)
+        self.assertIsInstance(consumer, BrokerConsumer)
         self.assertEqual(expected_topics, consumer.topics)
         self.assertEqual(self.config.broker, consumer._broker)
         self.assertEqual(self.config.broker.queue.host, consumer.host)
@@ -90,7 +90,7 @@ class TestConsumer(PostgresAsyncTestCase):
 
     def test_empty_topics(self):
         # noinspection PyTypeChecker
-        consumer = Consumer(broker=self.config.broker, client=self.client, **self.config.broker.queue._asdict())
+        consumer = BrokerConsumer(broker=self.config.broker, client=self.client, **self.config.broker.queue._asdict())
         self.assertEqual(set(), consumer.topics)
 
     def test_topics(self):
