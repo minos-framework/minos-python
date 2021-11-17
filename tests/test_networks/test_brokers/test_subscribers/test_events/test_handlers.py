@@ -17,7 +17,6 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandHandler,
     CommandReplyBroker,
     Event,
     Handler,
@@ -53,7 +52,7 @@ class TestEventHandler(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.command_reply_broker = CommandReplyBroker.from_config(self.config)
-        self.handler = CommandHandler.from_config(config=self.config, command_reply_broker=self.command_reply_broker)
+        self.handler = Handler.from_config(config=self.config, command_reply_broker=self.command_reply_broker)
         self.event = Event("TicketAdded", FAKE_AGGREGATE_DIFF)
 
     async def asyncSetUp(self):

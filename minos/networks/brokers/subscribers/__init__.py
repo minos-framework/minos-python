@@ -1,10 +1,5 @@
 from .abc import (
-    Handler,
     HandlerSetup,
-)
-from .commands import (
-    CommandHandler,
-    CommandHandlerService,
 )
 from .consumers import (
     Consumer,
@@ -16,6 +11,9 @@ from .dynamic import (
 from .entries import (
     HandlerEntry,
 )
+from .handlers import (
+    Handler,
+)
 from .messages import (
     HandlerRequest,
     HandlerResponse,
@@ -23,4 +21,5 @@ from .messages import (
 )
 from .services import (
     ConsumerService,
+    HandlerService,
 )

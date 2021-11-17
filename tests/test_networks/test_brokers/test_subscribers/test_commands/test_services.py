@@ -11,8 +11,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    CommandHandler,
-    CommandHandlerService,
+    Handler,
+    HandlerService,
 )
 from tests.utils import (
     BASE_PATH,
@@ -23,15 +23,15 @@ class TestCommandHandlerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_is_instance(self):
-        service = CommandHandlerService(config=self.config)
+        service = HandlerService(config=self.config)
         self.assertIsInstance(service, Service)
 
     def test_dispatcher(self):
-        service = CommandHandlerService(config=self.config)
-        self.assertIsInstance(service.dispatcher, CommandHandler)
+        service = HandlerService(config=self.config)
+        self.assertIsInstance(service.dispatcher, Handler)
 
     async def test_start_stop(self):
-        service = CommandHandlerService(config=self.config)
+        service = HandlerService(config=self.config)
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()

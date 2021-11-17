@@ -15,8 +15,6 @@ from .publishers import (
     ProducerService,
 )
 from .subscribers import (
-    CommandHandler,
-    CommandHandlerService,
     Consumer,
     ConsumerService,
     DynamicHandler,
@@ -26,5 +24,6 @@ from .subscribers import (
     HandlerRequest,
     HandlerResponse,
     HandlerResponseException,
+    HandlerService,
     HandlerSetup,
 )

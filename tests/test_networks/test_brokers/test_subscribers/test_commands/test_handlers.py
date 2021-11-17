@@ -14,9 +14,9 @@ from minos.common.testing import (
 from minos.networks import (
     USER_CONTEXT_VAR,
     Command,
-    CommandHandler,
     CommandReplyBroker,
     CommandStatus,
+    Handler,
     HandlerEntry,
     HandlerRequest,
     HandlerResponse,
@@ -54,7 +54,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.command_reply_broker = CommandReplyBroker.from_config(self.config)
-        self.handler = CommandHandler.from_config(self.config, command_reply_broker=self.command_reply_broker)
+        self.handler = Handler.from_config(self.config, command_reply_broker=self.command_reply_broker)
         self.saga = uuid4()
         self.user = uuid4()
         self.command = Command("AddOrder", FakeModel("foo"), saga=self.saga, user=self.user, reply_topic="UpdateTicket")
@@ -70,8 +70,8 @@ class TestCommandHandler(PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config(self):
-        handler = CommandHandler.from_config(self.config, command_reply_broker=self.command_reply_broker)
-        self.assertIsInstance(handler, CommandHandler)
+        handler = Handler.from_config(self.config, command_reply_broker=self.command_reply_broker)
+        self.assertIsInstance(handler, Handler)
 
         self.assertEqual(
             {"AddOrder", "DeleteOrder", "GetOrder", "TicketAdded", "TicketDeleted", "UpdateOrder"},
