@@ -3,6 +3,9 @@ from __future__ import (
 )
 
 import logging
+from contextlib import (
+    suppress,
+)
 from itertools import (
     chain,
 )
@@ -16,6 +19,7 @@ from aiokafka import (
     AIOKafkaConsumer,
 )
 from kafka.errors import (
+    IllegalStateError,
     KafkaError,
 )
 from psycopg2.sql import (
@@ -128,6 +132,7 @@ class Consumer(HandlerSetup):
                 *self._topics,
                 bootstrap_servers=f"{self._broker.host}:{self._broker.port}",
                 group_id=self._group_id,
+                enable_auto_commit=False,
                 auto_offset_reset="earliest",
             )
         return self._client
@@ -150,6 +155,8 @@ class Consumer(HandlerSetup):
 
         async for message in consumer:
             await self.handle_single_message(message)
+            with suppress(IllegalStateError):
+                await consumer.commit()
 
     async def handle_single_message(self, message):
         """Handle Kafka messages.
