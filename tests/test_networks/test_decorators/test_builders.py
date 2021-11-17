@@ -67,6 +67,30 @@ class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
         observed = set(await handlers[PeriodicEventEnrouteDecorator("@daily")](self.request))
         self.assertEqual(expected, observed)
 
+    async def test_get_broker_command_query_event(self):
+        handlers = self.builder.get_broker_command_query_event()
+        self.assertEqual(5, len(handlers))
+
+        expected = Response("_Ticket Added: [test]_")
+        observed = await handlers[BrokerEventEnrouteDecorator("TicketAdded")](self.request)
+        self.assertEqual(expected, observed)
+
+        expected = Response("_(Get Tickets: test)_")
+        observed = await handlers[BrokerQueryEnrouteDecorator("GetTickets")](self.request)
+        self.assertEqual(expected, observed)
+
+        expected = Response("_Create Ticket_")
+        observed = await handlers[BrokerCommandEnrouteDecorator("CreateTicket")](self.request)
+        self.assertEqual(expected, observed)
+
+        expected = Response("_Create Ticket_")
+        observed = await handlers[BrokerCommandEnrouteDecorator("AddTicket")](self.request)
+        self.assertEqual(expected, observed)
+
+        expected = None
+        observed = await handlers[BrokerCommandEnrouteDecorator("DeleteTicket")](self.request)
+        self.assertEqual(expected, observed)
+
     async def test_get_broker_command_query(self):
         handlers = self.builder.get_broker_command_query()
         self.assertEqual(4, len(handlers))
