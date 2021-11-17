@@ -7,8 +7,10 @@ from abc import (
     abstractmethod,
 )
 from asyncio import (
+    PriorityQueue,
+    Task,
     TimeoutError,
-    gather,
+    create_task,
     wait_for,
 )
 from typing import (
@@ -52,13 +54,48 @@ class Handler(HandlerSetup):
 
     """
 
-    __slots__ = "_handlers", "_records", "_retry"
+    __slots__ = "_handlers", "_records", "_retry", "_queue", "_consumers", "_consumer_concurrency"
 
-    def __init__(self, records: int, handlers: dict[str, Optional[Callable]], retry: int, **kwargs: Any):
+    def __init__(
+        self,
+        records: int,
+        handlers: dict[str, Optional[Callable]],
+        retry: int,
+        consumer_concurrency: int = 15,
+        **kwargs: Any,
+    ):
         super().__init__(**kwargs)
         self._handlers = handlers
         self._records = records
         self._retry = retry
+
+        self._queue = PriorityQueue(maxsize=self._records)
+        self._consumers: list[Task] = list()
+        self._consumer_concurrency = consumer_concurrency
+
+    async def _setup(self) -> None:
+        await super()._setup()
+
+        for _ in range(self._consumer_concurrency):
+            self._consumers.append(create_task(self._consume()))
+
+    async def _destroy(self) -> None:
+        for consumer in self._consumers:
+            consumer.cancel()
+
+        while not self._queue.empty():
+            entry = self._queue.get_nowait()
+            await self.submit_query(self._queries["update_not_processed"], (entry.id,))
+
+        await super()._destroy()
+
+    async def _consume(self) -> None:
+        while True:
+            await self._consume_one()
+
+    async def _consume_one(self) -> None:
+        entry = await self._queue.get()
+        await self._dispatch_one(entry)
 
     @property
     def handlers(self) -> dict[str, Optional[Callable]]:
@@ -115,7 +152,7 @@ class Handler(HandlerSetup):
     async def _get_count(self, cursor) -> int:
         if not len(self.topics):
             return 0
-        await cursor.execute(self._queries["count_not_processed"], (self._retry, tuple(self.topics)))
+        await cursor.execute(_COUNT_NOT_PROCESSED_QUERY, (self._retry, tuple(self.topics)))
         count = (await cursor.fetchone())[0]
         return count
 
@@ -140,35 +177,22 @@ class Handler(HandlerSetup):
             await cursor.execute(
                 self._queries["select_not_processed"], (self._retry, tuple(self.topics), self._records)
             )
-
             result = await cursor.fetchall()
-            entries = self._build_entries(result)
-            await self._dispatch_entries(entries)
 
-            for entry in entries:
-                query_id = "delete_processed" if entry.success else "update_not_processed"
-                await cursor.execute(self._queries[query_id], (entry.id,))
+            if len(result):
+                entries = self._build_entries(result)
+
+                await cursor.execute(self._queries["mark_processing"], (tuple(e.id for e in entries),))
+
+                for entry in entries:
+                    await self._queue.put(entry)
 
         if not is_external_cursor:
             await cursor.__aexit__(None, None, None)
 
-    @cached_property
-    def _queries(self) -> dict[str, str]:
-        # noinspection PyTypeChecker
-        return {
-            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
-            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY,
-            "delete_processed": _DELETE_PROCESSED_QUERY,
-            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
-        }
-
     def _build_entries(self, rows: list[tuple]) -> list[HandlerEntry]:
         kwargs = {"callback_lookup": self.get_action}
         return [HandlerEntry(*row, **kwargs) for row in rows]
-
-    async def _dispatch_entries(self, entries: list[HandlerEntry]) -> None:
-        futures = (self._dispatch_one(entry) for entry in entries)
-        await gather(*futures)
 
     async def _dispatch_one(self, entry: HandlerEntry) -> None:
         logger.debug(f"Dispatching '{entry!r}'...")
@@ -177,6 +201,9 @@ class Handler(HandlerSetup):
         except Exception as exc:
             logger.warning(f"Raised an exception while dispatching {entry!r}: {exc!r}")
             entry.exception = exc
+        finally:
+            query_id = "delete_processed" if entry.success else "update_not_processed"
+            await self.submit_query(self._queries[query_id], (entry.id,))
 
     @abstractmethod
     async def dispatch_one(self, entry: HandlerEntry) -> None:
@@ -212,24 +239,40 @@ class Handler(HandlerSetup):
         logger.debug(f"Loaded {handler!r} action!")
         return handler
 
+    @cached_property
+    def _queries(self) -> dict[str, str]:
+        # noinspection PyTypeChecker
+        return {
+            "count_not_processed": _COUNT_NOT_PROCESSED_QUERY,
+            "select_not_processed": _SELECT_NOT_PROCESSED_QUERY,
+            "mark_processing": _MARK_PROCESSING_QUERY,
+            "delete_processed": _DELETE_PROCESSED_QUERY,
+            "update_not_processed": _UPDATE_NOT_PROCESSED_QUERY,
+        }
+
 
 # noinspection SqlDerivedTableAlias
 _COUNT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT COUNT(*) FROM (SELECT id FROM consumer_queue WHERE retry < %s AND topic IN %s FOR UPDATE SKIP LOCKED) s"
+    "SELECT COUNT(*) "
+    "FROM (SELECT id FROM consumer_queue WHERE NOT processing AND retry < %s AND topic IN %s FOR UPDATE SKIP LOCKED) s"
 )
 
 _SELECT_NOT_PROCESSED_QUERY = SQL(
-    "SELECT * "
+    "SELECT id, topic, partition, data, retry, created_at, updated_at "
     "FROM consumer_queue "
-    "WHERE retry < %s AND topic IN %s "
+    "WHERE NOT processing AND retry < %s AND topic IN %s "
     "ORDER BY created_at "
     "LIMIT %s "
     "FOR UPDATE SKIP LOCKED"
 )
 
+_MARK_PROCESSING_QUERY = SQL("UPDATE consumer_queue SET processing = TRUE WHERE id IN %s")
+
 _DELETE_PROCESSED_QUERY = SQL("DELETE FROM consumer_queue WHERE id = %s")
 
-_UPDATE_NOT_PROCESSED_QUERY = SQL("UPDATE consumer_queue SET retry = retry + 1, updated_at = NOW() WHERE id = %s")
+_UPDATE_NOT_PROCESSED_QUERY = SQL(
+    "UPDATE consumer_queue SET processing = FALSE, retry = retry + 1, updated_at = NOW() WHERE id = %s"
+)
 
 _LISTEN_QUERY = SQL("LISTEN {}")
 

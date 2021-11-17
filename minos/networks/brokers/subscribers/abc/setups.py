@@ -24,6 +24,7 @@ class HandlerSetup(PostgreSqlMinosDatabase):
             '"partition" INTEGER,'
             '"data" BYTEA NOT NULL, '
             '"retry" INTEGER NOT NULL DEFAULT 0,'
+            '"processing" BOOL NOT NULL DEFAULT FALSE, '
             '"created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(), '
             '"updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW())'
         )

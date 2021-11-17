@@ -6,7 +6,11 @@ import logging
 from datetime import (
     datetime,
 )
+from functools import (
+    total_ordering,
+)
 from typing import (
+    Any,
     Callable,
     Generic,
     Optional,
@@ -28,6 +32,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
+@total_ordering
 class HandlerEntry(Generic[T]):
     """Handler Entry class."""
 
@@ -87,6 +92,30 @@ class HandlerEntry(Generic[T]):
         :return: A ``Model`` inherited instance.
         """
         return self.data_cls.from_avro_bytes(self.data_bytes)
+
+    def __lt__(self, other: Any) -> bool:
+        # noinspection PyBroadException
+        try:
+            return isinstance(other, type(self)) and self.data.data < other.data.data
+        except Exception:
+            return False
+
+    def __eq__(self, other):
+        return isinstance(other, type(self)) and tuple(self) == tuple(other)
+
+    def __iter__(self):
+        yield from (
+            self.id,
+            self.topic,
+            self.partition,
+            self.data_bytes,
+            self.data_cls,
+            self.retry,
+            self.created_at,
+            self.updated_at,
+            self.callback_lookup,
+            self.exception,
+        )
 
     def __repr__(self):
         try:

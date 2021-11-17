@@ -17,8 +17,10 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    CommandHandler,
+    CommandReplyBroker,
     Event,
-    EventHandler,
+    Handler,
     HandlerEntry,
     HandlerRequest,
     HandlerResponseException,
@@ -50,13 +52,27 @@ class TestEventHandler(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.handler = EventHandler.from_config(config=self.config)
+        self.command_reply_broker = CommandReplyBroker.from_config(self.config)
+        self.handler = CommandHandler.from_config(config=self.config, command_reply_broker=self.command_reply_broker)
         self.event = Event("TicketAdded", FAKE_AGGREGATE_DIFF)
 
-    def test_from_config(self):
-        self.assertIsInstance(self.handler, EventHandler)
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.command_reply_broker.setup()
+        await self.handler.setup()
 
-        self.assertEqual({"TicketAdded", "TicketDeleted"}, set(self.handler.handlers.keys()))
+    async def asyncTearDown(self):
+        await self.handler.destroy()
+        await self.command_reply_broker.destroy()
+        await super().asyncTearDown()
+
+    def test_from_config(self):
+        self.assertIsInstance(self.handler, Handler)
+
+        self.assertEqual(
+            {"AddOrder", "DeleteOrder", "GetOrder", "TicketAdded", "TicketDeleted", "UpdateOrder"},
+            set(self.handler.handlers.keys()),
+        )
 
         self.assertEqual(self.config.broker.queue.records, self.handler._records)
         self.assertEqual(self.config.broker.queue.retry, self.handler._retry)
@@ -81,8 +97,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         event = Event(topic, FAKE_AGGREGATE_DIFF)
         entry = HandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
-        async with self.handler:
-            await self.handler.dispatch_one(entry)
+        await self.handler.dispatch_one(entry)
 
         self.assertEqual(1, lookup_mock.call_count)
         self.assertEqual(call("TicketAdded"), lookup_mock.call_args)
@@ -113,11 +128,10 @@ class TestEventHandler(PostgresAsyncTestCase):
 
         events = [Event("TicketAdded", FakeModel("uuid1")), Event("TicketAdded", FakeModel("uuid2"))]
 
-        async with self.handler:
-            for event in events:
-                await self._insert_one(event)
+        for event in events:
+            await self._insert_one(event)
 
-            await self.handler.dispatch()
+        await self.handler.dispatch()
 
         expected = [FakeModel("uuid1"), FakeModel("uuid2")]
         self.assertEqual(expected, observed)
@@ -136,11 +150,10 @@ class TestEventHandler(PostgresAsyncTestCase):
             events.extend([Event("TicketAdded", ["uuid1", i]), Event("TicketAdded", ["uuid2", i])])
         shuffle(events)
 
-        async with self.handler:
-            for event in events:
-                await self._insert_one(event)
+        for event in events:
+            await self._insert_one(event)
 
-            await self.handler.dispatch()
+        await self.handler.dispatch()
 
         expected = {"uuid1": list(range(1, 6)), "uuid2": list(range(1, 6))}
         self.assertEqual(expected, observed)

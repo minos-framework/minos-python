@@ -69,7 +69,7 @@ class CommandHandler(Handler):
     @staticmethod
     def _handlers_from_config(config: MinosConfig, **kwargs) -> dict[str, Callable[[HandlerRequest], Awaitable]]:
         builder = EnrouteBuilder(*config.services, middleware=config.middleware)
-        decorators = builder.get_broker_command_query(config=config, **kwargs)
+        decorators = builder.get_broker_command_query_event(config=config, **kwargs)
         handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers
 
@@ -82,10 +82,11 @@ class CommandHandler(Handler):
         logger.info(f"Dispatching '{entry!s}'...")
 
         fn = self.get_callback(entry.callback)
-        command = entry.data
-        items, status = await fn(command)
+        message = entry.data
+        items, status = await fn(message)
 
-        await self.command_reply_broker.send(items, topic=command.reply_topic, saga=command.saga, status=status)
+        if isinstance(message, Command):
+            await self.command_reply_broker.send(items, topic=message.reply_topic, saga=message.saga, status=status)
 
     @staticmethod
     def get_callback(
