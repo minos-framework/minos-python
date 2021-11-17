@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import (
+    AsyncMock,
     MagicMock,
     call,
 )
@@ -16,9 +17,40 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    FakeConsumer,
     Message,
 )
+
+
+class _ConsumerClient:
+    """For testing purposes."""
+
+    def __init__(self, messages=None):
+        if messages is None:
+            messages = [Message(topic="TicketAdded", partition=0, value=bytes())]
+        self.messages = messages
+
+    async def start(self):
+        """For testing purposes."""
+
+    async def stop(self):
+        """For testing purposes."""
+
+    def subscribe(self, *args, **kwargs):
+        """For testing purposes."""
+
+    def unsubscribe(self):
+        """For testing purposes."""
+
+    async def getmany(self, *args, **kwargs):
+        """For testing purposes."""
+        return dict(enumerate(self.messages))
+
+    async def __aiter__(self):
+        for message in self.messages:
+            yield message
+
+    async def commit(self, *args, **kwargs):
+        """For testing purposes."""
 
 
 class TestConsumer(PostgresAsyncTestCase):
@@ -27,7 +59,8 @@ class TestConsumer(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.client = FakeConsumer([Message(topic="AddOrder", partition=0, value=b"test")])
+        self.client = _ConsumerClient([Message(topic="AddOrder", partition=0, value=b"test")])
+        # noinspection PyTypeChecker
         self.consumer = Consumer(
             topics={f"{self.config.service.name}Reply"},
             broker=self.config.broker,
@@ -56,6 +89,7 @@ class TestConsumer(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.password, consumer.password)
 
     def test_empty_topics(self):
+        # noinspection PyTypeChecker
         consumer = Consumer(broker=self.config.broker, client=self.client, **self.config.broker.queue._asdict())
         self.assertEqual(set(), consumer.topics)
 
@@ -103,14 +137,16 @@ class TestConsumer(PostgresAsyncTestCase):
         self.assertEqual(call(self.consumer.client), mock.call_args)
 
     async def tests_handle_message(self):
-        mock = MagicMock(side_effect=self.consumer.handle_single_message)
+        handle_single_message_mock = MagicMock(side_effect=self.consumer.handle_single_message)
+        commit_mock = AsyncMock()
 
-        self.consumer.handle_single_message = mock
+        self.client.commit = commit_mock
+        self.consumer.handle_single_message = handle_single_message_mock
         async with self.consumer:
             await self.consumer.dispatch()
 
-        self.assertEqual(1, mock.call_count)
-        self.assertEqual(call(self.consumer.client.messages[0]), mock.call_args)
+        self.assertEqual([call()], commit_mock.call_args_list)
+        self.assertEqual([call(self.client.messages[0])], handle_single_message_mock.call_args_list)
 
     async def test_handle_single_message(self):
         mock = MagicMock(side_effect=self.consumer.enqueue)
