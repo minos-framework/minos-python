@@ -4,6 +4,9 @@ from __future__ import (
 
 import logging
 import warnings
+from contextlib import (
+    suppress,
+)
 from typing import (
     Any,
     Iterable,
@@ -152,11 +155,15 @@ class SagaExecution:
 
         return cls(definition, uuid, context, *args, **kwargs)
 
-    async def execute(self, response: Optional[SagaResponse] = None, *args, **kwargs) -> SagaContext:
+    async def execute(
+        self, response: Optional[SagaResponse] = None, *args, autocommit: bool = True, **kwargs
+    ) -> SagaContext:
         """Execute the ``Saga`` definition.
 
         :param response: An optional ``SagaResponse`` to be consumed by the immediately next executed step.
         :param args: Additional positional arguments.
+        :param autocommit: If ``True`` the commit process is performed automatically, otherwise must be performed
+            manually.
         :param kwargs: Additional named arguments.
         :return: A ``SagaContext instance.
         """
@@ -176,17 +183,20 @@ class SagaExecution:
         self.status = SagaStatus.Running
         if self.paused_step is not None:
             try:
-                await self._execute_one(self.paused_step, response=response, *args, **kwargs)
+                await self._execute_one(self.paused_step, response=response, autocommit=autocommit, *args, **kwargs)
             finally:
                 if self.status != SagaStatus.Paused:
                     self.paused_step = None
 
         for step in self._pending_steps:
             execution_step = SagaStepExecution.from_definition(step)
-            await self._execute_one(execution_step, *args, **kwargs)
+            await self._execute_one(execution_step, autocommit=autocommit, *args, **kwargs)
 
-        await self._execute_commit(*args, **kwargs)
         self.status = SagaStatus.Finished
+
+        if autocommit:
+            await self.commit(*args, **kwargs)
+
         return self.context
 
     async def _execute_one(self, execution_step: SagaStepExecution, *args, **kwargs) -> None:
@@ -196,7 +206,7 @@ class SagaExecution:
             )
             self._add_executed(execution_step)
         except SagaFailedExecutionStepException as exc:
-            await self.rollback(*args, **kwargs)
+            await self.rollback(*args, **({"autoreject": kwargs.get("autocommit", True)} | kwargs))
             self.status = SagaStatus.Errored
             raise exc
         except SagaPausedExecutionStepException as exc:
@@ -204,25 +214,18 @@ class SagaExecution:
             self.status = SagaStatus.Paused
             raise exc
 
-    async def _execute_commit(self, *args, **kwargs) -> None:
-        try:
-            await TransactionCommitter(self.uuid, self.executed_steps, *args, **kwargs).commit()
-        except Exception as exc:  # FIXME: Exception is too broad
-            logger.warning(f"There was an exception on {TransactionCommitter.__name__!r} commit: {exc!r}")
-            await self.rollback(*args, **kwargs)
-            self.status = SagaStatus.Errored
-            raise SagaFailedCommitCallbackException(exc)
-
-    async def rollback(self, *args, **kwargs) -> None:
+    async def rollback(self, *args, autoreject: bool = True, **kwargs) -> None:
         """Revert the executed operation with a compensatory operation.
 
         :param args: Additional positional arguments.
+        :param autoreject: If ``True`` the commit process is performed automatically, otherwise must be performed
+            manually.
         :param kwargs: Additional named arguments.
         :return: The updated execution context.
         """
 
         if self.already_rollback:
-            raise SagaRollbackExecutionException("The saga was already rollbacked.")
+            raise SagaRollbackExecutionException("The execution rollback was already performed.")
 
         raised_exception = False
         for execution_step in reversed(self.executed_steps):
@@ -234,16 +237,52 @@ class SagaExecution:
                 logger.warning(f"There was an exception on {type(execution_step).__name__!r} rollback: {exc!r}")
                 raised_exception = True
 
-        try:
-            await TransactionCommitter(self.uuid, self.executed_steps, *args, **kwargs).reject()
-        except Exception as exc:
-            logger.warning(f"There was an exception on {TransactionCommitter.__name__!r} rejection: {exc!r}")
-            raised_exception = True
-
-        if raised_exception:
-            raise SagaRollbackExecutionException("Some execution steps failed to rollback.")
+        if autoreject:
+            try:
+                await self.reject()
+            except SagaFailedCommitCallbackException:
+                raised_exception = True
 
         self.already_rollback = True
+
+        if raised_exception:
+            raise SagaRollbackExecutionException("The execution failed during the rollback process.")
+
+    async def commit(self, *args, **kwargs) -> None:
+        """Commit the execution transactions.
+
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
+        if self.status != SagaStatus.Finished:
+            raise ValueError(
+                f"Commit can be performed only by {SagaStatus.Finished!r} executions. Obtained: {self.status!r}"
+            )
+
+        committer = TransactionCommitter(self.uuid, self.executed_steps, *args, **kwargs)
+        try:
+            await committer.commit()
+        except Exception as exc:  # FIXME: Exception is too broad
+            logger.warning(f"There was an exception on {TransactionCommitter.__name__!r} commit: {exc!r}")
+            with suppress(SagaRollbackExecutionException):
+                await self.rollback(*args, **({"autoreject": False} | kwargs))
+            self.status = SagaStatus.Errored
+            raise SagaFailedCommitCallbackException(exc)
+
+    async def reject(self, *args, **kwargs) -> None:
+        """Reject the execution transactions.
+
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
+        committer = TransactionCommitter(self.uuid, self.executed_steps, *args, **kwargs)
+        try:
+            await committer.reject()
+        except Exception as exc:
+            logger.warning(f"There was an exception on {TransactionCommitter.__name__!r} rejection: {exc!r}")
+            raise SagaFailedCommitCallbackException(exc)
 
     @property
     def _pending_steps(self) -> list[SagaStep]:
