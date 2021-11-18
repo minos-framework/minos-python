@@ -33,7 +33,7 @@ include = [
 python = "^3.9"
 dependency-injector = "^4.34.0"
 minos-microservice-common = "^0.3.0"
-minos-microservice-aggregate = "^0.2.0"
+minos-microservice-aggregate = { git = "https://github.com/clariteia/minos_microservice_aggregate.git", branch = "issue-9-modelref-resolver" }
 minos-microservice-saga = "^0.3.0"
 minos-microservice-networks = "^0.2.0"
 
