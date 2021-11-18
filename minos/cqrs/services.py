@@ -19,6 +19,8 @@ from minos.common import (
     MinosConfig,
 )
 from minos.networks import (
+    CommandBroker,
+    DynamicHandlerPool,
     EnrouteDecorator,
     Request,
     WrappedRequest,
@@ -44,10 +46,15 @@ class Service(ABC):
         *args,
         config: MinosConfig = Provide["config"],
         saga_manager: SagaManager = Provide["saga_manager"],
+        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
+        command_broker: CommandBroker = Provide["command_broker"],
         **kwargs,
     ):
         self.config = config
         self.saga_manager = saga_manager
+
+        self.dynamic_handler_pool = dynamic_handler_pool
+        self.command_broker = command_broker
 
     @classmethod
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
@@ -71,7 +78,12 @@ class CommandService(Service, ABC):
         raise MinosIllegalHandlingException("Queries cannot be handled by `CommandService` inherited classes.")
 
     def _pre_event_handle(self, request: Request) -> Request:
-        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager, user=request.user)
+        fn = partial(
+            PreEventHandler.handle,
+            dynamic_handler_pool=self.dynamic_handler_pool,
+            command_broker=self.command_broker,
+            user=request.user,
+        )
         return WrappedRequest(request, fn)
 
 
@@ -87,5 +99,10 @@ class QueryService(Service, ABC):
         return request
 
     def _pre_event_handle(self, request: Request) -> Request:
-        fn = partial(PreEventHandler.handle, saga_manager=self.saga_manager, user=request.user)
+        fn = partial(
+            PreEventHandler.handle,
+            dynamic_handler_pool=self.dynamic_handler_pool,
+            command_broker=self.command_broker,
+            user=request.user,
+        )
         return WrappedRequest(request, fn)
