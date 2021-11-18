@@ -1,4 +1,7 @@
 import logging
+from asyncio import (
+    gather,
+)
 from uuid import (
     UUID,
 )
@@ -13,7 +16,6 @@ from dependency_injector.wiring import (
 
 from minos.networks import (
     CommandBroker,
-    CommandReply,
     DynamicHandler,
     DynamicHandlerPool,
 )
@@ -54,28 +56,33 @@ class TransactionCommitter:
         """
         logger.info("committing...")
         async with self.dynamic_handler_pool.acquire() as handler:
-            if await self._reserve(handler):
-                await self._commit(handler)
-            else:
-                await self._reject(handler)
-                raise ValueError("Some transactions could not be committed.")
+            reserved = await self._reserve(handler)
+
+        if reserved:
+            await self._commit()
+        else:
+            await self.reject()
+            raise ValueError("Some transactions could not be committed.")
 
     async def _reserve(self, handler: DynamicHandler) -> bool:
-        for (uuid, service_name) in self.transactions:
-            await self.command_broker.send(
-                data=uuid, topic=f"Reserve{service_name.title()}Transaction", reply_topic=handler.topic,
+        futures = (
+            self.command_broker.send(
+                data=uuid, topic=f"Reserve{service_name.title()}Transaction", reply_topic=handler.topic
             )
-            response = await self._get_response(handler)
-            if not response.ok:
-                return False
-        return True
+            for (uuid, service_name) in self.transactions
+        )
+        await gather(*futures)
 
-    async def _commit(self, handler: DynamicHandler) -> None:
-        for (uuid, service_name) in self.transactions:
-            await self.command_broker.send(
-                data=uuid, topic=f"Commit{service_name.title()}Transaction", reply_topic=handler.topic,
-            )
-            await self._get_response(handler)
+        return await self._get_response(handler, len(self.transactions))
+
+    async def _commit(self) -> None:
+        futures = (
+            self.command_broker.send(data=uuid, topic=f"Commit{service_name.title()}Transaction")
+            for (uuid, service_name) in self.transactions
+        )
+        await gather(*futures)
+
+        # await self._get_response(handler, len(self.transactions))
         logger.info("Successfully committed!")
 
     async def reject(self) -> None:
@@ -83,23 +90,18 @@ class TransactionCommitter:
 
         :return: This method does not return anything.
         """
-        async with self.dynamic_handler_pool.acquire() as handler:
-            await self._reject(handler)
-
-    async def _reject(self, handler: DynamicHandler) -> None:
-        for (uuid, service_name) in self.transactions:
-            await self.command_broker.send(
-                data=uuid, topic=f"Reject{service_name.title()}Transaction", reply_topic=handler.topic,
-            )
-            await self._get_response(handler)
+        futures = (
+            self.command_broker.send(data=uuid, topic=f"Reject{service_name.title()}Transaction")
+            for (uuid, service_name) in self.transactions
+        )
+        await gather(*futures)
 
         logger.info("Successfully rejected!")
 
     @staticmethod
-    async def _get_response(handler: DynamicHandler, **kwargs) -> CommandReply:
-        handler_entry = await handler.get_one(**kwargs)
-        response = handler_entry.data
-        return response
+    async def _get_response(handler: DynamicHandler, count: int, **kwargs) -> bool:
+        entries = await handler.get_many(count, **kwargs)
+        return all(entry.data.ok for entry in entries)
 
     @cached_property
     def transactions(self) -> list[tuple[UUID, str]]:
