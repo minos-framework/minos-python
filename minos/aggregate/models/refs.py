@@ -216,18 +216,23 @@ class ModelRefResolver:
         :return: TODO
         """
         missing = ModelRefExtractor(data).build()
+
+        if not len(missing):
+            return data
+
         recovered = await self._query(missing)
+
         return ModelRefInjector(data, recovered).build()
 
-    async def _query(self, missing: dict[str, set[UUID]]) -> dict[UUID, Model]:
+    async def _query(self, references: dict[str, set[UUID]]) -> dict[UUID, Model]:
         async with self.dynamic_handler_pool.acquire() as handler:
             futures = (
                 self.command_broker.send(data={"uuids": uuids}, topic=f"Get{name}s", reply_topic=handler.topic)
-                for name, uuids in missing.items()
+                for name, uuids in references.items()
             )
             await gather(*futures)
 
-            return {model.uuid: model for model in await self._get_response(handler, len(missing))}
+            return {model.uuid: model for model in await self._get_response(handler, len(references))}
 
     @staticmethod
     async def _get_response(handler: DynamicHandler, count: int, **kwargs) -> Iterable[Model]:
