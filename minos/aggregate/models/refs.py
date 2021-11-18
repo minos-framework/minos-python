@@ -2,8 +2,14 @@ from __future__ import (
     annotations,
 )
 
+from asyncio import (
+    gather,
+)
 from collections import (
     defaultdict,
+)
+from itertools import (
+    chain,
 )
 from operator import (
     attrgetter,
@@ -170,7 +176,13 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
         async with self._dynamic_handler_pool.acquire() as handler:
             await self._command_broker.send(data={"uuids": self.uuid}, topic=f"Get{name}", reply_topic=handler.topic)
-            self.data = await _get_response(handler)
+            self.data = await self._get_response(handler)
+
+    @staticmethod
+    async def _get_response(handler: DynamicHandler, **kwargs) -> MT:
+        handler_entry = await handler.get_one(**kwargs)
+        response = handler_entry.data
+        return response.data
 
     @property
     def resolved(self) -> bool:
@@ -204,23 +216,23 @@ class ModelRefResolver:
         :return: TODO
         """
         missing = ModelRefExtractor(data).build()
-
-        recovered = dict()
-        async with self.dynamic_handler_pool.acquire() as handler:
-            for name, uuids in missing.items():
-                await self.command_broker.send(data={"uuids": uuids}, topic=f"Get{name}s", reply_topic=handler.topic)
-
-            for _ in range(len(missing)):
-                for model in await _get_response(handler):
-                    recovered[model.uuid] = model
-
+        recovered = await self._query(missing)
         return ModelRefInjector(data, recovered).build()
 
+    async def _query(self, missing: dict[str, set[UUID]]) -> dict[UUID, Model]:
+        async with self.dynamic_handler_pool.acquire() as handler:
+            futures = (
+                self.command_broker.send(data={"uuids": uuids}, topic=f"Get{name}s", reply_topic=handler.topic)
+                for name, uuids in missing.items()
+            )
+            await gather(*futures)
 
-async def _get_response(handler: DynamicHandler, **kwargs) -> Any:
-    handler_entry = await handler.get_one(**kwargs)
-    response = handler_entry.data
-    return response.data
+            return {model.uuid: model for model in await self._get_response(handler, len(missing))}
+
+    @staticmethod
+    async def _get_response(handler: DynamicHandler, count: int, **kwargs) -> Iterable[Model]:
+        entries = await handler.get_many(count, **kwargs)
+        return chain(*(entry.data.data for entry in entries))
 
 
 class ModelRefExtractor:
