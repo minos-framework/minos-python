@@ -85,20 +85,59 @@ class SagaManager(MinosSetup):
         storage = SagaExecutionStorage.from_config(config, **kwargs)
         return cls(storage=storage, **kwargs)
 
-    async def run(self, *args, response: Optional[SagaResponse] = None, **kwargs) -> Union[UUID, SagaExecution]:
+    async def run(
+        self,
+        definition: Optional[Saga] = None,
+        context: Optional[SagaContext] = None,
+        *,
+        response: Optional[SagaResponse] = None,
+        user: Optional[UUID] = None,
+        autocommit: bool = True,
+        pause_on_disk: bool = False,
+        raise_on_error: bool = True,
+        return_execution: bool = True,
+        **kwargs,
+    ) -> Union[UUID, SagaExecution]:
         """Perform a run of a ``Saga``.
 
         The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
 
+        :param definition: Saga definition to be executed.
+        :param context: Initial context to be used during the execution. (Only used for new executions)
         :param response: The reply that relaunches a saga execution.
+        :param user: The user identifier to be injected on remote steps.
+        :param autocommit: If ``True`` the transactions are committed/rejected automatically. Otherwise, the ``commit``
+            or ``reject`` must to be called manually.
+        :param pause_on_disk: If ``True`` the pauses until remote steps' responses are paused on disk (background,
+            non-blocking the execution). Otherwise, the pauses are waited on memory (online, blocking the execution)
+        :param raise_on_error: If ``True`` exceptions are raised on error. Otherwise, the execution is returned normally
+            but with ``Errored`` status.
+        :param return_execution: If ``True`` the ``SagaExecution`` instance is returned. Otherwise, only the
+            identifier (``UUID``) is returned.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
 
         if response is not None:
-            return await self._load_and_run(*args, response, **kwargs)
+            return await self._load_and_run(
+                response=response,
+                autocommit=autocommit,
+                pause_on_disk=pause_on_disk,
+                raise_on_error=raise_on_error,
+                return_execution=return_execution,
+                **kwargs,
+            )
 
-        return await self._run_new(*args, **kwargs)
+        return await self._run_new(
+            definition=definition,
+            context=context,
+            user=user,
+            autocommit=autocommit,
+            pause_on_disk=pause_on_disk,
+            raise_on_error=raise_on_error,
+            return_execution=return_execution,
+            **kwargs,
+        )
 
     async def _run_new(
         self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs,
@@ -111,12 +150,7 @@ class SagaManager(MinosSetup):
         execution = SagaExecution.from_definition(definition, context=context, user=user)
         return await self._run(execution, **kwargs)
 
-    # noinspection PyUnusedLocal
-    async def _load_and_run(
-        self, response: SagaResponse, user: Optional[UUID] = None, **kwargs
-    ) -> Union[UUID, SagaExecution]:
-        # NOTE: ``user`` is consumed here to avoid its injection on already started sagas.
-
+    async def _load_and_run(self, response: SagaResponse, **kwargs) -> Union[UUID, SagaExecution]:
         execution = self.storage.load(response.uuid)
         return await self._run(execution, response=response, **kwargs)
 
