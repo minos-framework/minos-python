@@ -55,25 +55,24 @@ class TransactionCommitter:
         :return: This method does not return anything.
         """
         logger.info("committing...")
-        async with self.dynamic_handler_pool.acquire() as handler:
-            reserved = await self._reserve(handler)
 
-        if reserved:
-            await self._commit()
-        else:
+        if not await self._reserve():
             await self.reject()
             raise ValueError("Some transactions could not be committed.")
 
-    async def _reserve(self, handler: DynamicHandler) -> bool:
-        futures = (
-            self.command_broker.send(
-                data=uuid, topic=f"Reserve{service_name.title()}Transaction", reply_topic=handler.topic
-            )
-            for (uuid, service_name) in self.transactions
-        )
-        await gather(*futures)
+        await self._commit()
 
-        return await self._get_response(handler, len(self.transactions))
+    async def _reserve(self) -> bool:
+        async with self.dynamic_handler_pool.acquire() as handler:
+            futures = (
+                self.command_broker.send(
+                    data=uuid, topic=f"Reserve{service_name.title()}Transaction", reply_topic=handler.topic
+                )
+                for (uuid, service_name) in self.transactions
+            )
+            await gather(*futures)
+
+            return await self._get_response(handler, len(self.transactions))
 
     async def _commit(self) -> None:
         futures = (
