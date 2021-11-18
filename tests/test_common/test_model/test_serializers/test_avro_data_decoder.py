@@ -236,6 +236,9 @@ class TestAvroDataDecoder(MinosTestCase):
             decoder.build(3)
         with self.assertRaises(DataDecoderRequiredValueException):
             decoder.build(None)
+        decoder = AvroDataDecoder(list[str])
+        with self.assertRaises(DataDecoderTypeException):
+            decoder.build("foo")
 
     def test_list_optional(self):
         decoder = AvroDataDecoder(list[Optional[int]])
@@ -261,6 +264,9 @@ class TestAvroDataDecoder(MinosTestCase):
             decoder.build(3)
         with self.assertRaises(DataDecoderRequiredValueException):
             decoder.build(None)
+        decoder = AvroDataDecoder(set[str])
+        with self.assertRaises(DataDecoderTypeException):
+            decoder.build("foo")
 
     def test_dict(self):
         decoder = AvroDataDecoder(dict[str, bool])
@@ -327,6 +333,11 @@ class TestAvroDataDecoder(MinosTestCase):
             decoder.build(None)
         with self.assertRaises(DataDecoderRequiredValueException):
             decoder.build(MissingSentinel)
+
+    def test_union(self):
+        decoder = AvroDataDecoder(Union[list[str], str])
+        self.assertEqual(["foo", "bar"], decoder.build(["foo", "bar"]))
+        self.assertEqual("foo", decoder.build("foo"))
 
     def test_union_raises(self):
         decoder = AvroDataDecoder(Union[int, list[int]])

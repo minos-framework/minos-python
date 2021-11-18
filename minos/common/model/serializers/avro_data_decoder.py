@@ -260,16 +260,16 @@ class AvroDataDecoder:
 
         raise DataDecoderTypeException(type_, data)
 
-    def _cast_list(self, data: list, type_values: Any) -> list[Any]:
+    def _cast_list(self, data: Any, type_values: Any) -> list[Any]:
         type_values = get_args(type_values)[0]
-        if not isinstance(data, Iterable):
+        if isinstance(data, str) or not isinstance(data, Iterable):
             raise DataDecoderTypeException(list, data)
 
         return list(self._cast_iterable(data, type_values))
 
-    def _cast_set(self, data: set, type_values: Any) -> set[Any]:
+    def _cast_set(self, data: Any, type_values: Any) -> set[Any]:
         type_values = get_args(type_values)[0]
-        if not isinstance(data, Iterable):
+        if isinstance(data, str) or not isinstance(data, Iterable):
             raise DataDecoderTypeException(set, data)
 
         return set(self._cast_iterable(data, type_values))
