@@ -126,6 +126,34 @@ class TestSagaManager(MinosTestCase):
             send_mock.call_args_list,
         )
 
+    async def test_run_with_pause_on_memory_without_commit(self):
+        send_mock = AsyncMock()
+        self.command_broker.send = send_mock
+
+        Message = namedtuple("Message", ["data"])
+        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
+        with patch("uuid.uuid4", return_value=expected_uuid):
+            self.handler.get_one = AsyncMock(
+                side_effect=[
+                    Message(
+                        CommandReply(
+                            "topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS, service_name="foo"
+                        )
+                    ),
+                    Message(
+                        CommandReply(
+                            "topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS, service_name="foo"
+                        )
+                    ),
+                ]
+            )
+
+            with patch("minos.saga.SagaExecution.commit") as commit_mock:
+                execution = await self.manager.run(ADD_ORDER, autocommit=False)
+            self.assertEqual(SagaStatus.Finished, execution.status)
+
+        self.assertEqual(0, commit_mock.call_count)
+
     async def test_run_with_pause_on_memory_with_error(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
 
@@ -133,6 +161,14 @@ class TestSagaManager(MinosTestCase):
             execution = await self.manager.run(ADD_ORDER, raise_on_error=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual([call()], reject_mock.call_args_list)
+
+    async def test_run_with_pause_on_memory_without_autocommit(self):
+        self.handler.get_one = AsyncMock(side_effect=ValueError)
+
+        with patch("minos.saga.SagaExecution.reject") as reject_mock:
+            execution = await self.manager.run(ADD_ORDER, autocommit=False, raise_on_error=False)
+        self.assertEqual(SagaStatus.Errored, execution.status)
+        self.assertEqual(0, reject_mock.call_count)
 
     async def test_run_with_pause_on_memory_with_error_raises(self):
         self.handler.get_one = AsyncMock(side_effect=ValueError)
@@ -188,6 +224,32 @@ class TestSagaManager(MinosTestCase):
             send_mock.call_args_list,
         )
 
+    async def test_run_with_pause_on_disk_without_commit(self):
+        send_mock = AsyncMock()
+        self.command_broker.send = send_mock
+
+        get_mock = AsyncMock()
+        get_mock.return_value.data.ok = True
+        self.handler.get_one = get_mock
+
+        execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        response = SagaResponse(
+            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        )
+        execution = await self.manager.run(response=response, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        response = SagaResponse(
+            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        )
+
+        with patch("minos.saga.SagaExecution.commit") as commit_mock:
+            execution = await self.manager.run(response=response, pause_on_disk=True, autocommit=False)
+        self.assertEqual(SagaStatus.Finished, execution.status)
+        self.assertEqual(0, commit_mock.call_count)
+
     async def test_run_with_pause_on_disk_returning_uuid(self):
         uuid = await self.manager.run(ADD_ORDER, return_execution=False, pause_on_disk=True)
         execution = self.manager.storage.load(uuid)
@@ -208,6 +270,14 @@ class TestSagaManager(MinosTestCase):
 
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual([call()], reject_mock.call_args_list)
+
+    async def test_run_with_pause_on_disk_without_autocommit(self):
+        self.command_broker.send = AsyncMock(side_effect=ValueError)
+
+        with patch("minos.saga.SagaExecution.reject") as reject_mock:
+            execution = await self.manager.run(DELETE_ORDER, pause_on_disk=True, raise_on_error=False, autocommit=False)
+        self.assertEqual(SagaStatus.Errored, execution.status)
+        self.assertEqual(0, reject_mock.call_count)
 
     async def test_run_with_user_context_var(self):
         send_mock = AsyncMock()
