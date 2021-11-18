@@ -29,6 +29,7 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
+    NULL_UUID,
     Lock,
     MinosPool,
     MinosSetup,
@@ -163,7 +164,7 @@ class EventRepository(ABC, MinosSetup):
 
                 entry = await self._submit(entry, **kwargs)
 
-            if transaction is None:
+            if entry.transaction_uuid == NULL_UUID:
                 await self._send_events(entry.aggregate_diff)
 
         finally:
