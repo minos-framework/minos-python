@@ -23,6 +23,11 @@ from uuid import (
     SafeUUID,
 )
 
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
 from minos.common import (
     AvroDataEncoder,
     DeclarativeModel,
@@ -30,6 +35,11 @@ from minos.common import (
     Model,
     TypeHintBuilder,
     is_model_type,
+)
+from minos.networks import (
+    CommandBroker,
+    DynamicHandler,
+    DynamicHandlerPool,
 )
 
 from ..events import (
@@ -78,10 +88,21 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
     _field_cls = FieldRef
     data: Union[MT, UUID]
 
-    def __init__(self, data: Union[MT, UUID], *args, **kwargs):
+    @inject
+    def __init__(
+        self,
+        data: Union[MT, UUID],
+        *args,
+        command_broker: CommandBroker = Provide["command_handler"],
+        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
+        **kwargs,
+    ):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
         DeclarativeModel.__init__(self, data, *args, **kwargs)
+
+        self._command_broker = command_broker
+        self._dynamic_handler_pool = dynamic_handler_pool
 
     def __getattr__(self, item: str) -> Any:
         try:
@@ -119,7 +140,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
         :return:
         """
-        if isinstance(self.data, UUID):
+        if not self.resolved:
             return self.data
         return self.data.uuid
 
@@ -133,6 +154,73 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         if args:
             return args[0]
         return None
+
+    # noinspection PyUnusedLocal
+    async def resolve(self, force: bool = False, **kwargs) -> None:
+        """TODO
+
+        :param force: TODO
+        :param kwargs: TODO
+        :return:
+        """
+        if not force and self.resolved:
+            return
+
+        name = self.data_cls.__name__
+
+        async with self._dynamic_handler_pool.acquire() as handler:
+            await self._command_broker.send(data={"uuids": self.uuid}, topic=f"Get{name}", reply_topic=handler.topic)
+            self.data = await _get_response(handler)
+
+    @property
+    def resolved(self) -> bool:
+        """TODO
+
+        :return: TODO
+        """
+        return not isinstance(self.data, UUID)
+
+
+class ModelRefResolver:
+    """TODO"""
+
+    # noinspection PyUnusedLocal
+    @inject
+    def __init__(
+        self,
+        command_broker: CommandBroker = Provide["command_handler"],
+        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
+        **kwargs,
+    ):
+        self.command_broker = command_broker
+        self.dynamic_handler_pool = dynamic_handler_pool
+
+    # noinspection PyUnusedLocal
+    async def resolve(self, data: Any, **kwargs) -> Any:
+        """TODO
+
+        :param data: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
+        missing = ModelRefExtractor(data).build()
+
+        recovered = dict()
+        async with self.dynamic_handler_pool.acquire() as handler:
+            for name, uuids in missing.items():
+                await self.command_broker.send(data={"uuids": uuids}, topic=f"Get{name}s", reply_topic=handler.topic)
+
+            for _ in range(len(missing)):
+                for model in await _get_response(handler):
+                    recovered[model.uuid] = model
+
+        return ModelRefInjector(data, recovered).build()
+
+
+async def _get_response(handler: DynamicHandler, **kwargs) -> Any:
+    handler_entry = await handler.get_one(**kwargs)
+    response = handler_entry.data
+    return response.data
 
 
 class ModelRefExtractor:
