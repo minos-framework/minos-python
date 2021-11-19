@@ -37,8 +37,6 @@ class FakeModel(DeclarativeModel):
     text: str
 
 
-FAKE_AGGREGATE_DIFF = FakeModel("Foo")
-
 Message = namedtuple("Message", ["topic", "partition", "value"])
 
 

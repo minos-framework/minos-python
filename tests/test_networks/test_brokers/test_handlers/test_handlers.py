@@ -44,7 +44,6 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    FAKE_AGGREGATE_DIFF,
     FakeModel,
     FakeRequest,
 )
@@ -182,7 +181,7 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = BrokerMessage("NoActionTopic", FAKE_AGGREGATE_DIFF)
+        instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"))
 
         queue_id_1 = await self._insert_one(instance_1)
         queue_id_2 = await self._insert_one(instance_2)
@@ -221,7 +220,7 @@ class TestHandler(PostgresAsyncTestCase):
         lookup_mock = MagicMock(return_value=callback_mock)
 
         topic = "TicketAdded"
-        event = BrokerMessage(topic, FAKE_AGGREGATE_DIFF)
+        event = BrokerMessage(topic, FakeModel("Foo"))
         entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         await self.handler.dispatch_one(entry)
