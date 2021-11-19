@@ -1,9 +1,8 @@
 import unittest
 from asyncio import (
+    Queue,
     TimeoutError,
-    create_task,
     gather,
-    sleep,
     wait_for,
 )
 from collections import (
@@ -16,7 +15,9 @@ from random import (
 from unittest.mock import (
     AsyncMock,
     MagicMock,
+    PropertyMock,
     call,
+    patch,
 )
 from uuid import (
     uuid4,
@@ -122,15 +123,15 @@ class TestHandler(PostgresAsyncTestCase):
             in str(context.exception)
         )
 
-    @unittest.skip
     async def test_dispatch_forever(self):
         mock = AsyncMock(side_effect=ValueError)
         self.handler.dispatch = mock
-        task = create_task(self.handler.dispatch_forever())
-        await sleep(1)
-        await self._notify("AddOrder")
-        await task
-        self.assertIsInstance(task.exception(), ValueError)
+        queue = Queue()
+        queue.put_nowait(None)
+        with patch("aiopg.Connection.notifies", new_callable=PropertyMock, return_value=queue):
+            with self.assertRaises(ValueError):
+                await self.handler.dispatch_forever()
+
         self.assertEqual(1, mock.call_count)
 
     async def test_dispatch_forever_without_notify(self):
