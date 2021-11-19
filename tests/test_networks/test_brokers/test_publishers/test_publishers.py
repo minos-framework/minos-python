@@ -3,21 +3,28 @@ from unittest.mock import (
     AsyncMock,
     call,
 )
-from uuid import uuid4
+from uuid import (
+    uuid4,
+)
 
-from minos.common import Model
 from psycopg2.sql import (
     SQL,
 )
 
+from minos.common import (
+    Model,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerPublisher, BrokerMessage, BrokerMessageStatus,
+    BrokerMessage,
+    BrokerMessageStatus,
+    BrokerPublisher,
 )
 from tests.utils import (
-    BASE_PATH, FakeModel,
+    BASE_PATH,
+    FakeModel,
 )
 
 
