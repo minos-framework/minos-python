@@ -29,6 +29,7 @@ class TestConsumerService(PostgresAsyncTestCase):
         self.dispatcher = FakeDispatcher()
 
     def test_is_instance(self):
+        # noinspection PyTypeChecker
         service = BrokerConsumerService(config=self.config, dispatcher=self.dispatcher)
         self.assertIsInstance(service, Service)
 
