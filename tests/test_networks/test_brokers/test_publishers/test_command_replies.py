@@ -13,9 +13,9 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    BrokerMessageStatus,
     CommandReply,
     CommandReplyBrokerPublisher,
-    CommandStatus,
 )
 from tests.utils import (
     BASE_PATH,
@@ -39,7 +39,9 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
         reply_topic = "fakeReply"
         async with CommandReplyBrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
-            identifier = await broker.send(FakeModel("foo"), saga=saga, topic=reply_topic, status=CommandStatus.SUCCESS)
+            identifier = await broker.send(
+                FakeModel("foo"), saga=saga, topic=reply_topic, status=BrokerMessageStatus.SUCCESS
+            )
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
@@ -51,7 +53,7 @@ class TestCommandReplyBroker(PostgresAsyncTestCase):
             reply_topic,
             FakeModel("foo"),
             saga=saga,
-            status=CommandStatus.SUCCESS,
+            status=BrokerMessageStatus.SUCCESS,
             service_name=self.config.service.name,
         )
         observed = Model.from_avro_bytes(args[1])

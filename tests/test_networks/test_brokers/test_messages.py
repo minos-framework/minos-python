@@ -4,9 +4,9 @@ from uuid import (
 )
 
 from minos.networks import (
+    BrokerMessageStatus,
     Command,
     CommandReply,
-    CommandStatus,
     Event,
 )
 from tests.utils import (
@@ -41,7 +41,7 @@ class TestCommandReply(unittest.TestCase):
         self.topic = "FooCreated"
         self.data = [FakeModel("blue"), FakeModel("red")]
         self.saga = uuid4()
-        self.status = CommandStatus.SUCCESS
+        self.status = BrokerMessageStatus.SUCCESS
 
     def test_constructor(self):
         command_reply = CommandReply(self.topic, self.data, self.saga, self.status)
@@ -51,9 +51,9 @@ class TestCommandReply(unittest.TestCase):
         self.assertEqual(self.status, command_reply.status)
 
     def test_ok(self):
-        self.assertTrue(CommandReply(self.topic, self.data, self.saga, CommandStatus.SUCCESS).ok)
-        self.assertFalse(CommandReply(self.topic, self.data, self.saga, CommandStatus.ERROR).ok)
-        self.assertFalse(CommandReply(self.topic, self.data, self.saga, CommandStatus.SYSTEM_ERROR).ok)
+        self.assertTrue(CommandReply(self.topic, self.data, self.saga, BrokerMessageStatus.SUCCESS).ok)
+        self.assertFalse(CommandReply(self.topic, self.data, self.saga, BrokerMessageStatus.ERROR).ok)
+        self.assertFalse(CommandReply(self.topic, self.data, self.saga, BrokerMessageStatus.SYSTEM_ERROR).ok)
 
     def test_avro_serialization(self):
         command_reply = CommandReply(self.topic, self.data, self.saga, self.status)

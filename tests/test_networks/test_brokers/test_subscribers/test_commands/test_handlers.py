@@ -15,12 +15,12 @@ from minos.networks import (
     USER_CONTEXT_VAR,
     BrokerHandler,
     BrokerHandlerEntry,
+    BrokerMessageStatus,
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
     Command,
     CommandReplyBrokerPublisher,
-    CommandStatus,
     Request,
     Response,
 )
@@ -100,7 +100,7 @@ class TestCommandHandler(PostgresAsyncTestCase):
         self.assertEqual(call("AddOrder"), lookup_mock.call_args)
 
         self.assertEqual(
-            [call("add_order", topic="UpdateTicket", saga=self.command.saga, status=CommandStatus.SUCCESS)],
+            [call("add_order", topic="UpdateTicket", saga=self.command.saga, status=BrokerMessageStatus.SUCCESS)],
             send_mock.call_args_list,
         )
 
@@ -111,20 +111,20 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     async def test_get_callback(self):
         fn = self.handler.get_callback(_Cls._fn)
-        self.assertEqual((FakeModel("foo"), CommandStatus.SUCCESS), await fn(self.command))
+        self.assertEqual((FakeModel("foo"), BrokerMessageStatus.SUCCESS), await fn(self.command))
 
     async def test_get_callback_none(self):
         fn = self.handler.get_callback(_Cls._fn_none)
-        self.assertEqual((None, CommandStatus.SUCCESS), await fn(self.command))
+        self.assertEqual((None, BrokerMessageStatus.SUCCESS), await fn(self.command))
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
-        expected = (repr(BrokerResponseException("foo")), CommandStatus.ERROR)
+        expected = (repr(BrokerResponseException("foo")), BrokerMessageStatus.ERROR)
         self.assertEqual(expected, await fn(self.command))
 
     async def test_get_callback_raises_exception(self):
         fn = self.handler.get_callback(_Cls._fn_raises_exception)
-        expected = (repr(ValueError()), CommandStatus.SYSTEM_ERROR)
+        expected = (repr(ValueError()), BrokerMessageStatus.SYSTEM_ERROR)
         self.assertEqual(expected, await fn(self.command))
 
     async def test_get_callback_with_user(self):

@@ -57,12 +57,11 @@ from ...utils import (
     consume_queue,
 )
 from ..messages import (
-    Command,
-    CommandStatus,
-    Event,
+    BrokerMessage,
+    BrokerMessageStatus,
 )
 from ..publishers import (
-    CommandReplyBrokerPublisher,
+    BrokerPublisher,
 )
 from .abc import (
     BrokerHandlerSetup,
@@ -90,7 +89,7 @@ class BrokerHandler(BrokerHandlerSetup):
         handlers: dict[str, Optional[Callable]],
         retry: int,
         consumer_concurrency: int = 15,
-        command_reply_broker: CommandReplyBrokerPublisher = Provide["command_reply_broker"],
+        command_reply_broker: BrokerPublisher = Provide["command_reply_broker"],
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
@@ -263,20 +262,20 @@ class BrokerHandler(BrokerHandlerSetup):
         message = entry.data
         items, status = await fn(message)
 
-        if isinstance(message, Command):
+        if getattr(message, "reply_topic", None) is not None:
             await self.command_reply_broker.send(items, topic=message.reply_topic, saga=message.saga, status=status)
 
     @staticmethod
     def get_callback(
         fn: Callable[[BrokerRequest], Union[Optional[BrokerRequest], Awaitable[Optional[BrokerRequest]]]]
-    ) -> Callable[[Union[Event, Command]], Awaitable[tuple[Any, CommandStatus]]]:
+    ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, BrokerMessageStatus]]]:
         """Get the handler function to be used by the Command Handler.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the Command Handler API.
         """
 
-        async def _fn(raw: Union[Event, Command]) -> tuple[Any, CommandStatus]:
+        async def _fn(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus]:
             request = BrokerRequest(raw)
             token = USER_CONTEXT_VAR.set(request.user)
 
@@ -286,13 +285,13 @@ class BrokerHandler(BrokerHandlerSetup):
                     response = await response
                 if isinstance(response, Response):
                     response = await response.content()
-                return response, CommandStatus.SUCCESS
+                return response, BrokerMessageStatus.SUCCESS
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
-                return repr(exc), CommandStatus.ERROR
+                return repr(exc), BrokerMessageStatus.ERROR
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
-                return repr(exc), CommandStatus.SYSTEM_ERROR
+                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR
             finally:
                 USER_CONTEXT_VAR.reset(token)
 

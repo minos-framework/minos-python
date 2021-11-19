@@ -10,6 +10,8 @@ from .brokers import (
     BrokerHandlerEntry,
     BrokerHandlerService,
     BrokerHandlerSetup,
+    BrokerMessage,
+    BrokerMessageStatus,
     BrokerProducer,
     BrokerProducerService,
     BrokerPublisher,
@@ -17,15 +19,8 @@ from .brokers import (
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
-    Command,
-    CommandBrokerPublisher,
-    CommandReply,
-    CommandReplyBrokerPublisher,
-    CommandStatus,
     DynamicBrokerHandler,
     DynamicBrokerHandlerPool,
-    Event,
-    EventBrokerPublisher,
 )
 from .decorators import (
     BrokerCommandEnrouteDecorator,
@@ -94,6 +89,6 @@ HandlerResponse = BrokerResponse
 BrokerResponseException = BrokerResponseException
 DynamicHandler = DynamicBrokerHandler
 DynamicHandlerPool = DynamicBrokerHandlerPool
-EventBroker = EventBrokerPublisher
-CommandBroker = CommandBrokerPublisher
-CommandReplyBroker = CommandReplyBrokerPublisher
+EventBroker = BrokerPublisher
+CommandBroker = BrokerPublisher
+CommandReplyBroker = BrokerPublisher

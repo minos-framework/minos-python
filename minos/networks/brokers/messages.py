@@ -24,23 +24,15 @@ from minos.common import (
 REPLY_TOPIC_CONTEXT_VAR: Final[ContextVar[Optional[str]]] = ContextVar("reply_topic", default=None)
 
 
-class Command(DeclarativeModel):
-    """Base Command class."""
+class BrokerMessage(DeclarativeModel):
+    """TODO"""
 
     topic: str
     data: Any
     saga: Optional[UUID]
-    reply_topic: str
+    reply_topic: Optional[str]
     user: Optional[UUID]
-
-
-class CommandReply(DeclarativeModel):
-    """Base Command class."""
-
-    topic: str
-    data: Any
-    saga: Optional[UUID]
-    status: CommandStatus
+    status: Optional[BrokerMessageStatus]
     service_name: Optional[str]
 
     @property
@@ -49,19 +41,12 @@ class CommandReply(DeclarativeModel):
 
         :return: ``True`` if the reply is okay or ``False`` otherwise.
         """
-        return self.status == CommandStatus.SUCCESS
+        return self.status == BrokerMessageStatus.SUCCESS
 
 
-class CommandStatus(IntEnum):
-    """Command Status class."""
+class BrokerMessageStatus(IntEnum):
+    """Broker Message Status class."""
 
     SUCCESS = 200
     ERROR = 400
     SYSTEM_ERROR = 500
-
-
-class Event(DeclarativeModel):
-    """Base Event class."""
-
-    topic: str
-    data: Any
