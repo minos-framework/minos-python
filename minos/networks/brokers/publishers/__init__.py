@@ -1,4 +1,4 @@
-from .abc import (
+from .publishers import (
     BrokerPublisher,
     BrokerPublisherSetup,
 )

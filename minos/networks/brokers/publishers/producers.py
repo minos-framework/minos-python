@@ -40,7 +40,7 @@ from ...utils import (
 from ..handlers import (
     BrokerConsumer,
 )
-from .abc import (
+from .publishers import (
     BrokerPublisherSetup,
 )
 
