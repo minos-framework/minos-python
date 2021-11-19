@@ -43,12 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerConsumer(BrokerHandlerSetup):
-    """
-    Handler Server
-
-    Generic insert for queue_* table. (Support Command, CommandReply and Event)
-
-    """
+    """TODO"""
 
     __slots__ = "_topics", "_broker", "_client"
 
@@ -161,8 +156,7 @@ class BrokerConsumer(BrokerHandlerSetup):
     async def handle_single_message(self, message):
         """Handle Kafka messages.
 
-        Evaluate if the binary of message is an Event instance.
-        Add Event instance to the event_queue table.
+        Add the message to the event_queue table.
 
         Args:
             message: Kafka message.
@@ -182,7 +176,7 @@ class BrokerConsumer(BrokerHandlerSetup):
         Args:
             topic: Kafka topic. Example: "TicketAdded"
             partition: Kafka partition number.
-            binary: Event Model in bytes.
+            binary: Broker Message in bytes.
 
         Returns:
             Queue ID.

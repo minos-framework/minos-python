@@ -66,7 +66,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         user: Optional[UUID] = None,
         **kwargs,
     ) -> int:
-        """Send a ``CommandReply``.
+        """Send a ``BrokerMessage``.
 
         :param data: The data to be send.
         :param topic: Topic in which the message will be published.

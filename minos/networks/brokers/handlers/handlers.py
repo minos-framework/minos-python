@@ -273,10 +273,10 @@ class BrokerHandler(BrokerHandlerSetup):
     def get_callback(
         fn: Callable[[BrokerRequest], Union[Optional[BrokerRequest], Awaitable[Optional[BrokerRequest]]]]
     ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, BrokerMessageStatus]]]:
-        """Get the handler function to be used by the Command Handler.
+        """Get the handler function to be used by the Broker Handler.
 
         :param fn: The action function.
-        :return: A wrapper function around the given one that is compatible with the Command Handler API.
+        :return: A wrapper function around the given one that is compatible with the Broker Handler API.
         """
 
         async def _fn(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus]:
@@ -302,7 +302,7 @@ class BrokerHandler(BrokerHandlerSetup):
         return _fn
 
     def get_action(self, topic: str) -> Optional[Callable]:
-        """Get Event instance to call.
+        """Get handling function to be called.
 
         Gets the instance of the class and method to call.
 
