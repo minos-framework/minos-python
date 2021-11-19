@@ -90,7 +90,7 @@ class BrokerHandler(BrokerHandlerSetup):
         handlers: dict[str, Optional[Callable]],
         retry: int,
         consumer_concurrency: int = 15,
-        command_reply_broker: BrokerPublisher = Provide["command_reply_broker"],
+        publisher: BrokerPublisher = Provide["command_reply_broker"],
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
@@ -102,7 +102,12 @@ class BrokerHandler(BrokerHandlerSetup):
         self._consumers: list[Task] = list()
         self._consumer_concurrency = consumer_concurrency
 
-        self.command_reply_broker = command_reply_broker
+        self._publisher = publisher
+
+    @property
+    def publisher(self) -> BrokerPublisher:
+        """TODO"""
+        return self._publisher
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerHandler:
@@ -267,7 +272,7 @@ class BrokerHandler(BrokerHandlerSetup):
         items, status = await fn(message)
 
         if getattr(message, "reply_topic", None) is not None:
-            await self.command_reply_broker.send(items, topic=message.reply_topic, saga=message.saga, status=status)
+            await self.publisher.send(items, topic=message.reply_topic, saga=message.saga, status=status)
 
     @staticmethod
     def get_callback(
@@ -319,9 +324,6 @@ class BrokerHandler(BrokerHandlerSetup):
             )
 
         handler = self._handlers[topic]
-
-        if handler is None:
-            return
 
         logger.debug(f"Loaded {handler!r} action!")
         return handler
