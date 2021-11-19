@@ -8,6 +8,7 @@ from asyncio import (
     Task,
     TimeoutError,
     create_task,
+    gather,
     wait_for,
 )
 from inspect import (
@@ -127,6 +128,8 @@ class BrokerHandler(BrokerHandlerSetup):
     async def _destroy(self) -> None:
         for consumer in self._consumers:
             consumer.cancel()
+        await gather(*self._consumers, return_exceptions=True)
+        self._consumers = list()
 
         while not self._queue.empty():
             entry = self._queue.get_nowait()
@@ -140,7 +143,10 @@ class BrokerHandler(BrokerHandlerSetup):
 
     async def _consume_one(self) -> None:
         entry = await self._queue.get()
-        await self._dispatch_one(entry)
+        try:
+            await self._dispatch_one(entry)
+        finally:
+            self._queue.task_done()
 
     @property
     def handlers(self) -> dict[str, Optional[Callable]]:
@@ -169,7 +175,7 @@ class BrokerHandler(BrokerHandlerSetup):
             try:
                 while True:
                     await self._wait_for_entries(cursor, max_wait)
-                    await self.dispatch(cursor)
+                    await self.dispatch(cursor, background_mode=True)
             finally:
                 await self._unlisten_entries(cursor)
 
@@ -201,17 +207,12 @@ class BrokerHandler(BrokerHandlerSetup):
         count = (await cursor.fetchone())[0]
         return count
 
-    async def dispatch(self, cursor: Optional[Cursor] = None) -> None:
-        """Event Queue Checker and dispatcher.
+    async def dispatch(self, cursor: Optional[Cursor] = None, background_mode: bool = False) -> None:
+        """TODO
 
-        It is in charge of querying the database and calling the action according to the topic.
-
-            1. Get periodically 10 records (or as many as defined in config > queue > records).
-            2. Instantiate the action (asynchronous) by passing it the model.
-            3. If the invoked function terminates successfully, remove the event from the database.
-
-        Raises:
-            Exception: An error occurred inserting record.
+        :param cursor: TODO
+        :param background_mode: TODO
+        :return: TODO
         """
 
         is_external_cursor = cursor is not None
@@ -234,6 +235,9 @@ class BrokerHandler(BrokerHandlerSetup):
 
         if not is_external_cursor:
             await cursor.__aexit__(None, None, None)
+
+        if not background_mode:
+            await self._queue.join()
 
     def _build_entries(self, rows: list[tuple]) -> list[BrokerHandlerEntry]:
         kwargs = {"callback_lookup": self.get_action}

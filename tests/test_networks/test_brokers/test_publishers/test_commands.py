@@ -13,9 +13,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    REPLY_TOPIC_CONTEXT_VAR,
-    Command,
-    CommandBrokerPublisher,
+    BrokerMessage,
+    BrokerPublisher,
 )
 from tests.utils import (
     BASE_PATH,
@@ -27,86 +26,46 @@ class TestCommandBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def test_from_config_default(self):
-        broker = CommandBrokerPublisher.from_config(config=self.config)
-        self.assertIsInstance(broker, CommandBrokerPublisher)
+        broker = BrokerPublisher.from_config(config=self.config)
+        self.assertIsInstance(broker, BrokerPublisher)
 
     def test_action(self):
-        self.assertEqual("command", CommandBrokerPublisher.ACTION)
-
-    def test_default_reply_topic(self):
-        broker = CommandBrokerPublisher.from_config(config=self.config)
-        self.assertEqual("OrderReply", broker.default_reply_topic)
+        self.assertEqual("command", BrokerPublisher.ACTION)
 
     async def test_send(self):
         mock = AsyncMock(return_value=56)
         saga = uuid4()
 
-        async with CommandBrokerPublisher.from_config(config=self.config) as broker:
+        async with BrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
-            identifier = await broker.send(FakeModel("foo"), "fake", saga, "ekaf")
+            identifier = await broker.send(FakeModel("foo"), "fake", saga=saga, reply_topic="ekaf")
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(
-            Command("fake", FakeModel("foo"), saga=saga, reply_topic="ekaf"), Model.from_avro_bytes(args[1])
-        )
-
-    async def test_send_with_default_reply_topic(self):
-        mock = AsyncMock(return_value=56)
-        saga = uuid4()
-
-        async with CommandBrokerPublisher.from_config(config=self.config) as broker:
-            broker.enqueue = mock
-            identifier = await broker.send(FakeModel("foo"), "fake", saga)
-
-        self.assertEqual(56, identifier)
-        self.assertEqual(1, mock.call_count)
-
-        args = mock.call_args.args
-        self.assertEqual("fake", args[0])
-        self.assertEqual(
-            Command("fake", FakeModel("foo"), saga=saga, reply_topic="OrderReply"), Model.from_avro_bytes(args[1]),
-        )
-
-    async def test_send_with_reply_topic_context_var(self):
-        mock = AsyncMock(return_value=56)
-        saga = uuid4()
-
-        REPLY_TOPIC_CONTEXT_VAR.set("onetwothree")
-
-        async with CommandBrokerPublisher.from_config(config=self.config) as broker:
-            broker.enqueue = mock
-            identifier = await broker.send(FakeModel("foo"), "fake", saga)
-
-        self.assertEqual(56, identifier)
-        self.assertEqual(1, mock.call_count)
-
-        args = mock.call_args.args
-        self.assertEqual("fake", args[0])
-        self.assertEqual(
-            Command("fake", FakeModel("foo"), saga=saga, reply_topic="onetwothree"), Model.from_avro_bytes(args[1]),
-        )
+        expected = BrokerMessage("fake", FakeModel("foo"), saga=saga, reply_topic="ekaf", service_name="Order")
+        self.assertEqual(expected, Model.from_avro_bytes(args[1]))
 
     async def test_send_with_user(self):
         mock = AsyncMock(return_value=56)
         saga = uuid4()
         user = uuid4()
 
-        async with CommandBrokerPublisher.from_config(config=self.config) as broker:
+        async with BrokerPublisher.from_config(config=self.config) as broker:
             broker.enqueue = mock
-            identifier = await broker.send(FakeModel("foo"), "fake", saga, "ekaf", user)
+            identifier = await broker.send(FakeModel("foo"), "fake", saga=saga, reply_topic="ekaf", user=user)
 
         self.assertEqual(56, identifier)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(
-            Command("fake", FakeModel("foo"), saga=saga, reply_topic="ekaf", user=user), Model.from_avro_bytes(args[1]),
+        expected = BrokerMessage(
+            "fake", FakeModel("foo"), saga=saga, reply_topic="ekaf", user=user, service_name="Order"
         )
+        self.assertEqual(expected, Model.from_avro_bytes(args[1]))
 
 
 if __name__ == "__main__":

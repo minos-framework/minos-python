@@ -19,10 +19,10 @@ from minos.common.testing import (
 from minos.networks import (
     BrokerHandler,
     BrokerHandlerEntry,
+    BrokerMessage,
+    BrokerPublisher,
     BrokerRequest,
     BrokerResponseException,
-    CommandReplyBrokerPublisher,
-    Event,
     Request,
 )
 from tests.utils import (
@@ -51,9 +51,9 @@ class TestEventHandler(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.command_reply_broker = CommandReplyBrokerPublisher.from_config(self.config)
+        self.command_reply_broker = BrokerPublisher.from_config(self.config)
         self.handler = BrokerHandler.from_config(config=self.config, command_reply_broker=self.command_reply_broker)
-        self.event = Event("TicketAdded", FAKE_AGGREGATE_DIFF)
+        self.event = BrokerMessage("TicketAdded", FAKE_AGGREGATE_DIFF)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -93,7 +93,7 @@ class TestEventHandler(PostgresAsyncTestCase):
         lookup_mock = MagicMock(return_value=callback_mock)
 
         topic = "TicketAdded"
-        event = Event(topic, FAKE_AGGREGATE_DIFF)
+        event = BrokerMessage(topic, FAKE_AGGREGATE_DIFF)
         entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         await self.handler.dispatch_one(entry)
@@ -125,7 +125,7 @@ class TestEventHandler(PostgresAsyncTestCase):
 
         self.handler.get_action = MagicMock(return_value=_fn2)
 
-        events = [Event("TicketAdded", FakeModel("uuid1")), Event("TicketAdded", FakeModel("uuid2"))]
+        events = [BrokerMessage("TicketAdded", FakeModel("uuid1")), BrokerMessage("TicketAdded", FakeModel("uuid2"))]
 
         for event in events:
             await self._insert_one(event)
@@ -146,7 +146,7 @@ class TestEventHandler(PostgresAsyncTestCase):
 
         events = list()
         for i in range(1, 6):
-            events.extend([Event("TicketAdded", ["uuid1", i]), Event("TicketAdded", ["uuid2", i])])
+            events.extend([BrokerMessage("TicketAdded", ["uuid1", i]), BrokerMessage("TicketAdded", ["uuid2", i])])
         shuffle(events)
 
         for event in events:

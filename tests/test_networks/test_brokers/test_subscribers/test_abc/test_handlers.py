@@ -29,10 +29,9 @@ from minos.common.testing import (
 from minos.networks import (
     BrokerHandler,
     BrokerHandlerEntry,
+    BrokerMessage,
     BrokerResponse,
-    Command,
     EnrouteBuilder,
-    Event,
     MinosActionNotFoundException,
 )
 from tests.utils import (
@@ -133,7 +132,7 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(0, mock.call_count)
 
     async def test_dispatch(self):
-        instance = Event("AddOrder", FAKE_AGGREGATE_DIFF)
+        instance = BrokerMessage("AddOrder", FAKE_AGGREGATE_DIFF)
 
         queue_id = await self._insert_one(instance)
         await self.handler.dispatch()
@@ -143,8 +142,8 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = Event("DeleteOrder", FAKE_AGGREGATE_DIFF)
-        instance_3 = Event("NoActionTopic", FAKE_AGGREGATE_DIFF)
+        instance_2 = BrokerMessage("DeleteOrder", FAKE_AGGREGATE_DIFF)
+        instance_3 = BrokerMessage("NoActionTopic", FAKE_AGGREGATE_DIFF)
 
         queue_id_1 = await self._insert_one(instance_1)
         queue_id_2 = await self._insert_one(instance_2)
@@ -161,7 +160,7 @@ class TestHandler(PostgresAsyncTestCase):
 
         saga = uuid4()
 
-        instance = Command("AddOrder", [FakeModel("foo")], saga=saga, reply_topic="UpdateTicket")
+        instance = BrokerMessage("AddOrder", [FakeModel("foo")], saga=saga, reply_topic="UpdateTicket")
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         for _ in range(10):

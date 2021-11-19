@@ -59,6 +59,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         self,
         data: Any,
         topic: str,
+        *,
         status: Optional[BrokerMessageStatus] = None,
         saga: Optional[UUID] = None,
         reply_topic: Optional[str] = None,

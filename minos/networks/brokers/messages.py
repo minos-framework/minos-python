@@ -35,6 +35,9 @@ class BrokerMessage(DeclarativeModel):
     status: Optional[BrokerMessageStatus]
     service_name: Optional[str]
 
+    def __init__(self, topic: str, data: Any, **kwargs):
+        super().__init__(topic, data, **kwargs)
+
     @property
     def ok(self) -> bool:
         """Check if the reply is okay or not.

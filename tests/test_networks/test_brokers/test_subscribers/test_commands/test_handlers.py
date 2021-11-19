@@ -15,12 +15,12 @@ from minos.networks import (
     USER_CONTEXT_VAR,
     BrokerHandler,
     BrokerHandlerEntry,
+    BrokerMessage,
     BrokerMessageStatus,
+    BrokerPublisher,
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
-    Command,
-    CommandReplyBrokerPublisher,
     Request,
     Response,
 )
@@ -53,11 +53,13 @@ class TestCommandHandler(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.command_reply_broker = CommandReplyBrokerPublisher.from_config(self.config)
+        self.command_reply_broker = BrokerPublisher.from_config(self.config)
         self.handler = BrokerHandler.from_config(self.config, command_reply_broker=self.command_reply_broker)
         self.saga = uuid4()
         self.user = uuid4()
-        self.command = Command("AddOrder", FakeModel("foo"), saga=self.saga, user=self.user, reply_topic="UpdateTicket")
+        self.command = BrokerMessage(
+            "AddOrder", FakeModel("foo"), saga=self.saga, user=self.user, reply_topic="UpdateTicket"
+        )
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
