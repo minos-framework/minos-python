@@ -98,6 +98,6 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         return raw[0]
 
 
-_INSERT_ENTRY_QUERY = SQL("INSERT INTO producer_queue (topic, data, action) VALUES (%s, %s, %s) RETURNING id")
+_INSERT_ENTRY_QUERY = SQL("INSERT INTO producer_queue (topic, data, strategy) VALUES (%s, %s, %s) RETURNING id")
 
 _NOTIFY_QUERY = SQL("NOTIFY producer_queue")

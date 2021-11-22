@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerProducerService(Service):
-    """ProducerService class."""
+    """Broker Producer Service class."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

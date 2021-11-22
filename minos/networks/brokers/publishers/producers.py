@@ -175,11 +175,11 @@ class BrokerProducer(BrokerPublisherSetup):
         :param row: A row containing the message information.
         :return: ``True`` if everything was fine or ``False`` otherwise.
         """
-        topic, message, action = row[1], row[2], row[3]
+        topic, message, strategy = row[1], row[2], row[3]
 
         # noinspection PyBroadException
         try:
-            if action == BrokerMessageStrategy.UNICAST and topic in self.consumer.topics:
+            if strategy == BrokerMessageStrategy.UNICAST and topic in self.consumer.topics:
                 await self.consumer.enqueue(topic, -1, message)
                 return True
 
@@ -206,6 +206,10 @@ class BrokerProducer(BrokerPublisherSetup):
 
     @property
     def client(self) -> AIOKafkaProducer:
+        """Get the client instance.
+
+        :return: An ``AIOKafkaProducer`` instance.
+        """
         if self._client is None:  # pragma: no cover
             self._client = AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
         return self._client
