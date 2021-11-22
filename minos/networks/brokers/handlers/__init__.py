@@ -4,10 +4,6 @@ from .abc import (
 from .consumers import (
     BrokerConsumer,
 )
-from .dynamic import (
-    DynamicBrokerHandler,
-    DynamicBrokerHandlerPool,
-)
 from .entries import (
     BrokerHandlerEntry,
 )

@@ -31,27 +31,31 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ...messages import (
-    REPLY_TOPIC_CONTEXT_VAR,
-)
-from ..consumers import (
+from ..handlers import (
     BrokerConsumer,
 )
-from .handlers import (
-    DynamicBrokerHandler,
+from ..messages import (
+    REPLY_TOPIC_CONTEXT_VAR,
+)
+from ..publishers import (
+    BrokerPublisher,
+)
+from .brokers import (
+    DynamicBroker,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicBrokerHandlerPool(MinosPool):
-    """Dynamic Handler Pool class."""
+class DynamicBrokerPool(MinosPool):
+    """Dynamic Broker Pool class."""
 
     def __init__(
         self,
         config: MinosConfig,
         client: KafkaAdminClient,
         consumer: BrokerConsumer,
+        publisher: BrokerPublisher,
         maxsize: int = 5,
         recycle: Optional[int] = 3600,
         *args,
@@ -61,11 +65,13 @@ class DynamicBrokerHandlerPool(MinosPool):
         self.config = config
         self.client = client
         self.consumer = consumer
+        self.publisher = publisher
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBrokerHandlerPool:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBrokerPool:
         kwargs["client"] = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
         kwargs["consumer"] = cls._get_consumer(**kwargs)
+        kwargs["publisher"] = cls._get_publisher(**kwargs)
         return cls(config, **kwargs)
 
     # noinspection PyUnusedLocal
@@ -82,15 +88,29 @@ class DynamicBrokerHandlerPool(MinosPool):
             raise NotProvidedException(f"A {BrokerConsumer!r} object must be provided.")
         return consumer
 
-    async def _create_instance(self) -> DynamicBrokerHandler:
+    # noinspection PyUnusedLocal
+    @staticmethod
+    @inject
+    def _get_publisher(
+        publisher: Optional[BrokerPublisher] = None,
+        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        **kwargs,
+    ) -> BrokerPublisher:
+        if publisher is None:
+            publisher = broker_publisher
+        if publisher is None or isinstance(publisher, Provide):
+            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
+        return publisher
+
+    async def _create_instance(self) -> DynamicBroker:
         topic = str(uuid4()).replace("-", "")
         await self._create_reply_topic(topic)
         await self._subscribe_reply_topic(topic)
-        instance = DynamicBrokerHandler.from_config(config=self.config, topic=topic)
+        instance = DynamicBroker.from_config(self.config, topic=topic, publisher=self.publisher)
         await instance.setup()
         return instance
 
-    async def _destroy_instance(self, instance: DynamicBrokerHandler):
+    async def _destroy_instance(self, instance: DynamicBroker):
         await instance.destroy()
         await self._unsubscribe_reply_topic(instance.topic)
         await self._delete_reply_topic(instance.topic)
@@ -120,11 +140,11 @@ class DynamicBrokerHandlerPool(MinosPool):
 class _ReplyTopicContextManager:
     _token: Optional[Token]
 
-    def __init__(self, wrapper: AsyncContextManager[DynamicBrokerHandler]):
+    def __init__(self, wrapper: AsyncContextManager[DynamicBroker]):
         self.wrapper = wrapper
         self._token = None
 
-    async def __aenter__(self) -> DynamicBrokerHandler:
+    async def __aenter__(self) -> DynamicBroker:
         handler = await self.wrapper.__aenter__()
         self._token = REPLY_TOPIC_CONTEXT_VAR.set(handler.topic)
         return handler

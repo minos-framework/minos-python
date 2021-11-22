@@ -17,6 +17,10 @@ from aiopg import (
 from cached_property import (
     cached_property,
 )
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -24,42 +28,71 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosConfig,
+    NotProvidedException,
 )
 
-from ....exceptions import (
+from ...exceptions import (
     MinosHandlerNotFoundEnoughEntriesException,
 )
-from ....utils import (
+from ...utils import (
     consume_queue,
 )
-from ..abc import (
+from ..handlers import (
+    BrokerHandlerEntry,
     BrokerHandlerSetup,
 )
-from ..entries import (
-    BrokerHandlerEntry,
+from ..publishers import (
+    BrokerPublisher,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class DynamicBrokerHandler(BrokerHandlerSetup):
-    """Dynamic Handler class."""
+class DynamicBroker(BrokerHandlerSetup):
+    """Dynamic Broker class."""
 
-    def __init__(self, topic, **kwargs):
+    def __init__(self, topic: str, publisher: BrokerPublisher, **kwargs):
         super().__init__(**kwargs)
 
         self.topic = topic
+        self.publisher = publisher
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicBrokerHandler:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicBroker:
+        kwargs["publisher"] = cls._get_publisher(**kwargs)
         # noinspection PyProtectedMember
-        return cls(handlers=dict(), **config.broker.queue._asdict(), **kwargs)
+        return cls(**config.broker.queue._asdict(), **kwargs)
+
+    # noinspection PyUnusedLocal
+    @staticmethod
+    @inject
+    def _get_publisher(
+        publisher: Optional[BrokerPublisher] = None,
+        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        **kwargs,
+    ) -> BrokerPublisher:
+        if publisher is None:
+            publisher = broker_publisher
+        if publisher is None or isinstance(publisher, Provide):
+            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
+        return publisher
 
     async def _setup(self) -> None:
         await super()._setup()
 
     async def _destroy(self) -> None:
         await super()._destroy()
+
+    # noinspection PyUnusedLocal
+    async def send(self, *args, reply_topic: None = None, **kwargs) -> None:
+        """Send a ``BrokerMessage``.
+
+        :param args: Additional positional arguments.
+        :param reply_topic: This argument is ignored if ignored in favor of ``self.topic``.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
+        """
+        await self.publisher.send(*args, reply_topic=self.topic, **kwargs)
 
     async def get_one(self, *args, **kwargs) -> BrokerHandlerEntry:
         """Get one handler entry from the given topics.

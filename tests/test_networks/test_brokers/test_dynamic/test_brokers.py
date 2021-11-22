@@ -6,16 +6,24 @@ from asyncio import (
 from datetime import (
     timedelta,
 )
+from unittest.mock import (
+    AsyncMock,
+    call,
+)
 
 import aiopg
 
+from minos.common import (
+    NotProvidedException,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
     BrokerHandlerEntry,
     BrokerHandlerSetup,
-    DynamicBrokerHandler,
+    BrokerPublisher,
+    DynamicBroker,
     MinosHandlerNotFoundEnoughEntriesException,
 )
 from tests.utils import (
@@ -25,7 +33,7 @@ from tests.utils import (
 )
 
 
-class TestDynamicHandler(PostgresAsyncTestCase):
+class TestDynamicBroker(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -34,7 +42,12 @@ class TestDynamicHandler(PostgresAsyncTestCase):
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.handler = DynamicBrokerHandler.from_config(config=self.config, topic=self.topic)
+        self.publisher = BrokerPublisher.from_config(self.config)
+        self.handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+
+    async def test_from_config_raises(self):
+        with self.assertRaises(NotProvidedException):
+            DynamicBroker.from_config(config=self.config)
 
     async def test_setup_destroy(self):
         self.assertFalse(self.handler.already_setup)
@@ -44,6 +57,14 @@ class TestDynamicHandler(PostgresAsyncTestCase):
 
     def test_base_classes(self):
         self.assertIsInstance(self.handler, BrokerHandlerSetup)
+
+    async def test_send(self):
+        mock = AsyncMock()
+        self.publisher.send = mock
+
+        await self.handler.send(56, "AddFoo")
+
+        self.assertEqual([call(56, "AddFoo", reply_topic=self.topic)], mock.call_args_list)
 
     async def test_get_one(self):
         expected = BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)

@@ -1,3 +1,7 @@
+from .dynamic import (
+    DynamicBroker,
+    DynamicBrokerPool,
+)
 from .handlers import (
     BrokerConsumer,
     BrokerConsumerService,
@@ -8,8 +12,6 @@ from .handlers import (
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
-    DynamicBrokerHandler,
-    DynamicBrokerHandlerPool,
 )
 from .messages import (
     REPLY_TOPIC_CONTEXT_VAR,

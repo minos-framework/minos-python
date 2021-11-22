@@ -20,8 +20,8 @@ from .brokers import (
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
-    DynamicBrokerHandler,
-    DynamicBrokerHandlerPool,
+    DynamicBroker,
+    DynamicBrokerPool,
 )
 from .decorators import (
     BrokerCommandEnrouteDecorator,
