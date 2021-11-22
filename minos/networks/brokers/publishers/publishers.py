@@ -81,7 +81,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
             service_name=self.service_name,
             strategy=strategy,
         )
-        logger.info(f"Sending '{message!s}'...")
+        logger.info(f"Publishing '{message!s}'...")
         return await self.enqueue(message.topic, message.strategy, message.avro_bytes)
 
     async def enqueue(self, topic: str, strategy: BrokerMessageStrategy, raw: bytes) -> int:
