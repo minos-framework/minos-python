@@ -4,77 +4,77 @@ from uuid import (
 )
 
 from minos.networks import (
-    Command,
-    CommandReply,
-    CommandStatus,
-    Event,
+    BrokerMessage,
+    BrokerMessageStatus,
+    BrokerMessageStrategy,
 )
 from tests.utils import (
     FakeModel,
 )
 
 
-class TestCommand(unittest.TestCase):
+class TestBrokerMessage(unittest.TestCase):
     def setUp(self) -> None:
         self.topic = "FooCreated"
         self.data = [FakeModel("blue"), FakeModel("red")]
         self.saga = uuid4()
         self.reply_topic = "AddOrderReply"
+        self.status = BrokerMessageStatus.SUCCESS
         self.user = uuid4()
+        self.service_name = "foo"
+        self.strategy = BrokerMessageStrategy.MULTICAST
+
+    def test_constructor_simple(self):
+        message = BrokerMessage(self.topic, self.data, self.service_name)
+        self.assertEqual(self.topic, message.topic)
+        self.assertEqual(self.data, message.data)
+        self.assertEqual(self.service_name, message.service_name)
+        self.assertEqual(None, message.saga)
+        self.assertEqual(None, message.reply_topic)
+        self.assertEqual(None, message.user)
+        self.assertEqual(BrokerMessageStatus.SUCCESS, message.status)
+        self.assertEqual(BrokerMessageStrategy.UNICAST, message.strategy)
 
     def test_constructor(self):
-        command = Command(self.topic, self.data, self.saga, self.reply_topic, self.user)
-        self.assertEqual(self.topic, command.topic)
-        self.assertEqual(self.data, command.data)
-        self.assertEqual(self.saga, command.saga)
-        self.assertEqual(self.reply_topic, command.reply_topic)
-        self.assertEqual(self.user, command.user)
-
-    def test_avro_serialization(self):
-        command = Command(self.topic, self.data, self.saga, self.reply_topic, self.user)
-        decoded_command = Command.from_avro_bytes(command.avro_bytes)
-        self.assertEqual(command, decoded_command)
-
-
-class TestCommandReply(unittest.TestCase):
-    def setUp(self) -> None:
-        self.topic = "FooCreated"
-        self.data = [FakeModel("blue"), FakeModel("red")]
-        self.saga = uuid4()
-        self.status = CommandStatus.SUCCESS
-
-    def test_constructor(self):
-        command_reply = CommandReply(self.topic, self.data, self.saga, self.status)
-        self.assertEqual(self.topic, command_reply.topic)
-        self.assertEqual(self.data, command_reply.data)
-        self.assertEqual(self.saga, command_reply.saga)
-        self.assertEqual(self.status, command_reply.status)
+        message = BrokerMessage(
+            self.topic,
+            self.data,
+            self.service_name,
+            saga=self.saga,
+            reply_topic=self.reply_topic,
+            user=self.user,
+            status=self.status,
+            strategy=self.strategy,
+        )
+        self.assertEqual(self.topic, message.topic)
+        self.assertEqual(self.data, message.data)
+        self.assertEqual(self.saga, message.saga)
+        self.assertEqual(self.reply_topic, message.reply_topic)
+        self.assertEqual(self.user, message.user)
+        self.assertEqual(self.status, message.status)
+        self.assertEqual(self.service_name, message.service_name)
+        self.assertEqual(self.strategy, message.strategy)
 
     def test_ok(self):
-        self.assertTrue(CommandReply(self.topic, self.data, self.saga, CommandStatus.SUCCESS).ok)
-        self.assertFalse(CommandReply(self.topic, self.data, self.saga, CommandStatus.ERROR).ok)
-        self.assertFalse(CommandReply(self.topic, self.data, self.saga, CommandStatus.SYSTEM_ERROR).ok)
+        self.assertTrue(BrokerMessage(self.topic, self.data, self.service_name, status=BrokerMessageStatus.SUCCESS).ok)
+        self.assertFalse(BrokerMessage(self.topic, self.data, self.service_name, status=BrokerMessageStatus.ERROR).ok)
+        self.assertFalse(
+            BrokerMessage(self.topic, self.data, self.service_name, status=BrokerMessageStatus.SYSTEM_ERROR).ok
+        )
 
     def test_avro_serialization(self):
-        command_reply = CommandReply(self.topic, self.data, self.saga, self.status)
-        decoded_command = CommandReply.from_avro_bytes(command_reply.avro_bytes)
-        self.assertEqual(command_reply, decoded_command)
-
-
-class TestEvent(unittest.TestCase):
-    def setUp(self) -> None:
-        self.data = FakeModel("blue")
-        self.topic = "FooCreated"
-
-    def test_constructor(self):
-        event = Event(self.topic, self.data)
-        self.assertEqual(self.topic, event.topic)
-        self.assertEqual(self.data, event.data)
-
-    def test_avro_serialization(self):
-        event = Event(self.topic, self.data)
-        decoded_event = Event.from_avro_bytes(event.avro_bytes)
-        self.assertEqual(event, decoded_event)
+        message = BrokerMessage(
+            self.topic,
+            self.data,
+            saga=self.saga,
+            reply_topic=self.reply_topic,
+            user=self.user,
+            status=self.status,
+            service_name=self.service_name,
+            strategy=self.strategy,
+        )
+        observed = BrokerMessage.from_avro_bytes(message.avro_bytes)
+        self.assertEqual(message, observed)
 
 
 if __name__ == "__main__":

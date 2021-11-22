@@ -1,7 +1,7 @@
 from .handlers import (
     RestHandler,
 )
-from .messages import (
+from .requests import (
     RestRequest,
     RestResponse,
     RestResponseException,

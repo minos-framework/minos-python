@@ -1,34 +1,27 @@
 __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from .brokers import (
     REPLY_TOPIC_CONTEXT_VAR,
-    Broker,
-    BrokerSetup,
-    Command,
-    CommandBroker,
-    CommandHandler,
-    CommandHandlerService,
-    CommandReply,
-    CommandReplyBroker,
-    CommandStatus,
-    Consumer,
-    ConsumerService,
-    DynamicHandler,
-    DynamicHandlerPool,
-    Event,
-    EventBroker,
-    EventHandler,
-    EventHandlerService,
-    Handler,
-    HandlerEntry,
-    HandlerRequest,
-    HandlerResponse,
-    HandlerResponseException,
-    HandlerSetup,
-    Producer,
-    ProducerService,
+    BrokerConsumer,
+    BrokerConsumerService,
+    BrokerHandler,
+    BrokerHandlerEntry,
+    BrokerHandlerService,
+    BrokerHandlerSetup,
+    BrokerMessage,
+    BrokerMessageStatus,
+    BrokerMessageStrategy,
+    BrokerProducer,
+    BrokerProducerService,
+    BrokerPublisher,
+    BrokerPublisherSetup,
+    BrokerRequest,
+    BrokerResponse,
+    BrokerResponseException,
+    DynamicBroker,
+    DynamicBrokerPool,
 )
 from .decorators import (
     BrokerCommandEnrouteDecorator,
@@ -62,7 +55,7 @@ from .exceptions import (
     MinosNetworkException,
     MinosRedefinedEnrouteDecoratorException,
 )
-from .messages import (
+from .requests import (
     USER_CONTEXT_VAR,
     Request,
     Response,

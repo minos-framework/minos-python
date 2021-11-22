@@ -25,7 +25,7 @@ from minos.common import (
 from ..exceptions import (
     MinosRedefinedEnrouteDecoratorException,
 )
-from ..messages import (
+from ..requests import (
     Request,
     Response,
 )
@@ -68,6 +68,14 @@ class EnrouteBuilder:
         """
         # noinspection PyTypeChecker
         return self._build("get_rest_command_query", **kwargs)
+
+    def get_broker_command_query_event(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
+        """Get the broker handlers for commands, queries and events.
+
+        :return: A dictionary with decorator classes as keys and callable handlers as values.
+        """
+        # noinspection PyTypeChecker
+        return self._build("get_broker_command_query_event", **kwargs)
 
     def get_broker_command_query(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
         """Get the broker handlers for commands and queries.

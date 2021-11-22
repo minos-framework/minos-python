@@ -37,37 +37,7 @@ class FakeModel(DeclarativeModel):
     text: str
 
 
-FAKE_AGGREGATE_DIFF = FakeModel("Foo")
-
 Message = namedtuple("Message", ["topic", "partition", "value"])
-
-
-class FakeConsumer:
-    """For testing purposes."""
-
-    def __init__(self, messages=None):
-        if messages is None:
-            messages = [Message(topic="TicketAdded", partition=0, value=bytes())]
-        self.messages = messages
-
-    async def start(self):
-        """For testing purposes."""
-
-    async def stop(self):
-        """For testing purposes."""
-
-    def subscribe(self, *args, **kwargs):
-        """For testing purposes."""
-
-    def unsubscribe(self):
-        """For testing purposes."""
-
-    async def getmany(self, *args, **kwargs):
-        return dict(enumerate(self.messages))
-
-    async def __aiter__(self):
-        for message in self.messages:
-            yield message
 
 
 class FakeDispatcher:

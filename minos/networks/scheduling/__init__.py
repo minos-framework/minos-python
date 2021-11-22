@@ -1,4 +1,4 @@
-from .messages import (
+from .requests import (
     ScheduledRequest,
     ScheduledRequestContent,
     ScheduledResponseException,
