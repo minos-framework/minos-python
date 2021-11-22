@@ -1,6 +1,6 @@
 __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from .brokers import (
     REPLY_TOPIC_CONTEXT_VAR,

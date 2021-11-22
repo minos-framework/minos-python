@@ -135,3 +135,19 @@ History
 * Add support variable number of services (previously only `CommandService` and `QueryService` were allowed).
 * Migrate `Command`, `CommandReply`, `CommandStatus` and `Event` from `minos.common` to `minos.networks`.
 * Add support for `minos-microservice-common=^0.3.0`
+
+0.3.0 (2021-11-22)
+------------------
+
+* Improve `BrokerHandler` dispatching strategy to be more concurrent (using `asyncio.PriorityQueue` and multiple consumers).
+* Add `send(...)` method to `DynamicBroker` in order to simplify the execution of request-response messages.
+* Merge `minos.networks.brokers` and `minos.networks.handlers` modules into `minos.networks.brokers` (divided into `handlers` and `subscribers`).
+* Merge `Command`, `CommandReply` and `Event` into `BrokerMessage`.
+* Rename `CommandStatus` as `BrokerMessageStatus`.
+* Merge `CommandBroker`, `CommandReplyBroker` and `EventBroker` into `BrokerPublisher`.
+* Merge `CommandHandler`, `CommandReplyHandler` and `EventHandler` into `BrokerHandler`.
+* Merge `CommandHandlerService`, `CommandReplyHandlerService` and `EventHandlerService` into `BrokerHandlerService`
+* Rename `DynamicHandler` and `DynamicHandlerPool` as `DynamicBroker` and `DynamicBrokerPool`
+* Rename `Consumer` and `ConsumerService` as `BrokerConsumer` and `BrokerConsumerService` respectively.
+* Rename `Producer` and `ProducerService` as `BrokerProducer` and `BrokerProducerService` respectively.
+* Rename `HandlerRequest`, `HandlerResponse` and `HandlerResponseException` as `BrokerRequest`, `BrokerResponse` and `BrokerResponseException` respectively.
