@@ -26,3 +26,9 @@
 * Add periodic event handler on `TransactionService` to reject `TransactionEntry` instances that are blocked (for more than a minute on `TransactionStatus.RESERVED` status).
 * Add ordering capabilities to `AggregateDiff` instances.
 * Add `updated_at` filter into `TransactionRepository.select`
+
+## 0.2.2 (2021-11-22)
+
+* Add `ModelRef.resolve(...)` method to resolve `ModelRef` instances.
+* Add `ModelRefResolver` to resolve `ModelRef` instances in batch.
+* Fix bug that published *Domain Events* when non-top-level transactions are committed.
