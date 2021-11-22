@@ -3,6 +3,7 @@ from asyncio import (
     Queue,
     TimeoutError,
     gather,
+    sleep,
     wait_for,
 )
 from collections import (
@@ -67,7 +68,7 @@ class _Cls:
         raise ValueError
 
 
-class TestHandler(PostgresAsyncTestCase):
+class TestBrokerHandler(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
     def setUp(self) -> None:
@@ -110,6 +111,41 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.user, self.handler.user)
         self.assertEqual(self.config.broker.queue.password, self.handler.password)
         self.assertEqual(self.publisher, self.handler.publisher)
+
+    async def test_consumers(self):
+        mock = AsyncMock()
+        consumer_concurrency = 3
+
+        async def _fn_no_wait(*args, **kwargs):
+            return
+
+        async def _fn(*args, **kwargs):
+            await sleep(60)
+
+        lookup_mock = MagicMock(side_effect=[_fn_no_wait, _fn, _fn, _fn, _fn_no_wait])
+
+        async with BrokerHandler.from_config(
+            self.config, publisher=self.publisher, consumer_concurrency=consumer_concurrency
+        ) as handler:
+            self.assertEqual(consumer_concurrency, len(handler.consumers))
+            handler.submit_query = mock
+
+            for _ in range(consumer_concurrency + 2):
+                entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1, callback_lookup=lookup_mock)
+                await handler._queue.put(entry)
+            await sleep(0.5)
+
+        self.assertEqual(0, len(handler.consumers))
+        self.assertEqual(
+            [
+                call(handler._queries["delete_processed"], (1,)),
+                call(handler._queries["update_not_processed"], (1,)),
+                call(handler._queries["update_not_processed"], (1,)),
+                call(handler._queries["update_not_processed"], (1,)),
+                call(handler._queries["update_not_processed"], (1,)),
+            ],
+            mock.call_args_list,
+        )
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")

@@ -4,6 +4,7 @@ from __future__ import (
 
 import logging
 from asyncio import (
+    CancelledError,
     PriorityQueue,
     Task,
     TimeoutError,
@@ -104,11 +105,6 @@ class BrokerHandler(BrokerHandlerSetup):
 
         self._publisher = publisher
 
-    @property
-    def publisher(self) -> BrokerPublisher:
-        """TODO"""
-        return self._publisher
-
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerHandler:
         handlers = cls._handlers_from_config(config, **kwargs)
@@ -126,11 +122,17 @@ class BrokerHandler(BrokerHandlerSetup):
 
     async def _setup(self) -> None:
         await super()._setup()
-
-        for _ in range(self._consumer_concurrency):
-            self._consumers.append(create_task(self._consume()))
+        await self._create_consumers()
 
     async def _destroy(self) -> None:
+        await self._destroy_consumers()
+        await super()._destroy()
+
+    async def _create_consumers(self):
+        while len(self._consumers) < self._consumer_concurrency:
+            self._consumers.append(create_task(self._consume()))
+
+    async def _destroy_consumers(self):
         for consumer in self._consumers:
             consumer.cancel()
         await gather(*self._consumers, return_exceptions=True)
@@ -139,8 +141,6 @@ class BrokerHandler(BrokerHandlerSetup):
         while not self._queue.empty():
             entry = self._queue.get_nowait()
             await self.submit_query(self._queries["update_not_processed"], (entry.id,))
-
-        await super()._destroy()
 
     async def _consume(self) -> None:
         while True:
@@ -152,6 +152,22 @@ class BrokerHandler(BrokerHandlerSetup):
             await self._dispatch_one(entry)
         finally:
             self._queue.task_done()
+
+    @property
+    def publisher(self) -> BrokerPublisher:
+        """Get the publisher instance.
+
+        :return: A ``BrokerPublisher`` instance.
+        """
+        return self._publisher
+
+    @property
+    def consumers(self) -> list[Task]:
+        """Get the consumers.
+
+        :return: A list of ``Task`` instances.
+        """
+        return self._consumers
 
     @property
     def handlers(self) -> dict[str, Optional[Callable]]:
@@ -252,9 +268,11 @@ class BrokerHandler(BrokerHandlerSetup):
         logger.debug(f"Dispatching '{entry!r}'...")
         try:
             await self.dispatch_one(entry)
-        except Exception as exc:
+        except (CancelledError, Exception) as exc:
             logger.warning(f"Raised an exception while dispatching {entry!r}: {exc!r}")
             entry.exception = exc
+            if isinstance(exc, CancelledError):
+                raise exc
         finally:
             query_id = "delete_processed" if entry.success else "update_not_processed"
             await self.submit_query(self._queries[query_id], (entry.id,))
