@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerPublisherSetup(PostgreSqlMinosDatabase):
-    """Minos Broker Setup Class"""
+    """Broker Publisher Setup class."""
 
     async def _setup(self) -> None:
         await self._create_broker_table()

@@ -52,7 +52,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerProducer(BrokerPublisherSetup):
-    """Minos Queue Dispatcher Class."""
+    """Broker Producer class."""
 
     def __init__(
         self,

@@ -68,6 +68,14 @@ class TestConsumer(PostgresAsyncTestCase):
             **self.config.broker.queue._asdict(),
         )
 
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.consumer.setup()
+
+    async def asyncTearDown(self):
+        await self.consumer.destroy()
+        await super().asyncTearDown()
+
     def test_from_config(self):
         expected_topics = {
             "AddOrder",
@@ -130,8 +138,7 @@ class TestConsumer(PostgresAsyncTestCase):
     async def test_dispatch(self):
         mock = MagicMock(side_effect=self.consumer.handle_message)
         self.consumer.handle_message = mock
-        async with self.consumer:
-            await self.consumer.dispatch()
+        await self.consumer.dispatch()
 
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(self.consumer.client), mock.call_args)
@@ -142,8 +149,7 @@ class TestConsumer(PostgresAsyncTestCase):
 
         self.client.commit = commit_mock
         self.consumer.handle_single_message = handle_single_message_mock
-        async with self.consumer:
-            await self.consumer.dispatch()
+        await self.consumer.dispatch()
 
         self.assertEqual([call()], commit_mock.call_args_list)
         self.assertEqual([call(self.client.messages[0])], handle_single_message_mock.call_args_list)
@@ -152,8 +158,7 @@ class TestConsumer(PostgresAsyncTestCase):
         mock = MagicMock(side_effect=self.consumer.enqueue)
 
         self.consumer.enqueue = mock
-        async with self.consumer:
-            await self.consumer.handle_single_message(Message(topic="AddOrder", partition=0, value=b"test"))
+        await self.consumer.handle_single_message(Message(topic="AddOrder", partition=0, value=b"test"))
 
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("AddOrder", 0, b"test"), mock.call_args)
@@ -164,8 +169,7 @@ class TestConsumer(PostgresAsyncTestCase):
         mock = MagicMock(side_effect=self.consumer.submit_query_and_fetchone)
 
         self.consumer.submit_query_and_fetchone = mock
-        async with self.consumer:
-            await self.consumer.enqueue("AddOrder", 0, b"test")
+        await self.consumer.enqueue("AddOrder", 0, b"test")
 
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call(query, ("AddOrder", 0, b"test")), mock.call_args)

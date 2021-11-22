@@ -150,7 +150,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual(expected, observed)
 
     async def test_enqueue(self):
-        query = SQL("INSERT INTO producer_queue (topic, data, action) VALUES (%s, %s, %s) RETURNING id")
+        query = SQL("INSERT INTO producer_queue (topic, data, strategy) VALUES (%s, %s, %s) RETURNING id")
 
         mock = AsyncMock(return_value=(56,))
         self.publisher.submit_query_and_fetchone = mock

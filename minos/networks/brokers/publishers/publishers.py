@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerPublisher(BrokerPublisherSetup, ABC):
-    """Minos Broker Class."""
+    """Broker Publisher class."""
 
     def __init__(self, *args, service_name: str, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,6 +43,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerPublisher:
+        # noinspection PyProtectedMember
         return cls(*args, service_name=config.service.name, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding

@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerConsumerService(Service):
-    """Minos QueueDispatcherService class."""
+    """Broker Consumer Service class."""
 
     @inject
     def __init__(self, consumer: BrokerConsumer = Provide["broker_consumer"], **kwargs):

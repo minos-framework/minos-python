@@ -74,6 +74,10 @@ class DynamicBrokerPool(MinosPool):
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         return cls(config, **kwargs)
 
+    async def _destroy(self) -> None:
+        await super()._destroy()
+        self.client.close()
+
     # noinspection PyUnusedLocal
     @staticmethod
     @inject

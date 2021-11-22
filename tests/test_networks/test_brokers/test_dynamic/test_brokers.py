@@ -39,21 +39,29 @@ class TestDynamicBroker(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.topic = "fooReply"
+        self.publisher = BrokerPublisher.from_config(self.config)
+        self.handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        self.publisher = BrokerPublisher.from_config(self.config)
-        self.handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        await self.publisher.setup()
+        await self.handler.setup()
+
+    async def asyncTearDown(self):
+        await self.handler.destroy()
+        await self.publisher.destroy()
+        await super().asyncTearDown()
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
             DynamicBroker.from_config(config=self.config)
 
     async def test_setup_destroy(self):
-        self.assertFalse(self.handler.already_setup)
-        async with self.handler:
-            self.assertTrue(self.handler.already_setup)
-        self.assertTrue(self.handler.already_destroyed)
+        handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
+        self.assertFalse(handler.already_setup)
+        async with handler:
+            self.assertTrue(handler.already_setup)
+        self.assertTrue(handler.already_destroyed)
 
     def test_base_classes(self):
         self.assertIsInstance(self.handler, BrokerHandlerSetup)
@@ -68,11 +76,10 @@ class TestDynamicBroker(PostgresAsyncTestCase):
 
     async def test_get_one(self):
         expected = BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)
-        async with self.handler:
-            await self._insert_one(Message("fooReply", 0, FakeModel("test1").avro_bytes))
-            await self._insert_one(Message("fooReply", 0, FakeModel("test2").avro_bytes))
+        await self._insert_one(Message("fooReply", 0, FakeModel("test1").avro_bytes))
+        await self._insert_one(Message("fooReply", 0, FakeModel("test2").avro_bytes))
 
-            observed = await self.handler.get_one()
+        observed = await self.handler.get_one()
 
         self._assert_equal_entries(expected, observed)
 
@@ -91,17 +98,15 @@ class TestDynamicBroker(PostgresAsyncTestCase):
             await self._insert_one(Message("fooReply", 0, FakeModel("test3").avro_bytes))
             await self._insert_one(Message("fooReply", 0, FakeModel("test4").avro_bytes))
 
-        async with self.handler:
-            observed, _ = await gather(self.handler.get_many(count=4, max_wait=0.1), _fn())
+        observed, _ = await gather(self.handler.get_many(count=4, max_wait=0.1), _fn())
 
         self.assertEqual(len(expected), len(observed))
         for e, o in zip(expected, observed):
             self._assert_equal_entries(e, o)
 
     async def test_get_many_raises(self):
-        async with self.handler:
-            with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
-                await self.handler.get_many(count=3, timeout=0.1)
+        with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
+            await self.handler.get_many(count=3, timeout=0.1)
 
     async def _insert_one(self, instance):
         async with aiopg.connect(**self.broker_queue_db) as connect:
