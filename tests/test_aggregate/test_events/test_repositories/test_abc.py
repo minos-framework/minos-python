@@ -277,6 +277,42 @@ class TestEventRepository(MinosTestCase):
 
         self.assertEqual(args, send_mock.call_args_list)
 
+    async def test_submit_not_send_events(self):
+        created_at = current_datetime()
+        id_ = 12
+        field_diff_container = FieldDiffContainer([IncrementalFieldDiff("colors", str, "red", Action.CREATE)])
+
+        async def _fn(e: EventEntry) -> EventEntry:
+            e.id = id_
+            e.version = 56
+            e.created_at = created_at
+            return e
+
+        submit_mock = AsyncMock(side_effect=_fn)
+        send_mock = AsyncMock()
+        self.event_repository._submit = submit_mock
+        self.event_broker.send = send_mock
+
+        uuid = uuid4()
+        aggregate_diff = EventEntry.from_aggregate_diff(
+            AggregateDiff(
+                uuid=uuid,
+                name="example.Car",
+                version=2,
+                action=Action.UPDATE,
+                created_at=current_datetime(),
+                fields_diff=field_diff_container,
+            ),
+            transaction_uuid=uuid4(),
+        )
+
+        validate_mock = AsyncMock(return_value=True)
+        self.event_repository.validate = validate_mock
+
+        await self.event_repository.submit(aggregate_diff)
+
+        self.assertEqual(0, send_mock.call_count)
+
     async def test_submit_raises_missing_action(self):
         entry = EventEntry(uuid4(), "example.Car", 0, bytes())
         with self.assertRaises(EventRepositoryException):
