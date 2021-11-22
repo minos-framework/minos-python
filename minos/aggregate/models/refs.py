@@ -43,9 +43,8 @@ from minos.common import (
     is_model_type,
 )
 from minos.networks import (
-    CommandBroker,
-    DynamicHandler,
-    DynamicHandlerPool,
+    DynamicBroker,
+    DynamicBrokerPool,
 )
 
 from ..events import (
@@ -96,19 +95,13 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     @inject
     def __init__(
-        self,
-        data: Union[MT, UUID],
-        *args,
-        command_broker: CommandBroker = Provide["command_handler"],
-        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
-        **kwargs,
+        self, data: Union[MT, UUID], *args, broker_pool: DynamicBrokerPool = Provide["broker_pool"], **kwargs,
     ):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
         DeclarativeModel.__init__(self, data, *args, **kwargs)
 
-        self._command_broker = command_broker
-        self._dynamic_handler_pool = dynamic_handler_pool
+        self._broker_pool = broker_pool
 
     def __getattr__(self, item: str) -> Any:
         try:
@@ -174,12 +167,12 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
         name = self.data_cls.__name__
 
-        async with self._dynamic_handler_pool.acquire() as handler:
-            await self._command_broker.send(data={"uuids": self.uuid}, topic=f"Get{name}", reply_topic=handler.topic)
-            self.data = await self._get_response(handler)
+        async with self._broker_pool.acquire() as broker:
+            await broker.send(data={"uuids": self.uuid}, topic=f"Get{name}")
+            self.data = await self._get_response(broker)
 
     @staticmethod
-    async def _get_response(handler: DynamicHandler, **kwargs) -> MT:
+    async def _get_response(handler: DynamicBroker, **kwargs) -> MT:
         handler_entry = await handler.get_one(**kwargs)
         response = handler_entry.data
         return response.data
@@ -199,13 +192,9 @@ class ModelRefResolver:
     # noinspection PyUnusedLocal
     @inject
     def __init__(
-        self,
-        command_broker: CommandBroker = Provide["command_handler"],
-        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
-        **kwargs,
+        self, broker_pool: DynamicBrokerPool = Provide["broker_pool"], **kwargs,
     ):
-        self.command_broker = command_broker
-        self.dynamic_handler_pool = dynamic_handler_pool
+        self.broker_pool = broker_pool
 
     # noinspection PyUnusedLocal
     async def resolve(self, data: Any, **kwargs) -> Any:
@@ -225,17 +214,14 @@ class ModelRefResolver:
         return ModelRefInjector(data, recovered).build()
 
     async def _query(self, references: dict[str, set[UUID]]) -> dict[UUID, Model]:
-        async with self.dynamic_handler_pool.acquire() as handler:
-            futures = (
-                self.command_broker.send(data={"uuids": uuids}, topic=f"Get{name}s", reply_topic=handler.topic)
-                for name, uuids in references.items()
-            )
+        async with self.broker_pool.acquire() as broker:
+            futures = (broker.send(data={"uuids": uuids}, topic=f"Get{name}s") for name, uuids in references.items())
             await gather(*futures)
 
-            return {model.uuid: model for model in await self._get_response(handler, len(references))}
+            return {model.uuid: model for model in await self._get_response(broker, len(references))}
 
     @staticmethod
-    async def _get_response(handler: DynamicHandler, count: int, **kwargs) -> Iterable[Model]:
+    async def _get_response(handler: DynamicBroker, count: int, **kwargs) -> Iterable[Model]:
         entries = await handler.get_many(count, **kwargs)
         return chain(*(entry.data.data for entry in entries))
 

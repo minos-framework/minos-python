@@ -11,7 +11,6 @@ from pathlib import (
     Path,
 )
 from typing import (
-    Any,
     Optional,
 )
 from unittest import (
@@ -44,7 +43,6 @@ from minos.aggregate import (
 )
 from minos.common import (
     Lock,
-    MinosConfig,
     MinosPool,
     MinosSetup,
     current_datetime,
@@ -60,18 +58,20 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.event_broker = FakeBroker()
+        self.broker_publisher = FakeBroker()
         self.lock_pool = FakeLockPool()
         self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
         self.event_repository = InMemoryEventRepository(
-            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+            broker_publisher=self.broker_publisher,
+            transaction_repository=self.transaction_repository,
+            lock_pool=self.lock_pool,
         )
         self.snapshot_repository = InMemorySnapshotRepository(
             event_repository=self.event_repository, transaction_repository=self.transaction_repository
         )
 
         self.container = containers.DynamicContainer()
-        self.container.event_broker = providers.Object(self.event_broker)
+        self.container.broker_publisher = providers.Object(self.broker_publisher)
         self.container.transaction_repository = providers.Object(self.transaction_repository)
         self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.event_repository = providers.Object(self.event_repository)
@@ -83,7 +83,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
 
-        await self.event_broker.setup()
+        await self.broker_publisher.setup()
         await self.transaction_repository.setup()
         await self.lock_pool.setup()
         await self.event_repository.setup()
@@ -94,7 +94,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         await self.event_repository.destroy()
         await self.lock_pool.destroy()
         await self.transaction_repository.destroy()
-        await self.event_broker.destroy()
+        await self.broker_publisher.destroy()
 
         await super().asyncTearDown()
 
@@ -123,26 +123,8 @@ class TestRepositorySelect(unittest.IsolatedAsyncioTestCase):
 class FakeBroker(MinosSetup):
     """For testing purposes."""
 
-    def __init__(self, **kwargs):
-        super().__init__()
-        self.call_count = 0
-        self.calls_kwargs = list()
-
-    async def send(self, data: Any, **kwargs) -> None:
+    async def send(self, *args, **kwargs) -> None:
         """For testing purposes."""
-        self.call_count += 1
-        self.calls_kwargs.append({"data": data} | kwargs)
-
-    @property
-    def call_kwargs(self) -> Optional[dict[str, Any]]:
-        """For testing purposes."""
-        if len(self.calls_kwargs) == 0:
-            return None
-        return self.calls_kwargs[-1]
-
-    def reset_mock(self):
-        self.call_count = 0
-        self.calls_kwargs = list()
 
 
 class FakeAsyncIterator:
