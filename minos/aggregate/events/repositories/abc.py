@@ -29,13 +29,15 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
+    NULL_UUID,
     Lock,
     MinosPool,
     MinosSetup,
     NotProvidedException,
 )
 from minos.networks import (
-    EventBroker,
+    BrokerMessageStrategy,
+    BrokerPublisher,
 )
 
 from ...exceptions import (
@@ -67,7 +69,7 @@ class EventRepository(ABC, MinosSetup):
     @inject
     def __init__(
         self,
-        event_broker: EventBroker = Provide["event_broker"],
+        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
         transaction_repository: TransactionRepository = Provide["transaction_repository"],
         lock_pool: MinosPool[Lock] = Provide["lock_pool"],
         *args,
@@ -75,7 +77,7 @@ class EventRepository(ABC, MinosSetup):
     ):
         super().__init__(*args, **kwargs)
 
-        if event_broker is None or isinstance(event_broker, Provide):
+        if broker_publisher is None or isinstance(broker_publisher, Provide):
             raise NotProvidedException("A broker instance is required.")
 
         if transaction_repository is None or isinstance(transaction_repository, Provide):
@@ -84,7 +86,7 @@ class EventRepository(ABC, MinosSetup):
         if lock_pool is None or isinstance(lock_pool, Provide):
             raise NotProvidedException("A lock pool instance is required.")
 
-        self._event_broker = event_broker
+        self._broker_publisher = broker_publisher
         self._transaction_repository = transaction_repository
         self._lock_pool = lock_pool
 
@@ -163,7 +165,7 @@ class EventRepository(ABC, MinosSetup):
 
                 entry = await self._submit(entry, **kwargs)
 
-            if transaction is None:
+            if entry.transaction_uuid == NULL_UUID:
                 await self._send_events(entry.aggregate_diff)
 
         finally:
@@ -216,7 +218,7 @@ class EventRepository(ABC, MinosSetup):
         }
 
         topic = f"{aggregate_diff.simplified_name}{suffix_mapper[aggregate_diff.action]}"
-        futures = [self._event_broker.send(aggregate_diff, topic=topic)]
+        futures = [self._broker_publisher.send(aggregate_diff, topic, strategy=BrokerMessageStrategy.MULTICAST)]
 
         if aggregate_diff.action == Action.UPDATE:
             from ...models import (
@@ -228,7 +230,11 @@ class EventRepository(ABC, MinosSetup):
                 composed_topic = f"{topic}.{diff.name}"
                 if isinstance(diff, IncrementalFieldDiff):
                     composed_topic += f".{diff.action.value}"
-                futures.append(self._event_broker.send(decomposed_aggregate_diff, topic=composed_topic))
+                futures.append(
+                    self._broker_publisher.send(
+                        decomposed_aggregate_diff, composed_topic, strategy=BrokerMessageStrategy.MULTICAST
+                    )
+                )
 
         await gather(*futures)
 
