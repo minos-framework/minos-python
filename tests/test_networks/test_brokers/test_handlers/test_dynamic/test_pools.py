@@ -4,6 +4,9 @@ from kafka import (
     KafkaAdminClient,
 )
 
+from minos.common import (
+    NotProvidedException,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -28,6 +31,10 @@ class TestDynamicHandlerPool(PostgresAsyncTestCase):
 
     async def test_config(self):
         self.assertEqual(self.config, self.pool.config)
+
+    async def test_from_config_raises(self):
+        with self.assertRaises(NotProvidedException):
+            DynamicBrokerHandlerPool.from_config(config=self.config)
 
     async def test_setup_destroy(self):
         self.assertTrue(self.pool.already_setup)

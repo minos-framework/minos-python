@@ -14,6 +14,9 @@ from uuid import (
 
 import aiopg
 
+from minos.common import (
+    NotProvidedException,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -51,6 +54,10 @@ class TestProducer(PostgresAsyncTestCase):
 
     def test_from_config_default(self):
         self.assertIsInstance(self.producer, BrokerProducer)
+
+    async def test_from_config_raises(self):
+        with self.assertRaises(NotProvidedException):
+            BrokerProducer.from_config(config=self.config)
 
     async def test_dispatch_one_internal_true(self):
         mock = AsyncMock()

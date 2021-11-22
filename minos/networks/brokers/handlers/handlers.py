@@ -42,6 +42,7 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosConfig,
+    NotProvidedException,
 )
 
 from ...decorators import (
@@ -84,14 +85,13 @@ class BrokerHandler(BrokerHandlerSetup):
 
     __slots__ = "_handlers", "_records", "_retry", "_queue", "_consumers", "_consumer_concurrency"
 
-    @inject
     def __init__(
         self,
         records: int,
         handlers: dict[str, Optional[Callable]],
         retry: int,
+        publisher: BrokerPublisher,
         consumer_concurrency: int = 15,
-        publisher: BrokerPublisher = Provide["command_reply_broker"],
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
@@ -106,19 +106,35 @@ class BrokerHandler(BrokerHandlerSetup):
         self._publisher = publisher
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerHandler:
-        handlers = cls._handlers_from_config(config, **kwargs)
+    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
+        kwargs["handlers"] = cls._get_handlers(config, **kwargs)
+        kwargs["publisher"] = cls._get_publisher(**kwargs)
         # noinspection PyProtectedMember
-        return cls(handlers=handlers, **config.broker.queue._asdict(), **kwargs)
+        return cls(**config.broker.queue._asdict(), **kwargs)
 
     @staticmethod
-    def _handlers_from_config(
-        config: MinosConfig, **kwargs
+    def _get_handlers(
+        config: MinosConfig, handlers: dict[str, Optional[Callable]] = None, **kwargs
     ) -> dict[str, Callable[[BrokerRequest], Awaitable[Optional[BrokerResponse]]]]:
-        builder = EnrouteBuilder(*config.services, middleware=config.middleware)
-        decorators = builder.get_broker_command_query_event(config=config, **kwargs)
-        handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
+        if handlers is None:
+            builder = EnrouteBuilder(*config.services, middleware=config.middleware)
+            decorators = builder.get_broker_command_query_event(config=config, **kwargs)
+            handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
         return handlers
+
+    # noinspection PyUnusedLocal
+    @staticmethod
+    @inject
+    def _get_publisher(
+        publisher: Optional[BrokerPublisher] = None,
+        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        **kwargs,
+    ) -> BrokerPublisher:
+        if publisher is None:
+            publisher = broker_publisher
+        if publisher is None or isinstance(publisher, Provide):
+            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
+        return publisher
 
     async def _setup(self) -> None:
         await super()._setup()

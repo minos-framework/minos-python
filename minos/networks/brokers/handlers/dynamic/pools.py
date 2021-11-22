@@ -28,6 +28,7 @@ from kafka.admin import (
 from minos.common import (
     MinosConfig,
     MinosPool,
+    NotProvidedException,
 )
 
 from ...messages import (
@@ -46,13 +47,12 @@ logger = logging.getLogger(__name__)
 class DynamicBrokerHandlerPool(MinosPool):
     """Dynamic Handler Pool class."""
 
-    @inject
     def __init__(
         self,
         config: MinosConfig,
         client: KafkaAdminClient,
+        consumer: BrokerConsumer,
         maxsize: int = 5,
-        consumer: BrokerConsumer = Provide["consumer"],
         recycle: Optional[int] = 3600,
         *args,
         **kwargs,
@@ -63,9 +63,24 @@ class DynamicBrokerHandlerPool(MinosPool):
         self.consumer = consumer
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> DynamicBrokerHandlerPool:
-        client = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
-        return cls(config, client, **kwargs)
+    def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBrokerHandlerPool:
+        kwargs["client"] = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
+        kwargs["consumer"] = cls._get_consumer(**kwargs)
+        return cls(config, **kwargs)
+
+    # noinspection PyUnusedLocal
+    @staticmethod
+    @inject
+    def _get_consumer(
+        consumer: Optional[BrokerConsumer] = None,
+        broker_consumer: BrokerConsumer = Provide["broker_consumer"],
+        **kwargs,
+    ) -> BrokerConsumer:
+        if consumer is None:
+            consumer = broker_consumer
+        if consumer is None or isinstance(consumer, Provide):
+            raise NotProvidedException(f"A {BrokerConsumer!r} object must be provided.")
+        return consumer
 
     async def _create_instance(self) -> DynamicBrokerHandler:
         topic = str(uuid4()).replace("-", "")

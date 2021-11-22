@@ -14,6 +14,10 @@ from dependency_injector.wiring import (
     inject,
 )
 
+from minos.common import (
+    NotProvidedException,
+)
+
 from .consumers import (
     BrokerConsumer,
 )
@@ -28,23 +32,25 @@ class BrokerConsumerService(Service):
     """Minos QueueDispatcherService class."""
 
     @inject
-    def __init__(self, dispatcher: BrokerConsumer = Provide["consumer"], **kwargs):
+    def __init__(self, consumer: BrokerConsumer = Provide["broker_consumer"], **kwargs):
         super().__init__(**kwargs)
-        self.dispatcher = dispatcher
+        if consumer is None or isinstance(consumer, Provide):
+            raise NotProvidedException(f"A {BrokerConsumer!r} object must be provided.")
+        self.consumer = consumer
 
     async def start(self) -> None:
-        """Method to be called at the startup by the internal ``aiomisc`` loigc.
+        """Start the service execution.
 
         :return: This method does not return anything.
         """
-        await self.dispatcher.setup()
+        await self.consumer.setup()
 
         try:
             self.start_event.set()
         except RuntimeError:
             logger.warning("Runtime is not properly setup.")
 
-        await self.dispatcher.dispatch()
+        await self.consumer.dispatch()
 
     async def stop(self, exception: Exception = None) -> Any:
         """Stop the service execution.
@@ -52,7 +58,7 @@ class BrokerConsumerService(Service):
         :param exception: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
-        await self.dispatcher.destroy()
+        await self.consumer.destroy()
 
 
 class BrokerHandlerService(Service):
@@ -63,18 +69,18 @@ class BrokerHandlerService(Service):
         self._init_kwargs = kwargs
 
     async def start(self) -> None:
-        """Method to be called at the startup by the internal ``aiomisc`` loigc.
+        """Start the service execution.
 
         :return: This method does not return anything.
         """
-        await self.dispatcher.setup()
+        await self.handler.setup()
 
         try:
             self.start_event.set()
         except RuntimeError:
             logger.warning("Runtime is not properly setup.")
 
-        await self.dispatcher.dispatch_forever()
+        await self.handler.dispatch_forever()
 
     async def stop(self, err: Exception = None) -> None:
         """Stop the service execution.
@@ -82,11 +88,11 @@ class BrokerHandlerService(Service):
         :param err: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
-        await self.dispatcher.destroy()
+        await self.handler.destroy()
 
     @cached_property
-    def dispatcher(self) -> BrokerHandler:
-        """Get the service dispatcher.
+    def handler(self) -> BrokerHandler:
+        """Get the service handler.
 
         :return: A ``Handler`` instance.
         """

@@ -11,6 +11,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
+    BrokerConsumer,
     BrokerProducer,
     BrokerProducerService,
 )
@@ -22,16 +23,20 @@ from tests.utils import (
 class TestProducerService(PostgresAsyncTestCase):
     CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
+    def setUp(self) -> None:
+        super().setUp()
+        self.consumer = BrokerConsumer.from_config(self.config)
+
     def test_is_instance(self):
-        service = BrokerProducerService(config=self.config)
+        service = BrokerProducerService(config=self.config, consumer=self.consumer)
         self.assertIsInstance(service, Service)
 
     def test_dispatcher(self):
-        service = BrokerProducerService(config=self.config)
+        service = BrokerProducerService(config=self.config, consumer=self.consumer)
         self.assertIsInstance(service.dispatcher, BrokerProducer)
 
     async def test_start_stop(self):
-        service = BrokerProducerService(config=self.config)
+        service = BrokerProducerService(config=self.config, consumer=self.consumer)
 
         setup_mock = AsyncMock()
         destroy_mock = AsyncMock()

@@ -32,6 +32,7 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosConfig,
+    NotProvidedException,
 )
 
 from ...utils import (
@@ -53,7 +54,6 @@ logger = logging.getLogger(__name__)
 class BrokerProducer(BrokerPublisherSetup):
     """Minos Queue Dispatcher Class."""
 
-    @inject
     def __init__(
         self,
         *args,
@@ -62,7 +62,7 @@ class BrokerProducer(BrokerPublisherSetup):
         retry: int,
         records: int,
         client: Optional[AIOKafkaProducer] = None,
-        consumer: BrokerConsumer = Provide["consumer"],
+        consumer: BrokerConsumer = Provide["broker_consumer"],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -74,15 +74,26 @@ class BrokerProducer(BrokerPublisherSetup):
         self.consumer = consumer
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerProducer:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerProducer:
+        kwargs["broker_host"] = config.broker.host
+        kwargs["broker_port"] = config.broker.port
+        kwargs["consumer"] = cls._get_consumer(**kwargs)
         # noinspection PyProtectedMember
-        return cls(
-            *args,
-            broker_host=config.broker.host,
-            broker_port=config.broker.port,
-            **config.broker.queue._asdict(),
-            **kwargs,
-        )
+        return cls(**config.broker.queue._asdict(), **kwargs)
+
+    # noinspection PyUnusedLocal
+    @staticmethod
+    @inject
+    def _get_consumer(
+        consumer: Optional[BrokerConsumer] = None,
+        broker_consumer: BrokerConsumer = Provide["broker_consumer"],
+        **kwargs,
+    ) -> BrokerConsumer:
+        if consumer is None:
+            consumer = broker_consumer
+        if consumer is None or isinstance(consumer, Provide):
+            raise NotProvidedException(f"A {BrokerConsumer!r} object must be provided.")
+        return consumer
 
     async def _setup(self) -> None:
         await super()._setup()

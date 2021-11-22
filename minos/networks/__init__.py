@@ -83,13 +83,3 @@ from .utils import (
     get_host_name,
     get_ip,
 )
-
-# FIXME: Only compatibility reasons, remove these lines as soon as possible.
-HandlerRequest = BrokerRequest
-HandlerResponse = BrokerResponse
-BrokerResponseException = BrokerResponseException
-DynamicHandler = DynamicBrokerHandler
-DynamicHandlerPool = DynamicBrokerHandlerPool
-EventBroker = BrokerPublisher
-CommandBroker = BrokerPublisher
-CommandReplyBroker = BrokerPublisher

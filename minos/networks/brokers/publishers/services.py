@@ -26,7 +26,7 @@ class BrokerProducerService(Service):
         self._init_kwargs = kwargs
 
     async def start(self) -> None:
-        """Method to be called at the startup by the internal ``aiomisc`` loigc.
+        """Start the service execution.
 
         :return: This method does not return anything.
         """

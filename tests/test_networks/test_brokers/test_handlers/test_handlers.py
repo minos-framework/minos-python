@@ -26,6 +26,9 @@ from uuid import (
 
 import aiopg
 
+from minos.common import (
+    NotProvidedException,
+)
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -112,6 +115,10 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.password, self.handler.password)
         self.assertEqual(self.publisher, self.handler.publisher)
 
+    async def test_from_config_raises(self):
+        with self.assertRaises(NotProvidedException):
+            BrokerHandler.from_config(config=self.config)
+
     async def test_consumers(self):
         mock = AsyncMock()
         consumer_concurrency = 3
@@ -184,7 +191,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.assertEqual(3, mock_count.call_count)
 
     async def test_dispatch_forever_without_topics(self):
-        handler = BrokerHandler(handlers=dict(), **self.config.broker.queue._asdict())
+        handler = BrokerHandler.from_config(self.config, handlers=dict(), publisher=self.publisher)
         mock = AsyncMock()
         async with handler:
             handler.dispatch = mock
