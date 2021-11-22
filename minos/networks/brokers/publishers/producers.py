@@ -32,25 +32,28 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosConfig,
+    NotProvidedException,
 )
 
 from ...utils import (
     consume_queue,
 )
-from ..subscribers import (
-    Consumer,
+from ..handlers import (
+    BrokerConsumer,
+)
+from ..messages import (
+    BrokerMessageStrategy,
 )
 from .abc import (
-    BrokerSetup,
+    BrokerPublisherSetup,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class Producer(BrokerSetup):
-    """Minos Queue Dispatcher Class."""
+class BrokerProducer(BrokerPublisherSetup):
+    """Broker Producer class."""
 
-    @inject
     def __init__(
         self,
         *args,
@@ -59,7 +62,7 @@ class Producer(BrokerSetup):
         retry: int,
         records: int,
         client: Optional[AIOKafkaProducer] = None,
-        consumer: Consumer = Provide["consumer"],
+        consumer: BrokerConsumer = Provide["broker_consumer"],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -71,15 +74,26 @@ class Producer(BrokerSetup):
         self.consumer = consumer
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> Producer:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerProducer:
+        kwargs["broker_host"] = config.broker.host
+        kwargs["broker_port"] = config.broker.port
+        kwargs["consumer"] = cls._get_consumer(**kwargs)
         # noinspection PyProtectedMember
-        return cls(
-            *args,
-            broker_host=config.broker.host,
-            broker_port=config.broker.port,
-            **config.broker.queue._asdict(),
-            **kwargs,
-        )
+        return cls(**config.broker.queue._asdict(), **kwargs)
+
+    # noinspection PyUnusedLocal
+    @staticmethod
+    @inject
+    def _get_consumer(
+        consumer: Optional[BrokerConsumer] = None,
+        broker_consumer: BrokerConsumer = Provide["broker_consumer"],
+        **kwargs,
+    ) -> BrokerConsumer:
+        if consumer is None:
+            consumer = broker_consumer
+        if consumer is None or isinstance(consumer, Provide):
+            raise NotProvidedException(f"A {BrokerConsumer!r} object must be provided.")
+        return consumer
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -161,13 +175,14 @@ class Producer(BrokerSetup):
         :param row: A row containing the message information.
         :return: ``True`` if everything was fine or ``False`` otherwise.
         """
-        topic, message, action = row[1], row[2], row[3]
+        topic, message, strategy = row[1], row[2], row[3]
 
         # noinspection PyBroadException
         try:
-            if action != "event" and topic in self.consumer.topics:
+            if strategy == BrokerMessageStrategy.UNICAST and topic in self.consumer.topics:
                 await self.consumer.enqueue(topic, -1, message)
                 return True
+
         except Exception as exc:
             logger.warning(f"There was a problem while trying to use the consumer: {exc!r}")
 
@@ -191,6 +206,10 @@ class Producer(BrokerSetup):
 
     @property
     def client(self) -> AIOKafkaProducer:
+        """Get the client instance.
+
+        :return: An ``AIOKafkaProducer`` instance.
+        """
         if self._client is None:  # pragma: no cover
             self._client = AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
         return self._client

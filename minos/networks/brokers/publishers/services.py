@@ -12,21 +12,21 @@ from cached_property import (
 )
 
 from .producers import (
-    Producer,
+    BrokerProducer,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class ProducerService(Service):
-    """ProducerService class."""
+class BrokerProducerService(Service):
+    """Broker Producer Service class."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._init_kwargs = kwargs
 
     async def start(self) -> None:
-        """Method to be called at the startup by the internal ``aiomisc`` loigc.
+        """Start the service execution.
 
         :return: This method does not return anything.
         """
@@ -48,9 +48,9 @@ class ProducerService(Service):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self) -> Producer:
+    def dispatcher(self) -> BrokerProducer:
         """Get the service dispatcher.
 
         :return: A ``Producer`` instance.
         """
-        return Producer.from_config(**self._init_kwargs)
+        return BrokerProducer.from_config(**self._init_kwargs)

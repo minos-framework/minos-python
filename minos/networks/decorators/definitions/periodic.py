@@ -35,6 +35,6 @@ class PeriodicEnrouteDecorator(EnrouteDecorator, ABC):
 
 
 class PeriodicEventEnrouteDecorator(PeriodicEnrouteDecorator):
-    """Periodic Command Enroute class"""
+    """Periodic Event Enroute class"""
 
     KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Event

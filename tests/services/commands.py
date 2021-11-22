@@ -1,5 +1,5 @@
 from minos.networks import (
-    HandlerResponse,
+    BrokerResponse,
     Request,
     Response,
     enroute,
@@ -13,19 +13,19 @@ class CommandService:
 
     @enroute.broker.command("GetOrder")
     def get_order_command(self, request: Request) -> Response:
-        return HandlerResponse("get_order")
+        return BrokerResponse("get_order")
 
     @enroute.broker.command("AddOrder")
     def add_order(self, request: Request) -> Response:
-        return HandlerResponse("add_order")
+        return BrokerResponse("add_order")
 
     @enroute.broker.command("DeleteOrder")
     def delete_order(self, request: Request) -> Response:
-        return HandlerResponse("delete_order")
+        return BrokerResponse("delete_order")
 
     @enroute.broker.command("UpdateOrder")
     def update_order(self, request: Request) -> Response:
-        return HandlerResponse("update_order")
+        return BrokerResponse("update_order")
 
     @enroute.broker.event("TicketAdded")
     def ticket_added(self, request: Request) -> None:
