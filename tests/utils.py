@@ -59,6 +59,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         super().setUp()
 
         self.broker_publisher = FakeBroker()
+        self.broker_pool = FakeBrokerPool()
         self.lock_pool = FakeLockPool()
         self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
         self.event_repository = InMemoryEventRepository(
@@ -72,6 +73,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
         self.container = containers.DynamicContainer()
         self.container.broker_publisher = providers.Object(self.broker_publisher)
+        self.container.broker_pool = providers.Object(self.broker_pool)
         self.container.transaction_repository = providers.Object(self.transaction_repository)
         self.container.lock_pool = providers.Object(self.lock_pool)
         self.container.event_repository = providers.Object(self.event_repository)
@@ -126,6 +128,12 @@ class FakeBroker(MinosSetup):
     async def send(self, *args, **kwargs) -> None:
         """For testing purposes."""
 
+    async def get_one(self, *args, **kwargs):
+        """For testing purposes."""
+
+    async def get_many(self, *args, **kwargs):
+        """For testing purposes."""
+
 
 class FakeAsyncIterator:
     """For testing purposes."""
@@ -160,6 +168,16 @@ class FakeLockPool(MinosPool):
 
     async def _create_instance(self):
         return FakeLock()
+
+    async def _destroy_instance(self, instance) -> None:
+        """For testing purposes."""
+
+
+class FakeBrokerPool(MinosPool):
+    """For testing purposes."""
+
+    async def _create_instance(self):
+        return FakeBroker()
 
     async def _destroy_instance(self, instance) -> None:
         """For testing purposes."""
