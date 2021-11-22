@@ -40,6 +40,9 @@ from ...utils import (
 from ..handlers import (
     BrokerConsumer,
 )
+from ..messages import (
+    BrokerMessageStrategy,
+)
 from .abc import (
     BrokerPublisherSetup,
 )
@@ -165,11 +168,10 @@ class BrokerProducer(BrokerPublisherSetup):
 
         # noinspection PyBroadException
         try:
-            if action != "event" and topic in self.consumer.topics:
-                # FIXME
-                # await self.consumer.enqueue(topic, -1, message)
-                # return True
-                pass
+            if action == BrokerMessageStrategy.UNICAST and topic in self.consumer.topics:
+                await self.consumer.enqueue(topic, -1, message)
+                return True
+
         except Exception as exc:
             logger.warning(f"There was a problem while trying to use the consumer: {exc!r}")
 

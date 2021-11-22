@@ -25,6 +25,7 @@ from minos.common import (
 from ..messages import (
     BrokerMessage,
     BrokerMessageStatus,
+    BrokerMessageStrategy,
 )
 from .abc import (
     BrokerPublisherSetup,
@@ -35,8 +36,6 @@ logger = logging.getLogger(__name__)
 
 class BrokerPublisher(BrokerPublisherSetup, ABC):
     """Minos Broker Class."""
-
-    ACTION: str = "command"  # FIXME
 
     def __init__(self, *args, service_name: str, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,6 +55,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         saga: Optional[UUID] = None,
         reply_topic: Optional[str] = None,
         user: Optional[UUID] = None,
+        strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
         **kwargs,
     ) -> int:
         """Send a ``BrokerMessage``.
@@ -66,6 +66,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         :param status: command status.
         :param reply_topic: TODO
         :param user: TODO
+        :param strategy: TODO
         :param kwargs: TODO
         :return: This method does not return anything.
         """
@@ -78,18 +79,20 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
             reply_topic=reply_topic,
             user=user,
             service_name=self.service_name,
+            strategy=strategy,
         )
         logger.info(f"Sending '{message!s}'...")
-        return await self.enqueue(message.topic, message.avro_bytes)
+        return await self.enqueue(message.topic, message.strategy, message.avro_bytes)
 
-    async def enqueue(self, topic: str, raw: bytes) -> int:
+    async def enqueue(self, topic: str, strategy: BrokerMessageStrategy, raw: bytes) -> int:
         """Send a sequence of bytes to the given topic.
 
         :param topic: Topic in which the bytes will be send.
+        :param strategy: TODO
         :param raw: Bytes sequence to be send.
         :return: The identifier of the message in the queue.
         """
-        params = (topic, raw, self.ACTION)
+        params = (topic, raw, strategy)
         raw = await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY)
         return raw[0]

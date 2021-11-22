@@ -78,8 +78,10 @@ class TestHandler(PostgresAsyncTestCase):
 
         self.saga = uuid4()
         self.user = uuid4()
+        self.service_name = self.config.service.name
+
         self.message = BrokerMessage(
-            "AddOrder", FakeModel("foo"), saga=self.saga, user=self.user, reply_topic="UpdateTicket"
+            "AddOrder", FakeModel("foo"), self.service_name, saga=self.saga, user=self.user, reply_topic="UpdateTicket",
         )
 
     async def asyncSetUp(self):
@@ -170,7 +172,15 @@ class TestHandler(PostgresAsyncTestCase):
         self.assertEqual(call("AddOrder"), lookup_mock.call_args)
 
         self.assertEqual(
-            [call("add_order", topic="UpdateTicket", saga=self.message.saga, status=BrokerMessageStatus.SUCCESS)],
+            [
+                call(
+                    "add_order",
+                    topic="UpdateTicket",
+                    saga=self.message.saga,
+                    status=BrokerMessageStatus.SUCCESS,
+                    user=self.user,
+                )
+            ],
             send_mock.call_args_list,
         )
 
@@ -181,7 +191,7 @@ class TestHandler(PostgresAsyncTestCase):
 
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"))
+        instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"), self.service_name)
 
         queue_id_1 = await self._insert_one(instance_1)
         queue_id_2 = await self._insert_one(instance_2)
@@ -196,7 +206,9 @@ class TestHandler(PostgresAsyncTestCase):
 
         saga = uuid4()
 
-        instance = BrokerMessage("AddOrder", [FakeModel("foo")], saga=saga, reply_topic="UpdateTicket")
+        instance = BrokerMessage(
+            "AddOrder", [FakeModel("foo")], self.service_name, saga=saga, reply_topic="UpdateTicket"
+        )
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         for _ in range(10):
@@ -220,7 +232,7 @@ class TestHandler(PostgresAsyncTestCase):
         lookup_mock = MagicMock(return_value=callback_mock)
 
         topic = "TicketAdded"
-        event = BrokerMessage(topic, FakeModel("Foo"))
+        event = BrokerMessage(topic, FakeModel("Foo"), self.service_name)
         entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         await self.handler.dispatch_one(entry)
@@ -270,7 +282,10 @@ class TestHandler(PostgresAsyncTestCase):
 
         self.handler.get_action = MagicMock(return_value=_fn2)
 
-        events = [BrokerMessage("TicketAdded", FakeModel("uuid1")), BrokerMessage("TicketAdded", FakeModel("uuid2"))]
+        events = [
+            BrokerMessage("TicketAdded", FakeModel("uuid1"), self.service_name),
+            BrokerMessage("TicketAdded", FakeModel("uuid2"), self.service_name),
+        ]
 
         for event in events:
             await self._insert_one(event)
@@ -291,7 +306,12 @@ class TestHandler(PostgresAsyncTestCase):
 
         events = list()
         for i in range(1, 6):
-            events.extend([BrokerMessage("TicketAdded", ["uuid1", i]), BrokerMessage("TicketAdded", ["uuid2", i])])
+            events.extend(
+                [
+                    BrokerMessage("TicketAdded", ["uuid1", i], self.service_name),
+                    BrokerMessage("TicketAdded", ["uuid2", i], self.service_name),
+                ]
+            )
         shuffle(events)
 
         for event in events:

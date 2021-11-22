@@ -15,6 +15,7 @@ from .messages import (
     REPLY_TOPIC_CONTEXT_VAR,
     BrokerMessage,
     BrokerMessageStatus,
+    BrokerMessageStrategy,
 )
 from .publishers import (
     BrokerProducer,

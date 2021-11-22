@@ -6,6 +6,7 @@ from contextvars import (
     ContextVar,
 )
 from enum import (
+    Enum,
     IntEnum,
 )
 from typing import (
@@ -29,14 +30,28 @@ class BrokerMessage(DeclarativeModel):
 
     topic: str
     data: Any
+    service_name: str
     saga: Optional[UUID]
     reply_topic: Optional[str]
     user: Optional[UUID]
-    status: Optional[BrokerMessageStatus]
-    service_name: Optional[str]
+    status: BrokerMessageStatus
+    strategy: BrokerMessageStrategy
 
-    def __init__(self, topic: str, data: Any, **kwargs):
-        super().__init__(topic, data, **kwargs)
+    def __init__(
+        self,
+        topic: str,
+        data: Any,
+        service_name: str,
+        *,
+        status: Optional[BrokerMessageStatus] = None,
+        strategy: Optional[BrokerMessageStrategy] = None,
+        **kwargs
+    ):
+        if status is None:
+            status = BrokerMessageStatus.SUCCESS
+        if strategy is None:
+            strategy = BrokerMessageStrategy.UNICAST
+        super().__init__(topic, data, service_name, status=status, strategy=strategy, **kwargs)
 
     @property
     def ok(self) -> bool:
@@ -53,3 +68,10 @@ class BrokerMessageStatus(IntEnum):
     SUCCESS = 200
     ERROR = 400
     SYSTEM_ERROR = 500
+
+
+class BrokerMessageStrategy(str, Enum):
+    """Broker Message Strategy class"""
+
+    UNICAST = "unicast"
+    MULTICAST = "multicast"

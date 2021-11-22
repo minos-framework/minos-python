@@ -17,7 +17,10 @@ class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.data = [FakeModel("foo"), FakeModel("bar")]
         self.saga = uuid4()
-        self.raw = BrokerMessage("FooCreated", self.data, saga=self.saga, reply_topic="AddOrderReply")
+        self.service_name = "foo"
+        self.raw = BrokerMessage(
+            "FooCreated", self.data, self.service_name, saga=self.saga, reply_topic="AddOrderReply"
+        )
 
     def test_repr(self):
         request = BrokerRequest(self.raw)
@@ -28,7 +31,9 @@ class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(BrokerRequest(self.raw), BrokerRequest(self.raw))
 
     def test_eq_false(self):
-        another = BrokerRequest(BrokerMessage("FooUpdated", self.data, saga=self.saga, reply_topic="AddOrderReply"))
+        another = BrokerRequest(
+            BrokerMessage("FooUpdated", self.data, self.service_name, saga=self.saga, reply_topic="AddOrderReply")
+        )
         self.assertNotEqual(BrokerRequest(self.raw), another)
 
     def test_no_user(self):
@@ -44,11 +49,15 @@ class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.data, await request.content())
 
     async def test_content_single(self):
-        request = BrokerRequest(BrokerMessage("FooCreated", self.data[0], saga=self.saga, reply_topic="AddOrderReply"))
+        request = BrokerRequest(
+            BrokerMessage("FooCreated", self.data[0], self.service_name, saga=self.saga, reply_topic="AddOrderReply")
+        )
         self.assertEqual(self.data[0], await request.content())
 
     async def test_content_simple(self):
-        request = BrokerRequest(BrokerMessage("FooCreated", 1234, saga=self.saga, reply_topic="AddOrderReply"))
+        request = BrokerRequest(
+            BrokerMessage("FooCreated", 1234, self.service_name, saga=self.saga, reply_topic="AddOrderReply")
+        )
         self.assertEqual(1234, await request.content())
 
 

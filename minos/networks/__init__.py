@@ -12,6 +12,7 @@ from .brokers import (
     BrokerHandlerSetup,
     BrokerMessage,
     BrokerMessageStatus,
+    BrokerMessageStrategy,
     BrokerProducer,
     BrokerProducerService,
     BrokerPublisher,

@@ -269,10 +269,12 @@ class BrokerHandler(BrokerHandlerSetup):
 
         fn = self.get_callback(entry.callback)
         message = entry.data
-        items, status = await fn(message)
+        data, status = await fn(message)
 
-        if getattr(message, "reply_topic", None) is not None:
-            await self.publisher.send(items, topic=message.reply_topic, saga=message.saga, status=status)
+        if message.reply_topic is not None:
+            await self.publisher.send(
+                data, topic=message.reply_topic, saga=message.saga, status=status, user=message.user
+            )
 
     @staticmethod
     def get_callback(
