@@ -2,6 +2,10 @@ import unittest
 from typing import (
     Optional,
 )
+from unittest.mock import (
+    AsyncMock,
+    call,
+)
 
 from minos.aggregate import (
     Action,
@@ -9,6 +13,9 @@ from minos.aggregate import (
     FieldDiff,
     FieldDiffContainer,
     ModelRef,
+)
+from minos.networks import (
+    BrokerMessageStrategy,
 )
 from tests.utils import (
     Car,
@@ -19,12 +26,15 @@ from tests.utils import (
 
 class TestAggregate(MinosTestCase):
     async def test_create(self):
+        mock = AsyncMock()
+        self.broker_publisher.send = mock
+
         car = await Car.create(doors=3, color="blue")
 
         self.assertEqual(
             [
-                {
-                    "data": AggregateDiff(
+                call(
+                    AggregateDiff(
                         uuid=car.uuid,
                         name=Car.classname,
                         version=1,
@@ -38,22 +48,26 @@ class TestAggregate(MinosTestCase):
                             ]
                         ),
                     ),
-                    "topic": "CarCreated",
-                }
+                    "CarCreated",
+                    strategy=BrokerMessageStrategy.MULTICAST,
+                )
             ],
-            self.event_broker.calls_kwargs,
+            mock.call_args_list,
         )
 
     async def test_update(self):
+        mock = AsyncMock()
+        self.broker_publisher.send = mock
+
         car = await Car.create(doors=3, color="blue")
-        self.event_broker.reset_mock()
+        mock.reset_mock()
 
         await car.update(color="red")
 
         self.assertEqual(
             [
-                {
-                    "data": AggregateDiff(
+                call(
+                    AggregateDiff(
                         uuid=car.uuid,
                         name=Car.classname,
                         version=2,
@@ -61,10 +75,11 @@ class TestAggregate(MinosTestCase):
                         created_at=car.updated_at,
                         fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
                     ),
-                    "topic": "CarUpdated",
-                },
-                {
-                    "data": AggregateDiff(
+                    "CarUpdated",
+                    strategy=BrokerMessageStrategy.MULTICAST,
+                ),
+                call(
+                    AggregateDiff(
                         uuid=car.uuid,
                         name=Car.classname,
                         version=2,
@@ -72,23 +87,26 @@ class TestAggregate(MinosTestCase):
                         created_at=car.updated_at,
                         fields_diff=FieldDiffContainer([FieldDiff("color", str, "red")]),
                     ),
-                    "topic": "CarUpdated.color",
-                },
+                    "CarUpdated.color",
+                    strategy=BrokerMessageStrategy.MULTICAST,
+                ),
             ],
-            self.event_broker.calls_kwargs,
+            mock.call_args_list,
         )
 
     async def test_delete(self):
+        mock = AsyncMock()
+        self.broker_publisher.send = mock
 
         car = await Car.create(doors=3, color="blue")
-        self.event_broker.reset_mock()
+        mock.reset_mock()
 
         await car.delete()
 
         self.assertEqual(
             [
-                {
-                    "data": AggregateDiff(
+                call(
+                    AggregateDiff(
                         uuid=car.uuid,
                         name=Car.classname,
                         version=2,
@@ -96,10 +114,11 @@ class TestAggregate(MinosTestCase):
                         created_at=car.updated_at,
                         fields_diff=FieldDiffContainer.empty(),
                     ),
-                    "topic": "CarDeleted",
-                }
+                    "CarDeleted",
+                    strategy=BrokerMessageStrategy.MULTICAST,
+                )
             ],
-            self.event_broker.calls_kwargs,
+            mock.call_args_list,
         )
 
 

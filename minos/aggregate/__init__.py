@@ -39,6 +39,7 @@ from .models import (
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,
+    ModelRefResolver,
     ValueObject,
     ValueObjectSet,
 )

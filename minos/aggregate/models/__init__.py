@@ -25,6 +25,7 @@ from .refs import (
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,
+    ModelRefResolver,
 )
 from .value_objects import (
     ValueObject,
