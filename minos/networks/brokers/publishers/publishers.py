@@ -51,10 +51,10 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         data: Any,
         topic: str,
         *,
-        status: Optional[BrokerMessageStatus] = None,
         saga: Optional[UUID] = None,
         reply_topic: Optional[str] = None,
         user: Optional[UUID] = None,
+        status: BrokerMessageStatus = BrokerMessageStatus.SUCCESS,
         strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
         **kwargs,
     ) -> int:
@@ -63,11 +63,11 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         :param data: The data to be send.
         :param topic: Topic in which the message will be published.
         :param saga: Saga identifier.
-        :param status: command status.
-        :param reply_topic: TODO
-        :param user: TODO
-        :param strategy: TODO
-        :param kwargs: TODO
+        :param reply_topic: An optional topic name to wait for a response.
+        :param user: The user identifier that send the message.
+        :param status: The status code of the message.
+        :param strategy: The publishing strategy.
+        :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
 
@@ -88,7 +88,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         """Send a sequence of bytes to the given topic.
 
         :param topic: Topic in which the bytes will be send.
-        :param strategy: TODO
+        :param strategy: The publishing strategy.
         :param raw: Bytes sequence to be send.
         :return: The identifier of the message in the queue.
         """

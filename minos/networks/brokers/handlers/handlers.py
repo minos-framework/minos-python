@@ -80,7 +80,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerHandler(BrokerHandlerSetup):
-    """TODO"""
+    """Broker Handler class."""
 
     __slots__ = "_handlers", "_records", "_retry", "_queue", "_consumers", "_consumer_concurrency"
 
@@ -229,11 +229,12 @@ class BrokerHandler(BrokerHandlerSetup):
         return count
 
     async def dispatch(self, cursor: Optional[Cursor] = None, background_mode: bool = False) -> None:
-        """TODO
+        """Dispatch a batch of ``HandlerEntry`` instances from the database's queue.
 
-        :param cursor: TODO
-        :param background_mode: TODO
-        :return: TODO
+        :param cursor: The cursor to interact with the database. If ``None`` is provided a new one is acquired.
+        :param background_mode: If ``True`` the entries dispatching waits until every entry is processed. Otherwise,
+            the dispatching is performed on background.
+        :return: This method does not return anything.
         """
 
         is_external_cursor = cursor is not None

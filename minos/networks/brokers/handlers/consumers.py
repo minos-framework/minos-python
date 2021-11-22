@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerConsumer(BrokerHandlerSetup):
-    """TODO"""
+    """Broker Consumer class."""
 
     __slots__ = "_topics", "_broker", "_client"
 

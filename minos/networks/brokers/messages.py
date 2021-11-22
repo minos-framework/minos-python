@@ -26,7 +26,7 @@ REPLY_TOPIC_CONTEXT_VAR: Final[ContextVar[Optional[str]]] = ContextVar("reply_to
 
 
 class BrokerMessage(DeclarativeModel):
-    """TODO"""
+    """Broker Message class."""
 
     topic: str
     data: Any

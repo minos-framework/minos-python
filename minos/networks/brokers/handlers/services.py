@@ -56,7 +56,7 @@ class BrokerConsumerService(Service):
 
 
 class BrokerHandlerService(Service):
-    """TODO"""
+    """Broker Handler Service class."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
