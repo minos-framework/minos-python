@@ -44,3 +44,9 @@
 * Add compatibility with `minos-microservice-networks^=0.2.0`
 * Add compatibility with `minos-microservice-saga^=0.3.0`
 * Add compatibility with `minos-microservice-aggregate^=0.2.0`
+
+## 0.2.1 (2021-11-23)
+
+* Start using the `minos.aggregate.ModelRefExtractor` for automatic `ModelRef` resolution of *Domain Events*.
+* Add compatibility with `minos-microservice-networks^=0.3.0`.
+* Remove `minos-microservice-saga` dependency.
