@@ -22,8 +22,8 @@ from minos.common import (
 )
 from minos.networks import (
     USER_CONTEXT_VAR,
-    CommandReply,
-    CommandStatus,
+    BrokerMessage,
+    BrokerMessageStatus,
 )
 from minos.saga import (
     SagaContext,
@@ -65,7 +65,7 @@ class TestSagaManager(MinosTestCase):
 
     def test_constructor_without_handler(self):
         with self.assertRaises(NotProvidedException):
-            SagaManager.from_config(self.config, dynamic_handler_pool=None)
+            SagaManager.from_config(self.config, broker_pool=None)
 
     async def test_context_manager(self):
         async with self.manager as saga_manager:
@@ -73,27 +73,27 @@ class TestSagaManager(MinosTestCase):
 
     async def test_run_with_pause_on_memory(self):
         send_mock = AsyncMock()
-        self.command_broker.send = send_mock
+        self.broker_publisher.send = send_mock
 
         Message = namedtuple("Message", ["data"])
         expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
         with patch("uuid.uuid4", return_value=expected_uuid):
-            self.handler.get_one = AsyncMock(
+            self.broker.get_one = AsyncMock(
                 side_effect=[
                     Message(
-                        CommandReply(
-                            "topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS, service_name="foo"
+                        BrokerMessage(
+                            "topicReply", [Foo("foo")], "foo", saga=expected_uuid, status=BrokerMessageStatus.SUCCESS
                         )
                     ),
                     Message(
-                        CommandReply(
-                            "topicReply", [Foo("foo")], expected_uuid, status=CommandStatus.SUCCESS, service_name="foo"
+                        BrokerMessage(
+                            "topicReply", [Foo("foo")], "foo", saga=expected_uuid, status=BrokerMessageStatus.SUCCESS
                         )
                     ),
-                    Message(CommandReply("", None, NULL_UUID, status=CommandStatus.SUCCESS, service_name="foo")),
-                    Message(CommandReply("", None, NULL_UUID, status=CommandStatus.SUCCESS, service_name="order")),
-                    Message(CommandReply("", None, NULL_UUID, status=CommandStatus.SUCCESS, service_name="foo")),
-                    Message(CommandReply("", None, NULL_UUID, status=CommandStatus.SUCCESS, service_name="order")),
+                    Message(BrokerMessage("", None, "foo", saga=NULL_UUID, status=BrokerMessageStatus.SUCCESS)),
+                    Message(BrokerMessage("", None, "order", saga=NULL_UUID, status=BrokerMessageStatus.SUCCESS)),
+                    Message(BrokerMessage("", None, "foo", saga=NULL_UUID, status=BrokerMessageStatus.SUCCESS)),
+                    Message(BrokerMessage("", None, "order", saga=NULL_UUID, status=BrokerMessageStatus.SUCCESS)),
                 ]
             )
 
@@ -120,33 +120,77 @@ class TestSagaManager(MinosTestCase):
                 ),
                 call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
+                call(topic="CommitFooTransaction", data=execution.uuid),
+                call(topic="CommitOrderTransaction", data=execution.uuid),
             ],
             send_mock.call_args_list,
         )
 
+    async def test_run_with_pause_on_memory_without_commit(self):
+        send_mock = AsyncMock()
+        self.broker_publisher.send = send_mock
+
+        Message = namedtuple("Message", ["data"])
+        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
+        with patch("uuid.uuid4", return_value=expected_uuid):
+            self.broker.get_one = AsyncMock(
+                side_effect=[
+                    Message(
+                        BrokerMessage(
+                            "topicReply",
+                            [Foo("foo")],
+                            saga=expected_uuid,
+                            status=BrokerMessageStatus.SUCCESS,
+                            service_name="foo",
+                        )
+                    ),
+                    Message(
+                        BrokerMessage(
+                            "topicReply",
+                            [Foo("foo")],
+                            saga=expected_uuid,
+                            status=BrokerMessageStatus.SUCCESS,
+                            service_name="foo",
+                        )
+                    ),
+                ]
+            )
+
+            with patch("minos.saga.SagaExecution.commit") as commit_mock:
+                execution = await self.manager.run(ADD_ORDER, autocommit=False)
+            self.assertEqual(SagaStatus.Finished, execution.status)
+
+        self.assertEqual(0, commit_mock.call_count)
+
     async def test_run_with_pause_on_memory_with_error(self):
-        self.handler.get_one = AsyncMock(side_effect=ValueError)
+        self.broker.get_one = AsyncMock(side_effect=ValueError)
 
         with patch("minos.saga.SagaExecution.reject") as reject_mock:
             execution = await self.manager.run(ADD_ORDER, raise_on_error=False)
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual([call()], reject_mock.call_args_list)
 
+    async def test_run_with_pause_on_memory_without_autocommit(self):
+        self.broker.get_one = AsyncMock(side_effect=ValueError)
+
+        with patch("minos.saga.SagaExecution.reject") as reject_mock:
+            execution = await self.manager.run(ADD_ORDER, autocommit=False, raise_on_error=False)
+        self.assertEqual(SagaStatus.Errored, execution.status)
+        self.assertEqual(0, reject_mock.call_count)
+
     async def test_run_with_pause_on_memory_with_error_raises(self):
-        self.handler.get_one = AsyncMock(side_effect=ValueError)
+        self.broker.get_one = AsyncMock(side_effect=ValueError)
 
         with self.assertRaises(SagaFailedExecutionException):
             await self.manager.run(ADD_ORDER)
 
     async def test_run_with_pause_on_disk(self):
         send_mock = AsyncMock()
-        self.command_broker.send = send_mock
+        self.broker_publisher.send = send_mock
 
         get_mock = AsyncMock()
         get_mock.return_value.data.ok = True
-        self.handler.get_one = get_mock
+        self.broker.get_one = get_mock
 
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
@@ -182,11 +226,37 @@ class TestSagaManager(MinosTestCase):
                 ),
                 call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
+                call(topic="CommitFooTransaction", data=execution.uuid),
+                call(topic="CommitOrderTransaction", data=execution.uuid),
             ],
             send_mock.call_args_list,
         )
+
+    async def test_run_with_pause_on_disk_without_commit(self):
+        send_mock = AsyncMock()
+        self.broker_publisher.send = send_mock
+
+        get_mock = AsyncMock()
+        get_mock.return_value.data.ok = True
+        self.broker.get_one = get_mock
+
+        execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        response = SagaResponse(
+            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        )
+        execution = await self.manager.run(response=response, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+
+        response = SagaResponse(
+            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
+        )
+
+        with patch("minos.saga.SagaExecution.commit") as commit_mock:
+            execution = await self.manager.run(response=response, pause_on_disk=True, autocommit=False)
+        self.assertEqual(SagaStatus.Finished, execution.status)
+        self.assertEqual(0, commit_mock.call_count)
 
     async def test_run_with_pause_on_disk_returning_uuid(self):
         uuid = await self.manager.run(ADD_ORDER, return_execution=False, pause_on_disk=True)
@@ -201,31 +271,25 @@ class TestSagaManager(MinosTestCase):
         self.assertEqual(context, execution.context)
 
     async def test_run_with_pause_on_disk_with_error(self):
-        get_mock = AsyncMock()
-        get_mock.return_value.data.ok = True
-        self.handler.get_one = get_mock
+        self.broker_publisher.send = AsyncMock(side_effect=ValueError)
 
-        execution = await self.manager.run(DELETE_ORDER, pause_on_disk=True)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        response = SagaResponse(
-            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
-        )
-        execution = await self.manager.run(response=response, pause_on_disk=True)
-        self.assertEqual(SagaStatus.Paused, execution.status)
-
-        response = SagaResponse(
-            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
-        )
         with patch("minos.saga.SagaExecution.reject") as reject_mock:
-            execution = await self.manager.run(response=response, pause_on_disk=True, raise_on_error=False)
+            execution = await self.manager.run(DELETE_ORDER, pause_on_disk=True, raise_on_error=False)
 
         self.assertEqual(SagaStatus.Errored, execution.status)
         self.assertEqual([call()], reject_mock.call_args_list)
 
+    async def test_run_with_pause_on_disk_without_autocommit(self):
+        self.broker_publisher.send = AsyncMock(side_effect=ValueError)
+
+        with patch("minos.saga.SagaExecution.reject") as reject_mock:
+            execution = await self.manager.run(DELETE_ORDER, pause_on_disk=True, raise_on_error=False, autocommit=False)
+        self.assertEqual(SagaStatus.Errored, execution.status)
+        self.assertEqual(0, reject_mock.call_count)
+
     async def test_run_with_user_context_var(self):
         send_mock = AsyncMock()
-        self.command_broker.send = send_mock
+        self.broker_publisher.send = send_mock
 
         saga_manager = SagaManager.from_config(self.config)
 

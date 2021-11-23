@@ -61,10 +61,10 @@ class TestTransactionCommitter(MinosTestCase):
     async def test_commit_true(self):
         get_mock = AsyncMock()
         get_mock.return_value.data.ok = True
-        self.handler.get_one = get_mock
+        self.broker.get_one = get_mock
 
         send_mock = AsyncMock()
-        self.command_broker.send = send_mock
+        self.broker_publisher.send = send_mock
 
         await self.committer.commit()
 
@@ -73,9 +73,9 @@ class TestTransactionCommitter(MinosTestCase):
                 call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="ReserveBarTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="ReserveFoobarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="CommitFooTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="CommitBarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="CommitFoobarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="CommitFooTransaction"),
+                call(data=self.execution_uuid, topic="CommitBarTransaction"),
+                call(data=self.execution_uuid, topic="CommitFoobarTransaction"),
             ],
             send_mock.call_args_list,
         )
@@ -83,10 +83,10 @@ class TestTransactionCommitter(MinosTestCase):
     async def test_commit_false(self):
         get_mock = AsyncMock()
         get_mock.return_value.data.ok = False
-        self.handler.get_one = get_mock
+        self.broker.get_one = get_mock
 
         send_mock = AsyncMock()
-        self.command_broker.send = send_mock
+        self.broker_publisher.send = send_mock
 
         with self.assertRaises(ValueError):
             await self.committer.commit()
@@ -94,27 +94,29 @@ class TestTransactionCommitter(MinosTestCase):
         self.assertEqual(
             [
                 call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="RejectFooTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="RejectBarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="RejectFoobarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="ReserveBarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="ReserveFoobarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="RejectFooTransaction"),
+                call(data=self.execution_uuid, topic="RejectBarTransaction"),
+                call(data=self.execution_uuid, topic="RejectFoobarTransaction"),
             ],
             send_mock.call_args_list,
         )
 
     async def test_reject(self):
         get_mock = AsyncMock()
-        self.handler.get_one = get_mock
+        self.broker.get_one = get_mock
 
         send_mock = AsyncMock()
-        self.command_broker.send = send_mock
+        self.broker_publisher.send = send_mock
 
         await self.committer.reject()
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="RejectFooTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="RejectBarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="RejectFoobarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="RejectFooTransaction"),
+                call(data=self.execution_uuid, topic="RejectBarTransaction"),
+                call(data=self.execution_uuid, topic="RejectFoobarTransaction"),
             ],
             send_mock.call_args_list,
         )

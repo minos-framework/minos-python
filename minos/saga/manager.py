@@ -24,9 +24,8 @@ from minos.common import (
 )
 from minos.networks import (
     USER_CONTEXT_VAR,
-    CommandReply,
-    DynamicHandler,
-    DynamicHandlerPool,
+    DynamicBroker,
+    DynamicBrokerPool,
 )
 
 from .context import (
@@ -59,19 +58,15 @@ class SagaManager(MinosSetup):
 
     @inject
     def __init__(
-        self,
-        storage: SagaExecutionStorage,
-        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
-        *args,
-        **kwargs,
+        self, storage: SagaExecutionStorage, broker_pool: DynamicBrokerPool = Provide["broker_pool"], *args, **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
 
-        if dynamic_handler_pool is None or isinstance(dynamic_handler_pool, Provide):
+        if broker_pool is None or isinstance(broker_pool, Provide):
             raise NotProvidedException("A handler pool instance is required.")
 
-        self.dynamic_handler_pool = dynamic_handler_pool
+        self.broker_pool = broker_pool
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
@@ -85,20 +80,59 @@ class SagaManager(MinosSetup):
         storage = SagaExecutionStorage.from_config(config, **kwargs)
         return cls(storage=storage, **kwargs)
 
-    async def run(self, *args, response: Optional[SagaResponse] = None, **kwargs) -> Union[UUID, SagaExecution]:
+    async def run(
+        self,
+        definition: Optional[Saga] = None,
+        context: Optional[SagaContext] = None,
+        *,
+        response: Optional[SagaResponse] = None,
+        user: Optional[UUID] = None,
+        autocommit: bool = True,
+        pause_on_disk: bool = False,
+        raise_on_error: bool = True,
+        return_execution: bool = True,
+        **kwargs,
+    ) -> Union[UUID, SagaExecution]:
         """Perform a run of a ``Saga``.
 
         The run can be a new one (if a name is provided) or continue execution a previous one (if a reply is provided).
 
+        :param definition: Saga definition to be executed.
+        :param context: Initial context to be used during the execution. (Only used for new executions)
         :param response: The reply that relaunches a saga execution.
+        :param user: The user identifier to be injected on remote steps.
+        :param autocommit: If ``True`` the transactions are committed/rejected automatically. Otherwise, the ``commit``
+            or ``reject`` must to be called manually.
+        :param pause_on_disk: If ``True`` the pauses until remote steps' responses are paused on disk (background,
+            non-blocking the execution). Otherwise, the pauses are waited on memory (online, blocking the execution)
+        :param raise_on_error: If ``True`` exceptions are raised on error. Otherwise, the execution is returned normally
+            but with ``Errored`` status.
+        :param return_execution: If ``True`` the ``SagaExecution`` instance is returned. Otherwise, only the
+            identifier (``UUID``) is returned.
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
 
         if response is not None:
-            return await self._load_and_run(*args, response, **kwargs)
+            return await self._load_and_run(
+                response=response,
+                autocommit=autocommit,
+                pause_on_disk=pause_on_disk,
+                raise_on_error=raise_on_error,
+                return_execution=return_execution,
+                **kwargs,
+            )
 
-        return await self._run_new(*args, **kwargs)
+        return await self._run_new(
+            definition=definition,
+            context=context,
+            user=user,
+            autocommit=autocommit,
+            pause_on_disk=pause_on_disk,
+            raise_on_error=raise_on_error,
+            return_execution=return_execution,
+            **kwargs,
+        )
 
     async def _run_new(
         self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs,
@@ -111,12 +145,7 @@ class SagaManager(MinosSetup):
         execution = SagaExecution.from_definition(definition, context=context, user=user)
         return await self._run(execution, **kwargs)
 
-    # noinspection PyUnusedLocal
-    async def _load_and_run(
-        self, response: SagaResponse, user: Optional[UUID] = None, **kwargs
-    ) -> Union[UUID, SagaExecution]:
-        # NOTE: ``user`` is consumed here to avoid its injection on already started sagas.
-
+    async def _load_and_run(self, response: SagaResponse, **kwargs) -> Union[UUID, SagaExecution]:
         execution = self.storage.load(response.uuid)
         return await self._run(execution, response=response, **kwargs)
 
@@ -147,33 +176,41 @@ class SagaManager(MinosSetup):
 
         return execution.uuid
 
-    async def _run_with_pause_on_disk(self, execution: SagaExecution, **kwargs) -> None:
+    async def _run_with_pause_on_disk(self, execution: SagaExecution, autocommit: bool = True, **kwargs) -> None:
         try:
-            await execution.execute(**kwargs)
+            await execution.execute(autocommit=False, **kwargs)
+            if autocommit:
+                await execution.commit(**kwargs)
         except SagaPausedExecutionStepException:
             self.storage.store(execution)
+        except SagaFailedExecutionException as exc:
+            if autocommit:
+                await execution.reject(**kwargs)
+            raise exc
 
     async def _run_with_pause_on_memory(
-        self, execution: SagaExecution, response: Optional[SagaResponse] = None, **kwargs
+        self, execution: SagaExecution, response: Optional[SagaResponse] = None, autocommit: bool = True, **kwargs
     ) -> None:
 
         try:
             # noinspection PyUnresolvedReferences
-            async with self.dynamic_handler_pool.acquire() as handler:
+            async with self.broker_pool.acquire() as broker:
                 while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                     try:
                         await execution.execute(response=response, autocommit=False, **kwargs)
                     except SagaPausedExecutionStepException:
-                        response = await self._get_response(handler, execution, **kwargs)
+                        response = await self._get_response(broker, execution, **kwargs)
                     self.storage.store(execution)
-            await execution.commit(**kwargs)
+            if autocommit:
+                await execution.commit(**kwargs)
         except SagaFailedExecutionException as exc:
-            await execution.reject(**kwargs)
+            if autocommit:
+                await execution.reject(**kwargs)
             raise exc
 
     @staticmethod
-    async def _get_response(handler: DynamicHandler, execution: SagaExecution, **kwargs) -> SagaResponse:
-        reply: Optional[CommandReply] = None
+    async def _get_response(handler: DynamicBroker, execution: SagaExecution, **kwargs) -> SagaResponse:
+        reply = None
         while reply is None or reply.saga != execution.uuid:
             try:
                 entry = await handler.get_one(**kwargs)

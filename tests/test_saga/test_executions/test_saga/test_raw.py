@@ -25,8 +25,8 @@ class TestSagaExecution(MinosTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user = uuid4()
-        self.publish_mock = MagicMock(side_effect=self.command_broker.send)
-        self.command_broker.send = self.publish_mock
+        self.publish_mock = MagicMock(side_effect=self.broker_publisher.send)
+        self.broker_publisher.send = self.publish_mock
 
     def test_from_raw(self):
         with patch("uuid.uuid4", return_value=UUID("a74d9d6d-290a-492e-afcc-70607958f65d")):
