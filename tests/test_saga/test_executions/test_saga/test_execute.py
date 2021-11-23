@@ -39,10 +39,10 @@ class TestSagaExecution(MinosTestCase):
 
         mock = AsyncMock()
         mock.return_value.data.ok = True
-        self.handler.get_one = mock
+        self.broker.get_one = mock
 
         self.publish_mock = AsyncMock()
-        self.command_broker.send = self.publish_mock
+        self.broker_publisher.send = self.publish_mock
 
     async def test_execute(self):
         saga = (

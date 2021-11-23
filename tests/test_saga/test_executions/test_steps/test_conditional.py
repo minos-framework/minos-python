@@ -52,7 +52,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
 
         mock = AsyncMock()
         mock.return_value.data.ok = True
-        self.handler.get_one = mock
+        self.broker.get_one = mock
 
         self.definition = ConditionalSagaStep(
             [

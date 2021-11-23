@@ -11,7 +11,7 @@ from minos.aggregate import (
     TransactionStatus,
 )
 from minos.networks import (
-    HandlerRequest,
+    BrokerRequest,
     Request,
     Response,
 )
@@ -33,7 +33,8 @@ Raw = namedtuple("Raw", ["saga", "data"])
 class TestMiddleware(MinosTestCase):
     async def test_transactional_command_unused(self):
         uuid = None
-        request = HandlerRequest(Raw(uuid, "foo"))
+        # noinspection PyTypeChecker
+        request = BrokerRequest(Raw(uuid, "foo"))
         response = await transactional_command(request, _fn)
 
         self.assertEqual("foobar", await response.content())
@@ -42,7 +43,8 @@ class TestMiddleware(MinosTestCase):
 
     async def test_transactional_command_used(self):
         uuid = uuid4()
-        request = HandlerRequest(Raw(uuid, "foo"))
+        # noinspection PyTypeChecker
+        request = BrokerRequest(Raw(uuid, "foo"))
         response = await transactional_command(request, _fn)
 
         self.assertEqual("foobar", await response.content())
