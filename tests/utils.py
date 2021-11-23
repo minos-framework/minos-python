@@ -28,7 +28,6 @@ from minos.cqrs import (
     Service,
 )
 from minos.networks import (
-    CommandReply,
     Request,
     Response,
     enroute,
@@ -73,7 +72,7 @@ class FakeRequest(Request):
         return self._content
 
     def __eq__(self, other) -> bool:
-        return self._content == other._content
+        return isinstance(other, type(self)) and self._content == other._content
 
     def __repr__(self) -> str:
         return f"FakeRequest({self._content!r})"

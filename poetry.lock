@@ -351,14 +351,14 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "identify"
-version = "2.3.6"
+version = "2.4.0"
 description = "File identification library for Python"
 category = "dev"
 optional = false
 python-versions = ">=3.6.1"
 
 [package.extras]
-license = ["editdistance-s"]
+license = ["ukkonen"]
 
 [[package]]
 name = "idna"
@@ -464,22 +464,15 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-aggregate"
-version = "0.2.1"
+version = "0.2.2"
 description = "Python Package for Minos Microservices containing all the Aggregate stuff"
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-minos-microservice-common = "^0.3.0"
-minos-microservice-networks = "^0.2.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/clariteia/minos_microservice_aggregate.git"
-reference = "issue-9-modelref-resolver"
-resolved_reference = "ae6d447eaaee33a1d0ff0468c2c06096df57e438"
+minos-microservice-common = ">=0.3.0,<0.4.0"
+minos-microservice-networks = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "minos-microservice-common"
@@ -501,7 +494,7 @@ PyYAML = ">=5.4.1,<6.0.0"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.2.0"
+version = "0.3.0"
 description = "Python Package with the common network classes and utilities used in Minos Microservice."
 category = "main"
 optional = false
@@ -515,20 +508,6 @@ aiopg = ">=1.2.1,<2.0.0"
 crontab = ">=0.23.0,<0.24.0"
 dependency-injector = ">=4.32.2,<5.0.0"
 minos-microservice-common = ">=0.3.0,<0.4.0"
-
-[[package]]
-name = "minos-microservice-saga"
-version = "0.3.1"
-description = "Saga Library for MinOS project."
-category = "main"
-optional = false
-python-versions = ">=3.9,<4.0"
-
-[package.dependencies]
-dependency-injector = ">=4.32.2,<5.0.0"
-minos-microservice-aggregate = ">=0.2.0,<0.3.0"
-minos-microservice-common = ">=0.3.0,<0.4.0"
-minos-microservice-networks = ">=0.2.0,<0.3.0"
 
 [[package]]
 name = "mistune"
@@ -982,7 +961,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "486c7f783f1de3b384b794b7b57d6589eddaf7db8d6cc349c95817311bfb1035"
+content-hash = "43a0a38e7ea6b5665a490b47b2fea26215a45996ffab2b07b00379381d0c4e37"
 
 [metadata.files]
 aiohttp = [
@@ -1414,8 +1393,8 @@ frozenlist = [
     {file = "frozenlist-1.2.0.tar.gz", hash = "sha256:68201be60ac56aff972dc18085800b6ee07973c49103a8aba669dee3d71079de"},
 ]
 identify = [
-    {file = "identify-2.3.6-py2.py3-none-any.whl", hash = "sha256:8cb609a671d2f861ae7fe583711a43fd2faab0c892f39cbc4568b0c51b354238"},
-    {file = "identify-2.3.6.tar.gz", hash = "sha256:4f85f9bd8e6e5e2d61b2f8de5ff5313d8a1cfac4c88822d74406de45ad10bd82"},
+    {file = "identify-2.4.0-py2.py3-none-any.whl", hash = "sha256:eba31ca80258de6bb51453084bff4a923187cd2193b9c13710f2516ab30732cc"},
+    {file = "identify-2.4.0.tar.gz", hash = "sha256:a33ae873287e81651c7800ca309dc1f84679b763c9c8b30680e16fbfa82f0107"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
@@ -1544,18 +1523,17 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-microservice-aggregate = []
+minos-microservice-aggregate = [
+    {file = "minos_microservice_aggregate-0.2.2-py3-none-any.whl", hash = "sha256:be7416ef30b079b17e34fb57df4aef8d675ec5094d99d50069a24e4d67ae14b7"},
+    {file = "minos_microservice_aggregate-0.2.2.tar.gz", hash = "sha256:73ccc2a10d93c359b560f7b4a4e905c657e8fe816bad5baf457eaf95504f0b2a"},
+]
 minos-microservice-common = [
     {file = "minos_microservice_common-0.3.0-py3-none-any.whl", hash = "sha256:0951b79119ac49a79341fb9de7864f90830f2ff55fa94743d46b0b1aca17eb66"},
     {file = "minos_microservice_common-0.3.0.tar.gz", hash = "sha256:0f0d601b789e6231d482660278e4bd07160bf656c785c5fd2d5c937a112748b8"},
 ]
 minos-microservice-networks = [
-    {file = "minos_microservice_networks-0.2.0-py3-none-any.whl", hash = "sha256:b6cbbb7c5fe55a011ddaffeb026bc51565583c54bc25a3f9a6cb7c69ba1b2185"},
-    {file = "minos_microservice_networks-0.2.0.tar.gz", hash = "sha256:76fe73f2820ff1af946b8ed73bc8e09f7accff55548c1aa6f00148d6c1ad3da8"},
-]
-minos-microservice-saga = [
-    {file = "minos_microservice_saga-0.3.1-py3-none-any.whl", hash = "sha256:36f21459114a2929c0c6d130b29a46aa3058dd9aafed7b5d9811481294f0652d"},
-    {file = "minos_microservice_saga-0.3.1.tar.gz", hash = "sha256:8b30fb82520b8c4c444605b3bab83e0503cb04fbb244b08e007d8d6d09c2e002"},
+    {file = "minos_microservice_networks-0.3.0-py3-none-any.whl", hash = "sha256:7e67126454ccf7dd83b343174c17968cbc02087d0c7e2298973ce6dbbeab0090"},
+    {file = "minos_microservice_networks-0.3.0.tar.gz", hash = "sha256:3dc9e75599d748bc0ddf386cc6d9ce03362b9bfa03b441cf63898d4382588370"},
 ]
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},

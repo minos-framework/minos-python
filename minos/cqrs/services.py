@@ -9,7 +9,13 @@ from inspect import (
     isfunction,
     ismethod,
 )
+from typing import (
+    Any,
+)
 
+from dependency_injector.containers import (
+    Container,
+)
 from dependency_injector.wiring import (
     Provide,
     inject,
@@ -19,14 +25,9 @@ from minos.common import (
     MinosConfig,
 )
 from minos.networks import (
-    CommandBroker,
-    DynamicHandlerPool,
     EnrouteDecorator,
     Request,
     WrappedRequest,
-)
-from minos.saga import (
-    SagaManager,
 )
 
 from .exceptions import (
@@ -41,20 +42,18 @@ class Service(ABC):
     """Base Service class"""
 
     @inject
-    def __init__(
-        self,
-        *args,
-        config: MinosConfig = Provide["config"],
-        saga_manager: SagaManager = Provide["saga_manager"],
-        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
-        command_broker: CommandBroker = Provide["command_broker"],
-        **kwargs,
-    ):
-        self.config = config
-        self.saga_manager = saga_manager
+    def __init__(self, container: Container = Provide["<container>"], **kwargs):
+        self._container = container
+        self._kwargs = kwargs
 
-        self.dynamic_handler_pool = dynamic_handler_pool
-        self.command_broker = command_broker
+    def __getattr__(self, item: str) -> Any:
+        if item != "_kwargs" and item in self._kwargs:
+            return self._kwargs[item]
+
+        if item != "_container" and isinstance(self._container, Container) and item in self._container.providers:
+            return self._container.providers[item]()
+
+        raise AttributeError(f"{type(self).__name__!r} does not contain the {item!r} field.")
 
     @classmethod
     def __get_enroute__(cls, config: MinosConfig) -> dict[str, set[EnrouteDecorator]]:
@@ -64,6 +63,11 @@ class Service(ABC):
                 continue
             result[name] = fn.__decorators__
         return result
+
+    @staticmethod
+    def _pre_event_handle(request: Request) -> Request:
+        fn = partial(PreEventHandler.handle, user=request.user)
+        return WrappedRequest(request, fn)
 
 
 class CommandService(Service, ABC):
@@ -77,15 +81,6 @@ class CommandService(Service, ABC):
     def _pre_query_handle(request: Request) -> Request:
         raise MinosIllegalHandlingException("Queries cannot be handled by `CommandService` inherited classes.")
 
-    def _pre_event_handle(self, request: Request) -> Request:
-        fn = partial(
-            PreEventHandler.handle,
-            dynamic_handler_pool=self.dynamic_handler_pool,
-            command_broker=self.command_broker,
-            user=request.user,
-        )
-        return WrappedRequest(request, fn)
-
 
 class QueryService(Service, ABC):
     """Query Service class"""
@@ -97,12 +92,3 @@ class QueryService(Service, ABC):
     @staticmethod
     def _pre_query_handle(request: Request) -> Request:
         return request
-
-    def _pre_event_handle(self, request: Request) -> Request:
-        fn = partial(
-            PreEventHandler.handle,
-            dynamic_handler_pool=self.dynamic_handler_pool,
-            command_broker=self.command_broker,
-            user=request.user,
-        )
-        return WrappedRequest(request, fn)

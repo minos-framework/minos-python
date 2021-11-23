@@ -6,6 +6,13 @@ from unittest.mock import (
     patch,
 )
 
+from dependency_injector import (
+    providers,
+)
+from dependency_injector.containers import (
+    DynamicContainer,
+)
+
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
@@ -32,12 +39,31 @@ class TestServices(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
+        self.broker_pool = AsyncMock()
         self.saga_manager = AsyncMock()
-        self.service = FakeService(config=self.config, saga_manager=self.saga_manager)
+
+        self.container = DynamicContainer()
+        self.container.broker_pool = providers.Object(self.broker_pool)
+
+        self.service = FakeService(self.container, config=self.config, saga_manager=self.saga_manager)
 
     async def test_constructor(self):
         self.assertEqual(self.config, self.service.config)
         self.assertEqual(self.saga_manager, self.service.saga_manager)
+        self.assertEqual(self.broker_pool, self.service.broker_pool)
+
+        with self.assertRaises(AttributeError):
+            self.service.event_repository
+
+    async def test_pre_event(self):
+        with patch("minos.cqrs.PreEventHandler.handle") as mock:
+            mock.return_value = "bar"
+            observed = self.service._pre_event_handle(FakeRequest("foo"))
+            self.assertIsInstance(observed, WrappedRequest)
+            self.assertEqual(FakeRequest("foo"), observed.base)
+            self.assertEqual(0, mock.call_count)
+            self.assertEqual("bar", await observed.content())
+            self.assertEqual(1, mock.call_count)
 
 
 class TestQueryService(PostgresAsyncTestCase):
@@ -58,16 +84,6 @@ class TestQueryService(PostgresAsyncTestCase):
     def test_pre_query(self):
         request = FakeRequest("foo")
         self.assertEqual(request, self.service._pre_query_handle(request))
-
-    async def test_pre_event(self):
-        with patch("minos.cqrs.PreEventHandler.handle") as mock:
-            mock.return_value = "bar"
-            observed = self.service._pre_event_handle(FakeRequest("foo"))
-            self.assertIsInstance(observed, WrappedRequest)
-            self.assertEqual(FakeRequest("foo"), observed.base)
-            self.assertEqual(0, mock.call_count)
-            self.assertEqual("bar", await observed.content())
-            self.assertEqual(1, mock.call_count)
 
     def test_get_enroute(self):
         expected = {
@@ -95,16 +111,6 @@ class TestCommandService(PostgresAsyncTestCase):
     def test_pre_query(self):
         with self.assertRaises(MinosIllegalHandlingException):
             self.service._pre_query_handle(FakeRequest("foo"))
-
-    async def test_pre_event(self):
-        with patch("minos.cqrs.PreEventHandler.handle") as mock:
-            mock.return_value = "bar"
-            observed = self.service._pre_event_handle(FakeRequest("foo"))
-            self.assertIsInstance(observed, WrappedRequest)
-            self.assertEqual(FakeRequest("foo"), observed.base)
-            self.assertEqual(0, mock.call_count)
-            self.assertEqual("bar", await observed.content())
-            self.assertEqual(1, mock.call_count)
 
     def test_get_enroute(self):
         expected = {

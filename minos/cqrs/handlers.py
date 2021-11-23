@@ -20,12 +20,12 @@ class PreEventHandler:
 
     @classmethod
     async def handle(cls, diff: T, resolve_references: bool = True, **kwargs) -> T:
-        """TODO
+        """Handle ModelRef resolution for Events.
 
-        :param diff: TODO
-        :param resolve_references: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param diff: The instance containing ``ModelRef`` instances.
+        :param resolve_references: If ``True`` the resolution is performed, otherwise it is skipped.
+        :param kwargs: Additional named arguments.
+        :return: The original instance with the ``ModelRef`` references already resolved.
         """
         if not isinstance(diff, AggregateDiff) or not resolve_references:
             return diff
