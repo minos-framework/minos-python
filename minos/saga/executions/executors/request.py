@@ -20,7 +20,7 @@ from minos.common import (
 )
 from minos.networks import (
     REPLY_TOPIC_CONTEXT_VAR,
-    CommandBroker,
+    BrokerPublisher,
 )
 
 from ...context import (
@@ -50,16 +50,16 @@ class RequestExecutor(Executor):
 
     @inject
     def __init__(
-        self, *args, user: Optional[UUID], command_broker: CommandBroker = Provide["command_broker"], **kwargs,
+        self, *args, user: Optional[UUID], broker_publisher: BrokerPublisher = Provide["broker_publisher"], **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
         self.user = user
 
-        if command_broker is None or isinstance(command_broker, Provide):
+        if broker_publisher is None or isinstance(broker_publisher, Provide):
             raise NotProvidedException("A broker instance is required.")
 
-        self.command_broker = command_broker
+        self.broker_publisher = broker_publisher
 
     # noinspection PyMethodOverriding
     async def exec(self, operation: Optional[SagaOperation[RequestCallBack]], context: SagaContext) -> SagaContext:
@@ -87,7 +87,7 @@ class RequestExecutor(Executor):
             reply_topic = self._get_default_reply_topic()
 
         try:
-            await self.command_broker.send(
+            await self.broker_publisher.send(
                 topic=request.target,
                 data=await request.content(),
                 saga=self.execution_uuid,

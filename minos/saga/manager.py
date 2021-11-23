@@ -24,9 +24,8 @@ from minos.common import (
 )
 from minos.networks import (
     USER_CONTEXT_VAR,
-    CommandReply,
-    DynamicHandler,
-    DynamicHandlerPool,
+    DynamicBroker,
+    DynamicBrokerPool,
 )
 
 from .context import (
@@ -59,19 +58,15 @@ class SagaManager(MinosSetup):
 
     @inject
     def __init__(
-        self,
-        storage: SagaExecutionStorage,
-        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
-        *args,
-        **kwargs,
+        self, storage: SagaExecutionStorage, broker_pool: DynamicBrokerPool = Provide["broker_pool"], *args, **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.storage = storage
 
-        if dynamic_handler_pool is None or isinstance(dynamic_handler_pool, Provide):
+        if broker_pool is None or isinstance(broker_pool, Provide):
             raise NotProvidedException("A handler pool instance is required.")
 
-        self.dynamic_handler_pool = dynamic_handler_pool
+        self.broker_pool = broker_pool
 
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> SagaManager:
@@ -199,12 +194,12 @@ class SagaManager(MinosSetup):
 
         try:
             # noinspection PyUnresolvedReferences
-            async with self.dynamic_handler_pool.acquire() as handler:
+            async with self.broker_pool.acquire() as broker:
                 while execution.status in (SagaStatus.Created, SagaStatus.Paused):
                     try:
                         await execution.execute(response=response, autocommit=False, **kwargs)
                     except SagaPausedExecutionStepException:
-                        response = await self._get_response(handler, execution, **kwargs)
+                        response = await self._get_response(broker, execution, **kwargs)
                     self.storage.store(execution)
             if autocommit:
                 await execution.commit(**kwargs)
@@ -214,8 +209,8 @@ class SagaManager(MinosSetup):
             raise exc
 
     @staticmethod
-    async def _get_response(handler: DynamicHandler, execution: SagaExecution, **kwargs) -> SagaResponse:
-        reply: Optional[CommandReply] = None
+    async def _get_response(handler: DynamicBroker, execution: SagaExecution, **kwargs) -> SagaResponse:
+        reply = None
         while reply is None or reply.saga != execution.uuid:
             try:
                 entry = await handler.get_one(**kwargs)

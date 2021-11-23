@@ -12,9 +12,9 @@ from minos.common import (
 )
 from minos.networks import (
     BrokerCommandEnrouteDecorator,
-    CommandReply,
-    CommandStatus,
-    HandlerRequest,
+    BrokerMessage,
+    BrokerMessageStatus,
+    BrokerRequest,
 )
 from minos.saga import (
     SagaManager,
@@ -47,8 +47,10 @@ class TestSagaService(MinosTestCase):
     async def test_reply(self):
         uuid = uuid4()
         with patch("minos.saga.SagaManager.run") as run_mock:
-            reply = CommandReply("orderReply", "foo", uuid, CommandStatus.SUCCESS, "ticket")
-            response = await self.service.__reply__(HandlerRequest(reply))
+            reply = BrokerMessage(
+                "orderReply", "foo", saga=uuid, status=BrokerMessageStatus.SUCCESS, service_name="ticket"
+            )
+            response = await self.service.__reply__(BrokerRequest(reply))
         self.assertEqual(None, response)
         self.assertEqual(
             [

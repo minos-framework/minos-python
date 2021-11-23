@@ -15,9 +15,9 @@ from dependency_injector.wiring import (
 )
 
 from minos.networks import (
-    CommandBroker,
-    DynamicHandler,
-    DynamicHandlerPool,
+    BrokerPublisher,
+    DynamicBroker,
+    DynamicBrokerPool,
 )
 
 from .steps import (
@@ -37,15 +37,15 @@ class TransactionCommitter:
         self,
         execution_uuid: UUID,
         executed_steps: list[SagaStepExecution],
-        dynamic_handler_pool: DynamicHandlerPool = Provide["dynamic_handler_pool"],
-        command_broker: CommandBroker = Provide["command_broker"],
+        broker_pool: DynamicBrokerPool = Provide["broker_pool"],
+        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
         **kwargs,
     ):
         self.executed_steps = executed_steps
         self.execution_uuid = execution_uuid
 
-        self.dynamic_handler_pool = dynamic_handler_pool
-        self.command_broker = command_broker
+        self.broker_pool = broker_pool
+        self.broker_publisher = broker_publisher
 
     # noinspection PyUnusedCommit,PyMethodOverriding
     async def commit(self, **kwargs) -> None:
@@ -63,20 +63,18 @@ class TransactionCommitter:
         await self._commit()
 
     async def _reserve(self) -> bool:
-        async with self.dynamic_handler_pool.acquire() as handler:
+        async with self.broker_pool.acquire() as broker:
             futures = (
-                self.command_broker.send(
-                    data=uuid, topic=f"Reserve{service_name.title()}Transaction", reply_topic=handler.topic
-                )
+                broker.send(data=uuid, topic=f"Reserve{service_name.title()}Transaction")
                 for (uuid, service_name) in self.transactions
             )
             await gather(*futures)
 
-            return await self._get_response(handler, len(self.transactions))
+            return await self._get_response(broker, len(self.transactions))
 
     async def _commit(self) -> None:
         futures = (
-            self.command_broker.send(data=uuid, topic=f"Commit{service_name.title()}Transaction")
+            self.broker_publisher.send(data=uuid, topic=f"Commit{service_name.title()}Transaction")
             for (uuid, service_name) in self.transactions
         )
         await gather(*futures)
@@ -90,7 +88,7 @@ class TransactionCommitter:
         :return: This method does not return anything.
         """
         futures = (
-            self.command_broker.send(data=uuid, topic=f"Reject{service_name.title()}Transaction")
+            self.broker_publisher.send(data=uuid, topic=f"Reject{service_name.title()}Transaction")
             for (uuid, service_name) in self.transactions
         )
         await gather(*futures)
@@ -98,7 +96,7 @@ class TransactionCommitter:
         logger.info("Successfully rejected!")
 
     @staticmethod
-    async def _get_response(handler: DynamicHandler, count: int, **kwargs) -> bool:
+    async def _get_response(handler: DynamicBroker, count: int, **kwargs) -> bool:
         entries = await handler.get_many(count, **kwargs)
         return all(entry.data.ok for entry in entries)
 

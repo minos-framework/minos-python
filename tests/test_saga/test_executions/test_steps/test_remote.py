@@ -39,7 +39,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         }
 
         self.publish_mock = AsyncMock()
-        self.command_broker.send = self.publish_mock
+        self.broker_publisher.send = self.publish_mock
 
     async def test_on_execute(self):
         step = RemoteSagaStep(send_create_ticket)

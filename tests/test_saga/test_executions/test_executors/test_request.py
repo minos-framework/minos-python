@@ -36,18 +36,18 @@ class TestRequestExecutor(MinosTestCase):
         self.assertIsInstance(self.executor, Executor)
         self.assertEqual(self.execution_uuid, self.executor.execution_uuid)
         self.assertEqual(self.user, self.executor.user)
-        self.assertEqual(self.command_broker, self.executor.command_broker)
+        self.assertEqual(self.broker_publisher, self.executor.broker_publisher)
 
     def test_constructor_without_broker(self):
         with self.assertRaises(NotProvidedException):
-            RequestExecutor(command_broker=None, execution_uuid=self.execution_uuid, user=self.user)
+            RequestExecutor(broker_publisher=None, execution_uuid=self.execution_uuid, user=self.user)
 
     async def test_exec(self):
         operation = SagaOperation(send_create_product)
         context = SagaContext(product=Foo("create_product!"))
 
-        mock = MagicMock(side_effect=self.command_broker.send)
-        self.command_broker.send = mock
+        mock = MagicMock(side_effect=self.broker_publisher.send)
+        self.broker_publisher.send = mock
         await self.executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
@@ -65,8 +65,8 @@ class TestRequestExecutor(MinosTestCase):
         operation = SagaOperation(send_create_product)
         context = SagaContext(product=Foo("create_product!"))
 
-        mock = MagicMock(side_effect=self.command_broker.send)
-        self.command_broker.send = mock
+        mock = MagicMock(side_effect=self.broker_publisher.send)
+        self.broker_publisher.send = mock
         await executor.exec(operation, context)
 
         self.assertEqual(1, mock.call_count)
@@ -87,7 +87,7 @@ class TestRequestExecutor(MinosTestCase):
             raise ValueError("This is an exception")
 
         mock = MagicMock(side_effect=_fn)
-        self.command_broker.send = mock
+        self.broker_publisher.send = mock
 
         with self.assertRaises(SagaFailedExecutionStepException) as result:
             await self.executor.exec(operation, context)

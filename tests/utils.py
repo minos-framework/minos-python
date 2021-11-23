@@ -51,18 +51,18 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
         self.config = MinosConfig(BASE_PATH / "config.yml")
 
-        self.handler = FakeHandler("TheReplyTopic")
-        self.dynamic_handler_pool = FakePool(self.handler)
+        self.broker_publisher = FakeBrokerPublisher()
+        self.broker = FakeBroker("TheReplyTopic", self.broker_publisher)
+        self.broker_pool = FakePool(self.broker)
 
         self.lock = FakeLock()
         self.lock_pool = FakePool(self.lock)
 
-        self.event_broker = NaiveBroker()
-        self.command_broker = NaiveBroker()
-
         self.transaction_repository = InMemoryTransactionRepository(lock_pool=self.lock_pool)
         self.event_repository = InMemoryEventRepository(
-            event_broker=self.event_broker, transaction_repository=self.transaction_repository, lock_pool=self.lock_pool
+            broker_publisher=self.broker_publisher,
+            transaction_repository=self.transaction_repository,
+            lock_pool=self.lock_pool,
         )
         self.snapshot_repository = InMemorySnapshotRepository(
             event_repository=self.event_repository, transaction_repository=self.transaction_repository
@@ -70,10 +70,9 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
 
         self.container = containers.DynamicContainer()
         self.container.config = providers.Object(self.config)
-        self.container.dynamic_handler_pool = providers.Object(self.dynamic_handler_pool)
+        self.container.broker_pool = providers.Object(self.broker_pool)
+        self.container.broker_publisher = providers.Object(self.broker_publisher)
         self.container.lock_pool = providers.Object(self.lock_pool)
-        self.container.event_broker = providers.Object(self.event_broker)
-        self.container.command_broker = providers.Object(self.command_broker)
         self.container.transaction_repository = providers.Object(self.transaction_repository)
         self.container.event_repository = providers.Object(self.event_repository)
         self.container.snapshot_repository = providers.Object(self.snapshot_repository)
@@ -84,7 +83,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
 
-        await self.event_broker.setup()
+        await self.broker_publisher.setup()
         await self.transaction_repository.setup()
         await self.lock_pool.setup()
         await self.event_repository.setup()
@@ -95,7 +94,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         await self.event_repository.destroy()
         await self.lock_pool.destroy()
         await self.transaction_repository.destroy()
-        await self.event_broker.destroy()
+        await self.broker_publisher.destroy()
 
         await super().asyncTearDown()
 
@@ -104,7 +103,7 @@ class MinosTestCase(unittest.IsolatedAsyncioTestCase):
         super().tearDown()
 
 
-class NaiveBroker(MinosSetup):
+class FakeBrokerPublisher(MinosSetup):
     """For testing purposes."""
 
     async def send(self, data: Any, **kwargs) -> None:
@@ -127,18 +126,24 @@ class FakeLock(Lock):
         """For testing purposes."""
 
 
-class FakeHandler:
+class FakeBroker:
     """For testing purposes."""
 
-    def __init__(self, topic):
+    def __init__(self, topic, publisher):
         super().__init__()
         self.topic = topic
+        self.publisher = publisher
         self._token = None
 
-    async def get_one(self, *args, **kwargs) -> Any:
+    async def send(self, *args, **kwargs) -> None:
         """For testing purposes."""
+        await self.publisher.send(*args, reply_topic=self.topic, **kwargs)
 
-    async def get_many(self, *args, **kwargs) -> list[Any]:
+    async def get_many(self, count: int, *args, **kwargs) -> list[Any]:
+        """For testing purposes."""
+        return [await self.get_one(*args, **kwargs) for _ in range(count)]
+
+    async def get_one(self, *args, **kwargs) -> Any:
         """For testing purposes."""
 
     async def __aenter__(self):
