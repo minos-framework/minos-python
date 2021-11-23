@@ -124,3 +124,10 @@ History
 * Improve integration between `ConditionalSagaStep` and `TransactionCommitter`
 * Add `SagaExecution.commit(...)` and `SagaExecution.reject(...)` methods and `autocommit: bool` and `autoreject: bool` into `SagaExecution.execute(...)` and `SagaExecution.rollback(...)` methods respectively.
 * Fix concurrent blocks related with a limited amount of `minos.networks.DynamicHandler` instances on the `minos.networks.DynamicHandlerPool`.
+
+0.3.2 (2021-11-23)
+------------------
+
+* Take advantage of concurrent remote broker calls to improve the `TransactionCommiter` performance.
+* Expose `autocommit: bool = True` argument on `SagaManager.run(...)` method.
+* Add support for `minos-microservice-networks=^0.3.0`.
