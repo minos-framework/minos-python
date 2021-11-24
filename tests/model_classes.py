@@ -1,3 +1,6 @@
+from enum import (
+    Enum,
+)
 from typing import (
     Generic,
     Optional,
@@ -177,3 +180,11 @@ class Car(DeclarativeModel):
     doors: int
     color: str
     owner: Optional[list[Owner]]
+
+
+class Status(str, Enum):
+    """For testing purposes."""
+
+    PENDING = "pending"
+    SUCCESS = "success"
+    ERROR = "error"

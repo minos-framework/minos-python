@@ -17,6 +17,10 @@ from minos.common import (
     AvroSchemaDecoder,
     MinosMalformedAttributeException,
     ModelType,
+    classname,
+)
+from tests.model_classes import (
+    Status,
 )
 
 
@@ -149,6 +153,11 @@ class TestAvroSchemaDecoder(unittest.TestCase):
             AvroSchemaDecoder({"name": "id", "type": "foo"}).build()
         with self.assertRaises(MinosMalformedAttributeException):
             AvroSchemaDecoder({"name": "id", "type": "string", "logicalType": "foo"}).build()
+
+    def test_enum(self):
+        expected = Status
+        observed = AvroSchemaDecoder({"type": "string", "logicalType": classname(Status)}).build()
+        self.assertEqual(expected, observed)
 
 
 if __name__ == "__main__":
