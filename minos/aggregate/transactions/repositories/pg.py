@@ -37,7 +37,7 @@ class PostgreSqlTransactionRepository(PostgreSqlMinosDatabase, TransactionReposi
         return cls(*args, **config.repository._asdict(), **kwargs)
 
     async def _setup(self):
-        await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+        await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";', lock="uuid-ossp")
 
         await self.submit_query(_CREATE_TRANSACTION_STATUS_ENUM_QUERY, lock=hash("aggregate_transaction_enum"))
         await self.submit_query(_CREATE_TRANSACTION_TABLE_QUERY, lock=hash("aggregate_transaction"))
