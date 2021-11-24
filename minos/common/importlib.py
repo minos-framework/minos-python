@@ -4,6 +4,7 @@ from types import (
 )
 from typing import (
     Callable,
+    Union,
 )
 
 from .exceptions import (
@@ -12,7 +13,7 @@ from .exceptions import (
 
 
 # noinspection SpellCheckingInspection
-def import_module(module_name: str) -> Callable:
+def import_module(module_name: str) -> Union[type, Callable]:
     """Import the given module from a package"""
     parts = module_name.rsplit(".", 1)
 
@@ -30,7 +31,7 @@ def import_module(module_name: str) -> Callable:
     return kallable
 
 
-def classname(cls: Callable) -> str:
+def classname(cls: Union[type, Callable]) -> str:
     """Compute the given class full name.
 
     :param cls: Target class.

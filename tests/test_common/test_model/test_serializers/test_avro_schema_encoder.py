@@ -19,8 +19,10 @@ from uuid import (
 from minos.common import (
     AvroSchemaEncoder,
     ModelType,
+    classname,
 )
 from tests.model_classes import (
+    Status,
     User,
 )
 
@@ -125,6 +127,11 @@ class TestAvroSchemaEncoder(unittest.TestCase):
     def test_any(self):
         expected = "null"
         observed = AvroSchemaEncoder(Any).build()
+        self.assertEqual(expected, observed)
+
+    def test_enum(self):
+        expected = {"type": "string", "logicalType": classname(Status)}
+        observed = AvroSchemaEncoder(Status).build()
         self.assertEqual(expected, observed)
 
 

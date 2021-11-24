@@ -240,3 +240,9 @@ History
 * Remove `Command`, `CommandReply`, `CommandStatus` and `Event` (moved to `minos.networks`).
 * Remove `MinosBroker` and `MinosHandler` (moved to `minos.networks`).
 * Remove `MinosSagaManager` (moved to `minos.saga`).
+
+0.3.1 (2021-11-24)
+--------------------
+
+* Fix bug related with `enum.Enum` inherited classes that do not recover the original type after being serialized.
+* Fix bug related with`str` values auto-casting to an iterable of characters.

@@ -9,6 +9,9 @@ from datetime import (
     time,
     timedelta,
 )
+from enum import (
+    Enum,
+)
 from typing import (
     Any,
     Optional,
@@ -21,6 +24,9 @@ from uuid import (
     uuid4,
 )
 
+from ...importlib import (
+    classname,
+)
 from ..types import (
     ModelType,
     NoneType,
@@ -66,16 +72,19 @@ class AvroSchemaEncoder:
         return {"name": self.name, "type": type_}
 
     def _build_schema(self, type_: type) -> Any:
-        origin = get_origin(type_)
-        if origin is not Union:
-            return self._build_single_schema(type_)
-        return self._build_union_schema(type_)
+        if get_origin(type_) is Union:
+            return self._build_union_schema(type_)
+
+        if is_type_subclass(type_) and issubclass(type_, Enum):
+            return self._build_enum_schema(type_)
+
+        return self._build_single_schema(type_)
 
     def _build_union_schema(self, type_: type) -> Any:
         ans = list()
         alternatives = get_args(type_)
         for alternative_type in alternatives:
-            step = self._build_single_schema(alternative_type)
+            step = self._build_schema(alternative_type)
             if isinstance(step, list):
                 ans += step
             else:
@@ -128,6 +137,9 @@ class AvroSchemaEncoder:
             return self._build_model_schema(type_)
 
         return self._build_composed_schema(type_)
+
+    def _build_enum_schema(self, type_: type):
+        return {"type": self._build_single_schema(type_), "logicalType": classname(type_)}
 
     def _build_model_schema(self, type_: type) -> Any:
         return [self._build_model_type_schema(ModelType.from_model(type_))]
