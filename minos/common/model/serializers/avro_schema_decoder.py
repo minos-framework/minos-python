@@ -108,7 +108,7 @@ class AvroSchemaDecoder:
             return self._build_set_type(schema["items"])
         with suppress(MinosImportException):
             return import_module(type_)
-        raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_!r}")
+        return self._build_type({k: v for k, v in schema.items() if k != "logicalType"})
 
     def _build_list_type(self, items: Any = None) -> type:
         return list[self._build_iterable_type(items)]

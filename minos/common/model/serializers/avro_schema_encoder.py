@@ -84,7 +84,7 @@ class AvroSchemaEncoder:
         ans = list()
         alternatives = get_args(type_)
         for alternative_type in alternatives:
-            step = self._build_single_schema(alternative_type)
+            step = self._build_schema(alternative_type)
             if isinstance(step, list):
                 ans += step
             else:

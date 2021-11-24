@@ -151,12 +151,15 @@ class TestAvroSchemaDecoder(unittest.TestCase):
     def test_raises(self):
         with self.assertRaises(MinosMalformedAttributeException):
             AvroSchemaDecoder({"name": "id", "type": "foo"}).build()
-        with self.assertRaises(MinosMalformedAttributeException):
-            AvroSchemaDecoder({"name": "id", "type": "string", "logicalType": "foo"}).build()
 
-    def test_enum(self):
+    def test_logical_type(self):
         expected = Status
         observed = AvroSchemaDecoder({"type": "string", "logicalType": classname(Status)}).build()
+        self.assertEqual(expected, observed)
+
+    def test_logical_type_unknown(self):
+        expected = str
+        observed = AvroSchemaDecoder({"name": "id", "type": "string", "logicalType": "foo"}).build()
         self.assertEqual(expected, observed)
 
 
