@@ -106,7 +106,7 @@ class AvroSchemaDecoder:
             return UUID
         if type_ == AVRO_SET["logicalType"]:
             return self._build_set_type(schema["items"])
-        with suppress(MinosImportException, MinosMalformedAttributeException):
+        with suppress(MinosImportException):
             return import_module(type_)
         raise MinosMalformedAttributeException(f"Given logical field type is not supported: {type_!r}")
 
