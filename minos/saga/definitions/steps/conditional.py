@@ -60,8 +60,13 @@ class ConditionalSagaStep(SagaStep):
     def _from_raw(cls, raw: dict[str, Any], **kwargs) -> ConditionalSagaStep:
         current = raw | kwargs
 
-        current["if_then"] = [IfThenAlternative.from_raw(alternative) for alternative in current["if_then"]]
-        current["else_then"] = ElseThenAlternative.from_raw(current["else_then"])
+        if_then = current.get("if_then", None)
+        if if_then is not None:
+            current["if_then"] = [IfThenAlternative.from_raw(alternative) for alternative in if_then]
+
+        else_then = current.get("else_then", None)
+        if else_then is not None:
+            current["else_then"] = ElseThenAlternative.from_raw(else_then)
 
         return cls(**current)
 
@@ -141,7 +146,7 @@ class IfThenAlternative:
         self.saga = saga
 
     @classmethod
-    def from_raw(cls, raw: Optional[Union[dict[str, Any], IfThenAlternative]], **kwargs) -> IfThenAlternative:
+    def from_raw(cls, raw: Union[dict[str, Any], IfThenAlternative], **kwargs) -> IfThenAlternative:
         """Build a new instance from a raw representation.
 
         :param raw: The raw representation.
@@ -199,7 +204,7 @@ class ElseThenAlternative:
         self.saga = saga
 
     @classmethod
-    def from_raw(cls, raw: Optional[Union[dict[str, Any], ElseThenAlternative]], **kwargs) -> ElseThenAlternative:
+    def from_raw(cls, raw: Union[dict[str, Any], ElseThenAlternative], **kwargs) -> ElseThenAlternative:
         """Build a new instance from a raw representation.
 
         :param raw: The raw representation.
