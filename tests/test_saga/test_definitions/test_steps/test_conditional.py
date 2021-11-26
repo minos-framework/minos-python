@@ -84,6 +84,17 @@ class TestConditionalSagaStep(unittest.TestCase):
         observed = SagaStep.from_raw(raw)
         self.assertEqual(expected, observed)
 
+    def test_from_raw_without_else(self):
+        raw = {
+            "cls": "minos.saga.definitions.steps.conditional.ConditionalSagaStep",
+            "else_then": None,
+            "if_then": [self.if_then[0].raw, self.if_then[1].raw],
+        }
+
+        expected = ConditionalSagaStep(if_then=self.if_then)
+        observed = SagaStep.from_raw(raw)
+        self.assertEqual(expected, observed)
+
     def test_from_raw_already(self):
         expected = ConditionalSagaStep(if_then=self.if_then, else_then=self.else_then)
         observed = SagaStep.from_raw(expected)
