@@ -1,6 +1,6 @@
 __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 from .context import (
     SagaContext,

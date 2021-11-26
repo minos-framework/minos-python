@@ -114,13 +114,13 @@ class TransactionCommitter:
             for step in steps:
                 if isinstance(step, ConditionalSagaStepExecution):
                     inner = step.inner
-                    return _fn(inner.uuid, inner.executed_steps)
-
-                pair = (uuid, step.service_name)
-                if pair in uniques:
-                    continue
-                transactions.append(pair)
-                uniques.add(pair)
+                    if inner is not None:
+                        _fn(inner.uuid, inner.executed_steps)
+                else:
+                    pair = (uuid, step.service_name)
+                    if pair not in uniques:
+                        transactions.append(pair)
+                        uniques.add(pair)
 
         _fn(self.execution_uuid, self.executed_steps)
         return transactions

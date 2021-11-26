@@ -136,3 +136,8 @@ History
 ------------------
 
 * Fix bug related with empty `ConditionalSagaStep.from_raw` and empty `else_then`.
+
+0.3.4 (2021-11-26)
+------------------
+
+* Fix bug related with `TransactionCommitter` and `ConditionalSagaStepExecution`.
