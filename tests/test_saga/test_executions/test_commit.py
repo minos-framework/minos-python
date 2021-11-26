@@ -46,6 +46,7 @@ class TestTransactionCommitter(MinosTestCase):
                 ),
                 service_name="bar",
             ),
+            ConditionalSagaStepExecution(definition),
         ]
 
         self.committer = TransactionCommitter(self.execution_uuid, self.executed_steps)
