@@ -31,7 +31,7 @@ async def transactional_command(
     if isinstance(request, BrokerRequest):
         message = request.raw
         raw_transaction_uuids = message.headers.get("transactions", None)
-        if raw_transaction_uuids is not None:
+        if raw_transaction_uuids:
             transaction_uuids = list(map(UUID, raw_transaction_uuids.split(",")))
             return await _transaction(request, inner, transaction_uuids)
 
