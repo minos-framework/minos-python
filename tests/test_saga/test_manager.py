@@ -85,7 +85,7 @@ class TestSagaManager(MinosTestCase):
                             [Foo("foo")],
                             "foo",
                             status=BrokerMessageStatus.SUCCESS,
-                            headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
+                            headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
                         )
                     ),
                     Message(
@@ -94,7 +94,7 @@ class TestSagaManager(MinosTestCase):
                             [Foo("foo")],
                             "foo",
                             status=BrokerMessageStatus.SUCCESS,
-                            headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
+                            headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
                         )
                     ),
                     Message(BrokerMessage("", None, "foo", status=BrokerMessageStatus.SUCCESS)),
@@ -114,14 +114,14 @@ class TestSagaManager(MinosTestCase):
                 call(
                     topic="CreateOrder",
                     data=Foo("create_order!"),
-                    headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
+                    headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
                     user=self.user,
                     reply_topic="TheReplyTopic",
                 ),
                 call(
                     topic="CreateTicket",
                     data=Foo("create_ticket!"),
-                    headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
+                    headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
                     user=self.user,
                     reply_topic="TheReplyTopic",
                 ),
@@ -146,7 +146,7 @@ class TestSagaManager(MinosTestCase):
                         BrokerMessage(
                             "topicReply",
                             [Foo("foo")],
-                            headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
+                            headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
                             status=BrokerMessageStatus.SUCCESS,
                             service_name="foo",
                         )
@@ -155,7 +155,7 @@ class TestSagaManager(MinosTestCase):
                         BrokerMessage(
                             "topicReply",
                             [Foo("foo")],
-                            headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
+                            headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
                             status=BrokerMessageStatus.SUCCESS,
                             service_name="foo",
                         )
@@ -220,14 +220,14 @@ class TestSagaManager(MinosTestCase):
                 call(
                     topic="CreateOrder",
                     data=Foo("create_order!"),
-                    headers={"saga": str(execution.uuid), "transaction": str(execution.uuid)},
+                    headers={"saga": str(execution.uuid), "transactions": str(execution.uuid)},
                     user=self.user,
                     reply_topic="orderReply",
                 ),
                 call(
                     topic="CreateTicket",
                     data=Foo("create_ticket!"),
-                    headers={"saga": str(execution.uuid), "transaction": str(execution.uuid)},
+                    headers={"saga": str(execution.uuid), "transactions": str(execution.uuid)},
                     user=self.user,
                     reply_topic="orderReply",
                 ),

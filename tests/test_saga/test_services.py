@@ -52,7 +52,7 @@ class TestSagaService(MinosTestCase):
                 "foo",
                 status=BrokerMessageStatus.SUCCESS,
                 service_name="ticket",
-                headers={"saga": str(uuid), "transaction": str(uuid)},
+                headers={"saga": str(uuid), "transactions": str(uuid)},
             )
             response = await self.service.__reply__(BrokerRequest(reply))
         self.assertEqual(None, response)

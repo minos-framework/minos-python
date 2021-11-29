@@ -32,7 +32,7 @@ Raw = namedtuple("Raw", ["headers", "data"])
 class TestMiddleware(MinosTestCase):
     async def test_transactional_command_unused(self):
         # noinspection PyTypeChecker
-        request = BrokerRequest(Raw({"transaction": None}, "foo"))
+        request = BrokerRequest(Raw({"transactions": None}, "foo"))
         response = await transactional_command(request, _fn)
 
         self.assertEqual("foobar", await response.content())
@@ -40,7 +40,7 @@ class TestMiddleware(MinosTestCase):
     async def test_transactional_command_used(self):
         uuid = uuid4()
         # noinspection PyTypeChecker
-        request = BrokerRequest(Raw({"transaction": str(uuid)}, "foo"))
+        request = BrokerRequest(Raw({"transactions": str(uuid)}, "foo"))
         response = await transactional_command(request, _fn)
 
         self.assertEqual("foobar", await response.content())

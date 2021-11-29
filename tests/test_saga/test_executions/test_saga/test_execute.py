@@ -94,7 +94,7 @@ class TestSagaExecution(MinosTestCase):
             data=Foo(foo="create_order!"),
             user=user,
             reply_topic="orderReply",
-            headers={"saga": str(execution.uuid), "transaction": str(execution.uuid)},
+            headers={"saga": str(execution.uuid), "transactions": str(execution.uuid)},
         )
         self.assertEqual(args, self.publish_mock.call_args)
         self.assertEqual(SagaStatus.Paused, execution.status)
