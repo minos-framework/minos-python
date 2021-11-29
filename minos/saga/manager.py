@@ -172,11 +172,11 @@ class SagaManager(MinosSetup):
         finally:
             headers = HEADERS_CONTEXT_VAR.get()
             if headers is not None:
-                service_names = ",".join([s.service_name for s in execution.executed_steps])
-                if "service_names" in headers:
-                    headers["service_names"] += f",{service_names}"
+                related_service_names = ",".join([s.service_name for s in execution.executed_steps])
+                if "related_service_names" in headers:
+                    headers["related_service_names"] += f",{related_service_names}"
                 else:
-                    headers["service_names"] = service_names
+                    headers["related_service_names"] = related_service_names
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
@@ -229,9 +229,10 @@ class SagaManager(MinosSetup):
                 raise SagaFailedExecutionException(exc)
             message = entry.data
 
-        service_name = str(message.service_name)
-        if "service_names" in message.headers:
-            service_name += f",{message.headers['service_names']}"
+        if "related_service_names" in message.headers:
+            service_name = f"{message.headers['related_service_names']},{message.service_name}"
+        else:
+            service_name = str(message.service_name)
 
         response = SagaResponse(message.data, message.status, service_name)
 
