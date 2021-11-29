@@ -83,12 +83,10 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         self.identifier = uuid4()
         self.user = uuid4()
-        self.service_name = self.config.service.name
 
         self.message = BrokerMessage(
             "AddOrder",
             FakeModel("foo"),
-            self.service_name,
             identifier=self.identifier,
             user=self.user,
             reply_topic="UpdateTicket",
@@ -242,7 +240,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"), self.service_name)
+        instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"))
 
         queue_id_1 = await self._insert_one(instance_1)
         queue_id_2 = await self._insert_one(instance_2)
@@ -257,9 +255,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         identifier = uuid4()
 
-        instance = BrokerMessage(
-            "AddOrder", [FakeModel("foo")], self.service_name, identifier=identifier, reply_topic="UpdateTicket"
-        )
+        instance = BrokerMessage("AddOrder", [FakeModel("foo")], identifier=identifier, reply_topic="UpdateTicket")
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         for _ in range(10):
@@ -283,7 +279,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         lookup_mock = MagicMock(return_value=callback_mock)
 
         topic = "TicketAdded"
-        event = BrokerMessage(topic, FakeModel("Foo"), self.service_name)
+        event = BrokerMessage(topic, FakeModel("Foo"))
         entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         await self.handler.dispatch_one(entry)
@@ -346,8 +342,8 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.handler.get_action = MagicMock(return_value=_fn2)
 
         events = [
-            BrokerMessage("TicketAdded", FakeModel("uuid1"), self.service_name),
-            BrokerMessage("TicketAdded", FakeModel("uuid2"), self.service_name),
+            BrokerMessage("TicketAdded", FakeModel("uuid1")),
+            BrokerMessage("TicketAdded", FakeModel("uuid2")),
         ]
 
         for event in events:
@@ -369,12 +365,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         events = list()
         for i in range(1, 6):
-            events.extend(
-                [
-                    BrokerMessage("TicketAdded", ["uuid1", i], self.service_name),
-                    BrokerMessage("TicketAdded", ["uuid2", i], self.service_name),
-                ]
-            )
+            events.extend([BrokerMessage("TicketAdded", ["uuid1", i]), BrokerMessage("TicketAdded", ["uuid2", i])])
         shuffle(events)
 
         for event in events:

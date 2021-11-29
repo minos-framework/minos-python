@@ -32,7 +32,6 @@ class BrokerMessage(DeclarativeModel):
 
     topic: str
     data: Any
-    service_name: str
     identifier: UUID
     reply_topic: Optional[str]
     user: Optional[UUID]
@@ -44,7 +43,6 @@ class BrokerMessage(DeclarativeModel):
         self,
         topic: str,
         data: Any,
-        service_name: str,
         *,
         identifier: Optional[UUID] = None,
         status: Optional[BrokerMessageStatus] = None,
@@ -61,14 +59,7 @@ class BrokerMessage(DeclarativeModel):
         if headers is None:
             headers = dict()
         super().__init__(
-            topic=topic,
-            data=data,
-            service_name=service_name,
-            identifier=identifier,
-            status=status,
-            strategy=strategy,
-            headers=headers,
-            **kwargs
+            topic=topic, data=data, identifier=identifier, status=status, strategy=strategy, headers=headers, **kwargs
         )
 
     @property

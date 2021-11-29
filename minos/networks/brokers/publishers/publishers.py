@@ -34,14 +34,10 @@ logger = logging.getLogger(__name__)
 class BrokerPublisher(BrokerPublisherSetup):
     """Broker Publisher class."""
 
-    def __init__(self, *args, service_name: str, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.service_name = service_name
-
     @classmethod
     def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerPublisher:
         # noinspection PyProtectedMember
-        return cls(*args, service_name=config.service.name, **config.broker.queue._asdict(), **kwargs)
+        return cls(*args, **config.broker.queue._asdict(), **kwargs)
 
     # noinspection PyMethodOverriding
     async def send(
@@ -78,7 +74,6 @@ class BrokerPublisher(BrokerPublisherSetup):
             status=status,
             reply_topic=reply_topic,
             user=user,
-            service_name=self.service_name,
             strategy=strategy,
             headers=headers,
         )

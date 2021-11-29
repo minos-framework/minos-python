@@ -61,7 +61,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
-        expected = BrokerMessage("fake", FakeModel("Foo"), service_name="Order", identifier=observed)
+        expected = BrokerMessage("fake", FakeModel("Foo"), identifier=observed)
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_identifier(self):
@@ -78,7 +78,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
-        expected = BrokerMessage("fake", FakeModel("Foo"), service_name="Order", identifier=identifier)
+        expected = BrokerMessage("fake", FakeModel("Foo"), identifier=identifier)
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_reply_topic(self):
@@ -93,9 +93,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
-        expected = BrokerMessage(
-            "fake", FakeModel("foo"), identifier=observed, reply_topic="ekaf", service_name="Order"
-        )
+        expected = BrokerMessage("fake", FakeModel("foo"), identifier=observed, reply_topic="ekaf")
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_user(self):
@@ -112,9 +110,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
-        expected = BrokerMessage(
-            "fake", FakeModel("foo"), identifier=observed, reply_topic="ekaf", user=user, service_name="Order"
-        )
+        expected = BrokerMessage("fake", FakeModel("foo"), identifier=observed, reply_topic="ekaf", user=user)
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_status(self):
@@ -133,11 +129,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
         expected = BrokerMessage(
-            reply_topic,
-            FakeModel("foo"),
-            identifier=observed,
-            status=BrokerMessageStatus.SUCCESS,
-            service_name=self.config.service.name,
+            reply_topic, FakeModel("foo"), identifier=observed, status=BrokerMessageStatus.SUCCESS,
         )
         observed = Model.from_avro_bytes(args[2])
         self.assertEqual(expected, observed)
@@ -158,11 +150,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual(BrokerMessageStrategy.MULTICAST, args[1])
 
         expected = BrokerMessage(
-            topic,
-            FakeModel("foo"),
-            identifier=observed,
-            service_name=self.config.service.name,
-            strategy=BrokerMessageStrategy.MULTICAST,
+            topic, FakeModel("foo"), identifier=observed, strategy=BrokerMessageStrategy.MULTICAST,
         )
         observed = Model.from_avro_bytes(args[2])
         self.assertEqual(expected, observed)
