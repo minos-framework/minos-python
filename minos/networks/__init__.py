@@ -3,8 +3,8 @@ __email__ = "devs@clariteia.com"
 __version__ = "0.3.0"
 
 from .brokers import (
-    HEADERS_CONTEXT_VAR,
-    REPLY_TOPIC_CONTEXT_VAR,
+    REQUEST_HEADERS_CONTEXT_VAR,
+    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
     BrokerConsumer,
     BrokerConsumerService,
     BrokerHandler,
@@ -57,7 +57,7 @@ from .exceptions import (
     MinosRedefinedEnrouteDecoratorException,
 )
 from .requests import (
-    USER_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
     Request,
     Response,
     ResponseException,

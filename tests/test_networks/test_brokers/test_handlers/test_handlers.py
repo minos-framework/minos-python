@@ -33,7 +33,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    USER_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
     BrokerHandler,
     BrokerHandlerEntry,
     BrokerMessage,
@@ -313,7 +313,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
     async def test_get_callback_with_user(self):
         async def _fn(request) -> None:
             self.assertEqual(self.user, request.user)
-            self.assertEqual(self.user, USER_CONTEXT_VAR.get())
+            self.assertEqual(self.user, REQUEST_USER_CONTEXT_VAR.get())
 
         mock = AsyncMock(side_effect=_fn)
 

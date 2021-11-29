@@ -52,7 +52,7 @@ from ...exceptions import (
     MinosActionNotFoundException,
 )
 from ...requests import (
-    USER_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
     Response,
     ResponseException,
 )
@@ -60,7 +60,7 @@ from ...utils import (
     consume_queue,
 )
 from ..messages import (
-    HEADERS_CONTEXT_VAR,
+    REQUEST_HEADERS_CONTEXT_VAR,
     BrokerMessage,
     BrokerMessageStatus,
 )
@@ -329,8 +329,8 @@ class BrokerHandler(BrokerHandlerSetup):
 
         async def _fn(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus, dict[str, str]]:
             request = BrokerRequest(raw)
-            user_token = USER_CONTEXT_VAR.set(request.user)
-            headers_token = HEADERS_CONTEXT_VAR.set(raw.headers)
+            user_token = REQUEST_USER_CONTEXT_VAR.set(request.user)
+            headers_token = REQUEST_HEADERS_CONTEXT_VAR.set(raw.headers)
 
             try:
                 response = fn(request)
@@ -338,16 +338,16 @@ class BrokerHandler(BrokerHandlerSetup):
                     response = await response
                 if isinstance(response, Response):
                     response = await response.content()
-                return response, BrokerMessageStatus.SUCCESS, HEADERS_CONTEXT_VAR.get()
+                return response, BrokerMessageStatus.SUCCESS, REQUEST_HEADERS_CONTEXT_VAR.get()
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
-                return repr(exc), BrokerMessageStatus.ERROR, HEADERS_CONTEXT_VAR.get()
+                return repr(exc), BrokerMessageStatus.ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
-                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR, HEADERS_CONTEXT_VAR.get()
+                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
             finally:
-                USER_CONTEXT_VAR.reset(user_token)
-                HEADERS_CONTEXT_VAR.reset(headers_token)
+                REQUEST_USER_CONTEXT_VAR.reset(user_token)
+                REQUEST_HEADERS_CONTEXT_VAR.reset(headers_token)
 
         return _fn
 

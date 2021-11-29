@@ -11,7 +11,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    REPLY_TOPIC_CONTEXT_VAR,
+    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
     BrokerConsumer,
     BrokerPublisher,
     DynamicBroker,
@@ -70,12 +70,12 @@ class TestDynamicBrokerPool(PostgresAsyncTestCase):
             self.assertIn(broker.topic, self.pool.client.list_topics())
 
     async def test_acquire_reply_topic_context_var(self):
-        self.assertEqual(None, REPLY_TOPIC_CONTEXT_VAR.get())
+        self.assertEqual(None, REQUEST_REPLY_TOPIC_CONTEXT_VAR.get())
 
         async with self.pool.acquire() as broker:
-            self.assertEqual(broker.topic, REPLY_TOPIC_CONTEXT_VAR.get())
+            self.assertEqual(broker.topic, REQUEST_REPLY_TOPIC_CONTEXT_VAR.get())
 
-        self.assertEqual(None, REPLY_TOPIC_CONTEXT_VAR.get())
+        self.assertEqual(None, REQUEST_REPLY_TOPIC_CONTEXT_VAR.get())
 
 
 if __name__ == "__main__":
