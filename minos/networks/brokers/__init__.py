@@ -14,6 +14,7 @@ from .handlers import (
     BrokerResponseException,
 )
 from .messages import (
+    HEADERS_CONTEXT_VAR,
     REPLY_TOPIC_CONTEXT_VAR,
     BrokerMessage,
     BrokerMessageStatus,

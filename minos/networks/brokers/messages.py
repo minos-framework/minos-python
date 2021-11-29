@@ -23,6 +23,7 @@ from minos.common import (
 )
 
 REPLY_TOPIC_CONTEXT_VAR: Final[ContextVar[Optional[str]]] = ContextVar("reply_topic", default=None)
+HEADERS_CONTEXT_VAR: Final[ContextVar[Optional[dict[str, str]]]] = ContextVar("headers", default=None)
 
 
 class BrokerMessage(DeclarativeModel):
@@ -36,6 +37,7 @@ class BrokerMessage(DeclarativeModel):
     user: Optional[UUID]
     status: BrokerMessageStatus
     strategy: BrokerMessageStrategy
+    headers: dict[str, str]
 
     def __init__(
         self,
@@ -45,13 +47,16 @@ class BrokerMessage(DeclarativeModel):
         *,
         status: Optional[BrokerMessageStatus] = None,
         strategy: Optional[BrokerMessageStrategy] = None,
+        headers: Optional[dict[str, str]] = None,
         **kwargs
     ):
         if status is None:
             status = BrokerMessageStatus.SUCCESS
         if strategy is None:
             strategy = BrokerMessageStrategy.UNICAST
-        super().__init__(topic, data, service_name, status=status, strategy=strategy, **kwargs)
+        if headers is None:
+            headers = dict()
+        super().__init__(topic, data, service_name, status=status, strategy=strategy, headers=headers, **kwargs)
 
     @property
     def ok(self) -> bool:

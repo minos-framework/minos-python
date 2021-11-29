@@ -57,6 +57,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         user: Optional[UUID] = None,
         status: BrokerMessageStatus = BrokerMessageStatus.SUCCESS,
         strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
+        headers: Optional[dict[str, str]] = None,
         **kwargs,
     ) -> int:
         """Send a ``BrokerMessage``.
@@ -68,6 +69,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         :param user: The user identifier that send the message.
         :param status: The status code of the message.
         :param strategy: The publishing strategy.
+        :param headers: TODO
         :param kwargs: Additional named arguments.
         :return: This method does not return anything.
         """
@@ -81,6 +83,7 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
             user=user,
             service_name=self.service_name,
             strategy=strategy,
+            headers=headers,
         )
         logger.info(f"Publishing '{message!s}'...")
         return await self.enqueue(message.topic, message.strategy, message.avro_bytes)

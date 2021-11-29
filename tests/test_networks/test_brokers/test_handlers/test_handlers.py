@@ -222,6 +222,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
                     saga=self.message.saga,
                     status=BrokerMessageStatus.SUCCESS,
                     user=self.user,
+                    headers=dict(),
                 )
             ],
             send_mock.call_args_list,
@@ -288,20 +289,20 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_get_callback(self):
         fn = self.handler.get_callback(_Cls._fn)
-        self.assertEqual((FakeModel("foo"), BrokerMessageStatus.SUCCESS), await fn(self.message))
+        self.assertEqual((FakeModel("foo"), BrokerMessageStatus.SUCCESS, dict()), await fn(self.message))
 
     async def test_get_callback_none(self):
         fn = self.handler.get_callback(_Cls._fn_none)
-        self.assertEqual((None, BrokerMessageStatus.SUCCESS), await fn(self.message))
+        self.assertEqual((None, BrokerMessageStatus.SUCCESS, dict()), await fn(self.message))
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
-        expected = (repr(BrokerResponseException("foo")), BrokerMessageStatus.ERROR)
+        expected = (repr(BrokerResponseException("foo")), BrokerMessageStatus.ERROR, dict())
         self.assertEqual(expected, await fn(self.message))
 
     async def test_get_callback_raises_exception(self):
         fn = self.handler.get_callback(_Cls._fn_raises_exception)
-        expected = (repr(ValueError()), BrokerMessageStatus.SYSTEM_ERROR)
+        expected = (repr(ValueError()), BrokerMessageStatus.SYSTEM_ERROR, dict())
         self.assertEqual(expected, await fn(self.message))
 
     async def test_get_callback_with_user(self):
