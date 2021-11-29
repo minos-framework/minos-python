@@ -86,13 +86,15 @@ class RequestExecutor(Executor):
         if reply_topic is None:
             reply_topic = self._get_default_reply_topic()
 
+        headers = {"saga": str(self.execution_uuid), "transaction": str(self.execution_uuid)}
+
         try:
             await self.broker_publisher.send(
                 topic=request.target,
                 data=await request.content(),
-                saga=self.execution_uuid,
                 user=self.user,
                 reply_topic=reply_topic,
+                headers=headers,
             )
         except Exception as exc:
             raise ExecutorException(exc)

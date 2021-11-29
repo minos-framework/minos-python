@@ -54,7 +54,7 @@ class TestRequestExecutor(MinosTestCase):
         args = call(
             data=Foo("create_product!"),
             topic="CreateProduct",
-            saga=self.execution_uuid,
+            headers={"saga": str(self.execution_uuid), "transaction": str(self.execution_uuid)},
             user=self.user,
             reply_topic="orderReply",
         )
@@ -73,7 +73,7 @@ class TestRequestExecutor(MinosTestCase):
         args = call(
             data=Foo("create_product!"),
             topic="CreateProduct",
-            saga=self.execution_uuid,
+            headers={"saga": str(self.execution_uuid), "transaction": str(self.execution_uuid)},
             user=None,
             reply_topic="orderReply",
         )

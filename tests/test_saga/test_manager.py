@@ -17,7 +17,6 @@ from uuid import (
 )
 
 from minos.common import (
-    NULL_UUID,
     NotProvidedException,
 )
 from minos.networks import (
@@ -82,18 +81,26 @@ class TestSagaManager(MinosTestCase):
                 side_effect=[
                     Message(
                         BrokerMessage(
-                            "topicReply", [Foo("foo")], "foo", saga=expected_uuid, status=BrokerMessageStatus.SUCCESS
+                            "topicReply",
+                            [Foo("foo")],
+                            "foo",
+                            status=BrokerMessageStatus.SUCCESS,
+                            headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
                         )
                     ),
                     Message(
                         BrokerMessage(
-                            "topicReply", [Foo("foo")], "foo", saga=expected_uuid, status=BrokerMessageStatus.SUCCESS
+                            "topicReply",
+                            [Foo("foo")],
+                            "foo",
+                            status=BrokerMessageStatus.SUCCESS,
+                            headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
                         )
                     ),
-                    Message(BrokerMessage("", None, "foo", saga=NULL_UUID, status=BrokerMessageStatus.SUCCESS)),
-                    Message(BrokerMessage("", None, "order", saga=NULL_UUID, status=BrokerMessageStatus.SUCCESS)),
-                    Message(BrokerMessage("", None, "foo", saga=NULL_UUID, status=BrokerMessageStatus.SUCCESS)),
-                    Message(BrokerMessage("", None, "order", saga=NULL_UUID, status=BrokerMessageStatus.SUCCESS)),
+                    Message(BrokerMessage("", None, "foo", status=BrokerMessageStatus.SUCCESS)),
+                    Message(BrokerMessage("", None, "order", status=BrokerMessageStatus.SUCCESS)),
+                    Message(BrokerMessage("", None, "foo", status=BrokerMessageStatus.SUCCESS)),
+                    Message(BrokerMessage("", None, "order", status=BrokerMessageStatus.SUCCESS)),
                 ]
             )
 
@@ -107,14 +114,14 @@ class TestSagaManager(MinosTestCase):
                 call(
                     topic="CreateOrder",
                     data=Foo("create_order!"),
-                    saga=expected_uuid,
+                    headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
                     user=self.user,
                     reply_topic="TheReplyTopic",
                 ),
                 call(
                     topic="CreateTicket",
                     data=Foo("create_ticket!"),
-                    saga=expected_uuid,
+                    headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
                     user=self.user,
                     reply_topic="TheReplyTopic",
                 ),
@@ -139,7 +146,7 @@ class TestSagaManager(MinosTestCase):
                         BrokerMessage(
                             "topicReply",
                             [Foo("foo")],
-                            saga=expected_uuid,
+                            headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
                             status=BrokerMessageStatus.SUCCESS,
                             service_name="foo",
                         )
@@ -148,7 +155,7 @@ class TestSagaManager(MinosTestCase):
                         BrokerMessage(
                             "topicReply",
                             [Foo("foo")],
-                            saga=expected_uuid,
+                            headers={"saga": str(expected_uuid), "transaction": str(expected_uuid)},
                             status=BrokerMessageStatus.SUCCESS,
                             service_name="foo",
                         )
@@ -213,14 +220,14 @@ class TestSagaManager(MinosTestCase):
                 call(
                     topic="CreateOrder",
                     data=Foo("create_order!"),
-                    saga=execution.uuid,
+                    headers={"saga": str(execution.uuid), "transaction": str(execution.uuid)},
                     user=self.user,
                     reply_topic="orderReply",
                 ),
                 call(
                     topic="CreateTicket",
                     data=Foo("create_ticket!"),
-                    saga=execution.uuid,
+                    headers={"saga": str(execution.uuid), "transaction": str(execution.uuid)},
                     user=self.user,
                     reply_topic="orderReply",
                 ),

@@ -48,7 +48,11 @@ class TestSagaService(MinosTestCase):
         uuid = uuid4()
         with patch("minos.saga.SagaManager.run") as run_mock:
             reply = BrokerMessage(
-                "orderReply", "foo", saga=uuid, status=BrokerMessageStatus.SUCCESS, service_name="ticket"
+                "orderReply",
+                "foo",
+                status=BrokerMessageStatus.SUCCESS,
+                service_name="ticket",
+                headers={"saga": str(uuid), "transaction": str(uuid)},
             )
             response = await self.service.__reply__(BrokerRequest(reply))
         self.assertEqual(None, response)

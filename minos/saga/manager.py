@@ -210,15 +210,15 @@ class SagaManager(MinosSetup):
 
     @staticmethod
     async def _get_response(handler: DynamicBroker, execution: SagaExecution, **kwargs) -> SagaResponse:
-        reply = None
-        while reply is None or reply.saga != execution.uuid:
+        message = None
+        while message is None or UUID(message.headers["saga"]) != execution.uuid:
             try:
                 entry = await handler.get_one(**kwargs)
             except Exception as exc:
                 execution.status = SagaStatus.Errored
                 raise SagaFailedExecutionException(exc)
-            reply = entry.data
+            message = entry.data
 
-        response = SagaResponse(reply.data, reply.status, reply.service_name)
+        response = SagaResponse(message.data, message.status, message.service_name)
 
         return response
