@@ -89,7 +89,7 @@ class RequestExecutor(Executor):
 
         headers = (REQUEST_HEADERS_CONTEXT_VAR.get() or dict()).copy()
         headers["saga"] = str(self.execution_uuid)
-        if headers.get("headers", None):
+        if headers.get("transactions", None):
             headers["transactions"] += f",{self.execution_uuid!s}"
         else:
             headers["transactions"] = f"{self.execution_uuid!s}"
