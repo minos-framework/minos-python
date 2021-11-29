@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from abc import (
-    ABC,
-)
 from typing import (
     Any,
     Optional,
@@ -34,7 +31,7 @@ from .abc import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerPublisher(BrokerPublisherSetup, ABC):
+class BrokerPublisher(BrokerPublisherSetup):
     """Broker Publisher class."""
 
     def __init__(self, *args, service_name: str, **kwargs):
