@@ -17,12 +17,17 @@ from tests.utils import (
 
 class TestHandlerEntry(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.saga = uuid4()
+        self.identifier = uuid4()
         self.user = uuid4()
         self.service_name = "foo"
 
         self.message = BrokerMessage(
-            "AddOrder", FakeModel("foo"), self.service_name, saga=self.saga, user=self.user, reply_topic="UpdateTicket",
+            "AddOrder",
+            FakeModel("foo"),
+            self.service_name,
+            identifier=self.identifier,
+            user=self.user,
+            reply_topic="UpdateTicket",
         )
 
     def test_constructor(self):

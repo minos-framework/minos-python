@@ -80,12 +80,17 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.publisher = BrokerPublisher.from_config(self.config)
         self.handler = BrokerHandler.from_config(self.config, publisher=self.publisher)
 
-        self.saga = uuid4()
+        self.identifier = uuid4()
         self.user = uuid4()
         self.service_name = self.config.service.name
 
         self.message = BrokerMessage(
-            "AddOrder", FakeModel("foo"), self.service_name, saga=self.saga, user=self.user, reply_topic="UpdateTicket",
+            "AddOrder",
+            FakeModel("foo"),
+            self.service_name,
+            identifier=self.identifier,
+            user=self.user,
+            reply_topic="UpdateTicket",
         )
 
     async def asyncSetUp(self):
@@ -219,7 +224,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
                 call(
                     "add_order",
                     topic="UpdateTicket",
-                    saga=self.message.saga,
+                    identifier=self.message.identifier,
                     status=BrokerMessageStatus.SUCCESS,
                     user=self.user,
                     headers=dict(),
@@ -248,10 +253,10 @@ class TestBrokerHandler(PostgresAsyncTestCase):
             FakeModel,
         )
 
-        saga = uuid4()
+        identifier = uuid4()
 
         instance = BrokerMessage(
-            "AddOrder", [FakeModel("foo")], self.service_name, saga=saga, reply_topic="UpdateTicket"
+            "AddOrder", [FakeModel("foo")], self.service_name, identifier=identifier, reply_topic="UpdateTicket"
         )
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 

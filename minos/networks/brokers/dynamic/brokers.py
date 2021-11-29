@@ -10,6 +10,9 @@ from asyncio import (
 from typing import (
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from aiopg import (
     Cursor,
@@ -84,15 +87,15 @@ class DynamicBroker(BrokerHandlerSetup):
         await super()._destroy()
 
     # noinspection PyUnusedLocal
-    async def send(self, *args, reply_topic: None = None, **kwargs) -> None:
+    async def send(self, *args, reply_topic: None = None, **kwargs) -> UUID:
         """Send a ``BrokerMessage``.
 
         :param args: Additional positional arguments.
         :param reply_topic: This argument is ignored if ignored in favor of ``self.topic``.
         :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
+        :return: The ``UUID`` identifier of the message.
         """
-        await self.publisher.send(*args, reply_topic=self.topic, **kwargs)
+        return await self.publisher.send(*args, reply_topic=self.topic, **kwargs)
 
     async def get_one(self, *args, **kwargs) -> BrokerHandlerEntry:
         """Get one handler entry from the given topics.

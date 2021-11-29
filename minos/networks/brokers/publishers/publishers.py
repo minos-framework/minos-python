@@ -52,32 +52,32 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
         data: Any,
         topic: str,
         *,
-        saga: Optional[UUID] = None,
+        identifier: Optional[UUID] = None,
         reply_topic: Optional[str] = None,
         user: Optional[UUID] = None,
         status: BrokerMessageStatus = BrokerMessageStatus.SUCCESS,
         strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
         headers: Optional[dict[str, str]] = None,
         **kwargs,
-    ) -> int:
+    ) -> UUID:
         """Send a ``BrokerMessage``.
 
         :param data: The data to be send.
         :param topic: Topic in which the message will be published.
-        :param saga: Saga identifier.
+        :param identifier: The identifier of the message.
         :param reply_topic: An optional topic name to wait for a response.
         :param user: The user identifier that send the message.
         :param status: The status code of the message.
         :param strategy: The publishing strategy.
-        :param headers: TODO
+        :param headers: A mapping of string values identified by a string key.
         :param kwargs: Additional named arguments.
-        :return: This method does not return anything.
+        :return: The ``UUID`` identifier of the message.
         """
 
         message = BrokerMessage(
             topic=topic,
             data=data,
-            saga=saga,
+            identifier=identifier,
             status=status,
             reply_topic=reply_topic,
             user=user,
@@ -86,7 +86,8 @@ class BrokerPublisher(BrokerPublisherSetup, ABC):
             headers=headers,
         )
         logger.info(f"Publishing '{message!s}'...")
-        return await self.enqueue(message.topic, message.strategy, message.avro_bytes)
+        await self.enqueue(message.topic, message.strategy, message.avro_bytes)
+        return message.identifier
 
     async def enqueue(self, topic: str, strategy: BrokerMessageStrategy, raw: bytes) -> int:
         """Send a sequence of bytes to the given topic.

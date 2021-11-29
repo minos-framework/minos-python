@@ -16,6 +16,7 @@ from typing import (
 )
 from uuid import (
     UUID,
+    uuid4,
 )
 
 from minos.common import (
@@ -32,7 +33,7 @@ class BrokerMessage(DeclarativeModel):
     topic: str
     data: Any
     service_name: str
-    saga: Optional[UUID]
+    identifier: UUID
     reply_topic: Optional[str]
     user: Optional[UUID]
     status: BrokerMessageStatus
@@ -45,18 +46,30 @@ class BrokerMessage(DeclarativeModel):
         data: Any,
         service_name: str,
         *,
+        identifier: Optional[UUID] = None,
         status: Optional[BrokerMessageStatus] = None,
         strategy: Optional[BrokerMessageStrategy] = None,
         headers: Optional[dict[str, str]] = None,
         **kwargs
     ):
+        if identifier is None:
+            identifier = uuid4()
         if status is None:
             status = BrokerMessageStatus.SUCCESS
         if strategy is None:
             strategy = BrokerMessageStrategy.UNICAST
         if headers is None:
             headers = dict()
-        super().__init__(topic, data, service_name, status=status, strategy=strategy, headers=headers, **kwargs)
+        super().__init__(
+            topic=topic,
+            data=data,
+            service_name=service_name,
+            identifier=identifier,
+            status=status,
+            strategy=strategy,
+            headers=headers,
+            **kwargs
+        )
 
     @property
     def ok(self) -> bool:
