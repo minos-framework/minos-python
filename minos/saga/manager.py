@@ -23,8 +23,8 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.networks import (
-    HEADERS_CONTEXT_VAR,
-    USER_CONTEXT_VAR,
+    REQUEST_HEADERS_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
     BrokerMessage,
     DynamicBroker,
     DynamicBrokerPool,
@@ -139,10 +139,10 @@ class SagaManager(MinosSetup):
     async def _run_new(
         self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs,
     ) -> Union[UUID, SagaExecution]:
-        if USER_CONTEXT_VAR.get() is not None:
+        if REQUEST_USER_CONTEXT_VAR.get() is not None:
             if user is not None:
                 warnings.warn("The `user` Argument will be ignored in favor of the `user` ContextVar", RuntimeWarning)
-            user = USER_CONTEXT_VAR.get()
+            user = REQUEST_USER_CONTEXT_VAR.get()
 
         execution = SagaExecution.from_definition(definition, context=context, user=user)
         return await self._run(execution, **kwargs)
@@ -170,7 +170,7 @@ class SagaManager(MinosSetup):
                 raise exc
             logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
         finally:
-            headers = HEADERS_CONTEXT_VAR.get()
+            headers = REQUEST_HEADERS_CONTEXT_VAR.get()
             if headers is not None:
                 related_service_names = ",".join([s.service_name for s in execution.executed_steps])
                 if "related_service_names" in headers:

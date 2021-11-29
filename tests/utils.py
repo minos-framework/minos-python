@@ -33,7 +33,7 @@ from minos.common import (
     MinosSetup,
 )
 from minos.networks import (
-    REPLY_TOPIC_CONTEXT_VAR,
+    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
 )
 from minos.saga import (
     Saga,
@@ -149,13 +149,13 @@ class FakeBroker:
     async def __aenter__(self):
         """For testing purposes."""
         if self._token is None:
-            self._token = REPLY_TOPIC_CONTEXT_VAR.set(self.topic)
+            self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(self.topic)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """For testing purposes."""
         if self._token is not None:
-            REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
+            REQUEST_REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
             self._token = None
 
 

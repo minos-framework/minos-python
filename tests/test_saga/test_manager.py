@@ -20,7 +20,7 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.networks import (
-    USER_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
     BrokerMessage,
     BrokerMessageStatus,
 )
@@ -51,7 +51,7 @@ class TestSagaManager(MinosTestCase):
         await super().asyncSetUp()
 
         self.user = uuid4()
-        USER_CONTEXT_VAR.set(self.user)
+        REQUEST_USER_CONTEXT_VAR.set(self.user)
         self.manager: SagaManager = SagaManager.from_config(self.config)
 
     def tearDown(self) -> None:

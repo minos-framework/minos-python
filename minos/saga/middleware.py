@@ -13,7 +13,7 @@ from minos.aggregate import (
     TransactionEntry,
 )
 from minos.networks import (
-    HEADERS_CONTEXT_VAR,
+    REQUEST_HEADERS_CONTEXT_VAR,
     BrokerRequest,
     Request,
     Response,
@@ -38,7 +38,7 @@ async def transactional_command(
                 return await _transaction(request, inner, transaction_uuids)
         return await inner(request)
     finally:
-        headers = HEADERS_CONTEXT_VAR.get()
+        headers = REQUEST_HEADERS_CONTEXT_VAR.get()
         if headers is not None:
             headers["transactions"] = f",{headers.get('transactions')}".rsplit(",", 1)[0]
 
