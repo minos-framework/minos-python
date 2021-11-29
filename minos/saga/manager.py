@@ -23,7 +23,9 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.networks import (
+    HEADERS_CONTEXT_VAR,
     USER_CONTEXT_VAR,
+    BrokerMessage,
     DynamicBroker,
     DynamicBrokerPool,
 )
@@ -167,6 +169,14 @@ class SagaManager(MinosSetup):
             if raise_on_error:
                 raise exc
             logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
+        finally:
+            headers = HEADERS_CONTEXT_VAR.get()
+            if headers is not None:
+                service_names = ",".join([s.service_name for s in execution.executed_steps])
+                if "service_names" in headers:
+                    headers["service_names"] += f",{service_names}"
+                else:
+                    headers["service_names"] = service_names
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
@@ -210,7 +220,7 @@ class SagaManager(MinosSetup):
 
     @staticmethod
     async def _get_response(handler: DynamicBroker, execution: SagaExecution, **kwargs) -> SagaResponse:
-        message = None
+        message: Optional[BrokerMessage] = None
         while message is None or UUID(message.headers["saga"]) != execution.uuid:
             try:
                 entry = await handler.get_one(**kwargs)
@@ -219,6 +229,10 @@ class SagaManager(MinosSetup):
                 raise SagaFailedExecutionException(exc)
             message = entry.data
 
-        response = SagaResponse(message.data, message.status, message.service_name)
+        service_name = str(message.service_name)
+        if "service_names" in message.headers:
+            service_name += f",{message.headers['service_names']}"
+
+        response = SagaResponse(message.data, message.status, service_name)
 
         return response
