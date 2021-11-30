@@ -44,10 +44,10 @@ class SagaStepExecution(ABC):
     ):
         if related_services is None:
             related_services = set()
+
         self.definition = definition
         self.status = status
         self.already_rollback = already_rollback
-
         self.related_services = related_services
 
     @classmethod
@@ -141,7 +141,7 @@ class SagaStepExecution(ABC):
             "cls": classname(type(self)),
             "definition": self.definition.raw,
             "status": self.status.raw,
-            "related_services": None if self.related_services is None else list(self.related_services),
+            "related_services": list(self.related_services),
             "already_rollback": self.already_rollback,
         }
 
