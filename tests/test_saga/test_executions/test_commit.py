@@ -53,8 +53,8 @@ class TestTransactionCommitter(MinosTestCase):
 
     def test_transactions(self):
         expected = [
-            (self.execution_uuid, "foo"),
             (self.execution_uuid, "bar"),
+            (self.execution_uuid, "foo"),
             (self.execution_uuid, "foobar"),
         ]
         self.assertEqual(expected, self.committer.transactions)
@@ -71,11 +71,11 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="ReserveBarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="ReserveFoobarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="CommitFooTransaction"),
                 call(data=self.execution_uuid, topic="CommitBarTransaction"),
+                call(data=self.execution_uuid, topic="CommitFooTransaction"),
                 call(data=self.execution_uuid, topic="CommitFoobarTransaction"),
             ],
             send_mock.call_args_list,
@@ -94,11 +94,11 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="ReserveBarTransaction", reply_topic="TheReplyTopic"),
+                call(data=self.execution_uuid, topic="ReserveFooTransaction", reply_topic="TheReplyTopic"),
                 call(data=self.execution_uuid, topic="ReserveFoobarTransaction", reply_topic="TheReplyTopic"),
-                call(data=self.execution_uuid, topic="RejectFooTransaction"),
                 call(data=self.execution_uuid, topic="RejectBarTransaction"),
+                call(data=self.execution_uuid, topic="RejectFooTransaction"),
                 call(data=self.execution_uuid, topic="RejectFoobarTransaction"),
             ],
             send_mock.call_args_list,
@@ -115,8 +115,8 @@ class TestTransactionCommitter(MinosTestCase):
 
         self.assertEqual(
             [
-                call(data=self.execution_uuid, topic="RejectFooTransaction"),
                 call(data=self.execution_uuid, topic="RejectBarTransaction"),
+                call(data=self.execution_uuid, topic="RejectFooTransaction"),
                 call(data=self.execution_uuid, topic="RejectFoobarTransaction"),
             ],
             send_mock.call_args_list,

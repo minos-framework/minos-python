@@ -84,8 +84,8 @@ class TestRequestExecutor(MinosTestCase):
 
     async def test_exec_with_headers(self):
         another = uuid4()
-        headers = {"foo": "bar", "transactions": str(another)}
-        REQUEST_HEADERS_CONTEXT_VAR.set(headers)
+        request_headers = {"foo": "bar", "transactions": str(another)}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
         executor = RequestExecutor(execution_uuid=self.execution_uuid, user=None,)
         operation = SagaOperation(send_create_product)
         context = SagaContext(product=Foo("create_product!"))
@@ -108,7 +108,7 @@ class TestRequestExecutor(MinosTestCase):
             )
         ]
         self.assertEqual(args, mock.call_args_list)
-        self.assertEqual({"foo": "bar", "transactions": str(another)}, headers)
+        self.assertEqual({"foo": "bar", "transactions": str(another)}, request_headers)
 
     async def test_exec_raises(self):
         operation = SagaOperation(send_create_product)

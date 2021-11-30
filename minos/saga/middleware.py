@@ -49,12 +49,11 @@ async def transactional_command(
                 else:
                     headers["transactions"] = raw_transaction_uuids_parts[0]
 
-            if raw_related_service_names := headers.get("related_services"):
-                related_services = set(raw_related_service_names.split(","))
-                related_services.add(get_service_name())
-                headers["related_services"] = ",".join(related_services)
-            else:
-                headers["related_services"] = get_service_name()
+            related_services = set()
+            if raw_related_services := headers.get("related_services"):
+                related_services.update(raw_related_services.split(","))
+            related_services.add(get_service_name())
+            headers["related_services"] = ",".join(related_services)
 
 
 async def _transaction(

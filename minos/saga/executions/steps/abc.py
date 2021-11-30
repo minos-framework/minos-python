@@ -79,8 +79,8 @@ class SagaStepExecution(ABC):
         raw["definition"] = SagaStep.from_raw(raw["definition"])
         raw["status"] = SagaStepStatus.from_raw(raw["status"])
 
-        if (raw_related_service_names := raw.get("related_services")) is not None:
-            raw["related_services"] = set(raw_related_service_names)
+        if (raw_related_services := raw.get("related_services")) is not None:
+            raw["related_services"] = set(raw_related_services)
         return cls(**raw)
 
     @staticmethod

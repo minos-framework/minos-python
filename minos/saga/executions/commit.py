@@ -124,4 +124,5 @@ class TransactionCommitter:
                             uniques.add(pair)
 
         _fn(self.execution_uuid, self.executed_steps)
+        transactions.sort()
         return transactions

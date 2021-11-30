@@ -128,10 +128,10 @@ class TestSagaManager(MinosTestCase):
                     user=self.user,
                     reply_topic="TheReplyTopic",
                 ),
-                call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitOrderTransaction", data=execution.uuid),
+                call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="CommitFooTransaction", data=execution.uuid),
+                call(topic="CommitOrderTransaction", data=execution.uuid),
             ],
             send_mock.call_args_list,
         )
@@ -163,7 +163,7 @@ class TestSagaManager(MinosTestCase):
                             headers={
                                 "saga": str(expected_uuid),
                                 "transactions": str(expected_uuid),
-                                "related_service_names": "foo",
+                                "related_services": "foo",
                             },
                         )
                     ),
@@ -316,10 +316,10 @@ class TestSagaManager(MinosTestCase):
                     user=self.user,
                     reply_topic="orderReply",
                 ),
-                call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitOrderTransaction", data=execution.uuid),
+                call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="CommitFooTransaction", data=execution.uuid),
+                call(topic="CommitOrderTransaction", data=execution.uuid),
             ],
             send_mock.call_args_list,
         )

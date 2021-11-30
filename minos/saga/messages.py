@@ -64,7 +64,7 @@ class SagaResponse:
     __slots__ = (
         "_content",
         "_status",
-        "_related_service_names",
+        "_related_services",
         "_uuid",
     )
 
@@ -86,7 +86,7 @@ class SagaResponse:
 
         self._content = content
         self._status = status
-        self._related_service_names = related_services
+        self._related_services = related_services
         self._uuid = uuid
 
     @classmethod
@@ -99,8 +99,8 @@ class SagaResponse:
 
         uuid = UUID(message.headers["saga"])
 
-        if raw_related_service_names := message.headers.get("related_services"):
-            related_services = set(raw_related_service_names.split(","))
+        if raw_related_services := message.headers.get("related_services"):
+            related_services = set(raw_related_services.split(","))
         else:
             related_services = set()
 
@@ -137,7 +137,7 @@ class SagaResponse:
 
         :return: An string value containing the microservice name.
         """
-        return self._related_service_names
+        return self._related_services
 
     @property
     def uuid(self) -> UUID:
@@ -152,19 +152,19 @@ class SagaResponse:
             isinstance(other, type(self))
             and self._content == other._content
             and self._status == other._status
-            and self._related_service_names == other._related_service_names
+            and self._related_services == other._related_services
             and self._uuid == other._uuid
         )
 
     def __repr__(self) -> str:
         return (
             f"{type(self).__name__}("
-            f"{self._content!r}, {self._status!r}, {self._related_service_names!r}, {self._uuid!r}"
+            f"{self._content!r}, {self._status!r}, {self._related_services!r}, {self._uuid!r}"
             f")"
         )
 
     def __hash__(self):
-        return hash((self._content, self._status, tuple(sorted(self._related_service_names)), self._uuid))
+        return hash((self._content, self._status, tuple(sorted(self._related_services)), self._uuid))
 
 
 class SagaResponseStatus(IntEnum):
