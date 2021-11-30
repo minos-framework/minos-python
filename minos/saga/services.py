@@ -1,7 +1,3 @@
-from uuid import (
-    UUID,
-)
-
 from dependency_injector.wiring import (
     Provide,
     inject,
@@ -34,13 +30,5 @@ class SagaService:
         return {cls.__reply__.__name__: {enroute.broker.command(f"{config.service.name}Reply")}}
 
     async def __reply__(self, request: BrokerRequest) -> None:
-        message = request.raw
-
-        uuid = UUID(message.headers["saga"])
-        if raw_related_service_names := message.headers.get("related_services"):
-            related_services = set(raw_related_service_names.split(","))
-        else:
-            related_services = set()
-
-        response = SagaResponse(message.data, related_services, message.status, uuid)
+        response = SagaResponse.from_message(request.raw)
         await self.saga_manager.run(response=response, pause_on_disk=True, raise_on_error=False, return_execution=False)

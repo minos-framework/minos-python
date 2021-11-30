@@ -14,6 +14,10 @@ from uuid import (
     UUID,
 )
 
+from minos.networks import (
+    BrokerMessage,
+)
+
 
 class SagaRequest:
     """Saga Request class."""
@@ -84,6 +88,23 @@ class SagaResponse:
         self._status = status
         self._related_service_names = related_services
         self._uuid = uuid
+
+    @classmethod
+    def from_message(cls, message: BrokerMessage) -> SagaResponse:
+        """Build a new ``SagaResponse`` from a ``BrokerMessage``.
+
+        :param message: The ``BrokerMessage`` instance.
+        :return: A ``SagaResponse``.
+        """
+
+        uuid = UUID(message.headers["saga"])
+
+        if raw_related_service_names := message.headers.get("related_services"):
+            related_services = set(raw_related_service_names.split(","))
+        else:
+            related_services = set()
+
+        return SagaResponse(message.data, related_services, message.status, uuid)
 
     # noinspection PyUnusedLocal
     async def content(self, **kwargs) -> Any:

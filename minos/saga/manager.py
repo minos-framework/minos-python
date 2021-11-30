@@ -176,8 +176,7 @@ class SagaManager(MinosSetup):
                 raise exc
             logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
         finally:
-            headers = REQUEST_HEADERS_CONTEXT_VAR.get()
-            if headers is not None:
+            if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is not None:
                 related_services = ",".join(reduce(or_, (s.related_services for s in execution.executed_steps)))
                 if "related_services" in headers:
                     headers["related_services"] += f",{related_services}"
@@ -234,12 +233,4 @@ class SagaManager(MinosSetup):
                 execution.status = SagaStatus.Errored
                 raise SagaFailedExecutionException(exc)
             message = entry.data
-
-        if raw_related_service_names := message.headers.get("related_services"):
-            related_services = set(raw_related_service_names.split(","))
-        else:
-            related_services = set()
-
-        response = SagaResponse(message.data, related_services, message.status)
-
-        return response
+        return SagaResponse.from_message(message)

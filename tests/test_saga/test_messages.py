@@ -3,6 +3,9 @@ from uuid import (
     uuid4,
 )
 
+from minos.networks import (
+    BrokerMessage,
+)
 from minos.saga import (
     SagaRequest,
     SagaResponse,
@@ -42,6 +45,18 @@ class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
         self.related_services = {"ticket"}
         self.response = SagaResponse(56, self.related_services, uuid=self.uuid)
 
+    def test_from_message(self):
+        expected = SagaResponse(56, {"ticket", "product"}, uuid=self.uuid)
+        observed = SagaResponse.from_message(
+            BrokerMessage("", 56, headers={"saga": str(self.uuid), "related_services": "ticket,product"})
+        )
+        self.assertEqual(expected, observed)
+
+    def test_from_message_empty_related_services(self):
+        expected = SagaResponse(56, uuid=self.uuid)
+        observed = SagaResponse.from_message(BrokerMessage("", 56, headers={"saga": str(self.uuid)}))
+        self.assertEqual(expected, observed)
+
     async def test_content(self):
         self.assertEqual(56, await self.response.content())
 
@@ -76,7 +91,6 @@ class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(SagaResponse(56, {"product"}, uuid=self.uuid), self.response)
 
     def test_repr(self):
-
         self.assertEqual(
             f"SagaResponse(56, {SagaResponseStatus.SUCCESS!r}, {self.related_services!r}, {self.uuid!r})",
             repr(self.response),
