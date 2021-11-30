@@ -246,3 +246,8 @@ History
 
 * Fix bug related with `enum.Enum` inherited classes that do not recover the original type after being serialized.
 * Fix bug related with`str` values auto-casting to an iterable of characters.
+
+0.3.2 (2021-11-30)
+--------------------
+
+* Fix bug related with `EntrypointLauncher`'s dependency injection and unloaded `minos.*` modules.
