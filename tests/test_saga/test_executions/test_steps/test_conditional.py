@@ -80,7 +80,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
             context = await self.execution.execute(context, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=1), context)
-        self.assertEqual(None, self.execution.related_services)
+        self.assertEqual({"order"}, self.execution.related_services)
 
         response = SagaResponse(Foo("order"), {"order"})
         with patch("minos.saga.SagaExecution.commit") as commit_mock:
@@ -143,7 +143,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
             "definition": self.definition.raw,
             "inner": None,
             "status": "created",
-            "related_services": None,
+            "related_services": [],
         }
         self.assertEqual(expected, self.execution.raw)
 
@@ -171,13 +171,13 @@ class TestConditionalSageStepExecution(MinosTestCase):
                         "on_success": {"callback": "tests.utils.handle_order_success"},
                     },
                     "status": "paused-by-on-execute",
-                    "related_services": None,
+                    "related_services": ["order"],
                 },
                 "status": "paused",
                 "user": str(self.execute_kwargs["user"]),
                 "uuid": str(self.execute_kwargs["execution_uuid"]),
             },
-            "related_services": None,
+            "related_services": ["order"],
             "status": "paused-by-on-execute",
         }
         observed = self.execution.raw

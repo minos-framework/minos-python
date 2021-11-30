@@ -71,7 +71,7 @@ class TestSagaExecution(MinosTestCase):
 
         response = SagaResponse(Foo("ticket"), {"ticket"})
         context = await execution.execute(response)
-        self.assertEqual(2, self.publish_mock.call_count)
+        self.assertEqual(4, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
@@ -129,7 +129,7 @@ class TestSagaExecution(MinosTestCase):
         response = SagaResponse(Foo("ticket"), {"ticket"})
         with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(response)
-        self.assertEqual(3, self.publish_mock.call_count)
+        self.assertEqual(4, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
         self.assertEqual(SagaStatus.Errored, execution.status)
 
@@ -167,7 +167,7 @@ class TestSagaExecution(MinosTestCase):
 
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(SagaContext(order=Foo("order"), ticket=Foo("ticket")), context)
-        self.assertEqual(2, self.publish_mock.call_count)
+        self.assertEqual(4, self.publish_mock.call_count)
 
     async def test_execute_commit_without_autocommit(self):
         saga = (
@@ -261,7 +261,7 @@ class TestSagaExecution(MinosTestCase):
 
         self.publish_mock.reset_mock()
         await execution.rollback()
-        self.assertEqual(2, self.publish_mock.call_count)
+        self.assertEqual(3, self.publish_mock.call_count)
 
         self.publish_mock.reset_mock()
         with self.assertRaises(SagaRollbackExecutionException):

@@ -43,6 +43,7 @@ class LocalSagaStepExecution(SagaStepExecution):
 
         executor = LocalExecutor(*args, **kwargs)
 
+        self.related_services.add(get_service_name())
         try:
             context = await executor.exec(self.definition.on_execute_operation, context)
         except SagaFailedExecutionStepException as exc:
@@ -50,7 +51,6 @@ class LocalSagaStepExecution(SagaStepExecution):
             self.status = SagaStepStatus.ErroredOnExecute
             raise exc
 
-        self.related_services = {get_service_name()}
         self.status = SagaStepStatus.Finished
         return context
 
@@ -70,6 +70,7 @@ class LocalSagaStepExecution(SagaStepExecution):
             raise SagaRollbackExecutionStepException("The step was already rollbacked.")
 
         executor = LocalExecutor(*args, **kwargs)
+        self.related_services.add(get_service_name())
         context = await executor.exec(self.definition.on_failure_operation, context)
 
         self.already_rollback = True

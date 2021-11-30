@@ -94,7 +94,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
-        self.assertEqual({"ticket"}, execution.related_services)
+        self.assertEqual({"ticket", "order"}, execution.related_services)
 
     async def test_on_success_not_defined(self):
         step = RemoteSagaStep(send_create_ticket)
@@ -107,7 +107,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
-        self.assertEqual({"ticket"}, execution.related_services)
+        self.assertEqual({"ticket", "order"}, execution.related_services)
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_success_raises(self):
@@ -135,7 +135,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
-        self.assertEqual({"ticket"}, execution.related_services)
+        self.assertEqual({"ticket", "order"}, execution.related_services)
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_error_not_defined(self):
@@ -149,7 +149,7 @@ class TestRemoteSagaStepExecution(MinosTestCase):
         await execution.execute(context, response, **self.execute_kwargs)
 
         self.assertEqual(SagaStepStatus.Finished, execution.status)
-        self.assertEqual({"ticket"}, execution.related_services)
+        self.assertEqual({"ticket", "order"}, execution.related_services)
         self.assertEqual(0, rollback_mock.call_count)
 
     async def test_on_error_raises(self):

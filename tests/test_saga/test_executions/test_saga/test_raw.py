@@ -219,7 +219,7 @@ class TestSagaExecution(MinosTestCase):
                         "on_failure": {"callback": "tests.utils.send_delete_order"},
                     },
                     "status": "finished",
-                    "related_services": ["ticket"],
+                    "related_services": ["ticket", "order"],
                     "already_rollback": False,
                 },
                 {
@@ -245,7 +245,7 @@ class TestSagaExecution(MinosTestCase):
                 },
                 "status": "paused-by-on-execute",
                 "already_rollback": False,
-                "related_services": None,
+                "related_services": ["order"],
             },
             "user": str(self.user),
             "status": "paused",

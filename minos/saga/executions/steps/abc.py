@@ -42,6 +42,8 @@ class SagaStepExecution(ABC):
         status: SagaStepStatus = SagaStepStatus.Created,
         already_rollback: bool = False,
     ):
+        if related_services is None:
+            related_services = set()
         self.definition = definition
         self.status = status
         self.already_rollback = already_rollback

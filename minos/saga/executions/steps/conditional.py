@@ -86,7 +86,6 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         if self.inner is not None:
             context = await self._execute_inner(context, *args, **kwargs)
 
-        self.related_services = {get_service_name()}
         self.status = SagaStepStatus.Finished
         return context
 
@@ -98,6 +97,7 @@ class ConditionalSagaStepExecution(SagaStepExecution):
         )
 
         executor = Executor(execution_uuid=execution_uuid)
+        self.related_services.add(get_service_name())
 
         definition = None
         for alternative in self.definition.if_then_alternatives:

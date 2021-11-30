@@ -20,6 +20,7 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.networks import (
+    REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,
     BrokerMessage,
 )
@@ -99,10 +100,10 @@ class TestSagaManager(MinosTestCase):
                             },
                         )
                     ),
-                    Message(BrokerMessage("", None, headers={"related_services": "foo"},),),
                     Message(BrokerMessage("", None, headers={"related_services": "order"},),),
                     Message(BrokerMessage("", None, headers={"related_services": "foo"},),),
                     Message(BrokerMessage("", None, headers={"related_services": "order"},),),
+                    Message(BrokerMessage("", None, headers={"related_services": "foo"},),),
                 ]
             )
 
@@ -127,10 +128,10 @@ class TestSagaManager(MinosTestCase):
                     user=self.user,
                     reply_topic="TheReplyTopic",
                 ),
-                call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitFooTransaction", data=execution.uuid),
+                call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="CommitOrderTransaction", data=execution.uuid),
+                call(topic="CommitFooTransaction", data=execution.uuid),
             ],
             send_mock.call_args_list,
         )
@@ -174,6 +175,88 @@ class TestSagaManager(MinosTestCase):
             self.assertEqual(SagaStatus.Finished, execution.status)
 
         self.assertEqual(0, commit_mock.call_count)
+
+    async def test_run_with_pause_on_memory_with_headers(self):
+        send_mock = AsyncMock()
+        self.broker_publisher.send = send_mock
+
+        Message = namedtuple("Message", ["data"])
+        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
+        with patch("uuid.uuid4", return_value=expected_uuid):
+            self.broker.get_one = AsyncMock(
+                side_effect=[
+                    Message(
+                        BrokerMessage(
+                            "topicReply",
+                            [Foo("foo")],
+                            headers={
+                                "saga": str(expected_uuid),
+                                "transactions": str(expected_uuid),
+                                "related_services": "foo",
+                            },
+                        )
+                    ),
+                    Message(
+                        BrokerMessage(
+                            "topicReply",
+                            [Foo("foo")],
+                            headers={
+                                "saga": str(expected_uuid),
+                                "transactions": str(expected_uuid),
+                                "related_services": "foo,bar",
+                            },
+                        )
+                    ),
+                ]
+            )
+
+            request_headers = {"hello": "world"}
+            REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+            await self.manager.run(ADD_ORDER, autocommit=False)
+            self.assertEqual({"hello", "related_services"}, request_headers.keys())
+            self.assertEqual("world", request_headers["hello"])
+            self.assertEqual({"foo", "bar", "order"}, set(request_headers["related_services"].split(",")))
+
+    async def test_run_with_pause_on_memory_with_headers_already_related_services(self):
+        send_mock = AsyncMock()
+        self.broker_publisher.send = send_mock
+
+        Message = namedtuple("Message", ["data"])
+        expected_uuid = UUID("a74d9d6d-290a-492e-afcc-70607958f65d")
+        with patch("uuid.uuid4", return_value=expected_uuid):
+            self.broker.get_one = AsyncMock(
+                side_effect=[
+                    Message(
+                        BrokerMessage(
+                            "topicReply",
+                            [Foo("foo")],
+                            headers={
+                                "saga": str(expected_uuid),
+                                "transactions": str(expected_uuid),
+                                "related_services": "foo",
+                            },
+                        )
+                    ),
+                    Message(
+                        BrokerMessage(
+                            "topicReply",
+                            [Foo("foo")],
+                            headers={
+                                "saga": str(expected_uuid),
+                                "transactions": str(expected_uuid),
+                                "related_services": "foo,bar",
+                            },
+                        )
+                    ),
+                ]
+            )
+
+            request_headers = {"hello": "world", "related_services": "order,one"}
+            REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+            await self.manager.run(ADD_ORDER, autocommit=False)
+            self.assertEqual({"hello", "related_services"}, request_headers.keys())
+            self.assertEqual("world", request_headers["hello"])
+            self.assertEqual({"foo", "bar", "one", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_memory_with_error(self):
         self.broker.get_one = AsyncMock(side_effect=ValueError)
@@ -233,10 +316,10 @@ class TestSagaManager(MinosTestCase):
                     user=self.user,
                     reply_topic="orderReply",
                 ),
-                call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="ReserveOrderTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
-                call(topic="CommitFooTransaction", data=execution.uuid),
+                call(topic="ReserveFooTransaction", data=execution.uuid, reply_topic="TheReplyTopic"),
                 call(topic="CommitOrderTransaction", data=execution.uuid),
+                call(topic="CommitFooTransaction", data=execution.uuid),
             ],
             send_mock.call_args_list,
         )
@@ -262,6 +345,32 @@ class TestSagaManager(MinosTestCase):
             execution = await self.manager.run(response=response, pause_on_disk=True, autocommit=False)
         self.assertEqual(SagaStatus.Finished, execution.status)
         self.assertEqual(0, commit_mock.call_count)
+
+    async def test_run_with_pause_on_disk_with_headers(self):
+        send_mock = AsyncMock()
+        self.broker_publisher.send = send_mock
+
+        get_mock = AsyncMock()
+        get_mock.return_value.data.ok = True
+        self.broker.get_one = get_mock
+
+        request_headers = {"related_services": "one"}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+        execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
+        self.assertEqual({"one", "order"}, set(request_headers["related_services"].split(",")))
+
+        request_headers = {"related_services": "one"}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
+        execution = await self.manager.run(response=response, pause_on_disk=True)
+        self.assertEqual(SagaStatus.Paused, execution.status)
+        self.assertEqual({"foo", "one", "order"}, set(request_headers["related_services"].split(",")))
+
+        request_headers = {"related_services": "one"}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+        response = SagaResponse([Foo("foo")], {"foo", "bar"}, uuid=execution.uuid)
+        await self.manager.run(response=response, pause_on_disk=True)
+        self.assertEqual({"foo", "bar", "one", "order"}, set(request_headers["related_services"].split(",")))
 
     async def test_run_with_pause_on_disk_returning_uuid(self):
         uuid = await self.manager.run(ADD_ORDER, return_execution=False, pause_on_disk=True)
