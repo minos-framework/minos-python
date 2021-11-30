@@ -4,6 +4,12 @@ from __future__ import (
 
 import logging
 import warnings
+from functools import (
+    reduce,
+)
+from operator import (
+    or_,
+)
 from typing import (
     Optional,
     Union,
@@ -23,7 +29,9 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.networks import (
-    USER_CONTEXT_VAR,
+    REQUEST_HEADERS_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
+    BrokerMessage,
     DynamicBroker,
     DynamicBrokerPool,
 )
@@ -137,10 +145,10 @@ class SagaManager(MinosSetup):
     async def _run_new(
         self, definition: Saga, context: Optional[SagaContext] = None, user: Optional[UUID] = None, **kwargs,
     ) -> Union[UUID, SagaExecution]:
-        if USER_CONTEXT_VAR.get() is not None:
+        if REQUEST_USER_CONTEXT_VAR.get() is not None:
             if user is not None:
                 warnings.warn("The `user` Argument will be ignored in favor of the `user` ContextVar", RuntimeWarning)
-            user = USER_CONTEXT_VAR.get()
+            user = REQUEST_USER_CONTEXT_VAR.get()
 
         execution = SagaExecution.from_definition(definition, context=context, user=user)
         return await self._run(execution, **kwargs)
@@ -167,6 +175,16 @@ class SagaManager(MinosSetup):
             if raise_on_error:
                 raise exc
             logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
+        finally:
+            if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is not None:
+                related_services = reduce(or_, (s.related_services for s in execution.executed_steps), set())
+                if execution.paused_step is not None:
+                    related_services.update(execution.paused_step.related_services)
+
+                if raw_related_services := headers.get("related_services"):
+                    related_services.update(raw_related_services.split(","))
+
+                headers["related_services"] = ",".join(related_services)
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
@@ -210,15 +228,12 @@ class SagaManager(MinosSetup):
 
     @staticmethod
     async def _get_response(handler: DynamicBroker, execution: SagaExecution, **kwargs) -> SagaResponse:
-        reply = None
-        while reply is None or reply.saga != execution.uuid:
+        message: Optional[BrokerMessage] = None
+        while message is None or UUID(message.headers["saga"]) != execution.uuid:
             try:
                 entry = await handler.get_one(**kwargs)
             except Exception as exc:
                 execution.status = SagaStatus.Errored
                 raise SagaFailedExecutionException(exc)
-            reply = entry.data
-
-        response = SagaResponse(reply.data, reply.status, reply.service_name)
-
-        return response
+            message = entry.data
+        return SagaResponse.from_message(message)

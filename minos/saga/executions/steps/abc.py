@@ -38,15 +38,17 @@ class SagaStepExecution(ABC):
     def __init__(
         self,
         definition: SagaStep,
+        related_services: Optional[set[str]] = None,
         status: SagaStepStatus = SagaStepStatus.Created,
-        service_name: Optional[str] = None,
         already_rollback: bool = False,
     ):
+        if related_services is None:
+            related_services = set()
+
         self.definition = definition
         self.status = status
         self.already_rollback = already_rollback
-
-        self.service_name = service_name
+        self.related_services = related_services
 
     @classmethod
     def from_raw(cls, raw: Union[dict[str, Any], SagaStepExecution], **kwargs) -> SagaStepExecution:
@@ -76,6 +78,9 @@ class SagaStepExecution(ABC):
     def _from_raw(cls, raw: dict[str, Any]) -> SagaStepExecution:
         raw["definition"] = SagaStep.from_raw(raw["definition"])
         raw["status"] = SagaStepStatus.from_raw(raw["status"])
+
+        if (raw_related_services := raw.get("related_services")) is not None:
+            raw["related_services"] = set(raw_related_services)
         return cls(**raw)
 
     @staticmethod
@@ -136,7 +141,7 @@ class SagaStepExecution(ABC):
             "cls": classname(type(self)),
             "definition": self.definition.raw,
             "status": self.status.raw,
-            "service_name": self.service_name,
+            "related_services": list(self.related_services),
             "already_rollback": self.already_rollback,
         }
 
@@ -147,6 +152,6 @@ class SagaStepExecution(ABC):
         yield from (
             self.definition,
             self.status,
-            self.service_name,
+            self.related_services,
             self.already_rollback,
         )

@@ -14,6 +14,10 @@ from uuid import (
     UUID,
 )
 
+from minos.networks import (
+    BrokerMessage,
+)
+
 
 class SagaRequest:
     """Saga Request class."""
@@ -60,15 +64,15 @@ class SagaResponse:
     __slots__ = (
         "_content",
         "_status",
-        "_service_name",
+        "_related_services",
         "_uuid",
     )
 
     def __init__(
         self,
         content: Any = None,
+        related_services: Optional[set[str]] = None,
         status: Optional[Union[int, SagaResponseStatus]] = None,
-        service_name: Optional[str] = None,
         uuid: Optional[UUID] = None,
         *args,
         **kwargs,
@@ -77,13 +81,30 @@ class SagaResponse:
             status = SagaResponseStatus.SUCCESS
         if not isinstance(status, SagaResponseStatus):
             status = SagaResponseStatus.from_raw(status)
-        if service_name is None:
-            raise ValueError("'service_name' must be set.")
+        if related_services is None:
+            related_services = set()
 
         self._content = content
         self._status = status
-        self._service_name = service_name
+        self._related_services = related_services
         self._uuid = uuid
+
+    @classmethod
+    def from_message(cls, message: BrokerMessage) -> SagaResponse:
+        """Build a new ``SagaResponse`` from a ``BrokerMessage``.
+
+        :param message: The ``BrokerMessage`` instance.
+        :return: A ``SagaResponse``.
+        """
+
+        uuid = UUID(message.headers["saga"])
+
+        if raw_related_services := message.headers.get("related_services"):
+            related_services = set(raw_related_services.split(","))
+        else:
+            related_services = set()
+
+        return SagaResponse(message.data, related_services, message.status, uuid)
 
     # noinspection PyUnusedLocal
     async def content(self, **kwargs) -> Any:
@@ -111,12 +132,12 @@ class SagaResponse:
         return self._status
 
     @property
-    def service_name(self) -> str:
+    def related_services(self) -> set[str]:
         """Get the microservice name that generated the response.
 
         :return: An string value containing the microservice name.
         """
-        return self._service_name
+        return self._related_services
 
     @property
     def uuid(self) -> UUID:
@@ -131,15 +152,19 @@ class SagaResponse:
             isinstance(other, type(self))
             and self._content == other._content
             and self._status == other._status
-            and self._service_name == other._service_name
+            and self._related_services == other._related_services
             and self._uuid == other._uuid
         )
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._content!r}, {self._status!r}, {self._service_name!r}, {self._uuid!r})"
+        return (
+            f"{type(self).__name__}("
+            f"{self._content!r}, {self._status!r}, {self._related_services!r}, {self._uuid!r}"
+            f")"
+        )
 
     def __hash__(self):
-        return hash((self._content, self._status, self._service_name, self._uuid))
+        return hash((self._content, self._status, tuple(sorted(self._related_services)), self._uuid))
 
 
 class SagaResponseStatus(IntEnum):

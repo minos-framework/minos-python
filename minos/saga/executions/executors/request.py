@@ -19,7 +19,8 @@ from minos.common import (
     NotProvidedException,
 )
 from minos.networks import (
-    REPLY_TOPIC_CONTEXT_VAR,
+    REQUEST_HEADERS_CONTEXT_VAR,
+    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
     BrokerPublisher,
 )
 
@@ -82,17 +83,24 @@ class RequestExecutor(Executor):
 
     # noinspection PyMethodOverriding
     async def _publish(self, request: SagaRequest) -> None:
-        reply_topic = REPLY_TOPIC_CONTEXT_VAR.get()
+        reply_topic = REQUEST_REPLY_TOPIC_CONTEXT_VAR.get()
         if reply_topic is None:
             reply_topic = self._get_default_reply_topic()
+
+        headers = (REQUEST_HEADERS_CONTEXT_VAR.get() or dict()).copy()
+        headers["saga"] = str(self.execution_uuid)
+        if headers.get("transactions"):
+            headers["transactions"] += f",{self.execution_uuid!s}"
+        else:
+            headers["transactions"] = f"{self.execution_uuid!s}"
 
         try:
             await self.broker_publisher.send(
                 topic=request.target,
                 data=await request.content(),
-                saga=self.execution_uuid,
                 user=self.user,
                 reply_topic=reply_topic,
+                headers=headers,
             )
         except Exception as exc:
             raise ExecutorException(exc)
