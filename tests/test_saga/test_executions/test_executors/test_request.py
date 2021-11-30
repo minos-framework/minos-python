@@ -10,6 +10,9 @@ from uuid import (
 from minos.common import (
     NotProvidedException,
 )
+from minos.networks import (
+    REQUEST_HEADERS_CONTEXT_VAR,
+)
 from minos.saga import (
     Executor,
     RequestExecutor,
@@ -54,7 +57,7 @@ class TestRequestExecutor(MinosTestCase):
         args = call(
             data=Foo("create_product!"),
             topic="CreateProduct",
-            saga=self.execution_uuid,
+            headers={"saga": str(self.execution_uuid), "transactions": str(self.execution_uuid)},
             user=self.user,
             reply_topic="orderReply",
         )
@@ -73,11 +76,39 @@ class TestRequestExecutor(MinosTestCase):
         args = call(
             data=Foo("create_product!"),
             topic="CreateProduct",
-            saga=self.execution_uuid,
+            headers={"saga": str(self.execution_uuid), "transactions": str(self.execution_uuid)},
             user=None,
             reply_topic="orderReply",
         )
         self.assertEqual(args, mock.call_args)
+
+    async def test_exec_with_headers(self):
+        another = uuid4()
+        request_headers = {"foo": "bar", "transactions": str(another)}
+        REQUEST_HEADERS_CONTEXT_VAR.set(request_headers)
+        executor = RequestExecutor(execution_uuid=self.execution_uuid, user=None,)
+        operation = SagaOperation(send_create_product)
+        context = SagaContext(product=Foo("create_product!"))
+
+        mock = MagicMock(side_effect=self.broker_publisher.send)
+        self.broker_publisher.send = mock
+        await executor.exec(operation, context)
+
+        args = [
+            call(
+                data=Foo("create_product!"),
+                topic="CreateProduct",
+                headers={
+                    "saga": str(self.execution_uuid),
+                    "transactions": f"{another!s},{self.execution_uuid!s}",
+                    "foo": "bar",
+                },
+                user=None,
+                reply_topic="orderReply",
+            )
+        ]
+        self.assertEqual(args, mock.call_args_list)
+        self.assertEqual({"foo": "bar", "transactions": str(another)}, request_headers)
 
     async def test_exec_raises(self):
         operation = SagaOperation(send_create_product)

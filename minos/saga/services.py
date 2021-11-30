@@ -30,6 +30,5 @@ class SagaService:
         return {cls.__reply__.__name__: {enroute.broker.command(f"{config.service.name}Reply")}}
 
     async def __reply__(self, request: BrokerRequest) -> None:
-        raw = request.raw
-        response = SagaResponse(raw.data, raw.status, raw.service_name, raw.saga)
+        response = SagaResponse.from_message(request.raw)
         await self.saga_manager.run(response=response, pause_on_disk=True, raise_on_error=False, return_execution=False)

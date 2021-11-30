@@ -80,13 +80,13 @@ class TestConditionalSageStepExecution(MinosTestCase):
             context = await self.execution.execute(context, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=1), context)
-        self.assertEqual(None, self.execution.service_name)
+        self.assertEqual({"order"}, self.execution.related_services)
 
-        response = SagaResponse(Foo("order"), service_name="order")
+        response = SagaResponse(Foo("order"), {"order"})
         with patch("minos.saga.SagaExecution.commit") as commit_mock:
             context = await self.execution.execute(context, response=response, **self.execute_kwargs)
         self.assertEqual(SagaStepStatus.Finished, self.execution.status)
-        self.assertEqual(self.config.service.name, self.execution.service_name)
+        self.assertEqual({self.config.service.name}, self.execution.related_services)
         self.assertEqual(SagaContext(option=1, order=Foo("order")), context)
         self.assertEqual(0, commit_mock.call_count)
 
@@ -98,7 +98,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
         self.assertEqual(SagaStepStatus.PausedByOnExecute, self.execution.status)
         self.assertEqual(SagaContext(option=2), context)
 
-        response = SagaResponse(Foo("ticket"), service_name="ticket")
+        response = SagaResponse(Foo("ticket"), {"ticket"})
         with patch("minos.saga.SagaExecution.rollback") as mock:
             with self.assertRaises(SagaFailedExecutionStepException):
                 context = await self.execution.execute(context, response=response, **self.execute_kwargs)
@@ -115,7 +115,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
     async def test_rollback(self):
         with suppress(SagaPausedExecutionStepException):
             await self.execution.execute(SagaContext(option=1), **self.execute_kwargs)
-        response = SagaResponse(Foo("order"), service_name="order")
+        response = SagaResponse(Foo("order"), {"order"})
         await self.execution.execute(SagaContext(), response=response, **self.execute_kwargs)
         with patch("minos.saga.SagaExecution.rollback") as rollback_mock, patch(
             "minos.saga.SagaExecution.commit"
@@ -143,7 +143,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
             "definition": self.definition.raw,
             "inner": None,
             "status": "created",
-            "service_name": None,
+            "related_services": [],
         }
         self.assertEqual(expected, self.execution.raw)
 
@@ -171,13 +171,13 @@ class TestConditionalSageStepExecution(MinosTestCase):
                         "on_success": {"callback": "tests.utils.handle_order_success"},
                     },
                     "status": "paused-by-on-execute",
-                    "service_name": None,
+                    "related_services": ["order"],
                 },
                 "status": "paused",
                 "user": str(self.execute_kwargs["user"]),
                 "uuid": str(self.execute_kwargs["execution_uuid"]),
             },
-            "service_name": None,
+            "related_services": ["order"],
             "status": "paused-by-on-execute",
         }
         observed = self.execution.raw
@@ -192,7 +192,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
         context = SagaContext(option=1)
         with suppress(SagaPausedExecutionStepException):
             context = await self.execution.execute(context, **self.execute_kwargs)
-        response = SagaResponse(Foo("order"), service_name="order")
+        response = SagaResponse(Foo("order"), {"order"})
         await self.execution.execute(context, response=response, **self.execute_kwargs)
 
         expected = {
@@ -215,7 +215,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
                             "on_success": {"callback": "tests.utils.handle_order_success"},
                         },
                         "status": "finished",
-                        "service_name": "order",
+                        "related_services": ["order"],
                     }
                 ],
                 "paused_step": None,
@@ -224,7 +224,7 @@ class TestConditionalSageStepExecution(MinosTestCase):
                 "uuid": str(self.execute_kwargs["execution_uuid"]),
             },
             "status": "finished",
-            "service_name": "order",
+            "related_services": ["order"],
         }
         observed = self.execution.raw
 

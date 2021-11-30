@@ -1,12 +1,3 @@
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
-
-from minos.common import (
-    MinosConfig,
-)
-
 from ...context import (
     SagaContext,
 )
@@ -16,6 +7,9 @@ from ...definitions import (
 from ...exceptions import (
     SagaFailedExecutionStepException,
     SagaRollbackExecutionStepException,
+)
+from ...utils import (
+    get_service_name,
 )
 from ..executors import (
     LocalExecutor,
@@ -49,6 +43,7 @@ class LocalSagaStepExecution(SagaStepExecution):
 
         executor = LocalExecutor(*args, **kwargs)
 
+        self.related_services.add(get_service_name())
         try:
             context = await executor.exec(self.definition.on_execute_operation, context)
         except SagaFailedExecutionStepException as exc:
@@ -56,13 +51,8 @@ class LocalSagaStepExecution(SagaStepExecution):
             self.status = SagaStepStatus.ErroredOnExecute
             raise exc
 
-        self.service_name = self._get_service_name()
         self.status = SagaStepStatus.Finished
         return context
-
-    @inject
-    def _get_service_name(self, config: MinosConfig = Provide["config"]) -> str:
-        return config.service.name
 
     async def rollback(self, context: SagaContext, *args, **kwargs) -> SagaContext:
         """Rollback the local saga context.
@@ -80,6 +70,7 @@ class LocalSagaStepExecution(SagaStepExecution):
             raise SagaRollbackExecutionStepException("The step was already rollbacked.")
 
         executor = LocalExecutor(*args, **kwargs)
+        self.related_services.add(get_service_name())
         context = await executor.exec(self.definition.on_failure_operation, context)
 
         self.already_rollback = True

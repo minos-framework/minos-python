@@ -22,6 +22,9 @@ from ...messages import (
     SagaResponse,
     SagaResponseStatus,
 )
+from ...utils import (
+    get_service_name,
+)
 from ..executors import (
     RequestExecutor,
     ResponseExecutor,
@@ -57,6 +60,8 @@ class RemoteSagaStepExecution(SagaStepExecution):
             self.status = SagaStepStatus.PausedByOnExecute
             raise SagaPausedExecutionStepException()
 
+        self.related_services |= response.related_services
+
         if response.status == SagaResponseStatus.SYSTEM_ERROR:
             self.status = SagaStepStatus.ErroredByOnExecute
             exc = SagaResponseException(f"Failed with {response.status!s} status: {await response.content()!s}")
@@ -67,7 +72,6 @@ class RemoteSagaStepExecution(SagaStepExecution):
         else:
             context = await self._execute_on_error(context, response, *args, **kwargs)
 
-        self.service_name = response.service_name
         self.status = SagaStepStatus.Finished
         return context
 
@@ -77,6 +81,7 @@ class RemoteSagaStepExecution(SagaStepExecution):
 
         self.status = SagaStepStatus.RunningOnExecute
         executor = RequestExecutor(*args, **kwargs)
+        self.related_services.add(get_service_name())
         try:
             await executor.exec(self.definition.on_execute_operation, context)
         except SagaFailedExecutionStepException as exc:
@@ -87,6 +92,7 @@ class RemoteSagaStepExecution(SagaStepExecution):
     async def _execute_on_success(self, context: SagaContext, response: SagaResponse, *args, **kwargs) -> SagaContext:
         self.status = SagaStepStatus.RunningOnSuccess
         executor = ResponseExecutor(*args, **kwargs)
+        self.related_services.add(get_service_name())
 
         try:
             context = await executor.exec(self.definition.on_success_operation, context, response)
@@ -100,6 +106,7 @@ class RemoteSagaStepExecution(SagaStepExecution):
     async def _execute_on_error(self, context: SagaContext, response: SagaResponse, *args, **kwargs) -> SagaContext:
         self.status = SagaStepStatus.RunningOnError
         executor = ResponseExecutor(*args, **kwargs)
+        self.related_services.add(get_service_name())
 
         try:
             context = await executor.exec(self.definition.on_error_operation, context, response)
