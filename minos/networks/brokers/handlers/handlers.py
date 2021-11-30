@@ -52,7 +52,7 @@ from ...exceptions import (
     MinosActionNotFoundException,
 )
 from ...requests import (
-    USER_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
     Response,
     ResponseException,
 )
@@ -60,6 +60,7 @@ from ...utils import (
     consume_queue,
 )
 from ..messages import (
+    REQUEST_HEADERS_CONTEXT_VAR,
     BrokerMessage,
     BrokerMessageStatus,
 )
@@ -304,26 +305,32 @@ class BrokerHandler(BrokerHandlerSetup):
 
         fn = self.get_callback(entry.callback)
         message = entry.data
-        data, status = await fn(message)
+        data, status, headers = await fn(message)
 
         if message.reply_topic is not None:
             await self.publisher.send(
-                data, topic=message.reply_topic, saga=message.saga, status=status, user=message.user
+                data,
+                topic=message.reply_topic,
+                identifier=message.identifier,
+                status=status,
+                user=message.user,
+                headers=headers,
             )
 
     @staticmethod
     def get_callback(
         fn: Callable[[BrokerRequest], Union[Optional[BrokerRequest], Awaitable[Optional[BrokerRequest]]]]
-    ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, BrokerMessageStatus]]]:
+    ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, BrokerMessageStatus, dict[str, str]]]]:
         """Get the handler function to be used by the Broker Handler.
 
         :param fn: The action function.
         :return: A wrapper function around the given one that is compatible with the Broker Handler API.
         """
 
-        async def _fn(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus]:
+        async def _fn(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus, dict[str, str]]:
             request = BrokerRequest(raw)
-            token = USER_CONTEXT_VAR.set(request.user)
+            user_token = REQUEST_USER_CONTEXT_VAR.set(request.user)
+            headers_token = REQUEST_HEADERS_CONTEXT_VAR.set(raw.headers)
 
             try:
                 response = fn(request)
@@ -331,15 +338,16 @@ class BrokerHandler(BrokerHandlerSetup):
                     response = await response
                 if isinstance(response, Response):
                     response = await response.content()
-                return response, BrokerMessageStatus.SUCCESS
+                return response, BrokerMessageStatus.SUCCESS, REQUEST_HEADERS_CONTEXT_VAR.get()
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
-                return repr(exc), BrokerMessageStatus.ERROR
+                return repr(exc), BrokerMessageStatus.ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
-                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR
+                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
             finally:
-                USER_CONTEXT_VAR.reset(token)
+                REQUEST_USER_CONTEXT_VAR.reset(user_token)
+                REQUEST_HEADERS_CONTEXT_VAR.reset(headers_token)
 
         return _fn
 

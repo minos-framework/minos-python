@@ -30,8 +30,7 @@ from .exceptions import (
     MinosException,
 )
 
-USER_CONTEXT_VAR: Final[ContextVar[Optional[UUID]]] = ContextVar("user", default=None)
-USER_CONTEXT_VAR.set(None)  # needed to "register" the context variable.
+REQUEST_USER_CONTEXT_VAR: Final[ContextVar[Optional[UUID]]] = ContextVar("user", default=None)
 
 
 class Request(ABC):

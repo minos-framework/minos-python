@@ -4,6 +4,7 @@ from unittest.mock import (
     call,
 )
 from uuid import (
+    UUID,
     uuid4,
 )
 
@@ -48,70 +49,79 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertIsInstance(BrokerPublisher.from_config(config=self.config), BrokerPublisher)
 
     async def test_send(self):
-        mock = AsyncMock(return_value=56)
+        mock = AsyncMock()
         self.publisher.enqueue = mock
 
-        identifier = await self.publisher.send(FakeModel("Foo"), topic="fake")
+        observed = await self.publisher.send(FakeModel("Foo"), topic="fake")
 
-        self.assertEqual(56, identifier)
+        self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
-        expected = BrokerMessage("fake", FakeModel("Foo"), service_name="Order")
+        expected = BrokerMessage("fake", FakeModel("Foo"), identifier=observed)
+        self.assertEqual(expected, Model.from_avro_bytes(args[2]))
+
+    async def test_send_with_identifier(self):
+        mock = AsyncMock()
+        self.publisher.enqueue = mock
+
+        identifier = uuid4()
+        observed = await self.publisher.send(FakeModel("Foo"), topic="fake", identifier=identifier)
+
+        self.assertEqual(identifier, observed)
+        self.assertEqual(1, mock.call_count)
+
+        args = mock.call_args.args
+        self.assertEqual("fake", args[0])
+        self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
+
+        expected = BrokerMessage("fake", FakeModel("Foo"), identifier=identifier)
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_reply_topic(self):
-        mock = AsyncMock(return_value=56)
+        mock = AsyncMock()
         self.publisher.enqueue = mock
 
-        saga = uuid4()
+        observed = await self.publisher.send(FakeModel("foo"), "fake", reply_topic="ekaf")
 
-        identifier = await self.publisher.send(FakeModel("foo"), "fake", saga=saga, reply_topic="ekaf")
-
-        self.assertEqual(56, identifier)
+        self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
-        expected = BrokerMessage("fake", FakeModel("foo"), saga=saga, reply_topic="ekaf", service_name="Order")
+        expected = BrokerMessage("fake", FakeModel("foo"), identifier=observed, reply_topic="ekaf")
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_user(self):
-        mock = AsyncMock(return_value=56)
+        mock = AsyncMock()
         self.publisher.enqueue = mock
 
-        saga = uuid4()
         user = uuid4()
 
-        identifier = await self.publisher.send(FakeModel("foo"), "fake", saga=saga, reply_topic="ekaf", user=user)
+        observed = await self.publisher.send(FakeModel("foo"), "fake", reply_topic="ekaf", user=user)
 
-        self.assertEqual(56, identifier)
+        self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
-        expected = BrokerMessage(
-            "fake", FakeModel("foo"), saga=saga, reply_topic="ekaf", user=user, service_name="Order"
-        )
+        expected = BrokerMessage("fake", FakeModel("foo"), identifier=observed, reply_topic="ekaf", user=user)
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_status(self):
-        mock = AsyncMock(return_value=56)
+        mock = AsyncMock()
         self.publisher.enqueue = mock
 
-        saga = uuid4()
         reply_topic = "fakeReply"
 
-        identifier = await self.publisher.send(
-            FakeModel("foo"), saga=saga, topic=reply_topic, status=BrokerMessageStatus.SUCCESS
-        )
+        observed = await self.publisher.send(FakeModel("foo"), topic=reply_topic, status=BrokerMessageStatus.SUCCESS)
 
-        self.assertEqual(56, identifier)
+        self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
@@ -119,24 +129,20 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
         expected = BrokerMessage(
-            reply_topic,
-            FakeModel("foo"),
-            saga=saga,
-            status=BrokerMessageStatus.SUCCESS,
-            service_name=self.config.service.name,
+            reply_topic, FakeModel("foo"), identifier=observed, status=BrokerMessageStatus.SUCCESS,
         )
         observed = Model.from_avro_bytes(args[2])
         self.assertEqual(expected, observed)
 
     async def test_send_with_multicast_strategy(self):
-        mock = AsyncMock(return_value=56)
+        mock = AsyncMock()
         self.publisher.enqueue = mock
 
         topic = "fakeReply"
 
-        identifier = await self.publisher.send(FakeModel("foo"), topic=topic, strategy=BrokerMessageStrategy.MULTICAST)
+        observed = await self.publisher.send(FakeModel("foo"), topic=topic, strategy=BrokerMessageStrategy.MULTICAST)
 
-        self.assertEqual(56, identifier)
+        self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
@@ -144,7 +150,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual(BrokerMessageStrategy.MULTICAST, args[1])
 
         expected = BrokerMessage(
-            topic, FakeModel("foo"), service_name=self.config.service.name, strategy=BrokerMessageStrategy.MULTICAST,
+            topic, FakeModel("foo"), identifier=observed, strategy=BrokerMessageStrategy.MULTICAST,
         )
         observed = Model.from_avro_bytes(args[2])
         self.assertEqual(expected, observed)
@@ -155,9 +161,9 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         mock = AsyncMock(return_value=(56,))
         self.publisher.submit_query_and_fetchone = mock
 
-        identifier = await self.publisher.enqueue("test_topic", BrokerMessageStrategy.UNICAST, b"test")
+        observed = await self.publisher.enqueue("test_topic", BrokerMessageStrategy.UNICAST, b"test")
 
-        self.assertEqual(56, identifier)
+        self.assertEqual(56, observed)
         self.assertEqual(1, mock.call_count)
 
         self.assertEqual(call(query, ("test_topic", b"test", BrokerMessageStrategy.UNICAST)), mock.call_args)

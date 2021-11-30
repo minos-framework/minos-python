@@ -139,13 +139,15 @@ class TestProducer(PostgresAsyncTestCase):
 
     async def test_concurrency_dispatcher(self):
         model = FakeModel("foo")
-        saga = uuid4()
+        identifier = uuid4()
 
         broker_publisher = BrokerPublisher.from_config(config=self.config)
 
         async with broker_publisher:
             for x in range(60):
-                await broker_publisher.send(model, "CommandBroker-Delete", saga=saga, reply_topic="TestDeleteReply")
+                await broker_publisher.send(
+                    model, "CommandBroker-Delete", identifier=identifier, reply_topic="TestDeleteReply"
+                )
 
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
@@ -165,30 +167,26 @@ class TestProducer(PostgresAsyncTestCase):
 
     async def test_if_commands_was_deleted(self):
         async with BrokerPublisher.from_config(config=self.config) as broker_publisher:
-            queue_id_1 = await broker_publisher.send(FakeModel("Foo"), "TestDeleteReply")
-            queue_id_2 = await broker_publisher.send(FakeModel("Foo"), "TestDeleteReply")
+            await broker_publisher.send(FakeModel("Foo"), "TestDeleteReply")
+            await broker_publisher.send(FakeModel("Foo"), "TestDeleteReply")
 
         await self.producer.dispatch()
 
         async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:
                 await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "TestDeleteReply")
-                records = await cursor.fetchone()
-
-        assert queue_id_1 > 0
-        assert queue_id_2 > 0
-        assert records[0] == 0
+                self.assertEqual(0, (await cursor.fetchone())[0])
 
     async def test_if_commands_retry_was_incremented(self):
         model = FakeModel("foo")
-        saga = uuid4()
+        identifier = uuid4()
 
         async with BrokerPublisher.from_config(config=self.config) as broker_publisher:
-            queue_id_1 = await broker_publisher.send(
-                model, "TestDeleteOrderReply", saga=saga, status=BrokerMessageStatus.SUCCESS
+            await broker_publisher.send(
+                model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageStatus.SUCCESS
             )
-            queue_id_2 = await broker_publisher.send(
-                model, "TestDeleteOrderReply", saga=saga, status=BrokerMessageStatus.SUCCESS
+            await broker_publisher.send(
+                model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageStatus.SUCCESS
             )
 
             self.producer.publish = AsyncMock(return_value=False)
@@ -196,20 +194,14 @@ class TestProducer(PostgresAsyncTestCase):
 
         async with aiopg.connect(**self.broker_queue_db) as connection:
             async with connection.cursor() as cursor:
-                await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = '%s'" % "TestDeleteOrderReply")
-                records = await cursor.fetchone()
+                await cursor.execute("SELECT COUNT(*) FROM producer_queue WHERE topic = 'TestDeleteOrderReply'")
+                self.assertEqual(2, (await cursor.fetchone())[0])
 
-                await cursor.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_1)
-                retry_1 = await cursor.fetchone()
+                await cursor.execute("SELECT retry FROM producer_queue WHERE id=1;")
+                self.assertEqual(1, (await cursor.fetchone())[0])
 
-                await cursor.execute("SELECT retry FROM producer_queue WHERE id=%d;" % queue_id_2)
-                retry_2 = await cursor.fetchone()
-
-        assert queue_id_1 > 0
-        assert queue_id_2 > 0
-        assert records[0] == 2
-        assert retry_1[0] > 0
-        assert retry_2[0] > 0
+                await cursor.execute("SELECT retry FROM producer_queue WHERE id=2;")
+                self.assertEqual(1, (await cursor.fetchone())[0])
 
     async def _notify(self, name):
         await sleep(0.2)

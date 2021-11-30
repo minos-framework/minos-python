@@ -35,7 +35,7 @@ from ..handlers import (
     BrokerConsumer,
 )
 from ..messages import (
-    REPLY_TOPIC_CONTEXT_VAR,
+    REQUEST_REPLY_TOPIC_CONTEXT_VAR,
 )
 from ..publishers import (
     BrokerPublisher,
@@ -150,9 +150,9 @@ class _ReplyTopicContextManager:
 
     async def __aenter__(self) -> DynamicBroker:
         handler = await self.wrapper.__aenter__()
-        self._token = REPLY_TOPIC_CONTEXT_VAR.set(handler.topic)
+        self._token = REQUEST_REPLY_TOPIC_CONTEXT_VAR.set(handler.topic)
         return handler
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
+        REQUEST_REPLY_TOPIC_CONTEXT_VAR.reset(self._token)
         await self.wrapper.__aexit__(exc_type, exc_val, exc_tb)

@@ -33,7 +33,8 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    USER_CONTEXT_VAR,
+    REQUEST_HEADERS_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
     BrokerHandler,
     BrokerHandlerEntry,
     BrokerMessage,
@@ -80,12 +81,16 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.publisher = BrokerPublisher.from_config(self.config)
         self.handler = BrokerHandler.from_config(self.config, publisher=self.publisher)
 
-        self.saga = uuid4()
+        self.identifier = uuid4()
         self.user = uuid4()
-        self.service_name = self.config.service.name
 
         self.message = BrokerMessage(
-            "AddOrder", FakeModel("foo"), self.service_name, saga=self.saga, user=self.user, reply_topic="UpdateTicket",
+            "AddOrder",
+            FakeModel("foo"),
+            identifier=self.identifier,
+            user=self.user,
+            reply_topic="UpdateTicket",
+            headers={"foo": "bar"},
         )
 
     async def asyncSetUp(self):
@@ -219,9 +224,10 @@ class TestBrokerHandler(PostgresAsyncTestCase):
                 call(
                     "add_order",
                     topic="UpdateTicket",
-                    saga=self.message.saga,
+                    identifier=self.message.identifier,
                     status=BrokerMessageStatus.SUCCESS,
                     user=self.user,
+                    headers={"foo": "bar"},
                 )
             ],
             send_mock.call_args_list,
@@ -234,7 +240,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"), self.service_name)
+        instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"))
 
         queue_id_1 = await self._insert_one(instance_1)
         queue_id_2 = await self._insert_one(instance_2)
@@ -247,11 +253,9 @@ class TestBrokerHandler(PostgresAsyncTestCase):
             FakeModel,
         )
 
-        saga = uuid4()
+        identifier = uuid4()
 
-        instance = BrokerMessage(
-            "AddOrder", [FakeModel("foo")], self.service_name, saga=saga, reply_topic="UpdateTicket"
-        )
+        instance = BrokerMessage("AddOrder", [FakeModel("foo")], identifier=identifier, reply_topic="UpdateTicket")
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         for _ in range(10):
@@ -275,7 +279,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         lookup_mock = MagicMock(return_value=callback_mock)
 
         topic = "TicketAdded"
-        event = BrokerMessage(topic, FakeModel("Foo"), self.service_name)
+        event = BrokerMessage(topic, FakeModel("Foo"))
         entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
 
         await self.handler.dispatch_one(entry)
@@ -288,26 +292,26 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_get_callback(self):
         fn = self.handler.get_callback(_Cls._fn)
-        self.assertEqual((FakeModel("foo"), BrokerMessageStatus.SUCCESS), await fn(self.message))
+        self.assertEqual((FakeModel("foo"), BrokerMessageStatus.SUCCESS, {"foo": "bar"}), await fn(self.message))
 
     async def test_get_callback_none(self):
         fn = self.handler.get_callback(_Cls._fn_none)
-        self.assertEqual((None, BrokerMessageStatus.SUCCESS), await fn(self.message))
+        self.assertEqual((None, BrokerMessageStatus.SUCCESS, {"foo": "bar"}), await fn(self.message))
 
     async def test_get_callback_raises_response(self):
         fn = self.handler.get_callback(_Cls._fn_raises_response)
-        expected = (repr(BrokerResponseException("foo")), BrokerMessageStatus.ERROR)
+        expected = (repr(BrokerResponseException("foo")), BrokerMessageStatus.ERROR, {"foo": "bar"})
         self.assertEqual(expected, await fn(self.message))
 
     async def test_get_callback_raises_exception(self):
         fn = self.handler.get_callback(_Cls._fn_raises_exception)
-        expected = (repr(ValueError()), BrokerMessageStatus.SYSTEM_ERROR)
+        expected = (repr(ValueError()), BrokerMessageStatus.SYSTEM_ERROR, {"foo": "bar"})
         self.assertEqual(expected, await fn(self.message))
 
     async def test_get_callback_with_user(self):
         async def _fn(request) -> None:
             self.assertEqual(self.user, request.user)
-            self.assertEqual(self.user, USER_CONTEXT_VAR.get())
+            self.assertEqual(self.user, REQUEST_USER_CONTEXT_VAR.get())
 
         mock = AsyncMock(side_effect=_fn)
 
@@ -315,6 +319,18 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         await handler(self.message)
 
         self.assertEqual(1, mock.call_count)
+
+    async def test_get_callback_with_headers(self):
+        async def _fn(request) -> None:
+            self.assertEqual({"foo": "bar"}, request.raw.headers)
+            REQUEST_HEADERS_CONTEXT_VAR.get()["bar"] = "foo"
+
+        mock = AsyncMock(side_effect=_fn)
+
+        handler = self.handler.get_callback(mock)
+        _, _, observed = await handler(self.message)
+
+        self.assertEqual({"foo": "bar", "bar": "foo"}, observed)
 
     async def test_dispatch_without_sorting(self):
         observed = list()
@@ -326,8 +342,8 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.handler.get_action = MagicMock(return_value=_fn2)
 
         events = [
-            BrokerMessage("TicketAdded", FakeModel("uuid1"), self.service_name),
-            BrokerMessage("TicketAdded", FakeModel("uuid2"), self.service_name),
+            BrokerMessage("TicketAdded", FakeModel("uuid1")),
+            BrokerMessage("TicketAdded", FakeModel("uuid2")),
         ]
 
         for event in events:
@@ -349,12 +365,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         events = list()
         for i in range(1, 6):
-            events.extend(
-                [
-                    BrokerMessage("TicketAdded", ["uuid1", i], self.service_name),
-                    BrokerMessage("TicketAdded", ["uuid2", i], self.service_name),
-                ]
-            )
+            events.extend([BrokerMessage("TicketAdded", ["uuid1", i]), BrokerMessage("TicketAdded", ["uuid2", i])])
         shuffle(events)
 
         for event in events:

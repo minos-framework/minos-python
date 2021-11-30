@@ -18,7 +18,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    USER_CONTEXT_VAR,
+    REQUEST_USER_CONTEXT_VAR,
     Request,
     Response,
     RestHandler,
@@ -98,7 +98,7 @@ class TestRestHandler(PostgresAsyncTestCase):
 
         async def _fn(request) -> None:
             self.assertEqual(user, request.user)
-            self.assertEqual(user, USER_CONTEXT_VAR.get())
+            self.assertEqual(user, REQUEST_USER_CONTEXT_VAR.get())
 
         mock = AsyncMock(side_effect=_fn)
 
