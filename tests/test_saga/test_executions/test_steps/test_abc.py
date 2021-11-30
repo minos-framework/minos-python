@@ -98,7 +98,7 @@ class TestSagaStepExecution(unittest.IsolatedAsyncioTestCase):
                 "on_error": {"callback": "tests.utils.handle_ticket_error"},
                 "on_failure": {"callback": "tests.utils.send_delete_ticket"},
             },
-            "service_name": None,
+            "related_services": None,
             "status": "created",
         }
         self.assertEqual(expected, execution.raw)

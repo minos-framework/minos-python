@@ -22,7 +22,6 @@ from minos.common import (
 from minos.networks import (
     REQUEST_USER_CONTEXT_VAR,
     BrokerMessage,
-    BrokerMessageStatus,
 )
 from minos.saga import (
     SagaContext,
@@ -32,7 +31,6 @@ from minos.saga import (
     SagaFailedExecutionException,
     SagaManager,
     SagaResponse,
-    SagaResponseStatus,
     SagaStatus,
 )
 from tests.utils import (
@@ -83,24 +81,28 @@ class TestSagaManager(MinosTestCase):
                         BrokerMessage(
                             "topicReply",
                             [Foo("foo")],
-                            "foo",
-                            status=BrokerMessageStatus.SUCCESS,
-                            headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
+                            headers={
+                                "saga": str(expected_uuid),
+                                "transactions": str(expected_uuid),
+                                "related_services": "foo",
+                            },
                         )
                     ),
                     Message(
                         BrokerMessage(
                             "topicReply",
                             [Foo("foo")],
-                            "foo",
-                            status=BrokerMessageStatus.SUCCESS,
-                            headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
+                            headers={
+                                "saga": str(expected_uuid),
+                                "transactions": str(expected_uuid),
+                                "related_services": "foo",
+                            },
                         )
                     ),
-                    Message(BrokerMessage("", None, "foo", status=BrokerMessageStatus.SUCCESS)),
-                    Message(BrokerMessage("", None, "order", status=BrokerMessageStatus.SUCCESS)),
-                    Message(BrokerMessage("", None, "foo", status=BrokerMessageStatus.SUCCESS)),
-                    Message(BrokerMessage("", None, "order", status=BrokerMessageStatus.SUCCESS)),
+                    Message(BrokerMessage("", None, headers={"related_services": "foo"},),),
+                    Message(BrokerMessage("", None, headers={"related_services": "order"},),),
+                    Message(BrokerMessage("", None, headers={"related_services": "foo"},),),
+                    Message(BrokerMessage("", None, headers={"related_services": "order"},),),
                 ]
             )
 
@@ -146,18 +148,22 @@ class TestSagaManager(MinosTestCase):
                         BrokerMessage(
                             "topicReply",
                             [Foo("foo")],
-                            headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
-                            status=BrokerMessageStatus.SUCCESS,
-                            service_name="foo",
+                            headers={
+                                "saga": str(expected_uuid),
+                                "transactions": str(expected_uuid),
+                                "related_services": "foo",
+                            },
                         )
                     ),
                     Message(
                         BrokerMessage(
                             "topicReply",
                             [Foo("foo")],
-                            headers={"saga": str(expected_uuid), "transactions": str(expected_uuid)},
-                            status=BrokerMessageStatus.SUCCESS,
-                            service_name="foo",
+                            headers={
+                                "saga": str(expected_uuid),
+                                "transactions": str(expected_uuid),
+                                "related_service_names": "foo",
+                            },
                         )
                     ),
                 ]
@@ -202,15 +208,11 @@ class TestSagaManager(MinosTestCase):
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(
-            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
-        )
+        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
         execution = await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(
-            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
-        )
+        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
         execution = await self.manager.run(response=response, pause_on_disk=True)
         with self.assertRaises(SagaExecutionNotFoundException):
             self.manager.storage.load(execution.uuid)
@@ -250,15 +252,11 @@ class TestSagaManager(MinosTestCase):
         execution = await self.manager.run(ADD_ORDER, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(
-            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
-        )
+        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
         execution = await self.manager.run(response=response, pause_on_disk=True)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(
-            [Foo("foo")], uuid=execution.uuid, status=SagaResponseStatus.SUCCESS, service_name="foo"
-        )
+        response = SagaResponse([Foo("foo")], {"foo"}, uuid=execution.uuid)
 
         with patch("minos.saga.SagaExecution.commit") as commit_mock:
             execution = await self.manager.run(response=response, pause_on_disk=True, autocommit=False)

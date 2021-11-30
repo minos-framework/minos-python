@@ -50,7 +50,7 @@ class LocalSagaStepExecution(SagaStepExecution):
             self.status = SagaStepStatus.ErroredOnExecute
             raise exc
 
-        self.service_name = get_service_name()
+        self.related_services = {get_service_name()}
         self.status = SagaStepStatus.Finished
         return context
 

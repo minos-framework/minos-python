@@ -117,7 +117,7 @@ class TransactionCommitter:
                     if inner is not None:
                         _fn(inner.uuid, inner.executed_steps)
                 else:
-                    for service_name in step.service_name.split(","):
+                    for service_name in step.related_services:
                         pair = (uuid, service_name)
                         if pair not in uniques:
                             transactions.append(pair)

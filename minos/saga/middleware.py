@@ -19,6 +19,10 @@ from minos.networks import (
     Response,
 )
 
+from .utils import (
+    get_service_name,
+)
+
 
 async def transactional_command(
     request: Request, inner: Callable[[Request], Awaitable[Optional[Response]]]
@@ -32,15 +36,25 @@ async def transactional_command(
     try:
         if isinstance(request, BrokerRequest):
             message = request.raw
-            raw_transaction_uuids = message.headers.get("transactions", None)
-            if raw_transaction_uuids:
+            if raw_transaction_uuids := message.headers.get("transactions"):
                 transaction_uuids = list(map(UUID, raw_transaction_uuids.split(",")))
                 return await _transaction(request, inner, transaction_uuids)
         return await inner(request)
     finally:
-        headers = REQUEST_HEADERS_CONTEXT_VAR.get()
-        if headers is not None:
-            headers["transactions"] = f",{headers.get('transactions')}".rsplit(",", 1)[0]
+        if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is not None:
+            if (raw_transaction_uuids := headers.get("transactions")) is not None:
+                raw_transaction_uuids_parts = raw_transaction_uuids.rsplit(",", 1)
+                if len(raw_transaction_uuids_parts) == 1:
+                    del headers["transactions"]
+                else:
+                    headers["transactions"] = raw_transaction_uuids_parts[0]
+
+            if raw_related_service_names := headers.get("related_services"):
+                related_services = set(raw_related_service_names.split(","))
+                related_services.add(get_service_name())
+                headers["related_services"] = ",".join(related_services)
+            else:
+                headers["related_services"] = get_service_name()
 
 
 async def _transaction(

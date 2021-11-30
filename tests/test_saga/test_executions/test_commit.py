@@ -31,20 +31,20 @@ class TestTransactionCommitter(MinosTestCase):
         # noinspection PyTypeChecker
         definition = LocalSagaStep(on_execute=LocalSagaStep)
         self.executed_steps = [
-            RemoteSagaStepExecution(definition, service_name="foo"),
-            LocalSagaStepExecution(definition, service_name="bar"),
+            RemoteSagaStepExecution(definition, {"foo"}),
+            LocalSagaStepExecution(definition, {"bar"}),
             ConditionalSagaStepExecution(
                 definition,
+                {"bar"},
                 inner=SagaExecution(
                     Saga(steps=[definition], committed=True),
                     self.execution_uuid,
                     SagaContext(),
                     steps=[
-                        RemoteSagaStepExecution(definition, service_name="foo"),
-                        RemoteSagaStepExecution(definition, service_name="foobar"),
+                        RemoteSagaStepExecution(definition, {"foo"}),
+                        RemoteSagaStepExecution(definition, {"foobar"}),
                     ],
                 ),
-                service_name="bar",
             ),
             ConditionalSagaStepExecution(definition),
         ]

@@ -4,6 +4,12 @@ from __future__ import (
 
 import logging
 import warnings
+from functools import (
+    reduce,
+)
+from operator import (
+    or_,
+)
 from typing import (
     Optional,
     Union,
@@ -172,11 +178,11 @@ class SagaManager(MinosSetup):
         finally:
             headers = REQUEST_HEADERS_CONTEXT_VAR.get()
             if headers is not None:
-                related_service_names = ",".join([s.service_name for s in execution.executed_steps])
-                if "related_service_names" in headers:
-                    headers["related_service_names"] += f",{related_service_names}"
+                related_services = ",".join(reduce(or_, (s.related_services for s in execution.executed_steps)))
+                if "related_services" in headers:
+                    headers["related_services"] += f",{related_services}"
                 else:
-                    headers["related_service_names"] = related_service_names
+                    headers["related_services"] = related_services
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
@@ -229,11 +235,11 @@ class SagaManager(MinosSetup):
                 raise SagaFailedExecutionException(exc)
             message = entry.data
 
-        if "related_service_names" in message.headers:
-            service_name = f"{message.headers['related_service_names']},{message.service_name}"
+        if raw_related_service_names := message.headers.get("related_services"):
+            related_services = set(raw_related_service_names.split(","))
         else:
-            service_name = str(message.service_name)
+            related_services = set()
 
-        response = SagaResponse(message.data, message.status, service_name)
+        response = SagaResponse(message.data, related_services, message.status)
 
         return response

@@ -476,7 +476,7 @@ minos-microservice-networks = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.3.1"
+version = "0.3.2"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
@@ -494,27 +494,20 @@ PyYAML = ">=5.4.1,<6.0.0"
 
 [[package]]
 name = "minos-microservice-networks"
-version = "0.3.0"
+version = "0.3.1"
 description = "Python Package with the common network classes and utilities used in Minos Microservice."
 category = "main"
 optional = false
-python-versions = "^3.9"
-develop = false
+python-versions = ">=3.9,<4.0"
 
 [package.dependencies]
-aiohttp = "^3.7.4"
-aiokafka = "^0.7.0"
-aiomisc = "^14.0.3"
-aiopg = "^1.2.1"
-crontab = "^0.23.0"
-dependency-injector = "^4.32.2"
-minos-microservice-common = "^0.3.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/Clariteia/minos_microservice_networks.git"
-reference = "issue-457-broker-message-headers"
-resolved_reference = "708dc172b509bcbf55ecc129ff90c29499db3e08"
+aiohttp = ">=3.7.4,<4.0.0"
+aiokafka = ">=0.7.0,<0.8.0"
+aiomisc = ">=14.0.3,<15.0.0"
+aiopg = ">=1.2.1,<2.0.0"
+crontab = ">=0.23.0,<0.24.0"
+dependency-injector = ">=4.32.2,<5.0.0"
+minos-microservice-common = ">=0.3.0,<0.4.0"
 
 [[package]]
 name = "mistune"
@@ -968,7 +961,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "1e9f0dc4bbdd2155062541d5e55c8e9c345e0f8c0746af61181c71066d60ea64"
+content-hash = "c2ea5ff2d60de23075dfa1c5df0b843cb5a0eb14d3b511b377a9a8636bf5a257"
 
 [metadata.files]
 aiohttp = [
@@ -1535,10 +1528,13 @@ minos-microservice-aggregate = [
     {file = "minos_microservice_aggregate-0.2.2.tar.gz", hash = "sha256:73ccc2a10d93c359b560f7b4a4e905c657e8fe816bad5baf457eaf95504f0b2a"},
 ]
 minos-microservice-common = [
-    {file = "minos_microservice_common-0.3.1-py3-none-any.whl", hash = "sha256:92c8f375859b41fbc217432694a1f23c3c0db49f391e2e0b880243d7ece0b292"},
-    {file = "minos_microservice_common-0.3.1.tar.gz", hash = "sha256:3a408a585e1ae99c663efd6b127cd220b54305f3db0b63910e45933d5446e1d2"},
+    {file = "minos_microservice_common-0.3.2-py3-none-any.whl", hash = "sha256:36ebf0cd34f90b9e2226baad5e43404c3f64a71a5d976783cd16e6e34638ee4f"},
+    {file = "minos_microservice_common-0.3.2.tar.gz", hash = "sha256:e33bdc981fdbe2a4420bd059691d4d219136167a4f4d361cabb203b6ee1f35e9"},
 ]
-minos-microservice-networks = []
+minos-microservice-networks = [
+    {file = "minos_microservice_networks-0.3.1-py3-none-any.whl", hash = "sha256:a1096fc84f0a2ef59e6b8dd5199e3c9d8a3c938986305446dc4aab980a4a78d0"},
+    {file = "minos_microservice_networks-0.3.1.tar.gz", hash = "sha256:55ff70882b617b9dfa7774f55a8119009a51bfd254112da6799100d37ca74c97"},
+]
 mistune = [
     {file = "mistune-0.8.4-py2.py3-none-any.whl", hash = "sha256:88a1051873018da288eee8538d476dffe1262495144b33ecb586c4ab266bb8d4"},
     {file = "mistune-0.8.4.tar.gz", hash = "sha256:59a3429db53c50b5c6bcc8a07f8848cb00d7dc8bdb431a4ab41920d201d4756e"},

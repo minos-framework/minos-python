@@ -51,15 +51,14 @@ class TestSagaService(MinosTestCase):
                 "orderReply",
                 "foo",
                 status=BrokerMessageStatus.SUCCESS,
-                service_name="ticket",
-                headers={"saga": str(uuid), "transactions": str(uuid)},
+                headers={"saga": str(uuid), "transactions": str(uuid), "related_services": "ticket,product"},
             )
             response = await self.service.__reply__(BrokerRequest(reply))
         self.assertEqual(None, response)
         self.assertEqual(
             [
                 call(
-                    response=SagaResponse("foo", SagaResponseStatus.SUCCESS, "ticket", uuid),
+                    response=SagaResponse("foo", {"ticket", "product"}, SagaResponseStatus.SUCCESS, uuid),
                     pause_on_disk=True,
                     raise_on_error=False,
                     return_execution=False,

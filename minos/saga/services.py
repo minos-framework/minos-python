@@ -37,10 +37,10 @@ class SagaService:
         message = request.raw
 
         uuid = UUID(message.headers["saga"])
-        if "related_service_names" in message.headers:
-            service_name = f"{message.headers['related_service_names']},{message.service_name}"
+        if raw_related_service_names := message.headers.get("related_services"):
+            related_services = set(raw_related_service_names.split(","))
         else:
-            service_name = str(message.service_name)
+            related_services = set()
 
-        response = SagaResponse(message.data, message.status, service_name, uuid)
+        response = SagaResponse(message.data, related_services, message.status, uuid)
         await self.saga_manager.run(response=response, pause_on_disk=True, raise_on_error=False, return_execution=False)

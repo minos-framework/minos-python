@@ -62,14 +62,14 @@ class TestSagaExecution(MinosTestCase):
         self.publish_mock.reset_mock()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("order"), service_name="ticket")
+        response = SagaResponse(Foo("order"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
         self.assertEqual(1, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("ticket"), service_name="ticket")
+        response = SagaResponse(Foo("ticket"), {"ticket"})
         context = await execution.execute(response)
         self.assertEqual(2, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
@@ -118,7 +118,7 @@ class TestSagaExecution(MinosTestCase):
         self.publish_mock.reset_mock()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("order"), service_name="ticket")
+        response = SagaResponse(Foo("order"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
         self.assertEqual(1, self.publish_mock.call_count)
@@ -126,14 +126,14 @@ class TestSagaExecution(MinosTestCase):
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         self.publish_mock.reset_mock()
-        response = SagaResponse(Foo("ticket"), service_name="ticket")
+        response = SagaResponse(Foo("ticket"), {"ticket"})
         with self.assertRaises(SagaFailedExecutionStepException):
             await execution.execute(response)
         self.assertEqual(3, self.publish_mock.call_count)
         self.publish_mock.reset_mock()
         self.assertEqual(SagaStatus.Errored, execution.status)
 
-        response = SagaResponse(Foo("fixed failure!"), service_name="ticket")
+        response = SagaResponse(Foo("fixed failure!"), {"ticket"})
         await execution.execute(response)
         self.assertEqual(0, self.publish_mock.call_count)
 
@@ -156,12 +156,12 @@ class TestSagaExecution(MinosTestCase):
             await execution.execute()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("order"), service_name="ticket")
+        response = SagaResponse(Foo("order"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("ticket"), service_name="ticket")
+        response = SagaResponse(Foo("ticket"), {"ticket"})
         self.publish_mock.reset_mock()
         context = await execution.execute(response)
 
@@ -185,12 +185,12 @@ class TestSagaExecution(MinosTestCase):
             await execution.execute()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("order"), service_name="ticket")
+        response = SagaResponse(Foo("order"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("ticket"), service_name="ticket")
+        response = SagaResponse(Foo("ticket"), {"ticket"})
         self.publish_mock.reset_mock()
         context = await execution.execute(response, autocommit=False)
 
@@ -214,13 +214,13 @@ class TestSagaExecution(MinosTestCase):
             await execution.execute()
         self.assertEqual(SagaStatus.Paused, execution.status)
 
-        response = SagaResponse(Foo("order1"), service_name="ticket")
+        response = SagaResponse(Foo("order1"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
         self.assertEqual(SagaStatus.Paused, execution.status)
 
         self.publish_mock.reset_mock()
-        response = SagaResponse(Foo("order2"), service_name="ticket")
+        response = SagaResponse(Foo("order2"), {"ticket"})
         with patch("minos.saga.TransactionCommitter.commit", side_effect=ValueError):
             with self.assertRaises(SagaFailedCommitCallbackException):
                 await execution.execute(response)
@@ -255,7 +255,7 @@ class TestSagaExecution(MinosTestCase):
         execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
-        response = SagaResponse(Foo("order1"), service_name="ticket")
+        response = SagaResponse(Foo("order1"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
 
@@ -280,7 +280,7 @@ class TestSagaExecution(MinosTestCase):
         execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
-        response = SagaResponse(Foo("order1"), service_name="ticket")
+        response = SagaResponse(Foo("order1"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
 
@@ -300,7 +300,7 @@ class TestSagaExecution(MinosTestCase):
         execution = SagaExecution.from_definition(saga)
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute()
-        response = SagaResponse(Foo("order1"), service_name="ticket")
+        response = SagaResponse(Foo("order1"), {"ticket"})
         with self.assertRaises(SagaPausedExecutionStepException):
             await execution.execute(response)
 

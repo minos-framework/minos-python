@@ -67,7 +67,7 @@ class RemoteSagaStepExecution(SagaStepExecution):
         else:
             context = await self._execute_on_error(context, response, *args, **kwargs)
 
-        self.service_name = response.service_name
+        self.related_services = response.related_services
         self.status = SagaStepStatus.Finished
         return context
 

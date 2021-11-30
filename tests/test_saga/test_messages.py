@@ -39,44 +39,47 @@ class TestSagaRequest(unittest.IsolatedAsyncioTestCase):
 class TestSagaResponse(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.uuid = uuid4()
-        self.response = SagaResponse(56, service_name="ticket", uuid=self.uuid)
+        self.related_services = {"ticket"}
+        self.response = SagaResponse(56, self.related_services, uuid=self.uuid)
 
     async def test_content(self):
         self.assertEqual(56, await self.response.content())
 
     def test_service_name(self):
-        self.assertEqual("ticket", self.response.service_name)
+        self.assertEqual(self.related_services, self.response.related_services)
 
-    def test_service_name_raises(self):
-        with self.assertRaises(ValueError):
-            SagaResponse(56)
+    def test_service_name_empty(self):
+        self.assertEqual(set(), SagaResponse(56).related_services)
 
     def test_uuid(self):
         self.assertEqual(self.uuid, self.response.uuid)
 
     def test_ok(self):
-        self.assertTrue(SagaResponse(56, SagaResponseStatus.SUCCESS, service_name="ticket").ok)
-        self.assertFalse(SagaResponse(56, SagaResponseStatus.ERROR, service_name="ticket").ok)
+        self.assertTrue(SagaResponse(56, self.related_services, SagaResponseStatus.SUCCESS).ok)
+        self.assertFalse(SagaResponse(56, self.related_services, SagaResponseStatus.ERROR).ok)
 
     def test_default_status(self):
         self.assertEqual(SagaResponseStatus.SUCCESS, self.response.status)
 
     def test_status(self):
-        response = SagaResponse(56, SagaResponseStatus.SYSTEM_ERROR, service_name="ticket")
+        response = SagaResponse(56, self.related_services, SagaResponseStatus.SYSTEM_ERROR)
         self.assertEqual(SagaResponseStatus.SYSTEM_ERROR, response.status)
 
     def test_status_raw(self):
-        response = SagaResponse(56, status=200, service_name="ticket")
+        response = SagaResponse(56, self.related_services, status=200)
         self.assertEqual(SagaResponseStatus.SUCCESS, response.status)
 
     def test_eq(self):
-        self.assertEqual(SagaResponse(56, service_name="ticket", uuid=self.uuid), self.response)
-        self.assertNotEqual(SagaResponse(42, service_name="ticket"), self.response)
-        self.assertNotEqual(SagaResponse(56, SagaResponseStatus.SYSTEM_ERROR, service_name="ticket"), self.response)
+        self.assertEqual(SagaResponse(56, self.related_services, uuid=self.uuid), self.response)
+        self.assertNotEqual(SagaResponse(42, self.related_services), self.response)
+        self.assertNotEqual(SagaResponse(56, self.related_services, SagaResponseStatus.SYSTEM_ERROR), self.response)
+        self.assertNotEqual(SagaResponse(56, {"product"}, uuid=self.uuid), self.response)
 
     def test_repr(self):
+
         self.assertEqual(
-            f"SagaResponse(56, {SagaResponseStatus.SUCCESS!r}, 'ticket', {self.uuid!r})", repr(self.response)
+            f"SagaResponse(56, {SagaResponseStatus.SUCCESS!r}, {self.related_services!r}, {self.uuid!r})",
+            repr(self.response),
         )
 
     def test_hash(self):
