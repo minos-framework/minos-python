@@ -141,3 +141,9 @@ History
 ------------------
 
 * Fix bug related with `TransactionCommitter` and `ConditionalSagaStepExecution`.
+
+0.3.5 (2021-11-30)
+------------------
+
+* Fix bug related with `Transaction` scopes and sub-`Saga` executions launched from `RemoteStep` calls
+* Add support for `minos-microservice-network~=0.3.1`.
