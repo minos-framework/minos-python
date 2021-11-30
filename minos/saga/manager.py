@@ -177,11 +177,12 @@ class SagaManager(MinosSetup):
             logger.warning(f"The execution identified by {execution.uuid!s} failed: {exc.exception!r}")
         finally:
             if (headers := REQUEST_HEADERS_CONTEXT_VAR.get()) is not None:
-                related_services = ",".join(reduce(or_, (s.related_services for s in execution.executed_steps)))
-                if "related_services" in headers:
-                    headers["related_services"] += f",{related_services}"
-                else:
-                    headers["related_services"] = related_services
+                related_services = reduce(or_, (s.related_services for s in execution.executed_steps), set())
+
+                if raw_related_services := headers.get("related_services"):
+                    related_services |= raw_related_services.split(",")
+
+                headers["related_services"] = ",".join(related_services)
 
         if execution.status == SagaStatus.Finished:
             self.storage.delete(execution)
