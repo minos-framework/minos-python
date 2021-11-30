@@ -151,3 +151,12 @@ History
 * Rename `Consumer` and `ConsumerService` as `BrokerConsumer` and `BrokerConsumerService` respectively.
 * Rename `Producer` and `ProducerService` as `BrokerProducer` and `BrokerProducerService` respectively.
 * Rename `HandlerRequest`, `HandlerResponse` and `HandlerResponseException` as `BrokerRequest`, `BrokerResponse` and `BrokerResponseException` respectively.
+
+0.3.1 (2021-11-30)
+------------------
+
+* Add `identifier: UUID` and `headers: dict[str, str]` attributes to `BrokerMessage`.
+* Remove `saga: Optional[UUID]` and `service_name: str` attributes from `BrokerMessage`.
+* Now `BrokerPublisher.send` returns the `BrokerMessage` identifier instead of the entry identifier on the `Producer`'s queue.
+* Add `REQUEST_HEADERS_CONTEXT_VAR`.
+* Rename `USER_CONTEXT_VAR` and `REPLY_TOPIC_CONTEXT_VAR` as `REQUEST_USER_CONTEXT_VAR` and `REQUEST_REPLY_TOPIC_CONTEXT_VAR` respectively.
