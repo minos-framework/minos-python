@@ -48,6 +48,7 @@ from .serializers import (
     AvroSchemaEncoder,
 )
 from .types import (
+    MissingSentinel,
     ModelType,
 )
 
@@ -244,7 +245,21 @@ class Model(Mapping):
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder(ModelType.from_model(self_or_cls)).build()]
+        encoder = AvroSchemaEncoder()
+        return self_or_cls.encode_schema(encoder)
+
+    # noinspection PyMethodParameters
+    @self_or_classmethod
+    def encode_schema(self_or_cls, encoder, _target=MissingSentinel) -> Any:
+        """Encode schema with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param _target: An optional pre-encoded schema.
+        :return: The encoded schema of the instance.
+        """
+        if _target is MissingSentinel:
+            _target = self_or_cls
+        return encoder.build(_target)
 
     @property
     def avro_data(self) -> dict[str, Any]:
@@ -252,7 +267,19 @@ class Model(Mapping):
 
         :return: A dictionary object.
         """
-        return AvroDataEncoder(self).build()
+        encoder = AvroDataEncoder()
+        return self.encode_data(encoder)
+
+    def encode_data(self, encoder, _target=MissingSentinel) -> Any:
+        """Encode data with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param _target: An optional pre-encoded data.
+        :return: The encoded data of the instance.
+        """
+        if _target is MissingSentinel:
+            _target = self
+        return encoder.build(_target)
 
     @property
     def avro_str(self) -> str:

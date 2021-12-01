@@ -23,6 +23,9 @@ from uuid import (
 from ...exceptions import (
     MinosMalformedAttributeException,
 )
+from ..types import (
+    MissingSentinel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,15 +33,17 @@ logger = logging.getLogger(__name__)
 class AvroDataEncoder:
     """Avro Data Encoder class."""
 
-    def __init__(self, value: Any):
+    def __init__(self, value: Any = None):
         self.value = value
 
-    def build(self) -> Any:
+    def build(self, value=MissingSentinel) -> Any:
         """Build a avro data representation based on the content of the given field.
 
         :return: A `avro`-compatible data.
         """
-        return self._to_avro_raw(self.value)
+        if value is MissingSentinel:
+            value = self.value
+        return self._to_avro_raw(value)
 
     def _to_avro_raw(self, value: Any) -> Any:
         if value is None:
@@ -49,7 +54,14 @@ class AvroDataEncoder:
         )
 
         if isinstance(value, Model):
-            return {name: field.avro_data for name, field in value.fields.items()}
+            return self._model_to_avro_raw(value)
+
+        from ..abc import (
+            Field,
+        )
+
+        if isinstance(value, Field):
+            return self._field_to_avro_raw(value)
 
         if isinstance(value, (str, int, bool, float, bytes)):
             return value
@@ -82,6 +94,13 @@ class AvroDataEncoder:
             return {k: self._to_avro_raw(v) for k, v in value.items()}
 
         raise MinosMalformedAttributeException(f"Given type is not supported: {type(value)!r} ({value!r})")
+
+    def _model_to_avro_raw(self, model) -> Any:
+        raw = {name: field.avro_data for name, field in model.fields.items()}
+        return model.encode_data(self, raw)
+
+    def _field_to_avro_raw(self, field) -> Any:
+        return field.encode_data(self, field.value)
 
     @staticmethod
     def _date_to_avro_raw(value: date) -> int:

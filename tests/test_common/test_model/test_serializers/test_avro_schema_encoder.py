@@ -28,11 +28,6 @@ from tests.model_classes import (
 
 
 class TestAvroSchemaEncoder(unittest.TestCase):
-    def test_with_name(self):
-        observed = AvroSchemaEncoder(int, "test").build()
-        expected = {"name": "test", "type": "int"}
-        self.assertEqual(expected, observed)
-
     def test_model_type(self):
         expected = {
             "fields": [{"name": "username", "type": "string"}],
