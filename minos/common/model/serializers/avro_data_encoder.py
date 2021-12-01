@@ -54,15 +54,14 @@ class AvroDataEncoder:
         )
 
         if isinstance(value, Model):
-            raw = {name: field.avro_data for name, field in value.fields.items()}
-            return value.encode_data(self, raw)
+            return self._model_to_avro_raw(value)
 
         from ..abc import (
             Field,
         )
 
         if isinstance(value, Field):
-            return value.encode_data(self, value.value)
+            return self._field_to_avro_raw(value)
 
         if isinstance(value, (str, int, bool, float, bytes)):
             return value
@@ -95,6 +94,13 @@ class AvroDataEncoder:
             return {k: self._to_avro_raw(v) for k, v in value.items()}
 
         raise MinosMalformedAttributeException(f"Given type is not supported: {type(value)!r} ({value!r})")
+
+    def _model_to_avro_raw(self, model) -> Any:
+        raw = {name: field.avro_data for name, field in model.fields.items()}
+        return model.encode_data(self, raw)
+
+    def _field_to_avro_raw(self, field) -> Any:
+        return field.encode_data(self, field.value)
 
     @staticmethod
     def _date_to_avro_raw(value: date) -> int:
