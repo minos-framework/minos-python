@@ -14,7 +14,6 @@ from enum import (
 )
 from typing import (
     Any,
-    Optional,
     Union,
     get_args,
     get_origin,
@@ -28,6 +27,7 @@ from ...importlib import (
     classname,
 )
 from ..types import (
+    MissingSentinel,
     ModelType,
     NoneType,
     is_model_subclass,
@@ -56,22 +56,19 @@ logger = logging.getLogger(__name__)
 class AvroSchemaEncoder:
     """Avro Schema Encoder class."""
 
-    def __init__(self, type_: type, name: Optional[str] = None):
+    def __init__(self, type_: type = None):
         self.type_ = type_
-        self.name = name
 
-    def build(self) -> Union[dict, list, str]:
+    def build(self, type_=MissingSentinel) -> Union[dict, list, str]:
         """Build the avro schema for the given field.
 
         :return: A dictionary object.
         """
-        type_ = self._build_schema(self.type_)
+        if type_ is MissingSentinel:
+            type_ = self.type_
+        return self._build_schema(type_)
 
-        if self.name is None:
-            return type_
-        return {"name": self.name, "type": type_}
-
-    def _build_schema(self, type_: type) -> Any:
+    def _build_schema(self, type_) -> Any:
         if get_origin(type_) is Union:
             return self._build_union_schema(type_)
 
@@ -133,16 +130,29 @@ class AvroSchemaEncoder:
             if isinstance(type_, ModelType):
                 return self._build_model_type_schema(type_)
 
-        if is_model_subclass(type_):
+        from ..abc import (
+            Model,
+        )
+
+        if isinstance(type_, Model) or is_model_subclass(type_):
+            # noinspection PyTypeChecker
             return self._build_model_schema(type_)
+
+        from ..fields import (
+            Field,
+        )
+
+        if isinstance(type_, Field):
+            return self._build_field_schema(type_)
 
         return self._build_composed_schema(type_)
 
     def _build_enum_schema(self, type_: type):
         return {"type": self._build_single_schema(type_), "logicalType": classname(type_)}
 
-    def _build_model_schema(self, type_: type) -> Any:
-        return [self._build_model_type_schema(ModelType.from_model(type_))]
+    def _build_model_schema(self, type_) -> Any:
+        raw = ModelType.from_model(type_)
+        return [type_.encode_schema(self, raw)]
 
     def _build_model_type_schema(self, type_: ModelType) -> Any:
         namespace = type_.namespace
@@ -152,9 +162,15 @@ class AvroSchemaEncoder:
             "name": type_.name,
             "namespace": namespace,
             "type": "record",
-            "fields": [type(self)(name=k, type_=v).build() for k, v in type_.type_hints.items()],
+            "fields": [
+                {"name": field_name, "type": self._build_schema(field_type)}
+                for field_name, field_type in type_.type_hints.items()
+            ],
         }
         return schema
+
+    def _build_field_schema(self, type_):
+        return {"name": type_.name, "type": self._build_schema(type_.type)}
 
     def _build_composed_schema(self, type_: type) -> Any:
         origin_type = get_origin(type_)
