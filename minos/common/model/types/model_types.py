@@ -6,6 +6,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Iterable,
+    NamedTuple,
     Optional,
     Type,
 )
@@ -218,3 +219,10 @@ class ModelType(type):
 
     def __repr__(cls):
         return f"{type(cls).__name__}(name={cls.name!r}, namespace={cls.namespace!r}, type_hints={cls.type_hints!r})"
+
+
+class FieldType(NamedTuple):
+    """Field Type class."""
+
+    name: str
+    type: type

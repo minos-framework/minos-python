@@ -27,6 +27,7 @@ from ...importlib import (
     classname,
 )
 from ..types import (
+    FieldType,
     MissingSentinel,
     ModelType,
     NoneType,
@@ -162,15 +163,12 @@ class AvroSchemaEncoder:
             "name": type_.name,
             "namespace": namespace,
             "type": "record",
-            "fields": [
-                {"name": field_name, "type": self._build_schema(field_type)}
-                for field_name, field_type in type_.type_hints.items()
-            ],
+            "fields": [self._build_field_schema(FieldType(n, t)) for n, t in type_.type_hints.items()],
         }
         return schema
 
-    def _build_field_schema(self, type_):
-        return {"name": type_.name, "type": self._build_schema(type_.type)}
+    def _build_field_schema(self, field):
+        return {"name": field.name, "type": self._build_schema(field.type)}
 
     def _build_composed_schema(self, type_: type) -> Any:
         origin_type = get_origin(type_)
