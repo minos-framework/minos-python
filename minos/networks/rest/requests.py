@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from collections import (
     defaultdict,
 )
@@ -43,14 +44,28 @@ from ..requests import (
 class RestRequest(Request):
     """Rest Request class."""
 
+    __slots__ = "raw"
+
     def __init__(self, request: web.Request):
-        self.raw_request = request
+        self.raw = request
+
+    @property
+    def raw_request(self) -> web.Request:
+        """Get the raw request within the instance.
+
+        :return: A ``web.Request`` instance.
+        """
+        warnings.warn(
+            f"'{RestRequest.__name__}s.raw_request' is deprecated in favor of '{RestRequest.__name__}.raw'.",
+            DeprecationWarning,
+        )
+        return self.raw
 
     def __eq__(self, other: RestRequest) -> bool:
-        return type(self) == type(other) and self.raw_request == other.raw_request
+        return type(self) == type(other) and self.raw == other.raw
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.raw_request!r})"
+        return f"{type(self).__name__}({self.raw!r})"
 
     @cached_property
     def user(self) -> Optional[UUID]:
@@ -68,7 +83,7 @@ class RestRequest(Request):
         :return: A dictionary in which keys are ``str`` instances and values are ``str`` instances.
         """
         # noinspection PyTypeChecker
-        return self.raw_request.headers
+        return self.raw.headers
 
     async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
         """Get the request content.
@@ -87,7 +102,7 @@ class RestRequest(Request):
 
     async def _raw_json(self) -> list[dict[str, Any]]:
         try:
-            data = await self.raw_request.json()
+            data = await self.raw.json()
         except JSONDecodeError:
             data = dict()
 
@@ -109,7 +124,7 @@ class RestRequest(Request):
 
     @property
     def _raw_url_args(self):
-        return self.raw_request.rel_url.query.items()  # pragma: no cover
+        return self.raw.rel_url.query.items()  # pragma: no cover
 
     @cached_property
     def path_args(self) -> dict[str, Any]:
@@ -125,7 +140,7 @@ class RestRequest(Request):
 
     @property
     def _raw_path_args(self):
-        return self.raw_request.match_info.items()  # pragma: no cover
+        return self.raw.match_info.items()  # pragma: no cover
 
     def _build_models(self, data: list[dict[str, Any]], model_type: Union[ModelType, Type[Model], str]) -> list[Model]:
         return [self._build_one_model(entry, model_type) for entry in data]
