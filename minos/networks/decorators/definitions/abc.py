@@ -7,7 +7,6 @@ from abc import (
     abstractmethod,
 )
 from asyncio import (
-    gather,
     iscoroutinefunction,
 )
 from functools import (
@@ -33,6 +32,7 @@ from ...requests import (
 )
 from .checkers import (
     Checker,
+    CheckFn,
     EnrouteCheckDecorator,
 )
 from .kinds import (
@@ -42,27 +42,14 @@ from .kinds import (
 Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
-class HandlerFn(Protocol):
-    """TODO"""
-
+class HandlerProtocol(Protocol):
     def __call__(self, request: Request) -> Union[Optional[Response], Awaitable[Optional[Response]]]:
         """TODO"""
         ...
 
     # noinspection PyPropertyDefinition
     @property
-    def __decorators__(self) -> set[EnrouteDecorator]:
-        """TODO"""
-        ...
-
-    # noinspection PyPropertyDefinition
-    @property
-    def __checkers__(self) -> set[Checker]:
-        ...
-
-    # noinspection PyPropertyDefinition
-    @property
-    def __base_func__(self) -> Handler:
+    def meta(self) -> HandlerFn:
         """TODO"""
         ...
 
@@ -73,64 +60,78 @@ class HandlerFn(Protocol):
         ...
 
 
+class HandlerFn:
+    """TODO"""
+
+    __base_func__: Handler
+    __checkers__: set[Checker]
+    __decorators: set[EnrouteDecorator]
+
+    def __init__(self, fn, __decorators__=None, __checkers__=None):
+        if __decorators__ is None:
+            __decorators__ = set()
+        if __checkers__ is None:
+            __checkers__ = set()
+        self.__base_func__ = fn
+        self.__decorators__ = __decorators__
+        self.__checkers__ = __checkers__
+
+    @property
+    def __call__(self) -> Handler:
+        if iscoroutinefunction(self.__base_func__):
+
+            async def _wrapper(*args, **kwargs) -> Optional[Response]:
+                if not await CheckFn.check_async(self.__checkers__, *args, **kwargs):
+                    raise Exception("TODO")
+                return await self.__base_func__(*args, **kwargs)
+
+        else:
+
+            def _wrapper(*args, **kwargs) -> Optional[Response]:
+                if not CheckFn.check_sync(self.__checkers__, *args, **kwargs):
+                    raise Exception("TODO")
+                return self.__base_func__(*args, **kwargs)
+
+        return _wrapper
+
+    def add_decorator(self, dec):
+        """TODO"""
+        self.__decorators__.add(dec)
+        kinds = set(decorator.KIND for decorator in self.__decorators__)
+        if len(kinds) > 1:
+            raise MinosMultipleEnrouteDecoratorKindsException(
+                f"There are multiple kinds but only one is allowed: {kinds}"
+            )
+
+    @property
+    def check(self) -> Type[EnrouteCheckDecorator]:
+        """TODO"""
+        # noinspection PyTypeChecker
+        return partial(EnrouteCheckDecorator, _checkers=self.__checkers__, _base=self.__base_func__)
+
+
 class EnrouteDecorator(ABC):
     """Base Decorator class."""
 
     # noinspection PyFinal
     KIND: Final[EnrouteDecoratorKind]
 
-    def __call__(self, fn: Handler) -> HandlerFn:
-        if iscoroutinefunction(fn):
+    def __call__(self, fn: Handler) -> HandlerProtocol:
+        if hasattr(fn, "meta"):
+            fn = fn.meta
 
-            async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not await self._check_async(_wrapper.__checkers__, *args, **kwargs):
-                    raise Exception("TODO")
-                return await _wrapper.__base_func__(*args, **kwargs)
+        if not isinstance(fn, HandlerFn):
+            fn = HandlerFn(fn)
 
-        else:
+        fn.add_decorator(self)
 
-            def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not self._check_sync(_wrapper.__checkers__, *args, **kwargs):
-                    raise Exception("TODO")
-                return _wrapper.__base_func__(*args, **kwargs)
+        def _wrapper(*args, **kwargs):
+            return fn(*args, **kwargs)
 
-        _wrapper.__decorators__ = getattr(fn, "__decorators__", set())
-        _wrapper.__decorators__.add(self)
-        kinds = set(decorator.KIND for decorator in _wrapper.__decorators__)
-        if len(kinds) > 1:
-            raise MinosMultipleEnrouteDecoratorKindsException(
-                f"There are multiple kinds but only one is allowed: {kinds}"
-            )
-
-        _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
-        _wrapper.__checkers__ = getattr(fn, "__checkers__", set())
-        _wrapper.check = partial(EnrouteCheckDecorator, _checkers=_wrapper.__checkers__, _base=_wrapper.__base_func__)
+        _wrapper.meta = fn
+        _wrapper.check = fn.check
 
         return _wrapper
-
-    @staticmethod
-    async def _check_async(checkers: set[Checker], *args, **kwargs) -> bool:
-        fns = list()
-        for checker in checkers:
-            if not iscoroutinefunction(checker):
-
-                async def _fn(*ag, **kwg):
-                    return checker(*ag, **kwg)
-
-                fns.append(_fn)
-            else:
-                fns.append(checker)
-
-        if not all(await gather(*(_c(*args, **kwargs) for _c in fns))):
-            return False
-        return True
-
-    @staticmethod
-    def _check_sync(checkers: set[Checker], *args, **kwargs) -> bool:
-        for checker in checkers:
-            if not checker(*args, **kwargs):
-                return False
-        return True
 
     def __repr__(self):
         args = ", ".join(map(repr, self))

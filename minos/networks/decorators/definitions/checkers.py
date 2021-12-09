@@ -1,5 +1,8 @@
 import asyncio
 import time
+from asyncio import (
+    gather,
+)
 from collections.abc import (
     Awaitable,
     Callable,
@@ -18,6 +21,36 @@ from ...requests import (
 )
 
 Checker = Callable[[Request], Union[Optional[bool], Awaitable[Optional[bool]]]]
+
+
+class CheckFn:
+    """TODO"""
+
+    @staticmethod
+    async def check_async(checkers: set[Checker], *args, **kwargs) -> bool:
+        """TODO"""
+        fns = list()
+        for checker in checkers:
+            if not iscoroutinefunction(checker):
+
+                async def _fn(*ag, **kwg):
+                    return checker(*ag, **kwg)
+
+                fns.append(_fn)
+            else:
+                fns.append(checker)
+
+        if not all(await gather(*(_c(*args, **kwargs) for _c in fns))):
+            return False
+        return True
+
+    @staticmethod
+    def check_sync(checkers: set[Checker], *args, **kwargs) -> bool:
+        """TODO"""
+        for checker in checkers:
+            if not checker(*args, **kwargs):
+                return False
+        return True
 
 
 class EnrouteCheckDecorator:

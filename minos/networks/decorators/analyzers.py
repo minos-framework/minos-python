@@ -101,7 +101,7 @@ class EnrouteAnalyzer:
     def _get_all(self, *args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
         result = dict()
         for name, fn in getmembers(self.decorated, predicate=lambda x: ismethod(x) or isfunction(x)):
-            if not hasattr(fn, "__decorators__"):
+            if not hasattr(fn, "meta"):
                 continue
-            result[name] = fn.__decorators__
+            result[name] = fn.meta.__decorators__
         return result
