@@ -1,3 +1,7 @@
+from __future__ import (
+    annotations,
+)
+
 import asyncio
 import time
 from asyncio import (
@@ -12,7 +16,9 @@ from inspect import (
     iscoroutinefunction,
 )
 from typing import (
+    TYPE_CHECKING,
     Optional,
+    Protocol,
     Union,
 )
 
@@ -20,11 +26,64 @@ from ...requests import (
     Request,
 )
 
+if TYPE_CHECKING:
+    from .abc import (
+        Handler,
+    )
+
 Checker = Callable[[Request], Union[Optional[bool], Awaitable[Optional[bool]]]]
 
 
-class CheckFn:
+class CheckerProtocol(Protocol):
     """TODO"""
+
+    def __call__(self, request: Request) -> Union[Optional[bool], Awaitable[Optional[bool]]]:
+        """TODO"""
+        ...
+
+    # noinspection PyPropertyDefinition
+    @property
+    def meta(self) -> CheckerFn:
+        """TODO"""
+        ...
+
+
+class CheckerFn:
+    """TODO"""
+
+    def __init__(self, base: Checker, attempts, each, decorators=None):
+        if decorators is None:
+            decorators = set()
+        self.base = base
+        self.attempts = attempts
+        self.each = each
+        self.decorators = decorators
+
+    @property
+    def __call__(self):
+        if iscoroutinefunction(self.base):
+
+            async def _wrapper(*args, **kwargs) -> bool:
+                r = 0
+                while r < self.attempts and not await self.base(*args, **kwargs):
+                    await asyncio.sleep(self.each)
+                    r += 1
+                return r < self.attempts
+
+        else:
+
+            def _wrapper(*args, **kwargs) -> bool:
+                r = 0
+                while r < self.attempts and not self.base(*args, **kwargs):
+                    time.sleep(self.each)
+                    r += 1
+                return r < self.attempts
+
+        return _wrapper
+
+    def add_decorator(self, decorator: EnrouteCheckDecorator):
+        """TODO"""
+        self.decorators.add(decorator)
 
     @staticmethod
     async def check_async(checkers: set[Checker], *args, **kwargs) -> bool:
@@ -56,7 +115,13 @@ class CheckFn:
 class EnrouteCheckDecorator:
     """TODO"""
 
-    def __init__(self, each: int = 100, attempts: int = 10, _checkers=None, _base=None):
+    def __init__(
+        self,
+        each: float = 0.1,
+        attempts: int = 10,
+        _checkers: Optional[set[Checker]] = None,
+        _base: Optional[Handler] = None,
+    ):
         self.each = each
         self.attempts = attempts
         self._checkers = _checkers
@@ -68,33 +133,24 @@ class EnrouteCheckDecorator:
             self.attempts,
         )
 
-    def __call__(self, fn: Checker) -> Checker:
-        base_checker = getattr(fn, "__base_func__", fn)
+    def __call__(self, fn: Checker) -> CheckerProtocol:
+        if iscoroutinefunction(fn) and not iscoroutinefunction(self._base):
+            raise Exception(f"{self._base!r} must be a coroutine if {fn!r} is a coroutine")
 
-        if iscoroutinefunction(fn):
-            if not iscoroutinefunction(self._base):
-                raise Exception(f"{self._base!r} must be a coroutine if {base_checker!r} is a coroutine")
+        if hasattr(fn, "meta"):
+            fn = fn.meta
 
-            async def _wrapper(*args, **kwargs) -> bool:
-                r = 0
-                while r < self.attempts and not await _wrapper.__base_func__(*args, **kwargs):
-                    await asyncio.sleep(self.each)
-                    r += 1
-                return r < self.attempts
+        if not isinstance(fn, CheckerFn):
+            fn = CheckerFn(fn, self.attempts, self.each)
 
-        else:
+        fn.add_decorator(self)
 
-            def _wrapper(*args, **kwargs) -> bool:
-                r = 0
-                while r < self.attempts and not _wrapper.__base_func__(*args, **kwargs):
-                    time.sleep(self.each)
-                    r += 1
-                return r < self.attempts
+        def _wrapper(*args, **kwargs):
+            return fn(*args, **kwargs)
 
-        _wrapper.__check_decorators__ = getattr(fn, "___check_decorators__", set())
-        _wrapper.__check_decorators__.add(self)
-        _wrapper.__base_func__ = base_checker
+        _wrapper.meta = fn
 
-        self._checkers.add(_wrapper)
+        if self._checkers is not None:
+            self._checkers.add(_wrapper)
 
         return _wrapper

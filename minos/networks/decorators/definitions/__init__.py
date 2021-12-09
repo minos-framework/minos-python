@@ -1,5 +1,7 @@
 from .abc import (
     EnrouteDecorator,
+    HandlerFn,
+    HandlerProtocol,
 )
 from .broker import (
     BrokerCommandEnrouteDecorator,
@@ -8,6 +10,8 @@ from .broker import (
     BrokerQueryEnrouteDecorator,
 )
 from .checkers import (
+    CheckerFn,
+    CheckerProtocol,
     EnrouteCheckDecorator,
 )
 from .kinds import (

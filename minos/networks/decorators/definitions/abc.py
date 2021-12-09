@@ -32,7 +32,7 @@ from ...requests import (
 )
 from .checkers import (
     Checker,
-    CheckFn,
+    CheckerFn,
     EnrouteCheckDecorator,
 )
 from .kinds import (
@@ -43,6 +43,8 @@ Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Respo
 
 
 class HandlerProtocol(Protocol):
+    """TODO"""
+
     def __call__(self, request: Request) -> Union[Optional[Response], Awaitable[Optional[Response]]]:
         """TODO"""
         ...
@@ -81,14 +83,14 @@ class HandlerFn:
         if iscoroutinefunction(self.base):
 
             async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not await CheckFn.check_async(self.checkers, *args, **kwargs):
+                if not await CheckerFn.check_async(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
                 return await self.base(*args, **kwargs)
 
         else:
 
             def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not CheckFn.check_sync(self.checkers, *args, **kwargs):
+                if not CheckerFn.check_sync(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
                 return self.base(*args, **kwargs)
 
