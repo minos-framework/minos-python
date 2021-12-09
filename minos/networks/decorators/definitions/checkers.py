@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 Checker = Callable[[Request], Union[Optional[bool], Awaitable[Optional[bool]]]]
 
 
-class CheckerProtocol(Protocol):
+class CheckerProtocol(Checker, Protocol):
     """TODO"""
 
     def __call__(self, request: Request) -> Union[Optional[bool], Awaitable[Optional[bool]]]:
@@ -48,10 +48,12 @@ class CheckerProtocol(Protocol):
         ...
 
 
-class CheckerFn:
+class CheckerFn(Checker):
     """TODO"""
 
-    def __init__(self, base: Checker, attempts, each, decorators=None):
+    def __init__(
+        self, base: Checker, attempts: int, each: float, decorators: Optional[set[EnrouteCheckDecorator]] = None
+    ):
         if decorators is None:
             decorators = set()
         self.base = base
@@ -81,13 +83,23 @@ class CheckerFn:
 
         return _wrapper
 
-    def add_decorator(self, decorator: EnrouteCheckDecorator):
-        """TODO"""
+    def add_decorator(self, decorator: EnrouteCheckDecorator) -> None:
+        """TODO
+
+        :param decorator: TODO
+        :return: TODO
+        """
         self.decorators.add(decorator)
 
     @staticmethod
     async def check_async(checkers: set[Checker], *args, **kwargs) -> bool:
-        """TODO"""
+        """TODO
+
+        :param checkers: TODO
+        :param args: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
         fns = list()
         for checker in checkers:
             if not iscoroutinefunction(checker):
@@ -105,7 +117,13 @@ class CheckerFn:
 
     @staticmethod
     def check_sync(checkers: set[Checker], *args, **kwargs) -> bool:
-        """TODO"""
+        """TODO
+
+        :param checkers: TODO
+        :param args: TODO
+        :param kwargs: TODO
+        :return: TODO
+        """
         for checker in checkers:
             if not checker(*args, **kwargs):
                 return False

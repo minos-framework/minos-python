@@ -9,14 +9,16 @@ from abc import (
 from asyncio import (
     iscoroutinefunction,
 )
+from collections.abc import (
+    Awaitable,
+    Callable,
+    Iterable,
+)
 from functools import (
     partial,
 )
 from typing import (
-    Awaitable,
-    Callable,
     Final,
-    Iterable,
     Optional,
     Protocol,
     Type,
@@ -42,7 +44,7 @@ from .kinds import (
 Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
-class HandlerProtocol(Protocol):
+class HandlerProtocol(Handler, Protocol):
     """TODO"""
 
     def __call__(self, request: Request) -> Union[Optional[Response], Awaitable[Optional[Response]]]:
@@ -62,14 +64,16 @@ class HandlerProtocol(Protocol):
         ...
 
 
-class HandlerFn:
+class HandlerFn(Handler):
     """TODO"""
 
     base: Handler
     decorators: set[EnrouteDecorator]
     checkers: set[Checker]
 
-    def __init__(self, fn, decorators: Optional[set[EnrouteDecorator]] = None, checkers: Optional[set[Checker]] = None):
+    def __init__(
+        self, fn: Handler, decorators: Optional[set[EnrouteDecorator]] = None, checkers: Optional[set[Checker]] = None
+    ):
         if decorators is None:
             decorators = set()
         if checkers is None:
@@ -97,7 +101,11 @@ class HandlerFn:
         return _wrapper
 
     def add_decorator(self, decorator: EnrouteDecorator) -> None:
-        """TODO"""
+        """TODO
+
+        :param decorator: TODO
+        :return: TODO
+        """
         another = next(iter(self.decorators), None)
         if another is not None and another.KIND != decorator.KIND:
             raise MinosMultipleEnrouteDecoratorKindsException(
@@ -107,7 +115,10 @@ class HandlerFn:
 
     @property
     def check(self) -> Type[EnrouteCheckDecorator]:
-        """TODO"""
+        """TODO
+
+        :return: TODO
+        """
         # noinspection PyTypeChecker
         return partial(EnrouteCheckDecorator, _checkers=self.checkers, _base=self.base)
 
