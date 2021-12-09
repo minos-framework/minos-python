@@ -31,6 +31,7 @@ from .decorators import (
     BrokerQueryEnrouteDecorator,
     EnrouteAnalyzer,
     EnrouteBuilder,
+    EnrouteCheckDecorator,
     EnrouteDecorator,
     EnrouteDecoratorKind,
     PeriodicEnrouteDecorator,

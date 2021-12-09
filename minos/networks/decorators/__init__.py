@@ -12,6 +12,7 @@ from .definitions import (
     BrokerEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
+    EnrouteCheckDecorator,
     EnrouteDecorator,
     EnrouteDecoratorKind,
     PeriodicEnrouteDecorator,

@@ -96,6 +96,14 @@ class FakeService:
         """For testing purposes."""
         return Response("Create Ticket")
 
+    @create_ticket.check()
+    def check_create_ticket_1(self, request: Request) -> bool:
+        return True
+
+    @create_ticket.check(each=1000, attempts=1)
+    def check_create_ticket_2(self, request: Request) -> bool:
+        return True
+
     # noinspection PyUnusedLocal
     @classmethod
     @enroute.rest.command(url="orders/", method="DELETE")
