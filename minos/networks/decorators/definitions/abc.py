@@ -94,14 +94,14 @@ class HandlerFn:
 
         return _wrapper
 
-    def add_decorator(self, dec):
+    def add_decorator(self, decorator: EnrouteDecorator) -> None:
         """TODO"""
-        self.decorators.add(dec)
-        kinds = set(decorator.KIND for decorator in self.decorators)
-        if len(kinds) > 1:
+        another = next(iter(self.decorators), None)
+        if another is not None and another.KIND != decorator.KIND:
             raise MinosMultipleEnrouteDecoratorKindsException(
-                f"There are multiple kinds but only one is allowed: {kinds}"
+                f"There are multiple kinds but only one is allowed: {(another.KIND, decorator.KIND)}"
             )
+        self.decorators.add(decorator)
 
     @property
     def check(self) -> Type[EnrouteCheckDecorator]:
