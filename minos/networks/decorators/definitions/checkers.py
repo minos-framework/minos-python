@@ -52,13 +52,13 @@ class CheckerMeta:
     """TODO"""
 
     def __init__(
-        self, base: Checker, attempts: int, each: float, decorators: Optional[set[EnrouteCheckDecorator]] = None
+        self, base: Checker, attempts: int, delay: float, decorators: Optional[set[EnrouteCheckDecorator]] = None
     ):
         if decorators is None:
             decorators = set()
         self.base = base
-        self.attempts = attempts
-        self.each = each
+        self.max_attempts = attempts
+        self.delay = delay
         self.decorators = decorators
 
     @cached_property
@@ -71,19 +71,19 @@ class CheckerMeta:
 
             async def _wrapper(*args, **kwargs) -> bool:
                 r = 0
-                while r < self.attempts and not await self.base(*args, **kwargs):
-                    await asyncio.sleep(self.each)
+                while r < self.max_attempts and not await self.base(*args, **kwargs):
+                    await asyncio.sleep(self.delay)
                     r += 1
-                return r < self.attempts
+                return r < self.max_attempts
 
         else:
 
             def _wrapper(*args, **kwargs) -> bool:
                 r = 0
-                while r < self.attempts and not self.base(*args, **kwargs):
-                    time.sleep(self.each)
+                while r <= self.max_attempts and not self.base(*args, **kwargs):
+                    time.sleep(self.delay)
                     r += 1
-                return r < self.attempts
+                return r <= self.max_attempts
 
         _wrapper.meta = self
         return _wrapper
@@ -140,29 +140,29 @@ class EnrouteCheckDecorator:
 
     def __init__(
         self,
-        each: Union[float, timedelta] = 0.1,
-        attempts: int = 10,
+        max_attempts: int = 10,
+        delay: Union[float, timedelta] = 0.1,
         _checkers: Optional[set[CheckerMeta]] = None,
         _base: Optional[Handler] = None,
     ):
-        if isinstance(each, timedelta):
-            each = each.total_seconds()
+        if isinstance(delay, timedelta):
+            delay = delay.total_seconds()
 
-        self.each = each
-        self.attempts = attempts
+        self.max_attempts = max_attempts
+        self.delay = delay
 
         self._checkers = _checkers
         self._base = _base
 
     def __iter__(self) -> Iterable:
         yield from (
-            self.each,
-            self.attempts,
+            self.delay,
+            self.max_attempts,
         )
 
     def __call__(self, meta: Checker) -> CheckerProtocol:
         if not isinstance(meta, CheckerMeta):
-            meta = getattr(meta, "meta", CheckerMeta(meta, self.attempts, self.each))
+            meta = getattr(meta, "meta", CheckerMeta(meta, self.max_attempts, self.delay))
 
         if iscoroutinefunction(meta) and not iscoroutinefunction(self._base):
             raise Exception(f"{self._base!r} must be a coroutine if {meta!r} is a coroutine")

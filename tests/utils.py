@@ -104,7 +104,7 @@ class FakeService:
     def check_create_ticket_1(self, request: Request) -> bool:
         return True
 
-    @create_ticket.check(each=timedelta(seconds=1), attempts=1)
+    @create_ticket.check(max_attempts=3, delay=timedelta(seconds=1))
     def check_create_ticket_2(self, request: Request) -> bool:
         return True
 
