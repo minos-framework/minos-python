@@ -15,6 +15,9 @@ from collections.abc import (
 from datetime import (
     timedelta,
 )
+from functools import (
+    wraps,
+)
 from inspect import (
     iscoroutinefunction,
 )
@@ -51,15 +54,10 @@ class CheckerProtocol(Protocol):
 class CheckerMeta:
     """TODO"""
 
-    def __init__(
-        self, base: Checker, attempts: int, delay: float, decorators: Optional[set[EnrouteCheckDecorator]] = None
-    ):
-        if decorators is None:
-            decorators = set()
+    def __init__(self, base: Checker, attempts: int, delay: float):
         self.base = base
         self.max_attempts = attempts
         self.delay = delay
-        self.decorators = decorators
 
     @cached_property
     def wrapper(self) -> CheckerProtocol:
@@ -69,6 +67,7 @@ class CheckerMeta:
         """
         if iscoroutinefunction(self.base):
 
+            @wraps(self.base)
             async def _wrapper(*args, **kwargs) -> bool:
                 r = 0
                 while r < self.max_attempts and not await self.base(*args, **kwargs):
@@ -78,6 +77,7 @@ class CheckerMeta:
 
         else:
 
+            @wraps(self.base)
             def _wrapper(*args, **kwargs) -> bool:
                 r = 0
                 while r <= self.max_attempts and not self.base(*args, **kwargs):
@@ -87,14 +87,6 @@ class CheckerMeta:
 
         _wrapper.meta = self
         return _wrapper
-
-    def add_decorator(self, decorator: EnrouteCheckDecorator) -> None:
-        """TODO
-
-        :param decorator: TODO
-        :return: TODO
-        """
-        self.decorators.add(decorator)
 
     @staticmethod
     async def check_async(checkers: set[CheckerMeta], *args, **kwargs) -> bool:
@@ -106,17 +98,18 @@ class CheckerMeta:
         :return: TODO
         """
         fns = list()
-        for checker in checkers:
-            if not iscoroutinefunction(checker):
-
-                async def _fn(*ag, **kwg):
-                    return checker.wrapper(*ag, **kwg)
-
-                fns.append(_fn)
+        for meta in checkers:
+            if iscoroutinefunction(meta.wrapper):
+                fns.append(meta.wrapper)
             else:
-                fns.append(checker)
 
-        if not all(await gather(*(_c(*args, **kwargs) for _c in fns))):
+                @wraps(meta.wrapper)
+                async def _wrapper(*ag, **kwg):
+                    return meta.wrapper(*ag, **kwg)
+
+                fns.append(_wrapper)
+
+        if not all(await gather(*(coro(*args, **kwargs) for coro in fns))):
             return False
         return True
 
@@ -129,8 +122,8 @@ class CheckerMeta:
         :param kwargs: TODO
         :return: TODO
         """
-        for checker in checkers:
-            if not checker.wrapper(*args, **kwargs):
+        for meta in checkers:
+            if not meta.wrapper(*args, **kwargs):
                 return False
         return True
 
@@ -166,8 +159,6 @@ class EnrouteCheckDecorator:
 
         if iscoroutinefunction(meta) and not iscoroutinefunction(self._base):
             raise Exception(f"{self._base!r} must be a coroutine if {meta!r} is a coroutine")
-
-        meta.add_decorator(self)
 
         if self._checkers is not None:
             self._checkers.add(meta)

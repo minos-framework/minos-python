@@ -16,6 +16,7 @@ from collections.abc import (
 )
 from functools import (
     partial,
+    wraps,
 )
 from typing import (
     Final,
@@ -84,6 +85,7 @@ class HandlerMeta:
         """
         if iscoroutinefunction(self.base):
 
+            @wraps(self.base)
             async def _wrapper(*args, **kwargs) -> Optional[Response]:
                 if not await CheckerMeta.check_async(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
@@ -91,6 +93,7 @@ class HandlerMeta:
 
         else:
 
+            @wraps(self.base)
             def _wrapper(*args, **kwargs) -> Optional[Response]:
                 if not CheckerMeta.check_sync(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
