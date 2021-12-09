@@ -87,7 +87,7 @@ class HandlerMeta:
 
             @wraps(self.base)
             async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not await CheckerMeta.check_async(self.checkers, *args, **kwargs):
+                if not await CheckerMeta.run_async(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
                 return await self.base(*args, **kwargs)
 
@@ -95,7 +95,7 @@ class HandlerMeta:
 
             @wraps(self.base)
             def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not CheckerMeta.check_sync(self.checkers, *args, **kwargs):
+                if not CheckerMeta.run_sync(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
                 return self.base(*args, **kwargs)
 

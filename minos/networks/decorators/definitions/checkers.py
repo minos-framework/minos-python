@@ -89,16 +89,16 @@ class CheckerMeta:
         return _wrapper
 
     @staticmethod
-    async def check_async(checkers: set[CheckerMeta], *args, **kwargs) -> bool:
+    async def run_async(metas: set[CheckerMeta], *args, **kwargs) -> bool:
         """TODO
 
-        :param checkers: TODO
+        :param metas: TODO
         :param args: TODO
         :param kwargs: TODO
         :return: TODO
         """
         fns = list()
-        for meta in checkers:
+        for meta in metas:
             if iscoroutinefunction(meta.wrapper):
                 fns.append(meta.wrapper)
             else:
@@ -114,15 +114,15 @@ class CheckerMeta:
         return True
 
     @staticmethod
-    def check_sync(checkers: set[CheckerMeta], *args, **kwargs) -> bool:
+    def run_sync(metas: set[CheckerMeta], *args, **kwargs) -> bool:
         """TODO
 
-        :param checkers: TODO
+        :param metas: TODO
         :param args: TODO
         :param kwargs: TODO
         :return: TODO
         """
-        for meta in checkers:
+        for meta in metas:
             if not meta.wrapper(*args, **kwargs):
                 return False
         return True
