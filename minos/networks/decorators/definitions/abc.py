@@ -32,16 +32,17 @@ from ...requests import (
     Response,
 )
 from .checkers import (
+    Checker,
     EnrouteCheckDecorator,
 )
 from .kinds import (
     EnrouteDecoratorKind,
 )
 
-Adapter = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
+Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
-class HandlingFn(Protocol):
+class HandlerFn(Protocol):
     """TODO"""
 
     def __call__(self, request: Request) -> Union[Optional[Response], Awaitable[Optional[Response]]]:
@@ -56,7 +57,12 @@ class HandlingFn(Protocol):
 
     # noinspection PyPropertyDefinition
     @property
-    def __base_func__(self) -> Adapter:
+    def __checkers__(self) -> set[Checker]:
+        ...
+
+    # noinspection PyPropertyDefinition
+    @property
+    def __base_func__(self) -> Handler:
         """TODO"""
         ...
 
@@ -73,33 +79,19 @@ class EnrouteDecorator(ABC):
     # noinspection PyFinal
     KIND: Final[EnrouteDecoratorKind]
 
-    def __call__(self, fn: Adapter) -> HandlingFn:
+    def __call__(self, fn: Handler) -> HandlerFn:
         if iscoroutinefunction(fn):
 
             async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                fns = list()
-                for checker in _wrapper.__checkers__:
-                    if not iscoroutinefunction(checker):
-
-                        async def _fn(*args, **kwargs):
-                            return checker(*args, **kwargs)
-
-                        fns.append(_fn)
-                    else:
-                        fns.append(checker)
-
-                if not all(await gather(*(_c(*args, **kwargs) for _c in fns))):
+                if not await self._check_async(_wrapper.__checkers__, *args, **kwargs):
                     raise Exception("TODO")
-
                 return await _wrapper.__base_func__(*args, **kwargs)
 
         else:
 
             def _wrapper(*args, **kwargs) -> Optional[Response]:
-                for checker in _wrapper.__checkers__:
-                    if not checker(*args, **kwargs):
-                        raise Exception("TODO")
-
+                if not self._check_sync(_wrapper.__checkers__, *args, **kwargs):
+                    raise Exception("TODO")
                 return _wrapper.__base_func__(*args, **kwargs)
 
         _wrapper.__decorators__ = getattr(fn, "__decorators__", set())
@@ -115,6 +107,30 @@ class EnrouteDecorator(ABC):
         _wrapper.check = partial(EnrouteCheckDecorator, _checkers=_wrapper.__checkers__, _base=_wrapper.__base_func__)
 
         return _wrapper
+
+    @staticmethod
+    async def _check_async(checkers: set[Checker], *args, **kwargs) -> bool:
+        fns = list()
+        for checker in checkers:
+            if not iscoroutinefunction(checker):
+
+                async def _fn(*ag, **kwg):
+                    return checker(*ag, **kwg)
+
+                fns.append(_fn)
+            else:
+                fns.append(checker)
+
+        if not all(await gather(*(_c(*args, **kwargs) for _c in fns))):
+            return False
+        return True
+
+    @staticmethod
+    def _check_sync(checkers: set[Checker], *args, **kwargs) -> bool:
+        for checker in checkers:
+            if not checker(*args, **kwargs):
+                return False
+        return True
 
     def __repr__(self):
         args = ", ".join(map(repr, self))
