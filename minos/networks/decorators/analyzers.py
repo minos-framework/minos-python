@@ -103,5 +103,5 @@ class EnrouteAnalyzer:
         for name, fn in getmembers(self.decorated, predicate=lambda x: ismethod(x) or isfunction(x)):
             if not hasattr(fn, "meta"):
                 continue
-            result[name] = fn.meta.__decorators__
+            result[name] = fn.meta.decorators
         return result

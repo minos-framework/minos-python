@@ -63,41 +63,41 @@ class HandlerProtocol(Protocol):
 class HandlerFn:
     """TODO"""
 
-    __base_func__: Handler
-    __checkers__: set[Checker]
-    __decorators: set[EnrouteDecorator]
+    base: Handler
+    decorators: set[EnrouteDecorator]
+    checkers: set[Checker]
 
-    def __init__(self, fn, __decorators__=None, __checkers__=None):
-        if __decorators__ is None:
-            __decorators__ = set()
-        if __checkers__ is None:
-            __checkers__ = set()
-        self.__base_func__ = fn
-        self.__decorators__ = __decorators__
-        self.__checkers__ = __checkers__
+    def __init__(self, fn, decorators: Optional[set[EnrouteDecorator]] = None, checkers: Optional[set[Checker]] = None):
+        if decorators is None:
+            decorators = set()
+        if checkers is None:
+            checkers = set()
+        self.base = fn
+        self.decorators = decorators
+        self.checkers = checkers
 
     @property
     def __call__(self) -> Handler:
-        if iscoroutinefunction(self.__base_func__):
+        if iscoroutinefunction(self.base):
 
             async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not await CheckFn.check_async(self.__checkers__, *args, **kwargs):
+                if not await CheckFn.check_async(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
-                return await self.__base_func__(*args, **kwargs)
+                return await self.base(*args, **kwargs)
 
         else:
 
             def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not CheckFn.check_sync(self.__checkers__, *args, **kwargs):
+                if not CheckFn.check_sync(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
-                return self.__base_func__(*args, **kwargs)
+                return self.base(*args, **kwargs)
 
         return _wrapper
 
     def add_decorator(self, dec):
         """TODO"""
-        self.__decorators__.add(dec)
-        kinds = set(decorator.KIND for decorator in self.__decorators__)
+        self.decorators.add(dec)
+        kinds = set(decorator.KIND for decorator in self.decorators)
         if len(kinds) > 1:
             raise MinosMultipleEnrouteDecoratorKindsException(
                 f"There are multiple kinds but only one is allowed: {kinds}"
@@ -107,7 +107,7 @@ class HandlerFn:
     def check(self) -> Type[EnrouteCheckDecorator]:
         """TODO"""
         # noinspection PyTypeChecker
-        return partial(EnrouteCheckDecorator, _checkers=self.__checkers__, _base=self.__base_func__)
+        return partial(EnrouteCheckDecorator, _checkers=self.checkers, _base=self.base)
 
 
 class EnrouteDecorator(ABC):
