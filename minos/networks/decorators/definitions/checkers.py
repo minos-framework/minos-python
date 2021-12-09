@@ -32,6 +32,9 @@ from cached_property import (
     cached_property,
 )
 
+from ...exceptions import (
+    NotSatisfiedCheckerException,
+)
 from ...requests import (
     Request,
 )
@@ -89,7 +92,7 @@ class CheckerMeta:
         return _wrapper
 
     @staticmethod
-    async def run_async(metas: set[CheckerMeta], *args, **kwargs) -> bool:
+    async def run_async(metas: set[CheckerMeta], *args, **kwargs) -> None:
         """TODO
 
         :param metas: TODO
@@ -109,9 +112,9 @@ class CheckerMeta:
 
                 fns.append(_wrapper)
 
-        if not all(await gather(*(coro(*args, **kwargs) for coro in fns))):
-            return False
-        return True
+        for satisfied, meta in zip(await gather(*(coro(*args, **kwargs) for coro in fns)), metas):
+            if not satisfied:
+                raise NotSatisfiedCheckerException(f"{meta.wrapper!r} is not satisfied.")
 
     @staticmethod
     def run_sync(metas: set[CheckerMeta], *args, **kwargs) -> bool:
@@ -123,8 +126,9 @@ class CheckerMeta:
         :return: TODO
         """
         for meta in metas:
-            if not meta.wrapper(*args, **kwargs):
-                return False
+            satisfied = meta.wrapper(*args, **kwargs)
+            if not satisfied:
+                raise NotSatisfiedCheckerException(f"{meta.wrapper!r} is not satisfied.")
         return True
 
 

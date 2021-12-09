@@ -96,7 +96,7 @@ class HandlerMeta:
             @wraps(self.base)
             def _wrapper(*args, **kwargs) -> Optional[Response]:
                 if not CheckerMeta.run_sync(self.checkers, *args, **kwargs):
-                    raise Exception("TODO")
+                    raise Exception("Some checks are not satisfied.")
                 return self.base(*args, **kwargs)
 
         _wrapper.meta = self
