@@ -25,7 +25,7 @@ from minos.common import (
     DeclarativeModel,
 )
 from minos.networks import (
-    EnrouteDecorator,
+    EnrouteHandleDecorator,
     Request,
     Response,
     WrappedRequest,
@@ -146,7 +146,7 @@ class FakeService:
 
 class FakeServiceWithGetEnroute:
     @staticmethod
-    def __get_enroute__(*args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
+    def __get_enroute__(*args, **kwargs) -> dict[str, set[EnrouteHandleDecorator]]:
         return {"create_foo": {enroute.broker.command(topic="CreateFoo")}}
 
     def create_foo(self, request: Request) -> Response:

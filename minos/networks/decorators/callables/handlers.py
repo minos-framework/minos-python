@@ -27,10 +27,12 @@ from cached_property import (
 
 from ...exceptions import (
     MinosMultipleEnrouteDecoratorKindsException,
+    NotSatisfiedCheckerException,
 )
 from ...requests import (
     Request,
     Response,
+    ResponseException,
 )
 from .checkers import (
     CheckerMeta,
@@ -39,7 +41,7 @@ from .checkers import (
 if TYPE_CHECKING:
     from ..definitions import (
         EnrouteCheckDecorator,
-        EnrouteDecorator,
+        EnrouteHandleDecorator,
     )
 
 Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
@@ -57,13 +59,13 @@ class HandlerMeta:
     """TODO"""
 
     base: Handler
-    decorators: set[EnrouteDecorator]
+    decorators: set[EnrouteHandleDecorator]
     checkers: set[CheckerMeta]
 
     def __init__(
         self,
         base: Handler,
-        decorators: Optional[set[EnrouteDecorator]] = None,
+        decorators: Optional[set[EnrouteHandleDecorator]] = None,
         checkers: Optional[set[CheckerMeta]] = None,
     ):
         if decorators is None:
@@ -84,16 +86,22 @@ class HandlerMeta:
 
             @wraps(self.base)
             async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not await CheckerMeta.run_async(self.checkers, *args, **kwargs):
-                    raise Exception("TODO")
+                try:
+                    await CheckerMeta.run_async(self.checkers, *args, **kwargs)
+                except NotSatisfiedCheckerException as exc:
+                    raise ResponseException(f"There was an exception during check step: {exc}")
+
                 return await self.base(*args, **kwargs)
 
         else:
 
             @wraps(self.base)
             def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not CheckerMeta.run_sync(self.checkers, *args, **kwargs):
-                    raise Exception("Some checks are not satisfied.")
+                try:
+                    CheckerMeta.run_sync(self.checkers, *args, **kwargs)
+                except NotSatisfiedCheckerException as exc:
+                    raise ResponseException(f"There was an exception during check step: {exc}")
+
                 return self.base(*args, **kwargs)
 
         _wrapper.meta = self
@@ -101,7 +109,7 @@ class HandlerMeta:
 
         return _wrapper
 
-    def add_decorator(self, decorator: EnrouteDecorator) -> None:
+    def add_decorator(self, decorator: EnrouteHandleDecorator) -> None:
         """TODO
 
         :param decorator: TODO

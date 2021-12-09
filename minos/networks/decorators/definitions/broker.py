@@ -7,14 +7,14 @@ from typing import (
 )
 
 from .abc import (
-    EnrouteDecorator,
+    EnrouteHandleDecorator,
 )
 from .kinds import (
-    EnrouteDecoratorKind,
+    EnrouteHandleDecoratorKind,
 )
 
 
-class BrokerEnrouteDecorator(EnrouteDecorator, ABC):
+class BrokerEnrouteHandleDecorator(EnrouteHandleDecorator, ABC):
     """Broker Enroute class"""
 
     def __init__(self, topic: str):
@@ -24,19 +24,19 @@ class BrokerEnrouteDecorator(EnrouteDecorator, ABC):
         yield from (self.topic,)
 
 
-class BrokerCommandEnrouteDecorator(BrokerEnrouteDecorator):
+class BrokerCommandEnrouteDecorator(BrokerEnrouteHandleDecorator):
     """Broker Command Enroute class"""
 
-    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Command
+    KIND: Final[EnrouteHandleDecoratorKind] = EnrouteHandleDecoratorKind.Command
 
 
-class BrokerQueryEnrouteDecorator(BrokerEnrouteDecorator):
+class BrokerQueryEnrouteDecorator(BrokerEnrouteHandleDecorator):
     """Broker Query Enroute class"""
 
-    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Query
+    KIND: Final[EnrouteHandleDecoratorKind] = EnrouteHandleDecoratorKind.Query
 
 
-class BrokerEventEnrouteDecorator(BrokerEnrouteDecorator):
+class BrokerEventEnrouteDecorator(BrokerEnrouteHandleDecorator):
     """Broker Event Enroute class"""
 
-    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Event
+    KIND: Final[EnrouteHandleDecoratorKind] = EnrouteHandleDecoratorKind.Event

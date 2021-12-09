@@ -19,15 +19,15 @@ from ..callables import (
     HandlerProtocol,
 )
 from .kinds import (
-    EnrouteDecoratorKind,
+    EnrouteHandleDecoratorKind,
 )
 
 
-class EnrouteDecorator(ABC):
+class EnrouteHandleDecorator(ABC):
     """Base Decorator class."""
 
     # noinspection PyFinal
-    KIND: Final[EnrouteDecoratorKind]
+    KIND: Final[EnrouteHandleDecoratorKind]
 
     def __call__(self, meta: Handler) -> HandlerProtocol:
         if not isinstance(meta, HandlerMeta):
@@ -41,7 +41,7 @@ class EnrouteDecorator(ABC):
         args = ", ".join(map(repr, self))
         return f"{type(self).__name__}({args})"
 
-    def __eq__(self, other: EnrouteDecorator) -> bool:
+    def __eq__(self, other: EnrouteHandleDecorator) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:

@@ -12,14 +12,14 @@ from crontab import (
 )
 
 from .abc import (
-    EnrouteDecorator,
+    EnrouteHandleDecorator,
 )
 from .kinds import (
-    EnrouteDecoratorKind,
+    EnrouteHandleDecoratorKind,
 )
 
 
-class PeriodicEnrouteDecorator(EnrouteDecorator, ABC):
+class PeriodicEnrouteHandleDecorator(EnrouteHandleDecorator, ABC):
     """Periodic Enroute class"""
 
     def __init__(self, crontab: Union[str, CronTab]):
@@ -34,7 +34,7 @@ class PeriodicEnrouteDecorator(EnrouteDecorator, ABC):
         return hash(tuple((s if not isinstance(s, CronTab) else s.matchers) for s in self))
 
 
-class PeriodicEventEnrouteDecorator(PeriodicEnrouteDecorator):
+class PeriodicEventEnrouteDecorator(PeriodicEnrouteHandleDecorator):
     """Periodic Event Enroute class"""
 
-    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Event
+    KIND: Final[EnrouteHandleDecoratorKind] = EnrouteHandleDecoratorKind.Event

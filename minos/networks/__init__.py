@@ -26,7 +26,7 @@ from .brokers import (
 )
 from .decorators import (
     BrokerCommandEnrouteDecorator,
-    BrokerEnrouteDecorator,
+    BrokerEnrouteHandleDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     Checker,
@@ -35,15 +35,15 @@ from .decorators import (
     EnrouteAnalyzer,
     EnrouteBuilder,
     EnrouteCheckDecorator,
-    EnrouteDecorator,
-    EnrouteDecoratorKind,
+    EnrouteHandleDecorator,
+    EnrouteHandleDecoratorKind,
     Handler,
     HandlerMeta,
     HandlerProtocol,
-    PeriodicEnrouteDecorator,
+    PeriodicEnrouteHandleDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
-    RestEnrouteDecorator,
+    RestEnrouteHandleDecorator,
     RestQueryEnrouteDecorator,
     enroute,
 )
