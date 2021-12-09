@@ -1,10 +1,14 @@
 from collections import (
     namedtuple,
 )
+from datetime import (
+    timedelta,
+)
 from pathlib import (
     Path,
 )
 from typing import (
+    Any,
     Callable,
     Optional,
 )
@@ -100,7 +104,7 @@ class FakeService:
     def check_create_ticket_1(self, request: Request) -> bool:
         return True
 
-    @create_ticket.check(each=1000, attempts=1)
+    @create_ticket.check(each=timedelta(seconds=1), attempts=1)
     def check_create_ticket_2(self, request: Request) -> bool:
         return True
 
@@ -164,8 +168,8 @@ class FakeRequest(Request):
         """For testing purposes"""
         return self._content
 
-    def __eq__(self, other) -> bool:
-        return self._content == other._content
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, type(self)) and self._content == other._content
 
     def __repr__(self) -> str:
         return f"FakeRequest({self._content!r})"

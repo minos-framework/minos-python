@@ -1,6 +1,6 @@
 from .abc import (
     EnrouteDecorator,
-    HandlerFn,
+    HandlerMeta,
     HandlerProtocol,
 )
 from .broker import (
@@ -10,7 +10,7 @@ from .broker import (
     BrokerQueryEnrouteDecorator,
 )
 from .checkers import (
-    CheckerFn,
+    CheckerMeta,
     CheckerProtocol,
     EnrouteCheckDecorator,
 )

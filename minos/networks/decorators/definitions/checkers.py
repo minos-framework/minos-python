@@ -12,6 +12,9 @@ from collections.abc import (
     Callable,
     Iterable,
 )
+from datetime import (
+    timedelta,
+)
 from inspect import (
     iscoroutinefunction,
 )
@@ -20,6 +23,10 @@ from typing import (
     Optional,
     Protocol,
     Union,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from ...requests import (
@@ -34,21 +41,14 @@ if TYPE_CHECKING:
 Checker = Callable[[Request], Union[Optional[bool], Awaitable[Optional[bool]]]]
 
 
-class CheckerProtocol(Checker, Protocol):
+class CheckerProtocol(Protocol):
     """TODO"""
 
-    def __call__(self, request: Request) -> Union[Optional[bool], Awaitable[Optional[bool]]]:
-        """TODO"""
-        ...
-
-    # noinspection PyPropertyDefinition
-    @property
-    def meta(self) -> CheckerFn:
-        """TODO"""
-        ...
+    meta: CheckerMeta
+    __call__: Checker
 
 
-class CheckerFn(Checker):
+class CheckerMeta:
     """TODO"""
 
     def __init__(
@@ -61,8 +61,12 @@ class CheckerFn(Checker):
         self.each = each
         self.decorators = decorators
 
-    @property
-    def __call__(self):
+    @cached_property
+    def wrapper(self) -> CheckerProtocol:
+        """TODO
+
+        :return: TODO
+        """
         if iscoroutinefunction(self.base):
 
             async def _wrapper(*args, **kwargs) -> bool:
@@ -81,6 +85,7 @@ class CheckerFn(Checker):
                     r += 1
                 return r < self.attempts
 
+        _wrapper.meta = self
         return _wrapper
 
     def add_decorator(self, decorator: EnrouteCheckDecorator) -> None:
@@ -92,7 +97,7 @@ class CheckerFn(Checker):
         self.decorators.add(decorator)
 
     @staticmethod
-    async def check_async(checkers: set[Checker], *args, **kwargs) -> bool:
+    async def check_async(checkers: set[CheckerMeta], *args, **kwargs) -> bool:
         """TODO
 
         :param checkers: TODO
@@ -105,7 +110,7 @@ class CheckerFn(Checker):
             if not iscoroutinefunction(checker):
 
                 async def _fn(*ag, **kwg):
-                    return checker(*ag, **kwg)
+                    return checker.wrapper(*ag, **kwg)
 
                 fns.append(_fn)
             else:
@@ -116,7 +121,7 @@ class CheckerFn(Checker):
         return True
 
     @staticmethod
-    def check_sync(checkers: set[Checker], *args, **kwargs) -> bool:
+    def check_sync(checkers: set[CheckerMeta], *args, **kwargs) -> bool:
         """TODO
 
         :param checkers: TODO
@@ -125,7 +130,7 @@ class CheckerFn(Checker):
         :return: TODO
         """
         for checker in checkers:
-            if not checker(*args, **kwargs):
+            if not checker.wrapper(*args, **kwargs):
                 return False
         return True
 
@@ -135,13 +140,17 @@ class EnrouteCheckDecorator:
 
     def __init__(
         self,
-        each: float = 0.1,
+        each: Union[float, timedelta] = 0.1,
         attempts: int = 10,
-        _checkers: Optional[set[Checker]] = None,
+        _checkers: Optional[set[CheckerMeta]] = None,
         _base: Optional[Handler] = None,
     ):
+        if isinstance(each, timedelta):
+            each = each.total_seconds()
+
         self.each = each
         self.attempts = attempts
+
         self._checkers = _checkers
         self._base = _base
 
@@ -151,24 +160,16 @@ class EnrouteCheckDecorator:
             self.attempts,
         )
 
-    def __call__(self, fn: Checker) -> CheckerProtocol:
-        if iscoroutinefunction(fn) and not iscoroutinefunction(self._base):
-            raise Exception(f"{self._base!r} must be a coroutine if {fn!r} is a coroutine")
+    def __call__(self, meta: Checker) -> CheckerProtocol:
+        if not isinstance(meta, CheckerMeta):
+            meta = getattr(meta, "meta", CheckerMeta(meta, self.attempts, self.each))
 
-        if hasattr(fn, "meta"):
-            fn = fn.meta
+        if iscoroutinefunction(meta) and not iscoroutinefunction(self._base):
+            raise Exception(f"{self._base!r} must be a coroutine if {meta!r} is a coroutine")
 
-        if not isinstance(fn, CheckerFn):
-            fn = CheckerFn(fn, self.attempts, self.each)
-
-        fn.add_decorator(self)
-
-        def _wrapper(*args, **kwargs):
-            return fn(*args, **kwargs)
-
-        _wrapper.meta = fn
+        meta.add_decorator(self)
 
         if self._checkers is not None:
-            self._checkers.add(_wrapper)
+            self._checkers.add(meta)
 
-        return _wrapper
+        return meta.wrapper

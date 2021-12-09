@@ -25,6 +25,10 @@ from typing import (
     Union,
 )
 
+from cached_property import (
+    cached_property,
+)
+
 from ...exceptions import (
     MinosMultipleEnrouteDecoratorKindsException,
 )
@@ -33,8 +37,7 @@ from ...requests import (
     Response,
 )
 from .checkers import (
-    Checker,
-    CheckerFn,
+    CheckerMeta,
     EnrouteCheckDecorator,
 )
 from .kinds import (
@@ -44,59 +47,57 @@ from .kinds import (
 Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
-class HandlerProtocol(Handler, Protocol):
+class HandlerProtocol(Protocol):
     """TODO"""
 
-    def __call__(self, request: Request) -> Union[Optional[Response], Awaitable[Optional[Response]]]:
-        """TODO"""
-        ...
-
-    # noinspection PyPropertyDefinition
-    @property
-    def meta(self) -> HandlerFn:
-        """TODO"""
-        ...
-
-    # noinspection PyPropertyDefinition
-    @property
-    def check(self) -> Type[EnrouteCheckDecorator]:
-        """TODO"""
-        ...
+    meta: HandlerMeta
+    check: Type[EnrouteCheckDecorator]
+    __call__: Handler
 
 
-class HandlerFn(Handler):
+class HandlerMeta:
     """TODO"""
 
     base: Handler
     decorators: set[EnrouteDecorator]
-    checkers: set[Checker]
+    checkers: set[CheckerMeta]
 
     def __init__(
-        self, fn: Handler, decorators: Optional[set[EnrouteDecorator]] = None, checkers: Optional[set[Checker]] = None
+        self,
+        base: Handler,
+        decorators: Optional[set[EnrouteDecorator]] = None,
+        checkers: Optional[set[CheckerMeta]] = None,
     ):
         if decorators is None:
             decorators = set()
         if checkers is None:
             checkers = set()
-        self.base = fn
+        self.base = base
         self.decorators = decorators
         self.checkers = checkers
 
-    @property
-    def __call__(self) -> Handler:
+    @cached_property
+    def wrapper(self) -> HandlerProtocol:
+        """TODO
+
+        :return: TODO
+        """
         if iscoroutinefunction(self.base):
 
             async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not await CheckerFn.check_async(self.checkers, *args, **kwargs):
+                if not await CheckerMeta.check_async(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
                 return await self.base(*args, **kwargs)
 
         else:
 
             def _wrapper(*args, **kwargs) -> Optional[Response]:
-                if not CheckerFn.check_sync(self.checkers, *args, **kwargs):
+                if not CheckerMeta.check_sync(self.checkers, *args, **kwargs):
                     raise Exception("TODO")
                 return self.base(*args, **kwargs)
+
+        _wrapper.meta = self
+        _wrapper.check = self.check
 
         return _wrapper
 
@@ -129,22 +130,13 @@ class EnrouteDecorator(ABC):
     # noinspection PyFinal
     KIND: Final[EnrouteDecoratorKind]
 
-    def __call__(self, fn: Handler) -> HandlerProtocol:
-        if hasattr(fn, "meta"):
-            fn = fn.meta
+    def __call__(self, meta: Handler) -> HandlerProtocol:
+        if not isinstance(meta, HandlerMeta):
+            meta = getattr(meta, "meta", HandlerMeta(meta))
 
-        if not isinstance(fn, HandlerFn):
-            fn = HandlerFn(fn)
+        meta.add_decorator(self)
 
-        fn.add_decorator(self)
-
-        def _wrapper(*args, **kwargs):
-            return fn(*args, **kwargs)
-
-        _wrapper.meta = fn
-        _wrapper.check = fn.check
-
-        return _wrapper
+        return meta.wrapper
 
     def __repr__(self):
         args = ", ".join(map(repr, self))

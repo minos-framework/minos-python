@@ -21,7 +21,7 @@ from .definitions import (
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     EnrouteDecorator,
-    HandlerFn,
+    HandlerMeta,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
     RestEnrouteDecorator,
@@ -102,6 +102,6 @@ class EnrouteAnalyzer:
     def _get_all(self, *args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
         result = dict()
         for name, fn in getmembers(self.decorated, predicate=lambda x: ismethod(x) or isfunction(x)):
-            if hasattr(fn, "meta") and isinstance(fn.meta, HandlerFn):
+            if hasattr(fn, "meta") and isinstance(fn.meta, HandlerMeta):
                 result[name] = fn.meta.decorators
         return result
