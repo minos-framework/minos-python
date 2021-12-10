@@ -16,7 +16,7 @@ from minos.common import (
 )
 
 from .callables import (
-    HandlerMeta,
+    HandlerWrapper,
 )
 from .definitions import (
     BrokerCommandEnrouteDecorator,
@@ -104,6 +104,6 @@ class EnrouteAnalyzer:
     def _get_all(self, *args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
         result = dict()
         for name, fn in getmembers(self.decorated, predicate=lambda x: ismethod(x) or isfunction(x)):
-            if hasattr(fn, "meta") and isinstance(fn.meta, HandlerMeta):
+            if isinstance(fn, HandlerWrapper):
                 result[name] = fn.meta.decorators
         return result
