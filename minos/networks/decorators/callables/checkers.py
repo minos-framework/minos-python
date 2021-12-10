@@ -42,14 +42,14 @@ Checker = Callable[[Request], Union[Optional[bool], Awaitable[Optional[bool]]]]
 
 @runtime_checkable
 class CheckerWrapper(Protocol):
-    """TODO"""
+    """Checker Wrapper class."""
 
     meta: CheckerMeta
     __call__: Checker
 
 
 class CheckerMeta:
-    """TODO"""
+    """Checker Meta class."""
 
     func: Checker
     max_attempts: int
@@ -62,12 +62,12 @@ class CheckerMeta:
 
     @staticmethod
     async def run_async(metas: set[CheckerMeta], *args, **kwargs) -> None:
-        """TODO
+        """Run a set of checkers asynchronously.
 
-        :param metas: TODO
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param metas: The set of checkers.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
         """
         metas = list(metas)
         futures = [meta.async_wrapper(*args, **kwargs) for meta in metas]
@@ -78,12 +78,12 @@ class CheckerMeta:
 
     @staticmethod
     def run_sync(metas: set[CheckerMeta], *args, **kwargs) -> bool:
-        """TODO
+        """Run a set of checkers synchronously.
 
-        :param metas: TODO
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param metas: The set of checkers.
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: This method does not return anything.
         """
         for meta in metas:
             satisfied = meta.sync_wrapper(*args, **kwargs)
@@ -93,9 +93,9 @@ class CheckerMeta:
 
     @property
     def wrapper(self) -> CheckerWrapper:
-        """TODO
+        """Get the ``HandlerWrapper`` instance.
 
-        :return: TODO
+        :return: A ``HandlerWrapper`` instance.
         """
         if iscoroutinefunction(self.func):
             return self.async_wrapper
@@ -104,9 +104,9 @@ class CheckerMeta:
 
     @cached_property
     def async_wrapper(self) -> CheckerWrapper:
-        """TODO
+        """Get the async ``HandlerWrapper`` instance.
 
-        :return: TODO
+        :return: A ``HandlerWrapper`` instance.
         """
 
         @wraps(self.func)
@@ -129,9 +129,9 @@ class CheckerMeta:
 
     @cached_property
     def sync_wrapper(self) -> CheckerWrapper:
-        """TODO
+        """Get the sync ``HandlerWrapper`` instance.
 
-        :return: TODO
+        :return: A ``HandlerWrapper`` instance.
         """
         if iscoroutinefunction(self.func):
             raise ValueError(f"{self.func!r} cannot be awaitable.")

@@ -81,7 +81,7 @@ class TestHandlerMeta(unittest.IsolatedAsyncioTestCase):
                 await meta.wrapper(FakeRequest("foo"))
 
     async def test_async_wrapper_sync(self):
-        mock = MagicMock()
+        mock = MagicMock(return_value=True)
         meta = HandlerMeta(mock)
         self.assertEqual(True, await meta.async_wrapper(FakeRequest(True)))
 
