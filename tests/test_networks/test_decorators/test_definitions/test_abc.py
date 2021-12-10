@@ -6,6 +6,8 @@ from typing import (
 from minos.networks import (
     EnrouteHandleDecorator,
     EnrouteHandleDecoratorKind,
+    HandlerMeta,
+    HandlerProtocol,
     MinosMultipleEnrouteDecoratorKindsException,
     Request,
     Response,
@@ -39,6 +41,17 @@ class TestEnrouteHandleDecorator(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.request = FakeRequest("test")
         self.decorator = _FakeEnrouteHandleDecorator()
+
+    def test_decorate(self):
+        decorated = self.decorator(_fn)
+        self.assertIsInstance(decorated, HandlerProtocol)
+        self.assertEqual(HandlerMeta(_fn, {self.decorator}), decorated.meta)
+
+    def test_iter(self):
+        self.assertEqual(tuple(), tuple(self.decorator))
+
+    def test_hash(self):
+        self.assertEqual(hash(tuple()), hash(self.decorator))
 
     def test_repr(self):
         self.assertEqual("_FakeEnrouteHandleDecorator()", repr(self.decorator))

@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 class EnrouteCheckDecorator:
-    """TODO"""
+    """Enroute Check Decorator class."""
 
     def __init__(
         self,
@@ -48,20 +48,29 @@ class EnrouteCheckDecorator:
         self._checkers = _checkers
         self._handler = _handler
 
-    def __iter__(self) -> Iterable:
-        yield from (
-            self.delay,
-            self.max_attempts,
-        )
+    def __call__(self, func: Checker) -> CheckerProtocol:
+        if iscoroutinefunction(func) and not iscoroutinefunction(self._handler):
+            raise ValueError(f"{self._handler!r} must be a coroutine if {func!r} is a coroutine")
 
-    def __call__(self, meta: Checker) -> CheckerProtocol:
-        if not isinstance(meta, CheckerMeta):
-            meta = getattr(meta, "meta", CheckerMeta(meta, self.max_attempts, self.delay))
-
-        if iscoroutinefunction(meta) and not iscoroutinefunction(self._handler):
-            raise Exception(f"{self._handler!r} must be a coroutine if {meta!r} is a coroutine")
+        meta = getattr(func, "meta", CheckerMeta(func, self.max_attempts, self.delay))
 
         if self._checkers is not None:
             self._checkers.add(meta)
 
         return meta.wrapper
+
+    def __repr__(self):
+        args = ", ".join(map(repr, self))
+        return f"{type(self).__name__}({args})"
+
+    def __eq__(self, other: EnrouteCheckDecorator) -> bool:
+        return isinstance(other, type(self)) and tuple(self) == tuple(other)
+
+    def __hash__(self) -> int:
+        return hash(tuple(self))
+
+    def __iter__(self) -> Iterable:
+        yield from (
+            self.max_attempts,
+            self.delay,
+        )

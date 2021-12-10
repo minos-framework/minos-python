@@ -29,9 +29,8 @@ class EnrouteHandleDecorator(ABC):
     # noinspection PyFinal
     KIND: Final[EnrouteHandleDecoratorKind]
 
-    def __call__(self, meta: Handler) -> HandlerProtocol:
-        if not isinstance(meta, HandlerMeta):
-            meta = getattr(meta, "meta", HandlerMeta(meta))
+    def __call__(self, func: Handler) -> HandlerProtocol:
+        meta = getattr(func, "meta", HandlerMeta(func))
 
         meta.add_decorator(self)
 
