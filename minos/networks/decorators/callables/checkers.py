@@ -16,6 +16,9 @@ from collections.abc import (
 from functools import (
     wraps,
 )
+from inspect import (
+    isawaitable,
+)
 from typing import (
     Optional,
     Protocol,
@@ -57,35 +60,6 @@ class CheckerMeta:
         self.max_attempts = max_attempts
         self.delay = delay
 
-    @cached_property
-    def wrapper(self) -> CheckerWrapper:
-        """TODO
-
-        :return: TODO
-        """
-        if iscoroutinefunction(self.func):
-
-            @wraps(self.func)
-            async def _wrapper(*args, **kwargs) -> bool:
-                r = 0
-                while r < self.max_attempts and not await self.func(*args, **kwargs):
-                    await asyncio.sleep(self.delay)
-                    r += 1
-                return r < self.max_attempts
-
-        else:
-
-            @wraps(self.func)
-            def _wrapper(*args, **kwargs) -> bool:
-                r = 0
-                while r < self.max_attempts and not self.func(*args, **kwargs):
-                    time.sleep(self.delay)
-                    r += 1
-                return r < self.max_attempts
-
-        _wrapper.meta = self
-        return _wrapper
-
     @staticmethod
     async def run_async(metas: set[CheckerMeta], *args, **kwargs) -> None:
         """TODO
@@ -95,19 +69,10 @@ class CheckerMeta:
         :param kwargs: TODO
         :return: TODO
         """
-        fns = list()
-        for meta in metas:
-            if iscoroutinefunction(meta.wrapper):
-                fns.append(meta.wrapper)
-            else:
+        metas = list(metas)
+        futures = [meta.async_wrapper(*args, **kwargs) for meta in metas]
 
-                @wraps(meta.wrapper)
-                async def _wrapper(*ag, **kwg):
-                    return meta.wrapper(*ag, **kwg)
-
-                fns.append(_wrapper)
-
-        for satisfied, meta in zip(await gather(*(coro(*args, **kwargs) for coro in fns)), metas):
+        for satisfied, meta in zip(await gather(*futures), metas):
             if not satisfied:
                 raise NotSatisfiedCheckerException(f"{meta.wrapper!r} is not satisfied.")
 
@@ -121,10 +86,71 @@ class CheckerMeta:
         :return: TODO
         """
         for meta in metas:
-            satisfied = meta.wrapper(*args, **kwargs)
+            satisfied = meta.sync_wrapper(*args, **kwargs)
             if not satisfied:
                 raise NotSatisfiedCheckerException(f"{meta.wrapper!r} is not satisfied.")
         return True
+
+    @property
+    def wrapper(self) -> CheckerWrapper:
+        """TODO
+
+        :return: TODO
+        """
+        if iscoroutinefunction(self.func):
+            return self.async_wrapper
+        else:
+            return self.sync_wrapper
+
+    @cached_property
+    def async_wrapper(self) -> CheckerWrapper:
+        """TODO
+
+        :return: TODO
+        """
+
+        @wraps(self.func)
+        async def _wrapper(*args, **kwargs) -> bool:
+            r = 0
+            while r < self.max_attempts:
+                satisfied = self.func(*args, **kwargs)
+                if isawaitable(satisfied):
+                    satisfied = await satisfied
+                if satisfied:
+                    return True
+
+                await asyncio.sleep(self.delay)
+                r += 1
+
+            return False
+
+        _wrapper.meta = self
+        return _wrapper
+
+    @cached_property
+    def sync_wrapper(self) -> CheckerWrapper:
+        """TODO
+
+        :return: TODO
+        """
+
+        @wraps(self.func)
+        def _wrapper(*args, **kwargs) -> bool:
+            r = 0
+            while r < self.max_attempts:
+                if iscoroutinefunction(self.func):
+                    raise ValueError(f"{self.func!r} cannot be awaitable.")
+                satisfied = self.func(*args, **kwargs)
+                if satisfied:
+                    return True
+
+                time.sleep(self.delay)
+                r += 1
+
+            return False
+
+        _wrapper.meta = self
+        return _wrapper
 
     def __repr__(self):
         args = ", ".join(map(repr, self))
