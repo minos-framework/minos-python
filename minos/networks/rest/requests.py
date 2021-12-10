@@ -6,14 +6,14 @@ import warnings
 from collections import (
     defaultdict,
 )
-from json import (
-    JSONDecodeError,
-)
 from typing import (
     Any,
     Optional,
     Type,
     Union,
+)
+from urllib.parse import (
+    parse_qs,
 )
 from uuid import (
     UUID,
@@ -27,6 +27,7 @@ from cached_property import (
 )
 
 from minos.common import (
+    MinosAvroProtocol,
     MinosImportException,
     Model,
     ModelType,
@@ -115,6 +116,31 @@ class RestRequest(Request):
         if not isinstance(data, list):
             data = [data]
         return data
+
+    async def _raw_form(self) -> list[dict[str, Any]]:
+        # noinspection PyBroadException
+        try:
+            data = await self.raw.json(loads=parse_qs)
+        except Exception:
+            data = dict()
+
+        if not isinstance(data, list):
+            data = [data]
+        return data
+
+    async def _raw_avro(self) -> Any:
+        # noinspection PyBroadException
+        try:
+            return MinosAvroProtocol.decode(await self._raw_bytes())
+        except Exception:
+            return None
+
+    async def _raw_bytes(self) -> bytes:
+        # noinspection PyBroadException
+        try:
+            return await self.raw.read()
+        except Exception:
+            return bytes()
 
     @cached_property
     def url_args(self) -> dict[str, Any]:
