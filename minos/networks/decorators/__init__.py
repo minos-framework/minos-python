@@ -17,15 +17,15 @@ from .callables import (
 )
 from .definitions import (
     BrokerCommandEnrouteDecorator,
-    BrokerEnrouteHandleDecorator,
+    BrokerEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
-    EnrouteCheckDecorator,
-    EnrouteHandleDecorator,
-    EnrouteHandleDecoratorKind,
-    PeriodicEnrouteHandleDecorator,
+    CheckDecorator,
+    EnrouteDecorator,
+    EnrouteDecoratorKind,
+    PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
-    RestEnrouteHandleDecorator,
+    RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )

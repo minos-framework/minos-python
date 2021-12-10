@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     )
 
 
-class EnrouteCheckDecorator:
+class CheckDecorator:
     """Enroute Check Decorator class."""
 
     def __init__(
@@ -63,7 +63,7 @@ class EnrouteCheckDecorator:
         args = ", ".join(map(repr, self))
         return f"{type(self).__name__}({args})"
 
-    def __eq__(self, other: EnrouteCheckDecorator) -> bool:
+    def __eq__(self, other: CheckDecorator) -> bool:
         return isinstance(other, type(self)) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:

@@ -20,13 +20,13 @@ from .callables import (
 )
 from .definitions import (
     BrokerCommandEnrouteDecorator,
-    BrokerEnrouteHandleDecorator,
+    BrokerEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
-    EnrouteHandleDecorator,
+    EnrouteDecorator,
     PeriodicEventEnrouteDecorator,
     RestCommandEnrouteDecorator,
-    RestEnrouteHandleDecorator,
+    RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )
 
@@ -42,7 +42,7 @@ class EnrouteAnalyzer:
         self.decorated = decorated
         self.config = config
 
-    def get_rest_command_query(self) -> dict[str, set[RestEnrouteHandleDecorator]]:
+    def get_rest_command_query(self) -> dict[str, set[RestEnrouteDecorator]]:
         """Returns rest's command and query values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
@@ -50,7 +50,7 @@ class EnrouteAnalyzer:
         # noinspection PyTypeChecker
         return self._get_items({RestCommandEnrouteDecorator, RestQueryEnrouteDecorator})
 
-    def get_broker_command_query_event(self) -> dict[str, set[BrokerEnrouteHandleDecorator]]:
+    def get_broker_command_query_event(self) -> dict[str, set[BrokerEnrouteDecorator]]:
         """Returns broker's command, query and event values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
@@ -60,7 +60,7 @@ class EnrouteAnalyzer:
             {BrokerCommandEnrouteDecorator, BrokerQueryEnrouteDecorator, BrokerEventEnrouteDecorator}
         )
 
-    def get_broker_command_query(self) -> dict[str, set[BrokerEnrouteHandleDecorator]]:
+    def get_broker_command_query(self) -> dict[str, set[BrokerEnrouteDecorator]]:
         """Returns broker's command and query values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
@@ -68,7 +68,7 @@ class EnrouteAnalyzer:
         # noinspection PyTypeChecker
         return self._get_items({BrokerCommandEnrouteDecorator, BrokerQueryEnrouteDecorator})
 
-    def get_broker_event(self) -> dict[str, set[BrokerEnrouteHandleDecorator]]:
+    def get_broker_event(self) -> dict[str, set[BrokerEnrouteDecorator]]:
         """Returns broker's event values.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
@@ -84,7 +84,7 @@ class EnrouteAnalyzer:
         # noinspection PyTypeChecker
         return self._get_items({PeriodicEventEnrouteDecorator})
 
-    def _get_items(self, expected_types: set[Type[EnrouteHandleDecorator]]) -> dict[str, set[EnrouteHandleDecorator]]:
+    def _get_items(self, expected_types: set[Type[EnrouteDecorator]]) -> dict[str, set[EnrouteDecorator]]:
         items = dict()
         for fn, decorators in self.get_all().items():
             decorators = {decorator for decorator in decorators if type(decorator) in expected_types}
@@ -92,7 +92,7 @@ class EnrouteAnalyzer:
                 items[fn] = decorators
         return items
 
-    def get_all(self) -> dict[str, set[EnrouteHandleDecorator]]:
+    def get_all(self) -> dict[str, set[EnrouteDecorator]]:
         """Get all functions decorated with enroute decorators.
 
         :return: A mapping with functions as keys and a sets of decorators as values.
@@ -101,7 +101,7 @@ class EnrouteAnalyzer:
         return fn(config=self.config)
 
     # noinspection PyUnusedLocal
-    def _get_all(self, *args, **kwargs) -> dict[str, set[EnrouteHandleDecorator]]:
+    def _get_all(self, *args, **kwargs) -> dict[str, set[EnrouteDecorator]]:
         result = dict()
         for name, fn in getmembers(self.decorated, predicate=lambda x: ismethod(x) or isfunction(x)):
             if hasattr(fn, "meta") and isinstance(fn.meta, HandlerMeta):

@@ -4,7 +4,7 @@ from enum import (
 )
 
 
-class EnrouteHandleDecoratorKind(Enum):
+class EnrouteDecoratorKind(Enum):
     """Enroute Kind enumerate."""
 
     Command = auto()

@@ -4,9 +4,9 @@ from datetime import (
 )
 
 from minos.networks import (
+    CheckDecorator,
     CheckerMeta,
     CheckerWrapper,
-    EnrouteCheckDecorator,
     Request,
 )
 from tests.utils import (
@@ -32,7 +32,7 @@ class TestEnrouteCheckDecorator(unittest.IsolatedAsyncioTestCase):
         self.request = FakeRequest("test")
         self.max_attempts = 30
         self.delay = 1
-        self.decorator = EnrouteCheckDecorator(self.max_attempts, self.delay)
+        self.decorator = CheckDecorator(self.max_attempts, self.delay)
 
     def test_constructor(self):
         self.assertEqual(self.max_attempts, self.decorator.max_attempts)
@@ -43,7 +43,7 @@ class TestEnrouteCheckDecorator(unittest.IsolatedAsyncioTestCase):
     def test_constructor_extended(self):
         checkers = set()
         handler = FakeService.create_ticket
-        decorator = EnrouteCheckDecorator(self.max_attempts, self.delay, checkers, handler)
+        decorator = CheckDecorator(self.max_attempts, self.delay, checkers, handler)
 
         self.assertEqual(self.max_attempts, decorator.max_attempts)
         self.assertEqual(self.delay, decorator.delay)
@@ -57,17 +57,17 @@ class TestEnrouteCheckDecorator(unittest.IsolatedAsyncioTestCase):
 
     def test_decorate_add_checkers(self):
         checkers = set()
-        decorator = EnrouteCheckDecorator(self.max_attempts, self.delay, _checkers=checkers)
+        decorator = CheckDecorator(self.max_attempts, self.delay, _checkers=checkers)
         decorator(_fn)
         self.assertEqual({CheckerMeta(_fn, self.max_attempts, self.delay)}, checkers)
 
     def test_decorate_raises(self):
-        decorator = EnrouteCheckDecorator(self.max_attempts, self.delay, _handler=FakeService.create_ticket)
+        decorator = CheckDecorator(self.max_attempts, self.delay, _handler=FakeService.create_ticket)
         with self.assertRaises(ValueError):
             decorator(_async_fn)
 
     def test_delay_timedelta(self):
-        decorator = EnrouteCheckDecorator(self.max_attempts, timedelta(seconds=2, milliseconds=500))
+        decorator = CheckDecorator(self.max_attempts, timedelta(seconds=2, milliseconds=500))
         self.assertEqual(2.5, decorator.delay)
 
     def test_iter(self):
@@ -77,16 +77,12 @@ class TestEnrouteCheckDecorator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(hash((self.max_attempts, self.delay)), hash(self.decorator))
 
     def test_eq(self):
-        self.assertEqual(
-            EnrouteCheckDecorator(self.max_attempts, self.delay), EnrouteCheckDecorator(self.max_attempts, self.delay)
-        )
-        self.assertNotEqual(EnrouteCheckDecorator(2, self.delay), EnrouteCheckDecorator(1, self.delay))
-        self.assertNotEqual(
-            EnrouteCheckDecorator(self.max_attempts, 0.5), EnrouteCheckDecorator(self.max_attempts, 0.6)
-        )
+        self.assertEqual(CheckDecorator(self.max_attempts, self.delay), CheckDecorator(self.max_attempts, self.delay))
+        self.assertNotEqual(CheckDecorator(2, self.delay), CheckDecorator(1, self.delay))
+        self.assertNotEqual(CheckDecorator(self.max_attempts, 0.5), CheckDecorator(self.max_attempts, 0.6))
 
     def test_repr(self):
-        self.assertEqual(f"EnrouteCheckDecorator({self.max_attempts!r}, {self.delay!r})", repr(self.decorator))
+        self.assertEqual(f"CheckDecorator({self.max_attempts!r}, {self.delay!r})", repr(self.decorator))
 
 
 if __name__ == "__main__":

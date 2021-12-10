@@ -1,24 +1,24 @@
 from .abc import (
-    EnrouteHandleDecorator,
+    EnrouteDecorator,
 )
 from .broker import (
     BrokerCommandEnrouteDecorator,
-    BrokerEnrouteHandleDecorator,
+    BrokerEnrouteDecorator,
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
 )
 from .checkers import (
-    EnrouteCheckDecorator,
+    CheckDecorator,
 )
 from .kinds import (
-    EnrouteHandleDecoratorKind,
+    EnrouteDecoratorKind,
 )
 from .periodic import (
-    PeriodicEnrouteHandleDecorator,
+    PeriodicEnrouteDecorator,
     PeriodicEventEnrouteDecorator,
 )
 from .rest import (
     RestCommandEnrouteDecorator,
-    RestEnrouteHandleDecorator,
+    RestEnrouteDecorator,
     RestQueryEnrouteDecorator,
 )

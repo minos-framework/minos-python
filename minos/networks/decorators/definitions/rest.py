@@ -7,14 +7,14 @@ from typing import (
 )
 
 from .abc import (
-    EnrouteHandleDecorator,
+    EnrouteDecorator,
 )
 from .kinds import (
-    EnrouteHandleDecoratorKind,
+    EnrouteDecoratorKind,
 )
 
 
-class RestEnrouteHandleDecorator(EnrouteHandleDecorator, ABC):
+class RestEnrouteDecorator(EnrouteDecorator, ABC):
     """Rest Enroute class"""
 
     def __init__(self, url: str, method: str):
@@ -28,13 +28,13 @@ class RestEnrouteHandleDecorator(EnrouteHandleDecorator, ABC):
         )
 
 
-class RestCommandEnrouteDecorator(RestEnrouteHandleDecorator):
+class RestCommandEnrouteDecorator(RestEnrouteDecorator):
     """Rest Command Enroute class"""
 
-    KIND: Final[EnrouteHandleDecoratorKind] = EnrouteHandleDecoratorKind.Command
+    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Command
 
 
-class RestQueryEnrouteDecorator(RestEnrouteHandleDecorator):
+class RestQueryEnrouteDecorator(RestEnrouteDecorator):
     """Rest Query Enroute class"""
 
-    KIND: Final[EnrouteHandleDecoratorKind] = EnrouteHandleDecoratorKind.Query
+    KIND: Final[EnrouteDecoratorKind] = EnrouteDecoratorKind.Query

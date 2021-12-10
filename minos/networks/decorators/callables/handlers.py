@@ -42,8 +42,8 @@ from .checkers import (
 
 if TYPE_CHECKING:
     from ..definitions import (
-        EnrouteCheckDecorator,
-        EnrouteHandleDecorator,
+        CheckDecorator,
+        EnrouteDecorator,
     )
 
 Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
@@ -54,7 +54,7 @@ class HandlerWrapper(Protocol):
     """TODO"""
 
     meta: HandlerMeta
-    check: Type[EnrouteCheckDecorator]
+    check: Type[CheckDecorator]
     __call__: Handler
 
 
@@ -62,13 +62,13 @@ class HandlerMeta:
     """TODO"""
 
     func: Handler
-    decorators: set[EnrouteHandleDecorator]
+    decorators: set[EnrouteDecorator]
     checkers: set[CheckerMeta]
 
     def __init__(
         self,
         func: Handler,
-        decorators: Optional[set[EnrouteHandleDecorator]] = None,
+        decorators: Optional[set[EnrouteDecorator]] = None,
         checkers: Optional[set[CheckerMeta]] = None,
     ):
         if decorators is None:
@@ -112,7 +112,7 @@ class HandlerMeta:
 
         return _wrapper
 
-    def add_decorator(self, decorator: EnrouteHandleDecorator) -> None:
+    def add_decorator(self, decorator: EnrouteDecorator) -> None:
         """TODO
 
         :param decorator: TODO
@@ -126,17 +126,17 @@ class HandlerMeta:
         self.decorators.add(decorator)
 
     @cached_property
-    def check(self) -> Type[EnrouteCheckDecorator]:
+    def check(self) -> Type[CheckDecorator]:
         """TODO
 
         :return: TODO
         """
         from ..definitions import (
-            EnrouteCheckDecorator,
+            CheckDecorator,
         )
 
         # noinspection PyTypeChecker
-        return partial(EnrouteCheckDecorator, _checkers=self.checkers, _handler=self.func)
+        return partial(CheckDecorator, _checkers=self.checkers, _handler=self.func)
 
     def __repr__(self):
         args = ", ".join(map(repr, self))

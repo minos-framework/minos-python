@@ -4,8 +4,8 @@ from typing import (
 )
 
 from minos.networks import (
-    EnrouteHandleDecorator,
-    EnrouteHandleDecoratorKind,
+    EnrouteDecorator,
+    EnrouteDecoratorKind,
     HandlerMeta,
     HandlerWrapper,
     MinosMultipleEnrouteDecoratorKindsException,
@@ -30,8 +30,8 @@ async def _async_fn(request: Request) -> Response:
     return Response(f"Async Fn: {await request.content()}")
 
 
-class _FakeEnrouteHandleDecorator(EnrouteHandleDecorator):
-    KIND = EnrouteHandleDecoratorKind.Command
+class _FakeEnrouteDecorator(EnrouteDecorator):
+    KIND = EnrouteDecoratorKind.Command
 
     def __iter__(self) -> Iterable:
         yield from []
@@ -40,7 +40,7 @@ class _FakeEnrouteHandleDecorator(EnrouteHandleDecorator):
 class TestEnrouteHandleDecorator(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.request = FakeRequest("test")
-        self.decorator = _FakeEnrouteHandleDecorator()
+        self.decorator = _FakeEnrouteDecorator()
 
     def test_decorate(self):
         decorated = self.decorator(_fn)
@@ -54,7 +54,7 @@ class TestEnrouteHandleDecorator(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(hash(tuple()), hash(self.decorator))
 
     def test_repr(self):
-        self.assertEqual("_FakeEnrouteHandleDecorator()", repr(self.decorator))
+        self.assertEqual("_FakeEnrouteDecorator()", repr(self.decorator))
 
     def test_method_call(self):
         instance = FakeService()

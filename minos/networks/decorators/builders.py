@@ -34,11 +34,11 @@ from .analyzers import (
     EnrouteAnalyzer,
 )
 from .definitions import (
-    BrokerEnrouteHandleDecorator,
-    EnrouteHandleDecorator,
-    EnrouteHandleDecoratorKind,
-    PeriodicEnrouteHandleDecorator,
-    RestEnrouteHandleDecorator,
+    BrokerEnrouteDecorator,
+    EnrouteDecorator,
+    EnrouteDecoratorKind,
+    PeriodicEnrouteDecorator,
+    RestEnrouteDecorator,
 )
 
 Handler = Callable[[Request], Awaitable[Optional[Response]]]
@@ -62,7 +62,7 @@ class EnrouteBuilder:
         self.classes = classes
         self.middleware = middleware
 
-    def get_rest_command_query(self, **kwargs) -> dict[RestEnrouteHandleDecorator, Handler]:
+    def get_rest_command_query(self, **kwargs) -> dict[RestEnrouteDecorator, Handler]:
         """Get the rest handlers for commands and queries.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
@@ -70,7 +70,7 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build("get_rest_command_query", **kwargs)
 
-    def get_broker_command_query_event(self, **kwargs) -> dict[BrokerEnrouteHandleDecorator, Handler]:
+    def get_broker_command_query_event(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
         """Get the broker handlers for commands, queries and events.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
@@ -78,7 +78,7 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build("get_broker_command_query_event", **kwargs)
 
-    def get_broker_command_query(self, **kwargs) -> dict[BrokerEnrouteHandleDecorator, Handler]:
+    def get_broker_command_query(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
         """Get the broker handlers for commands and queries.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
@@ -86,7 +86,7 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build("get_broker_command_query", **kwargs)
 
-    def get_broker_event(self, **kwargs) -> dict[BrokerEnrouteHandleDecorator, Handler]:
+    def get_broker_event(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
         """Get the broker handlers for events.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
@@ -94,7 +94,7 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build("get_broker_event", **kwargs)
 
-    def get_periodic_event(self, **kwargs) -> dict[PeriodicEnrouteHandleDecorator, Handler]:
+    def get_periodic_event(self, **kwargs) -> dict[PeriodicEnrouteDecorator, Handler]:
         """Get the periodic handlers for events.
 
         :return: A dictionary with decorator classes as keys and callable handlers as values.
@@ -102,12 +102,12 @@ class EnrouteBuilder:
         # noinspection PyTypeChecker
         return self._build("get_periodic_event", **kwargs)
 
-    def _build(self, method_name: str, **kwargs) -> dict[EnrouteHandleDecorator, Handler]:
-        def _flatten(decorator: EnrouteHandleDecorator, fns: set[Handler]) -> Handler:
+    def _build(self, method_name: str, **kwargs) -> dict[EnrouteDecorator, Handler]:
+        def _flatten(decorator: EnrouteDecorator, fns: set[Handler]) -> Handler:
             if len(fns) == 1:
                 return next(iter(fns))
 
-            if decorator.KIND != EnrouteHandleDecoratorKind.Event:
+            if decorator.KIND != EnrouteDecoratorKind.Event:
                 raise MinosRedefinedEnrouteDecoratorException(f"{decorator!r} can be used only once.")
 
             async def _wrapper(*ag, **kw):
@@ -120,14 +120,14 @@ class EnrouteBuilder:
             for decorator, fns in self._build_all_classes(method_name, **kwargs).items()
         }
 
-    def _build_all_classes(self, method_name: str, **kwargs) -> dict[EnrouteHandleDecorator, set[Handler]]:
+    def _build_all_classes(self, method_name: str, **kwargs) -> dict[EnrouteDecorator, set[Handler]]:
         decomposed_handlers = defaultdict(set)
         for class_ in self.classes:
             self._build_one_class(class_, method_name, decomposed_handlers, **kwargs)
         return decomposed_handlers
 
     def _build_one_class(
-        self, class_: type, method_name: str, ans: dict[EnrouteHandleDecorator, set[Handler]], **kwargs
+        self, class_: type, method_name: str, ans: dict[EnrouteDecorator, set[Handler]], **kwargs
     ) -> None:
         analyzer = EnrouteAnalyzer(class_, **kwargs)
         mapping = getattr(analyzer, method_name)()

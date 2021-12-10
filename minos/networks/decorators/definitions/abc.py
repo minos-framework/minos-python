@@ -19,15 +19,15 @@ from ..callables import (
     HandlerWrapper,
 )
 from .kinds import (
-    EnrouteHandleDecoratorKind,
+    EnrouteDecoratorKind,
 )
 
 
-class EnrouteHandleDecorator(ABC):
+class EnrouteDecorator(ABC):
     """Base Decorator class."""
 
     # noinspection PyFinal
-    KIND: Final[EnrouteHandleDecoratorKind]
+    KIND: Final[EnrouteDecoratorKind]
 
     def __call__(self, func: Handler) -> HandlerWrapper:
         meta = getattr(func, "meta", HandlerMeta(func))
@@ -40,7 +40,7 @@ class EnrouteHandleDecorator(ABC):
         args = ", ".join(map(repr, self))
         return f"{type(self).__name__}({args})"
 
-    def __eq__(self, other: EnrouteHandleDecorator) -> bool:
+    def __eq__(self, other: EnrouteDecorator) -> bool:
         return type(self) == type(other) and tuple(self) == tuple(other)
 
     def __hash__(self) -> int:
