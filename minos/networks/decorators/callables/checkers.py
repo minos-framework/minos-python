@@ -133,13 +133,13 @@ class CheckerMeta:
 
         :return: TODO
         """
+        if iscoroutinefunction(self.func):
+            raise ValueError(f"{self.func!r} cannot be awaitable.")
 
         @wraps(self.func)
         def _wrapper(*args, **kwargs) -> bool:
             r = 0
             while r < self.max_attempts:
-                if iscoroutinefunction(self.func):
-                    raise ValueError(f"{self.func!r} cannot be awaitable.")
                 satisfied = self.func(*args, **kwargs)
                 if satisfied:
                     return True

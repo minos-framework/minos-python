@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import (
+    AsyncMock,
+    MagicMock,
     call,
     patch,
 )
@@ -15,12 +17,12 @@ from minos.networks import (
     Response,
     ResponseException,
 )
-# noinspection PyUnusedLocal
 from tests.utils import (
     FakeRequest,
 )
 
 
+# noinspection PyUnusedLocal
 def _fn(request: Request) -> Response:
     """For testing purposes."""
     return Response("Fn")
@@ -77,6 +79,17 @@ class TestHandlerMeta(unittest.IsolatedAsyncioTestCase):
         with patch("minos.networks.CheckerMeta.run_sync", side_effect=NotSatisfiedCheckerException("")):
             with self.assertRaises(ResponseException):
                 await meta.wrapper(FakeRequest("foo"))
+
+    async def test_async_wrapper_sync(self):
+        mock = MagicMock()
+        meta = HandlerMeta(mock)
+        self.assertEqual(True, await meta.async_wrapper(FakeRequest(True)))
+
+    def test_sync_wrapper_async_raises(self):
+        mock = AsyncMock()
+        meta = HandlerMeta(mock)
+        with self.assertRaises(ValueError):
+            meta.sync_wrapper(FakeRequest(True))
 
     def test_add_decorator(self):
         decorator = BrokerCommandEnrouteDecorator("CreateFoo")

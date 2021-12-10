@@ -14,6 +14,9 @@ from functools import (
     partial,
     wraps,
 )
+from inspect import (
+    isawaitable,
+)
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -79,33 +82,59 @@ class HandlerMeta:
         self.decorators = decorators
         self.checkers = checkers
 
-    @cached_property
+    @property
     def wrapper(self) -> HandlerWrapper:
         """Get the ``HandlerWrapper`` instance.
 
         :return: A ``HandlerWrapper`` instance.
         """
         if iscoroutinefunction(self.func):
-
-            @wraps(self.func)
-            async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                try:
-                    await CheckerMeta.run_async(self.checkers, *args, **kwargs)
-                except NotSatisfiedCheckerException as exc:
-                    raise ResponseException(f"There was an exception during check step: {exc}")
-
-                return await self.func(*args, **kwargs)
-
+            return self.async_wrapper
         else:
+            return self.sync_wrapper
 
-            @wraps(self.func)
-            def _wrapper(*args, **kwargs) -> Optional[Response]:
-                try:
-                    CheckerMeta.run_sync(self.checkers, *args, **kwargs)
-                except NotSatisfiedCheckerException as exc:
-                    raise ResponseException(f"There was an exception during check step: {exc}")
+    @cached_property
+    def async_wrapper(self) -> HandlerWrapper:
+        """Get the async ``HandlerWrapper`` instance.
 
-                return self.func(*args, **kwargs)
+        :return: A ``HandlerWrapper`` instance.
+        """
+
+        @wraps(self.func)
+        async def _wrapper(*args, **kwargs) -> Optional[Response]:
+            try:
+                await CheckerMeta.run_async(self.checkers, *args, **kwargs)
+            except NotSatisfiedCheckerException as exc:
+                raise ResponseException(f"There was an exception during check step: {exc}")
+
+            response = self.func(*args, **kwargs)
+            if isawaitable(response):
+                response = await response
+            return response
+
+        _wrapper.meta = self
+        _wrapper.check = self.check
+
+        return _wrapper
+
+    @cached_property
+    def sync_wrapper(self) -> HandlerWrapper:
+        """Get the sync ``HandlerWrapper`` instance.
+
+        :return: A ``HandlerWrapper`` instance.
+        """
+
+        if iscoroutinefunction(self.func):
+            raise ValueError(f"{self.func!r} cannot be awaitable.")
+
+        @wraps(self.func)
+        def _wrapper(*args, **kwargs) -> Optional[Response]:
+            try:
+                CheckerMeta.run_sync(self.checkers, *args, **kwargs)
+            except NotSatisfiedCheckerException as exc:
+                raise ResponseException(f"There was an exception during check step: {exc}")
+
+            return self.func(*args, **kwargs)
 
         _wrapper.meta = self
         _wrapper.check = self.check
