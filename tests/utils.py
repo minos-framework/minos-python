@@ -116,6 +116,11 @@ class FakeService:
         """For testing purposes."""
         return
 
+    @classmethod
+    @delete_ticket.__func__.check()
+    def check_classmethod(cls, request: Request) -> bool:
+        return True
+
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
@@ -132,6 +137,11 @@ class FakeService:
     async def ticket_added(request: Request) -> Response:
         """For testing purposes."""
         return Response(": ".join(("Ticket Added", await request.content(),)))
+
+    @staticmethod
+    @ticket_added.__func__.check()
+    def check_static(request: Request) -> bool:
+        return True
 
     @enroute.periodic.event("@daily")
     async def send_newsletter(self, request: Request):
