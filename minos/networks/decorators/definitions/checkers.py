@@ -20,7 +20,7 @@ from typing import (
 from ..callables import (
     Checker,
     CheckerMeta,
-    CheckerProtocol,
+    CheckerWrapper,
 )
 
 if TYPE_CHECKING:
@@ -48,7 +48,7 @@ class EnrouteCheckDecorator:
         self._checkers = _checkers
         self._handler = _handler
 
-    def __call__(self, func: Checker) -> CheckerProtocol:
+    def __call__(self, func: Checker) -> CheckerWrapper:
         if iscoroutinefunction(func) and not iscoroutinefunction(self._handler):
             raise ValueError(f"{self._handler!r} must be a coroutine if {func!r} is a coroutine")
 

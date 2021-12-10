@@ -40,7 +40,7 @@ Checker = Callable[[Request], Union[Optional[bool], Awaitable[Optional[bool]]]]
 
 
 @runtime_checkable
-class CheckerProtocol(Protocol):
+class CheckerWrapper(Protocol):
     """TODO"""
 
     meta: CheckerMeta
@@ -60,7 +60,7 @@ class CheckerMeta:
         self.delay = delay
 
     @cached_property
-    def wrapper(self) -> CheckerProtocol:
+    def wrapper(self) -> CheckerWrapper:
         """TODO
 
         :return: TODO

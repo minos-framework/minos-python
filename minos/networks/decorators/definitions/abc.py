@@ -16,7 +16,7 @@ from typing import (
 from ..callables import (
     Handler,
     HandlerMeta,
-    HandlerProtocol,
+    HandlerWrapper,
 )
 from .kinds import (
     EnrouteHandleDecoratorKind,
@@ -29,7 +29,7 @@ class EnrouteHandleDecorator(ABC):
     # noinspection PyFinal
     KIND: Final[EnrouteHandleDecoratorKind]
 
-    def __call__(self, func: Handler) -> HandlerProtocol:
+    def __call__(self, func: Handler) -> HandlerWrapper:
         meta = getattr(func, "meta", HandlerMeta(func))
 
         meta.add_decorator(self)

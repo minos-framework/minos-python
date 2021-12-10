@@ -5,7 +5,7 @@ from datetime import (
 
 from minos.networks import (
     CheckerMeta,
-    CheckerProtocol,
+    CheckerWrapper,
     EnrouteCheckDecorator,
     Request,
 )
@@ -52,7 +52,7 @@ class TestEnrouteCheckDecorator(unittest.IsolatedAsyncioTestCase):
 
     def test_decorate(self):
         decorated = self.decorator(_fn)
-        self.assertIsInstance(decorated, CheckerProtocol)
+        self.assertIsInstance(decorated, CheckerWrapper)
         self.assertEqual(CheckerMeta(_fn, self.max_attempts, self.delay), decorated.meta)
 
     def test_decorate_add_checkers(self):

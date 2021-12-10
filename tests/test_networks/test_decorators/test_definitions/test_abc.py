@@ -7,7 +7,7 @@ from minos.networks import (
     EnrouteHandleDecorator,
     EnrouteHandleDecoratorKind,
     HandlerMeta,
-    HandlerProtocol,
+    HandlerWrapper,
     MinosMultipleEnrouteDecoratorKindsException,
     Request,
     Response,
@@ -44,7 +44,7 @@ class TestEnrouteHandleDecorator(unittest.IsolatedAsyncioTestCase):
 
     def test_decorate(self):
         decorated = self.decorator(_fn)
-        self.assertIsInstance(decorated, HandlerProtocol)
+        self.assertIsInstance(decorated, HandlerWrapper)
         self.assertEqual(HandlerMeta(_fn, {self.decorator}), decorated.meta)
 
     def test_iter(self):

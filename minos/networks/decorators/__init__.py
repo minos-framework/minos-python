@@ -10,10 +10,10 @@ from .builders import (
 from .callables import (
     Checker,
     CheckerMeta,
-    CheckerProtocol,
+    CheckerWrapper,
     Handler,
     HandlerMeta,
-    HandlerProtocol,
+    HandlerWrapper,
 )
 from .definitions import (
     BrokerCommandEnrouteDecorator,

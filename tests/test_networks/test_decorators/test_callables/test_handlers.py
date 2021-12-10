@@ -8,7 +8,7 @@ from minos.networks import (
     BrokerCommandEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     HandlerMeta,
-    HandlerProtocol,
+    HandlerWrapper,
     MinosMultipleEnrouteDecoratorKindsException,
     NotSatisfiedCheckerException,
     Request,
@@ -43,14 +43,14 @@ class TestHandlerMeta(unittest.IsolatedAsyncioTestCase):
     async def test_wrapper_async(self):
         meta = HandlerMeta(_async_fn)
         wrapper = meta.wrapper
-        self.assertIsInstance(wrapper, HandlerProtocol)
+        self.assertIsInstance(wrapper, HandlerWrapper)
         self.assertEqual(meta, wrapper.meta)
         self.assertEqual(meta.check, wrapper.check)
 
     def test_wrapper_sync(self):
         meta = HandlerMeta(_fn)
         wrapper = meta.wrapper
-        self.assertIsInstance(wrapper, HandlerProtocol)
+        self.assertIsInstance(wrapper, HandlerWrapper)
         self.assertEqual(meta, wrapper.meta)
         self.assertEqual(meta.check, wrapper.check)
 

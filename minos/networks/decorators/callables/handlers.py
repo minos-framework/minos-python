@@ -50,7 +50,7 @@ Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Respo
 
 
 @runtime_checkable
-class HandlerProtocol(Protocol):
+class HandlerWrapper(Protocol):
     """TODO"""
 
     meta: HandlerMeta
@@ -80,7 +80,7 @@ class HandlerMeta:
         self.checkers = checkers
 
     @cached_property
-    def wrapper(self) -> HandlerProtocol:
+    def wrapper(self) -> HandlerWrapper:
         """TODO
 
         :return: TODO

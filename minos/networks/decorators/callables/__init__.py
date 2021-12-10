@@ -1,10 +1,10 @@
 from .checkers import (
     Checker,
     CheckerMeta,
-    CheckerProtocol,
+    CheckerWrapper,
 )
 from .handlers import (
     Handler,
     HandlerMeta,
-    HandlerProtocol,
+    HandlerWrapper,
 )
