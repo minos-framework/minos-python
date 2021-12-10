@@ -12,8 +12,6 @@ from datetime import (
     timedelta,
 )
 from typing import (
-    TYPE_CHECKING,
-    Optional,
     Union,
 )
 
@@ -21,23 +19,16 @@ from ..callables import (
     Checker,
     CheckerMeta,
     CheckerWrapper,
+    Handler,
+    HandlerMeta,
 )
-
-if TYPE_CHECKING:
-    from .abc import (
-        Handler,
-    )
 
 
 class CheckDecorator:
     """Enroute Check Decorator class."""
 
     def __init__(
-        self,
-        max_attempts: int = 10,
-        delay: Union[float, timedelta] = 0.1,
-        _checkers: Optional[set[CheckerMeta]] = None,
-        _handler: Optional[Handler] = None,
+        self, handler_meta: HandlerMeta, max_attempts: int = 10, delay: Union[float, timedelta] = 0.1,
     ):
         if isinstance(delay, timedelta):
             delay = delay.total_seconds()
@@ -45,22 +36,28 @@ class CheckDecorator:
         self.max_attempts = max_attempts
         self.delay = delay
 
-        self._checkers = _checkers
-        self._handler = _handler
+        self.handler_meta = handler_meta
 
     def __call__(self, func: Union[CheckerWrapper, Checker]) -> CheckerWrapper:
         if isinstance(func, CheckerWrapper):
             func = func.meta.func
 
-        if iscoroutinefunction(func) and not iscoroutinefunction(self._handler):
-            raise ValueError(f"{self._handler!r} must be a coroutine if {func!r} is a coroutine")
+        if iscoroutinefunction(func) and not iscoroutinefunction(self._handler_func):
+            raise ValueError(f"{self._handler_func!r} must be a coroutine if {func!r} is a coroutine")
 
         meta = CheckerMeta(func, self.max_attempts, self.delay)
 
-        if self._checkers is not None:
-            self._checkers.add(meta)
+        self._handler_checkers.add(meta)
 
         return meta.wrapper
+
+    @property
+    def _handler_func(self) -> Handler:
+        return self.handler_meta.func
+
+    @property
+    def _handler_checkers(self) -> set[CheckerMeta]:
+        return self.handler_meta.checkers
 
     def __repr__(self):
         args = ", ".join(map(repr, self))
@@ -74,6 +71,7 @@ class CheckDecorator:
 
     def __iter__(self) -> Iterable:
         yield from (
+            self.handler_meta,
             self.max_attempts,
             self.delay,
         )

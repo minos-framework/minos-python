@@ -165,7 +165,7 @@ class HandlerMeta:
         )
 
         # noinspection PyTypeChecker
-        return partial(CheckDecorator, _checkers=self.checkers, _handler=self.func)
+        return partial(CheckDecorator, handler_meta=self)
 
     def __repr__(self):
         args = ", ".join(map(repr, self))
