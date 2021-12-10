@@ -85,6 +85,11 @@ class RestRequest(Request):
         # noinspection PyTypeChecker
         return self.raw.headers
 
+    @property
+    def content_type(self) -> str:
+        """TODO"""
+        return self.raw.content_type
+
     async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
         """Get the request content.
 
@@ -101,9 +106,10 @@ class RestRequest(Request):
         return data
 
     async def _raw_json(self) -> list[dict[str, Any]]:
+        # noinspection PyBroadException
         try:
             data = await self.raw.json()
-        except JSONDecodeError:
+        except Exception:
             data = dict()
 
         if not isinstance(data, list):

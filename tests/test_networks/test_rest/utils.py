@@ -1,29 +1,31 @@
-from json import (
-    JSONDecodeError,
+from typing import (
+    Any,
+    Optional,
+    Union,
+)
+from unittest.mock import (
+    AsyncMock,
 )
 from uuid import (
+    UUID,
     uuid4,
 )
 
-from yarl import (
-    URL,
+from aiohttp import (
+    test_utils,
+    web,
 )
 
 
-class MockedRequest:
-    def __init__(self, data=None, user=None):
-        if user is None:
-            user = uuid4()
-        self.data = data
-        self.remote = "127.0.0.1"
-        self.rel_url = URL("localhost")
-        self.match_info = dict()
-        self.headers = {"User": str(user), "something": "123"}
+def mocked_request(data: Any = None, user: Optional[Union[str, UUID]] = None) -> web.Request:
+    """For testing purposes"""
+    if user is None:
+        user = uuid4()
 
-    def __repr__(self):
-        return "repr"
+    response = test_utils.make_mocked_request("POST", "localhost", headers={"User": str(user), "something": "123"})
 
-    async def json(self):
-        if self.data is None:
-            raise JSONDecodeError("", "", 1)
-        return self.data
+    if data is not None:
+        mock = AsyncMock(return_value=data)
+        response.json = mock
+
+    return response
