@@ -125,7 +125,7 @@ class HandlerMeta:
             )
         self.decorators.add(decorator)
 
-    @property
+    @cached_property
     def check(self) -> Type[EnrouteCheckDecorator]:
         """TODO
 
