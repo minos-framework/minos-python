@@ -47,9 +47,13 @@ class CheckerProtocol(Protocol):
 class CheckerMeta:
     """TODO"""
 
-    def __init__(self, base: Checker, attempts: int, delay: float):
-        self.base = base
-        self.max_attempts = attempts
+    func: Checker
+    max_attempts: int
+    delay: float
+
+    def __init__(self, func: Checker, max_attempts: int, delay: float):
+        self.func = func
+        self.max_attempts = max_attempts
         self.delay = delay
 
     @cached_property
@@ -58,22 +62,22 @@ class CheckerMeta:
 
         :return: TODO
         """
-        if iscoroutinefunction(self.base):
+        if iscoroutinefunction(self.func):
 
-            @wraps(self.base)
+            @wraps(self.func)
             async def _wrapper(*args, **kwargs) -> bool:
                 r = 0
-                while r < self.max_attempts and not await self.base(*args, **kwargs):
+                while r < self.max_attempts and not await self.func(*args, **kwargs):
                     await asyncio.sleep(self.delay)
                     r += 1
                 return r < self.max_attempts
 
         else:
 
-            @wraps(self.base)
+            @wraps(self.func)
             def _wrapper(*args, **kwargs) -> bool:
                 r = 0
-                while r <= self.max_attempts and not self.base(*args, **kwargs):
+                while r <= self.max_attempts and not self.func(*args, **kwargs):
                     time.sleep(self.delay)
                     r += 1
                 return r <= self.max_attempts

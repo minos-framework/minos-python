@@ -58,13 +58,13 @@ class HandlerProtocol(Protocol):
 class HandlerMeta:
     """TODO"""
 
-    base: Handler
+    func: Handler
     decorators: set[EnrouteHandleDecorator]
     checkers: set[CheckerMeta]
 
     def __init__(
         self,
-        base: Handler,
+        func: Handler,
         decorators: Optional[set[EnrouteHandleDecorator]] = None,
         checkers: Optional[set[CheckerMeta]] = None,
     ):
@@ -72,7 +72,7 @@ class HandlerMeta:
             decorators = set()
         if checkers is None:
             checkers = set()
-        self.base = base
+        self.func = func
         self.decorators = decorators
         self.checkers = checkers
 
@@ -82,27 +82,27 @@ class HandlerMeta:
 
         :return: TODO
         """
-        if iscoroutinefunction(self.base):
+        if iscoroutinefunction(self.func):
 
-            @wraps(self.base)
+            @wraps(self.func)
             async def _wrapper(*args, **kwargs) -> Optional[Response]:
                 try:
                     await CheckerMeta.run_async(self.checkers, *args, **kwargs)
                 except NotSatisfiedCheckerException as exc:
                     raise ResponseException(f"There was an exception during check step: {exc}")
 
-                return await self.base(*args, **kwargs)
+                return await self.func(*args, **kwargs)
 
         else:
 
-            @wraps(self.base)
+            @wraps(self.func)
             def _wrapper(*args, **kwargs) -> Optional[Response]:
                 try:
                     CheckerMeta.run_sync(self.checkers, *args, **kwargs)
                 except NotSatisfiedCheckerException as exc:
                     raise ResponseException(f"There was an exception during check step: {exc}")
 
-                return self.base(*args, **kwargs)
+                return self.func(*args, **kwargs)
 
         _wrapper.meta = self
         _wrapper.check = self.check
@@ -133,4 +133,4 @@ class HandlerMeta:
         )
 
         # noinspection PyTypeChecker
-        return partial(EnrouteCheckDecorator, _checkers=self.checkers, _base=self.base)
+        return partial(EnrouteCheckDecorator, _checkers=self.checkers, _handler=self.func)

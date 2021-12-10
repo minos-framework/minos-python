@@ -37,7 +37,7 @@ class EnrouteCheckDecorator:
         max_attempts: int = 10,
         delay: Union[float, timedelta] = 0.1,
         _checkers: Optional[set[CheckerMeta]] = None,
-        _base: Optional[Handler] = None,
+        _handler: Optional[Handler] = None,
     ):
         if isinstance(delay, timedelta):
             delay = delay.total_seconds()
@@ -46,7 +46,7 @@ class EnrouteCheckDecorator:
         self.delay = delay
 
         self._checkers = _checkers
-        self._base = _base
+        self._handler = _handler
 
     def __iter__(self) -> Iterable:
         yield from (
@@ -58,8 +58,8 @@ class EnrouteCheckDecorator:
         if not isinstance(meta, CheckerMeta):
             meta = getattr(meta, "meta", CheckerMeta(meta, self.max_attempts, self.delay))
 
-        if iscoroutinefunction(meta) and not iscoroutinefunction(self._base):
-            raise Exception(f"{self._base!r} must be a coroutine if {meta!r} is a coroutine")
+        if iscoroutinefunction(meta) and not iscoroutinefunction(self._handler):
+            raise Exception(f"{self._handler!r} must be a coroutine if {meta!r} is a coroutine")
 
         if self._checkers is not None:
             self._checkers.add(meta)
