@@ -11,6 +11,7 @@ from collections.abc import (
 )
 from typing import (
     Final,
+    Union,
 )
 
 from ..callables import (
@@ -29,8 +30,11 @@ class EnrouteDecorator(ABC):
     # noinspection PyFinal
     KIND: Final[EnrouteDecoratorKind]
 
-    def __call__(self, func: Handler) -> HandlerWrapper:
-        meta = getattr(func, "meta", HandlerMeta(func))
+    def __call__(self, func: Union[Handler, HandlerWrapper]) -> HandlerWrapper:
+        if isinstance(func, HandlerWrapper):
+            meta = func.meta
+        else:
+            meta = HandlerMeta(func)
 
         meta.add_decorator(self)
 

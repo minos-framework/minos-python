@@ -100,11 +100,11 @@ class FakeService:
         """For testing purposes."""
         return Response("Create Ticket")
 
-    @create_ticket.check()
+    @create_ticket.check(max_attempts=1, delay=0.5)
     def check_create_ticket_1(self, request: Request) -> bool:
         return True
 
-    @create_ticket.check(max_attempts=3, delay=timedelta(seconds=1))
+    @create_ticket.check(delay=timedelta(seconds=1))
     def check_create_ticket_2(self, request: Request) -> bool:
         return True
 
@@ -121,6 +121,11 @@ class FakeService:
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
         return Response(": ".join(("Get Tickets", await request.content(),)))
+
+    @create_ticket.check()
+    @get_tickets.check()
+    def check_multiple(self, request: Request) -> bool:
+        return True
 
     @staticmethod
     @enroute.broker.event(topic="TicketAdded")

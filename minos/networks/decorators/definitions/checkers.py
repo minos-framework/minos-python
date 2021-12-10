@@ -48,11 +48,14 @@ class CheckDecorator:
         self._checkers = _checkers
         self._handler = _handler
 
-    def __call__(self, func: Checker) -> CheckerWrapper:
+    def __call__(self, func: Union[CheckerWrapper, Checker]) -> CheckerWrapper:
+        if isinstance(func, CheckerWrapper):
+            func = func.meta.func
+
         if iscoroutinefunction(func) and not iscoroutinefunction(self._handler):
             raise ValueError(f"{self._handler!r} must be a coroutine if {func!r} is a coroutine")
 
-        meta = getattr(func, "meta", CheckerMeta(func, self.max_attempts, self.delay))
+        meta = CheckerMeta(func, self.max_attempts, self.delay)
 
         if self._checkers is not None:
             self._checkers.add(meta)
