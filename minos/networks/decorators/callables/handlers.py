@@ -51,7 +51,7 @@ Handler = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Respo
 
 @runtime_checkable
 class HandlerWrapper(Protocol):
-    """TODO"""
+    """Handler Wrapper class."""
 
     meta: HandlerMeta
     check: Type[CheckDecorator]
@@ -59,7 +59,7 @@ class HandlerWrapper(Protocol):
 
 
 class HandlerMeta:
-    """TODO"""
+    """Handler Meta class."""
 
     func: Handler
     decorators: set[EnrouteDecorator]
@@ -81,9 +81,9 @@ class HandlerMeta:
 
     @cached_property
     def wrapper(self) -> HandlerWrapper:
-        """TODO
+        """Get the ``HandlerWrapper`` instance.
 
-        :return: TODO
+        :return: A ``HandlerWrapper`` instance.
         """
         if iscoroutinefunction(self.func):
 
@@ -113,10 +113,10 @@ class HandlerMeta:
         return _wrapper
 
     def add_decorator(self, decorator: EnrouteDecorator) -> None:
-        """TODO
+        """Add a new decorator to the ``decorators`` set.
 
-        :param decorator: TODO
-        :return: TODO
+        :param decorator: The decorator to be added.
+        :return: This method does not return anything.
         """
         another = next(iter(self.decorators), None)
         if another is not None and another.KIND != decorator.KIND:
@@ -127,9 +127,9 @@ class HandlerMeta:
 
     @cached_property
     def check(self) -> Type[CheckDecorator]:
-        """TODO
+        """Get the check decorator.
 
-        :return: TODO
+        :return: A ``CheckDecorator`` type.
         """
         from ..definitions import (
             CheckDecorator,
