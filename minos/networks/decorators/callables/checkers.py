@@ -6,6 +6,7 @@ import asyncio
 import time
 from asyncio import (
     gather,
+    iscoroutinefunction,
 )
 from collections.abc import (
     Awaitable,
@@ -14,9 +15,6 @@ from collections.abc import (
 )
 from functools import (
     wraps,
-)
-from inspect import (
-    iscoroutinefunction,
 )
 from typing import (
     Optional,
@@ -80,10 +78,10 @@ class CheckerMeta:
             @wraps(self.func)
             def _wrapper(*args, **kwargs) -> bool:
                 r = 0
-                while r <= self.max_attempts and not self.func(*args, **kwargs):
+                while r < self.max_attempts and not self.func(*args, **kwargs):
                     time.sleep(self.delay)
                     r += 1
-                return r <= self.max_attempts
+                return r < self.max_attempts
 
         _wrapper.meta = self
         return _wrapper

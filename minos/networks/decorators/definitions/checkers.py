@@ -2,14 +2,14 @@ from __future__ import (
     annotations,
 )
 
+from asyncio import (
+    iscoroutinefunction,
+)
 from collections.abc import (
     Iterable,
 )
 from datetime import (
     timedelta,
-)
-from inspect import (
-    iscoroutinefunction,
 )
 from typing import (
     TYPE_CHECKING,
