@@ -55,10 +55,9 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(RestRequest(mocked_request()), RestRequest(mocked_request()))
 
     def test_headers(self):
-        uuid = uuid4()
-        raw = mocked_request(user=uuid, headers={"something": "123"})
+        raw = mocked_request(headers={"something": "123"})
         request = RestRequest(raw)
-        self.assertEqual({"User": str(uuid), "something": "123"}, request.headers)
+        self.assertEqual({"something": "123"}, request.headers)
 
     def test_user(self):
         uuid = uuid4()
