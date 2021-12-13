@@ -15,12 +15,15 @@ from aiohttp import (
     test_utils,
     web,
 )
+# noinspection PyProtectedMember
+from aiohttp.streams import (
+    EmptyStreamReader,
+)
 
 
 def json_mocked_request(data: Any, **kwargs) -> web.Request:
     """For testng purposes. """
-    data = json.dumps(data).encode()
-    return mocked_request(data, content_type="application/json", **kwargs)
+    return mocked_request(json.dumps(data).encode(), content_type="application/json", **kwargs)
 
 
 def mocked_request(
@@ -43,9 +46,16 @@ def mocked_request(
     if content_type is not None:
         headers["Content-Type"] = content_type
 
-    response = test_utils.make_mocked_request(method, path, headers=headers)
+    kwargs = {
+        "method": method,
+        "path": path,
+        "headers": headers,
+    }
 
-    if data is not None:
-        response.read = AsyncMock(return_value=data)
+    if data is None:
+        kwargs["payload"] = EmptyStreamReader()
+
+    response = test_utils.make_mocked_request(**kwargs)
+    response.read = AsyncMock(return_value=data)
 
     return response
