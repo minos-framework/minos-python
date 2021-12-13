@@ -17,6 +17,9 @@ from minos.networks import (
 from tests.test_networks.test_rest.test_handlers import (
     mocked_request,
 )
+from tests.test_networks.test_rest.utils import (
+    json_mocked_request,
+)
 from tests.utils import (
     FakeModel,
 )
@@ -42,7 +45,7 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
 
     def test_headers(self):
         uuid = uuid4()
-        raw = mocked_request(user=uuid)
+        raw = mocked_request(user=uuid, headers={"something": "123"})
         request = RestRequest(raw)
         self.assertEqual({"User": str(uuid), "something": "123"}, request.headers)
 
@@ -62,7 +65,7 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
             Content(id=2, version=1, doors=5, color="red", owner=None),
         ]
 
-        raw = mocked_request(
+        raw = json_mocked_request(
             [
                 {"id": 1, "version": 1, "doors": 3, "color": "blue", "owner": None},
                 {"id": 2, "version": 1, "doors": 5, "color": "red", "owner": None},
@@ -79,7 +82,7 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
         )
         expected = Content(id=1, version=1, doors=3, color="blue", owner=None)
 
-        raw = mocked_request({"id": 1, "version": 1, "doors": 3, "color": "blue", "owner": None})
+        raw = json_mocked_request({"id": 1, "version": 1, "doors": 3, "color": "blue", "owner": None})
         request = RestRequest(raw)
         observed = await request.content()
 
@@ -113,7 +116,7 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
         Content = ModelType.build("Content", {"foo": list[int], "bar": int, "one": list[int], "two": int, "color": str})
         expected = Content(foo=[1, 3], bar=2, one=[1, 3], two=2, color="blue")
 
-        raw = mocked_request({"color": "blue"})
+        raw = json_mocked_request({"color": "blue"})
         with patch("minos.networks.RestRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
             mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
             with patch("minos.networks.RestRequest._raw_path_args", new_callable=PropertyMock) as mock_path:
@@ -130,7 +133,7 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
             Content(foo=[1, 3], bar=2, one=[1, 3], two=2, color="red"),
         ]
 
-        raw = mocked_request([{"color": "blue"}, {"color": "red"}])
+        raw = json_mocked_request([{"color": "blue"}, {"color": "red"}])
         with patch("minos.networks.RestRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
             mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
             with patch("minos.networks.RestRequest._raw_path_args", new_callable=PropertyMock) as mock_path:
