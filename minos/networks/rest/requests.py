@@ -8,6 +8,7 @@ from collections import (
 )
 from collections.abc import (
     Callable,
+    Iterable,
 )
 from typing import (
     Any,
@@ -16,7 +17,7 @@ from typing import (
     Union,
 )
 from urllib.parse import (
-    parse_qs,
+    parse_qsl,
 )
 from uuid import (
     UUID,
@@ -128,13 +129,14 @@ class RestRequest(Request):
 
         return mapper[self.content_type]
 
-    async def _raw_json(self) -> Optional[Any]:
+    async def _raw_json(self) -> Any:
         return await self.raw.json()
 
-    async def _raw_form(self) -> Optional[Any]:
-        return await self.raw.json(loads=parse_qs)
+    async def _raw_form(self) -> dict[str, Any]:
+        form = await self.raw.json(loads=parse_qsl)
+        return self._parse_multi_dict(form)
 
-    async def _raw_avro(self) -> Optional[Any]:
+    async def _raw_avro(self) -> Any:
         data = MinosAvroProtocol.decode(await self._raw_bytes())
         schema = MinosAvroProtocol.decode_schema(await self._raw_bytes())
 
@@ -161,11 +163,7 @@ class RestRequest(Request):
 
         :return: A dictionary instance.
         """
-        args = defaultdict(list)
-        for k, v in self._raw_url_args:
-            args[k].append(v)
-        args = {k: v if len(v) > 1 else v[0] for k, v in args.items()}
-        return args
+        return self._parse_multi_dict(self._raw_url_args)
 
     @property
     def _raw_url_args(self):
@@ -177,11 +175,7 @@ class RestRequest(Request):
 
         :return: A dictionary instance.
         """
-        args = defaultdict(list)
-        for k, v in self._raw_path_args:
-            args[k].append(v)
-        args = {k: v if len(v) > 1 else v[0] for k, v in args.items()}
-        return args
+        return self._parse_multi_dict(self._raw_path_args)
 
     @property
     def _raw_path_args(self):
@@ -200,6 +194,13 @@ class RestRequest(Request):
                 model_type = ModelType.build(model_type, type_hints)
 
         return model_type(**entry)
+
+    @staticmethod
+    def _parse_multi_dict(raw: Iterable[str, Any]) -> dict[str, Any]:
+        args = defaultdict(list)
+        for k, v in raw:
+            args[k].append(v)
+        return {k: v if len(v) > 1 else v[0] for k, v in args.items()}
 
 
 class RestResponse(Response):

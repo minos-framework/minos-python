@@ -106,7 +106,7 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     async def test_form(self):
-        expected = ModelType.build("Content", {"foo": list[str], "bar": list[str]})(["foo1"], ["bar1", "bar2"])
+        expected = ModelType.build("Content", {"foo": str, "bar": list[str]})("foo1", ["bar1", "bar2"])
 
         raw = form_mocked_request({"foo": "foo1", "bar": ["bar1", "bar2"]})
         request = RestRequest(raw)
