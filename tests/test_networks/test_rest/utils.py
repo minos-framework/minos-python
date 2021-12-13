@@ -45,7 +45,9 @@ def mocked_request(
 
     response = test_utils.make_mocked_request(method, path, headers=headers)
 
-    if data is not None:
-        response.read = AsyncMock(return_value=data)
+    if data is None:
+        data = bytes()
+
+    response.read = AsyncMock(return_value=data)
 
     return response

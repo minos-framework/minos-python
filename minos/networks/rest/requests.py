@@ -6,6 +6,9 @@ import warnings
 from collections import (
     defaultdict,
 )
+from collections.abc import (
+    Callable,
+)
 from typing import (
     Any,
     Optional,
@@ -86,11 +89,6 @@ class RestRequest(Request):
         # noinspection PyTypeChecker
         return self.raw.headers
 
-    @property
-    def content_type(self) -> str:
-        """TODO"""
-        return self.raw.content_type
-
     async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
         """Get the request content.
 
@@ -98,49 +96,60 @@ class RestRequest(Request):
         :param kwargs: Additional named arguments.
         :return: The command content.
         """
-        data = await self._raw_json()
-        data = [(entry | self.url_args | self.path_args) for entry in data]
-        data = self._build_models(data, model_type)
+        data = await self._content_parser()
 
-        if len(data) == 1:
-            return data[0]
+        if isinstance(data, dict):
+            data = data | self.url_args | self.path_args
+            data = self._build_one_model(data, model_type)
+        elif data == bytes() and (len(self.url_args) or len(self.path_args)):
+            data = self.url_args | self.path_args
+            data = self._build_one_model(data, model_type)
+        elif isinstance(data, list):
+            data = [(entry | self.url_args | self.path_args) for entry in data]
+            data = self._build_models(data, model_type)
+
         return data
 
-    async def _raw_json(self) -> list[dict[str, Any]]:
-        # noinspection PyBroadException
-        try:
-            data = await self.raw.json()
-        except Exception:
-            data = dict()
+    @property
+    def _content_parser(self) -> Callable:
+        return self._content_type_mapper[self.content_type]
 
-        if not isinstance(data, list):
-            data = [data]
-        return data
+    @cached_property
+    def _content_type_mapper(self) -> dict[str, Callable]:
+        return {
+            "multipart/form-data": self._raw_multipart,
+            "application/json": self._raw_json,
+            "application/x-www-form-encoded": self._raw_form,
+            "avro/binary": self._raw_avro,
+            "text/plain": self._raw_text,
+            "application/octet-stream": self._raw_bytes,
+        }
 
-    async def _raw_form(self) -> list[dict[str, Any]]:
-        # noinspection PyBroadException
-        try:
-            data = await self.raw.json(loads=parse_qs)
-        except Exception:
-            data = dict()
+    async def _raw_multipart(self) -> Optional[Any]:
+        raise NotImplementedError
 
-        if not isinstance(data, list):
-            data = [data]
-        return data
+    async def _raw_json(self) -> Optional[Any]:
+        return await self.raw.json()
 
-    async def _raw_avro(self) -> Any:
-        # noinspection PyBroadException
-        try:
-            return MinosAvroProtocol.decode(await self._raw_bytes())
-        except Exception:
-            return None
+    async def _raw_form(self) -> Optional[Any]:
+        return await self.raw.json(loads=parse_qs)
+
+    async def _raw_avro(self) -> Optional[Any]:
+        return MinosAvroProtocol.decode(await self._raw_bytes())
+
+    async def _raw_text(self) -> str:
+        return await self.raw.text()
 
     async def _raw_bytes(self) -> bytes:
-        # noinspection PyBroadException
-        try:
-            return await self.raw.read()
-        except Exception:
-            return bytes()
+        return await self.raw.read()
+
+    @property
+    def content_type(self) -> str:
+        """TODO
+
+        :return: TODO
+        """
+        return self.raw.content_type
 
     @cached_property
     def url_args(self) -> dict[str, Any]:
