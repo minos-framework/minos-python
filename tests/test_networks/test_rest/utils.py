@@ -7,6 +7,9 @@ from typing import (
 from unittest.mock import (
     AsyncMock,
 )
+from urllib.parse import (
+    urlencode,
+)
 from uuid import (
     UUID,
 )
@@ -24,6 +27,11 @@ from aiohttp.streams import (
 def json_mocked_request(data: Any, **kwargs) -> web.Request:
     """For testng purposes. """
     return mocked_request(json.dumps(data).encode(), content_type="application/json", **kwargs)
+
+
+def form_mocked_request(data: dict[str, Any], **kwargs) -> web.Request:
+    """For testng purposes. """
+    return mocked_request(urlencode(data, doseq=True).encode(), content_type="application/x-www-form-encoded", **kwargs)
 
 
 def mocked_request(
