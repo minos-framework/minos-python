@@ -30,6 +30,8 @@ from cached_property import (
 )
 
 from minos.common import (
+    AvroDataDecoder,
+    AvroSchemaDecoder,
     MinosAvroProtocol,
     MinosImportException,
     Model,
@@ -109,14 +111,9 @@ class RestRequest(Request):
 
         return content
 
-    @property
-    def _content_parser(self) -> Callable:
-        return self._content_type_mapper[self.content_type]
-
     @cached_property
-    def _content_type_mapper(self) -> dict[str, Callable]:
-        return {
-            "multipart/form-data": self._raw_multipart,
+    def _content_parser(self) -> Callable:
+        mapper = {
             "application/json": self._raw_json,
             "application/x-www-form-encoded": self._raw_form,
             "avro/binary": self._raw_avro,
@@ -124,8 +121,12 @@ class RestRequest(Request):
             "application/octet-stream": self._raw_bytes,
         }
 
-    async def _raw_multipart(self) -> Optional[Any]:
-        raise NotImplementedError
+        if self.content_type not in mapper:
+            raise ValueError(
+                f"The given Content-Type ({self.content_type!r}) is not supported for automatic content parsing yet."
+            )
+
+        return mapper[self.content_type]
 
     async def _raw_json(self) -> Optional[Any]:
         return await self.raw.json()
@@ -134,7 +135,11 @@ class RestRequest(Request):
         return await self.raw.json(loads=parse_qs)
 
     async def _raw_avro(self) -> Optional[Any]:
-        return MinosAvroProtocol.decode(await self._raw_bytes())
+        data = MinosAvroProtocol.decode(await self._raw_bytes())
+        schema = MinosAvroProtocol.decode_schema(await self._raw_bytes())
+
+        type_ = AvroSchemaDecoder(schema).build()
+        return AvroDataDecoder(type_).build(data)
 
     async def _raw_text(self) -> str:
         return await self.raw.text()
@@ -144,9 +149,9 @@ class RestRequest(Request):
 
     @property
     def content_type(self) -> str:
-        """TODO
+        """Get the content type.
 
-        :return: TODO
+        :return: A ``str`` value.
         """
         return self.raw.content_type
 

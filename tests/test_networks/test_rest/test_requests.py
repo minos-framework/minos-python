@@ -16,9 +16,12 @@ from minos.networks import (
     RestResponse,
 )
 from tests.test_networks.test_rest.utils import (
+    avro_mocked_request,
+    bytes_mocked_request,
     form_mocked_request,
     json_mocked_request,
     mocked_request,
+    text_mocked_request,
 )
 from tests.utils import (
     FakeModel,
@@ -111,17 +114,67 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    @unittest.skip("TODO: This case must be supported.")
-    async def test_form_with_content(self):
-        # noinspection PyPep8Naming
-        Content = ModelType.build("Content", {"foo": str, "bar": list[str]})
-        expected = Content("foo1", ["bar1", "bar2"])
+    async def test_avro_int(self):
+        expected = 56
 
-        raw = form_mocked_request({"foo": "foo1", "bar": ["bar1", "bar2"]})
+        raw = avro_mocked_request(56, "int")
         request = RestRequest(raw)
-        observed = await request.content(model_type=Content)
+        observed = await request.content()
 
         self.assertEqual(expected, observed)
+
+    async def test_avro_uuid(self):
+        expected = uuid4()
+
+        raw = avro_mocked_request(expected, {"type": "string", "logicalType": "uuid"})
+        request = RestRequest(raw)
+        observed = await request.content()
+
+        self.assertEqual(expected, observed)
+
+    async def test_avro_dto(self):
+        expected = ModelType.build("FakeModel", {"text": str})("foobar")
+
+        raw = avro_mocked_request(
+            {"text": "foobar"}, {"name": "FakeModel", "type": "record", "fields": [{"name": "text", "type": "string"}]}
+        )
+        request = RestRequest(raw)
+        observed = await request.content()
+
+        self.assertEqual(expected, observed)
+
+    async def test_avro_model(self):
+        expected = FakeModel("foobar")
+
+        raw = avro_mocked_request(expected.avro_data, expected.avro_schema)
+        request = RestRequest(raw)
+        observed = await request.content()
+
+        self.assertEqual(expected, observed)
+
+    async def test_text(self):
+        expected = "foobar"
+
+        raw = text_mocked_request("foobar")
+        request = RestRequest(raw)
+        observed = await request.content()
+
+        self.assertEqual(expected, observed)
+
+    async def test_bytes(self):
+        expected = bytes("foobar", "utf-8")
+
+        raw = bytes_mocked_request(bytes("foobar", "utf-8"))
+        request = RestRequest(raw)
+        observed = await request.content()
+
+        self.assertEqual(expected, observed)
+
+    async def test_raises(self):
+        raw = mocked_request(content_type="foo/bar")
+        request = RestRequest(raw)
+        with self.assertRaises(ValueError):
+            await request.content()
 
 
 class TestRestRequestContentArgs(unittest.IsolatedAsyncioTestCase):

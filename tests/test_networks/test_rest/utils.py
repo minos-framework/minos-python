@@ -23,6 +23,10 @@ from aiohttp.streams import (
     EmptyStreamReader,
 )
 
+from minos.common import (
+    MinosAvroProtocol,
+)
+
 
 def json_mocked_request(data: Any, **kwargs) -> web.Request:
     """For testng purposes. """
@@ -32,6 +36,21 @@ def json_mocked_request(data: Any, **kwargs) -> web.Request:
 def form_mocked_request(data: dict[str, Any], **kwargs) -> web.Request:
     """For testng purposes. """
     return mocked_request(urlencode(data, doseq=True).encode(), content_type="application/x-www-form-encoded", **kwargs)
+
+
+def avro_mocked_request(data: Any, schema: Any, **kwargs) -> web.Request:
+    """For testng purposes. """
+    return mocked_request(MinosAvroProtocol.encode(data, schema), content_type="avro/binary", **kwargs)
+
+
+def text_mocked_request(data: str, **kwargs) -> web.Request:
+    """For testng purposes. """
+    return mocked_request(data.encode(), content_type="text/plain", **kwargs)
+
+
+def bytes_mocked_request(data: bytes, **kwargs) -> web.Request:
+    """For testng purposes. """
+    return mocked_request(data, content_type="application/octet-stream", **kwargs)
 
 
 def mocked_request(
