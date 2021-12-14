@@ -10,10 +10,12 @@ from collections.abc import (
     Callable,
     Iterable,
 )
+from itertools import (
+    chain,
+)
 from typing import (
     Any,
     Optional,
-    Type,
     Union,
 )
 from urllib.parse import (
@@ -34,10 +36,6 @@ from minos.common import (
     AvroDataDecoder,
     AvroSchemaDecoder,
     MinosAvroProtocol,
-    MinosImportException,
-    Model,
-    ModelType,
-    TypeHintBuilder,
     import_module,
 )
 
@@ -92,25 +90,20 @@ class RestRequest(Request):
         # noinspection PyTypeChecker
         return self.raw.headers
 
-    async def content(self, model_type: Union[ModelType, Type[Model], str] = "Content", **kwargs) -> Any:
+    async def content(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
         """Get the request content.
 
-        :param model_type: Optional ``ModelType`` that defines the request content structure.
+        :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
         :param kwargs: Additional named arguments.
         :return: The command content.
         """
-        if not self.raw.body_exists and (len(self.url_args) or len(self.path_args)):
-            return self._build_one_model(self.url_args | self.path_args, model_type)
+        if "model_type" in kwargs:
+            warnings.warn("The 'model_type' argument is deprecated. Use 'type_' instead")
+            if type_ is None:
+                type_ = kwargs["model_type"]
 
-        content = await self._content_parser()
-
-        if isinstance(content, dict):
-            return self._build_one_model(content | self.url_args | self.path_args, model_type)
-
-        if isinstance(content, list):
-            return self._build_models([(entry | self.url_args | self.path_args) for entry in content], model_type)
-
-        return content
+        data = await self._content_parser()
+        return self._build(data, type_)
 
     @cached_property
     def _content_parser(self) -> Callable:
@@ -157,43 +150,55 @@ class RestRequest(Request):
         """
         return self.raw.content_type
 
-    @cached_property
-    def url_args(self) -> dict[str, Any]:
-        """Get the url arguments as a dictionary.
+    async def params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
+        """Get the params.
 
+        :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
+        :param kwargs: Additional named arguments.
+        :return:
+        """
+
+        data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
+        return self._build(data, type_)
+
+    async def url_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
+        """Get the url params.
+
+        :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
+        :param kwargs: Additional named arguments.
         :return: A dictionary instance.
         """
-        return self._parse_multi_dict(self._raw_url_args)
+        data = self._parse_multi_dict(self._raw_url_params)
+        return self._build(data, type_)
 
     @property
-    def _raw_url_args(self):
+    def _raw_url_params(self):
         return self.raw.rel_url.query.items()  # pragma: no cover
 
-    @cached_property
-    def path_args(self) -> dict[str, Any]:
-        """Get the path arguments as a dictionary.
+    async def query_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
+        """Get the query params.
 
+
+        :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
+        :param kwargs: Additional named arguments.
         :return: A dictionary instance.
         """
-        return self._parse_multi_dict(self._raw_path_args)
+        data = self._parse_multi_dict(self._raw_query_params)
+        return self._build(data, type_)
 
     @property
-    def _raw_path_args(self):
+    def _raw_query_params(self):
         return self.raw.match_info.items()  # pragma: no cover
 
-    def _build_models(self, data: list[dict[str, Any]], model_type: Union[ModelType, Type[Model], str]) -> list[Model]:
-        return [self._build_one_model(entry, model_type) for entry in data]
-
     @staticmethod
-    def _build_one_model(entry: dict[str, Any], model_type: Union[ModelType, Type[Model], str]) -> Model:
-        if isinstance(model_type, str):
-            try:
-                model_type = import_module(model_type)
-            except MinosImportException:
-                type_hints = {k: TypeHintBuilder(v).build() for k, v in entry.items()}
-                model_type = ModelType.build(model_type, type_hints)
+    def _build(data: Any, type_: Union[type, str]) -> Any:
+        if type_ is None:
+            return data
 
-        return model_type(**entry)
+        if isinstance(type_, str):
+            type_ = import_module(type_)
+
+        return AvroDataDecoder(type_).build(data)
 
     @staticmethod
     def _parse_multi_dict(raw: Iterable[str, Any]) -> dict[str, Any]:

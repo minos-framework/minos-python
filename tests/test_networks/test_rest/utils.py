@@ -18,9 +18,8 @@ from aiohttp import (
     test_utils,
     web,
 )
-# noinspection PyProtectedMember
-from aiohttp.streams import (
-    EmptyStreamReader,
+from multidict import (
+    MultiDict,
 )
 
 from minos.common import (
@@ -60,6 +59,8 @@ def mocked_request(
     content_type: Optional[str] = None,
     method: str = "POST",
     path: str = "localhost",
+    url_params: Optional[list[tuple[str, str]]] = None,
+    query_params: Optional[list[tuple[str, str]]] = None,
 ) -> web.Request:
     """For testing purposes"""
     if headers is None:
@@ -79,10 +80,14 @@ def mocked_request(
         "headers": headers,
     }
 
-    if data is None:
-        kwargs["payload"] = EmptyStreamReader()
+    request = test_utils.make_mocked_request(**kwargs)
+    request.read = AsyncMock(return_value=data)
 
-    response = test_utils.make_mocked_request(**kwargs)
-    response.read = AsyncMock(return_value=data)
+    if url_params is not None:
+        # noinspection PyProtectedMember
+        request._rel_url = request._rel_url.with_query(url_params)
 
-    return response
+    if query_params is not None:
+        request._match_info = MultiDict(map(lambda kv: (str(kv[0]), str(kv[1])), query_params))
+
+    return request

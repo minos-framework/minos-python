@@ -1,15 +1,12 @@
 import unittest
 import warnings
-from unittest.mock import (
-    PropertyMock,
-    patch,
-)
 from uuid import (
     uuid4,
 )
 
 from minos.common import (
     ModelType,
+    classname,
 )
 from minos.networks import (
     RestRequest,
@@ -83,9 +80,7 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     async def test_json_list(self):
-        # noinspection PyPep8Naming
-        Content = ModelType.build("Content", {"doors": int, "color": str, "owner": type(None)})
-        expected = [Content(3, "blue", None), Content(5, "red", None)]
+        expected = [{"doors": 3, "color": "blue", "owner": None}, {"doors": 5, "color": "red", "owner": None}]
 
         raw = json_mocked_request(
             [{"doors": 3, "color": "blue", "owner": None}, {"doors": 5, "color": "red", "owner": None}]
@@ -96,7 +91,7 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     async def test_json_dict(self):
-        expected = ModelType.build("Content", {"doors": int, "color": str, "owner": type(None)})(3, "blue", None)
+        expected = {"doors": 3, "color": "blue", "owner": None}
 
         raw = json_mocked_request({"doors": 3, "color": "blue", "owner": None})
         request = RestRequest(raw)
@@ -105,7 +100,7 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     async def test_form(self):
-        expected = ModelType.build("Content", {"foo": str, "bar": list[str]})("foo1", ["bar1", "bar2"])
+        expected = {"foo": "foo1", "bar": ["bar1", "bar2"]}
 
         raw = form_mocked_request({"foo": "foo1", "bar": ["bar1", "bar2"]})
         request = RestRequest(raw)
@@ -175,78 +170,108 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             await request.content()
 
-
-class TestRestRequestContentArgs(unittest.IsolatedAsyncioTestCase):
-    async def test_url_args(self):
-        expected = ModelType.build("Content", {"foo": list[int], "bar": int})(foo=[1, 3], bar=2)
-
-        raw = mocked_request()
-        with patch("minos.networks.RestRequest._raw_url_args", new_callable=PropertyMock) as mock:
-            mock.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
-            request = RestRequest(raw)
-            observed = await request.content()
-
-        self.assertEqual(expected, observed)
-
-    async def test_path_args(self):
-        expected = ModelType.build("Content", {"foo": list[int], "bar": int})(foo=[1, 3], bar=2)
-
-        raw = mocked_request()
-        with patch("minos.networks.RestRequest._raw_path_args", new_callable=PropertyMock) as mock:
-            mock.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
-            request = RestRequest(raw)
-            observed = await request.content()
-
-        self.assertEqual(expected, observed)
-
-    async def test_int_with_args(self):
-        expected = 56
-
-        raw = json_mocked_request(56)
-        with patch("minos.networks.RestRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
-            mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
-            with patch("minos.networks.RestRequest._raw_path_args", new_callable=PropertyMock) as mock_path:
-                mock_path.return_value = [("one", 1), ("two", 2), ("one", 3)]
-                request = RestRequest(raw)
-                observed = await request.content()
-
-        self.assertEqual(expected, observed)
-
-    async def test_dict_with_args(self):
-        expected = ModelType.build(
-            "Content", {"foo": list[int], "bar": int, "one": list[int], "two": int, "color": str}
-        )(foo=[1, 3], bar=2, one=[1, 3], two=2, color="blue")
-
-        raw = json_mocked_request({"color": "blue"})
-        with patch("minos.networks.RestRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
-            mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
-            with patch("minos.networks.RestRequest._raw_path_args", new_callable=PropertyMock) as mock_path:
-                mock_path.return_value = [("one", 1), ("two", 2), ("one", 3)]
-                request = RestRequest(raw)
-                observed = await request.content()
-
-        self.assertEqual(expected, observed)
-
-    async def test_list_with_args(self):
+    async def test_with_type(self):
         # noinspection PyPep8Naming
-        Content = ModelType.build("Content", {"foo": list[int], "bar": int, "one": list[int], "two": int, "color": str})
-        expected = [
-            Content(foo=[1, 3], bar=2, one=[1, 3], two=2, color="blue"),
-            Content(foo=[1, 3], bar=2, one=[1, 3], two=2, color="red"),
-        ]
+        Car = ModelType.build("Car", {"doors": int, "color": str, "owner": type(None)})
+        expected = [Car(3, "blue", None), Car(5, "red", None)]
 
-        raw = json_mocked_request([{"color": "blue"}, {"color": "red"}])
-        with patch("minos.networks.RestRequest._raw_url_args", new_callable=PropertyMock) as mock_url:
-            mock_url.return_value = [("foo", 1), ("bar", 2), ("foo", 3)]
-            with patch("minos.networks.RestRequest._raw_path_args", new_callable=PropertyMock) as mock_path:
-                mock_path.return_value = [("one", 1), ("two", 2), ("one", 3)]
-                request = RestRequest(raw)
-                observed = await request.content()
+        raw = json_mocked_request([{"doors": "3", "color": "blue"}, {"doors": "5", "color": "red"}])
+        request = RestRequest(raw)
+        observed = await request.content(type_=list[Car])
+
+        self.assertEqual(expected, observed)
+
+    async def test_with_type_classname(self):
+        expected = 3
+
+        raw = json_mocked_request("3")
+        request = RestRequest(raw)
+        observed = await request.content(type_=classname(int))
+
+        self.assertEqual(expected, observed)
+
+    async def test_with_model_type(self):
+        expected = 3
+
+        raw = json_mocked_request("3")
+        request = RestRequest(raw)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            observed = await request.content(model_type=classname(int))
+
+        self.assertEqual(expected, observed)
+
+
+class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
+    async def test_url_params(self):
+        expected = {"bar": "2", "foo": ["1", "3"]}
+
+        raw = mocked_request(url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")])
+        request = RestRequest(raw)
+        observed = await request.url_params()
+
+        self.assertEqual(expected, observed)
+
+    async def test_url_params_with_type(self):
+        # noinspection PyPep8Naming
+        Params = ModelType.build("Params", {"foo": list[int], "bar": int})
+        expected = Params(foo=[1, 3], bar=2)
+
+        raw = mocked_request(url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")])
+        request = RestRequest(raw)
+        observed = await request.url_params(type_=Params)
+
+        self.assertEqual(expected, observed)
+
+    async def test_query_params(self):
+        expected = {"one": ["1", "3"], "two": "2"}
+
+        raw = mocked_request(query_params=[("one", "1"), ("two", "2"), ("one", "3")])
+        request = RestRequest(raw)
+        observed = await request.query_params()
+
+        self.assertEqual(expected, observed)
+
+    async def test_query_params_with_type(self):
+        # noinspection PyPep8Naming
+        Params = ModelType.build("Params", {"one": list[int], "two": int})
+        expected = Params(one=[1, 3], two=2)
+
+        raw = mocked_request(query_params=[("one", "1"), ("two", "2"), ("one", "3")])
+        request = RestRequest(raw)
+        observed = await request.query_params(type_=Params)
+
+        self.assertEqual(expected, observed)
+
+    async def test_params(self):
+        expected = {"bar": "2", "foo": ["1", "3"], "one": ["1", "3"], "two": "2"}
+
+        raw = mocked_request(
+            url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")],
+            query_params=[("one", "1"), ("two", "2"), ("one", "3")],
+        )
+        request = RestRequest(raw)
+        observed = await request.params()
+
+        self.assertEqual(expected, observed)
+
+    async def test_params_with_type(self):
+        # noinspection PyPep8Naming
+        Params = ModelType.build("Params", {"foo": list[int], "bar": int, "one": list[int], "two": int})
+        expected = Params(foo=[1, 3], bar=2, one=[1, 3], two=2)
+
+        raw = mocked_request(
+            url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")],
+            query_params=[("one", "1"), ("two", "2"), ("one", "3")],
+        )
+        request = RestRequest(raw)
+        observed = await request.params(type_=Params)
 
         self.assertEqual(expected, observed)
 
 
 class TestRestResponse(unittest.IsolatedAsyncioTestCase):
+    # noinspection PyMissingOrEmptyDocstring
     def setUp(self) -> None:
         self.models = [FakeModel("foo"), FakeModel("bar")]
 
