@@ -103,7 +103,7 @@ class RestRequest(Request):
         :return: The command content.
         """
         if "model_type" in kwargs:
-            warnings.warn("The 'model_type' argument is deprecated. Use 'type_' instead")
+            warnings.warn("The 'model_type' argument is deprecated. Use 'type_' instead", DeprecationWarning)
             if type_ is None:
                 type_ = kwargs["model_type"]
 
