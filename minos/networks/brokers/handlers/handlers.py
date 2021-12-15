@@ -12,6 +12,9 @@ from asyncio import (
     gather,
     wait_for,
 )
+from functools import (
+    wraps,
+)
 from inspect import (
     isawaitable,
 )
@@ -327,7 +330,8 @@ class BrokerHandler(BrokerHandlerSetup):
         :return: A wrapper function around the given one that is compatible with the Broker Handler API.
         """
 
-        async def _fn(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus, dict[str, str]]:
+        @wraps(fn)
+        async def _wrapper(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus, dict[str, str]]:
             request = BrokerRequest(raw)
             user_token = REQUEST_USER_CONTEXT_VAR.set(request.user)
             headers_token = REQUEST_HEADERS_CONTEXT_VAR.set(raw.headers)
@@ -349,7 +353,7 @@ class BrokerHandler(BrokerHandlerSetup):
                 REQUEST_USER_CONTEXT_VAR.reset(user_token)
                 REQUEST_HEADERS_CONTEXT_VAR.reset(headers_token)
 
-        return _fn
+        return _wrapper
 
     def get_action(self, topic: str) -> Optional[Callable]:
         """Get handling function to be called.
