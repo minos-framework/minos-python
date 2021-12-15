@@ -17,6 +17,7 @@ from tests.utils import (
 class TestRequest(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(Request, ABC))
+        # noinspection PyUnresolvedReferences
         self.assertEqual({"user", "content", "__eq__", "__repr__"}, Request.__abstractmethods__)
 
 
@@ -27,21 +28,21 @@ async def _action(content: str) -> str:
 class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.base = FakeRequest("hello")
-        self.action = _action
-        self.request = WrappedRequest(self.base, self.action)
+        self.content_action = _action
+        self.request = WrappedRequest(self.base, self.content_action)
 
     async def test_content(self):
         expected = "Wrapped Request: hello"
         self.assertEqual(expected, await self.request.content())
 
     def test_equal_true(self):
-        self.assertEqual(WrappedRequest(self.base, self.action), self.request)
+        self.assertEqual(WrappedRequest(self.base, self.content_action), self.request)
 
     def test_equal_false(self):
-        self.assertNotEqual(WrappedRequest(FakeRequest("foo"), self.action), self.request)
+        self.assertNotEqual(WrappedRequest(FakeRequest("foo"), self.content_action), self.request)
 
     def test_repr(self):
-        self.assertEqual(f"WrappedRequest({self.base!r}, {self.action!r})", repr(self.request))
+        self.assertEqual(f"WrappedRequest({self.base!r}, {self.content_action!r}, {None!r})", repr(self.request))
 
     def test_user(self):
         self.assertEqual(self.base.user, self.request.user)

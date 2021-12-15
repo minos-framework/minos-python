@@ -90,6 +90,11 @@ class RestRequest(Request):
         # noinspection PyTypeChecker
         return self.raw.headers
 
+    @property
+    def has_content(self) -> bool:
+        """TODO"""
+        return self.raw.body_exists
+
     async def content(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
         """Get the request content.
 
@@ -150,6 +155,12 @@ class RestRequest(Request):
         """
         return self.raw.content_type
 
+    @property
+    def has_params(self) -> bool:
+        """TODO"""
+        sentinel = object()
+        return next(chain(self._raw_url_params, self._raw_query_params), sentinel) is not sentinel
+
     async def params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
         """Get the params.
 
@@ -160,6 +171,12 @@ class RestRequest(Request):
 
         data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
         return self._build(data, type_)
+
+    @property
+    def has_url_params(self) -> bool:
+        """TODO"""
+        sentinel = object()
+        return next(iter(self._raw_url_params), sentinel) is not sentinel
 
     async def url_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
         """Get the url params.
@@ -174,6 +191,12 @@ class RestRequest(Request):
     @property
     def _raw_url_params(self):
         return self.raw.rel_url.query.items()  # pragma: no cover
+
+    @property
+    def has_query_params(self) -> bool:
+        """TODO"""
+        sentinel = object()
+        return next(iter(self._raw_query_params), sentinel) is not sentinel
 
     async def query_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
         """Get the query params.
