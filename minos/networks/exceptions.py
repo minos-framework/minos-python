@@ -27,6 +27,10 @@ class MinosHandlerNotFoundEnoughEntriesException(MinosHandlerException):
     """Exception to be raised when not enough entries have been found by a handler."""
 
 
+class NotSatisfiedCheckerException(MinosHandlerException):
+    """Exception to be raised when some checkers are not validated."""
+
+
 class MinosEnrouteDecoratorException(MinosNetworkException):
     """Base exception for enroute decorators."""
 

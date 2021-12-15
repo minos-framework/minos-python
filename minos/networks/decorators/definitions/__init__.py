@@ -7,6 +7,9 @@ from .broker import (
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
 )
+from .checkers import (
+    CheckDecorator,
+)
 from .kinds import (
     EnrouteDecoratorKind,
 )

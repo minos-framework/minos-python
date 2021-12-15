@@ -6,30 +6,22 @@ from abc import (
     ABC,
     abstractmethod,
 )
-from inspect import (
-    iscoroutinefunction,
+from collections.abc import (
+    Iterable,
 )
 from typing import (
-    Awaitable,
-    Callable,
     Final,
-    Iterable,
-    Optional,
     Union,
 )
 
-from ...exceptions import (
-    MinosMultipleEnrouteDecoratorKindsException,
-)
-from ...requests import (
-    Request,
-    Response,
+from ..callables import (
+    Handler,
+    HandlerMeta,
+    HandlerWrapper,
 )
 from .kinds import (
     EnrouteDecoratorKind,
 )
-
-Adapter = Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]
 
 
 class EnrouteDecorator(ABC):
@@ -38,27 +30,15 @@ class EnrouteDecorator(ABC):
     # noinspection PyFinal
     KIND: Final[EnrouteDecoratorKind]
 
-    def __call__(self, fn: Adapter) -> Adapter:
-        if iscoroutinefunction(fn):
-
-            async def _wrapper(*args, **kwargs) -> Optional[Response]:
-                return await fn(*args, **kwargs)
-
+    def __call__(self, func: Union[Handler, HandlerWrapper]) -> HandlerWrapper:
+        if isinstance(func, HandlerWrapper):
+            meta = func.meta
         else:
+            meta = HandlerMeta(func)
 
-            def _wrapper(*args, **kwargs) -> Optional[Response]:
-                return fn(*args, **kwargs)
+        meta.add_decorator(self)
 
-        _wrapper.__decorators__ = getattr(fn, "__decorators__", set())
-        _wrapper.__decorators__.add(self)
-        kinds = set(decorator.KIND for decorator in _wrapper.__decorators__)
-        if len(kinds) > 1:
-            raise MinosMultipleEnrouteDecoratorKindsException(
-                f"There are multiple kinds but only one is allowed: {kinds}"
-            )
-        _wrapper.__base_func__ = getattr(fn, "__base_func__", fn)
-
-        return _wrapper
+        return meta.wrapper
 
     def __repr__(self):
         args = ", ".join(map(repr, self))
