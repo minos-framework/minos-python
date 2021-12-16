@@ -6,6 +6,10 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from collections.abc import (
+    Awaitable,
+    Callable,
+)
 from contextvars import (
     ContextVar,
 )
@@ -14,9 +18,9 @@ from inspect import (
 )
 from typing import (
     Any,
-    Callable,
     Final,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -104,6 +108,8 @@ class Request(ABC):
 
 
 sentinel = object()
+ContentAction = Callable[[Any, ...], Union[Any, Awaitable[Any]]]
+ParamsAction = Callable[[dict[str, Any], ...], Union[dict[str, Any], Awaitable[dict[str, Any]]]]
 
 
 class WrappedRequest(Request):
@@ -112,8 +118,8 @@ class WrappedRequest(Request):
     def __init__(
         self,
         base: Request,
-        content_action: Callable[[Any, ...], Any] = None,
-        params_action: Callable[[Any, ...], Any] = None,
+        content_action: Optional[ContentAction] = None,
+        params_action: Optional[ParamsAction] = None,
     ):
         self.base = base
         self.content_action = content_action
@@ -147,7 +153,7 @@ class WrappedRequest(Request):
         """
         return self.base.has_content
 
-    async def _params(self, **kwargs) -> Any:
+    async def _params(self, **kwargs) -> dict[str, Any]:
         if self.params_action is None:
             return await self.base.params()
 
