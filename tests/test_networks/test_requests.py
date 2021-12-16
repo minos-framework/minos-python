@@ -2,6 +2,12 @@ import unittest
 from abc import (
     ABC,
 )
+from typing import (
+    Optional,
+)
+from uuid import (
+    UUID,
+)
 
 from minos.networks import (
     Request,
@@ -19,9 +25,60 @@ class TestRequest(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(Request, ABC))
         # noinspection PyUnresolvedReferences
         self.assertEqual(
-            {"__eq__", "__repr__", "content", "has_content", "has_params", "params", "user"},
-            Request.__abstractmethods__,
+            {"__eq__", "__repr__", "has_content", "has_params", "user"}, Request.__abstractmethods__,
         )
+
+    async def test_content_raises(self):
+        class _Request(Request):
+            @property
+            def user(self) -> Optional[UUID]:
+                """For testing purposes."""
+                return None
+
+            @property
+            def has_content(self) -> bool:
+                """For testing purposes."""
+                return True
+
+            @property
+            def has_params(self) -> bool:
+                """For testing purposes."""
+                return True
+
+            def __eq__(self, other: Request) -> bool:
+                return True
+
+            def __repr__(self) -> str:
+                return str()
+
+        with self.assertRaises(RuntimeError):
+            await _Request().content()
+
+    async def test_params_raises(self):
+        class _Request(Request):
+            @property
+            def user(self) -> Optional[UUID]:
+                """For testing purposes."""
+                return None
+
+            @property
+            def has_content(self) -> bool:
+                """For testing purposes."""
+                return True
+
+            @property
+            def has_params(self) -> bool:
+                """For testing purposes."""
+                return True
+
+            def __eq__(self, other: Request) -> bool:
+                return True
+
+            def __repr__(self) -> str:
+                return str()
+
+        with self.assertRaises(RuntimeError):
+            await _Request().params()
 
 
 async def _content_action(content: str) -> str:

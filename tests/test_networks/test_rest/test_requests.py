@@ -9,6 +9,8 @@ from minos.common import (
     classname,
 )
 from minos.networks import (
+    NotHasContentException,
+    NotHasParamsException,
     RestRequest,
     RestResponse,
 )
@@ -80,10 +82,11 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         request = RestRequest(raw)
         self.assertEqual(True, request.has_content)
 
-    async def test_empty(self):
+    async def test_empty_raises(self):
         raw = mocked_request()
         request = RestRequest(raw)
-        self.assertEqual(None, await request.content())
+        with self.assertRaises(NotHasContentException):
+            await request.content()
 
     async def test_json_int(self):
         expected = 56
@@ -180,7 +183,7 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     async def test_raises(self):
-        raw = mocked_request(content_type="foo/bar")
+        raw = mocked_request(content_type="foo/bar", data="foobar".encode())
         request = RestRequest(raw)
         with self.assertRaises(ValueError):
             await request.content()
@@ -248,10 +251,11 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_url_params_empty(self):
+    async def test_url_params_raises(self):
         raw = mocked_request()
         request = RestRequest(raw)
-        self.assertEqual(None, await request.url_params())
+        with self.assertRaises(NotHasParamsException):
+            await request.url_params()
 
     def test_has_query_params_false(self):
         raw = mocked_request()
@@ -283,10 +287,11 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_query_params_empty(self):
+    async def test_query_params_raises(self):
         raw = mocked_request()
         request = RestRequest(raw)
-        self.assertEqual(None, await request.query_params())
+        with self.assertRaises(NotHasParamsException):
+            await request.query_params()
 
     def test_has_params_false(self):
         raw = mocked_request()
@@ -335,10 +340,11 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
-    async def test_params_empty(self):
+    async def test_params_raises(self):
         raw = mocked_request()
         request = RestRequest(raw)
-        self.assertEqual(None, await request.params())
+        with self.assertRaises(NotHasParamsException):
+            await request.params()
 
 
 class TestRestResponse(unittest.IsolatedAsyncioTestCase):

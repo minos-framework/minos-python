@@ -7,6 +7,7 @@ from minos.networks import (
     BrokerMessage,
     BrokerRequest,
     BrokerResponse,
+    NotHasParamsException,
 )
 from tests.utils import (
     FakeModel,
@@ -50,8 +51,9 @@ class TestBrokerRequest(unittest.IsolatedAsyncioTestCase):
     def test_has_params(self):
         self.assertEqual(False, self.request.has_params)
 
-    async def test_params(self):
-        self.assertEqual(None, await self.request.params())
+    async def test_params_raises(self):
+        with self.assertRaises(NotHasParamsException):
+            await self.request.params()
 
 
 class TestHandlerResponse(unittest.IsolatedAsyncioTestCase):

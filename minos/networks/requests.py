@@ -28,6 +28,8 @@ from minos.common import (
 
 from .exceptions import (
     MinosException,
+    NotHasContentException,
+    NotHasParamsException,
 )
 
 REQUEST_USER_CONTEXT_VAR: Final[ContextVar[Optional[UUID]]] = ContextVar("user", default=None)
@@ -44,14 +46,15 @@ class Request(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     async def content(self, **kwargs) -> Any:
         """Get the request content.
 
         :param kwargs: Additional named arguments.
         :return: The request content.
         """
-        raise NotImplementedError
+        if not self.has_content:
+            raise NotHasContentException(f"{self!r} has not content.")
+        return await self._content(**kwargs)
 
     @property
     @abstractmethod
@@ -62,14 +65,20 @@ class Request(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    async def params(self, **kwargs) -> Optional[dict[str, Any]]:
+    async def _content(self, **kwargs) -> Any:
+        raise RuntimeError(
+            f"{type(self).__name__}._content must be implemented if {type(self).__name__}.has_content returns {True!r}."
+        )
+
+    async def params(self, **kwargs) -> dict[str, Any]:
         """Get the request params.
 
         :param kwargs: Additional named arguments.
         :return: The request params.
         """
-        raise NotImplementedError
+        if not self.has_params:
+            raise NotHasParamsException(f"{self!r} has not params.")
+        return await self._params(**kwargs)
 
     @property
     @abstractmethod
@@ -79,6 +88,11 @@ class Request(ABC):
         :return: ``True`` if it has params or ``False`` otherwise.
         """
         raise NotImplementedError
+
+    async def _params(self, **kwargs) -> dict[str, Any]:
+        raise RuntimeError(
+            f"{type(self).__name__}._params must be implemented if '{type(self).__name__}.has_params returns {True!r}."
+        )
 
     @abstractmethod
     def __eq__(self, other: Request) -> bool:
@@ -104,8 +118,8 @@ class WrappedRequest(Request):
         self.base = base
         self.content_action = content_action
         self.params_action = params_action
-        self._content = sentinel
-        self._params = sentinel
+        self._computed_content = sentinel
+        self._computed_params = sentinel
 
     @property
     def user(self) -> Optional[UUID]:
@@ -114,21 +128,16 @@ class WrappedRequest(Request):
         """
         return self.base.user
 
-    async def content(self, **kwargs) -> Any:
-        """Get the request content.
-
-        :param kwargs: Additional named arguments.
-        :return: A list of instances.
-        """
+    async def _content(self, **kwargs) -> Any:
         if self.content_action is None:
             return await self.base.content()
 
-        if self._content is sentinel:
+        if self._computed_content is sentinel:
             content = self.content_action(await self.base.content(), **kwargs)
             if isawaitable(content):
                 content = await content
-            self._content = content
-        return self._content
+            self._computed_content = content
+        return self._computed_content
 
     @property
     def has_content(self) -> bool:
@@ -138,22 +147,16 @@ class WrappedRequest(Request):
         """
         return self.base.has_content
 
-    async def params(self, **kwargs) -> Any:
-        """Get the request params.
-
-        :param kwargs: Additional named arguments.
-        :return: The request params.
-        """
-
+    async def _params(self, **kwargs) -> Any:
         if self.params_action is None:
             return await self.base.params()
 
-        if self._params is sentinel:
+        if self._computed_params is sentinel:
             params = self.params_action(await self.base.params(), **kwargs)
             if isawaitable(params):
                 params = await params
-            self._params = params
-        return self._params
+            self._computed_params = params
+        return self._computed_params
 
     @property
     def has_params(self) -> bool:

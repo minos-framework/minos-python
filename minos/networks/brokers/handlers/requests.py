@@ -41,15 +41,6 @@ class BrokerRequest(Request):
         """
         return getattr(self.raw, "user", None)
 
-    async def content(self, **kwargs) -> Any:
-        """Request content.
-
-        :param kwargs: Additional named arguments.
-        :return: The content.
-        """
-        data = self.raw.data
-        return data
-
     @property
     def has_content(self) -> bool:
         """Check if the request has content.
@@ -58,13 +49,8 @@ class BrokerRequest(Request):
         """
         return True
 
-    async def params(self, **kwargs) -> Optional[dict[str, Any]]:
-        """Get the request params.
-
-        :param kwargs: Additional named arguments.
-        :return: The request params.
-        """
-        return None
+    async def _content(self, **kwargs) -> Any:
+        return self.raw.data
 
     @property
     def has_params(self) -> bool:

@@ -5,6 +5,7 @@ from minos.common import (
     current_datetime,
 )
 from minos.networks import (
+    NotHasParamsException,
     ScheduledRequest,
     ScheduledRequestContent,
 )
@@ -24,8 +25,9 @@ class TestScheduledRequest(unittest.IsolatedAsyncioTestCase):
     def test_has_params(self):
         self.assertEqual(False, self.request.has_params)
 
-    async def test_params(self):
-        self.assertEqual(None, await self.request.params())
+    async def test_params_raises(self):
+        with self.assertRaises(NotHasParamsException):
+            await self.request.params()
 
     def test_user(self):
         self.assertIsNone(self.request.user)

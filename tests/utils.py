@@ -171,8 +171,8 @@ class FakeRequest(Request):
 
     def __init__(self, content: Any = sentinel, params: Any = sentinel, user: Optional[UUID] = None):
         super().__init__()
-        self._content = content
-        self._params = params
+        self._content_value = content
+        self._params_value = params
         self._user = user
 
     @property
@@ -180,35 +180,29 @@ class FakeRequest(Request):
         """For testing purposes"""
         return self._user
 
-    async def content(self, **kwargs):
-        """For testing purposes"""
-        if not self.has_content:
-            return None
-        return self._content
-
     @property
     def has_content(self) -> bool:
         """For testing purposes"""
-        return self._content is not sentinel
+        return self._content_value is not sentinel
 
-    async def params(self, **kwargs) -> Optional[dict[str, Any]]:
-        """For testing purposes"""
-        if not self.has_params:
-            return None
-        return self._params
+    async def _content(self, **kwargs) -> Any:
+        return self._content_value
 
     @property
     def has_params(self) -> bool:
         """For testing purposes"""
-        return self._params is not sentinel
+        return self._params_value is not sentinel
+
+    async def _params(self, **kwargs) -> dict[str, Any]:
+        return self._params_value
 
     def __eq__(self, other: Any) -> bool:
         return (
             isinstance(other, type(self))
-            and self._content == other._content
-            and self._params == other._params
+            and self._content_value == other._content_value
+            and self._params_value == other._params_value
             and self._user == other._user
         )
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._content!r}, {self._params!r}, {self._user!r})"
+        return f"{type(self).__name__}({self._content_value!r}, {self._params_value!r}, {self._user!r})"

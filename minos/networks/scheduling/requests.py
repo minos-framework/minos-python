@@ -6,11 +6,14 @@ from datetime import (
     datetime,
 )
 from typing import (
-    Any,
     Optional,
 )
 from uuid import (
     UUID,
+)
+
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (
@@ -38,14 +41,6 @@ class ScheduledRequest(Request):
         """
         return None
 
-    async def content(self, **kwargs) -> ScheduledRequestContent:
-        """Get the request content.
-
-        :param kwargs: Additional named arguments.
-        :return: A ``ScheduledRequestContent` intance.`.
-        """
-        return self._content
-
     @property
     def has_content(self) -> bool:
         """Check if the request has content.
@@ -54,13 +49,8 @@ class ScheduledRequest(Request):
         """
         return True
 
-    async def params(self, **kwargs) -> Optional[dict[str, Any]]:
-        """Get the request params.
-
-        :param kwargs: Additional named arguments.
-        :return: The request params.
-        """
-        return None
+    async def _content(self, **kwargs) -> ScheduledRequestContent:
+        return self._content_value
 
     @property
     def has_params(self) -> bool:
@@ -71,13 +61,13 @@ class ScheduledRequest(Request):
         return False
 
     def __eq__(self, other: Request) -> bool:
-        return isinstance(other, type(self)) and self._content == other._content
+        return isinstance(other, type(self)) and self._content_value == other._content_value
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._content!r})"
+        return f"{type(self).__name__}({self._content_value!r})"
 
-    @property
-    def _content(self) -> ScheduledRequestContent:
+    @cached_property
+    def _content_value(self) -> ScheduledRequestContent:
         return ScheduledRequestContent(self._scheduled_at)
 
 

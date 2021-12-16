@@ -41,3 +41,15 @@ class MinosMultipleEnrouteDecoratorKindsException(MinosEnrouteDecoratorException
 
 class MinosRedefinedEnrouteDecoratorException(MinosEnrouteDecoratorException):
     """Exception to be raised when same enroute decorator is used by multiple handlers."""
+
+
+class RequestException(MinosNetworkException):
+    """Base exception for requests."""
+
+
+class NotHasContentException(RequestException):
+    """Exception to be raised when request has not content."""
+
+
+class NotHasParamsException(RequestException):
+    """Exception to be raised when request has not params"""

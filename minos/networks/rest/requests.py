@@ -39,6 +39,9 @@ from minos.common import (
     import_module,
 )
 
+from .. import (
+    NotHasParamsException,
+)
 from ..requests import (
     Request,
     Response,
@@ -98,13 +101,7 @@ class RestRequest(Request):
         """
         return self.raw.body_exists
 
-    async def content(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
-        """Get the request content.
-
-        :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
-        :param kwargs: Additional named arguments.
-        :return: The command content.
-        """
+    async def _content(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
         if "model_type" in kwargs:
             warnings.warn("The 'model_type' argument is deprecated. Use 'type_' instead", DeprecationWarning)
             if type_ is None:
@@ -158,17 +155,7 @@ class RestRequest(Request):
         """
         return self.raw.content_type
 
-    async def params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Optional[dict[str, Any]]:
-        """Get the params.
-
-        :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
-        :param kwargs: Additional named arguments.
-        :return:
-        """
-
-        if not self.has_params:
-            return None
-
+    async def _params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> dict[str, Any]:
         data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
         return self._build(data, type_)
 
@@ -189,7 +176,7 @@ class RestRequest(Request):
         :return: A dictionary instance.
         """
         if not self.has_url_params:
-            return None
+            raise NotHasParamsException(f"{self!r} has not url params.")
 
         data = self._parse_multi_dict(self._raw_url_params)
         return self._build(data, type_)
@@ -216,7 +203,7 @@ class RestRequest(Request):
         :return: A dictionary instance.
         """
         if not self._raw_query_params:
-            return None
+            raise NotHasParamsException(f"{self!r} has not query params.")
 
         data = self._parse_multi_dict(self._raw_query_params)
         return self._build(data, type_)
