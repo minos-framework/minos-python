@@ -4,6 +4,9 @@ from .abc import (
     Response,
     ResponseException,
 )
+from .memory import (
+    InMemoryRequest,
+)
 from .wrapped import (
     WrappedRequest,
 )

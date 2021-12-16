@@ -31,7 +31,10 @@ class WrappedRequest(Request):
         base: Request,
         content_action: Callable[[Any, ...], Any] = None,
         params_action: Callable[[Any, ...], Any] = None,
+        *args,
+        **kwargs,
     ):
+        super().__init__(*args, **kwargs)
         self.base = base
         self.content_action = content_action
         self.params_action = params_action

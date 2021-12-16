@@ -8,12 +8,8 @@ from pathlib import (
     Path,
 )
 from typing import (
-    Any,
     Callable,
     Optional,
-)
-from uuid import (
-    UUID,
 )
 
 from minos.common import (
@@ -161,48 +157,3 @@ class FakeServiceWithGetEnroute:
 
     def create_foo(self, request: Request) -> Response:
         """For testing purposes."""
-
-
-sentinel = object()
-
-
-class FakeRequest(Request):
-    """For testing purposes"""
-
-    def __init__(self, content: Any = sentinel, params: Any = sentinel, user: Optional[UUID] = None):
-        super().__init__()
-        self._content_value = content
-        self._params_value = params
-        self._user = user
-
-    @property
-    def user(self) -> Optional[UUID]:
-        """For testing purposes"""
-        return self._user
-
-    @property
-    def has_content(self) -> bool:
-        """For testing purposes"""
-        return self._content_value is not sentinel
-
-    async def _content(self, **kwargs) -> Any:
-        return self._content_value
-
-    @property
-    def has_params(self) -> bool:
-        """For testing purposes"""
-        return self._params_value is not sentinel
-
-    async def _params(self, **kwargs) -> dict[str, Any]:
-        return self._params_value
-
-    def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, type(self))
-            and self._content_value == other._content_value
-            and self._params_value == other._params_value
-            and self._user == other._user
-        )
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({self._content_value!r}, {self._params_value!r}, {self._user!r})"

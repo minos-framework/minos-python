@@ -8,13 +8,13 @@ from minos.networks import (
     EnrouteDecoratorKind,
     HandlerMeta,
     HandlerWrapper,
+    InMemoryRequest,
     MinosMultipleEnrouteDecoratorKindsException,
     Request,
     Response,
     enroute,
 )
 from tests.utils import (
-    FakeRequest,
     FakeService,
 )
 
@@ -39,7 +39,7 @@ class _FakeEnrouteDecorator(EnrouteDecorator):
 
 class TestEnrouteHandleDecorator(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.request = FakeRequest("test")
+        self.request = InMemoryRequest("test")
         self.decorator = _FakeEnrouteDecorator()
 
     def test_decorate(self):
@@ -58,12 +58,12 @@ class TestEnrouteHandleDecorator(unittest.IsolatedAsyncioTestCase):
 
     def test_method_call(self):
         instance = FakeService()
-        response = instance.create_ticket(FakeRequest("test"))
+        response = instance.create_ticket(InMemoryRequest("test"))
         self.assertEqual(Response("Create Ticket"), response)
 
     async def test_static_method_call(self):
         instance = FakeService()
-        response = await instance.ticket_added(FakeRequest("test"))
+        response = await instance.ticket_added(InMemoryRequest("test"))
         self.assertEqual(Response("Ticket Added: test"), response)
 
     def test_function_call(self):

@@ -29,8 +29,8 @@ from ..requests import (
 class ScheduledRequest(Request):
     """Scheduling Request class."""
 
-    def __init__(self, scheduled_at: datetime):
-        super().__init__()
+    def __init__(self, scheduled_at: datetime, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._scheduled_at = scheduled_at
 
     @property

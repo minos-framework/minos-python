@@ -7,11 +7,11 @@ from minos.networks import (
     CheckDecorator,
     CheckerMeta,
     CheckerWrapper,
+    InMemoryRequest,
     Request,
     enroute,
 )
 from tests.utils import (
-    FakeRequest,
     FakeService,
 )
 
@@ -30,7 +30,7 @@ async def _async_fn(request: Request) -> bool:
 
 class TestEnrouteCheckDecorator(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.request = FakeRequest("test")
+        self.request = InMemoryRequest("test")
         self.max_attempts = 30
         self.delay = 1
         self.handler_meta = FakeService.create_ticket.meta

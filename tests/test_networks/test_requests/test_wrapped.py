@@ -1,10 +1,8 @@
 import unittest
 
 from minos.networks import (
+    InMemoryRequest,
     WrappedRequest,
-)
-from tests.utils import (
-    FakeRequest,
 )
 
 
@@ -18,14 +16,14 @@ async def _params_action(params: str) -> str:
 
 class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.base = FakeRequest("hello", "world")
+        self.base = InMemoryRequest("hello", "world")
         self.request = WrappedRequest(self.base, _content_action, _params_action)
 
     def test_equal_true(self):
         self.assertEqual(WrappedRequest(self.base, _content_action, _params_action), self.request)
 
     def test_equal_false(self):
-        self.assertNotEqual(WrappedRequest(FakeRequest("foo"), _content_action, _params_action), self.request)
+        self.assertNotEqual(WrappedRequest(InMemoryRequest("foo"), _content_action, _params_action), self.request)
 
     def test_repr(self):
         self.assertEqual(f"WrappedRequest({self.base!r}, {_content_action!r}, {_params_action!r})", repr(self.request))

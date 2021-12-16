@@ -54,8 +54,9 @@ class RestRequest(Request):
 
     __slots__ = "raw"
 
-    def __init__(self, request: web.Request):
-        self.raw = request
+    def __init__(self, raw: web.Request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.raw = raw
 
     @property
     def raw_request(self) -> web.Request:
