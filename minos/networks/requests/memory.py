@@ -39,7 +39,6 @@ class InMemoryRequest(Request):
 
     @property
     def has_content(self) -> bool:
-
         """Check if the request has content.
 
         :return: ``True`` if it has content or ``False`` otherwise.
