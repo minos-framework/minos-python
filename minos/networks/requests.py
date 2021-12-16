@@ -54,28 +54,31 @@ class Request(ABC):
         raise NotImplementedError
 
     @property
+    @abstractmethod
     def has_content(self) -> bool:
         """Check if the request has content.
 
         :return: ``True`` if it has content or ``False`` otherwise.
         """
-        return True
+        raise NotImplementedError
 
+    @abstractmethod
     async def params(self, **kwargs) -> Any:
         """Get the request params.
 
         :param kwargs: Additional named arguments.
         :return: The request params.
         """
-        return None
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def has_params(self) -> bool:
         """Check if the request has params.
 
         :return: ``True`` if it has params or ``False`` otherwise.
         """
-        return False
+        raise NotImplementedError
 
     @abstractmethod
     def __eq__(self, other: Request) -> bool:

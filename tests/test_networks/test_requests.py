@@ -18,7 +18,10 @@ class TestRequest(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(Request, ABC))
         # noinspection PyUnresolvedReferences
-        self.assertEqual({"user", "content", "__eq__", "__repr__"}, Request.__abstractmethods__)
+        self.assertEqual(
+            {"__eq__", "__repr__", "content", "has_content", "has_params", "params", "user"},
+            Request.__abstractmethods__,
+        )
 
 
 async def _content_action(content: str) -> str:

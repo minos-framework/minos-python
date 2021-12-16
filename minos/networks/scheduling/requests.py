@@ -6,6 +6,7 @@ from datetime import (
     datetime,
 )
 from typing import (
+    Any,
     Optional,
 )
 from uuid import (
@@ -44,6 +45,30 @@ class ScheduledRequest(Request):
         :return: A ``ScheduledRequestContent` intance.`.
         """
         return self._content
+
+    @property
+    def has_content(self) -> bool:
+        """Check if the request has content.
+
+        :return: ``True`` if it has content or ``False`` otherwise.
+        """
+        return True
+
+    async def params(self, **kwargs) -> Any:
+        """Get the request params.
+
+        :param kwargs: Additional named arguments.
+        :return: The request params.
+        """
+        return None
+
+    @property
+    def has_params(self) -> bool:
+        """Check if the request has params.
+
+        :return: ``True`` if it has params or ``False`` otherwise.
+        """
+        return False
 
     def __eq__(self, other: Request) -> bool:
         return isinstance(other, type(self)) and self._content == other._content
