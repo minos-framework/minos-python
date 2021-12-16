@@ -158,7 +158,7 @@ class RestRequest(Request):
         """
         return self.raw.content_type
 
-    async def params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
+    async def params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Optional[dict[str, Any]]:
         """Get the params.
 
         :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.

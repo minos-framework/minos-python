@@ -54,7 +54,7 @@ class ScheduledRequest(Request):
         """
         return True
 
-    async def params(self, **kwargs) -> Any:
+    async def params(self, **kwargs) -> Optional[dict[str, Any]]:
         """Get the request params.
 
         :param kwargs: Additional named arguments.

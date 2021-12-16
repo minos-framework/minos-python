@@ -191,7 +191,7 @@ class FakeRequest(Request):
         """For testing purposes"""
         return self._content is not sentinel
 
-    async def params(self, **kwargs) -> Any:
+    async def params(self, **kwargs) -> Optional[dict[str, Any]]:
         """For testing purposes"""
         if not self.has_params:
             return None
