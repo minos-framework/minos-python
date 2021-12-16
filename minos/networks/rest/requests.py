@@ -158,6 +158,20 @@ class RestRequest(Request):
         """
         return self.raw.content_type
 
+    async def params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
+        """Get the params.
+
+        :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
+        :param kwargs: Additional named arguments.
+        :return:
+        """
+
+        if not self.has_params:
+            return None
+
+        data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
+        return self._build(data, type_)
+
     @property
     def has_params(self) -> bool:
         """Check if the request has params.
@@ -167,15 +181,17 @@ class RestRequest(Request):
         sentinel = object()
         return next(chain(self._raw_url_params, self._raw_query_params), sentinel) is not sentinel
 
-    async def params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
-        """Get the params.
+    async def url_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
+        """Get the url params.
 
         :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
         :param kwargs: Additional named arguments.
-        :return:
+        :return: A dictionary instance.
         """
+        if not self.has_url_params:
+            return None
 
-        data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
+        data = self._parse_multi_dict(self._raw_url_params)
         return self._build(data, type_)
 
     @property
@@ -187,19 +203,23 @@ class RestRequest(Request):
         sentinel = object()
         return next(iter(self._raw_url_params), sentinel) is not sentinel
 
-    async def url_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
-        """Get the url params.
+    @property
+    def _raw_url_params(self):
+        return self.raw.rel_url.query.items()  # pragma: no cover
+
+    async def query_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
+        """Get the query params.
+
 
         :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
         :param kwargs: Additional named arguments.
         :return: A dictionary instance.
         """
-        data = self._parse_multi_dict(self._raw_url_params)
-        return self._build(data, type_)
+        if not self._raw_query_params:
+            return None
 
-    @property
-    def _raw_url_params(self):
-        return self.raw.rel_url.query.items()  # pragma: no cover
+        data = self._parse_multi_dict(self._raw_query_params)
+        return self._build(data, type_)
 
     @property
     def has_query_params(self) -> bool:
@@ -210,17 +230,6 @@ class RestRequest(Request):
                 """
         sentinel = object()
         return next(iter(self._raw_query_params), sentinel) is not sentinel
-
-    async def query_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
-        """Get the query params.
-
-
-        :param type_: Optional ``type`` or ``str`` (classname) that defines the request content type.
-        :param kwargs: Additional named arguments.
-        :return: A dictionary instance.
-        """
-        data = self._parse_multi_dict(self._raw_query_params)
-        return self._build(data, type_)
 
     @property
     def _raw_query_params(self):

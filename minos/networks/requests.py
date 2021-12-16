@@ -44,14 +44,6 @@ class Request(ABC):
         """
         raise NotImplementedError
 
-    @property
-    def has_content(self) -> bool:
-        """Check if the request has content.
-
-        :return: ``True`` if it has content or ``False`` otherwise.
-        """
-        return True
-
     @abstractmethod
     async def content(self, **kwargs) -> Any:
         """Get the request content.
@@ -62,12 +54,12 @@ class Request(ABC):
         raise NotImplementedError
 
     @property
-    def has_params(self) -> bool:
-        """Check if the request has params.
+    def has_content(self) -> bool:
+        """Check if the request has content.
 
-        :return: ``True`` if it has params or ``False`` otherwise.
+        :return: ``True`` if it has content or ``False`` otherwise.
         """
-        return False
+        return True
 
     async def params(self, **kwargs) -> Any:
         """Get the request params.
@@ -76,6 +68,14 @@ class Request(ABC):
         :return: The request params.
         """
         return None
+
+    @property
+    def has_params(self) -> bool:
+        """Check if the request has params.
+
+        :return: ``True`` if it has params or ``False`` otherwise.
+        """
+        return False
 
     @abstractmethod
     def __eq__(self, other: Request) -> bool:
@@ -111,14 +111,6 @@ class WrappedRequest(Request):
         """
         return self.base.user
 
-    @property
-    def has_content(self) -> bool:
-        """Check if the request has params.
-
-        :return: ``True`` if it has params or ``False`` otherwise.
-        """
-        return self.base.has_content
-
     async def content(self, **kwargs) -> Any:
         """Get the request content.
 
@@ -136,12 +128,12 @@ class WrappedRequest(Request):
         return self._content
 
     @property
-    def has_params(self) -> bool:
+    def has_content(self) -> bool:
         """Check if the request has params.
 
         :return: ``True`` if it has params or ``False`` otherwise.
         """
-        return self.base.has_params
+        return self.base.has_content
 
     async def params(self, **kwargs) -> Any:
         """Get the request params.
@@ -159,6 +151,14 @@ class WrappedRequest(Request):
                 params = await params
             self._params = params
         return self._params
+
+    @property
+    def has_params(self) -> bool:
+        """Check if the request has params.
+
+        :return: ``True`` if it has params or ``False`` otherwise.
+        """
+        return self.base.has_params
 
     def __eq__(self, other: WrappedRequest) -> bool:
         return (

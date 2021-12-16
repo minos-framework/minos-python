@@ -80,6 +80,11 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         request = RestRequest(raw)
         self.assertEqual(True, request.has_content)
 
+    async def test_empty(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        self.assertEqual(None, await request.content())
+
     async def test_json_int(self):
         expected = 56
 
@@ -243,6 +248,11 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
+    async def test_url_params_empty(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        self.assertEqual(None, await request.url_params())
+
     def test_has_query_params_false(self):
         raw = mocked_request()
         request = RestRequest(raw)
@@ -272,6 +282,11 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
         observed = await request.query_params(type_=Params)
 
         self.assertEqual(expected, observed)
+
+    async def test_query_params_empty(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        self.assertEqual(None, await request.query_params())
 
     def test_has_params_false(self):
         raw = mocked_request()
@@ -319,6 +334,11 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
         observed = await request.params(type_=Params)
 
         self.assertEqual(expected, observed)
+
+    async def test_params_empty(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        self.assertEqual(None, await request.params())
 
 
 class TestRestResponse(unittest.IsolatedAsyncioTestCase):

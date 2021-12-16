@@ -14,11 +14,6 @@ from typing import (
 )
 from uuid import (
     UUID,
-    uuid4,
-)
-
-from cached_property import (
-    cached_property,
 )
 
 from minos.common import (
@@ -174,34 +169,46 @@ sentinel = object()
 class FakeRequest(Request):
     """For testing purposes"""
 
-    def __init__(self, content=sentinel, params=sentinel):
+    def __init__(self, content: Any = sentinel, params: Any = sentinel, user: Optional[UUID] = None):
         super().__init__()
         self._content = content
         self._params = params
+        self._user = user
 
-    @cached_property
+    @property
     def user(self) -> Optional[UUID]:
         """For testing purposes"""
-        return uuid4()
+        return self._user
 
+    async def content(self, **kwargs):
+        """For testing purposes"""
+        if not self.has_content:
+            return None
+        return self._content
+
+    @property
     def has_content(self) -> bool:
         """For testing purposes"""
         return self._content is not sentinel
 
-    async def content(self, **kwargs):
+    async def params(self, **kwargs) -> Any:
         """For testing purposes"""
-        return self._content
+        if not self.has_params:
+            return None
+        return self._params
 
+    @property
     def has_params(self) -> bool:
         """For testing purposes"""
         return self._params is not sentinel
 
-    async def params(self, **kwargs) -> Any:
-        """For testing purposes"""
-        return self._params
-
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, type(self)) and self._content == other._content
+        return (
+            isinstance(other, type(self))
+            and self._content == other._content
+            and self._params == other._params
+            and self._user == other._user
+        )
 
     def __repr__(self) -> str:
-        return f"FakeRequest({self._content!r})"
+        return f"{type(self).__name__}({self._content!r}, {self._params!r}, {self._user!r})"
