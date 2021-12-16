@@ -15,8 +15,17 @@ class TestScheduledRequest(unittest.IsolatedAsyncioTestCase):
         self.now = current_datetime()
         self.request = ScheduledRequest(self.now)
 
+    def test_has_content(self):
+        self.assertEqual(True, self.request.has_content)
+
     async def test_content(self):
         self.assertEqual(ScheduledRequestContent(self.now), await self.request.content())
+
+    def test_has_params(self):
+        self.assertEqual(False, self.request.has_params)
+
+    async def test_params(self):
+        self.assertEqual(None, await self.request.params())
 
     def test_user(self):
         self.assertIsNone(self.request.user)

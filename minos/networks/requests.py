@@ -75,7 +75,7 @@ class Request(ABC):
         :param kwargs: Additional named arguments.
         :return: The request params.
         """
-        raise ValueError
+        return None
 
     @abstractmethod
     def __eq__(self, other: Request) -> bool:
@@ -93,7 +93,10 @@ class WrappedRequest(Request):
     """Wrapped Request class."""
 
     def __init__(
-        self, base: Request, content_action: Callable[[Any, ...], Any], params_action: Callable[[Any, ...], Any] = None
+        self,
+        base: Request,
+        content_action: Callable[[Any, ...], Any] = None,
+        params_action: Callable[[Any, ...], Any] = None,
     ):
         self.base = base
         self.content_action = content_action
@@ -114,7 +117,7 @@ class WrappedRequest(Request):
 
         :return: ``True`` if it has params or ``False`` otherwise.
         """
-        return self.content_action is not None or self.base.has_content
+        return self.base.has_content
 
     async def content(self, **kwargs) -> Any:
         """Get the request content.
@@ -122,13 +125,13 @@ class WrappedRequest(Request):
         :param kwargs: Additional named arguments.
         :return: A list of instances.
         """
+        if self.content_action is None:
+            return await self.base.content()
+
         if self._content is sentinel:
-            if self.content_action is None:
-                content = await self.base.content()
-            else:
-                content = self.content_action(await self.base.content(), **kwargs)
-                if isawaitable(content):
-                    content = await content
+            content = self.content_action(await self.base.content(), **kwargs)
+            if isawaitable(content):
+                content = await content
             self._content = content
         return self._content
 
@@ -138,7 +141,7 @@ class WrappedRequest(Request):
 
         :return: ``True`` if it has params or ``False`` otherwise.
         """
-        return self.params_action is not None or self.base.has_params
+        return self.base.has_params
 
     async def params(self, **kwargs) -> Any:
         """Get the request params.
@@ -147,13 +150,13 @@ class WrappedRequest(Request):
         :return: The request params.
         """
 
+        if self.params_action is None:
+            return await self.base.params()
+
         if self._params is sentinel:
-            if self.params_action is None:
-                params = await self.base.params()
-            else:
-                params = self.content_action(await self.base.params(), **kwargs)
-                if isawaitable(params):
-                    params = await params
+            params = self.params_action(await self.base.params(), **kwargs)
+            if isawaitable(params):
+                params = await params
             self._params = params
         return self._params
 

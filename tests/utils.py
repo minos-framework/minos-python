@@ -168,20 +168,37 @@ class FakeServiceWithGetEnroute:
         """For testing purposes."""
 
 
+sentinel = object()
+
+
 class FakeRequest(Request):
     """For testing purposes"""
 
-    def __init__(self, content):
+    def __init__(self, content=sentinel, params=sentinel):
         super().__init__()
         self._content = content
+        self._params = params
 
     @cached_property
     def user(self) -> Optional[UUID]:
+        """For testing purposes"""
         return uuid4()
+
+    def has_content(self) -> bool:
+        """For testing purposes"""
+        return self._content is not sentinel
 
     async def content(self, **kwargs):
         """For testing purposes"""
         return self._content
+
+    def has_params(self) -> bool:
+        """For testing purposes"""
+        return self._params is not sentinel
+
+    async def params(self, **kwargs) -> Any:
+        """For testing purposes"""
+        return self._params
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, type(self)) and self._content == other._content

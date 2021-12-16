@@ -13,49 +13,45 @@ from tests.utils import (
 )
 
 
-class TestHandlerRequest(unittest.IsolatedAsyncioTestCase):
+class TestBrokerRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.data = [FakeModel("foo"), FakeModel("bar")]
         self.identifier = uuid4()
-        self.raw = BrokerMessage("FooCreated", self.data, identifier=self.identifier, reply_topic="AddOrderReply")
+        self.raw = BrokerMessage("FooCreated", self.data)
+        self.request = BrokerRequest(self.raw)
 
     def test_repr(self):
-        request = BrokerRequest(self.raw)
         expected = f"BrokerRequest({self.raw!r})"
-        self.assertEqual(expected, repr(request))
+        self.assertEqual(expected, repr(self.request))
 
     def test_eq_true(self):
-        self.assertEqual(BrokerRequest(self.raw), BrokerRequest(self.raw))
+        self.assertEqual(self.request, BrokerRequest(self.raw))
 
     def test_eq_false(self):
-        another = BrokerRequest(
-            BrokerMessage("FooUpdated", self.data, identifier=self.identifier, reply_topic="AddOrderReply")
-        )
-        self.assertNotEqual(BrokerRequest(self.raw), another)
+        self.assertNotEqual(self.request, BrokerRequest(BrokerMessage("FooUpdated", self.data)))
 
-    def test_no_user(self):
-        request = BrokerRequest(self.raw)
-        self.assertEqual(None, request.user)
+    def test_user(self):
+        raw = BrokerMessage("FooCreated", self.data, user=uuid4())
+        request = BrokerRequest(raw)
+        self.assertEqual(raw.user, request.user)
 
-    def test_command(self):
-        request = BrokerRequest(self.raw)
-        self.assertEqual(self.raw, request.raw)
+    def test_user_unset(self):
+        self.assertEqual(None, self.request.user)
+
+    def test_raw(self):
+        self.assertEqual(self.raw, self.request.raw)
+
+    def test_has_content(self):
+        self.assertEqual(True, self.request.has_content)
 
     async def test_content(self):
-        request = BrokerRequest(self.raw)
-        self.assertEqual(self.data, await request.content())
+        self.assertEqual(self.data, await self.request.content())
 
-    async def test_content_single(self):
-        request = BrokerRequest(
-            BrokerMessage("FooCreated", self.data[0], identifier=self.identifier, reply_topic="AddOrderReply")
-        )
-        self.assertEqual(self.data[0], await request.content())
+    def test_has_params(self):
+        self.assertEqual(False, self.request.has_params)
 
-    async def test_content_simple(self):
-        request = BrokerRequest(
-            BrokerMessage("FooCreated", 1234, identifier=self.identifier, reply_topic="AddOrderReply")
-        )
-        self.assertEqual(1234, await request.content())
+    async def test_params(self):
+        self.assertEqual(None, await self.request.params())
 
 
 class TestHandlerResponse(unittest.IsolatedAsyncioTestCase):

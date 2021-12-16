@@ -92,7 +92,10 @@ class RestRequest(Request):
 
     @property
     def has_content(self) -> bool:
-        """TODO"""
+        """Check if the request has content.
+
+        :return: ``True`` if it has content or ``False`` otherwise.
+        """
         return self.raw.body_exists
 
     async def content(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
@@ -157,7 +160,10 @@ class RestRequest(Request):
 
     @property
     def has_params(self) -> bool:
-        """TODO"""
+        """Check if the request has params.
+
+        :return: ``True`` if it has params or ``False`` otherwise.
+        """
         sentinel = object()
         return next(chain(self._raw_url_params, self._raw_query_params), sentinel) is not sentinel
 
@@ -174,7 +180,10 @@ class RestRequest(Request):
 
     @property
     def has_url_params(self) -> bool:
-        """TODO"""
+        """Check if the request has url params.
+
+        :return: ``True`` if it has url params or ``False`` otherwise.
+        """
         sentinel = object()
         return next(iter(self._raw_url_params), sentinel) is not sentinel
 
@@ -194,7 +203,11 @@ class RestRequest(Request):
 
     @property
     def has_query_params(self) -> bool:
-        """TODO"""
+        # noinspection GrazieInspection
+        """Check if the request has query params.
+
+                :return: ``True`` if it has query params or ``False`` otherwise.
+                """
         sentinel = object()
         return next(iter(self._raw_query_params), sentinel) is not sentinel
 
