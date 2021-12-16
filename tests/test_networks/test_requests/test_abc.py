@@ -12,11 +12,9 @@ from uuid import (
 from minos.networks import (
     Request,
     Response,
-    WrappedRequest,
 )
 from tests.utils import (
     FakeModel,
-    FakeRequest,
 )
 
 
@@ -79,54 +77,6 @@ class TestRequest(unittest.IsolatedAsyncioTestCase):
 
         with self.assertRaises(RuntimeError):
             await _Request().params()
-
-
-async def _content_action(content: str) -> str:
-    return f"Wrapped Content: {content}"
-
-
-async def _params_action(params: str) -> str:
-    return f"Wrapped Params: {params}"
-
-
-class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        self.base = FakeRequest("hello", "world")
-        self.request = WrappedRequest(self.base, _content_action, _params_action)
-
-    def test_equal_true(self):
-        self.assertEqual(WrappedRequest(self.base, _content_action, _params_action), self.request)
-
-    def test_equal_false(self):
-        self.assertNotEqual(WrappedRequest(FakeRequest("foo"), _content_action, _params_action), self.request)
-
-    def test_repr(self):
-        self.assertEqual(f"WrappedRequest({self.base!r}, {_content_action!r}, {_params_action!r})", repr(self.request))
-
-    def test_user(self):
-        self.assertEqual(self.base.user, self.request.user)
-
-    def test_has_content(self):
-        self.assertEqual(self.base.has_content, self.request.has_content)
-
-    async def test_content(self):
-        expected = "Wrapped Content: hello"
-        self.assertEqual(expected, await self.request.content())
-
-    async def test_content_without_action(self):
-        expected = "hello"
-        self.assertEqual(expected, await WrappedRequest(self.base).content())
-
-    def test_has_params(self):
-        self.assertEqual(self.base.has_params, self.request.has_params)
-
-    async def test_params(self):
-        expected = "Wrapped Params: world"
-        self.assertEqual(expected, await self.request.params())
-
-    async def test_params_without_action(self):
-        expected = "world"
-        self.assertEqual(expected, await WrappedRequest(self.base).params())
 
 
 class TestResponse(unittest.IsolatedAsyncioTestCase):
