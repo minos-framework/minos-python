@@ -57,7 +57,7 @@ class Request(ABC):
         """Get the request content.
 
         :param kwargs: Additional named arguments.
-        :return: A request contents.
+        :return: The request content.
         """
         raise NotImplementedError
 
