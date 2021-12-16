@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 from collections.abc import (
+    Awaitable,
     Callable,
 )
 from inspect import (
@@ -11,6 +12,7 @@ from inspect import (
 from typing import (
     Any,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -21,6 +23,8 @@ from .abc import (
 )
 
 sentinel = object()
+ContentAction = Callable[[Any, ...], Union[Any, Awaitable[Any]]]
+ParamsAction = Callable[[dict[str, Any], ...], Union[dict[str, Any], Awaitable[dict[str, Any]]]]
 
 
 class WrappedRequest(Request):
@@ -29,8 +33,8 @@ class WrappedRequest(Request):
     def __init__(
         self,
         base: Request,
-        content_action: Callable[[Any, ...], Any] = None,
-        params_action: Callable[[Any, ...], Any] = None,
+        content_action: Optional[ContentAction] = None,
+        params_action: Optional[ParamsAction] = None,
         *args,
         **kwargs,
     ):

@@ -1,4 +1,7 @@
 import unittest
+from typing import (
+    Any,
+)
 
 from minos.networks import (
     InMemoryRequest,
@@ -10,13 +13,13 @@ async def _content_action(content: str) -> str:
     return f"Wrapped Content: {content}"
 
 
-async def _params_action(params: str) -> str:
-    return f"Wrapped Params: {params}"
+async def _params_action(params: dict[str, Any]) -> dict[str, Any]:
+    return params | {"wrapped": "params"}
 
 
 class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.base = InMemoryRequest("hello", "world")
+        self.base = InMemoryRequest("hello", {"hello": "world"})
         self.request = WrappedRequest(self.base, _content_action, _params_action)
 
     def test_equal_true(self):
@@ -46,11 +49,11 @@ class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.base.has_params, self.request.has_params)
 
     async def test_params(self):
-        expected = "Wrapped Params: world"
+        expected = {"hello": "world", "wrapped": "params"}
         self.assertEqual(expected, await self.request.params())
 
     async def test_params_without_action(self):
-        expected = "world"
+        expected = {"hello": "world"}
         self.assertEqual(expected, await WrappedRequest(self.base).params())
 
 
