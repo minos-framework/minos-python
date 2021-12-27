@@ -9,12 +9,8 @@ from abc import (
 from contextvars import (
     ContextVar,
 )
-from inspect import (
-    isawaitable,
-)
 from typing import (
     Any,
-    Callable,
     Final,
     Optional,
 )
@@ -26,8 +22,10 @@ from minos.common import (
     AvroDataEncoder,
 )
 
-from .exceptions import (
+from ..exceptions import (
     MinosException,
+    NotHasContentException,
+    NotHasParamsException,
 )
 
 REQUEST_USER_CONTEXT_VAR: Final[ContextVar[Optional[UUID]]] = ContextVar("user", default=None)
@@ -44,14 +42,53 @@ class Request(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     async def content(self, **kwargs) -> Any:
         """Get the request content.
 
         :param kwargs: Additional named arguments.
-        :return: A list of instances.
+        :return: The request content.
+        """
+        if not self.has_content:
+            raise NotHasContentException(f"{self!r} has not content.")
+        return await self._content(**kwargs)
+
+    @property
+    @abstractmethod
+    def has_content(self) -> bool:
+        """Check if the request has content.
+
+        :return: ``True`` if it has content or ``False`` otherwise.
         """
         raise NotImplementedError
+
+    async def _content(self, **kwargs) -> Any:
+        raise RuntimeError(
+            f"{type(self).__name__}._content must be implemented if {type(self).__name__}.has_content returns {True!r}."
+        )
+
+    async def params(self, **kwargs) -> dict[str, Any]:
+        """Get the request params.
+
+        :param kwargs: Additional named arguments.
+        :return: The request params.
+        """
+        if not self.has_params:
+            raise NotHasParamsException(f"{self!r} has not params.")
+        return await self._params(**kwargs)
+
+    @property
+    @abstractmethod
+    def has_params(self) -> bool:
+        """Check if the request has params.
+
+        :return: ``True`` if it has params or ``False`` otherwise.
+        """
+        raise NotImplementedError
+
+    async def _params(self, **kwargs) -> dict[str, Any]:
+        raise RuntimeError(
+            f"{type(self).__name__}._params must be implemented if '{type(self).__name__}.has_params returns {True!r}."
+        )
 
     @abstractmethod
     def __eq__(self, other: Request) -> bool:
@@ -60,41 +97,6 @@ class Request(ABC):
     @abstractmethod
     def __repr__(self) -> str:
         raise NotImplementedError
-
-
-class WrappedRequest(Request):
-    """Wrapped Request class."""
-
-    def __init__(self, base: Request, action: Callable[[Any, ...], Any]):
-        self.base = base
-        self.action = action
-        self._content = None
-
-    @property
-    def user(self) -> Optional[UUID]:
-        """
-        Returns the UUID of the user making the Request.
-        """
-        return self.base.user
-
-    async def content(self, **kwargs) -> Any:
-        """Get the request content.
-
-        :param kwargs: Additional named arguments.
-        :return: A list of instances.
-        """
-        if self._content is None:
-            content = self.action(await self.base.content(), **kwargs)
-            if isawaitable(content):
-                content = await content
-            self._content = content
-        return self._content
-
-    def __eq__(self, other: WrappedRequest) -> bool:
-        return type(self) == type(other) and self.base == other.base and self.action == other.action
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.base!r}, {self.action!r})"
 
 
 class Response:

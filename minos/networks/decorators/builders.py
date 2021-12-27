@@ -6,6 +6,7 @@ from collections import (
 )
 from functools import (
     partial,
+    wraps,
 )
 from inspect import (
     isawaitable,
@@ -109,10 +110,10 @@ class EnrouteBuilder:
             if decorator.KIND != EnrouteDecoratorKind.Event:
                 raise MinosRedefinedEnrouteDecoratorException(f"{decorator!r} can be used only once.")
 
-            async def _fn(*ag, **kw):
+            async def _wrapper(*ag, **kw):
                 return await gather(*(fn(*ag, **kw) for fn in fns))
 
-            return _fn
+            return _wrapper
 
         return {
             decorator: _flatten(decorator, fns)
@@ -141,7 +142,8 @@ class EnrouteBuilder:
         pre_fn = getattr(instance, pref_fn_name, None)
         post_fn = getattr(instance, post_fn_name, None)
 
-        async def _wrapped_fn(request: Request) -> Optional[Response]:
+        @wraps(fn)
+        async def _wrapper(request: Request) -> Optional[Response]:
             if pre_fn is not None:
                 request = pre_fn(request)
                 if isawaitable(request):
@@ -159,6 +161,6 @@ class EnrouteBuilder:
             return response
 
         for middleware_fn in reversed(self.middleware):
-            _wrapped_fn = partial(middleware_fn, inner=_wrapped_fn)
+            _wrapper = partial(middleware_fn, inner=_wrapper)
 
-        return _wrapped_fn
+        return _wrapper

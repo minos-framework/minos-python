@@ -5,6 +5,7 @@ from __future__ import (
 import logging
 from functools import (
     cached_property,
+    wraps,
 )
 from inspect import (
     isawaitable,
@@ -124,7 +125,8 @@ class RestHandler(MinosSetup):
         :return: A wrapper function around the given one that is compatible with the ``aiohttp`` Controller.
         """
 
-        async def _fn(request: web.Request) -> web.Response:
+        @wraps(fn)
+        async def _wrapper(request: web.Request) -> web.Response:
             logger.info(f"Dispatching '{request!s}' from '{request.remote!s}'...")
 
             request = RestRequest(request)
@@ -148,7 +150,7 @@ class RestHandler(MinosSetup):
             finally:
                 REQUEST_USER_CONTEXT_VAR.reset(token)
 
-        return _fn
+        return _wrapper
 
     def _mount_system_health(self, app: web.Application):
         """Mount System Health Route."""

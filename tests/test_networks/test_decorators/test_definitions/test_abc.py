@@ -6,13 +6,15 @@ from typing import (
 from minos.networks import (
     EnrouteDecorator,
     EnrouteDecoratorKind,
+    HandlerMeta,
+    HandlerWrapper,
+    InMemoryRequest,
     MinosMultipleEnrouteDecoratorKindsException,
     Request,
     Response,
     enroute,
 )
 from tests.utils import (
-    FakeRequest,
     FakeService,
 )
 
@@ -35,22 +37,33 @@ class _FakeEnrouteDecorator(EnrouteDecorator):
         yield from []
 
 
-class TestEnrouteDecorator(unittest.IsolatedAsyncioTestCase):
+class TestEnrouteHandleDecorator(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.request = FakeRequest("test")
+        self.request = InMemoryRequest("test")
         self.decorator = _FakeEnrouteDecorator()
+
+    def test_decorate(self):
+        decorated = self.decorator(_fn)
+        self.assertIsInstance(decorated, HandlerWrapper)
+        self.assertEqual(HandlerMeta(_fn, {self.decorator}), decorated.meta)
+
+    def test_iter(self):
+        self.assertEqual(tuple(), tuple(self.decorator))
+
+    def test_hash(self):
+        self.assertEqual(hash(tuple()), hash(self.decorator))
 
     def test_repr(self):
         self.assertEqual("_FakeEnrouteDecorator()", repr(self.decorator))
 
     def test_method_call(self):
         instance = FakeService()
-        response = instance.create_ticket(FakeRequest("test"))
+        response = instance.create_ticket(InMemoryRequest("test"))
         self.assertEqual(Response("Create Ticket"), response)
 
     async def test_static_method_call(self):
         instance = FakeService()
-        response = await instance.ticket_added(FakeRequest("test"))
+        response = await instance.ticket_added(InMemoryRequest("test"))
         self.assertEqual(Response("Ticket Added: test"), response)
 
     def test_function_call(self):

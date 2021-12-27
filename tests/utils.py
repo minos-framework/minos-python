@@ -1,20 +1,15 @@
 from collections import (
     namedtuple,
 )
+from datetime import (
+    timedelta,
+)
 from pathlib import (
     Path,
 )
 from typing import (
     Callable,
     Optional,
-)
-from uuid import (
-    UUID,
-    uuid4,
-)
-
-from cached_property import (
-    cached_property,
 )
 
 from minos.common import (
@@ -96,6 +91,14 @@ class FakeService:
         """For testing purposes."""
         return Response("Create Ticket")
 
+    @create_ticket.check(max_attempts=1, delay=0.5)
+    def check_create_ticket_1(self, request: Request) -> bool:
+        return True
+
+    @create_ticket.check(delay=timedelta(seconds=1))
+    def check_create_ticket_2(self, request: Request) -> bool:
+        return True
+
     # noinspection PyUnusedLocal
     @classmethod
     @enroute.rest.command(url="orders/", method="DELETE")
@@ -104,17 +107,32 @@ class FakeService:
         """For testing purposes."""
         return
 
+    @classmethod
+    @delete_ticket.__func__.check()
+    def check_classmethod(cls, request: Request) -> bool:
+        return True
+
     @enroute.rest.query(url="tickets/", method="GET")
     @enroute.broker.query(topic="GetTickets")
     async def get_tickets(self, request: Request) -> Response:
         """For testing purposes."""
         return Response(": ".join(("Get Tickets", await request.content(),)))
 
+    @create_ticket.check()
+    @get_tickets.check()
+    def check_multiple(self, request: Request) -> bool:
+        return True
+
     @staticmethod
     @enroute.broker.event(topic="TicketAdded")
     async def ticket_added(request: Request) -> Response:
         """For testing purposes."""
         return Response(": ".join(("Ticket Added", await request.content(),)))
+
+    @staticmethod
+    @ticket_added.__func__.check()
+    def check_static(request: Request) -> bool:
+        return True
 
     @enroute.periodic.event("@daily")
     async def send_newsletter(self, request: Request):
@@ -139,25 +157,3 @@ class FakeServiceWithGetEnroute:
 
     def create_foo(self, request: Request) -> Response:
         """For testing purposes."""
-
-
-class FakeRequest(Request):
-    """For testing purposes"""
-
-    def __init__(self, content):
-        super().__init__()
-        self._content = content
-
-    @cached_property
-    def user(self) -> Optional[UUID]:
-        return uuid4()
-
-    async def content(self, **kwargs):
-        """For testing purposes"""
-        return self._content
-
-    def __eq__(self, other) -> bool:
-        return self._content == other._content
-
-    def __repr__(self) -> str:
-        return f"FakeRequest({self._content!r})"

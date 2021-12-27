@@ -2,49 +2,81 @@ import unittest
 from abc import (
     ABC,
 )
+from typing import (
+    Optional,
+)
+from uuid import (
+    UUID,
+)
 
 from minos.networks import (
     Request,
     Response,
-    WrappedRequest,
 )
 from tests.utils import (
     FakeModel,
-    FakeRequest,
 )
 
 
 class TestRequest(unittest.IsolatedAsyncioTestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(Request, ABC))
-        self.assertEqual({"user", "content", "__eq__", "__repr__"}, Request.__abstractmethods__)
+        # noinspection PyUnresolvedReferences
+        self.assertEqual(
+            {"__eq__", "__repr__", "has_content", "has_params", "user"}, Request.__abstractmethods__,
+        )
 
+    async def test_content_raises(self):
+        class _Request(Request):
+            @property
+            def user(self) -> Optional[UUID]:
+                """For testing purposes."""
+                return None
 
-async def _action(content: str) -> str:
-    return f"Wrapped Request: {content}"
+            @property
+            def has_content(self) -> bool:
+                """For testing purposes."""
+                return True
 
+            @property
+            def has_params(self) -> bool:
+                """For testing purposes."""
+                return True
 
-class TestWrappedRequest(unittest.IsolatedAsyncioTestCase):
-    def setUp(self) -> None:
-        self.base = FakeRequest("hello")
-        self.action = _action
-        self.request = WrappedRequest(self.base, self.action)
+            def __eq__(self, other: Request) -> bool:
+                return True
 
-    async def test_content(self):
-        expected = "Wrapped Request: hello"
-        self.assertEqual(expected, await self.request.content())
+            def __repr__(self) -> str:
+                return str()
 
-    def test_equal_true(self):
-        self.assertEqual(WrappedRequest(self.base, self.action), self.request)
+        with self.assertRaises(RuntimeError):
+            await _Request().content()
 
-    def test_equal_false(self):
-        self.assertNotEqual(WrappedRequest(FakeRequest("foo"), self.action), self.request)
+    async def test_params_raises(self):
+        class _Request(Request):
+            @property
+            def user(self) -> Optional[UUID]:
+                """For testing purposes."""
+                return None
 
-    def test_repr(self):
-        self.assertEqual(f"WrappedRequest({self.base!r}, {self.action!r})", repr(self.request))
+            @property
+            def has_content(self) -> bool:
+                """For testing purposes."""
+                return True
 
-    def test_user(self):
-        self.assertEqual(self.base.user, self.request.user)
+            @property
+            def has_params(self) -> bool:
+                """For testing purposes."""
+                return True
+
+            def __eq__(self, other: Request) -> bool:
+                return True
+
+            def __repr__(self) -> str:
+                return str()
+
+        with self.assertRaises(RuntimeError):
+            await _Request().params()
 
 
 class TestResponse(unittest.IsolatedAsyncioTestCase):
