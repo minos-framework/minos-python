@@ -200,7 +200,7 @@ class RestRequest(Request):
         :param kwargs: Additional named arguments.
         :return: A dictionary instance.
         """
-        if not self._raw_query_params:
+        if not self.has_query_params:
             raise NotHasParamsException(f"{self!r} has not query params.")
 
         data = self._parse_multi_dict(self._raw_query_params)
