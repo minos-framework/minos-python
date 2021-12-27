@@ -26,7 +26,8 @@ from minos.networks import (
     RestResponseException,
 )
 from tests.test_networks.test_rest.utils import (
-    MockedRequest,
+    json_mocked_request,
+    mocked_request,
 )
 from tests.utils import (
     BASE_PATH,
@@ -71,14 +72,14 @@ class TestRestHandler(PostgresAsyncTestCase):
 
     async def test_get_callback(self):
         handler = self.handler.get_callback(_Cls._fn)
-        response = await handler(MockedRequest({"foo": "bar"}))
+        response = await handler(json_mocked_request({"foo": "bar"}))
         self.assertIsInstance(response, web.Response)
         self.assertEqual('{"foo": "bar"}', response.text)
         self.assertEqual("application/json", response.content_type)
 
     async def test_get_callback_none(self):
         handler = self.handler.get_callback(_Cls._fn_none)
-        response = await handler(MockedRequest())
+        response = await handler(mocked_request())
         self.assertIsInstance(response, web.Response)
         self.assertEqual(None, response.text)
         self.assertEqual("application/json", response.content_type)
@@ -86,12 +87,12 @@ class TestRestHandler(PostgresAsyncTestCase):
     async def test_get_callback_raises_response(self):
         handler = self.handler.get_callback(_Cls._fn_raises_response)
         with self.assertRaises(HTTPBadRequest):
-            await handler(MockedRequest({"foo": "bar"}))
+            await handler(json_mocked_request({"foo": "bar"}))
 
     async def test_get_callback_raises_exception(self):
         handler = self.handler.get_callback(_Cls._fn_raises_exception)
         with self.assertRaises(HTTPInternalServerError):
-            await handler(MockedRequest({"foo": "bar"}))
+            await handler(json_mocked_request({"foo": "bar"}))
 
     async def test_get_callback_with_user(self):
         user = uuid4()
@@ -103,7 +104,7 @@ class TestRestHandler(PostgresAsyncTestCase):
         mock = AsyncMock(side_effect=_fn)
 
         handler = self.handler.get_callback(mock)
-        await handler(MockedRequest({"foo": "bar"}, user=user))
+        await handler(json_mocked_request({"foo": "bar"}, user=user))
 
         self.assertEqual(1, mock.call_count)
 
