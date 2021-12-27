@@ -14,11 +14,6 @@ from typing import (
 )
 from uuid import (
     UUID,
-    uuid4,
-)
-
-from cached_property import (
-    cached_property,
 )
 
 from minos.common import (
@@ -168,23 +163,46 @@ class FakeServiceWithGetEnroute:
         """For testing purposes."""
 
 
+sentinel = object()
+
+
 class FakeRequest(Request):
     """For testing purposes"""
 
-    def __init__(self, content):
+    def __init__(self, content: Any = sentinel, params: Any = sentinel, user: Optional[UUID] = None):
         super().__init__()
-        self._content = content
+        self._content_value = content
+        self._params_value = params
+        self._user = user
 
-    @cached_property
+    @property
     def user(self) -> Optional[UUID]:
-        return uuid4()
-
-    async def content(self, **kwargs):
         """For testing purposes"""
-        return self._content
+        return self._user
+
+    @property
+    def has_content(self) -> bool:
+        """For testing purposes"""
+        return self._content_value is not sentinel
+
+    async def _content(self, **kwargs) -> Any:
+        return self._content_value
+
+    @property
+    def has_params(self) -> bool:
+        """For testing purposes"""
+        return self._params_value is not sentinel
+
+    async def _params(self, **kwargs) -> dict[str, Any]:
+        return self._params_value
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, type(self)) and self._content == other._content
+        return (
+            isinstance(other, type(self))
+            and self._content_value == other._content_value
+            and self._params_value == other._params_value
+            and self._user == other._user
+        )
 
     def __repr__(self) -> str:
-        return f"FakeRequest({self._content!r})"
+        return f"{type(self).__name__}({self._content_value!r}, {self._params_value!r}, {self._user!r})"

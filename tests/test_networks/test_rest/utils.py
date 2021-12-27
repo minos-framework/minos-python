@@ -18,6 +18,9 @@ from aiohttp import (
     test_utils,
     web,
 )
+from aiohttp.streams import (
+    EmptyStreamReader,
+)
 from multidict import (
     MultiDict,
 )
@@ -79,6 +82,8 @@ def mocked_request(
         "path": path,
         "headers": headers,
     }
+    if data is None:
+        kwargs["payload"] = EmptyStreamReader()
 
     request = test_utils.make_mocked_request(**kwargs)
     request.read = AsyncMock(return_value=data)

@@ -9,6 +9,8 @@ from minos.common import (
     classname,
 )
 from minos.networks import (
+    NotHasContentException,
+    NotHasParamsException,
     RestRequest,
     RestResponse,
 )
@@ -70,6 +72,22 @@ class TestRestRequest(unittest.IsolatedAsyncioTestCase):
 
 
 class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
+    def test_has_content_false(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        self.assertEqual(False, request.has_content)
+
+    def test_has_content_true(self):
+        raw = json_mocked_request(123)
+        request = RestRequest(raw)
+        self.assertEqual(True, request.has_content)
+
+    async def test_empty_raises(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        with self.assertRaises(NotHasContentException):
+            await request.content()
+
     async def test_json_int(self):
         expected = 56
 
@@ -165,7 +183,7 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(expected, observed)
 
     async def test_raises(self):
-        raw = mocked_request(content_type="foo/bar")
+        raw = mocked_request(content_type="foo/bar", data="foobar".encode())
         request = RestRequest(raw)
         with self.assertRaises(ValueError):
             await request.content()
@@ -203,6 +221,16 @@ class TestRestRequestContent(unittest.IsolatedAsyncioTestCase):
 
 
 class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
+    def test_has_url_params_false(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        self.assertEqual(False, request.has_url_params)
+
+    def test_has_url_params_true(self):
+        raw = mocked_request(url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")])
+        request = RestRequest(raw)
+        self.assertEqual(True, request.has_url_params)
+
     async def test_url_params(self):
         expected = {"bar": "2", "foo": ["1", "3"]}
 
@@ -223,6 +251,22 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(expected, observed)
 
+    async def test_url_params_raises(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        with self.assertRaises(NotHasParamsException):
+            await request.url_params()
+
+    def test_has_query_params_false(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        self.assertEqual(False, request.has_query_params)
+
+    def test_has_query_params_true(self):
+        raw = mocked_request(query_params=[("one", "1"), ("two", "2"), ("one", "3")])
+        request = RestRequest(raw)
+        self.assertEqual(True, request.has_query_params)
+
     async def test_query_params(self):
         expected = {"one": ["1", "3"], "two": "2"}
 
@@ -242,6 +286,33 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
         observed = await request.query_params(type_=Params)
 
         self.assertEqual(expected, observed)
+
+    async def test_query_params_raises(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        with self.assertRaises(NotHasParamsException):
+            await request.query_params()
+
+    def test_has_params_false(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        self.assertEqual(False, request.has_params)
+
+    def test_has_params_true(self):
+        raw = mocked_request(url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")])
+        request = RestRequest(raw)
+        self.assertEqual(True, request.has_params)
+
+        raw = mocked_request(query_params=[("one", "1"), ("two", "2"), ("one", "3")])
+        request = RestRequest(raw)
+        self.assertEqual(True, request.has_params)
+
+        raw = mocked_request(
+            url_params=[("foo", "1"), ("bar", "2"), ("foo", "3")],
+            query_params=[("one", "1"), ("two", "2"), ("one", "3")],
+        )
+        request = RestRequest(raw)
+        self.assertEqual(True, request.has_params)
 
     async def test_params(self):
         expected = {"bar": "2", "foo": ["1", "3"], "one": ["1", "3"], "two": "2"}
@@ -268,6 +339,12 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
         observed = await request.params(type_=Params)
 
         self.assertEqual(expected, observed)
+
+    async def test_params_raises(self):
+        raw = mocked_request()
+        request = RestRequest(raw)
+        with self.assertRaises(NotHasParamsException):
+            await request.params()
 
 
 class TestRestResponse(unittest.IsolatedAsyncioTestCase):

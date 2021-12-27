@@ -6,6 +6,10 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from collections.abc import (
+    Awaitable,
+    Callable,
+)
 from contextvars import (
     ContextVar,
 )
@@ -14,9 +18,9 @@ from inspect import (
 )
 from typing import (
     Any,
-    Callable,
     Final,
     Optional,
+    Union,
 )
 from uuid import (
     UUID,
@@ -28,6 +32,8 @@ from minos.common import (
 
 from .exceptions import (
     MinosException,
+    NotHasContentException,
+    NotHasParamsException,
 )
 
 REQUEST_USER_CONTEXT_VAR: Final[ContextVar[Optional[UUID]]] = ContextVar("user", default=None)
@@ -44,14 +50,53 @@ class Request(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     async def content(self, **kwargs) -> Any:
         """Get the request content.
 
         :param kwargs: Additional named arguments.
-        :return: A list of instances.
+        :return: The request content.
+        """
+        if not self.has_content:
+            raise NotHasContentException(f"{self!r} has not content.")
+        return await self._content(**kwargs)
+
+    @property
+    @abstractmethod
+    def has_content(self) -> bool:
+        """Check if the request has content.
+
+        :return: ``True`` if it has content or ``False`` otherwise.
         """
         raise NotImplementedError
+
+    async def _content(self, **kwargs) -> Any:
+        raise RuntimeError(
+            f"{type(self).__name__}._content must be implemented if {type(self).__name__}.has_content returns {True!r}."
+        )
+
+    async def params(self, **kwargs) -> dict[str, Any]:
+        """Get the request params.
+
+        :param kwargs: Additional named arguments.
+        :return: The request params.
+        """
+        if not self.has_params:
+            raise NotHasParamsException(f"{self!r} has not params.")
+        return await self._params(**kwargs)
+
+    @property
+    @abstractmethod
+    def has_params(self) -> bool:
+        """Check if the request has params.
+
+        :return: ``True`` if it has params or ``False`` otherwise.
+        """
+        raise NotImplementedError
+
+    async def _params(self, **kwargs) -> dict[str, Any]:
+        raise RuntimeError(
+            f"{type(self).__name__}._params must be implemented if '{type(self).__name__}.has_params returns {True!r}."
+        )
 
     @abstractmethod
     def __eq__(self, other: Request) -> bool:
@@ -62,13 +107,25 @@ class Request(ABC):
         raise NotImplementedError
 
 
+sentinel = object()
+ContentAction = Callable[[Any, ...], Union[Any, Awaitable[Any]]]
+ParamsAction = Callable[[dict[str, Any], ...], Union[dict[str, Any], Awaitable[dict[str, Any]]]]
+
+
 class WrappedRequest(Request):
     """Wrapped Request class."""
 
-    def __init__(self, base: Request, action: Callable[[Any, ...], Any]):
+    def __init__(
+        self,
+        base: Request,
+        content_action: Optional[ContentAction] = None,
+        params_action: Optional[ParamsAction] = None,
+    ):
         self.base = base
-        self.action = action
-        self._content = None
+        self.content_action = content_action
+        self.params_action = params_action
+        self._computed_content = sentinel
+        self._computed_params = sentinel
 
     @property
     def user(self) -> Optional[UUID]:
@@ -77,24 +134,54 @@ class WrappedRequest(Request):
         """
         return self.base.user
 
-    async def content(self, **kwargs) -> Any:
-        """Get the request content.
+    @property
+    def has_content(self) -> bool:
+        """Check if the request has params.
 
-        :param kwargs: Additional named arguments.
-        :return: A list of instances.
+        :return: ``True`` if it has params or ``False`` otherwise.
         """
-        if self._content is None:
-            content = self.action(await self.base.content(), **kwargs)
+        return self.base.has_content
+
+    async def _content(self, **kwargs) -> Any:
+        if self.content_action is None:
+            return await self.base.content()
+
+        if self._computed_content is sentinel:
+            content = self.content_action(await self.base.content(), **kwargs)
             if isawaitable(content):
                 content = await content
-            self._content = content
-        return self._content
+            self._computed_content = content
+        return self._computed_content
+
+    @property
+    def has_params(self) -> bool:
+        """Check if the request has params.
+
+        :return: ``True`` if it has params or ``False`` otherwise.
+        """
+        return self.base.has_params
+
+    async def _params(self, **kwargs) -> dict[str, Any]:
+        if self.params_action is None:
+            return await self.base.params()
+
+        if self._computed_params is sentinel:
+            params = self.params_action(await self.base.params(), **kwargs)
+            if isawaitable(params):
+                params = await params
+            self._computed_params = params
+        return self._computed_params
 
     def __eq__(self, other: WrappedRequest) -> bool:
-        return type(self) == type(other) and self.base == other.base and self.action == other.action
+        return (
+            isinstance(other, type(self))
+            and self.base == other.base
+            and self.content_action == other.content_action
+            and self.params_action == other.params_action
+        )
 
     def __repr__(self) -> str:
-        return f"{type(self).__name__}({self.base!r}, {self.action!r})"
+        return f"{type(self).__name__}({self.base!r}, {self.content_action!r}, {self.params_action!r})"
 
 
 class Response:
