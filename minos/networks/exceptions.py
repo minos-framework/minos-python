@@ -52,4 +52,4 @@ class NotHasContentException(RequestException):
 
 
 class NotHasParamsException(RequestException):
-    """Exception to be raised when request has not params"""
+    """Exception to be raised when request has not params."""

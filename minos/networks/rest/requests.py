@@ -25,9 +25,7 @@ from uuid import (
     UUID,
 )
 
-from aiohttp import (
-    web,
-)
+from aiohttp.web import Request as AioHttpRequest
 from cached_property import (
     cached_property,
 )
@@ -39,7 +37,7 @@ from minos.common import (
     import_module,
 )
 
-from .. import (
+from ..exceptions import (
     NotHasParamsException,
 )
 from ..requests import (
@@ -54,14 +52,14 @@ class RestRequest(Request):
 
     __slots__ = "raw"
 
-    def __init__(self, request: web.Request):
-        self.raw = request
+    def __init__(self, raw: AioHttpRequest):
+        self.raw = raw
 
     @property
-    def raw_request(self) -> web.Request:
+    def raw_request(self) -> AioHttpRequest:
         """Get the raw request within the instance.
 
-        :return: A ``web.Request`` instance.
+        :return: An ``aiohttp.web.Request`` instance.
         """
         warnings.warn(
             f"'{RestRequest.__name__}s.raw_request' is deprecated in favor of '{RestRequest.__name__}.raw'.",
