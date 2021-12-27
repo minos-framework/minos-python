@@ -78,7 +78,7 @@ class PostgreSqlSnapshotWriter(PostgreSqlSnapshotSetup):
         """Check if the snapshot has the latest version of an ``Aggregate`` instance.
 
         :param aggregate_name: Class name of the ``Aggregate`` to be checked.
-        :return: ``True`` if has the latest version for the identifier or ``False`` otherwise.
+        :return: ``True`` if it has the latest version for the identifier or ``False`` otherwise.
         """
         offset = await self._load_offset(**kwargs)
         iterable = self._event_repository.select(id_gt=offset, aggregate_name=aggregate_name, **kwargs)
