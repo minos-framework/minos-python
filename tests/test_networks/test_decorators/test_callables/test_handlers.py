@@ -11,14 +11,12 @@ from minos.networks import (
     BrokerQueryEnrouteDecorator,
     HandlerMeta,
     HandlerWrapper,
+    InMemoryRequest,
     MinosMultipleEnrouteDecoratorKindsException,
     NotSatisfiedCheckerException,
     Request,
     Response,
     ResponseException,
-)
-from tests.utils import (
-    FakeRequest,
 )
 
 
@@ -59,37 +57,37 @@ class TestHandlerMeta(unittest.IsolatedAsyncioTestCase):
     async def test_wrapper_async_call(self):
         meta = HandlerMeta(_async_fn)
         with patch("minos.networks.CheckerMeta.run_async") as mock:
-            self.assertEqual(Response("Async Fn: foo"), await meta.wrapper(FakeRequest("foo")))
-            self.assertEqual([call(meta.decorators, FakeRequest("foo"))], mock.call_args_list)
+            self.assertEqual(Response("Async Fn: foo"), await meta.wrapper(InMemoryRequest("foo")))
+            self.assertEqual([call(meta.decorators, InMemoryRequest("foo"))], mock.call_args_list)
 
     async def test_wrapper_async_call_raises(self):
         meta = HandlerMeta(_async_fn)
         with patch("minos.networks.CheckerMeta.run_async", side_effect=NotSatisfiedCheckerException("")):
             with self.assertRaises(ResponseException):
-                await meta.wrapper(FakeRequest("foo"))
+                await meta.wrapper(InMemoryRequest("foo"))
 
     def test_wrapper_sync_call(self):
         meta = HandlerMeta(_fn)
         with patch("minos.networks.CheckerMeta.run_sync") as mock:
-            self.assertEqual(Response("Fn"), meta.wrapper(FakeRequest("foo")))
-            self.assertEqual([call(meta.decorators, FakeRequest("foo"))], mock.call_args_list)
+            self.assertEqual(Response("Fn"), meta.wrapper(InMemoryRequest("foo")))
+            self.assertEqual([call(meta.decorators, InMemoryRequest("foo"))], mock.call_args_list)
 
     async def test_wrapper_sync_call_raises(self):
         meta = HandlerMeta(_fn)
         with patch("minos.networks.CheckerMeta.run_sync", side_effect=NotSatisfiedCheckerException("")):
             with self.assertRaises(ResponseException):
-                await meta.wrapper(FakeRequest("foo"))
+                await meta.wrapper(InMemoryRequest("foo"))
 
     async def test_async_wrapper_sync(self):
         mock = MagicMock(return_value=True)
         meta = HandlerMeta(mock)
-        self.assertEqual(True, await meta.async_wrapper(FakeRequest(True)))
+        self.assertEqual(True, await meta.async_wrapper(InMemoryRequest(True)))
 
     def test_sync_wrapper_async_raises(self):
         mock = AsyncMock()
         meta = HandlerMeta(mock)
         with self.assertRaises(ValueError):
-            meta.sync_wrapper(FakeRequest(True))
+            meta.sync_wrapper(InMemoryRequest(True))
 
     def test_add_decorator(self):
         decorator = BrokerCommandEnrouteDecorator("CreateFoo")

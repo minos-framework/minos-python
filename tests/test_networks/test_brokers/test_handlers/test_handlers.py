@@ -43,6 +43,7 @@ from minos.networks import (
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
+    InMemoryRequest,
     MinosActionNotFoundException,
     Request,
     Response,
@@ -50,7 +51,6 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FakeModel,
-    FakeRequest,
 )
 
 
@@ -161,7 +161,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_get_action(self):
         action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual(BrokerResponse("add_order"), await action(FakeRequest("test")))
+        self.assertEqual(BrokerResponse("add_order"), await action(InMemoryRequest("test")))
 
     async def test_get_action_raises(self):
         with self.assertRaises(MinosActionNotFoundException) as context:

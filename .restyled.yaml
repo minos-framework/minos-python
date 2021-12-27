@@ -9,7 +9,7 @@ exclude:
   - ".github/workflows/**/*"
 restylers:
   - name: black
-    image: restyled/restyler-black:v19.10b0
+    image: restyled/restyler-black:v19.10b0-3
     command:
       - black
     arguments: ["--line-length", "120"]
