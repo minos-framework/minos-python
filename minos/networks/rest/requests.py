@@ -25,9 +25,7 @@ from uuid import (
     UUID,
 )
 
-from aiohttp import (
-    web,
-)
+from aiohttp.web import Request as AioHttpRequest
 from cached_property import (
     cached_property,
 )
@@ -39,7 +37,7 @@ from minos.common import (
     import_module,
 )
 
-from .. import (
+from ..exceptions import (
     NotHasParamsException,
 )
 from ..requests import (
@@ -54,15 +52,15 @@ class RestRequest(Request):
 
     __slots__ = "raw"
 
-    def __init__(self, raw: web.Request, *args, **kwargs):
+    def __init__(self, raw: AioHttpRequest, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.raw = raw
 
     @property
-    def raw_request(self) -> web.Request:
+    def raw_request(self) -> AioHttpRequest:
         """Get the raw request within the instance.
 
-        :return: A ``web.Request`` instance.
+        :return: An ``aiohttp.web.Request`` instance.
         """
         warnings.warn(
             f"'{RestRequest.__name__}s.raw_request' is deprecated in favor of '{RestRequest.__name__}.raw'.",
@@ -156,10 +154,6 @@ class RestRequest(Request):
         """
         return self.raw.content_type
 
-    async def _params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> dict[str, Any]:
-        data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
-        return self._build(data, type_)
-
     @property
     def has_params(self) -> bool:
         """Check if the request has params.
@@ -168,6 +162,10 @@ class RestRequest(Request):
         """
         sentinel = object()
         return next(chain(self._raw_url_params, self._raw_query_params), sentinel) is not sentinel
+
+    async def _params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> dict[str, Any]:
+        data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
+        return self._build(data, type_)
 
     async def url_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
         """Get the url params.

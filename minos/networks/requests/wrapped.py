@@ -52,6 +52,14 @@ class WrappedRequest(Request):
         """
         return self.base.user
 
+    @property
+    def has_content(self) -> bool:
+        """Check if the request has params.
+
+        :return: ``True`` if it has params or ``False`` otherwise.
+        """
+        return self.base.has_content
+
     async def _content(self, **kwargs) -> Any:
         if self.content_action is None:
             return await self.base.content()
@@ -64,12 +72,12 @@ class WrappedRequest(Request):
         return self._computed_content
 
     @property
-    def has_content(self) -> bool:
+    def has_params(self) -> bool:
         """Check if the request has params.
 
         :return: ``True`` if it has params or ``False`` otherwise.
         """
-        return self.base.has_content
+        return self.base.has_params
 
     async def _params(self, **kwargs) -> Any:
         if self.params_action is None:
@@ -81,14 +89,6 @@ class WrappedRequest(Request):
                 params = await params
             self._computed_params = params
         return self._computed_params
-
-    @property
-    def has_params(self) -> bool:
-        """Check if the request has params.
-
-        :return: ``True`` if it has params or ``False`` otherwise.
-        """
-        return self.base.has_params
 
     def __eq__(self, other: WrappedRequest) -> bool:
         return (
