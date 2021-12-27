@@ -155,10 +155,6 @@ class RestRequest(Request):
         """
         return self.raw.content_type
 
-    async def _params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> dict[str, Any]:
-        data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
-        return self._build(data, type_)
-
     @property
     def has_params(self) -> bool:
         """Check if the request has params.
@@ -167,6 +163,10 @@ class RestRequest(Request):
         """
         sentinel = object()
         return next(chain(self._raw_url_params, self._raw_query_params), sentinel) is not sentinel
+
+    async def _params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> dict[str, Any]:
+        data = self._parse_multi_dict(chain(self._raw_url_params, self._raw_query_params))
+        return self._build(data, type_)
 
     async def url_params(self, type_: Optional[Union[type, str]] = None, **kwargs) -> Any:
         """Get the url params.
