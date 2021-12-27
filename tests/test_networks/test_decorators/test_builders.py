@@ -8,6 +8,7 @@ from minos.networks import (
     BrokerEventEnrouteDecorator,
     BrokerQueryEnrouteDecorator,
     EnrouteBuilder,
+    InMemoryRequest,
     MinosRedefinedEnrouteDecoratorException,
     PeriodicEventEnrouteDecorator,
     Response,
@@ -16,7 +17,6 @@ from minos.networks import (
     enroute,
 )
 from tests.utils import (
-    FakeRequest,
     FakeService,
     fake_middleware,
 )
@@ -24,7 +24,7 @@ from tests.utils import (
 
 class TestEnrouteBuilder(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        self.request = FakeRequest("test")
+        self.request = InMemoryRequest("test")
         self.builder = EnrouteBuilder(FakeService, middleware=fake_middleware)
 
     def test_classes(self):

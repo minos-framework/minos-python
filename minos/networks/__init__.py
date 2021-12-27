@@ -69,6 +69,7 @@ from .exceptions import (
 )
 from .requests import (
     REQUEST_USER_CONTEXT_VAR,
+    InMemoryRequest,
     Request,
     Response,
     ResponseException,

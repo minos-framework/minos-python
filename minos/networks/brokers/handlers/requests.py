@@ -25,7 +25,8 @@ class BrokerRequest(Request):
 
     __slots__ = "raw"
 
-    def __init__(self, raw: BrokerMessage):
+    def __init__(self, raw: BrokerMessage, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.raw = raw
 
     def __eq__(self, other: BrokerRequest) -> bool:
