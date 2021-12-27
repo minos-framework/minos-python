@@ -160,3 +160,13 @@ History
 * Now `BrokerPublisher.send` returns the `BrokerMessage` identifier instead of the entry identifier on the `Producer`'s queue.
 * Add `REQUEST_HEADERS_CONTEXT_VAR`.
 * Rename `USER_CONTEXT_VAR` and `REPLY_TOPIC_CONTEXT_VAR` as `REQUEST_USER_CONTEXT_VAR` and `REQUEST_REPLY_TOPIC_CONTEXT_VAR` respectively.
+
+0.3.2 (2021-12-27)
+------------------
+
+* Add `CheckDecorator` (accessible from `EnrouteDecorator.check(...): CheckDecorator` attribute) allowing to set check functions with the `(request: Request) -> bool` prototype to the service handling functions.
+* Add support for more `Content-Type` values. Currently: `application/json`, `application/x-www-form-encoded`, `avro/binary`, `text/plain` and `application/octet-stream`.
+* Remove url params and query params injection from the `RestRequest.content(..)` method.
+* Add `Request.params(...)` method allowing to access to the request's params.
+* Add `Request.has_content: bool` and `Request.has_params: bool` to check for the existence of `content` and `params` respectively.
+* Add `InMemoryRequest` class that allows to create requests for testing or calling service handling functions directly.
