@@ -61,8 +61,6 @@ class AvroDataDecoder:
         return self._cast_value(self.type_, data)
 
     def _cast_value(self, type_: type, data: Any) -> Any:
-        if type_ is Any:
-            type_ = TypeHintBuilder(data).build()
         origin = get_origin(type_)
         if origin is not Union:
             return self._cast_single_value(type_, data)
@@ -84,6 +82,8 @@ class AvroDataDecoder:
         raise DataDecoderTypeException(type_, data)
 
     def _cast_single_value(self, type_: type, data: Any) -> Any:
+        if type_ is Any:
+            type_ = TypeHintBuilder(data).build()
         if isinstance(type_, TypeVar):
             unpacked_type = unpack_typevar(type_)
             return self._cast_value(unpacked_type, data)
@@ -96,6 +96,9 @@ class AvroDataDecoder:
 
         if data is MissingSentinel:
             raise DataDecoderRequiredValueException("Value is missing.")
+
+        if is_model_subclass(type_):
+            return self._cast_model(type_, data)
 
         if is_type_subclass(type_):
             if issubclass(type_, bool):
@@ -130,9 +133,6 @@ class AvroDataDecoder:
 
             if isinstance(type_, ModelType):
                 return self._cast_model_type(type_, data)
-
-        if is_model_subclass(type_):
-            return self._cast_model(type_, data)
 
         return self._cast_composed_value(type_, data)
 

@@ -96,8 +96,8 @@ class Model(Mapping):
         decoded = MinosAvroProtocol.decode(raw)
 
         if isinstance(decoded, list):
-            return [cls.from_avro(schema, d | kwargs) for d in decoded]
-        return cls.from_avro(schema, decoded | kwargs)
+            return [cls.from_avro(schema, d, **kwargs) for d in decoded]
+        return cls.from_avro(schema, decoded, **kwargs)
 
     @classmethod
     def from_typed_dict(cls: Type[T], typed_dict: TypedDict, *args, **kwargs) -> T:
@@ -122,11 +122,14 @@ class Model(Mapping):
         """
 
     @classmethod
-    def from_avro(cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> T:
+    def from_avro(
+        cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any], **kwargs
+    ) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
         :param data: The avro data of the model.
+        :param kwargs: TODO
         :return: A new ``DynamicModel`` instance.
         """
         if isinstance(schema, list):
