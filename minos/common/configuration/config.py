@@ -43,8 +43,6 @@ _ENVIRONMENT_MAPPER = {
     "broker.queue.database": "MINOS_BROKER_QUEUE_DATABASE",
     "broker.queue.user": "MINOS_BROKER_QUEUE_USER",
     "broker.queue.password": "MINOS_BROKER_QUEUE_PASSWORD",
-    "commands.service": "MINOS_COMMANDS_SERVICE",
-    "queries.service": "MINOS_QUERIES_SERVICE",
     "repository.host": "MINOS_REPOSITORY_HOST",
     "repository.port": "MINOS_REPOSITORY_PORT",
     "repository.database": "MINOS_REPOSITORY_DATABASE",
@@ -71,10 +69,6 @@ _PARAMETERIZED_MAPPER = {
     "broker.queue.database": "broker_queue_database",
     "broker.queue.user": "broker_queue_user",
     "broker.queue.password": "broker_queue_password",
-    "commands.service": "commands_service",
-    "queries.service": "queries_service",
-    "saga.broker": "saga_broker",
-    "saga.port": "saga_port",
     "repository.host": "repository_host",
     "repository.port": "repository_port",
     "repository.database": "repository_database",
@@ -88,6 +82,41 @@ _PARAMETERIZED_MAPPER = {
     "discovery.client": "minos_discovery_client",
     "discovery.host": "minos_discovery_host",
     "discovery.port": "minos_discovery_port",
+}
+
+_DEFAULTS_MAPPER = {
+    "service.injections": dict(),
+    "service.services": [
+        "minos.networks.BrokerProducerService",
+        "minos.networks.BrokerConsumerService",
+        "minos.networks.BrokerHandlerService",
+        "minos.networks.RestService",
+        "minos.networks.PeriodicTaskSchedulerService",
+    ],
+    "middleware": list(),
+    "services": list(),
+    "rest.host": "0.0.0.0",
+    "rest.port": 8080,
+    "broker.host": "localhost",
+    "broker.port": 9092,
+    "broker.queue.host": "localhost",
+    "broker.queue.port": 5432,
+    "broker.queue.user": "postgres",
+    "broker.queue.password": "",
+    "broker.queue.records": 1000,
+    "broker.queue.retry": 2,
+    "repository.host": "postgres",
+    "repository.port": "5432",
+    "repository.user": "postgres",
+    "repository.password": "",
+    "snapshot.host": "postgres",
+    "snapshot.port": 5432,
+    "snapshot.user": "postgres",
+    "snapshot.password": "minos.networks.MinosDiscoveryClient",
+    "saga.storage.path": "saga.lmdb",
+    "discovery.client": "minos",
+    "discovery.host": "localhost",
+    "discovery.port": 5567,
 }
 
 
@@ -158,7 +187,9 @@ class MinosConfig(MinosConfigAbstract):
 
         try:
             return _fn(key, self._data)
-        except Exception:
+        except KeyError:
+            if key in _DEFAULTS_MAPPER:
+                return _DEFAULTS_MAPPER[key]
             raise MinosConfigException(f"{key!r} field is not defined on the configuration!")
 
     @property
@@ -176,17 +207,11 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def _service_injections(self) -> dict[str, str]:
-        try:
-            return self._get("service.injections")
-        except MinosConfigException:
-            return dict()
+        return self._get("service.injections")
 
     @property
     def _service_services(self) -> list[str]:
-        try:
-            return self._get("service.services")
-        except MinosConfigException:
-            return list()
+        return self._get("service.services")
 
     @property
     def rest(self) -> REST:
@@ -219,25 +244,19 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def services(self) -> list[str]:
-        """Get the commands config.
+        """Get the services.
 
         :return: A list containing the service class names as string values..
         """
-        try:
-            return self._get("services")
-        except MinosConfigException:
-            return list()
+        return self._get("services")
 
     @property
     def middleware(self) -> list[str]:
-        """Get the commands config.
+        """Get the middleware.
 
         :return: A list containing the service class names as string values..
         """
-        try:
-            return self._get("middleware")
-        except MinosConfigException:
-            return list()
+        return self._get("middleware")
 
     @property
     def saga(self) -> SAGA:
@@ -287,7 +306,7 @@ class MinosConfig(MinosConfigAbstract):
 
     @property
     def discovery(self) -> DISCOVERY:
-        """Get the sagas config.
+        """Get the discovery.
 
         :return: A ``DISCOVERY`` NamedTuple instance.
         """
