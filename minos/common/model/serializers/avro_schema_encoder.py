@@ -13,7 +13,9 @@ from enum import (
     Enum,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
+    Type,
     Union,
     get_args,
     get_origin,
@@ -50,6 +52,14 @@ from .constants import (
     AVRO_TIMESTAMP,
     AVRO_UUID,
 )
+
+if TYPE_CHECKING:
+    from ..abc import (
+        Model,
+    )
+    from ..fields import (
+        Field,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +161,7 @@ class AvroSchemaEncoder:
     def _build_enum_schema(self, type_: type):
         return {"type": self._build_single_schema(type_), "logicalType": classname(type_)}
 
-    def _build_model_schema(self, type_) -> Any:
+    def _build_model_schema(self, type_: Type[Model]) -> Any:
         raw = ModelType.from_model(type_)
         return [type_.encode_schema(self, raw)]
 
@@ -167,7 +177,7 @@ class AvroSchemaEncoder:
         }
         return schema
 
-    def _build_field_schema(self, field):
+    def _build_field_schema(self, field: Union[Field, FieldType]):
         return {"name": field.name, "type": self._build_schema(field.type)}
 
     def _build_composed_schema(self, type_: type) -> Any:

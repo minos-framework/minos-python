@@ -14,6 +14,7 @@ from decimal import (
     Decimal,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
 )
 from uuid import (
@@ -26,6 +27,14 @@ from ...exceptions import (
 from ..types import (
     MissingSentinel,
 )
+
+if TYPE_CHECKING:
+    from ..abc import (
+        Model,
+    )
+    from ..fields import (
+        Field,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -95,11 +104,11 @@ class AvroDataEncoder:
 
         raise MinosMalformedAttributeException(f"Given type is not supported: {type(value)!r} ({value!r})")
 
-    def _model_to_avro_raw(self, model) -> Any:
+    def _model_to_avro_raw(self, model: Model) -> Any:
         raw = {name: field.avro_data for name, field in model.fields.items()}
         return model.encode_data(self, raw)
 
-    def _field_to_avro_raw(self, field) -> Any:
+    def _field_to_avro_raw(self, field: Field) -> Any:
         return field.encode_data(self, field.value)
 
     @staticmethod
