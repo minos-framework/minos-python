@@ -21,7 +21,6 @@ from minos.aggregate import (
 )
 from minos.common import (
     DeclarativeModel,
-    Model,
     ModelType,
 )
 from tests.utils import (
@@ -49,6 +48,9 @@ class TestSubAggregate(unittest.TestCase):
 
 FakeEntry = ModelType.build("FakeEntry", {"data": Any})
 FakeMessage = ModelType.build("FakeMessage", {"data": Any})
+
+Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+Foo = ModelType.build("Foo", {"another": ModelRef[Bar]})
 
 
 class TestModelRef(MinosTestCase):
@@ -79,50 +81,35 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(uuid.is_safe, value.is_safe)
 
     def test_model(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        # noinspection PyPep8Naming
-        Foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[Bar]})
-
-        another = Bar(uuid=uuid4(), version=1)
-        value = Foo(uuid=uuid4(), version=1, another=another)
+        another = Bar(uuid4(), 1)
+        value = Foo(another=another)
 
         self.assertEqual(another, value.another)
 
     def test_model_uuid(self):
         uuid = uuid4()
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        value = ModelRef(Bar(uuid=uuid, version=1))
+        value = ModelRef(Bar(uuid, 1))
 
         self.assertEqual(uuid, value.uuid)
 
     def test_model_attribute(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(Bar(uuid=uuid4(), age=1))
+        value = ModelRef(Bar(uuid4(), 1))
 
         self.assertEqual(1, value.age)
 
     def test_model_attribute_raises(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(Bar(uuid=uuid4(), age=1))
+        value = ModelRef(Bar(uuid4(), 1))
 
         with self.assertRaises(AttributeError):
             value.year
 
     def test_fields(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(Bar(uuid=uuid4(), age=1))
+        value = ModelRef(Bar(uuid4(), 1))
 
         self.assertEqual({"data": FieldRef("data", Union[Bar, UUID], value)}, value.fields)
 
     def test_model_avro_data(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = Bar(uuid=uuid4(), age=1)
+        value = Bar(uuid4(), 1)
 
         self.assertEqual(value.avro_data, ModelRef(value).avro_data)
 
@@ -131,10 +118,8 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(str(value), ModelRef(value).avro_data)
 
     async def test_model_avro_data_submitting(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
         uuid = uuid4()
-        value = Bar(uuid=uuid, age=1)
+        value = Bar(uuid, 1)
 
         IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
         self.assertEqual(str(uuid), ModelRef(value).avro_data)
@@ -145,9 +130,7 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(str(value), ModelRef(value).avro_data)
 
     def test_model_avro_schema(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = Bar(uuid=uuid4(), age=1)
+        value = Bar(uuid4(), 1)
 
         expected = [
             {
@@ -166,39 +149,43 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(expected, ModelRef(value).avro_schema)
 
     def test_uuid_avro_schema(self):
-        expected = {
-            "logicalType": "minos.aggregate.models.refs.models.ModelRef",
-            "type": "string",
-        }
-        self.assertEqual(expected, ModelRef(uuid4()).avro_schema)
+        another = uuid4()
+        ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
+
+        expected = [
+            {
+                "fields": [
+                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
+                    {"name": "age", "type": "int"},
+                ],
+                "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                "name": "Bar",
+                "namespace": "",
+                "type": "record",
+            },
+            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+        ]
+        self.assertEqual(expected, ref.avro_schema)
 
     async def test_resolve(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        # noinspection PyPep8Naming
-        Foo = ModelType.build("Foo", {"another": ModelRef[Bar]})
+        another = uuid4()
 
-        uuid = uuid4()
+        ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
-        ref = Foo(uuid).another  # FIXME: This should not be needed to set the type hint properly
-
-        self.assertEqual(ref.data, uuid)
+        self.assertEqual(ref.data, another)
 
         with patch("tests.utils.FakeBroker.send") as send_mock:
             with patch("tests.utils.FakeBroker.get_one") as get_many:
-                get_many.return_value = FakeEntry(FakeMessage(Bar(uuid, 1)))
+                get_many.return_value = FakeEntry(FakeMessage(Bar(another, 1)))
                 await ref.resolve()
 
-        self.assertEqual([call(data={"uuid": uuid}, topic="GetBar")], send_mock.call_args_list)
-        self.assertEqual(ref.data, Bar(uuid, 1))
+        self.assertEqual([call(data={"uuid": another}, topic="GetBar")], send_mock.call_args_list)
+        self.assertEqual(ref.data, Bar(another, 1))
 
     async def test_resolve_already(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-
         uuid = uuid4()
 
-        ref = ModelRef(Bar(uuid, 1))  # FIXME: This should not be needed to set the type hint properly
+        ref = ModelRef(Bar(uuid, 1))
 
         with patch("tests.utils.FakeBroker.send") as send_mock:
             await ref.resolve()
@@ -206,16 +193,12 @@ class TestModelRef(MinosTestCase):
         self.assertEqual([], send_mock.call_args_list)
 
     async def test_resolved(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-
         self.assertFalse(ModelRef(uuid4()).resolved)
         self.assertTrue(ModelRef(Bar(uuid4(), 4)).resolved)
 
     @unittest.skip("Failing test... FIXME!")
     def test_avro_model(self):
         # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
         base = ModelRef(Bar(uuid4(), 1))
         self.assertEqual(base, ModelRef.from_avro_bytes(base.avro_bytes))
 
