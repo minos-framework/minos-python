@@ -65,7 +65,8 @@ class AvroSchemaDecoder:
     def build(self, schema: Any = MissingSentinel) -> type:
         """Build type from given avro schema item.
 
-        :return: A dictionary object.
+        :param schema: The schema to be decoded as a type.
+        :return: A type object.
         """
         if schema is MissingSentinel:
             schema = self._schema

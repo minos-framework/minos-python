@@ -267,11 +267,11 @@ class Model(Mapping):
 
     @classmethod
     def decode_schema(cls, decoder, schema: Any) -> ModelType:
-        """TODO
+        """Decode schema with the given encoder.
 
-        :param decoder: TODO
-        :param schema: TODO
-        :return: TODO
+        :param decoder: The decoder instance.
+        :param schema: The schema to be decoded.
+        :return: The decoded schema as a type.
         """
         return decoder.build(schema)
 
@@ -297,12 +297,12 @@ class Model(Mapping):
 
     @classmethod
     def decode_data(cls: T, decoder, data: Any, type_: ModelType) -> T:
-        """TODO
+        """Decode data with the given decoder.
 
-        :param decoder: TODO
-        :param data: TODO
-        :param type_: TODO
-        :return: TODO
+        :param decoder: The decoder instance.
+        :param data: The data to be decoded.
+        :param type_: The data type.
+        :return: A decoded instance.
         """
         return decoder.build(data, type_)
 

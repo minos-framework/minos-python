@@ -83,11 +83,11 @@ class ModelType(type):
         return cls.model_cls.from_model_type(cls, *args, **kwargs)
 
     def decode_schema(cls, *args, **kwargs) -> type:
-        """TODO
+        """Decode schema with the given encoder.
 
-        :param args: TODO
-        :param kwargs: TODO
-        :return: TODO
+        :param args: Additional positional arguments.
+        :param kwargs: Additional named arguments.
+        :return: The decoded schema as a type.
         """
         return cls.model_cls.decode_schema(*args, **kwargs)
 

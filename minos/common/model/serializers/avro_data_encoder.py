@@ -46,8 +46,9 @@ class AvroDataEncoder:
         self.value = value
 
     def build(self, value=MissingSentinel) -> Any:
-        """Build a avro data representation based on the content of the given field.
+        """Build an avro data representation based on the content of the given field.
 
+        :param value: The value to be encoded.
         :return: A `avro`-compatible data.
         """
         if value is MissingSentinel:

@@ -74,6 +74,7 @@ class AvroSchemaEncoder:
     def build(self, type_=MissingSentinel) -> Union[dict, list, str]:
         """Build the avro schema for the given field.
 
+        :param type_: The type to be encoded as a schema.
         :return: A dictionary object.
         """
         if type_ is MissingSentinel:

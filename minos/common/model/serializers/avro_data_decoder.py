@@ -63,7 +63,7 @@ class AvroDataDecoder:
         """Cast data type according to the field definition.
 
         :param data: Data to be casted.
-        :param type_: TODO
+        :param type_: The type of the decoded data.
         :return: The casted object.
         """
         if type_ is MissingSentinel:
