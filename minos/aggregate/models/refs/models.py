@@ -121,15 +121,6 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         schema = encoder.build(_target.type_hints["data"])
         return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
 
-    def encode_data(self, encoder, _target: Any = MissingSentinel) -> Any:
-        """Encode data with the given encoder.
-
-        :param encoder: The encoder instance.
-        :param _target: An optional pre-encoded data.
-        :return: The encoded data of the instance.
-        """
-        return super().encode_data(encoder, self.fields["data"])
-
     @classmethod
     def decode_schema(cls, decoder, schema: Any) -> ModelType:
         """TODO
@@ -140,6 +131,15 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         """
         decoded = decoder.build(schema)
         return ModelType.from_model(cls[decoded])
+
+    def encode_data(self, encoder, _target: Any = MissingSentinel) -> Any:
+        """Encode data with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param _target: An optional pre-encoded data.
+        :return: The encoded data of the instance.
+        """
+        return super().encode_data(encoder, self.fields["data"])
 
     @classmethod
     def decode_data(cls, decoder, data, type_: ModelType) -> ModelRef:
