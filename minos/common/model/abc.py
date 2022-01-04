@@ -253,26 +253,26 @@ class Model(Mapping):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder, schema: Any = MissingSentinel) -> Any:
+    def encode_schema(self_or_cls, encoder, target: Any = MissingSentinel) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
-        :param schema: An optional pre-encoded schema.
+        :param target: An optional pre-encoded schema.
         :return: The encoded schema of the instance.
         """
-        if schema is MissingSentinel:
-            schema = self_or_cls
-        return encoder.build(schema)
+        if target is MissingSentinel:
+            target = self_or_cls
+        return encoder.build(target)
 
     @classmethod
-    def decode_schema(cls, decoder, schema: Any) -> ModelType:
+    def decode_schema(cls, decoder, target: Any) -> ModelType:
         """Decode schema with the given encoder.
 
         :param decoder: The decoder instance.
-        :param schema: The schema to be decoded.
+        :param target: The schema to be decoded.
         :return: The decoded schema as a type.
         """
-        return decoder.build(schema)
+        return decoder.build(target)
 
     @property
     def avro_data(self) -> dict[str, Any]:
@@ -283,27 +283,27 @@ class Model(Mapping):
         encoder = AvroDataEncoder()
         return self.encode_data(encoder)
 
-    def encode_data(self, encoder, data: Any = MissingSentinel) -> Any:
+    def encode_data(self, encoder, target: Any = MissingSentinel) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
-        :param data: An optional pre-encoded data.
+        :param target: An optional pre-encoded data.
         :return: The encoded data of the instance.
         """
-        if data is MissingSentinel:
-            data = self
-        return encoder.build(data)
+        if target is MissingSentinel:
+            target = self
+        return encoder.build(target)
 
     @classmethod
-    def decode_data(cls: T, decoder, data: Any, type_: ModelType) -> T:
+    def decode_data(cls: T, decoder, target: Any, type_: ModelType) -> T:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.
-        :param data: The data to be decoded.
+        :param target: The data to be decoded.
         :param type_: The data type.
         :return: A decoded instance.
         """
-        return decoder.build(data, type_)
+        return decoder.build(target, type_)
 
     @property
     def avro_str(self) -> str:
