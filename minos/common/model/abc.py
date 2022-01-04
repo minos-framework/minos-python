@@ -148,7 +148,7 @@ class Model(Mapping):
 
     @classmethod
     def to_avro_bytes(cls: Type[T], models: list[T]) -> bytes:
-        """Create a bytes representation of the given object instances.
+        """Create a ``bytes`` representation of the given object instances.
 
         :param models: A sequence of minos models.
         :return: A bytes object.
@@ -253,16 +253,16 @@ class Model(Mapping):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder, _target: Any = MissingSentinel) -> Any:
+    def encode_schema(self_or_cls, encoder, schema: Any = MissingSentinel) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
-        :param _target: An optional pre-encoded schema.
+        :param schema: An optional pre-encoded schema.
         :return: The encoded schema of the instance.
         """
-        if _target is MissingSentinel:
-            _target = self_or_cls
-        return encoder.build(_target)
+        if schema is MissingSentinel:
+            schema = self_or_cls
+        return encoder.build(schema)
 
     @classmethod
     def decode_schema(cls, decoder, schema: Any) -> ModelType:
@@ -283,16 +283,16 @@ class Model(Mapping):
         encoder = AvroDataEncoder()
         return self.encode_data(encoder)
 
-    def encode_data(self, encoder, _target: Any = MissingSentinel) -> Any:
+    def encode_data(self, encoder, data: Any = MissingSentinel) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
-        :param _target: An optional pre-encoded data.
+        :param data: An optional pre-encoded data.
         :return: The encoded data of the instance.
         """
-        if _target is MissingSentinel:
-            _target = self
-        return encoder.build(_target)
+        if data is MissingSentinel:
+            data = self
+        return encoder.build(data)
 
     @classmethod
     def decode_data(cls: T, decoder, data: Any, type_: ModelType) -> T:
