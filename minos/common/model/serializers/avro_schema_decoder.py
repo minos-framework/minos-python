@@ -14,7 +14,6 @@ from datetime import (
 )
 from typing import (
     Any,
-    Optional,
     Union,
 )
 from uuid import (
@@ -29,6 +28,7 @@ from ...importlib import (
     import_module,
 )
 from ..types import (
+    MissingSentinel,
     ModelType,
     NoneType,
     build_union,
@@ -58,39 +58,41 @@ logger = logging.getLogger(__name__)
 class AvroSchemaDecoder:
     """Avro Schema Decoder class."""
 
-    def __init__(self, schema: dict):
+    def __init__(self, schema: Any = None):
         self._schema = schema
 
-    def build(self) -> type:
+    def build(self, schema: Any = MissingSentinel) -> type:
         """Build type from given avro schema item.
 
         :return: A dictionary object.
         """
-        return self._build_type(self._schema)
+        if schema is MissingSentinel:
+            schema = self._schema
+        return self._build(schema)
 
-    def _build_type(self, schema: Union[dict, list, str]) -> type:
+    def _build(self, schema: Union[dict, list, str]) -> type:
         if isinstance(schema, dict):
-            return self._build_type_from_dict(schema)
+            return self._build_from_dict(schema)
         elif isinstance(schema, list):
-            return self._build_type_from_list(schema)
+            return self._build_from_list(schema)
         else:
-            return self._build_simple_type(schema)
+            return self._build_simple(schema)
 
-    def _build_type_from_list(self, schema: list[Any]) -> type:
-        options = tuple(self._build_type(entry) for entry in schema)
+    def _build_from_list(self, schema: list[Any]) -> type:
+        options = tuple(self._build(entry) for entry in schema)
         return build_union(options)
 
-    def _build_type_from_dict(self, schema: dict) -> type:
+    def _build_from_dict(self, schema: dict) -> type:
         if "logicalType" in schema:
             return self._build_logical_type(schema)
         elif schema["type"] == AVRO_ARRAY:
-            return self._build_list_type(schema["items"])
+            return self._build_list(schema)
         elif schema["type"] == AVRO_MAP:
-            return self._build_dict_type(schema["values"])
+            return self._build_dict(schema)
         elif schema["type"] == AVRO_RECORD:
-            return self._build_record_type(schema["name"], schema.get("namespace", None), schema["fields"])
+            return self._build_record(schema)
         else:
-            return self._build_type(schema["type"])
+            return self._build_type(schema)
 
     def _build_logical_type(self, schema: dict[str, Any]) -> type:
         type_ = schema["logicalType"]
@@ -105,45 +107,56 @@ class AvroSchemaDecoder:
         if type_ == AVRO_UUID["logicalType"]:
             return UUID
         if type_ == AVRO_SET["logicalType"]:
-            return self._build_set_type(schema["items"])
+            return self._build_set(schema)
         with suppress(MinosImportException):
             return import_module(type_)
-        return self._build_type({k: v for k, v in schema.items() if k != "logicalType"})
+        return self._build({k: v for k, v in schema.items() if k != "logicalType"})
 
-    def _build_list_type(self, items: Any = None) -> type:
-        return list[self._build_iterable_type(items)]
+    def _build_list(self, schema: dict[str, Any]) -> type:
+        items = schema["items"]
+        return list[self._build_iterable(items)]
 
-    def _build_set_type(self, items: Any = None) -> type:
-        return set[self._build_iterable_type(items)]
+    def _build_set(self, schema: dict[str, Any]) -> type:
+        items = schema["items"]
+        return set[self._build_iterable(items)]
 
-    def _build_dict_type(self, values: Union[dict, str, Any] = None) -> type:
-        return dict[str, self._build_iterable_type(values)]
+    def _build_dict(self, schema: dict[str, Any]) -> type:
+        values = schema["values"]
+        return dict[str, self._build_iterable(values)]
 
-    def _build_iterable_type(self, values: Union[dict, str, Any]) -> type:
-        type_ = self._build_type(values)
+    def _build_iterable(self, values: Union[dict, str, Any]) -> type:
+        type_ = self._build(values)
         if type_ is NoneType:
             # FIXME: This is a design decision that must be revisited in the future.
             type_ = Any
         return type_
 
-    def _build_record_type(self, name: str, namespace: Optional[str], fields: list[dict[str, Any]]) -> type:
-        def _unpatch_namespace(mt: type) -> type:
-            try:
-                mt.namespace, _ = mt.namespace.rsplit(".", 1)
-            except ValueError:
-                pass
-            return mt
+    def _build_record(self, schema: dict[str, Any]) -> type:
+        name = schema["name"]
+        namespace = schema.get("namespace", None)
+        fields = schema["fields"]
 
         model_type = ModelType.build(
-            name, {field["name"]: self._build_type(field) for field in fields}, namespace_=namespace
+            name, {field["name"]: self._build(field) for field in fields}, namespace_=namespace
         )
 
-        model_type = _unpatch_namespace(model_type)
+        model_type = self._unpatch_namespace(model_type)
 
         return model_type
 
     @staticmethod
-    def _build_simple_type(type_: str) -> type:
+    def _unpatch_namespace(mt: ModelType) -> ModelType:
+        try:
+            mt.namespace, _ = mt.namespace.rsplit(".", 1)
+        except ValueError:
+            pass
+        return mt
+
+    def _build_type(self, schema: dict[str, Any]) -> type:
+        return self._build(schema["type"])
+
+    @staticmethod
+    def _build_simple(type_: str) -> type:
         if type_ == AVRO_NULL:
             return NoneType
         if type_ == AVRO_INT:
