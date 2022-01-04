@@ -61,6 +61,7 @@ class TestModelRef(MinosTestCase):
 
     def test_raises(self):
         with self.assertRaises(ValueError):
+            # noinspection PyTypeChecker
             ModelRef(56)
 
     def test_uuid(self):
@@ -134,6 +135,7 @@ class TestModelRef(MinosTestCase):
         another = Bar(uuid4(), 1)
 
         expected = [
+            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
             {
                 "fields": [
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
@@ -144,7 +146,6 @@ class TestModelRef(MinosTestCase):
                 "type": "record",
                 "logicalType": "minos.aggregate.models.refs.models.ModelRef",
             },
-            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
         ]
 
         self.assertEqual(expected, ModelRef(another).avro_schema)
@@ -154,6 +155,7 @@ class TestModelRef(MinosTestCase):
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         expected = [
+            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
             {
                 "fields": [
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
@@ -164,7 +166,6 @@ class TestModelRef(MinosTestCase):
                 "namespace": "",
                 "type": "record",
             },
-            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
         ]
         self.assertEqual(expected, ref.avro_schema)
 
@@ -173,6 +174,7 @@ class TestModelRef(MinosTestCase):
         expected = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         schema = [
+            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
             {
                 "fields": [
                     {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
@@ -183,7 +185,6 @@ class TestModelRef(MinosTestCase):
                 "namespace": "",
                 "type": "record",
             },
-            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
         ]
         data = another.avro_data
 

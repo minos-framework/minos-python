@@ -24,6 +24,7 @@ from minos.common import (
     DeclarativeModel,
     Field,
     MissingSentinel,
+    Model,
     ModelType,
     self_or_classmethod,
 )
@@ -39,7 +40,7 @@ from ..entities import (
     Entity,
 )
 
-MT = TypeVar("MT")
+MT = TypeVar("MT", bound=Model)
 
 
 class AggregateRef(Entity):
@@ -70,11 +71,11 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
     """Model Reference."""
 
     _field_cls = FieldRef
-    data: Union[MT, UUID]
+    data: Union[UUID, MT]
 
     @inject
     def __init__(
-        self, data: Union[MT, UUID], *args, broker_pool: DynamicBrokerPool = Provide["broker_pool"], **kwargs,
+        self, data: Union[UUID, MT], *args, broker_pool: DynamicBrokerPool = Provide["broker_pool"], **kwargs,
     ):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
@@ -117,12 +118,8 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         """
         if _target is MissingSentinel:
             _target = ModelType.from_model(self_or_cls)
-
         schema = encoder.build(_target.type_hints["data"])
-
-        return [
-            (sub if not isinstance(sub, dict) else (sub | {"logicalType": self_or_cls.classname})) for sub in schema
-        ]
+        return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
 
     def encode_data(self, encoder, _target: Any = MissingSentinel) -> Any:
         """Encode data with the given encoder.
@@ -181,8 +178,8 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: A model type.
         """
         args = get_args(self.type_hints["data"])
-        if args:
-            return args[0]
+        if args[1] != MT:
+            return args[1]
         return None
 
     # noinspection PyUnusedLocal
