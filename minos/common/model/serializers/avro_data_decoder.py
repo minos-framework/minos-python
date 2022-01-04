@@ -234,8 +234,9 @@ class AvroDataDecoder:
                 return data
 
         if isinstance(data, dict):
-            decoded_data = {n: AvroDataDecoder(t).build(data.get(n, None)) for n, t in type_.type_hints.items()}
-            return type_(**decoded_data, additional_type_hints=type_.type_hints)
+            with suppress(Exception):
+                decoded_data = {n: AvroDataDecoder(t).build(data.get(n, None)) for n, t in type_.type_hints.items()}
+                return type_(**decoded_data, additional_type_hints=type_.type_hints)
 
         with suppress(Exception):
             decoded_data = data if isinstance(data, (list, tuple)) else (data,)
