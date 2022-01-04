@@ -21,6 +21,7 @@ from minos.aggregate import (
 )
 from minos.common import (
     DeclarativeModel,
+    Model,
     ModelType,
 )
 from tests.utils import (
@@ -78,43 +79,50 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(uuid.is_safe, value.is_safe)
 
     def test_model(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[mt_bar]})
+        # noinspection PyPep8Naming
+        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
+        # noinspection PyPep8Naming
+        Foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[Bar]})
 
-        another = mt_bar(uuid=uuid4(), version=1)
-        value = mt_foo(uuid=uuid4(), version=1, another=another)
+        another = Bar(uuid=uuid4(), version=1)
+        value = Foo(uuid=uuid4(), version=1, another=another)
 
         self.assertEqual(another, value.another)
 
     def test_model_uuid(self):
         uuid = uuid4()
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        value = ModelRef(mt_bar(uuid=uuid, version=1))
+        # noinspection PyPep8Naming
+        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
+        value = ModelRef(Bar(uuid=uuid, version=1))
 
         self.assertEqual(uuid, value.uuid)
 
     def test_model_attribute(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+        # noinspection PyPep8Naming
+        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = ModelRef(Bar(uuid=uuid4(), age=1))
 
         self.assertEqual(1, value.age)
 
     def test_model_attribute_raises(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+        # noinspection PyPep8Naming
+        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = ModelRef(Bar(uuid=uuid4(), age=1))
 
         with self.assertRaises(AttributeError):
             value.year
 
     def test_fields(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+        # noinspection PyPep8Naming
+        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = ModelRef(Bar(uuid=uuid4(), age=1))
 
-        self.assertEqual({"data": FieldRef("data", Union[mt_bar, UUID], value)}, value.fields)
+        self.assertEqual({"data": FieldRef("data", Union[Bar, UUID], value)}, value.fields)
 
     def test_model_avro_data(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = mt_bar(uuid=uuid4(), age=1)
+        # noinspection PyPep8Naming
+        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = Bar(uuid=uuid4(), age=1)
 
         self.assertEqual(value.avro_data, ModelRef(value).avro_data)
 
@@ -123,9 +131,10 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(str(value), ModelRef(value).avro_data)
 
     async def test_model_avro_data_submitting(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        # noinspection PyPep8Naming
+        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
         uuid = uuid4()
-        value = mt_bar(uuid=uuid, age=1)
+        value = Bar(uuid=uuid, age=1)
 
         IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
         self.assertEqual(str(uuid), ModelRef(value).avro_data)
@@ -136,8 +145,9 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(str(value), ModelRef(value).avro_data)
 
     def test_model_avro_schema(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = mt_bar(uuid=uuid4(), age=1)
+        # noinspection PyPep8Naming
+        Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+        value = Bar(uuid=uuid4(), age=1)
 
         expected = [
             {
