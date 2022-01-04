@@ -49,16 +49,19 @@ logger = logging.getLogger(__name__)
 class AvroDataDecoder:
     """Avro Data Decoder class."""
 
-    def __init__(self, type_: type):
+    def __init__(self, type_: type = None):
         self.type_ = type_
 
-    def build(self, data: Any) -> Any:
+    def build(self, data: Any, type_: Any = MissingSentinel) -> Any:
         """Cast data type according to the field definition.
 
         :param data: Data to be casted.
+        :param type_: TODO
         :return: The casted object.
         """
-        return self._cast_value(self.type_, data)
+        if type_ is MissingSentinel:
+            type_ = self.type_
+        return self._cast_value(type_, data)
 
     def _cast_value(self, type_: type, data: Any) -> Any:
         origin = get_origin(type_)

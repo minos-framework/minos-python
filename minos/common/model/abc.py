@@ -134,8 +134,14 @@ class Model(Mapping):
         """
         if isinstance(schema, list):
             schema = schema[-1]
-        model_type = AvroSchemaDecoder(schema).build()
-        return AvroDataDecoder(model_type).build(data)
+
+        schema_decoder = AvroSchemaDecoder()
+        type_ = cls.decode_schema(schema_decoder, schema)
+
+        data_decoder = AvroDataDecoder()
+        instance = cls.decode_data(data_decoder, data, type_)
+
+        return instance
 
     @classmethod
     def to_avro_str(cls: Type[T], models: list[T]) -> str:
@@ -264,6 +270,16 @@ class Model(Mapping):
             _target = self_or_cls
         return encoder.build(_target)
 
+    @classmethod
+    def decode_schema(cls: T, decoder, _target) -> T:
+        """TODO
+
+        :param decoder: TODO
+        :param _target: TODO
+        :return: TODO
+        """
+        return decoder.build(_target)
+
     @property
     def avro_data(self) -> dict[str, Any]:
         """Compute the avro data of the model.
@@ -283,6 +299,17 @@ class Model(Mapping):
         if _target is MissingSentinel:
             _target = self
         return encoder.build(_target)
+
+    @classmethod
+    def decode_data(cls: T, decoder, _target, type_) -> T:
+        """TODO
+
+        :param decoder: TODO
+        :param _target: TODO
+        :param type_: TODO
+        :return: TODO
+        """
+        return decoder.build(_target, type_)
 
     @property
     def avro_str(self) -> str:
