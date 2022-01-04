@@ -37,7 +37,7 @@ class TestAvroSchemaEncoder(unittest.TestCase):
         }
         encoder = AvroSchemaEncoder(ModelType.build("User", {"username": str}, namespace_="path.to"))
 
-        with patch("minos.common.AvroSchemaEncoder._generate_random_str", return_value="hello"):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
             observed = encoder.build()
 
         self.assertEqual(expected, observed)
@@ -112,7 +112,7 @@ class TestAvroSchemaEncoder(unittest.TestCase):
         }
         encoder = AvroSchemaEncoder(list[Optional[User]])
 
-        with patch("minos.common.AvroSchemaEncoder._generate_random_str", return_value="hello"):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
             observed = encoder.build()
 
         self.assertEqual(expected, observed)

@@ -133,7 +133,7 @@ class TestDataTransferObject(unittest.IsolatedAsyncioTestCase):
         ]
         dto = DataTransferObject.from_avro(schema, {"price": 120})
 
-        with patch("minos.common.AvroSchemaEncoder._generate_random_str", side_effect=["hello"]):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello"]):
             self.assertEqual(schema, dto.avro_schema)
 
     def test_classname(self):
