@@ -15,6 +15,7 @@ from enum import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Optional,
     Type,
     Union,
     get_args,
@@ -168,20 +169,17 @@ class AvroSchemaEncoder:
     def _build_model_type_schema(self, type_: ModelType) -> Any:
         schema = {
             "name": type_.name,
-            "namespace": type_.namespace,
+            "namespace": self._patch_namespace(type_.namespace),
             "type": "record",
             "fields": [self._build_field_schema(FieldType(n, t)) for n, t in type_.type_hints.items()],
         }
-
-        schema = self._patch_namespace(schema)
-
         return schema
 
     @classmethod
-    def _patch_namespace(cls, schema: dict[str, Any]) -> dict[str, Any]:
-        if len(schema["namespace"]) > 0:
-            schema["namespace"] += f".{cls.generate_random_str()}"
-        return schema
+    def _patch_namespace(cls, namespace: Optional[str]) -> Optional[str]:
+        if len(namespace) > 0:
+            namespace += f".{cls.generate_random_str()}"
+        return namespace
 
     def _build_field_schema(self, field: Union[Field, FieldType]):
         return {"name": field.name, "type": self._build_schema(field.type)}

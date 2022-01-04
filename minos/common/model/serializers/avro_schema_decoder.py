@@ -132,30 +132,20 @@ class AvroSchemaDecoder:
         return type_
 
     def _build_record(self, schema: dict[str, Any]) -> type:
-        schema = self._unpatch_namespace(schema)
-
         type_ = ModelType.build(
             name_=schema["name"],
             type_hints_={field["name"]: self._build(field) for field in schema["fields"]},
-            namespace_=schema["namespace"],
+            namespace_=schema.get("namespace"),
         )
+
+        type_ = self._unpatch_namespace(type_)
 
         return type_
 
     @staticmethod
-    def _unpatch_namespace(schema: dict[str, Any]) -> dict[str, Any]:
-        schema = schema.copy()
-
-        if schema.get("namespace") is None:
-            try:
-                schema["namespace"], schema["name"] = schema["name"].rsplit(".", 1)
-            except ValueError:
-                schema["namespace"] = str()
-
-        if len(schema["namespace"]) > 0:
-            schema["namespace"] = schema["namespace"].rsplit(".", 1)[0]
-
-        return schema
+    def _unpatch_namespace(type_: ModelType) -> ModelType:
+        type_.namespace = type_.namespace.rsplit(".", 1)[0]
+        return type_
 
     def _build_type(self, schema: dict[str, Any]) -> type:
         return self._build(schema["type"])

@@ -52,7 +52,7 @@ class TestMinosModelAvro(MinosTestCase):
                 "type": "record",
             }
         ]
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["goodbye", "hello"]):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello", "goodbye"]):
             self.assertEqual(expected, ShoppingList.avro_schema)
 
     def test_avro_data(self):
@@ -97,7 +97,7 @@ class TestMinosModelAvro(MinosTestCase):
                 "type": "record",
             }
         ]
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["goodbye", "hello"]):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello", "goodbye"]):
             self.assertEqual(expected, Auth.avro_schema)
 
     def test_avro_schema_simple(self):
@@ -205,7 +205,7 @@ class TestMinosModelAvro(MinosTestCase):
             }
         ]
 
-        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello", "goodbye", "one"]):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["one", "hello", "goodbye"]):
             self.assertEqual(expected, bar.avro_schema)
 
     def test_multiple_fields_avro_data(self):
