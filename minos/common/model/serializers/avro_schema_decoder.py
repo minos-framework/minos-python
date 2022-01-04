@@ -32,7 +32,7 @@ from ..types import (
     ModelType,
     NoneType,
     build_union,
-    is_model_type,
+    is_model_subclass,
 )
 from .constants import (
     AVRO_ARRAY,
@@ -124,7 +124,7 @@ class AvroSchemaDecoder:
 
         with suppress(MinosImportException):
             type_ = import_module(logical_type)
-            if not is_model_type(type_):
+            if not is_model_subclass(type_):
                 return type_
             # noinspection PyUnresolvedReferences
             return type_.decode_schema(self, {k: v for k, v in schema.items() if k != "logicalType"})

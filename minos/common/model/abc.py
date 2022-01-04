@@ -123,7 +123,7 @@ class Model(Mapping):
 
     @classmethod
     def from_avro(
-        cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any], **kwargs
+        cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: Any, **kwargs
     ) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
@@ -259,7 +259,7 @@ class Model(Mapping):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder, _target=MissingSentinel) -> Any:
+    def encode_schema(self_or_cls, encoder, _target: Any = MissingSentinel) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
@@ -271,14 +271,14 @@ class Model(Mapping):
         return encoder.build(_target)
 
     @classmethod
-    def decode_schema(cls: T, decoder, _target) -> T:
+    def decode_schema(cls, decoder, schema: Any) -> ModelType:
         """TODO
 
         :param decoder: TODO
-        :param _target: TODO
+        :param schema: TODO
         :return: TODO
         """
-        return decoder.build(_target)
+        return decoder.build(schema)
 
     @property
     def avro_data(self) -> dict[str, Any]:
@@ -289,7 +289,7 @@ class Model(Mapping):
         encoder = AvroDataEncoder()
         return self.encode_data(encoder)
 
-    def encode_data(self, encoder, _target=MissingSentinel) -> Any:
+    def encode_data(self, encoder, _target: Any = MissingSentinel) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -301,15 +301,15 @@ class Model(Mapping):
         return encoder.build(_target)
 
     @classmethod
-    def decode_data(cls: T, decoder, _target, type_) -> T:
+    def decode_data(cls: T, decoder, data: Any, type_: ModelType) -> T:
         """TODO
 
         :param decoder: TODO
-        :param _target: TODO
+        :param data: TODO
         :param type_: TODO
         :return: TODO
         """
-        return decoder.build(_target, type_)
+        return decoder.build(data, type_)
 
     @property
     def avro_str(self) -> str:
