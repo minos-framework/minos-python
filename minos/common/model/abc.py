@@ -115,11 +115,11 @@ class Model(Mapping):
         :return: A single instance or a sequence of instances.
         """
         schema = MinosAvroProtocol.decode_schema(raw)
-        decoded = MinosAvroProtocol.decode(raw)
+        data = MinosAvroProtocol.decode(raw)
 
-        if isinstance(decoded, list):
-            return [cls.from_avro(schema, d) for d in decoded]
-        return cls.from_avro(schema, decoded)
+        if isinstance(data, list):
+            return [cls.from_avro(schema, entry) for entry in data]
+        return cls.from_avro(schema, data)
 
     @classmethod
     def from_avro(cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: Any) -> T:
