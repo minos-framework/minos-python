@@ -18,7 +18,9 @@ from datetime import (
     timezone,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
+    Type,
     TypeVar,
     Union,
     get_args,
@@ -42,6 +44,11 @@ from ..types import (
     is_type_subclass,
     unpack_typevar,
 )
+
+if TYPE_CHECKING:
+    from ..abc import (
+        Model,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +108,7 @@ class AvroDataDecoder:
             raise DataDecoderRequiredValueException("Value is missing.")
 
         if is_model_subclass(type_):
+            # noinspection PyTypeChecker
             return self._cast_model(type_, data)
 
         if is_type_subclass(type_):
@@ -226,10 +234,10 @@ class AvroDataDecoder:
                 pass
         raise DataDecoderTypeException(UUID, data)
 
-    def _cast_model(self, type_: type, data: Any) -> Any:
+    def _cast_model(self, type_: Type[Model], data: Any) -> Any:
         if is_type_subclass(type_) and isinstance(data, type_):
             return data
-        return self._cast_model_type(ModelType.from_model(type_), data)
+        return type_.decode_data(self, data, ModelType.from_model(type_))
 
     def _cast_model_type(self, type_: ModelType, data: Any) -> Any:
         if hasattr(data, "model_type"):
