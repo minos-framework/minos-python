@@ -108,25 +108,23 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder, _target=MissingSentinel) -> Any:
+    def encode_schema(self_or_cls, encoder, _target: Any = MissingSentinel) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
         :param _target: An optional pre-encoded schema.
         :return: The encoded schema of the instance.
         """
-        schema = encoder.build(ModelType.from_model(self_or_cls).type_hints["data"])
+        if _target is MissingSentinel:
+            _target = ModelType.from_model(self_or_cls)
 
-        if isinstance(schema, dict):
-            return schema | {"logicalType": ModelRef.classname}
-        elif isinstance(schema, list):
-            return [
-                (sub if not isinstance(sub, dict) else (sub | {"logicalType": ModelRef.classname})) for sub in schema
-            ]
-        else:
-            return schema
+        schema = encoder.build(_target.type_hints["data"])
 
-    def encode_data(self, encoder, _target=MissingSentinel) -> Any:
+        return [
+            (sub if not isinstance(sub, dict) else (sub | {"logicalType": self_or_cls.classname})) for sub in schema
+        ]
+
+    def encode_data(self, encoder, _target: Any = MissingSentinel) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -134,6 +132,31 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: The encoded data of the instance.
         """
         return super().encode_data(encoder, self.fields["data"])
+
+    @classmethod
+    def decode_schema(cls, decoder, schema: Any) -> ModelType:
+        """TODO
+
+        :param decoder: TODO
+        :param schema: TODO
+        :return: TODO
+        """
+        decoded = decoder.build(schema)
+        return ModelType.from_model(cls[decoded])
+
+    @classmethod
+    def decode_data(cls, decoder, data, type_: ModelType) -> ModelRef:
+        """TODO
+
+        :param decoder: TODO
+        :param data: TODO
+        :param type_: TODO
+        :return: TODO
+        """
+        decoded = decoder.build(data, type_.type_hints["data"])
+        if isinstance(decoded, ModelRef):
+            return decoded
+        return ModelRef(decoded, additional_type_hints=type_.type_hints)
 
     def __eq__(self, other):
         return super().__eq__(other) or self.uuid == other or self.data == other
