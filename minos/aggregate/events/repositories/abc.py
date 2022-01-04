@@ -40,6 +40,9 @@ from minos.networks import (
     BrokerPublisher,
 )
 
+from ...contextvars import (
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
+)
 from ...exceptions import (
     EventRepositoryConflictException,
     EventRepositoryException,
@@ -49,9 +52,6 @@ from ...transactions import (
     TransactionEntry,
     TransactionRepository,
     TransactionStatus,
-)
-from ..contextvars import (
-    SUBMITTING_EVENT_CONTEXT_VAR,
 )
 from ..entries import (
     EventEntry,
@@ -149,7 +149,7 @@ class EventRepository(ABC, MinosSetup):
             AggregateDiff,
         )
 
-        token = SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+        token = IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
         try:
             transaction = TRANSACTION_CONTEXT_VAR.get()
 
@@ -169,7 +169,7 @@ class EventRepository(ABC, MinosSetup):
                 await self._send_events(entry.aggregate_diff)
 
         finally:
-            SUBMITTING_EVENT_CONTEXT_VAR.reset(token)
+            IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.reset(token)
 
         return entry
 

@@ -17,6 +17,7 @@ from uuid import (
 )
 
 from minos.aggregate import (
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     TRANSACTION_CONTEXT_VAR,
     Action,
     AggregateDiff,
@@ -331,6 +332,23 @@ class TestEventRepository(MinosTestCase):
         entry = EventEntry(uuid4(), "example.Car", 0, bytes(), action=Action.CREATE)
         with self.assertRaises(EventRepositoryConflictException):
             await self.event_repository.submit(entry)
+
+    async def test_submit_context_var(self):
+        mocked_aggregate_diff = AsyncMock()
+        mocked_aggregate_diff.action = Action.CREATE
+
+        async def _fn(entry):
+            self.assertEqual(True, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
+            return entry
+
+        mocked_submit = AsyncMock(side_effect=_fn)
+        self.event_repository._submit = mocked_submit
+
+        self.assertEqual(False, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
+        await self.event_repository.submit(mocked_aggregate_diff)
+        self.assertEqual(False, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
+
+        self.assertEqual(1, mocked_submit.call_count)
 
     async def test_validate_true(self):
         aggregate_uuid = uuid4()

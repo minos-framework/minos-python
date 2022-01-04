@@ -14,7 +14,7 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    SUBMITTING_EVENT_CONTEXT_VAR,
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     AggregateRef,
     FieldRef,
     ModelRef,
@@ -127,12 +127,12 @@ class TestModelRef(MinosTestCase):
         uuid = uuid4()
         value = mt_bar(uuid=uuid, age=1)
 
-        SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+        IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
         self.assertEqual({"data": str(uuid)}, ModelRef(value).avro_data)
 
     async def test_uuid_avro_data_submitting(self):
         value = uuid4()
-        SUBMITTING_EVENT_CONTEXT_VAR.set(True)
+        IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
         self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
 
     async def test_resolve(self):

@@ -30,8 +30,8 @@ from minos.networks import (
     DynamicBrokerPool,
 )
 
-from ...events import (
-    SUBMITTING_EVENT_CONTEXT_VAR,
+from ...contextvars import (
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
 from ..entities import (
     Entity,
@@ -60,7 +60,7 @@ class FieldRef(Field):
 
         :return: A dictionary object.
         """
-        if not SUBMITTING_EVENT_CONTEXT_VAR.get():
+        if not IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get():
             return super().avro_data
 
         value = self.value

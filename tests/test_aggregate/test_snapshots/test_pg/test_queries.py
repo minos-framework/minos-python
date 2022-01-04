@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import (
+    MagicMock,
     patch,
 )
 from uuid import (
@@ -17,6 +18,7 @@ from psycopg2.sql import (
 )
 
 from minos.aggregate import (
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     Condition,
     Ordering,
     PostgreSqlSnapshotQueryBuilder,
@@ -70,6 +72,21 @@ class TestPostgreSqlSnapshotQueryBuilder(PostgresAsyncTestCase):
         self.assertEqual(10, qb.limit)
         self.assertEqual(transaction_uuids, qb.transaction_uuids)
         self.assertTrue(qb.exclude_deleted)
+
+    def test_build_submitting_context_var(self):
+        builder = PostgreSqlSnapshotQueryBuilder("path.to.Aggregate", Condition.TRUE)
+
+        def _fn():
+            self.assertEqual(True, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
+
+        mock = MagicMock(side_effect=_fn)
+        builder._build = mock
+
+        self.assertEqual(False, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
+        builder.build()
+        self.assertEqual(False, IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get())
+
+        self.assertEqual(1, mock.call_count)
 
     def test_build_raises(self):
         with self.assertRaises(ValueError):
