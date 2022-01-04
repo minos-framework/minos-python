@@ -53,10 +53,10 @@ class AvroDataDecoder:
         self.type_ = type_
 
     def build(self, data: Any) -> Any:
-        """Cast data type according to the field definition..
+        """Cast data type according to the field definition.
 
         :param data: Data to be casted.
-        :return: Casted object.
+        :return: The casted object.
         """
         return self._cast_value(self.type_, data)
 

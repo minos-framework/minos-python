@@ -139,7 +139,7 @@ class Model(Mapping):
 
     @classmethod
     def to_avro_str(cls: Type[T], models: list[T]) -> str:
-        """Create a bytes representation of the given object instances.
+        """Build the avro string representation of the given object instances.
 
         :param models: A sequence of minos models.
         :return: A bytes object.
