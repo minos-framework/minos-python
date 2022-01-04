@@ -166,16 +166,26 @@ class AvroSchemaEncoder:
         return [type_.encode_schema(self, raw)]
 
     def _build_model_type_schema(self, type_: ModelType) -> Any:
-        namespace = type_.namespace
-        if len(namespace) > 0:
-            namespace = f"{type_.namespace}.{self.generate_random_str()}"
         schema = {
             "name": type_.name,
-            "namespace": namespace,
+            "namespace": type_.namespace,
             "type": "record",
             "fields": [self._build_field_schema(FieldType(n, t)) for n, t in type_.type_hints.items()],
         }
+
+        schema = self._patch_namespace(schema)
+
         return schema
+
+    @classmethod
+    def _patch_namespace(cls, schema: dict[str, Any]) -> dict[str, Any]:
+        if len(schema["namespace"]) > 0:
+            schema["namespace"] += f".{cls._generate_random_str()}"
+        return schema
+
+    @staticmethod
+    def _generate_random_str() -> str:
+        return str(uuid4())
 
     def _build_field_schema(self, field: Union[Field, FieldType]):
         return {"name": field.name, "type": self._build_schema(field.type)}
@@ -203,11 +213,3 @@ class AvroSchemaEncoder:
 
     def _build_dict_schema(self, type_: type) -> dict[str, Any]:
         return {"type": AVRO_MAP, "values": self._build_schema(get_args(type_)[1])}
-
-    @staticmethod
-    def generate_random_str() -> str:
-        """Generate a random string
-
-        :return: A random string value.
-        """
-        return str(uuid4())
