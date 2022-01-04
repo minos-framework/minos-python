@@ -76,30 +76,6 @@ class Model(Mapping):
         self.__eq_reversing = False
 
     @classmethod
-    def from_avro_str(cls: Type[T], raw: str, **kwargs) -> Union[T, list[T]]:
-        """Build a single instance or a sequence of instances from bytes
-
-        :param raw: A bytes data.
-        :return: A single instance or a sequence of instances.
-        """
-        raw = b64decode(raw.encode())
-        return cls.from_avro_bytes(raw, **kwargs)
-
-    @classmethod
-    def from_avro_bytes(cls: Type[T], raw: bytes, **kwargs) -> Union[T, list[T]]:
-        """Build a single instance or a sequence of instances from bytes
-
-        :param raw: A bytes data.
-        :return: A single instance or a sequence of instances.
-        """
-        schema = MinosAvroProtocol.decode_schema(raw)
-        decoded = MinosAvroProtocol.decode(raw)
-
-        if isinstance(decoded, list):
-            return [cls.from_avro(schema, d, **kwargs) for d in decoded]
-        return cls.from_avro(schema, decoded, **kwargs)
-
-    @classmethod
     def from_typed_dict(cls: Type[T], typed_dict: TypedDict, *args, **kwargs) -> T:
         """Build a ``Model`` from a ``TypeDict`` and ``data``.
 
@@ -122,12 +98,35 @@ class Model(Mapping):
         """
 
     @classmethod
-    def from_avro(cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: Any, **kwargs) -> T:
+    def from_avro_str(cls: Type[T], raw: str) -> Union[T, list[T]]:
+        """Build a single instance or a sequence of instances from bytes
+
+        :param raw: A ``str`` representation of the model.
+        :return: A single instance or a sequence of instances.
+        """
+        raw = b64decode(raw.encode())
+        return cls.from_avro_bytes(raw)
+
+    @classmethod
+    def from_avro_bytes(cls: Type[T], raw: bytes) -> Union[T, list[T]]:
+        """Build a single instance or a sequence of instances from bytes
+
+        :param raw: A ``bytes`` representation of the model.
+        :return: A single instance or a sequence of instances.
+        """
+        schema = MinosAvroProtocol.decode_schema(raw)
+        decoded = MinosAvroProtocol.decode(raw)
+
+        if isinstance(decoded, list):
+            return [cls.from_avro(schema, d) for d in decoded]
+        return cls.from_avro(schema, decoded)
+
+    @classmethod
+    def from_avro(cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: Any) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
         :param data: The avro data of the model.
-        :param kwargs: TODO
         :return: A new ``DynamicModel`` instance.
         """
         schema_decoder = AvroSchemaDecoder()
