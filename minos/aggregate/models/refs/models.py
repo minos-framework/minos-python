@@ -21,9 +21,11 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    AvroDataEncoder,
     DeclarativeModel,
     Field,
+    MissingSentinel,
+    ModelType,
+    self_or_classmethod,
 )
 from minos.networks import (
     DynamicBroker,
@@ -52,22 +54,16 @@ class AggregateRef(Entity):
 class FieldRef(Field):
     """Ref Field class."""
 
-    @property
-    def avro_data(self) -> Any:
-        """Compute the avro data of the model.
+    def encode_data(self, encoder, _target=MissingSentinel) -> Any:
+        """Encode data with the given encoder.
 
-        If submitting is active then simply the identifier is used, otherwise the complete value is used.
-
-        :return: A dictionary object.
+        :param encoder: The encoder instance.
+        :param _target: An optional pre-encoded data.
+        :return: The encoded data of the instance.
         """
-        if not IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get():
-            return super().avro_data
-
-        value = self.value
-        if not isinstance(value, UUID):
-            value = value.uuid
-
-        return AvroDataEncoder(value).build()
+        if IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get() and not isinstance(self.value, UUID):
+            _target = self.value.uuid
+        return super().encode_data(encoder, _target)
 
 
 class ModelRef(DeclarativeModel, UUID, Generic[MT]):
@@ -109,6 +105,35 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: A ``SafeUUID`` value.
         """
         return self.uuid.is_safe
+
+    # noinspection PyMethodParameters
+    @self_or_classmethod
+    def encode_schema(self_or_cls, encoder, _target=MissingSentinel) -> Any:
+        """Encode schema with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param _target: An optional pre-encoded schema.
+        :return: The encoded schema of the instance.
+        """
+        schema = encoder.build(ModelType.from_model(self_or_cls).type_hints["data"])
+
+        if isinstance(schema, dict):
+            return schema | {"logicalType": ModelRef.classname}
+        elif isinstance(schema, list):
+            return [
+                (sub if not isinstance(sub, dict) else (sub | {"logicalType": ModelRef.classname})) for sub in schema
+            ]
+        else:
+            return schema
+
+    def encode_data(self, encoder, _target=MissingSentinel) -> Any:
+        """Encode data with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param _target: An optional pre-encoded data.
+        :return: The encoded data of the instance.
+        """
+        return super().encode_data(encoder, self.fields["data"])
 
     def __eq__(self, other):
         return super().__eq__(other) or self.uuid == other or self.data == other
