@@ -123,11 +123,11 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     @classmethod
     def decode_schema(cls, decoder, schema: Any) -> ModelType:
-        """TODO
+        """Decode schema with the given encoder.
 
-        :param decoder: TODO
-        :param schema: TODO
-        :return: TODO
+        :param decoder: The decoder instance.
+        :param schema: The schema to be decoded.
+        :return: The decoded schema as a type.
         """
         decoded = decoder.build(schema)
         return ModelType.from_model(cls[decoded])
@@ -143,12 +143,12 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     @classmethod
     def decode_data(cls, decoder, data, type_: ModelType) -> ModelRef:
-        """TODO
+        """Decode data with the given decoder.
 
-        :param decoder: TODO
-        :param data: TODO
-        :param type_: TODO
-        :return: TODO
+        :param decoder: The decoder instance.
+        :param data: The data to be decoded.
+        :param type_: The data type.
+        :return: A decoded instance.
         """
         decoded = decoder.build(data, type_.type_hints["data"])
         if isinstance(decoded, ModelRef):
