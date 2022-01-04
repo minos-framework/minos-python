@@ -32,6 +32,7 @@ from ..types import (
     ModelType,
     NoneType,
     build_union,
+    is_model_type,
 )
 from .constants import (
     AVRO_ARRAY,
@@ -70,13 +71,17 @@ class AvroSchemaDecoder:
             schema = self._schema
         return self._build(schema)
 
-    def _build(self, schema: Union[dict, list, str]) -> type:
+    def _build(self, schema: Union[ModelType, dict, list, str]) -> type:
+        if isinstance(schema, ModelType):
+            return schema
+
         if isinstance(schema, dict):
             return self._build_from_dict(schema)
-        elif isinstance(schema, list):
+
+        if isinstance(schema, list):
             return self._build_from_list(schema)
-        else:
-            return self._build_simple(schema)
+
+        return self._build_simple(schema)
 
     def _build_from_list(self, schema: list[Any]) -> type:
         options = tuple(self._build(entry) for entry in schema)
@@ -85,31 +90,45 @@ class AvroSchemaDecoder:
     def _build_from_dict(self, schema: dict) -> type:
         if "logicalType" in schema:
             return self._build_logical_type(schema)
-        elif schema["type"] == AVRO_ARRAY:
+
+        if schema["type"] == AVRO_ARRAY:
             return self._build_list(schema)
-        elif schema["type"] == AVRO_MAP:
+
+        if schema["type"] == AVRO_MAP:
             return self._build_dict(schema)
-        elif schema["type"] == AVRO_RECORD:
+
+        if schema["type"] == AVRO_RECORD:
             return self._build_record(schema)
-        else:
-            return self._build_type(schema)
+
+        return self._build_type(schema)
 
     def _build_logical_type(self, schema: dict[str, Any]) -> type:
-        type_ = schema["logicalType"]
-        if type_ == AVRO_DATE["logicalType"]:
+        logical_type = schema["logicalType"]
+        if logical_type == AVRO_DATE["logicalType"]:
             return date
-        if type_ == AVRO_TIME["logicalType"]:
+
+        if logical_type == AVRO_TIME["logicalType"]:
             return time
-        if type_ == AVRO_TIMESTAMP["logicalType"]:
+
+        if logical_type == AVRO_TIMESTAMP["logicalType"]:
             return datetime
-        if type_ == AVRO_TIMEDELTA["logicalType"]:
+
+        if logical_type == AVRO_TIMEDELTA["logicalType"]:
             return timedelta
-        if type_ == AVRO_UUID["logicalType"]:
+
+        if logical_type == AVRO_UUID["logicalType"]:
             return UUID
-        if type_ == AVRO_SET["logicalType"]:
+
+        if logical_type == AVRO_SET["logicalType"]:
             return self._build_set(schema)
+
         with suppress(MinosImportException):
-            return import_module(type_)
+            type_ = import_module(logical_type)
+            if not is_model_type(type_):
+                return type_
+            # noinspection PyUnresolvedReferences
+            return type_.decode_schema(self, {k: v for k, v in schema.items() if k != "logicalType"})
+
         return self._build({k: v for k, v in schema.items() if k != "logicalType"})
 
     def _build_list(self, schema: dict[str, Any]) -> type:
@@ -140,7 +159,7 @@ class AvroSchemaDecoder:
 
         type_ = self._unpatch_namespace(type_)
 
-        return type_
+        return type_.decode_schema(self, type_)
 
     @staticmethod
     def _unpatch_namespace(type_: ModelType) -> ModelType:
@@ -154,16 +173,22 @@ class AvroSchemaDecoder:
     def _build_simple(type_: str) -> type:
         if type_ == AVRO_NULL:
             return NoneType
+
         if type_ == AVRO_INT:
             return int
+
         if type_ == AVRO_BOOLEAN:
             return bool
+
         if type_ == AVRO_FLOAT:
             return float
+
         if type_ == AVRO_DOUBLE:
             return float
+
         if type_ == AVRO_STRING:
             return str
+
         if type_ == AVRO_BYTES:
             return bytes
 
