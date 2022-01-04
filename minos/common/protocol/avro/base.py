@@ -52,10 +52,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
 
     @staticmethod
     def _parse_schema(schema: list[dict[str, Any]]) -> dict[str, Any]:
-        named_schemas = {}
-        for item in schema[:-1]:
-            parse_schema(item, named_schemas)
-        return parse_schema(schema[-1], named_schemas, expand=True)
+        return parse_schema(schema)
 
     @staticmethod
     def _write_data(value: list[dict[str, Any]], schema: dict[str, Any]):

@@ -29,30 +29,24 @@ class TestMinosAvroProtocol(unittest.TestCase):
         deserialized = MinosAvroProtocol.decode(serialized)
         self.assertEqual(data, deserialized)
 
-        expected_schema = {
-            "type": "record",
-            "name": "tests.model_classes.ShoppingList",
-            "fields": [
-                {
-                    "name": "user",
-                    "type": [
-                        {
-                            "type": "record",
-                            "name": "tests.model_classes.User",
-                            "fields": [
-                                {"name": "id", "type": "int"},
-                                {"name": "username", "type": ["string", "null"]},
-                            ],
-                        },
-                        "null",
-                    ],
-                },
-                {"name": "cost", "type": "float"},
-            ],
-        }
+        expected_schema = [
+            {
+                "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
+                "name": "tests.model_classes.User",
+                "type": "record",
+            },
+            {
+                "fields": [
+                    {"name": "user", "type": ["tests.model_classes.User", "null"]},
+                    {"name": "cost", "type": "float"},
+                ],
+                "name": "tests.model_classes.ShoppingList",
+                "type": "record",
+            },
+        ]
 
         decoded_schema = MinosAvroProtocol.decode_schema(serialized)
-        self.assertEqual(decoded_schema, expected_schema)
+        self.assertEqual(expected_schema, decoded_schema)
 
     def test_decode_schema_raise_exception(self):
         data = b"Test"

@@ -122,9 +122,7 @@ class Model(Mapping):
         """
 
     @classmethod
-    def from_avro(
-        cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: Any, **kwargs
-    ) -> T:
+    def from_avro(cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: Any, **kwargs) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
@@ -132,9 +130,6 @@ class Model(Mapping):
         :param kwargs: TODO
         :return: A new ``DynamicModel`` instance.
         """
-        if isinstance(schema, list):
-            schema = schema[-1]
-
         schema_decoder = AvroSchemaDecoder()
         type_ = cls.decode_schema(schema_decoder, schema)
 
