@@ -146,7 +146,6 @@ class TestModelAvro(MinosTestCase):
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["one", "hello", "goodbye"]):
             self.assertEqual(expected, bar.avro_schema)
 
-    @unittest.skip("FIXME!")
     def test_encode_schema(self):
         user = User(1234)
         shopping_list = ShoppingList(user)
@@ -158,7 +157,7 @@ class TestModelAvro(MinosTestCase):
 
         self.assertEqual([call(encoder), call(encoder, shopping_list.model_type)], shopping_mock.call_args_list)
 
-        self.assertEqual([call(encoder, user.model_type)], user_mock.call_args_list)
+        self.assertEqual([], user_mock.call_args_list)
 
     def test_avro_data(self):
         shopping_list = ShoppingList(User(1234))
@@ -246,7 +245,6 @@ class TestModelAvro(MinosTestCase):
                 mock.call_args_list,
             )
 
-    @unittest.skip("FIXME!")
     def test_decode_data(self):
         user = User(1234)
         shopping_list = ShoppingList(user)
@@ -260,7 +258,6 @@ class TestModelAvro(MinosTestCase):
         self.assertEqual(
             [
                 call(decoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")}, shopping_list.model_type),
-                call(decoder, {"id": 1234, "username": None}, user.model_type),
             ],
             mock.call_args_list,
         )
