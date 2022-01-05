@@ -82,15 +82,6 @@ class ModelType(type):
     def __call__(cls, *args, **kwargs) -> Model:
         return cls.model_cls.from_model_type(cls, *args, **kwargs)
 
-    def decode_schema(cls, *args, **kwargs) -> type:
-        """Decode schema with the given encoder.
-
-        :param args: Additional positional arguments.
-        :param kwargs: Additional named arguments.
-        :return: The decoded schema as a type.
-        """
-        return cls.model_cls.decode_schema(*args, **kwargs)
-
     @property
     def model_cls(cls) -> Type[Model]:
         """Get the model class if defined or ``DataTransferObject`` otherwise.
