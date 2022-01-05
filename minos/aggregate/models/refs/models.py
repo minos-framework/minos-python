@@ -71,11 +71,11 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
     """Model Reference."""
 
     _field_cls = FieldRef
-    data: Union[UUID, MT]
+    data: Union[MT, UUID]
 
     @inject
     def __init__(
-        self, data: Union[UUID, MT], *args, broker_pool: DynamicBrokerPool = Provide["broker_pool"], **kwargs,
+        self, data: Union[MT, UUID], *args, broker_pool: DynamicBrokerPool = Provide["broker_pool"], **kwargs,
     ):
         if not isinstance(data, UUID) and not hasattr(data, "uuid"):
             raise ValueError(f"data must be an {UUID!r} instance or have 'uuid' as one of its fields")
@@ -180,8 +180,8 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: A model type.
         """
         args = get_args(self.type_hints["data"])
-        if args[1] != MT:
-            return args[1]
+        if args[0] != MT:
+            return args[0]
         return None
 
     # noinspection PyUnusedLocal

@@ -135,17 +135,19 @@ class TestModelRef(MinosTestCase):
         another = Bar(uuid4(), 1)
 
         expected = [
-            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
-            {
-                "fields": [
-                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                    {"name": "age", "type": "int"},
-                ],
-                "name": "Bar",
-                "namespace": "",
-                "type": "record",
-                "logicalType": "minos.aggregate.models.refs.models.ModelRef",
-            },
+            [
+                {
+                    "fields": [
+                        {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
+                        {"name": "age", "type": "int"},
+                    ],
+                    "name": "Bar",
+                    "namespace": "",
+                    "type": "record",
+                    "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                },
+                {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+            ]
         ]
 
         self.assertEqual(expected, ModelRef(another).avro_schema)
@@ -155,17 +157,19 @@ class TestModelRef(MinosTestCase):
         ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
         expected = [
-            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
-            {
-                "fields": [
-                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
-                    {"name": "age", "type": "int"},
-                ],
-                "logicalType": "minos.aggregate.models.refs.models.ModelRef",
-                "name": "Bar",
-                "namespace": "",
-                "type": "record",
-            },
+            [
+                {
+                    "fields": [
+                        {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
+                        {"name": "age", "type": "int"},
+                    ],
+                    "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                    "name": "Bar",
+                    "namespace": "",
+                    "type": "record",
+                },
+                {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+            ]
         ]
         self.assertEqual(expected, ref.avro_schema)
 
