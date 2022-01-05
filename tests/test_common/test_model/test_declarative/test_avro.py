@@ -9,6 +9,7 @@ from uuid import (
 
 from minos.common import (
     EmptyMinosModelSequenceException,
+    Model,
     MultiTypeMinosModelSequenceException,
 )
 from tests.model_classes import (
@@ -145,6 +146,20 @@ class TestModelAvro(MinosTestCase):
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["one", "hello", "goodbye"]):
             self.assertEqual(expected, bar.avro_schema)
 
+    @unittest.skip("FIXME!")
+    def test_encode_schema(self):
+        user = User(1234)
+        shopping_list = ShoppingList(user)
+        with patch.object(ShoppingList, "encode_schema", side_effect=shopping_list.encode_schema) as shopping_mock:
+            with patch.object(User, "encode_schema", side_effect=user.encode_schema) as user_mock:
+                shopping_list.avro_schema
+
+        encoder = shopping_mock.call_args_list[0].args[0]
+
+        self.assertEqual([call(encoder), call(encoder, shopping_list.model_type)], shopping_mock.call_args_list)
+
+        self.assertEqual([call(encoder, user.model_type)], user_mock.call_args_list)
+
     def test_avro_data(self):
         shopping_list = ShoppingList(User(1234))
         expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
@@ -210,6 +225,45 @@ class TestModelAvro(MinosTestCase):
         customers = [Customer(1234), Customer(5678)]
         avro_str = Customer.to_avro_str(customers)
         self.assertIsInstance(avro_str, str)
+
+    def test_decode_schema(self):
+        user = User(1234)
+        shopping_list = ShoppingList(user)
+
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            with patch.object(Model, "decode_schema", side_effect=Model.decode_schema) as mock:
+                # noinspection PyTypeChecker
+                Model.from_avro(shopping_list.avro_schema, shopping_list.avro_data)
+
+            decoder = mock.call_args_list[0].args[0]
+
+            self.assertEqual(
+                [
+                    call(decoder, shopping_list.avro_schema),
+                    call(decoder, user.model_type),
+                    call(decoder, shopping_list.model_type),
+                ],
+                mock.call_args_list,
+            )
+
+    @unittest.skip("FIXME!")
+    def test_decode_data(self):
+        user = User(1234)
+        shopping_list = ShoppingList(user)
+
+        with patch.object(Model, "decode_data", side_effect=Model.decode_data) as mock:
+            # noinspection PyTypeChecker
+            Model.from_avro(shopping_list.avro_schema, shopping_list.avro_data)
+
+        decoder = mock.call_args_list[0].args[0]
+
+        self.assertEqual(
+            [
+                call(decoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")}, shopping_list.model_type),
+                call(decoder, {"id": 1234, "username": None}, user.model_type),
+            ],
+            mock.call_args_list,
+        )
 
     def test_from_avro_bytes_single(self):
         customer = Customer(1234)
