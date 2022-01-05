@@ -128,8 +128,8 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: The decoded schema as a type.
         """
         decoded = decoder.build(schema)
-        if decoded in (str, UUID):
-            return ModelType.from_model(cls)
+        if not isinstance(decoded, ModelType):
+            raise ValueError(f"The decoded type is not valid: {decoded}")
         return ModelType.from_model(cls[decoded])
 
     def encode_data(self, encoder, _target: Any = MissingSentinel, **kwargs) -> Any:
