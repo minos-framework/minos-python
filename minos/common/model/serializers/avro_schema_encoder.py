@@ -79,29 +79,29 @@ class AvroSchemaEncoder:
         """
         if type_ is MissingSentinel:
             type_ = self.type_
-        return self._build_schema(type_)
+        return self._build(type_)
 
-    def _build_schema(self, type_) -> Any:
+    def _build(self, type_) -> Any:
         if get_origin(type_) is Union:
-            return self._build_union_schema(type_)
+            return self._build_union(type_)
 
         if is_type_subclass(type_) and issubclass(type_, Enum):
-            return self._build_enum_schema(type_)
+            return self._build_enum(type_)
 
-        return self._build_single_schema(type_)
+        return self._build_single(type_)
 
-    def _build_union_schema(self, type_: type) -> Any:
+    def _build_union(self, type_: type) -> Any:
         ans = list()
         alternatives = get_args(type_)
         for alternative_type in alternatives:
-            step = self._build_schema(alternative_type)
+            step = self._build(alternative_type)
             if isinstance(step, list):
                 ans += step
             else:
                 ans.append(step)
         return ans
 
-    def _build_single_schema(self, type_: type) -> Any:
+    def _build_single(self, type_: type) -> Any:
         if type_ is Any:
             # FIXME: This is a design decision that must be revisited in the future.
             return AVRO_NULL
@@ -141,7 +141,7 @@ class AvroSchemaEncoder:
                 return AVRO_UUID
 
             if isinstance(type_, ModelType):
-                return self._build_model_type_schema(type_)
+                return self._build_model_type(type_)
 
         from ..abc import (
             Model,
@@ -149,30 +149,30 @@ class AvroSchemaEncoder:
 
         if isinstance(type_, Model) or is_model_subclass(type_):
             # noinspection PyTypeChecker
-            return self._build_model_schema(type_)
+            return self._build_model(type_)
 
         from ..fields import (
             Field,
         )
 
         if isinstance(type_, Field):
-            return self._build_field_schema(type_)
+            return self._build_field(type_)
 
-        return self._build_composed_schema(type_)
+        return self._build_collection(type_)
 
-    def _build_enum_schema(self, type_: type):
-        return {"type": self._build_single_schema(type_), "logicalType": classname(type_)}
+    def _build_enum(self, type_: type):
+        return {"type": self._build_single(type_), "logicalType": classname(type_)}
 
-    def _build_model_schema(self, type_: Type[Model]) -> Any:
+    def _build_model(self, type_: Type[Model]) -> Any:
         raw = ModelType.from_model(type_)
         return [type_.encode_schema(self, raw)]
 
-    def _build_model_type_schema(self, type_: ModelType) -> Any:
+    def _build_model_type(self, type_: ModelType) -> Any:
         schema = {
             "name": type_.name,
             "namespace": self._patch_namespace(type_.namespace),
             "type": "record",
-            "fields": [self._build_field_schema(FieldType(n, t)) for n, t in type_.type_hints.items()],
+            "fields": [self._build_field(FieldType(n, t)) for n, t in type_.type_hints.items()],
         }
         return schema
 
@@ -182,32 +182,32 @@ class AvroSchemaEncoder:
             namespace += f".{cls.generate_random_str()}"
         return namespace
 
-    def _build_field_schema(self, field: Union[Field, FieldType]):
-        return {"name": field.name, "type": self._build_schema(field.type)}
+    def _build_field(self, field: Union[Field, FieldType]):
+        return {"name": field.name, "type": self._build(field.type)}
 
-    def _build_composed_schema(self, type_: type) -> Any:
+    def _build_collection(self, type_: type) -> Any:
         origin_type = get_origin(type_)
 
         if origin_type is list:
-            return self._build_list_schema(type_)
+            return self._build_list(type_)
 
         if origin_type is set:
-            return self._build_set_schema(type_)
+            return self._build_set(type_)
 
         if origin_type is dict:
-            return self._build_dict_schema(type_)
+            return self._build_dict(type_)
 
         raise ValueError(f"Given field type is not supported: {type_}")  # pragma: no cover
 
-    def _build_set_schema(self, type_: type) -> dict[str, Any]:
-        schema = self._build_list_schema(type_)
+    def _build_set(self, type_: type) -> dict[str, Any]:
+        schema = self._build_list(type_)
         return schema | AVRO_SET
 
-    def _build_list_schema(self, type_: type) -> dict[str, Any]:
-        return {"type": AVRO_ARRAY, "items": self._build_schema(get_args(type_)[0])}
+    def _build_list(self, type_: type) -> dict[str, Any]:
+        return {"type": AVRO_ARRAY, "items": self._build(get_args(type_)[0])}
 
-    def _build_dict_schema(self, type_: type) -> dict[str, Any]:
-        return {"type": AVRO_MAP, "values": self._build_schema(get_args(type_)[1])}
+    def _build_dict(self, type_: type) -> dict[str, Any]:
+        return {"type": AVRO_MAP, "values": self._build(get_args(type_)[1])}
 
     @staticmethod
     def generate_random_str() -> str:
