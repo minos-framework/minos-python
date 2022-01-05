@@ -109,7 +109,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder, _target: Any = MissingSentinel) -> Any:
+    def encode_schema(self_or_cls, encoder, _target: Any = MissingSentinel, **kwargs) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
@@ -122,7 +122,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
 
     @classmethod
-    def decode_schema(cls, decoder, schema: Any) -> ModelType:
+    def decode_schema(cls, decoder, schema: Any, **kwargs) -> ModelType:
         """Decode schema with the given encoder.
 
         :param decoder: The decoder instance.
@@ -134,7 +134,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
             return ModelType.from_model(cls)
         return ModelType.from_model(cls[decoded])
 
-    def encode_data(self, encoder, _target: Any = MissingSentinel) -> Any:
+    def encode_data(self, encoder, _target: Any = MissingSentinel, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -144,7 +144,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         return super().encode_data(encoder, self.fields["data"])
 
     @classmethod
-    def decode_data(cls, decoder, data, type_: ModelType) -> ModelRef:
+    def decode_data(cls, decoder, data: Any, type_: ModelType, **kwargs) -> ModelRef:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.
