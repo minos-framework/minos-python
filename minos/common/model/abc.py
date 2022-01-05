@@ -253,7 +253,7 @@ class Model(Mapping):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder, target: Any = MissingSentinel) -> Any:
+    def encode_schema(self_or_cls, encoder: AvroSchemaEncoder, target: Any = MissingSentinel) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
@@ -265,7 +265,7 @@ class Model(Mapping):
         return encoder.build(target)
 
     @classmethod
-    def decode_schema(cls, decoder, target: Any) -> ModelType:
+    def decode_schema(cls, decoder: AvroSchemaDecoder, target: Any) -> Any:
         """Decode schema with the given encoder.
 
         :param decoder: The decoder instance.
@@ -283,7 +283,7 @@ class Model(Mapping):
         encoder = AvroDataEncoder()
         return self.encode_data(encoder)
 
-    def encode_data(self, encoder, target: Any = MissingSentinel) -> Any:
+    def encode_data(self, encoder: AvroDataEncoder, target: Any = MissingSentinel) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -295,7 +295,7 @@ class Model(Mapping):
         return encoder.build(target)
 
     @classmethod
-    def decode_data(cls: T, decoder, target: Any, type_: ModelType) -> T:
+    def decode_data(cls: T, decoder: AvroDataDecoder, target: Any, type_: ModelType) -> T:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.
