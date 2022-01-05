@@ -239,11 +239,7 @@ class TestModelAvro(MinosTestCase):
             decoder = mock.call_args_list[0].args[0]
 
             self.assertEqual(
-                [
-                    call(decoder, user.model_type, already_callback=True),
-                    call(decoder, shopping_list.model_type, already_callback=True),
-                ],
-                mock.call_args_list,
+                [call(decoder, user.model_type), call(decoder, shopping_list.model_type)], mock.call_args_list,
             )
 
     def test_decode_data(self):
