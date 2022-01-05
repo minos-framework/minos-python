@@ -256,9 +256,7 @@ class TestModelAvro(MinosTestCase):
         decoder = mock.call_args_list[0].args[0]
 
         self.assertEqual(
-            [
-                call(decoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")}, shopping_list.model_type),
-            ],
+            [call(decoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")}, shopping_list.model_type)],
             mock.call_args_list,
         )
 
