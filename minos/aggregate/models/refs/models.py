@@ -55,7 +55,7 @@ class AggregateRef(Entity):
 class FieldRef(Field):
     """Ref Field class."""
 
-    def encode_data(self, encoder, _target=MissingSentinel) -> Any:
+    def encode_data(self, encoder, _target=MissingSentinel, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -64,7 +64,7 @@ class FieldRef(Field):
         """
         if IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get() and not isinstance(self.value, UUID):
             _target = self.value.uuid
-        return super().encode_data(encoder, _target)
+        return super().encode_data(encoder, _target, **kwargs)
 
 
 class ModelRef(DeclarativeModel, UUID, Generic[MT]):
