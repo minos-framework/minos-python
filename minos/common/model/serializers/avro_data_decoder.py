@@ -237,12 +237,15 @@ class AvroDataDecoder:
     def _build_model(self, type_: Type[Model], data: Any, **kwargs) -> Any:
         if is_type_subclass(type_) and isinstance(data, type_):
             return data
-        return type_.decode_data(self, data, ModelType.from_model(type_))
+        return self._build_model_type(ModelType.from_model(type_), data, **kwargs)
 
-    def _build_model_type(self, type_: ModelType, data: Any, **kwargs) -> Any:
+    def _build_model_type(self, type_: ModelType, data: Any, already_callback=False, **kwargs) -> Any:
         if hasattr(data, "model_type"):
             if ModelType.from_model(data) >= type_:
                 return data
+
+        if not already_callback:
+            return type_.model_cls.decode_data(self, data, type_, already_callback=True, **kwargs)
 
         if isinstance(data, dict):
             with suppress(Exception):

@@ -165,9 +165,12 @@ class AvroSchemaEncoder:
 
     def _build_model(self, type_: Type[Model], **kwargs) -> Any:
         raw = ModelType.from_model(type_)
-        return [type_.encode_schema(self, raw)]
+        return [self._build_model_type(raw, **kwargs)]
 
-    def _build_model_type(self, type_: ModelType, **kwargs) -> Any:
+    def _build_model_type(self, type_: ModelType, already_callback=False, **kwargs) -> Any:
+        if not already_callback:
+            return type_.model_cls.encode_schema(self, type_, already_callback=True, **kwargs)
+
         schema = {
             "name": type_.name,
             "namespace": self._patch_namespace(type_.namespace),

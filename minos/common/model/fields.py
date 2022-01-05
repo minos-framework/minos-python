@@ -161,7 +161,7 @@ class Field:
         encoder = AvroDataEncoder()
         return self.encode_data(encoder)
 
-    def encode_data(self, encoder, _target=MissingSentinel) -> Any:
+    def encode_data(self, encoder, _target=MissingSentinel, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -170,7 +170,7 @@ class Field:
         """
         if _target is MissingSentinel:
             _target = self
-        return encoder.build(_target)
+        return encoder.build(_target, **kwargs)
 
     @classmethod
     def from_avro(cls, schema: dict, value: Any) -> Field:

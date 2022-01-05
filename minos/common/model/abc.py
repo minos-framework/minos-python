@@ -48,7 +48,6 @@ from .serializers import (
     AvroSchemaEncoder,
 )
 from .types import (
-    MissingSentinel,
     ModelType,
 )
 
@@ -130,10 +129,10 @@ class Model(Mapping):
         :return: A new ``DynamicModel`` instance.
         """
         schema_decoder = AvroSchemaDecoder()
-        type_ = cls.decode_schema(schema_decoder, schema)
+        type_ = schema_decoder.build(schema)
 
         data_decoder = AvroDataDecoder()
-        instance = cls.decode_data(data_decoder, data, type_)
+        instance = data_decoder.build(data, type_)
 
         return instance
 
@@ -249,30 +248,30 @@ class Model(Mapping):
         """
         # noinspection PyTypeChecker
         encoder = AvroSchemaEncoder()
-        return self_or_cls.encode_schema(encoder)
+        return encoder.build(self_or_cls)
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder: AvroSchemaEncoder, target: Any = MissingSentinel) -> Any:
+    def encode_schema(self_or_cls, encoder: AvroSchemaEncoder, target: Any, **kwargs) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
         :param target: An optional pre-encoded schema.
+        :param kwargs: Additional named arguments.
         :return: The encoded schema of the instance.
         """
-        if target is MissingSentinel:
-            target = self_or_cls
-        return encoder.build(target)
+        return encoder.build(target, **kwargs)
 
     @classmethod
-    def decode_schema(cls, decoder: AvroSchemaDecoder, target: Any) -> Any:
+    def decode_schema(cls, decoder: AvroSchemaDecoder, target: Any, **kwargs) -> Any:
         """Decode schema with the given encoder.
 
         :param decoder: The decoder instance.
         :param target: The schema to be decoded.
+        :param kwargs: Additional named arguments.
         :return: The decoded schema as a type.
         """
-        return decoder.build(target)
+        return decoder.build(target, **kwargs)
 
     @property
     def avro_data(self) -> dict[str, Any]:
@@ -281,29 +280,30 @@ class Model(Mapping):
         :return: A dictionary object.
         """
         encoder = AvroDataEncoder()
-        return self.encode_data(encoder)
+        return encoder.build(self)
 
-    def encode_data(self, encoder: AvroDataEncoder, target: Any = MissingSentinel) -> Any:
+    # noinspection PyMethodMayBeStatic
+    def encode_data(self, encoder: AvroDataEncoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
         :param target: An optional pre-encoded data.
+        :param kwargs: Additional named arguments.
         :return: The encoded data of the instance.
         """
-        if target is MissingSentinel:
-            target = self
-        return encoder.build(target)
+        return encoder.build(target, **kwargs)
 
     @classmethod
-    def decode_data(cls: T, decoder: AvroDataDecoder, target: Any, type_: ModelType) -> T:
+    def decode_data(cls: T, decoder: AvroDataDecoder, target: Any, type_: ModelType, **kwargs) -> T:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.
         :param target: The data to be decoded.
         :param type_: The data type.
+        :param kwargs: Additional named arguments.
         :return: A decoded instance.
         """
-        return decoder.build(target, type_)
+        return decoder.build(target, type_, **kwargs)
 
     @property
     def avro_str(self) -> str:

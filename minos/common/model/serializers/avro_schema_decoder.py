@@ -151,7 +151,7 @@ class AvroSchemaDecoder:
             type_ = Any
         return type_
 
-    def _build_record(self, schema: dict[str, Any], **kwargs) -> type:
+    def _build_record(self, schema: dict[str, Any], already_callback=False, **kwargs) -> type:
         type_ = ModelType.build(
             name_=schema["name"],
             type_hints_={field["name"]: self._build(field, **kwargs) for field in schema["fields"]},
@@ -160,7 +160,9 @@ class AvroSchemaDecoder:
 
         type_ = self._unpatch_namespace(type_)
 
-        return type_.decode_schema(self, type_)
+        if not already_callback:
+            return type_.model_cls.decode_schema(self, type_, already_callback=True, **kwargs)
+        return type_
 
     @staticmethod
     def _unpatch_namespace(type_: ModelType) -> ModelType:

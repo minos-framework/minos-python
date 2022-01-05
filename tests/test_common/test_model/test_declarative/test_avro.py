@@ -155,9 +155,11 @@ class TestModelAvro(MinosTestCase):
 
         encoder = shopping_mock.call_args_list[0].args[0]
 
-        self.assertEqual([call(encoder), call(encoder, shopping_list.model_type)], shopping_mock.call_args_list)
+        self.assertEqual(
+            [call(encoder, shopping_list.model_type, already_callback=True)], shopping_mock.call_args_list,
+        )
 
-        self.assertEqual([], user_mock.call_args_list)
+        self.assertEqual([call(encoder, user.model_type, already_callback=True)], user_mock.call_args_list)
 
     def test_avro_data(self):
         shopping_list = ShoppingList(User(1234))
@@ -192,7 +194,7 @@ class TestModelAvro(MinosTestCase):
         encoder = shopping_mock.call_args_list[0].args[0]
 
         self.assertEqual(
-            [call(encoder), call(encoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")})],
+            [call(encoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")})],
             shopping_mock.call_args_list,
         )
 
@@ -238,9 +240,8 @@ class TestModelAvro(MinosTestCase):
 
             self.assertEqual(
                 [
-                    call(decoder, shopping_list.avro_schema),
-                    call(decoder, user.model_type),
-                    call(decoder, shopping_list.model_type),
+                    call(decoder, user.model_type, already_callback=True),
+                    call(decoder, shopping_list.model_type, already_callback=True),
                 ],
                 mock.call_args_list,
             )
@@ -256,7 +257,15 @@ class TestModelAvro(MinosTestCase):
         decoder = mock.call_args_list[0].args[0]
 
         self.assertEqual(
-            [call(decoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")}, shopping_list.model_type)],
+            [
+                call(
+                    decoder,
+                    {"user": {"id": 1234, "username": None}, "cost": float("inf")},
+                    shopping_list.model_type,
+                    already_callback=True,
+                ),
+                call(decoder, {"id": 1234, "username": None}, user.model_type, already_callback=True),
+            ],
             mock.call_args_list,
         )
 
