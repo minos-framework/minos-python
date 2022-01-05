@@ -116,8 +116,6 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :param _target: An optional pre-encoded schema.
         :return: The encoded schema of the instance.
         """
-        if _target is MissingSentinel:
-            _target = ModelType.from_model(self_or_cls)
         schema = encoder.build(_target.type_hints["data"])
         return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
 
@@ -153,8 +151,6 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: A decoded instance.
         """
         decoded = decoder.build(data, type_.type_hints["data"])
-        if isinstance(decoded, ModelRef):
-            return decoded
         return ModelRef(decoded, additional_type_hints=type_.type_hints)
 
     def __eq__(self, other):
