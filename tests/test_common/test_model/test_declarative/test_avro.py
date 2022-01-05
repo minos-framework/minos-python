@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import (
+    call,
     patch,
 )
 from uuid import (
@@ -25,7 +26,7 @@ from tests.utils import (
 )
 
 
-class TestMinosModelAvro(MinosTestCase):
+class TestModelAvro(MinosTestCase):
     def test_avro_schema(self):
         expected = [
             {
@@ -54,15 +55,6 @@ class TestMinosModelAvro(MinosTestCase):
         ]
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello", "goodbye"]):
             self.assertEqual(expected, ShoppingList.avro_schema)
-
-    def test_avro_data(self):
-        shopping_list = ShoppingList(User(1234))
-        expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
-        self.assertEqual(expected, shopping_list.avro_data)
-
-    def test_avro_bytes(self):
-        shopping_list = ShoppingList(User(1234))
-        self.assertIsInstance(shopping_list.avro_bytes, bytes)
 
     def test_avro_schema_generics(self):
         expected = [
@@ -120,6 +112,11 @@ class TestMinosModelAvro(MinosTestCase):
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", side_effect=["hello"]):
             self.assertEqual(expected, customer.avro_schema)
 
+    def test_avro_data(self):
+        shopping_list = ShoppingList(User(1234))
+        expected = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
+        self.assertEqual(expected, shopping_list.avro_data)
+
     def test_avro_data_simple(self):
         customer = Customer(1234)
         expected = {
@@ -132,12 +129,32 @@ class TestMinosModelAvro(MinosTestCase):
         }
         self.assertEqual(expected, customer.avro_data)
 
+    def test_encode_data(self):
+        user = User(1234)
+        shopping_list = ShoppingList(user)
+        with patch.object(ShoppingList, "encode_data", side_effect=shopping_list.encode_data) as shopping_mock:
+            with patch.object(User, "encode_data", side_effect=user.encode_data) as user_mock:
+                shopping_list.avro_data
+
+        encoder = shopping_mock.call_args_list[0].args[0]
+
+        self.assertEqual(
+            [call(encoder), call(encoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")})],
+            shopping_mock.call_args_list,
+        )
+
+        self.assertEqual([call(encoder, {"id": 1234, "username": None})], user_mock.call_args_list)
+
     def test_avro_avro_str_single(self):
         customer = Customer(1234)
         avro_str = customer.avro_str
         self.assertIsInstance(avro_str, str)
         decoded_customer = Customer.from_avro_str(avro_str)
         self.assertEqual(customer, decoded_customer)
+
+    def test_avro_bytes(self):
+        shopping_list = ShoppingList(User(1234))
+        self.assertIsInstance(shopping_list.avro_bytes, bytes)
 
     def test_avro_bytes_single(self):
         customer = Customer(1234)

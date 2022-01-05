@@ -106,7 +106,7 @@ class AvroDataEncoder:
         raise MinosMalformedAttributeException(f"Given type is not supported: {type(value)!r} ({value!r})")
 
     def _model_to_avro_raw(self, model: Model) -> Any:
-        raw = {name: field.avro_data for name, field in model.fields.items()}
+        raw = {name: self._field_to_avro_raw(field) for name, field in model.fields.items()}
         return model.encode_data(self, raw)
 
     def _field_to_avro_raw(self, field: Field) -> Any:
