@@ -251,3 +251,11 @@ History
 --------------------
 
 * Fix bug related with `EntrypointLauncher`'s dependency injection and unloaded `minos.*` modules.
+
+0.3.3 (2022-01-10)
+--------------------
+
+* Big refactor of the `minos.common.model.serializers` module:
+  * Add `encode_schema`, `decode_schema`, `encode_data` and `decode_data` callback-like functions to be able to modify the serialization/deserialization logic.
+  * Add `SchemaEncoder`, `SchemaDecoder`, `DataEncoder` and `DataDecoder` abstract base classes.
+  * Increase serialization/deserialization robustness.
