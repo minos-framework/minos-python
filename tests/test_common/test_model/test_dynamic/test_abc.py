@@ -15,9 +15,9 @@ class TestDynamicModel(unittest.TestCase):
         model = DynamicModel.from_avro_bytes(original.avro_bytes)
         self.assertEqual("hello", model.text)
 
-    def test_from_avro_bytes_multiple(self):
+    def test_from_avro_bytes_in_batch(self):
         encoded = Foo.to_avro_bytes([Foo("hello"), Foo("bye")])
-        decoded = DynamicModel.from_avro_bytes(encoded)
+        decoded = DynamicModel.from_avro_bytes(encoded, batch_mode=True)
         self.assertEqual("hello", decoded[0].text)
         self.assertEqual("bye", decoded[1].text)
 

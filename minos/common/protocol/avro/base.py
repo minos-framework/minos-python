@@ -22,7 +22,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
     """Minos Avro Protocol class."""
 
     @classmethod
-    def encode(cls, value: Any, schema: Any, *args, **kwargs) -> bytes:
+    def encode(cls, value: Any, schema: Any, *args, batch_mode: bool = False, **kwargs) -> bytes:
         """Encoder in avro for database Values
         all the headers are converted in fields with double underscore name
         the body is a set fields coming from the data type.
@@ -30,11 +30,14 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         :param value: The data to be stored.
         :param schema: The schema relative to the data.
         :param args: Additional positional arguments.
+        :param batch_mode: If ``True`` the data is processed as a list of models, otherwise the data is processed as a
+        single model.
         :param kwargs: Additional named arguments.
         :return: A bytes object.
         """
-        if not isinstance(value, list):
+        if not batch_mode:
             value = [value]
+
         if not isinstance(schema, list):
             schema = [schema]
 

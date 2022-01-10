@@ -102,27 +102,31 @@ class Model(Mapping):
         """
 
     @classmethod
-    def from_avro_str(cls: Type[T], raw: str) -> Union[T, list[T]]:
+    def from_avro_str(cls: Type[T], raw: str, **kwargs) -> Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A ``str`` representation of the model.
         :return: A single instance or a sequence of instances.
         """
         raw = b64decode(raw.encode())
-        return cls.from_avro_bytes(raw)
+        return cls.from_avro_bytes(raw, **kwargs)
 
     @classmethod
-    def from_avro_bytes(cls: Type[T], raw: bytes) -> Union[T, list[T]]:
+    def from_avro_bytes(cls: Type[T], raw: bytes, batch_mode: bool = False, **kwargs) -> Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
 
         :param raw: A ``bytes`` representation of the model.
+        :param batch_mode: If ``True`` the data is processed as a list of models, otherwise the data is processed as a
+        single model.
+        :param kwargs: Additional named arguments.
         :return: A single instance or a sequence of instances.
         """
         schema = MinosAvroProtocol.decode_schema(raw)
         data = MinosAvroProtocol.decode(raw)
 
-        if isinstance(data, list):
+        if batch_mode:
             return [cls.from_avro(schema, entry) for entry in data]
+
         return cls.from_avro(schema, data)
 
     @classmethod
@@ -168,7 +172,7 @@ class Model(Mapping):
 
         avro_schema = models[0].avro_schema
         # noinspection PyTypeChecker
-        return MinosAvroProtocol().encode([model.avro_data for model in models], avro_schema)
+        return MinosAvroProtocol().encode([model.avro_data for model in models], avro_schema, batch_mode=True)
 
     # noinspection PyMethodParameters
     @property_or_classproperty
