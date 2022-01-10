@@ -19,6 +19,10 @@ from .serializers import (
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
+    DataDecoder,
+    DataEncoder,
+    SchemaDecoder,
+    SchemaEncoder,
 )
 from .types import (
     GenericTypeProjector,

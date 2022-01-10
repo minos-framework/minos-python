@@ -14,54 +14,67 @@ from decimal import (
     Decimal,
 )
 from typing import (
+    TYPE_CHECKING,
     Any,
 )
 from uuid import (
     UUID,
 )
 
-from ...exceptions import (
+from .....exceptions import (
     MinosMalformedAttributeException,
 )
-from ..types import (
+from ....types import (
     MissingSentinel,
 )
+from ...abc import (
+    DataEncoder,
+)
+
+if TYPE_CHECKING:
+    from ....abc import (
+        Model,
+    )
+    from ....fields import (
+        Field,
+    )
 
 logger = logging.getLogger(__name__)
 
 
-class AvroDataEncoder:
+class AvroDataEncoder(DataEncoder):
     """Avro Data Encoder class."""
 
     def __init__(self, value: Any = None):
         self.value = value
 
-    def build(self, value=MissingSentinel) -> Any:
-        """Build a avro data representation based on the content of the given field.
+    def build(self, value=MissingSentinel, **kwargs) -> Any:
+        """Build an avro data representation based on the content of the given field.
 
+        :param value: The value to be encoded.
         :return: A `avro`-compatible data.
         """
         if value is MissingSentinel:
             value = self.value
-        return self._to_avro_raw(value)
+        return self._build(value, **kwargs)
 
-    def _to_avro_raw(self, value: Any) -> Any:
+    def _build(self, value: Any, **kwargs) -> Any:
         if value is None:
             return None
 
-        from ..abc import (
+        from ....abc import (
             Model,
         )
 
         if isinstance(value, Model):
-            return self._model_to_avro_raw(value)
+            return self._build_model(value, **kwargs)
 
-        from ..abc import (
+        from ....abc import (
             Field,
         )
 
         if isinstance(value, Field):
-            return self._field_to_avro_raw(value)
+            return self._build_field(value, **kwargs)
 
         if isinstance(value, (str, int, bool, float, bytes)):
             return value
@@ -73,51 +86,55 @@ class AvroDataEncoder:
             return float(value)
 
         if isinstance(value, datetime):
-            return self._datetime_to_avro_raw(value)
+            return self._build_datetime(value, **kwargs)
 
         if isinstance(value, timedelta):
-            return self._timedelta_to_avro_raw(value)
+            return self._build_timedelta(value, **kwargs)
 
         if isinstance(value, date):
-            return self._date_to_avro_raw(value)
+            return self._build_date(value, **kwargs)
 
         if isinstance(value, time):
-            return self._time_to_avro_raw(value)
+            return self._build_time(value, **kwargs)
 
         if isinstance(value, UUID):
-            return self._uuid_to_avro_raw(value)
+            return self._build_uuid(value, **kwargs)
 
         if isinstance(value, (list, set,)):
-            return [self._to_avro_raw(v) for v in value]
+            return [self._build(v, **kwargs) for v in value]
 
         if isinstance(value, dict):
-            return {k: self._to_avro_raw(v) for k, v in value.items()}
+            return {k: self._build(v, **kwargs) for k, v in value.items()}
 
         raise MinosMalformedAttributeException(f"Given type is not supported: {type(value)!r} ({value!r})")
 
-    def _model_to_avro_raw(self, model) -> Any:
-        raw = {name: field.avro_data for name, field in model.fields.items()}
-        return model.encode_data(self, raw)
+    def _build_model(self, model: Model, **kwargs) -> Any:
+        raw = {name: self._build_field(field, **kwargs) for name, field in model.fields.items()}
 
-    def _field_to_avro_raw(self, field) -> Any:
-        return field.encode_data(self, field.value)
+        if (ans := model.encode_data(self, raw, **kwargs)) is not MissingSentinel:
+            return ans
+
+        return self._build(raw, **kwargs)
+
+    def _build_field(self, field: Field, **kwargs) -> Any:
+        return self._build(field.value, **kwargs)
 
     @staticmethod
-    def _date_to_avro_raw(value: date) -> int:
+    def _build_date(value: date, **kwargs) -> int:
         return (value - date(1970, 1, 1)).days
 
     @staticmethod
-    def _time_to_avro_raw(value: time) -> int:
+    def _build_time(value: time, **kwargs) -> int:
         return (datetime.combine(date(1, 1, 1), value) - datetime(1, 1, 1)) // timedelta(microseconds=1)
 
     @staticmethod
-    def _datetime_to_avro_raw(value: datetime) -> int:
+    def _build_datetime(value: datetime, **kwargs) -> int:
         return (value.astimezone(timezone.utc) - datetime(1970, 1, 1, tzinfo=timezone.utc)) // timedelta(microseconds=1)
 
     @staticmethod
-    def _timedelta_to_avro_raw(value: timedelta) -> int:
+    def _build_timedelta(value: timedelta, **kwargs) -> int:
         return value // timedelta(microseconds=1)
 
     @staticmethod
-    def _uuid_to_avro_raw(value: UUID) -> str:
+    def _build_uuid(value: UUID, **kwargs) -> str:
         return str(value)

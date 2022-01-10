@@ -10,14 +10,14 @@ class TestMinosAvroProtocol(unittest.TestCase):
         data = {"cost": float("inf"), "user": {"id": 1234, "username": None}}
         schema = [
             {
-                "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
-                "name": "User",
+                "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "float"}],
+                "name": "ShoppingList",
                 "namespace": "tests.model_classes",
                 "type": "record",
             },
             {
-                "fields": [{"name": "user", "type": ["User", "null"]}, {"name": "cost", "type": "float"}],
-                "name": "ShoppingList",
+                "fields": [{"name": "id", "type": "int"}, {"name": "username", "type": ["string", "null"]}],
+                "name": "User",
                 "namespace": "tests.model_classes",
                 "type": "record",
             },
@@ -94,6 +94,15 @@ class TestMinosAvroProtocol(unittest.TestCase):
         serialized = MinosAvroProtocol.encode(data, schema)
         deserialized = MinosAvroProtocol.decode(serialized)
         self.assertEqual(data, deserialized)
+
+    def test_union_schema(self):
+        serialized = MinosAvroProtocol.encode("one", [["string", "int"]])
+
+        schema = MinosAvroProtocol.decode_schema(serialized)
+        self.assertEqual(["string", "int"], schema)
+
+        data = MinosAvroProtocol.decode(serialized)
+        self.assertEqual("one", data)
 
 
 if __name__ == "__main__":

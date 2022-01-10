@@ -139,18 +139,7 @@ class Field:
         :return: A dictionary object.
         """
         encoder = AvroSchemaEncoder()
-        return self.encode_schema(encoder)
-
-    def encode_schema(self, encoder, _target=MissingSentinel) -> Any:
-        """Encode schema with the given encoder.
-
-        :param encoder: The encoder instance.
-        :param _target: An optional pre-encoded schema.
-        :return: The encoded schema of the instance.
-        """
-        if _target is MissingSentinel:
-            _target = self
-        return encoder.build(_target)
+        return encoder.build(self)
 
     @property
     def avro_data(self) -> Any:
@@ -159,18 +148,7 @@ class Field:
         :return: A dictionary object.
         """
         encoder = AvroDataEncoder()
-        return self.encode_data(encoder)
-
-    def encode_data(self, encoder, _target=MissingSentinel) -> Any:
-        """Encode data with the given encoder.
-
-        :param encoder: The encoder instance.
-        :param _target: An optional pre-encoded data.
-        :return: The encoded data of the instance.
-        """
-        if _target is MissingSentinel:
-            _target = self
-        return encoder.build(_target)
+        return encoder.build(self)
 
     @classmethod
     def from_avro(cls, schema: dict, value: Any) -> Field:
