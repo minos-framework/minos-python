@@ -34,12 +34,12 @@ from uuid import (
     UUID,
 )
 
-from ...exceptions import (
+from .....exceptions import (
     DataDecoderMalformedTypeException,
     DataDecoderRequiredValueException,
     DataDecoderTypeException,
 )
-from ..types import (
+from ....types import (
     MissingSentinel,
     ModelType,
     NoneType,
@@ -48,12 +48,12 @@ from ..types import (
     is_type_subclass,
     unpack_typevar,
 )
-from .abc import (
+from ...abc import (
     DataDecoder,
 )
 
 if TYPE_CHECKING:
-    from ..abc import (
+    from ....abc import (
         Model,
     )
 

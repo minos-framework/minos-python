@@ -21,21 +21,21 @@ from uuid import (
     UUID,
 )
 
-from ...exceptions import (
+from .....exceptions import (
     MinosMalformedAttributeException,
 )
-from ..types import (
+from ....types import (
     MissingSentinel,
 )
-from .abc import (
+from ...abc import (
     DataEncoder,
 )
 
 if TYPE_CHECKING:
-    from ..abc import (
+    from ....abc import (
         Model,
     )
-    from ..fields import (
+    from ....fields import (
         Field,
     )
 

@@ -26,10 +26,10 @@ from uuid import (
     uuid4,
 )
 
-from ...importlib import (
+from .....importlib import (
     classname,
 )
-from ..types import (
+from ....types import (
     FieldType,
     MissingSentinel,
     ModelType,
@@ -37,7 +37,7 @@ from ..types import (
     is_model_subclass,
     is_type_subclass,
 )
-from .abc import (
+from ...abc import (
     SchemaEncoder,
 )
 from .constants import (
@@ -58,10 +58,10 @@ from .constants import (
 )
 
 if TYPE_CHECKING:
-    from ..abc import (
+    from ....abc import (
         Model,
     )
-    from ..fields import (
+    from ....fields import (
         Field,
     )
 
@@ -146,7 +146,7 @@ class AvroSchemaEncoder(SchemaEncoder):
             if isinstance(type_, ModelType):
                 return self._build_model_type(type_, **kwargs)
 
-        from ..abc import (
+        from ....abc import (
             Model,
         )
 
@@ -154,7 +154,7 @@ class AvroSchemaEncoder(SchemaEncoder):
             # noinspection PyTypeChecker
             return self._build_model(type_, **kwargs)
 
-        from ..fields import (
+        from ....fields import (
             Field,
         )
 

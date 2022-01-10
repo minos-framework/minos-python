@@ -20,21 +20,21 @@ from uuid import (
     UUID,
 )
 
-from ...exceptions import (
+from .....exceptions import (
     MinosImportException,
     MinosMalformedAttributeException,
 )
-from ...importlib import (
+from .....importlib import (
     import_module,
 )
-from ..types import (
+from ....types import (
     MissingSentinel,
     ModelType,
     NoneType,
     build_union,
     is_model_subclass,
 )
-from .abc import (
+from ...abc import (
     SchemaDecoder,
 )
 from .constants import (
