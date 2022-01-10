@@ -150,16 +150,6 @@ class Field:
         encoder = AvroDataEncoder()
         return encoder.build(self)
 
-    # noinspection PyMethodMayBeStatic
-    def encode_data(self, encoder: AvroDataEncoder, target: Any, **kwargs) -> Any:
-        """Encode data with the given encoder.
-
-        :param encoder: The encoder instance.
-        :param target: An optional pre-encoded data.
-        :return: The encoded data of the instance.
-        """
-        return encoder.build(target, **kwargs)
-
     @classmethod
     def from_avro(cls, schema: dict, value: Any) -> Field:
         """Build a ``Field`` instance from the avro information.

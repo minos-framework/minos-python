@@ -110,7 +110,7 @@ class AvroDataEncoder:
         return model.encode_data(self, raw, **kwargs)
 
     def _build_field(self, field: Field, **kwargs) -> Any:
-        return field.encode_data(self, field.value, **kwargs)
+        return self._build(field.value, **kwargs)
 
     @staticmethod
     def _build_date(value: date, **kwargs) -> int:
