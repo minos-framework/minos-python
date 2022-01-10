@@ -4,7 +4,6 @@ from __future__ import (
 
 import logging
 from asyncio import (
-    CancelledError,
     PriorityQueue,
     Task,
     TimeoutError,
@@ -12,20 +11,11 @@ from asyncio import (
     gather,
     wait_for,
 )
-from functools import (
-    wraps,
-)
-from inspect import (
-    isawaitable,
-)
 from typing import (
     Any,
-    Awaitable,
-    Callable,
     KeysView,
     NoReturn,
     Optional,
-    Union,
 )
 
 from aiopg import (
@@ -34,10 +24,6 @@ from aiopg import (
 from cached_property import (
     cached_property,
 )
-from dependency_injector.wiring import (
-    Provide,
-    inject,
-)
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -45,40 +31,19 @@ from psycopg2.sql import (
 
 from minos.common import (
     MinosConfig,
-    NotProvidedException,
 )
 
-from ...decorators import (
-    EnrouteBuilder,
-)
-from ...exceptions import (
-    MinosActionNotFoundException,
-)
-from ...requests import (
-    REQUEST_USER_CONTEXT_VAR,
-    Response,
-    ResponseException,
-)
 from ...utils import (
     consume_queue,
-)
-from ..messages import (
-    REQUEST_HEADERS_CONTEXT_VAR,
-    BrokerMessage,
-    BrokerMessageStatus,
-)
-from ..publishers import (
-    BrokerPublisher,
 )
 from .abc import (
     BrokerHandlerSetup,
 )
+from .dispatchers import (
+    BrokerDispatcher,
+)
 from .entries import (
     BrokerHandlerEntry,
-)
-from .requests import (
-    BrokerRequest,
-    BrokerResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -90,16 +55,11 @@ class BrokerHandler(BrokerHandlerSetup):
     __slots__ = "_handlers", "_records", "_retry", "_queue", "_consumers", "_consumer_concurrency"
 
     def __init__(
-        self,
-        records: int,
-        handlers: dict[str, Optional[Callable]],
-        retry: int,
-        publisher: BrokerPublisher,
-        consumer_concurrency: int = 15,
-        **kwargs: Any,
+        self, dispatcher: BrokerDispatcher, records: int, retry: int, consumer_concurrency: int = 15, **kwargs: Any,
     ):
         super().__init__(**kwargs)
-        self._handlers = handlers
+        self._dispatcher = dispatcher
+
         self._records = records
         self._retry = retry
 
@@ -107,38 +67,11 @@ class BrokerHandler(BrokerHandlerSetup):
         self._consumers: list[Task] = list()
         self._consumer_concurrency = consumer_concurrency
 
-        self._publisher = publisher
-
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
-        kwargs["handlers"] = cls._get_handlers(config, **kwargs)
-        kwargs["publisher"] = cls._get_publisher(**kwargs)
+        kwargs["dispatcher"] = BrokerDispatcher.from_config(config, **kwargs)
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
-
-    @staticmethod
-    def _get_handlers(
-        config: MinosConfig, handlers: dict[str, Optional[Callable]] = None, **kwargs
-    ) -> dict[str, Callable[[BrokerRequest], Awaitable[Optional[BrokerResponse]]]]:
-        if handlers is None:
-            builder = EnrouteBuilder(*config.services, middleware=config.middleware)
-            decorators = builder.get_broker_command_query_event(config=config, **kwargs)
-            handlers = {decorator.topic: fn for decorator, fn in decorators.items()}
-        return handlers
-
-    # noinspection PyUnusedLocal
-    @staticmethod
-    @inject
-    def _get_publisher(
-        publisher: Optional[BrokerPublisher] = None,
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
-        **kwargs,
-    ) -> BrokerPublisher:
-        if publisher is None:
-            publisher = broker_publisher
-        if publisher is None or isinstance(publisher, Provide):
-            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
-        return publisher
 
     async def _setup(self) -> None:
         await super()._setup()
@@ -169,17 +102,16 @@ class BrokerHandler(BrokerHandlerSetup):
     async def _consume_one(self) -> None:
         entry = await self._queue.get()
         try:
-            await self._dispatch_one(entry)
+            await self._dispatcher.dispatch(entry)
         finally:
+            query_id = "delete_processed" if entry.success else "update_not_processed"
+            await self.submit_query(self._queries[query_id], (entry.id,))
             self._queue.task_done()
 
     @property
-    def publisher(self) -> BrokerPublisher:
-        """Get the publisher instance.
-
-        :return: A ``BrokerPublisher`` instance.
-        """
-        return self._publisher
+    def dispatcher(self) -> BrokerDispatcher:
+        """TODO"""
+        return self._dispatcher
 
     @property
     def consumers(self) -> list[Task]:
@@ -190,20 +122,12 @@ class BrokerHandler(BrokerHandlerSetup):
         return self._consumers
 
     @property
-    def handlers(self) -> dict[str, Optional[Callable]]:
-        """Handlers getter.
-
-        :return: A dictionary in which the keys are topics and the values are the handler.
-        """
-        return self._handlers
-
-    @property
     def topics(self) -> KeysView[str]:
         """Get an iterable containing the topic names.
 
         :return: An ``Iterable`` of ``str``.
         """
-        return self.handlers.keys()
+        return self._dispatcher.handlers.keys()
 
     async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
         """Dispatch the items in the consuming queue forever.
@@ -268,7 +192,7 @@ class BrokerHandler(BrokerHandlerSetup):
             result = await cursor.fetchall()
 
             if len(result):
-                entries = self._build_entries(result)
+                entries = [BrokerHandlerEntry(*row) for row in result]
 
                 await cursor.execute(self._queries["mark_processing"], (tuple(e.id for e in entries),))
 
@@ -280,102 +204,6 @@ class BrokerHandler(BrokerHandlerSetup):
 
         if not background_mode:
             await self._queue.join()
-
-    def _build_entries(self, rows: list[tuple]) -> list[BrokerHandlerEntry]:
-        kwargs = {"callback_lookup": self.get_action}
-        return [BrokerHandlerEntry(*row, **kwargs) for row in rows]
-
-    async def _dispatch_one(self, entry: BrokerHandlerEntry) -> None:
-        logger.debug(f"Dispatching '{entry!r}'...")
-        try:
-            await self.dispatch_one(entry)
-        except (CancelledError, Exception) as exc:
-            logger.warning(f"Raised an exception while dispatching {entry!r}: {exc!r}")
-            entry.exception = exc
-            if isinstance(exc, CancelledError):
-                raise exc
-        finally:
-            query_id = "delete_processed" if entry.success else "update_not_processed"
-            await self.submit_query(self._queries[query_id], (entry.id,))
-
-    async def dispatch_one(self, entry: BrokerHandlerEntry) -> None:
-        """Dispatch one row.
-
-        :param entry: Entry to be dispatched.
-        :return: This method does not return anything.
-        """
-        logger.info(f"Dispatching '{entry!s}'...")
-
-        fn = self.get_callback(entry.callback)
-        message = entry.data
-        data, status, headers = await fn(message)
-
-        if message.reply_topic is not None:
-            await self.publisher.send(
-                data,
-                topic=message.reply_topic,
-                identifier=message.identifier,
-                status=status,
-                user=message.user,
-                headers=headers,
-            )
-
-    @staticmethod
-    def get_callback(
-        fn: Callable[[BrokerRequest], Union[Optional[BrokerRequest], Awaitable[Optional[BrokerRequest]]]]
-    ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, BrokerMessageStatus, dict[str, str]]]]:
-        """Get the handler function to be used by the Broker Handler.
-
-        :param fn: The action function.
-        :return: A wrapper function around the given one that is compatible with the Broker Handler API.
-        """
-
-        @wraps(fn)
-        async def _wrapper(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus, dict[str, str]]:
-            request = BrokerRequest(raw)
-            user_token = REQUEST_USER_CONTEXT_VAR.set(request.user)
-            headers_token = REQUEST_HEADERS_CONTEXT_VAR.set(raw.headers)
-
-            try:
-                response = fn(request)
-                if isawaitable(response):
-                    response = await response
-                if isinstance(response, Response):
-                    response = await response.content()
-                return response, BrokerMessageStatus.SUCCESS, REQUEST_HEADERS_CONTEXT_VAR.get()
-            except ResponseException as exc:
-                logger.warning(f"Raised an application exception: {exc!s}")
-                return repr(exc), BrokerMessageStatus.ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
-            except Exception as exc:
-                logger.exception(f"Raised a system exception: {exc!r}")
-                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
-            finally:
-                REQUEST_USER_CONTEXT_VAR.reset(user_token)
-                REQUEST_HEADERS_CONTEXT_VAR.reset(headers_token)
-
-        return _wrapper
-
-    def get_action(self, topic: str) -> Optional[Callable]:
-        """Get handling function to be called.
-
-        Gets the instance of the class and method to call.
-
-        Args:
-            topic: Kafka topic. Example: "TicketAdded"
-
-        Raises:
-            MinosNetworkException: topic TicketAdded have no controller/action configured, please review th
-                configuration file.
-        """
-        if topic not in self._handlers:
-            raise MinosActionNotFoundException(
-                f"topic {topic} have no controller/action configured, " f"please review th configuration file"
-            )
-
-        handler = self._handlers[topic]
-
-        logger.debug(f"Loaded {handler!r} action!")
-        return handler
 
     @cached_property
     def _queries(self) -> dict[str, str]:

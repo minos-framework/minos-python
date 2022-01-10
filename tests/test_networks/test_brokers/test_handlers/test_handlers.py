@@ -33,18 +33,13 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    REQUEST_HEADERS_CONTEXT_VAR,
-    REQUEST_USER_CONTEXT_VAR,
+    BrokerDispatcher,
     BrokerHandler,
     BrokerHandlerEntry,
     BrokerMessage,
-    BrokerMessageStatus,
     BrokerPublisher,
-    BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
-    InMemoryRequest,
-    MinosActionNotFoundException,
     Request,
     Response,
 )
@@ -105,10 +100,11 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     def test_from_config(self):
         self.assertIsInstance(self.handler, BrokerHandler)
+        self.assertIsInstance(self.handler.dispatcher, BrokerDispatcher)
 
         self.assertEqual(
             {"AddOrder", "DeleteOrder", "GetOrder", "TicketAdded", "TicketDeleted", "UpdateOrder"},
-            set(self.handler.handlers.keys()),
+            set(self.handler.topics),
         )
 
         self.assertEqual(self.config.broker.queue.records, self.handler._records)
@@ -118,11 +114,10 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.assertEqual(self.config.broker.queue.database, self.handler.database)
         self.assertEqual(self.config.broker.queue.user, self.handler.user)
         self.assertEqual(self.config.broker.queue.password, self.handler.password)
-        self.assertEqual(self.publisher, self.handler.publisher)
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            BrokerHandler.from_config(config=self.config)
+            BrokerHandler.from_config(self.config)
 
     async def test_consumers(self):
         mock = AsyncMock()
@@ -134,16 +129,16 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         async def _fn(*args, **kwargs):
             await sleep(60)
 
-        lookup_mock = MagicMock(side_effect=[_fn_no_wait, _fn, _fn, _fn, _fn_no_wait])
-
         async with BrokerHandler.from_config(
             self.config, publisher=self.publisher, consumer_concurrency=consumer_concurrency
         ) as handler:
+            handler.dispatcher.get_handler = MagicMock(side_effect=[_fn_no_wait, _fn, _fn, _fn, _fn_no_wait])
+
             self.assertEqual(consumer_concurrency, len(handler.consumers))
             handler.submit_query = mock
 
             for _ in range(consumer_concurrency + 2):
-                entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1, callback_lookup=lookup_mock)
+                entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1)
                 await handler._queue.put(entry)
             await sleep(0.5)
 
@@ -157,19 +152,6 @@ class TestBrokerHandler(PostgresAsyncTestCase):
                 call(handler._queries["update_not_processed"], (1,)),
             ],
             mock.call_args_list,
-        )
-
-    async def test_get_action(self):
-        action = self.handler.get_action(topic="AddOrder")
-        self.assertEqual(BrokerResponse("add_order"), await action(InMemoryRequest("test")))
-
-    async def test_get_action_raises(self):
-        with self.assertRaises(MinosActionNotFoundException) as context:
-            self.handler.get_action(topic="NotExisting")
-
-        self.assertTrue(
-            "topic NotExisting have no controller/action configured, please review th configuration file"
-            in str(context.exception)
         )
 
     async def test_dispatch_forever(self):
@@ -206,38 +188,6 @@ class TestBrokerHandler(PostgresAsyncTestCase):
                 pass
         self.assertEqual(0, mock.call_count)
 
-    async def test_dispatch(self):
-        callback_mock = AsyncMock(return_value=Response("add_order"))
-        lookup_mock = MagicMock(return_value=callback_mock)
-        entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1, callback_lookup=lookup_mock)
-
-        send_mock = AsyncMock()
-        self.publisher.send = send_mock
-
-        await self.handler.dispatch_one(entry)
-
-        self.assertEqual(1, lookup_mock.call_count)
-        self.assertEqual(call("AddOrder"), lookup_mock.call_args)
-
-        self.assertEqual(
-            [
-                call(
-                    "add_order",
-                    topic="UpdateTicket",
-                    identifier=self.message.identifier,
-                    status=BrokerMessageStatus.SUCCESS,
-                    user=self.user,
-                    headers={"foo": "bar"},
-                )
-            ],
-            send_mock.call_args_list,
-        )
-
-        self.assertEqual(1, callback_mock.call_count)
-        observed = callback_mock.call_args[0][0]
-        self.assertIsInstance(observed, BrokerRequest)
-        self.assertEqual(FakeModel("foo"), await observed.content())
-
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
         instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"))
@@ -267,71 +217,6 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         await gather(*(self.handler.dispatch() for _ in range(2)))
         self.assertEqual(10, await self._count())
 
-    async def test_handlers(self):
-        self.assertEqual(
-            {"query_service_ticket_added", "command_service_ticket_added"},
-            set(await self.handler.handlers["TicketAdded"](None)),
-        )
-        self.assertEqual("ticket_deleted", await self.handler.handlers["TicketDeleted"](None))
-
-    async def test_dispatch_one(self):
-        callback_mock = AsyncMock()
-        lookup_mock = MagicMock(return_value=callback_mock)
-
-        topic = "TicketAdded"
-        event = BrokerMessage(topic, FakeModel("Foo"))
-        entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1, callback_lookup=lookup_mock)
-
-        await self.handler.dispatch_one(entry)
-
-        self.assertEqual(1, lookup_mock.call_count)
-        self.assertEqual(call("TicketAdded"), lookup_mock.call_args)
-
-        self.assertEqual(1, callback_mock.call_count)
-        self.assertEqual(call(BrokerRequest(event)), callback_mock.call_args)
-
-    async def test_get_callback(self):
-        fn = self.handler.get_callback(_Cls._fn)
-        self.assertEqual((FakeModel("foo"), BrokerMessageStatus.SUCCESS, {"foo": "bar"}), await fn(self.message))
-
-    async def test_get_callback_none(self):
-        fn = self.handler.get_callback(_Cls._fn_none)
-        self.assertEqual((None, BrokerMessageStatus.SUCCESS, {"foo": "bar"}), await fn(self.message))
-
-    async def test_get_callback_raises_response(self):
-        fn = self.handler.get_callback(_Cls._fn_raises_response)
-        expected = (repr(BrokerResponseException("foo")), BrokerMessageStatus.ERROR, {"foo": "bar"})
-        self.assertEqual(expected, await fn(self.message))
-
-    async def test_get_callback_raises_exception(self):
-        fn = self.handler.get_callback(_Cls._fn_raises_exception)
-        expected = (repr(ValueError()), BrokerMessageStatus.SYSTEM_ERROR, {"foo": "bar"})
-        self.assertEqual(expected, await fn(self.message))
-
-    async def test_get_callback_with_user(self):
-        async def _fn(request) -> None:
-            self.assertEqual(self.user, request.user)
-            self.assertEqual(self.user, REQUEST_USER_CONTEXT_VAR.get())
-
-        mock = AsyncMock(side_effect=_fn)
-
-        handler = self.handler.get_callback(mock)
-        await handler(self.message)
-
-        self.assertEqual(1, mock.call_count)
-
-    async def test_get_callback_with_headers(self):
-        async def _fn(request) -> None:
-            self.assertEqual({"foo": "bar"}, request.raw.headers)
-            REQUEST_HEADERS_CONTEXT_VAR.get()["bar"] = "foo"
-
-        mock = AsyncMock(side_effect=_fn)
-
-        handler = self.handler.get_callback(mock)
-        _, _, observed = await handler(self.message)
-
-        self.assertEqual({"foo": "bar", "bar": "foo"}, observed)
-
     async def test_dispatch_without_sorting(self):
         observed = list()
 
@@ -339,7 +224,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
             content = await request.content()
             observed.append(content)
 
-        self.handler.get_action = MagicMock(return_value=_fn2)
+        self.handler.dispatcher.get_handler = MagicMock(return_value=_fn2)
 
         events = [
             BrokerMessage("TicketAdded", FakeModel("uuid1")),
@@ -361,14 +246,14 @@ class TestBrokerHandler(PostgresAsyncTestCase):
             content = await request.content()
             observed[content[0]].append(content[1])
 
-        self.handler.get_action = MagicMock(return_value=_fn2)
+        self.handler.dispatcher.get_handler = MagicMock(return_value=_fn2)
 
-        events = list()
+        messages = list()
         for i in range(1, 6):
-            events.extend([BrokerMessage("TicketAdded", ["uuid1", i]), BrokerMessage("TicketAdded", ["uuid2", i])])
-        shuffle(events)
+            messages.extend([BrokerMessage("TicketAdded", ["uuid1", i]), BrokerMessage("TicketAdded", ["uuid2", i])])
+        shuffle(messages)
 
-        for event in events:
+        for event in messages:
             await self._insert_one(event)
 
         await self.handler.dispatch()

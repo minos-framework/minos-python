@@ -120,7 +120,6 @@ class TestDynamicBroker(PostgresAsyncTestCase):
     def _assert_equal_entries(self, expected, observed):
         self.assertEqual(expected.id, observed.id)
         self.assertEqual(expected.topic, observed.topic)
-        self.assertEqual(expected.callback, observed.callback)
         self.assertEqual(expected.partition, observed.partition)
         self.assertEqual(expected.data, observed.data)
         self.assertEqual(expected.retry, observed.retry)

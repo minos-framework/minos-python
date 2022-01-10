@@ -4,6 +4,9 @@ from .abc import (
 from .consumers import (
     BrokerConsumer,
 )
+from .dispatchers import (
+    BrokerDispatcher,
+)
 from .entries import (
     BrokerHandlerEntry,
 )
