@@ -1,6 +1,6 @@
-from .avro_schema_decoder import (
+from .decoder import (
     AvroSchemaDecoder,
 )
-from .avro_schema_encoder import (
+from .encoder import (
     AvroSchemaEncoder,
 )

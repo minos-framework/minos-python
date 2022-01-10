@@ -1,6 +1,6 @@
-from .avro_data_decoder import (
+from .decoder import (
     AvroDataDecoder,
 )
-from .avro_data_encoder import (
+from .encoder import (
     AvroDataEncoder,
 )
