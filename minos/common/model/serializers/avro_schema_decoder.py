@@ -34,6 +34,9 @@ from ..types import (
     build_union,
     is_model_subclass,
 )
+from .abc import (
+    SchemaDecoder,
+)
 from .constants import (
     AVRO_ARRAY,
     AVRO_BOOLEAN,
@@ -56,7 +59,7 @@ from .constants import (
 logger = logging.getLogger(__name__)
 
 
-class AvroSchemaDecoder:
+class AvroSchemaDecoder(SchemaDecoder):
     """Avro Schema Decoder class."""
 
     def __init__(self, schema: Any = None):

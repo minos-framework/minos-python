@@ -27,6 +27,9 @@ from ...exceptions import (
 from ..types import (
     MissingSentinel,
 )
+from .abc import (
+    DataEncoder,
+)
 
 if TYPE_CHECKING:
     from ..abc import (
@@ -39,7 +42,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class AvroDataEncoder:
+class AvroDataEncoder(DataEncoder):
     """Avro Data Encoder class."""
 
     def __init__(self, value: Any = None):

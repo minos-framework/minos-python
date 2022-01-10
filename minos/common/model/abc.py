@@ -46,6 +46,10 @@ from .serializers import (
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
+    DataDecoder,
+    DataEncoder,
+    SchemaDecoder,
+    SchemaEncoder,
 )
 from .types import (
     ModelType,
@@ -279,7 +283,7 @@ class Model(Mapping):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder: AvroSchemaEncoder, target: Any, **kwargs) -> Any:
+    def encode_schema(self_or_cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
@@ -290,7 +294,7 @@ class Model(Mapping):
         return encoder.build(target, **kwargs)
 
     @classmethod
-    def decode_schema(cls, decoder: AvroSchemaDecoder, target: Any, **kwargs) -> Any:
+    def decode_schema(cls, decoder: SchemaDecoder, target: Any, **kwargs) -> Any:
         """Decode schema with the given encoder.
 
         :param decoder: The decoder instance.
@@ -301,7 +305,7 @@ class Model(Mapping):
         return decoder.build(target, **kwargs)
 
     # noinspection PyMethodMayBeStatic
-    def encode_data(self, encoder: AvroDataEncoder, target: Any, **kwargs) -> Any:
+    def encode_data(self, encoder: DataEncoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -312,7 +316,7 @@ class Model(Mapping):
         return encoder.build(target, **kwargs)
 
     @classmethod
-    def decode_data(cls: T, decoder: AvroDataDecoder, target: Any, type_: ModelType, **kwargs) -> T:
+    def decode_data(cls: T, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> T:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.

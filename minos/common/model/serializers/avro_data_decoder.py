@@ -23,6 +23,7 @@ from itertools import (
 from typing import (
     TYPE_CHECKING,
     Any,
+    Optional,
     Type,
     TypeVar,
     Union,
@@ -47,6 +48,9 @@ from ..types import (
     is_type_subclass,
     unpack_typevar,
 )
+from .abc import (
+    DataDecoder,
+)
 
 if TYPE_CHECKING:
     from ..abc import (
@@ -56,10 +60,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class AvroDataDecoder:
+class AvroDataDecoder(DataDecoder):
     """Avro Data Decoder class."""
 
-    def __init__(self, type_: type = None):
+    def __init__(self, type_: Optional[type] = None):
         self.type_ = type_
 
     def build(self, data: Any, type_: Any = MissingSentinel, **kwargs) -> Any:

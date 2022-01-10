@@ -37,6 +37,9 @@ from ..types import (
     is_model_subclass,
     is_type_subclass,
 )
+from .abc import (
+    SchemaEncoder,
+)
 from .constants import (
     AVRO_ARRAY,
     AVRO_BOOLEAN,
@@ -65,7 +68,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class AvroSchemaEncoder:
+class AvroSchemaEncoder(SchemaEncoder):
     """Avro Schema Encoder class."""
 
     def __init__(self, type_: type = None):
