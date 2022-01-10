@@ -95,6 +95,15 @@ class TestMinosAvroProtocol(unittest.TestCase):
         deserialized = MinosAvroProtocol.decode(serialized)
         self.assertEqual(data, deserialized)
 
+    def test_union_schema(self):
+        serialized = MinosAvroProtocol.encode("one", [["string", "int"]])
+
+        schema = MinosAvroProtocol.decode_schema(serialized)
+        self.assertEqual(["string", "int"], schema)
+
+        data = MinosAvroProtocol.decode(serialized)
+        self.assertEqual("one", data)
+
 
 if __name__ == "__main__":
     unittest.main()
