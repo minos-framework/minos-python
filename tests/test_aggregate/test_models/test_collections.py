@@ -6,6 +6,9 @@ from minos.aggregate import (
     IncrementalSetDiff,
     IncrementalSetDiffEntry,
 )
+from minos.common import (
+    Model,
+)
 
 
 class TestIncrementalSet(unittest.TestCase):
@@ -76,6 +79,32 @@ class TestIncrementalSet(unittest.TestCase):
         raw = [1, 2]
         entities = IncrementalSet(raw)
         self.assertEqual(int, entities.data_cls)
+
+    def test_from_avro(self):
+        expected = IncrementalSet([1, 2])
+        schema = [
+            {"items": "int", "logicalType": "minos.aggregate.models.collections.IncrementalSet", "type": "array"},
+        ]
+        data = [1, 2]
+
+        observed = Model.from_avro(schema, data)
+        self.assertEqual(expected, observed)
+
+    def test_avro_schema(self):
+        expected = [
+            {"items": "int", "logicalType": "minos.aggregate.models.collections.IncrementalSet", "type": "array"},
+        ]
+        observed = IncrementalSet([1, 2]).avro_schema
+        self.assertEqual(expected, observed)
+
+    def test_avro_data(self):
+        expected = [1, 2]
+        observed = IncrementalSet([1, 2]).avro_data
+        self.assertEqual(expected, observed)
+
+    def test_avro_bytes(self):
+        expected = IncrementalSet([1, 2])
+        self.assertEqual(expected, Model.from_avro_bytes(expected.avro_bytes))
 
 
 class TestIncrementalSetDiff(unittest.TestCase):

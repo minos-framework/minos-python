@@ -468,17 +468,24 @@ version = "0.3.3"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
-python-versions = ">=3.9,<4.0"
+python-versions = "^3.9"
+develop = false
 
 [package.dependencies]
-aiomisc = ">=14.0.3,<15.0.0"
-aiopg = ">=1.2.1,<2.0.0"
-cached-property = ">=1.5.2,<2.0.0"
-dependency-injector = ">=4.32.2,<5.0.0"
-fastavro = ">=1.4.0,<2.0.0"
-lmdb = ">=1.2.1,<2.0.0"
-orjson = ">=3.5.2,<4.0.0"
-PyYAML = ">=5.4.1,<6.0.0"
+aiomisc = "^14.0.3"
+aiopg = "^1.2.1"
+cached-property = "^1.5.2"
+dependency-injector = "^4.32.2"
+fastavro = "^1.4.0"
+lmdb = "^1.2.1"
+orjson = "^3.5.2"
+PyYAML = "^5.4.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/Clariteia/minos_microservice_common"
+reference = "issue-677-add-batch-mode-argument"
+resolved_reference = "221c0453e44e1a49b048ef5f31ad6ce1c3b20033"
 
 [[package]]
 name = "minos-microservice-networks"
@@ -949,7 +956,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "2d7f993a37e1c9e31886c24bc20303430fa890bd957f90e10ae056aef3cba050"
+content-hash = "0e7088cd1b878c3ec1cd0e48154151c625a2cd8a95dacca41f4e13c2b572c31a"
 
 [metadata.files]
 aiohttp = [
@@ -1511,10 +1518,7 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-minos-microservice-common = [
-    {file = "minos_microservice_common-0.3.3-py3-none-any.whl", hash = "sha256:9f1ca0bcf3d917ca0810ebb6d000ac7e80e36618f78b40e3fd5f60f1f4d67649"},
-    {file = "minos_microservice_common-0.3.3.tar.gz", hash = "sha256:ecf4362f74a6e0a8a650a6f803e97017ea5f367efe37b923f6ee5a2cd84edd18"},
-]
+minos-microservice-common = []
 minos-microservice-networks = [
     {file = "minos_microservice_networks-0.3.0-py3-none-any.whl", hash = "sha256:7e67126454ccf7dd83b343174c17968cbc02087d0c7e2298973ce6dbbeab0090"},
     {file = "minos_microservice_networks-0.3.0.tar.gz", hash = "sha256:3dc9e75599d748bc0ddf386cc6d9ce03362b9bfa03b441cf63898d4382588370"},
