@@ -22,8 +22,6 @@ from dependency_injector.wiring import (
 
 from minos.common import (
     DeclarativeModel,
-    Field,
-    MissingSentinel,
     Model,
     ModelType,
     self_or_classmethod,
@@ -52,25 +50,9 @@ class AggregateRef(Entity):
         super().__init__(uuid=uuid, *args, **kwargs)
 
 
-class FieldRef(Field):
-    """Ref Field class."""
-
-    def encode_data(self, encoder, _target=MissingSentinel, **kwargs) -> Any:
-        """Encode data with the given encoder.
-
-        :param encoder: The encoder instance.
-        :param _target: An optional pre-encoded data.
-        :return: The encoded data of the instance.
-        """
-        if IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get() and not isinstance(self.value, UUID):
-            _target = self.value.uuid
-        return super().encode_data(encoder, _target, **kwargs)
-
-
 class ModelRef(DeclarativeModel, UUID, Generic[MT]):
     """Model Reference."""
 
-    _field_cls = FieldRef
     data: Union[MT, UUID]
 
     @inject
@@ -109,14 +91,14 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder, _target: Any = MissingSentinel, **kwargs) -> Any:
+    def encode_schema(self_or_cls, encoder, target: Any, **kwargs) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
-        :param _target: An optional pre-encoded schema.
+        :param target: An optional pre-encoded schema.
         :return: The encoded schema of the instance.
         """
-        schema = encoder.build(_target.type_hints["data"])
+        schema = encoder.build(target.type_hints["data"])
         return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
 
     @classmethod
@@ -132,14 +114,17 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
             raise ValueError(f"The decoded type is not valid: {decoded}")
         return ModelType.from_model(cls[decoded])
 
-    def encode_data(self, encoder, _target: Any = MissingSentinel, **kwargs) -> Any:
+    def encode_data(self, encoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
-        :param _target: An optional pre-encoded data.
+        :param target: An optional pre-encoded data.
         :return: The encoded data of the instance.
         """
-        return super().encode_data(encoder, self.fields["data"])
+        target = self.data
+        if IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get() and not isinstance(target, UUID):
+            target = target.uuid
+        return super().encode_data(encoder, target)
 
     @classmethod
     def decode_data(cls, decoder, data: Any, type_: ModelType, **kwargs) -> ModelRef:

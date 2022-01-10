@@ -33,7 +33,6 @@ from .models import (
     EntitySet,
     FieldDiff,
     FieldDiffContainer,
-    FieldRef,
     IncrementalFieldDiff,
     IncrementalSet,
     IncrementalSetDiff,

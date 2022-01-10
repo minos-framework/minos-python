@@ -6,7 +6,6 @@ from .injectors import (
 )
 from .models import (
     AggregateRef,
-    FieldRef,
     ModelRef,
 )
 from .resolvers import (

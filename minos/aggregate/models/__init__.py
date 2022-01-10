@@ -21,7 +21,6 @@ from .entities import (
 )
 from .refs import (
     AggregateRef,
-    FieldRef,
     ModelRef,
     ModelRefExtractor,
     ModelRefInjector,

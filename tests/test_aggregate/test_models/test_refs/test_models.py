@@ -16,11 +16,11 @@ from uuid import (
 from minos.aggregate import (
     IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     AggregateRef,
-    FieldRef,
     ModelRef,
 )
 from minos.common import (
     DeclarativeModel,
+    Field,
     Model,
     ModelType,
 )
@@ -108,7 +108,7 @@ class TestModelRef(MinosTestCase):
     def test_fields(self):
         value = ModelRef(Bar(uuid4(), 1))
 
-        self.assertEqual({"data": FieldRef("data", Union[Bar, UUID], value)}, value.fields)
+        self.assertEqual({"data": Field("data", Union[Bar, UUID], value)}, value.fields)
 
     def test_model_avro_data(self):
         value = Bar(uuid4(), 1)
