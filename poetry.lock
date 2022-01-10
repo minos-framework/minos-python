@@ -485,7 +485,7 @@ PyYAML = "^5.4.1"
 type = "git"
 url = "https://github.com/Clariteia/minos_microservice_common"
 reference = "issue-672-add-decode-callbacks"
-resolved_reference = "cd9f7bfcb8fec93f497e50318ce8ad50bf330868"
+resolved_reference = "e18834d2320c8ec6ed9d6fe98710ca330bda0f57"
 
 [[package]]
 name = "minos-microservice-networks"
