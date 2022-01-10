@@ -62,14 +62,14 @@ class AvroDataEncoder(DataEncoder):
         if value is None:
             return None
 
-        from ..abc import (
+        from ....abc import (
             Model,
         )
 
         if isinstance(value, Model):
             return self._build_model(value, **kwargs)
 
-        from ..abc import (
+        from ....abc import (
             Field,
         )
 
