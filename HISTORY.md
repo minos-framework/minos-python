@@ -32,3 +32,11 @@
 * Add `ModelRef.resolve(...)` method to resolve `ModelRef` instances.
 * Add `ModelRefResolver` to resolve `ModelRef` instances in batch.
 * Fix bug that published *Domain Events* when non-top-level transactions are committed.
+
+
+## 0.2.3 (2022-01-10)
+
+* Remove the `data` wrapper from the `ModelRef`'s avro serialization.
+* Add support for search by `ModelRef` instances on the `PostgreSqlSnapshot`.
+* Fix bug related with the `IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR`, used to store on the repository only the references to another aggregates.
+* Fix bug related with concurrent enabling of the `uuid-ossp` extension from `postgres`.
