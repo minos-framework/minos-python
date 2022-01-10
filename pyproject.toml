@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.3.0"
+minos-microservice-common = "^0.3.3"
 minos-microservice-networks = "^0.3.0"
 
 [tool.poetry.dev-dependencies]

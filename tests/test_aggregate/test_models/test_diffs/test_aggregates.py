@@ -45,7 +45,7 @@ class TestAggregateDiff(MinosTestCase):
                 [
                     FieldDiff("doors", int, 3),
                     FieldDiff("color", str, "blue"),
-                    FieldDiff("owner", Optional[list[ModelRef[Owner]]], None),
+                    FieldDiff("owner", Optional[ModelRef[Owner]], None),
                 ]
             ),
         )
