@@ -170,9 +170,9 @@ class AvroSchemaEncoder(SchemaEncoder):
         raw = ModelType.from_model(type_)
         return [self._build_model_type(raw, **kwargs)]
 
-    def _build_model_type(self, type_: ModelType, already_callback=False, **kwargs) -> Any:
-        if not already_callback:
-            return type_.model_cls.encode_schema(self, type_, already_callback=True, **kwargs)
+    def _build_model_type(self, type_: ModelType, **kwargs) -> Any:
+        if (ans := type_.model_cls.encode_schema(self, type_, **kwargs)) is not MissingSentinel:
+            return ans
 
         schema = {
             "name": type_.name,

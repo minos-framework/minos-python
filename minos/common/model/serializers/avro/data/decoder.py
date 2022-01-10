@@ -246,13 +246,13 @@ class AvroDataDecoder(DataDecoder):
             return data
         return self._build_model_type(ModelType.from_model(type_), data, **kwargs)
 
-    def _build_model_type(self, type_: ModelType, data: Any, already_callback=False, **kwargs) -> Any:
+    def _build_model_type(self, type_: ModelType, data: Any, **kwargs) -> Any:
         if hasattr(data, "model_type"):
             if ModelType.from_model(data) >= type_:
                 return data
 
-        if not already_callback:
-            return type_.model_cls.decode_data(self, data, type_, already_callback=True, **kwargs)
+        if (ans := type_.model_cls.decode_data(self, data, type_, **kwargs)) is not MissingSentinel:
+            return ans
 
         if isinstance(data, dict):
             with suppress(Exception):

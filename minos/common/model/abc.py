@@ -52,6 +52,7 @@ from .serializers import (
     SchemaEncoder,
 )
 from .types import (
+    MissingSentinel,
     ModelType,
 )
 
@@ -281,7 +282,7 @@ class Model(Mapping):
         # noinspection PyTypeChecker
         return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
 
-    # noinspection PyMethodParameters
+    # noinspection PyMethodParameters,PyUnusedLocal
     @self_or_classmethod
     def encode_schema(self_or_cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
         """Encode schema with the given encoder.
@@ -291,8 +292,9 @@ class Model(Mapping):
         :param kwargs: Additional named arguments.
         :return: The encoded schema of the instance.
         """
-        return encoder.build(target, **kwargs)
+        return MissingSentinel
 
+    # noinspection PyUnusedLocal
     @classmethod
     def decode_schema(cls, decoder: SchemaDecoder, target: Any, **kwargs) -> Any:
         """Decode schema with the given encoder.
@@ -302,9 +304,9 @@ class Model(Mapping):
         :param kwargs: Additional named arguments.
         :return: The decoded schema as a type.
         """
-        return decoder.build(target, **kwargs)
+        return MissingSentinel
 
-    # noinspection PyMethodMayBeStatic
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def encode_data(self, encoder: DataEncoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
 
@@ -313,10 +315,11 @@ class Model(Mapping):
         :param kwargs: Additional named arguments.
         :return: The encoded data of the instance.
         """
-        return encoder.build(target, **kwargs)
+        return MissingSentinel
 
+    # noinspection PyUnusedLocal
     @classmethod
-    def decode_data(cls: T, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> T:
+    def decode_data(cls: T, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> Any:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.
@@ -325,7 +328,7 @@ class Model(Mapping):
         :param kwargs: Additional named arguments.
         :return: A decoded instance.
         """
-        return decoder.build(target, type_, **kwargs)
+        return MissingSentinel
 
     def __eq__(self: T, other: T) -> bool:
         if type(self) == type(other) and self.fields == other.fields:

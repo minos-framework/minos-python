@@ -110,7 +110,11 @@ class AvroDataEncoder(DataEncoder):
 
     def _build_model(self, model: Model, **kwargs) -> Any:
         raw = {name: self._build_field(field, **kwargs) for name, field in model.fields.items()}
-        return model.encode_data(self, raw, **kwargs)
+
+        if (ans := model.encode_data(self, raw, **kwargs)) is not MissingSentinel:
+            return ans
+
+        return self._build(raw, **kwargs)
 
     def _build_field(self, field: Field, **kwargs) -> Any:
         return self._build(field.value, **kwargs)

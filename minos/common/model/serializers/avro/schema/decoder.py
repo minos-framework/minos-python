@@ -154,7 +154,7 @@ class AvroSchemaDecoder(SchemaDecoder):
             type_ = Any
         return type_
 
-    def _build_record(self, schema: dict[str, Any], already_callback=False, **kwargs) -> type:
+    def _build_record(self, schema: dict[str, Any], **kwargs) -> type:
         name, namespace = schema["name"], schema.get("namespace")
         if namespace is None:
             try:
@@ -164,19 +164,26 @@ class AvroSchemaDecoder(SchemaDecoder):
 
         namespace = self._unpatch_namespace(namespace)
 
-        if not already_callback:
-            if len(namespace) > 0:
-                classname = f"{namespace}.{name}"
-            else:
-                classname = name
+        if len(namespace) > 0:
+            classname = f"{namespace}.{name}"
+        else:
+            classname = name
 
-            try:
-                cls_ = import_module(classname)
-            except MinosImportException:
-                cls_ = None
+        try:
+            cls_ = import_module(classname)
+        except MinosImportException:
+            cls_ = None
 
-            if hasattr(cls_, "decode_schema"):
-                return cls_.decode_schema(self, schema, already_callback=True, **kwargs)
+        from ....abc import (
+            Model,
+        )
+
+        if (
+            cls_ is not None
+            and issubclass(cls_, Model)
+            and (ans := cls_.decode_schema(self, schema, **kwargs)) is not MissingSentinel
+        ):
+            return ans
 
         type_hints = {field["name"]: self._build(field, **kwargs) for field in schema["fields"]}
 

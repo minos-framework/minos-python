@@ -9,6 +9,7 @@ from uuid import (
 
 from minos.common import (
     EmptyMinosModelSequenceException,
+    MissingSentinel,
     Model,
     MultiTypeMinosModelSequenceException,
 )
@@ -149,17 +150,17 @@ class TestModelAvro(MinosTestCase):
     def test_encode_schema(self):
         user = User(1234)
         shopping_list = ShoppingList(user)
-        with patch.object(ShoppingList, "encode_schema", side_effect=shopping_list.encode_schema) as shopping_mock:
-            with patch.object(User, "encode_schema", side_effect=user.encode_schema) as user_mock:
+        with patch.object(ShoppingList, "encode_schema", return_value=MissingSentinel) as shopping_mock:
+            with patch.object(User, "encode_schema", return_value=user.avro_schema) as user_mock:
                 shopping_list.avro_schema
 
         encoder = shopping_mock.call_args_list[0].args[0]
 
         self.assertEqual(
-            [call(encoder, shopping_list.model_type, already_callback=True)], shopping_mock.call_args_list,
+            [call(encoder, shopping_list.model_type)], shopping_mock.call_args_list,
         )
 
-        self.assertEqual([call(encoder, user.model_type, already_callback=True)], user_mock.call_args_list)
+        self.assertEqual([call(encoder, user.model_type)], user_mock.call_args_list)
 
     def test_avro_data(self):
         shopping_list = ShoppingList(User(1234))
@@ -187,8 +188,8 @@ class TestModelAvro(MinosTestCase):
     def test_encode_data(self):
         user = User(1234)
         shopping_list = ShoppingList(user)
-        with patch.object(ShoppingList, "encode_data", side_effect=shopping_list.encode_data) as shopping_mock:
-            with patch.object(User, "encode_data", side_effect=user.encode_data) as user_mock:
+        with patch.object(ShoppingList, "encode_data", return_value=MissingSentinel) as shopping_mock:
+            with patch.object(User, "encode_data", return_value=user.avro_data) as user_mock:
                 shopping_list.avro_data
 
         encoder = shopping_mock.call_args_list[0].args[0]
@@ -232,25 +233,21 @@ class TestModelAvro(MinosTestCase):
         shopping_list = ShoppingList(user)
 
         with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
-            with patch.object(Model, "decode_schema", side_effect=Model.decode_schema) as mock:
+            with patch.object(Model, "decode_schema", side_effect=[MissingSentinel, User]) as mock:
                 # noinspection PyTypeChecker
                 Model.from_avro(shopping_list.avro_schema, shopping_list.avro_data)
 
             decoder = mock.call_args_list[0].args[0]
 
             self.assertEqual(
-                [
-                    call(decoder, shopping_list.avro_schema[0], already_callback=True),
-                    call(decoder, user.avro_schema[0], already_callback=True),
-                ],
-                mock.call_args_list,
+                [call(decoder, shopping_list.avro_schema[0]), call(decoder, user.avro_schema[0])], mock.call_args_list,
             )
 
     def test_decode_data(self):
         user = User(1234)
         shopping_list = ShoppingList(user)
 
-        with patch.object(Model, "decode_data", side_effect=Model.decode_data) as mock:
+        with patch.object(Model, "decode_data", side_effect=[MissingSentinel, user]) as mock:
             # noinspection PyTypeChecker
             Model.from_avro(shopping_list.avro_schema, shopping_list.avro_data)
 
@@ -259,12 +256,9 @@ class TestModelAvro(MinosTestCase):
         self.assertEqual(
             [
                 call(
-                    decoder,
-                    {"user": {"id": 1234, "username": None}, "cost": float("inf")},
-                    shopping_list.model_type,
-                    already_callback=True,
+                    decoder, {"user": {"id": 1234, "username": None}, "cost": float("inf")}, shopping_list.model_type,
                 ),
-                call(decoder, {"id": 1234, "username": None}, user.model_type, already_callback=True),
+                call(decoder, {"id": 1234, "username": None}, user.model_type),
             ],
             mock.call_args_list,
         )
