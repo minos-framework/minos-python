@@ -250,6 +250,33 @@ class Model(Mapping):
         encoder = AvroSchemaEncoder()
         return encoder.build(self_or_cls)
 
+    @property
+    def avro_data(self) -> dict[str, Any]:
+        """Compute the avro data of the model.
+
+        :return: A dictionary object.
+        """
+        encoder = AvroDataEncoder()
+        return encoder.build(self)
+
+    @property
+    def avro_str(self) -> str:
+        """Generate bytes representation of the current instance.
+
+        :return: A bytes object.
+        """
+        # noinspection PyTypeChecker
+        return b64encode(self.avro_bytes).decode()
+
+    @property
+    def avro_bytes(self) -> bytes:
+        """Generate bytes representation of the current instance.
+
+        :return: A bytes object.
+        """
+        # noinspection PyTypeChecker
+        return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
+
     # noinspection PyMethodParameters
     @self_or_classmethod
     def encode_schema(self_or_cls, encoder: AvroSchemaEncoder, target: Any, **kwargs) -> Any:
@@ -273,15 +300,6 @@ class Model(Mapping):
         """
         return decoder.build(target, **kwargs)
 
-    @property
-    def avro_data(self) -> dict[str, Any]:
-        """Compute the avro data of the model.
-
-        :return: A dictionary object.
-        """
-        encoder = AvroDataEncoder()
-        return encoder.build(self)
-
     # noinspection PyMethodMayBeStatic
     def encode_data(self, encoder: AvroDataEncoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
@@ -304,24 +322,6 @@ class Model(Mapping):
         :return: A decoded instance.
         """
         return decoder.build(target, type_, **kwargs)
-
-    @property
-    def avro_str(self) -> str:
-        """Generate bytes representation of the current instance.
-
-        :return: A bytes object.
-        """
-        # noinspection PyTypeChecker
-        return b64encode(self.avro_bytes).decode()
-
-    @property
-    def avro_bytes(self) -> bytes:
-        """Generate bytes representation of the current instance.
-
-        :return: A bytes object.
-        """
-        # noinspection PyTypeChecker
-        return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
 
     def __eq__(self: T, other: T) -> bool:
         if type(self) == type(other) and self.fields == other.fields:
