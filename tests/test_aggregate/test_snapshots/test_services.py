@@ -19,15 +19,17 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerCommandEnrouteDecorator,
+    InMemoryRequest,
     PeriodicEventEnrouteDecorator,
     ResponseException,
 )
 from tests.utils import (
     BASE_PATH,
-    FakeRequest,
     MinosTestCase,
     Order,
 )
+
+Agg = ModelType.build("Agg", {"uuid": UUID})
 
 
 class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
@@ -49,36 +51,32 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
 
     async def test_get_aggregate(self):
         uuid = uuid4()
-        Agg = ModelType.build("Agg", {"uuid": UUID})
         expected = Agg(uuid)
         with patch("minos.aggregate.Aggregate.get", return_value=expected):
-            response = await self.service.__get_one__(FakeRequest({"uuid": uuid}))
+            response = await self.service.__get_one__(InMemoryRequest({"uuid": uuid}))
         self.assertEqual(expected, await response.content())
 
     async def test_get_aggregate_raises(self):
-        with patch("tests.utils.FakeRequest.content", side_effect=ValueError):
-            with self.assertRaises(ResponseException):
-                await self.service.__get_one__(FakeRequest(None))
+        with self.assertRaises(ResponseException):
+            await self.service.__get_one__(InMemoryRequest(None))
         with patch("minos.aggregate.Aggregate.get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
-                await self.service.__get_one__(FakeRequest({"uuid": uuid4()}))
+                await self.service.__get_one__(InMemoryRequest({"uuid": uuid4()}))
 
     async def test_get_aggregates(self):
         uuids = [uuid4(), uuid4()]
-        Agg = ModelType.build("Agg", {"uuid": UUID})
 
         expected = [Agg(u) for u in uuids]
         with patch("minos.aggregate.Aggregate.get", side_effect=expected):
-            response = await self.service.__get_many__(FakeRequest({"uuids": uuids}))
+            response = await self.service.__get_many__(InMemoryRequest({"uuids": uuids}))
         self.assertEqual(expected, await response.content())
 
     async def test_get_aggregates_raises(self):
-        with patch("tests.utils.FakeRequest.content", side_effect=ValueError):
-            with self.assertRaises(ResponseException):
-                await self.service.__get_many__(FakeRequest(None))
+        with self.assertRaises(ResponseException):
+            await self.service.__get_many__(InMemoryRequest(None))
         with patch("minos.aggregate.Aggregate.get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
-                await self.service.__get_many__(FakeRequest({"uuids": [uuid4()]}))
+                await self.service.__get_many__(InMemoryRequest({"uuids": [uuid4()]}))
 
     def test_aggregate_cls(self):
         self.assertEqual(Order, self.service.__aggregate_cls__)
@@ -86,7 +84,7 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
     async def test_synchronize(self):
         mock = AsyncMock()
         self.snapshot_repository.synchronize = mock
-        response = await self.service.__synchronize__(FakeRequest(None))
+        response = await self.service.__synchronize__(InMemoryRequest(None))
         self.assertEqual(1, mock.call_count)
         self.assertEqual(None, response)
 
