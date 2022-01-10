@@ -39,7 +39,7 @@ class MinosAvroMessageProtocol(MinosAvroProtocol):
         :return: A dictionary or a list of dictionaries.
         """
         data_return = {"headers": dict()}
-        for schema_dict in super().decode(data, flatten=False):
+        for schema_dict in super().decode(data, batch_mode=True):
             logger.debug("Avro: get the request/response in dict format")
             data_return["headers"] = schema_dict["headers"]
             # check wich type is body

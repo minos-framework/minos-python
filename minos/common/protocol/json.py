@@ -24,7 +24,7 @@ class MinosJsonBinaryProtocol(MinosBinaryProtocol):
         return orjson.dumps(data)
 
     @classmethod
-    def decode(cls, data: bytes) -> Any:
+    def decode(cls, data: bytes, *args, **kwargs) -> Any:
         """Decodes the given bytes data.
 
         :param data: bytes data to be decoded.

@@ -20,7 +20,7 @@ class MinosBinaryProtocol(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def decode(cls, data: bytes) -> Any:
+    def decode(cls, data: bytes, *args, **kwargs) -> Any:
         """Decodes the given bytes data.
 
         :param data: bytes data to be decoded.

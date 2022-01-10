@@ -111,6 +111,7 @@ class Model(Mapping):
         raw = b64decode(raw.encode())
         return cls.from_avro_bytes(raw, **kwargs)
 
+    # noinspection PyUnusedLocal
     @classmethod
     def from_avro_bytes(cls: Type[T], raw: bytes, batch_mode: bool = False, **kwargs) -> Union[T, list[T]]:
         """Build a single instance or a sequence of instances from bytes
@@ -122,7 +123,7 @@ class Model(Mapping):
         :return: A single instance or a sequence of instances.
         """
         schema = MinosAvroProtocol.decode_schema(raw)
-        data = MinosAvroProtocol.decode(raw)
+        data = MinosAvroProtocol.decode(raw, batch_mode=batch_mode)
 
         if batch_mode:
             return [cls.from_avro(schema, entry) for entry in data]
@@ -172,7 +173,7 @@ class Model(Mapping):
 
         avro_schema = models[0].avro_schema
         # noinspection PyTypeChecker
-        return MinosAvroProtocol().encode([model.avro_data for model in models], avro_schema, batch_mode=True)
+        return MinosAvroProtocol.encode([model.avro_data for model in models], avro_schema, batch_mode=True)
 
     # noinspection PyMethodParameters
     @property_or_classproperty
@@ -284,7 +285,7 @@ class Model(Mapping):
         :return: A bytes object.
         """
         # noinspection PyTypeChecker
-        return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
+        return MinosAvroProtocol.encode(self.avro_data, self.avro_schema)
 
     # noinspection PyMethodParameters,PyUnusedLocal
     @self_or_classmethod
