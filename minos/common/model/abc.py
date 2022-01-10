@@ -135,7 +135,7 @@ class Model(Mapping):
         """
 
         if isinstance(schema, list):
-            schema = schema[-1]
+            schema = schema[0]
 
         schema_decoder = AvroSchemaDecoder()
         type_ = schema_decoder.build(schema)
