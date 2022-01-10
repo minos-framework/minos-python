@@ -126,7 +126,7 @@ class Model(Mapping):
         return cls.from_avro(schema, data)
 
     @classmethod
-    def from_avro(cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: Any) -> T:
+    def from_avro(cls: Type[T], schema: Any, data: Any) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
