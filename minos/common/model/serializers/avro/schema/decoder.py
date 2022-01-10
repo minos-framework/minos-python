@@ -126,14 +126,21 @@ class AvroSchemaDecoder(SchemaDecoder):
         if logical_type == AVRO_SET["logicalType"]:
             return self._build_set(schema, **kwargs)
 
-        with suppress(MinosImportException):
-            type_ = import_module(logical_type)
-            if not is_model_subclass(type_):
-                return type_
-            # noinspection PyUnresolvedReferences
-            return type_.decode_schema(self, {k: v for k, v in schema.items() if k != "logicalType"})
+        sub_schema = {k: v for k, v in schema.items() if k != "logicalType"}
 
-        return self._build({k: v for k, v in schema.items() if k != "logicalType"}, **kwargs)
+        try:
+            cls_ = import_module(logical_type)
+        except MinosImportException:
+            cls_ = None
+
+        if cls_ is not None:
+            # noinspection PyUnresolvedReferences
+            if is_model_subclass(cls_) and (ans := cls_.decode_schema(self, sub_schema)) is not MissingSentinel:
+                return ans
+
+            return cls_
+
+        return self._build(sub_schema, **kwargs)
 
     def _build_list(self, schema: dict[str, Any], **kwargs) -> type:
         items = schema["items"]
@@ -174,15 +181,7 @@ class AvroSchemaDecoder(SchemaDecoder):
         except MinosImportException:
             cls_ = None
 
-        from ....abc import (
-            Model,
-        )
-
-        if (
-            cls_ is not None
-            and issubclass(cls_, Model)
-            and (ans := cls_.decode_schema(self, schema, **kwargs)) is not MissingSentinel
-        ):
+        if is_model_subclass(cls_) and (ans := cls_.decode_schema(self, schema, **kwargs)) is not MissingSentinel:
             return ans
 
         type_hints = {field["name"]: self._build(field, **kwargs) for field in schema["fields"]}
