@@ -21,9 +21,13 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
+    DataDecoder,
+    DataEncoder,
     DeclarativeModel,
     Model,
     ModelType,
+    SchemaDecoder,
+    SchemaEncoder,
     self_or_classmethod,
 )
 from minos.networks import (
@@ -91,7 +95,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
     # noinspection PyMethodParameters
     @self_or_classmethod
-    def encode_schema(self_or_cls, encoder, target: Any, **kwargs) -> Any:
+    def encode_schema(self_or_cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
@@ -102,19 +106,19 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
 
     @classmethod
-    def decode_schema(cls, decoder, schema: Any, **kwargs) -> ModelType:
+    def decode_schema(cls, decoder: SchemaDecoder, target: Any, **kwargs) -> ModelType:
         """Decode schema with the given encoder.
 
         :param decoder: The decoder instance.
-        :param schema: The schema to be decoded.
+        :param target: The schema to be decoded.
         :return: The decoded schema as a type.
         """
-        decoded = decoder.build(schema)
+        decoded = decoder.build(target)
         if not isinstance(decoded, ModelType):
             raise ValueError(f"The decoded type is not valid: {decoded}")
         return ModelType.from_model(cls[decoded])
 
-    def encode_data(self, encoder, target: Any, **kwargs) -> Any:
+    def encode_data(self, encoder: DataEncoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
@@ -127,7 +131,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         return super().encode_data(encoder, target)
 
     @classmethod
-    def decode_data(cls, decoder, data: Any, type_: ModelType, **kwargs) -> ModelRef:
+    def decode_data(cls, decoder: DataDecoder, data: Any, type_: ModelType, **kwargs) -> ModelRef:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.
