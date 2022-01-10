@@ -75,10 +75,7 @@ class AvroSchemaDecoder(SchemaDecoder):
             schema = self._schema
         return self._build(schema, **kwargs)
 
-    def _build(self, schema: Union[ModelType, dict, list, str], **kwargs) -> type:
-        if isinstance(schema, ModelType):
-            return schema
-
+    def _build(self, schema: Union[dict, list, str], **kwargs) -> type:
         if isinstance(schema, dict):
             return self._build_from_dict(schema, **kwargs)
 
@@ -157,20 +154,39 @@ class AvroSchemaDecoder(SchemaDecoder):
             type_ = Any
         return type_
 
-    def _build_record(self, schema: dict[str, Any], **kwargs) -> type:
-        type_ = ModelType.build(
-            name_=schema["name"],
-            type_hints_={field["name"]: self._build(field, **kwargs) for field in schema["fields"]},
-            namespace_=schema.get("namespace"),
-        )
+    def _build_record(self, schema: dict[str, Any], already_callback=False, **kwargs) -> type:
+        name, namespace = schema["name"], schema.get("namespace")
+        if namespace is None:
+            try:
+                namespace, name = name.rsplit(".", 1)
+            except ValueError:
+                namespace = str()
 
-        type_.namespace = self._unpatch_namespace(type_.namespace)
+        namespace = self._unpatch_namespace(namespace)
 
-        return type_.model_cls.decode_schema(self, type_, **kwargs)
+        if not already_callback:
+            if len(namespace) > 0:
+                classname = f"{namespace}.{name}"
+            else:
+                classname = name
+
+            try:
+                cls_ = import_module(classname)
+            except MinosImportException:
+                cls_ = None
+
+            if hasattr(cls_, "decode_schema"):
+                return cls_.decode_schema(self, schema, already_callback=True, **kwargs)
+
+        type_hints = {field["name"]: self._build(field, **kwargs) for field in schema["fields"]}
+
+        return ModelType.build(name_=name, type_hints_=type_hints, namespace_=namespace)
 
     @staticmethod
     def _unpatch_namespace(namespace: str) -> str:
-        return namespace.rsplit(".", 1)[0]
+        if len(namespace) > 0:
+            return namespace.rsplit(".", 1)[0]
+        return namespace
 
     def _build_type(self, schema: dict[str, Any], **kwargs) -> type:
         return self._build(schema["type"], **kwargs)
