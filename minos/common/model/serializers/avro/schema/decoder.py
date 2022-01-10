@@ -164,14 +164,13 @@ class AvroSchemaDecoder(SchemaDecoder):
             namespace_=schema.get("namespace"),
         )
 
-        type_ = self._unpatch_namespace(type_)
+        type_.namespace = self._unpatch_namespace(type_.namespace)
 
         return type_.model_cls.decode_schema(self, type_, **kwargs)
 
     @staticmethod
-    def _unpatch_namespace(type_: ModelType) -> ModelType:
-        type_.namespace = type_.namespace.rsplit(".", 1)[0]
-        return type_
+    def _unpatch_namespace(namespace: str) -> str:
+        return namespace.rsplit(".", 1)[0]
 
     def _build_type(self, schema: dict[str, Any], **kwargs) -> type:
         return self._build(schema["type"], **kwargs)
