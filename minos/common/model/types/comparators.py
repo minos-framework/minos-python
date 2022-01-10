@@ -35,13 +35,13 @@ def is_type_subclass(type_: type) -> bool:
     return issubclass(type(type_), type(type))
 
 
-def is_model_type(type_: type):
+def is_model_type(value_: type):
     """Check if the given type is a model instance."""
     from ..abc import (
         Model,
     )
 
-    return isinstance(type_, Model)
+    return isinstance(value_, Model)
 
 
 logger = logging.getLogger(__name__)

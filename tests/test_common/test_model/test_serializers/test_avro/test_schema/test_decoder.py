@@ -9,6 +9,9 @@ from typing import (
     Any,
     Union,
 )
+from unittest.mock import (
+    patch,
+)
 from uuid import (
     UUID,
 )
@@ -20,6 +23,7 @@ from minos.common import (
     classname,
 )
 from tests.model_classes import (
+    ShoppingList,
     Status,
 )
 
@@ -161,6 +165,11 @@ class TestAvroSchemaDecoder(unittest.TestCase):
         expected = str
         observed = AvroSchemaDecoder({"name": "id", "type": "string", "logicalType": "foo"}).build()
         self.assertEqual(expected, observed)
+
+    def test_logical_type_model(self):
+        with patch.object(ShoppingList, "decode_schema", return_value=ShoppingList):
+            observed = AvroSchemaDecoder({"type": "string", "logicalType": classname(ShoppingList)}).build()
+        self.assertEqual(ShoppingList, observed)
 
 
 if __name__ == "__main__":

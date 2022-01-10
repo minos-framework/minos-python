@@ -3,9 +3,11 @@ from __future__ import (
 )
 
 import logging
+from collections.abc import (
+    Iterable,
+)
 from typing import (
     Any,
-    Iterable,
     Optional,
     Union,
     get_args,
@@ -23,14 +25,14 @@ from .model_types import (
 logger = logging.getLogger(__name__)
 
 
-def build_union(options: tuple[type, ...]) -> type:
+def build_union(options: Iterable[type, ...]) -> type:
     """Build the union type base on the given options.
 
     :param options: A tuple of types.
     :return: The union of types.
     """
 
-    return Union[options]
+    return Union[tuple(options)]
 
 
 class TypeHintBuilder:

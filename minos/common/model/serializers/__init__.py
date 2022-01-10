@@ -1,12 +1,12 @@
-from .avro_data_decoder import (
+from .abc import (
+    DataDecoder,
+    DataEncoder,
+    SchemaDecoder,
+    SchemaEncoder,
+)
+from .avro import (
     AvroDataDecoder,
-)
-from .avro_data_encoder import (
     AvroDataEncoder,
-)
-from .avro_schema_decoder import (
     AvroSchemaDecoder,
-)
-from .avro_schema_encoder import (
     AvroSchemaEncoder,
 )

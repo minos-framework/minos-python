@@ -17,5 +17,6 @@ from .generics import (
     unpack_typevar,
 )
 from .model_types import (
+    FieldType,
     ModelType,
 )

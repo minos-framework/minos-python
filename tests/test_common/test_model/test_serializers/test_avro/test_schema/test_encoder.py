@@ -10,7 +10,7 @@ from typing import (
     Optional,
 )
 from unittest.mock import (
-    MagicMock,
+    patch,
 )
 from uuid import (
     UUID,
@@ -28,11 +28,6 @@ from tests.model_classes import (
 
 
 class TestAvroSchemaEncoder(unittest.TestCase):
-    def test_with_name(self):
-        observed = AvroSchemaEncoder(int, "test").build()
-        expected = {"name": "test", "type": "int"}
-        self.assertEqual(expected, observed)
-
     def test_model_type(self):
         expected = {
             "fields": [{"name": "username", "type": "string"}],
@@ -41,8 +36,10 @@ class TestAvroSchemaEncoder(unittest.TestCase):
             "type": "record",
         }
         encoder = AvroSchemaEncoder(ModelType.build("User", {"username": str}, namespace_="path.to"))
-        encoder.generate_random_str = MagicMock(return_value="hello")
-        observed = encoder.build()
+
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            observed = encoder.build()
+
         self.assertEqual(expected, observed)
 
     def test_int(self):
@@ -114,9 +111,10 @@ class TestAvroSchemaEncoder(unittest.TestCase):
             "type": "array",
         }
         encoder = AvroSchemaEncoder(list[Optional[User]])
-        encoder.generate_random_str = MagicMock(return_value="hello")
 
-        observed = encoder.build()
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            observed = encoder.build()
+
         self.assertEqual(expected, observed)
 
     def test_uuid(self):

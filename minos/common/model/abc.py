@@ -46,8 +46,13 @@ from .serializers import (
     AvroDataEncoder,
     AvroSchemaDecoder,
     AvroSchemaEncoder,
+    DataDecoder,
+    DataEncoder,
+    SchemaDecoder,
+    SchemaEncoder,
 )
 from .types import (
+    MissingSentinel,
     ModelType,
 )
 
@@ -75,30 +80,6 @@ class Model(Mapping):
         self.__eq_reversing = False
 
     @classmethod
-    def from_avro_str(cls: Type[T], raw: str, **kwargs) -> Union[T, list[T]]:
-        """Build a single instance or a sequence of instances from bytes
-
-        :param raw: A bytes data.
-        :return: A single instance or a sequence of instances.
-        """
-        raw = b64decode(raw.encode())
-        return cls.from_avro_bytes(raw, **kwargs)
-
-    @classmethod
-    def from_avro_bytes(cls: Type[T], raw: bytes, **kwargs) -> Union[T, list[T]]:
-        """Build a single instance or a sequence of instances from bytes
-
-        :param raw: A bytes data.
-        :return: A single instance or a sequence of instances.
-        """
-        schema = MinosAvroProtocol.decode_schema(raw)
-        decoded = MinosAvroProtocol.decode(raw)
-
-        if isinstance(decoded, list):
-            return [cls.from_avro(schema, d | kwargs) for d in decoded]
-        return cls.from_avro(schema, decoded | kwargs)
-
-    @classmethod
     def from_typed_dict(cls: Type[T], typed_dict: TypedDict, *args, **kwargs) -> T:
         """Build a ``Model`` from a ``TypeDict`` and ``data``.
 
@@ -121,21 +102,48 @@ class Model(Mapping):
         """
 
     @classmethod
-    def from_avro(cls: Type[T], schema: Union[dict[str, Any], list[dict[str, Any]]], data: dict[str, Any]) -> T:
+    def from_avro_str(cls: Type[T], raw: str) -> Union[T, list[T]]:
+        """Build a single instance or a sequence of instances from bytes
+
+        :param raw: A ``str`` representation of the model.
+        :return: A single instance or a sequence of instances.
+        """
+        raw = b64decode(raw.encode())
+        return cls.from_avro_bytes(raw)
+
+    @classmethod
+    def from_avro_bytes(cls: Type[T], raw: bytes) -> Union[T, list[T]]:
+        """Build a single instance or a sequence of instances from bytes
+
+        :param raw: A ``bytes`` representation of the model.
+        :return: A single instance or a sequence of instances.
+        """
+        schema = MinosAvroProtocol.decode_schema(raw)
+        data = MinosAvroProtocol.decode(raw)
+
+        if isinstance(data, list):
+            return [cls.from_avro(schema, entry) for entry in data]
+        return cls.from_avro(schema, data)
+
+    @classmethod
+    def from_avro(cls: Type[T], schema: Any, data: Any) -> T:
         """Build a new instance from the ``avro`` schema and data.
 
         :param schema: The avro schema of the model.
         :param data: The avro data of the model.
         :return: A new ``DynamicModel`` instance.
         """
-        if isinstance(schema, list):
-            schema = schema[-1]
-        model_type = AvroSchemaDecoder(schema).build()
-        return AvroDataDecoder(model_type).build(data)
+        schema_decoder = AvroSchemaDecoder()
+        type_ = schema_decoder.build(schema)
+
+        data_decoder = AvroDataDecoder()
+        instance = data_decoder.build(data, type_)
+
+        return instance
 
     @classmethod
     def to_avro_str(cls: Type[T], models: list[T]) -> str:
-        """Create a bytes representation of the given object instances.
+        """Build the avro string representation of the given object instances.
 
         :param models: A sequence of minos models.
         :return: A bytes object.
@@ -144,7 +152,7 @@ class Model(Mapping):
 
     @classmethod
     def to_avro_bytes(cls: Type[T], models: list[T]) -> bytes:
-        """Create a bytes representation of the given object instances.
+        """Create a ``bytes`` representation of the given object instances.
 
         :param models: A sequence of minos models.
         :return: A bytes object.
@@ -244,7 +252,8 @@ class Model(Mapping):
         :return: A dictionary object.
         """
         # noinspection PyTypeChecker
-        return [AvroSchemaEncoder(ModelType.from_model(self_or_cls)).build()]
+        encoder = AvroSchemaEncoder()
+        return encoder.build(self_or_cls)
 
     @property
     def avro_data(self) -> dict[str, Any]:
@@ -252,7 +261,8 @@ class Model(Mapping):
 
         :return: A dictionary object.
         """
-        return AvroDataEncoder(self).build()
+        encoder = AvroDataEncoder()
+        return encoder.build(self)
 
     @property
     def avro_str(self) -> str:
@@ -271,6 +281,54 @@ class Model(Mapping):
         """
         # noinspection PyTypeChecker
         return MinosAvroProtocol().encode(self.avro_data, self.avro_schema)
+
+    # noinspection PyMethodParameters,PyUnusedLocal
+    @self_or_classmethod
+    def encode_schema(self_or_cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
+        """Encode schema with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param target: An optional pre-encoded schema.
+        :param kwargs: Additional named arguments.
+        :return: The encoded schema of the instance.
+        """
+        return MissingSentinel
+
+    # noinspection PyUnusedLocal
+    @classmethod
+    def decode_schema(cls, decoder: SchemaDecoder, target: Any, **kwargs) -> Any:
+        """Decode schema with the given encoder.
+
+        :param decoder: The decoder instance.
+        :param target: The schema to be decoded.
+        :param kwargs: Additional named arguments.
+        :return: The decoded schema as a type.
+        """
+        return MissingSentinel
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def encode_data(self, encoder: DataEncoder, target: Any, **kwargs) -> Any:
+        """Encode data with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param target: An optional pre-encoded data.
+        :param kwargs: Additional named arguments.
+        :return: The encoded data of the instance.
+        """
+        return MissingSentinel
+
+    # noinspection PyUnusedLocal
+    @classmethod
+    def decode_data(cls: T, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> Any:
+        """Decode data with the given decoder.
+
+        :param decoder: The decoder instance.
+        :param target: The data to be decoded.
+        :param type_: The data type.
+        :param kwargs: Additional named arguments.
+        :return: A decoded instance.
+        """
+        return MissingSentinel
 
     def __eq__(self: T, other: T) -> bool:
         if type(self) == type(other) and self.fields == other.fields:

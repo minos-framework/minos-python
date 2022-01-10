@@ -22,13 +22,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
     """Minos Avro Protocol class."""
 
     @classmethod
-    def encode(
-        cls,
-        value: Union[dict[str, Any], list[dict[str, Any]]],
-        schema: Union[dict[str, Any], list[dict[str, Any]]],
-        *args,
-        **kwargs,
-    ) -> bytes:
+    def encode(cls, value: Any, schema: Any, *args, **kwargs) -> bytes:
         """Encoder in avro for database Values
         all the headers are converted in fields with double underscore name
         the body is a set fields coming from the data type.
@@ -53,9 +47,9 @@ class MinosAvroProtocol(MinosBinaryProtocol):
     @staticmethod
     def _parse_schema(schema: list[dict[str, Any]]) -> dict[str, Any]:
         named_schemas = {}
-        for item in schema[:-1]:
+        for item in schema[1::-1]:
             parse_schema(item, named_schemas)
-        return parse_schema(schema[-1], named_schemas, expand=True)
+        return parse_schema(schema[0], named_schemas, expand=True)
 
     @staticmethod
     def _write_data(value: list[dict[str, Any]], schema: dict[str, Any]):

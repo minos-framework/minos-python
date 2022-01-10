@@ -1,6 +1,6 @@
 __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 from .configuration import (
     BROKER,
@@ -73,6 +73,8 @@ from .model import (
     AvroSchemaDecoder,
     AvroSchemaEncoder,
     BucketModel,
+    DataDecoder,
+    DataEncoder,
     DataTransferObject,
     DeclarativeModel,
     DynamicModel,
@@ -84,6 +86,8 @@ from .model import (
     ModelField,
     ModelType,
     NoneType,
+    SchemaDecoder,
+    SchemaEncoder,
     TypeHintBuilder,
     TypeHintComparator,
     is_model_type,

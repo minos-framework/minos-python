@@ -366,6 +366,7 @@ class TestAvroDataDecoder(MinosTestCase):
             decoder.build(value)
 
     def test_container_inheritance(self):
+        # noinspection PyPep8Naming
         Container = ModelType.build("Container", {"data": list[Base]})
         raw = Container([User(1, "John"), Analytics(2, dict()), User(3, "John"), Analytics(4, dict())])
         decoder = AvroDataDecoder(Container)

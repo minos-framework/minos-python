@@ -138,7 +138,8 @@ class Field:
 
         :return: A dictionary object.
         """
-        return AvroSchemaEncoder(self.type, self.name).build()
+        encoder = AvroSchemaEncoder()
+        return encoder.build(self)
 
     @property
     def avro_data(self) -> Any:
@@ -146,7 +147,8 @@ class Field:
 
         :return: A dictionary object.
         """
-        return AvroDataEncoder(self.value).build()
+        encoder = AvroDataEncoder()
+        return encoder.build(self)
 
     @classmethod
     def from_avro(cls, schema: dict, value: Any) -> Field:
