@@ -102,7 +102,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :param target: An optional pre-encoded schema.
         :return: The encoded schema of the instance.
         """
-        schema = encoder.build(target.type_hints["data"])
+        schema = encoder.build(target.type_hints["data"], **kwargs)
         return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
 
     @classmethod
@@ -113,7 +113,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :param target: The schema to be decoded.
         :return: The decoded schema as a type.
         """
-        decoded = decoder.build(target)
+        decoded = decoder.build(target, **kwargs)
         if not isinstance(decoded, ModelType):
             raise ValueError(f"The decoded type is not valid: {decoded}")
         return ModelType.from_model(cls[decoded])
@@ -128,7 +128,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         target = self.data
         if IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get() and not isinstance(target, UUID):
             target = target.uuid
-        return super().encode_data(encoder, target)
+        return encoder.build(target, **kwargs)
 
     @classmethod
     def decode_data(cls, decoder: DataDecoder, data: Any, type_: ModelType, **kwargs) -> ModelRef:
@@ -139,7 +139,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :param type_: The data type.
         :return: A decoded instance.
         """
-        decoded = decoder.build(data, type_.type_hints["data"])
+        decoded = decoder.build(data, type_.type_hints["data"], **kwargs)
         return ModelRef(decoded, additional_type_hints=type_.type_hints)
 
     def __eq__(self, other):
