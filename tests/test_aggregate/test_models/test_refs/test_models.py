@@ -14,13 +14,14 @@ from uuid import (
 )
 
 from minos.aggregate import (
-    SUBMITTING_EVENT_CONTEXT_VAR,
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
     AggregateRef,
-    FieldRef,
     ModelRef,
 )
 from minos.common import (
     DeclarativeModel,
+    Field,
+    Model,
     ModelType,
 )
 from tests.utils import (
@@ -49,6 +50,9 @@ class TestSubAggregate(unittest.TestCase):
 FakeEntry = ModelType.build("FakeEntry", {"data": Any})
 FakeMessage = ModelType.build("FakeMessage", {"data": Any})
 
+Bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
+Foo = ModelType.build("Foo", {"another": ModelRef[Bar]})
+
 
 class TestModelRef(MinosTestCase):
     def test_subclass(self):
@@ -57,6 +61,7 @@ class TestModelRef(MinosTestCase):
 
     def test_raises(self):
         with self.assertRaises(ValueError):
+            # noinspection PyTypeChecker
             ModelRef(56)
 
     def test_uuid(self):
@@ -78,90 +83,159 @@ class TestModelRef(MinosTestCase):
         self.assertEqual(uuid.is_safe, value.is_safe)
 
     def test_model(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        mt_foo = ModelType.build("Foo", {"uuid": UUID, "version": int, "another": ModelRef[mt_bar]})
-
-        another = mt_bar(uuid=uuid4(), version=1)
-        value = mt_foo(uuid=uuid4(), version=1, another=another)
+        another = Bar(uuid4(), 1)
+        value = Foo(another=another)
 
         self.assertEqual(another, value.another)
 
     def test_model_uuid(self):
         uuid = uuid4()
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        value = ModelRef(mt_bar(uuid=uuid, version=1))
+        value = ModelRef(Bar(uuid, 1))
 
         self.assertEqual(uuid, value.uuid)
 
     def test_model_attribute(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+        value = ModelRef(Bar(uuid4(), 1))
 
         self.assertEqual(1, value.age)
 
     def test_model_attribute_raises(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+        value = ModelRef(Bar(uuid4(), 1))
 
         with self.assertRaises(AttributeError):
             value.year
 
     def test_fields(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = ModelRef(mt_bar(uuid=uuid4(), age=1))
+        value = ModelRef(Bar(uuid4(), 1))
 
-        self.assertEqual({"data": FieldRef("data", Union[mt_bar, UUID], value)}, value.fields)
+        self.assertEqual({"data": Field("data", Union[Bar, UUID], value)}, value.fields)
 
     def test_model_avro_data(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
-        value = mt_bar(uuid=uuid4(), age=1)
+        value = Bar(uuid4(), 1)
 
-        self.assertEqual({"data": value.avro_data}, ModelRef(value).avro_data)
+        self.assertEqual(value.avro_data, ModelRef(value).avro_data)
 
     def test_uuid_avro_data(self):
         value = uuid4()
-        self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
+        self.assertEqual(str(value), ModelRef(value).avro_data)
 
     async def test_model_avro_data_submitting(self):
-        mt_bar = ModelType.build("Bar", {"uuid": UUID, "age": int})
         uuid = uuid4()
-        value = mt_bar(uuid=uuid, age=1)
+        value = Bar(uuid, 1)
 
-        SUBMITTING_EVENT_CONTEXT_VAR.set(True)
-        self.assertEqual({"data": str(uuid)}, ModelRef(value).avro_data)
+        IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
+        self.assertEqual(str(uuid), ModelRef(value).avro_data)
 
     async def test_uuid_avro_data_submitting(self):
         value = uuid4()
-        SUBMITTING_EVENT_CONTEXT_VAR.set(True)
-        self.assertEqual({"data": str(value)}, ModelRef(value).avro_data)
+        IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
+        self.assertEqual(str(value), ModelRef(value).avro_data)
+
+    def test_model_avro_schema(self):
+        another = Bar(uuid4(), 1)
+
+        expected = [
+            [
+                {
+                    "fields": [
+                        {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
+                        {"name": "age", "type": "int"},
+                    ],
+                    "name": "Bar",
+                    "namespace": "",
+                    "type": "record",
+                    "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                },
+                {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+            ]
+        ]
+
+        self.assertEqual(expected, ModelRef(another).avro_schema)
+
+    def test_uuid_avro_schema(self):
+        another = uuid4()
+        ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
+
+        expected = [
+            [
+                {
+                    "fields": [
+                        {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
+                        {"name": "age", "type": "int"},
+                    ],
+                    "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                    "name": "Bar",
+                    "namespace": "",
+                    "type": "record",
+                },
+                {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+            ]
+        ]
+        self.assertEqual(expected, ref.avro_schema)
+
+    def test_model_from_avro(self):
+        another = Bar(uuid4(), 1)
+        expected = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
+
+        schema = [
+            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+            {
+                "fields": [
+                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
+                    {"name": "age", "type": "int"},
+                ],
+                "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                "name": "Bar",
+                "namespace": "",
+                "type": "record",
+            },
+        ]
+        data = another.avro_data
+
+        observed = Model.from_avro(schema, data)
+        self.assertEqual(expected, observed)
+
+    def test_uuid_from_avro(self):
+        another = uuid4()
+        expected = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
+
+        schema = [
+            {
+                "fields": [
+                    {"name": "uuid", "type": {"logicalType": "uuid", "type": "string"}},
+                    {"name": "age", "type": "int"},
+                ],
+                "logicalType": "minos.aggregate.models.refs.models.ModelRef",
+                "name": "Bar",
+                "namespace": "",
+                "type": "record",
+            },
+            {"logicalType": "minos.aggregate.models.refs.models.ModelRef", "type": "string"},
+        ]
+        data = str(another)
+
+        observed = Model.from_avro(schema, data)
+        self.assertEqual(expected, observed)
 
     async def test_resolve(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-        # noinspection PyPep8Naming
-        Foo = ModelType.build("Foo", {"another": ModelRef[Bar]})
+        another = uuid4()
 
-        uuid = uuid4()
+        ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
 
-        ref = Foo(uuid).another  # FIXME: This should not be needed to set the type hint properly
-
-        self.assertEqual(ref.data, uuid)
+        self.assertEqual(ref.data, another)
 
         with patch("tests.utils.FakeBroker.send") as send_mock:
             with patch("tests.utils.FakeBroker.get_one") as get_many:
-                get_many.return_value = FakeEntry(FakeMessage(Bar(uuid, 1)))
+                get_many.return_value = FakeEntry(FakeMessage(Bar(another, 1)))
                 await ref.resolve()
 
-        self.assertEqual([call(data={"uuid": uuid}, topic="GetBar")], send_mock.call_args_list)
-        self.assertEqual(ref.data, Bar(uuid, 1))
+        self.assertEqual([call(data={"uuid": another}, topic="GetBar")], send_mock.call_args_list)
+        self.assertEqual(ref.data, Bar(another, 1))
 
     async def test_resolve_already(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-
         uuid = uuid4()
 
-        ref = ModelRef(Bar(uuid, 1))  # FIXME: This should not be needed to set the type hint properly
+        ref = ModelRef(Bar(uuid, 1))
 
         with patch("tests.utils.FakeBroker.send") as send_mock:
             await ref.resolve()
@@ -169,11 +243,20 @@ class TestModelRef(MinosTestCase):
         self.assertEqual([], send_mock.call_args_list)
 
     async def test_resolved(self):
-        # noinspection PyPep8Naming
-        Bar = ModelType.build("Bar", {"uuid": UUID, "version": int})
-
         self.assertFalse(ModelRef(uuid4()).resolved)
         self.assertTrue(ModelRef(Bar(uuid4(), 4)).resolved)
+
+    def test_avro_model(self):
+        another = Bar(uuid4(), 1)
+        ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
+
+        self.assertEqual(ref, ModelRef.from_avro_bytes(ref.avro_bytes))
+
+    def test_avro_uuid(self):
+        another = uuid4()
+        ref = Foo(another).another  # FIXME: This should not be needed to set the type hint properly
+
+        self.assertEqual(ref, ModelRef.from_avro_bytes(ref.avro_bytes))
 
 
 if __name__ == "__main__":

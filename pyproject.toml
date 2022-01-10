@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_aggregate"
-version = "0.2.2"
+version = "0.2.3"
 description = "Python Package for Minos Microservices containing all the Aggregate stuff"
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_aggregate"
@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.3.0"
+minos-microservice-common = "^0.3.3"
 minos-microservice-networks = "^0.3.0"
 
 [tool.poetry.dev-dependencies]

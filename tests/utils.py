@@ -219,7 +219,7 @@ class Car(Aggregate):
 
     doors: int
     color: str
-    owner: Optional[list[ModelRef[Owner]]]
+    owner: Optional[ModelRef[Owner]]
 
 
 class Order(Aggregate):

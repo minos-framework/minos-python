@@ -51,7 +51,7 @@ class PostgreSqlEventRepository(PostgreSqlMinosDatabase, EventRepository):
 
         :return: This method does not return anything.
         """
-        await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+        await self.submit_query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";', lock="uuid-ossp")
 
         await self.submit_query(_CREATE_ACTION_ENUM_QUERY, lock="aggregate_event")
         await self.submit_query(_CREATE_TABLE_QUERY, lock="aggregate_event")

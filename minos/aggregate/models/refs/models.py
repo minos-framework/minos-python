@@ -21,23 +21,28 @@ from dependency_injector.wiring import (
 )
 
 from minos.common import (
-    AvroDataEncoder,
+    DataDecoder,
+    DataEncoder,
     DeclarativeModel,
-    Field,
+    Model,
+    ModelType,
+    SchemaDecoder,
+    SchemaEncoder,
+    self_or_classmethod,
 )
 from minos.networks import (
     DynamicBroker,
     DynamicBrokerPool,
 )
 
-from ...events import (
-    SUBMITTING_EVENT_CONTEXT_VAR,
+from ...contextvars import (
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
 )
 from ..entities import (
     Entity,
 )
 
-MT = TypeVar("MT")
+MT = TypeVar("MT", bound=Model)
 
 
 class AggregateRef(Entity):
@@ -49,31 +54,9 @@ class AggregateRef(Entity):
         super().__init__(uuid=uuid, *args, **kwargs)
 
 
-class FieldRef(Field):
-    """Ref Field class."""
-
-    @property
-    def avro_data(self) -> Any:
-        """Compute the avro data of the model.
-
-        If submitting is active then simply the identifier is used, otherwise the complete value is used.
-
-        :return: A dictionary object.
-        """
-        if not SUBMITTING_EVENT_CONTEXT_VAR.get():
-            return super().avro_data
-
-        value = self.value
-        if not isinstance(value, UUID):
-            value = value.uuid
-
-        return AvroDataEncoder(value).build()
-
-
 class ModelRef(DeclarativeModel, UUID, Generic[MT]):
     """Model Reference."""
 
-    _field_cls = FieldRef
     data: Union[MT, UUID]
 
     @inject
@@ -110,6 +93,55 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         """
         return self.uuid.is_safe
 
+    # noinspection PyMethodParameters
+    @self_or_classmethod
+    def encode_schema(self_or_cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
+        """Encode schema with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param target: An optional pre-encoded schema.
+        :return: The encoded schema of the instance.
+        """
+        schema = encoder.build(target.type_hints["data"], **kwargs)
+        return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
+
+    @classmethod
+    def decode_schema(cls, decoder: SchemaDecoder, target: Any, **kwargs) -> ModelType:
+        """Decode schema with the given encoder.
+
+        :param decoder: The decoder instance.
+        :param target: The schema to be decoded.
+        :return: The decoded schema as a type.
+        """
+        decoded = decoder.build(target, **kwargs)
+        if not isinstance(decoded, ModelType):
+            raise ValueError(f"The decoded type is not valid: {decoded}")
+        return ModelType.from_model(cls[decoded])
+
+    def encode_data(self, encoder: DataEncoder, target: Any, **kwargs) -> Any:
+        """Encode data with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param target: An optional pre-encoded data.
+        :return: The encoded data of the instance.
+        """
+        target = self.data
+        if IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get() and not isinstance(target, UUID):
+            target = target.uuid
+        return encoder.build(target, **kwargs)
+
+    @classmethod
+    def decode_data(cls, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> ModelRef:
+        """Decode data with the given decoder.
+
+        :param decoder: The decoder instance.
+        :param target: The data to be decoded.
+        :param type_: The data type.
+        :return: A decoded instance.
+        """
+        decoded = decoder.build(target, type_.type_hints["data"], **kwargs)
+        return ModelRef(decoded, additional_type_hints=type_.type_hints)
+
     def __eq__(self, other):
         return super().__eq__(other) or self.uuid == other or self.data == other
 
@@ -133,7 +165,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: A model type.
         """
         args = get_args(self.type_hints["data"])
-        if args:
+        if args[0] != MT:
             return args[0]
         return None
 

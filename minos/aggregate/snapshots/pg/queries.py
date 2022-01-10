@@ -27,6 +27,9 @@ from minos.common import (
     AvroDataEncoder,
 )
 
+from ...contextvars import (
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
+)
 from ...queries import (
     _FALSE_CONDITION,
     _AndCondition,
@@ -79,7 +82,12 @@ class PostgreSqlSnapshotQueryBuilder:
         """
         self._parameters = dict()
 
-        query = self._build()
+        token = IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.set(True)
+        try:
+            query = self._build()
+        finally:
+            IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.reset(token)
+
         parameters = self._parameters
 
         return query, parameters

@@ -1,9 +1,11 @@
 __author__ = """Clariteia Devs"""
 __email__ = "devs@clariteia.com"
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
+from .contextvars import (
+    IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR,
+)
 from .events import (
-    SUBMITTING_EVENT_CONTEXT_VAR,
     EventEntry,
     EventRepository,
     InMemoryEventRepository,
@@ -31,7 +33,6 @@ from .models import (
     EntitySet,
     FieldDiff,
     FieldDiffContainer,
-    FieldRef,
     IncrementalFieldDiff,
     IncrementalSet,
     IncrementalSetDiff,
