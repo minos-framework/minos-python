@@ -131,15 +131,15 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         return encoder.build(target, **kwargs)
 
     @classmethod
-    def decode_data(cls, decoder: DataDecoder, data: Any, type_: ModelType, **kwargs) -> ModelRef:
+    def decode_data(cls, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> ModelRef:
         """Decode data with the given decoder.
 
         :param decoder: The decoder instance.
-        :param data: The data to be decoded.
+        :param target: The data to be decoded.
         :param type_: The data type.
         :return: A decoded instance.
         """
-        decoded = decoder.build(data, type_.type_hints["data"], **kwargs)
+        decoded = decoder.build(target, type_.type_hints["data"], **kwargs)
         return ModelRef(decoded, additional_type_hints=type_.type_hints)
 
     def __eq__(self, other):
