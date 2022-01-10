@@ -133,6 +133,10 @@ class Model(Mapping):
         :param data: The avro data of the model.
         :return: A new ``DynamicModel`` instance.
         """
+
+        if isinstance(schema, list):
+            schema = schema[-1]
+
         schema_decoder = AvroSchemaDecoder()
         type_ = schema_decoder.build(schema)
 
