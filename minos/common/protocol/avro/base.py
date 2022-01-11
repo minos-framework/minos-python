@@ -22,7 +22,7 @@ class MinosAvroProtocol(MinosBinaryProtocol):
     """Minos Avro Protocol class."""
 
     @classmethod
-    def encode(cls, value: Any, schema: Any, *args, **kwargs) -> bytes:
+    def encode(cls, value: Any, schema: Any, *args, batch_mode: bool = False, **kwargs) -> bytes:
         """Encoder in avro for database Values
         all the headers are converted in fields with double underscore name
         the body is a set fields coming from the data type.
@@ -30,11 +30,14 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         :param value: The data to be stored.
         :param schema: The schema relative to the data.
         :param args: Additional positional arguments.
+        :param batch_mode: If ``True`` the data is processed as a list of models, otherwise the data is processed as a
+        single model.
         :param kwargs: Additional named arguments.
         :return: A bytes object.
         """
-        if not isinstance(value, list):
+        if not batch_mode:
             value = [value]
+
         if not isinstance(schema, list):
             schema = [schema]
 
@@ -60,12 +63,13 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         return content
 
     @classmethod
-    def decode(cls, data: bytes, flatten: bool = True, *args, **kwargs) -> Union[dict[str, Any], list[dict[str, Any]]]:
+    def decode(cls, data: bytes, *args, batch_mode: bool = False, **kwargs) -> Any:
         """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.
 
         :param data: A bytes object.
-        :param flatten: If ``True`` tries to return the values as flat as possible.
         :param args: Additional positional arguments.
+        :param batch_mode: If ``True`` the data is processed as a list of models, otherwise the data is processed as a
+        single model.
         :param kwargs: Additional named arguments.
         :return: A dictionary or a list of dictionaries.
         """
@@ -76,11 +80,16 @@ class MinosAvroProtocol(MinosBinaryProtocol):
         except Exception as exc:
             raise MinosProtocolException(f"Error decoding the avro bytes: {exc}")
 
-        if flatten and len(ans) == 1:
-            return ans[0]
+        if not batch_mode:
+            if len(ans) > 1:
+                raise MinosProtocolException(
+                    f"The 'batch_mode' argument was set to {False!r} but data contains multiple values: {ans!r}"
+                )
+            ans = ans[0]
 
         return ans
 
+    # noinspection PyUnusedLocal
     @classmethod
     def decode_schema(cls, data: bytes, *args, **kwargs) -> Union[dict[str, Any], list[dict[str, Any]]]:
         """Decode the given bytes of data into a single dictionary or a sequence of dictionaries.

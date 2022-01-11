@@ -270,11 +270,11 @@ class TestModelAvro(MinosTestCase):
         decoded_customer = Customer.from_avro_bytes(avro_bytes)
         self.assertEqual(customer, decoded_customer)
 
-    def test_from_avro_bytes_sequence(self):
+    def test_from_avro_bytes_in_batch(self):
         customers = [Customer(1234), Customer(5678)]
         avro_bytes = Customer.to_avro_bytes(customers)
         self.assertIsInstance(avro_bytes, bytes)
-        decoded_customer = Customer.from_avro_bytes(avro_bytes)
+        decoded_customer = Customer.from_avro_bytes(avro_bytes, batch_mode=True)
         self.assertEqual(customers, decoded_customer)
 
     def test_from_avro_bytes_composed(self):
@@ -310,11 +310,11 @@ class TestModelAvro(MinosTestCase):
         decoded_customer = Customer.from_avro_str(avro_str)
         self.assertEqual(customer, decoded_customer)
 
-    def test_from_avro_str_sequence(self):
+    def test_from_avro_str_in_batch(self):
         customers = [Customer(1234), Customer(5678)]
         avro_str = Customer.to_avro_str(customers)
 
-        decoded_customer = Customer.from_avro_str(avro_str)
+        decoded_customer = Customer.from_avro_str(avro_str, batch_mode=True)
         self.assertEqual(customers, decoded_customer)
 
 
