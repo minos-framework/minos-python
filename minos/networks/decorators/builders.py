@@ -63,41 +63,41 @@ class EnrouteBuilder:
         self.middleware = middleware
 
     def get_rest_command_query(self, **kwargs) -> dict[RestEnrouteDecorator, Handler]:
-        """Get the rest handlers for commands and queries.
+        """Get the rest actions for commands and queries.
 
-        :return: A dictionary with decorator classes as keys and callable handlers as values.
+        :return: A dictionary with decorator classes as keys and callable actions as values.
         """
         # noinspection PyTypeChecker
         return self._build("get_rest_command_query", **kwargs)
 
     def get_broker_command_query_event(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
-        """Get the broker handlers for commands, queries and events.
+        """Get the broker actions for commands, queries and events.
 
-        :return: A dictionary with decorator classes as keys and callable handlers as values.
+        :return: A dictionary with decorator classes as keys and callable actions as values.
         """
         # noinspection PyTypeChecker
         return self._build("get_broker_command_query_event", **kwargs)
 
     def get_broker_command_query(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
-        """Get the broker handlers for commands and queries.
+        """Get the broker actions for commands and queries.
 
-        :return: A dictionary with decorator classes as keys and callable handlers as values.
+        :return: A dictionary with decorator classes as keys and callable actions as values.
         """
         # noinspection PyTypeChecker
         return self._build("get_broker_command_query", **kwargs)
 
     def get_broker_event(self, **kwargs) -> dict[BrokerEnrouteDecorator, Handler]:
-        """Get the broker handlers for events.
+        """Get the broker actions for events.
 
-        :return: A dictionary with decorator classes as keys and callable handlers as values.
+        :return: A dictionary with decorator classes as keys and callable actions as values.
         """
         # noinspection PyTypeChecker
         return self._build("get_broker_event", **kwargs)
 
     def get_periodic_event(self, **kwargs) -> dict[PeriodicEnrouteDecorator, Handler]:
-        """Get the periodic handlers for events.
+        """Get the periodic actions for events.
 
-        :return: A dictionary with decorator classes as keys and callable handlers as values.
+        :return: A dictionary with decorator classes as keys and callable actions as values.
         """
         # noinspection PyTypeChecker
         return self._build("get_periodic_event", **kwargs)

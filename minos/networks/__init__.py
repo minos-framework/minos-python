@@ -7,6 +7,7 @@ from .brokers import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
     BrokerConsumer,
     BrokerConsumerService,
+    BrokerDispatcher,
     BrokerHandler,
     BrokerHandlerEntry,
     BrokerHandlerService,

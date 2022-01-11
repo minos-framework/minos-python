@@ -5,6 +5,7 @@ from .dynamic import (
 from .handlers import (
     BrokerConsumer,
     BrokerConsumerService,
+    BrokerDispatcher,
     BrokerHandler,
     BrokerHandlerEntry,
     BrokerHandlerService,

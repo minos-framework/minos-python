@@ -11,7 +11,6 @@ from functools import (
 )
 from typing import (
     Any,
-    Callable,
     Generic,
     Optional,
     Type,
@@ -46,7 +45,6 @@ class BrokerHandlerEntry(Generic[T]):
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
         data_cls: Type[Model] = Model,
-        callback_lookup: Optional[Callable] = None,
         exception: Optional[Exception] = None,
     ):
         if created_at is None or updated_at is None:
@@ -64,7 +62,6 @@ class BrokerHandlerEntry(Generic[T]):
         self.retry = retry
         self.created_at = created_at
         self.updated_at = updated_at
-        self.callback_lookup = callback_lookup
         self.exception = exception
 
     @property
@@ -74,16 +71,6 @@ class BrokerHandlerEntry(Generic[T]):
         :return: A boolean value.
         """
         return self.exception is None
-
-    @cached_property
-    def callback(self) -> Optional[Callable]:
-        """Get the callback if lookup is provided.
-
-        :return: A Callable object or None.
-        """
-        if self.callback_lookup is None:
-            return None
-        return self.callback_lookup(self.topic)
 
     @cached_property
     def data(self) -> T:
@@ -113,7 +100,6 @@ class BrokerHandlerEntry(Generic[T]):
             self.retry,
             self.created_at,
             self.updated_at,
-            self.callback_lookup,
             self.exception,
         )
 
