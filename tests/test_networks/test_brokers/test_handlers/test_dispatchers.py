@@ -87,25 +87,25 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
 
         self.assertEqual(
             {"AddOrder", "DeleteOrder", "GetOrder", "TicketAdded", "TicketDeleted", "UpdateOrder"},
-            set(self.dispatcher.handlers.keys()),
+            set(self.dispatcher.actions.keys()),
         )
 
         self.assertEqual(self.publisher, self.dispatcher.publisher)
 
-    async def test_handlers(self):
+    async def test_actions(self):
         self.assertEqual(
             {"query_service_ticket_added", "command_service_ticket_added"},
-            set(await self.dispatcher.handlers["TicketAdded"](None)),
+            set(await self.dispatcher.actions["TicketAdded"](None)),
         )
-        self.assertEqual("ticket_deleted", await self.dispatcher.handlers["TicketDeleted"](None))
+        self.assertEqual("ticket_deleted", await self.dispatcher.actions["TicketDeleted"](None))
 
-    async def test_get_handler(self):
-        action = self.dispatcher.get_handler("AddOrder")
+    async def test_get_action(self):
+        action = self.dispatcher.get_action("AddOrder")
         self.assertEqual(BrokerResponse("add_order"), await action(InMemoryRequest("test")))
 
-    async def test_get_handler_raises(self):
+    async def test_get_action_raises(self):
         with self.assertRaises(MinosActionNotFoundException) as context:
-            self.dispatcher.get_handler("NotExisting")
+            self.dispatcher.get_action("NotExisting")
 
         self.assertTrue(
             "topic NotExisting have no controller/action configured, please review th configuration file"
@@ -137,8 +137,8 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
 
         mock = AsyncMock(side_effect=_fn)
 
-        handler = self.dispatcher.get_callback(mock)
-        await handler(self.message)
+        action = self.dispatcher.get_callback(mock)
+        await action(self.message)
 
         self.assertEqual(1, mock.call_count)
 
@@ -149,15 +149,15 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
 
         mock = AsyncMock(side_effect=_fn)
 
-        handler = self.dispatcher.get_callback(mock)
-        _, _, observed = await handler(self.message)
+        action = self.dispatcher.get_callback(mock)
+        _, _, observed = await action(self.message)
 
         self.assertEqual({"foo": "bar", "bar": "foo"}, observed)
 
     async def test_dispatch_with_response(self):
         callback_mock = AsyncMock(return_value=Response("add_order"))
         lookup_mock = MagicMock(return_value=callback_mock)
-        self.dispatcher.get_handler = lookup_mock
+        self.dispatcher.get_action = lookup_mock
 
         entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1)
 
@@ -192,7 +192,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         callback_mock = AsyncMock()
         lookup_mock = MagicMock(return_value=callback_mock)
 
-        self.dispatcher.get_handler = lookup_mock
+        self.dispatcher.get_action = lookup_mock
 
         topic = "TicketAdded"
         event = BrokerMessage(topic, FakeModel("Foo"))

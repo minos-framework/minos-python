@@ -132,7 +132,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         async with BrokerHandler.from_config(
             self.config, publisher=self.publisher, consumer_concurrency=consumer_concurrency
         ) as handler:
-            handler.dispatcher.get_handler = MagicMock(side_effect=[_fn_no_wait, _fn, _fn, _fn, _fn_no_wait])
+            handler.dispatcher.get_action = MagicMock(side_effect=[_fn_no_wait, _fn, _fn, _fn, _fn_no_wait])
 
             self.assertEqual(consumer_concurrency, len(handler.consumers))
             handler.submit_query = mock
@@ -224,7 +224,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
             content = await request.content()
             observed.append(content)
 
-        self.handler.dispatcher.get_handler = MagicMock(return_value=_fn2)
+        self.handler.dispatcher.get_action = MagicMock(return_value=_fn2)
 
         events = [
             BrokerMessage("TicketAdded", FakeModel("uuid1")),
@@ -246,7 +246,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
             content = await request.content()
             observed[content[0]].append(content[1])
 
-        self.handler.dispatcher.get_handler = MagicMock(return_value=_fn2)
+        self.handler.dispatcher.get_action = MagicMock(return_value=_fn2)
 
         messages = list()
         for i in range(1, 6):

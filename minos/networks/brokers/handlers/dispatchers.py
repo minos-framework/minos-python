@@ -63,24 +63,24 @@ logger = logging.getLogger(__name__)
 
 
 class BrokerDispatcher(MinosSetup):
-    """TODO"""
+    """Broker Dispatcher class."""
 
     def __init__(
-        self, handlers: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs,
+        self, actions: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs,
     ):
         super().__init__(**kwargs)
-        self._handlers = handlers
+        self._actions = actions
         self._publisher = publisher
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerDispatcher:
-        kwargs["handlers"] = cls._get_handlers(config, **kwargs)
+        kwargs["actions"] = cls._get_actions(config, **kwargs)
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
 
     @staticmethod
-    def _get_handlers(
+    def _get_actions(
         config: MinosConfig, handlers: dict[str, Optional[Callable]] = None, **kwargs
     ) -> dict[str, Callable[[BrokerRequest], Awaitable[Optional[BrokerResponse]]]]:
         if handlers is None:
@@ -112,15 +112,19 @@ class BrokerDispatcher(MinosSetup):
         return self._publisher
 
     @property
-    def handlers(self) -> dict[str, Optional[Callable]]:
-        """Handlers getter.
+    def actions(self) -> dict[str, Optional[Callable]]:
+        """Actions getter.
 
         :return: A dictionary in which the keys are topics and the values are the handler.
         """
-        return self._handlers
+        return self._actions
 
     async def dispatch(self, entry: BrokerHandlerEntry) -> None:
-        """TODO"""
+        """Dispatch an entry.
+
+        :param entry: The entry to be dispatched.
+        :return: This method does not return anything.
+        """
         logger.info(f"Dispatching '{entry!r}'...")
         try:
             await self._dispatch(entry)
@@ -131,10 +135,8 @@ class BrokerDispatcher(MinosSetup):
                 raise exc
 
     async def _dispatch(self, entry: BrokerHandlerEntry) -> None:
-        """TODO"""
-
-        handler = self.get_handler(entry.topic)
-        fn = self.get_callback(handler)
+        action = self.get_action(entry.topic)
+        fn = self.get_callback(action)
 
         message = entry.data
         data, status, headers = await fn(message)
@@ -184,7 +186,7 @@ class BrokerDispatcher(MinosSetup):
 
         return _wrapper
 
-    def get_handler(
+    def get_action(
         self, topic: str
     ) -> Optional[Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]]:
         """Get handling function to be called.
@@ -198,12 +200,12 @@ class BrokerDispatcher(MinosSetup):
             MinosNetworkException: topic TicketAdded have no controller/action configured, please review th
                 configuration file.
         """
-        if topic not in self._handlers:
+        if topic not in self._actions:
             raise MinosActionNotFoundException(
                 f"topic {topic} have no controller/action configured, " f"please review th configuration file"
             )
 
-        handler = self._handlers[topic]
+        action = self._actions[topic]
 
-        logger.debug(f"Loaded {handler!r} action!")
-        return handler
+        logger.debug(f"Loaded {action!r} action!")
+        return action

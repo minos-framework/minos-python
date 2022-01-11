@@ -110,7 +110,10 @@ class BrokerHandler(BrokerHandlerSetup):
 
     @property
     def dispatcher(self) -> BrokerDispatcher:
-        """TODO"""
+        """Get the dispatcher.
+
+        :return: A ``BrokerDispatcher`` instance.
+        """
         return self._dispatcher
 
     @property
@@ -127,7 +130,7 @@ class BrokerHandler(BrokerHandlerSetup):
 
         :return: An ``Iterable`` of ``str``.
         """
-        return self._dispatcher.handlers.keys()
+        return self._dispatcher.actions.keys()
 
     async def dispatch_forever(self, max_wait: Optional[float] = 60.0) -> NoReturn:
         """Dispatch the items in the consuming queue forever.
