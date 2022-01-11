@@ -24,6 +24,10 @@ from aiopg import (
 from cached_property import (
     cached_property,
 )
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
 from psycopg2.sql import (
     SQL,
     Identifier,
@@ -69,9 +73,24 @@ class BrokerHandler(BrokerHandlerSetup):
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerHandler:
-        kwargs["dispatcher"] = BrokerDispatcher.from_config(config, **kwargs)
+        kwargs["dispatcher"] = cls._get_dispatcher(config, **kwargs)
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
+
+    # noinspection PyUnusedLocal
+    @staticmethod
+    @inject
+    def _get_dispatcher(
+        config: MinosConfig,
+        dispatcher: Optional[BrokerDispatcher] = None,
+        broker_dispatcher: BrokerDispatcher = Provide["broker_dispatcher"],
+        **kwargs,
+    ) -> BrokerDispatcher:
+        if dispatcher is None:
+            dispatcher = broker_dispatcher
+        if dispatcher is None or isinstance(dispatcher, Provide):
+            dispatcher = BrokerDispatcher.from_config(config, **kwargs)
+        return dispatcher
 
     async def _setup(self) -> None:
         await super()._setup()
