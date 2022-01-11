@@ -38,33 +38,11 @@ from minos.networks import (
     BrokerHandlerEntry,
     BrokerMessage,
     BrokerPublisher,
-    BrokerResponse,
-    BrokerResponseException,
-    Request,
-    Response,
 )
 from tests.utils import (
     BASE_PATH,
     FakeModel,
 )
-
-
-class _Cls:
-    @staticmethod
-    async def _fn(request: Request) -> Response:
-        return BrokerResponse(await request.content())
-
-    @staticmethod
-    async def _fn_none(request: Request):
-        await request.content()
-
-    @staticmethod
-    async def _fn_raises_response(request: Request) -> Response:
-        raise BrokerResponseException("foo")
-
-    @staticmethod
-    async def _fn_raises_exception(request: Request) -> Response:
-        raise ValueError
 
 
 class TestBrokerHandler(PostgresAsyncTestCase):
