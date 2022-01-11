@@ -6,6 +6,10 @@ import logging
 from asyncio import (
     CancelledError,
 )
+from collections.abc import (
+    Awaitable,
+    Callable,
+)
 from functools import (
     wraps,
 )
@@ -14,8 +18,6 @@ from inspect import (
 )
 from typing import (
     Any,
-    Awaitable,
-    Callable,
     Optional,
     Union,
 )
@@ -186,19 +188,11 @@ class BrokerDispatcher(MinosSetup):
 
         return _wrapper
 
-    def get_action(
-        self, topic: str
-    ) -> Optional[Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]]:
-        """Get handling function to be called.
+    def get_action(self, topic: str) -> Callable[[Request], Union[Optional[Response], Awaitable[Optional[Response]]]]:
+        """Get the handling function to be called.
 
-        Gets the instance of the class and method to call.
-
-        Args:
-            topic: Kafka topic. Example: "TicketAdded"
-
-        Raises:
-            MinosNetworkException: topic TicketAdded have no controller/action configured, please review th
-                configuration file.
+        :param topic: The name of the topic that matches the action.
+        :return: A ``Callable`` instance.
         """
         if topic not in self._actions:
             raise MinosActionNotFoundException(
