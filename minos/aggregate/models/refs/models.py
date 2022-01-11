@@ -28,7 +28,6 @@ from minos.common import (
     ModelType,
     SchemaDecoder,
     SchemaEncoder,
-    self_or_classmethod,
 )
 from minos.networks import (
     DynamicBroker,
@@ -94,8 +93,8 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         return self.uuid.is_safe
 
     # noinspection PyMethodParameters
-    @self_or_classmethod
-    def encode_schema(self_or_cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
+    @classmethod
+    def encode_schema(cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
@@ -103,7 +102,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: The encoded schema of the instance.
         """
         schema = encoder.build(target.type_hints["data"], **kwargs)
-        return [(sub | {"logicalType": self_or_cls.classname}) for sub in schema]
+        return [(sub | {"logicalType": cls.classname}) for sub in schema]
 
     @classmethod
     def decode_schema(cls, decoder: SchemaDecoder, target: Any, **kwargs) -> ModelType:
@@ -118,16 +117,17 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
             raise ValueError(f"The decoded type is not valid: {decoded}")
         return ModelType.from_model(cls[decoded])
 
-    def encode_data(self, encoder: DataEncoder, target: Any, **kwargs) -> Any:
+    @staticmethod
+    def encode_data(encoder: DataEncoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
         :param target: An optional pre-encoded data.
         :return: The encoded data of the instance.
         """
-        target = self.data
-        if IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get() and not isinstance(target, UUID):
-            target = target.uuid
+        target = target["data"]
+        if IS_REPOSITORY_SERIALIZATION_CONTEXT_VAR.get() and isinstance(target, dict):
+            target = target["uuid"]
         return encoder.build(target, **kwargs)
 
     @classmethod
@@ -140,7 +140,7 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
         :return: A decoded instance.
         """
         decoded = decoder.build(target, type_.type_hints["data"], **kwargs)
-        return ModelRef(decoded, additional_type_hints=type_.type_hints)
+        return cls(decoded, additional_type_hints=type_.type_hints)
 
     def __eq__(self, other):
         return super().__eq__(other) or self.uuid == other or self.data == other
