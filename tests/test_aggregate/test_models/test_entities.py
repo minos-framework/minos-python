@@ -132,11 +132,11 @@ class TestEntitySet(unittest.TestCase):
         schema = [
             {
                 "logicalType": "minos.aggregate.models.entities.EntitySet",
-                "type": "map",
-                "values": _Entity.avro_schema[0],
+                "type": "array",
+                "items": _Entity.avro_schema[0],
             },
         ]
-        data = {str(v.uuid): v.avro_data for v in values}
+        data = [v.avro_data for v in values]
 
         observed = Model.from_avro(schema, data)
         self.assertEqual(expected, observed)
@@ -146,8 +146,8 @@ class TestEntitySet(unittest.TestCase):
             expected = [
                 {
                     "logicalType": "minos.aggregate.models.entities.EntitySet",
-                    "type": "map",
-                    "values": _Entity.avro_schema[0],
+                    "type": "array",
+                    "items": _Entity.avro_schema[0],
                 },
             ]
             observed = EntitySet({_Entity("John"), _Entity("Michael")}).avro_schema
@@ -155,9 +155,10 @@ class TestEntitySet(unittest.TestCase):
 
     def test_avro_data(self):
         values = {_Entity("John"), _Entity("Michael")}
-        expected = {str(v.uuid): v.avro_data for v in values}
+        expected = sorted([v.avro_data for v in values], key=lambda v: v["uuid"])
         observed = EntitySet(values).avro_data
-        self.assertEqual(expected, observed)
+        self.assertIsInstance(observed, list)
+        self.assertEqual(expected, sorted([v.avro_data for v in values], key=lambda v: v["uuid"]))
 
     def test_avro_bytes(self):
         expected = EntitySet({_Entity("John"), _Entity("Michael")})

@@ -6,6 +6,7 @@ from operator import (
     attrgetter,
 )
 from typing import (
+    Any,
     Iterable,
     Iterator,
     Optional,
@@ -19,8 +20,12 @@ from uuid import (
 )
 
 from minos.common import (
+    DataDecoder,
+    DataEncoder,
     DeclarativeModel,
     Model,
+    ModelType,
+    SchemaEncoder,
 )
 
 from .collections import (
@@ -114,3 +119,40 @@ class EntitySet(IncrementalSet[T]):
         """
         args = get_args(self.type_hints["data"])
         return args[1]
+
+    # noinspection PyMethodParameters
+    @classmethod
+    def encode_schema(cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
+        """Encode schema with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param target: An optional pre-encoded schema.
+        :return: The encoded schema of the instance.
+        """
+        type_ = get_args(target.type_hints["data"])[-1]
+        schema = encoder.build(list[type_], **kwargs)
+        return schema | {"logicalType": cls.classname}
+
+    @staticmethod
+    def encode_data(encoder: DataEncoder, target: Any, **kwargs) -> Any:
+        """Encode data with the given encoder.
+
+        :param encoder: The encoder instance.
+        :param target: An optional pre-encoded data.
+        :return: The encoded data of the instance.
+        """
+        target = list(target["data"].values())
+        return encoder.build(target, **kwargs)
+
+    @classmethod
+    def decode_data(cls, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> IncrementalSet:
+        """Decode data with the given decoder.
+
+        :param decoder: The decoder instance.
+        :param target: The data to be decoded.
+        :param type_: The data type.
+        :return: A decoded instance.
+        """
+        target = {str(v["uuid"]): v for v in target}
+        decoded = decoder.build(target, type_.type_hints["data"], **kwargs)
+        return cls(decoded, additional_type_hints=type_.type_hints)
