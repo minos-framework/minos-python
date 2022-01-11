@@ -23,7 +23,6 @@ from minos.common import (
     ModelType,
     SchemaDecoder,
     SchemaEncoder,
-    self_or_classmethod,
 )
 
 from .actions import (
@@ -90,8 +89,8 @@ class IncrementalSet(DeclarativeModel, MutableSet, Generic[T]):
         return args[0]
 
     # noinspection PyMethodParameters
-    @self_or_classmethod
-    def encode_schema(self_or_cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
+    @classmethod
+    def encode_schema(cls, encoder: SchemaEncoder, target: Any, **kwargs) -> Any:
         """Encode schema with the given encoder.
 
         :param encoder: The encoder instance.
@@ -99,7 +98,7 @@ class IncrementalSet(DeclarativeModel, MutableSet, Generic[T]):
         :return: The encoded schema of the instance.
         """
         schema = encoder.build(target.type_hints["data"], **kwargs)
-        return schema | {"logicalType": self_or_cls.classname}
+        return schema | {"logicalType": cls.classname}
 
     @classmethod
     def decode_schema(cls, decoder: SchemaDecoder, target: Any, **kwargs) -> ModelType:
@@ -112,14 +111,15 @@ class IncrementalSet(DeclarativeModel, MutableSet, Generic[T]):
         decoded = decoder.build(target, **kwargs)
         return ModelType.from_model(cls[get_args(decoded)[-1]])
 
-    def encode_data(self, encoder: DataEncoder, target: Any, **kwargs) -> Any:
+    @staticmethod
+    def encode_data(encoder: DataEncoder, target: Any, **kwargs) -> Any:
         """Encode data with the given encoder.
 
         :param encoder: The encoder instance.
         :param target: An optional pre-encoded data.
         :return: The encoded data of the instance.
         """
-        return encoder.build(self.data, **kwargs)
+        return encoder.build(target["data"], **kwargs)
 
     @classmethod
     def decode_data(cls, decoder: DataDecoder, target: Any, type_: ModelType, **kwargs) -> IncrementalSet:
