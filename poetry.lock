@@ -435,7 +435,7 @@ python-versions = "*"
 
 [[package]]
 name = "minos-microservice-common"
-version = "0.3.3"
+version = "0.3.4"
 description = "Python Package with common Classes and Utilities used in Minos Microservices."
 category = "main"
 optional = false
@@ -730,7 +730,7 @@ test = ["pytest", "pytest-cov", "html5lib", "cython", "typed-ast"]
 
 [[package]]
 name = "sphinx-autodoc-typehints"
-version = "1.15.1"
+version = "1.15.2"
 description = "Type hints (PEP 484) support for the Sphinx autodoc extension"
 category = "dev"
 optional = false
@@ -903,7 +903,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "6081f0636d515e108fcfedfb949fe01a90086263d1df1a5cf3b21c34a69880c2"
+content-hash = "e5617707782eebfad678040c455489f5d81056913ad3bc82af76186bc7617261"
 
 [metadata.files]
 aiohttp = [
@@ -1411,8 +1411,8 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 minos-microservice-common = [
-    {file = "minos_microservice_common-0.3.3-py3-none-any.whl", hash = "sha256:9f1ca0bcf3d917ca0810ebb6d000ac7e80e36618f78b40e3fd5f60f1f4d67649"},
-    {file = "minos_microservice_common-0.3.3.tar.gz", hash = "sha256:ecf4362f74a6e0a8a650a6f803e97017ea5f367efe37b923f6ee5a2cd84edd18"},
+    {file = "minos_microservice_common-0.3.4-py3-none-any.whl", hash = "sha256:61f5a93cfbfca2c6cdc1d25b02a7562fe9c23f74993f35ccb70b5a15f199420f"},
+    {file = "minos_microservice_common-0.3.4.tar.gz", hash = "sha256:4212b8a16aed5514acd8a587a10cf814933748f4b22cb222dc9ef18adfe117b6"},
 ]
 minos-microservice-networks = [
     {file = "minos_microservice_networks-0.3.2-py3-none-any.whl", hash = "sha256:a355bf8f601cecb49d247e5f1ece55cd17ed31ab60ece8eabd5239988570b943"},
@@ -1760,8 +1760,8 @@ sphinx = [
     {file = "Sphinx-4.3.2.tar.gz", hash = "sha256:0a8836751a68306b3fe97ecbe44db786f8479c3bf4b80e3a7f5c838657b4698c"},
 ]
 sphinx-autodoc-typehints = [
-    {file = "sphinx_autodoc_typehints-1.15.1-py3-none-any.whl", hash = "sha256:477302d72565c907756c16e907daa6ad7ad78ac7574a18c0eae9f493158c220c"},
-    {file = "sphinx_autodoc_typehints-1.15.1.tar.gz", hash = "sha256:47bd87c2d99173e20c44d5604917ff890bb2d2e77174d952b061dcfaa99f0b7d"},
+    {file = "sphinx_autodoc_typehints-1.15.2-py3-none-any.whl", hash = "sha256:bd6b70b93fc53d63a167738ba4fb40643ef7eb9b8d915a886c372949981b8eac"},
+    {file = "sphinx_autodoc_typehints-1.15.2.tar.gz", hash = "sha256:1480d4af8ac465aa87b793e22bb0feb4578b9c93b36e01b35c983bd6f596326f"},
 ]
 sphinx-rtd-theme = [
     {file = "sphinx_rtd_theme-0.5.2-py2.py3-none-any.whl", hash = "sha256:4a05bdbe8b1446d77a01e20a23ebc6777c74f43237035e76be89699308987d6f"},
