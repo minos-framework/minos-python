@@ -9,6 +9,9 @@ from enum import (
     Enum,
     IntEnum,
 )
+from functools import (
+    total_ordering,
+)
 from typing import (
     Any,
     Final,
@@ -27,6 +30,7 @@ REQUEST_REPLY_TOPIC_CONTEXT_VAR: Final[ContextVar[Optional[str]]] = ContextVar("
 REQUEST_HEADERS_CONTEXT_VAR: Final[ContextVar[Optional[dict[str, str]]]] = ContextVar("headers", default=None)
 
 
+@total_ordering
 class BrokerMessage(DeclarativeModel):
     """Broker Message class."""
 
@@ -69,6 +73,13 @@ class BrokerMessage(DeclarativeModel):
         :return: ``True`` if the reply is okay or ``False`` otherwise.
         """
         return self.status == BrokerMessageStatus.SUCCESS
+
+    def __lt__(self, other: Any) -> bool:
+        # noinspection PyBroadException
+        try:
+            return isinstance(other, type(self)) and self.data < other.data
+        except Exception:
+            return False
 
 
 class BrokerMessageStatus(IntEnum):

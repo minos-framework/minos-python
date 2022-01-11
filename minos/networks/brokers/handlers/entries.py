@@ -11,10 +11,7 @@ from functools import (
 )
 from typing import (
     Any,
-    Generic,
     Optional,
-    Type,
-    TypeVar,
 )
 
 from cached_property import (
@@ -23,16 +20,18 @@ from cached_property import (
 
 from minos.common import (
     MinosException,
-    Model,
     current_datetime,
 )
 
+from ..messages import (
+    BrokerMessage,
+)
+
 logger = logging.getLogger(__name__)
-T = TypeVar("T")
 
 
 @total_ordering
-class BrokerHandlerEntry(Generic[T]):
+class BrokerHandlerEntry:
     """Handler Entry class."""
 
     def __init__(
@@ -44,7 +43,6 @@ class BrokerHandlerEntry(Generic[T]):
         retry: int = 0,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
-        data_cls: Type[Model] = Model,
         exception: Optional[Exception] = None,
     ):
         if created_at is None or updated_at is None:
@@ -58,7 +56,6 @@ class BrokerHandlerEntry(Generic[T]):
         self.topic = topic
         self.partition = partition
         self.data_bytes = data_bytes
-        self.data_cls = data_cls
         self.retry = retry
         self.created_at = created_at
         self.updated_at = updated_at
@@ -73,17 +70,17 @@ class BrokerHandlerEntry(Generic[T]):
         return self.exception is None
 
     @cached_property
-    def data(self) -> T:
+    def data(self) -> BrokerMessage:
         """Get the data.
 
         :return: A ``Model`` inherited instance.
         """
-        return self.data_cls.from_avro_bytes(self.data_bytes)
+        return BrokerMessage.from_avro_bytes(self.data_bytes)
 
     def __lt__(self, other: Any) -> bool:
         # noinspection PyBroadException
         try:
-            return isinstance(other, type(self)) and self.data.data < other.data.data
+            return isinstance(other, type(self)) and self.data < other.data
         except Exception:
             return False
 
@@ -96,7 +93,6 @@ class BrokerHandlerEntry(Generic[T]):
             self.topic,
             self.partition,
             self.data_bytes,
-            self.data_cls,
             self.retry,
             self.created_at,
             self.updated_at,

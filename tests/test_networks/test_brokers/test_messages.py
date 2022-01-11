@@ -70,6 +70,21 @@ class TestBrokerMessage(unittest.TestCase):
         observed = BrokerMessage.from_avro_bytes(message.avro_bytes)
         self.assertEqual(message, observed)
 
+    def test_sort(self):
+        unsorted = [
+            BrokerMessage("", "foo"),
+            BrokerMessage("", 4),
+            BrokerMessage("", 2),
+            BrokerMessage("", 3),
+            BrokerMessage("", 1),
+            BrokerMessage("", "bar"),
+        ]
+
+        expected = [unsorted[0], unsorted[4], unsorted[2], unsorted[3], unsorted[1], unsorted[5]]
+
+        observed = sorted(unsorted)
+        self.assertEqual(expected, observed)
+
 
 if __name__ == "__main__":
     unittest.main()
