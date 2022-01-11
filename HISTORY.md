@@ -259,3 +259,8 @@ History
   * Add `encode_schema`, `decode_schema`, `encode_data` and `decode_data` callback-like functions to be able to modify the serialization/deserialization logic.
   * Add `SchemaEncoder`, `SchemaDecoder`, `DataEncoder` and `DataDecoder` abstract base classes.
   * Increase serialization/deserialization robustness.
+
+0.3.4 (2022-01-11)
+--------------------
+
+* Add `batch_mode: bool` argument to manage if the `avro` serialization is performed for a single model or a batch of models.

@@ -2,6 +2,7 @@ import unittest
 
 from minos.common import (
     MinosAvroProtocol,
+    MinosProtocolException,
 )
 
 
@@ -103,6 +104,24 @@ class TestMinosAvroProtocol(unittest.TestCase):
 
         data = MinosAvroProtocol.decode(serialized)
         self.assertEqual("one", data)
+
+    def test_batch_mode(self):
+        serialized = MinosAvroProtocol.encode(["one", 1], [["string", "int"]], batch_mode=True)
+
+        schema = MinosAvroProtocol.decode_schema(serialized)
+        self.assertEqual(["string", "int"], schema)
+
+        data = MinosAvroProtocol.decode(serialized, batch_mode=True)
+        self.assertEqual(["one", 1], data)
+
+    def test_batch_mode_raises(self):
+        serialized = MinosAvroProtocol.encode(["one", 1], [["string", "int"]], batch_mode=True)
+
+        schema = MinosAvroProtocol.decode_schema(serialized)
+        self.assertEqual(["string", "int"], schema)
+
+        with self.assertRaises(MinosProtocolException):
+            MinosAvroProtocol.decode(serialized)
 
 
 if __name__ == "__main__":
