@@ -9,12 +9,14 @@ from orjson import (
 )
 
 from minos.common import (
+    MinosAvroProtocol,
     ModelType,
     classname,
 )
 from minos.networks import (
     NotHasContentException,
     NotHasParamsException,
+    Response,
     RestRequest,
     RestResponse,
 )
@@ -352,17 +354,78 @@ class TestRestRequestParams(unittest.IsolatedAsyncioTestCase):
 
 
 class TestRestResponse(unittest.IsolatedAsyncioTestCase):
-    # noinspection PyMissingOrEmptyDocstring
-    def setUp(self) -> None:
-        self.models = [FakeModel("foo"), FakeModel("bar")]
+    async def test_from_response(self):
+        base = Response("foobar")
 
-    async def test_content(self):
-        response = RestResponse(self.models)
-        self.assertEqual(orjson.dumps([item.avro_data for item in self.models]), await response.content())
+        response = RestResponse.from_response(base)
 
-    async def test_content_single(self):
-        response = RestResponse(self.models[0])
-        self.assertEqual(orjson.dumps(self.models[0].avro_data), await response.content())
+        self.assertEqual(orjson.dumps("foobar"), await response.content())
+        self.assertEqual("application/json", response.content_type)
+
+    def test_from_response_already(self):
+        base = RestResponse()
+
+        response = RestResponse.from_response(base)
+
+        self.assertEqual(base, response)
+
+    def test_from_response_empty(self):
+        response = RestResponse.from_response(None)
+
+        self.assertEqual(RestResponse(), response)
+
+    async def test_empty(self):
+        response = RestResponse()
+        self.assertEqual(None, await response.content())
+        self.assertEqual("application/json", response.content_type)
+
+    async def test_content_json(self):
+        data = [FakeModel("foo"), FakeModel("bar")]
+        response = RestResponse(data)
+        self.assertEqual(orjson.dumps([item.avro_data for item in data]), await response.content())
+        self.assertEqual("application/json", response.content_type)
+
+    async def test_content_form(self):
+        data = {"foo": "bar", "one": "two"}
+        response = RestResponse(data, content_type="application/x-www-form-urlencoded")
+        self.assertEqual("foo=bar&one=two".encode(), await response.content())
+        self.assertEqual("application/x-www-form-urlencoded", response.content_type)
+
+    async def test_content_bytes(self):
+        data = "foobar".encode()
+        response = RestResponse(data, content_type="application/octet-stream")
+        self.assertEqual("foobar".encode(), await response.content())
+        self.assertEqual("application/octet-stream", response.content_type)
+
+    async def test_content_bytes_raises(self):
+        data = 56
+        response = RestResponse(data, content_type="application/octet-stream")
+        with self.assertRaises(ValueError):
+            await response.content()
+
+    async def test_content_text(self):
+        data = "foobar"
+        response = RestResponse(data, content_type="text/plain")
+        self.assertEqual("foobar".encode(), await response.content())
+        self.assertEqual("text/plain", response.content_type)
+
+    async def test_content_text_raises(self):
+        data = 56
+        response = RestResponse(data, content_type="text/plain")
+        with self.assertRaises(ValueError):
+            await response.content()
+
+    async def test_content_avro(self):
+        data = "foobar"
+        response = RestResponse(data, content_type="avro/binary")
+        self.assertEqual(data, MinosAvroProtocol.decode(await response.content()))
+        self.assertEqual("avro/binary", response.content_type)
+
+    async def test_content_image(self):
+        data = bytes("image", "utf-8")
+        response = RestResponse(data, content_type="image/png")
+        self.assertEqual(data, await response.content())
+        self.assertEqual("image/png", response.content_type)
 
 
 if __name__ == "__main__":

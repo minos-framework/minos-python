@@ -306,7 +306,7 @@ class RestResponse(Response):
         schema = AvroSchemaEncoder(type_).build()
         data = AvroDataEncoder(self._data).build()
 
-        return MinosAvroProtocol.encode(schema, data)
+        return MinosAvroProtocol.encode(data, schema)
 
     async def _raw_text(self) -> bytes:
         if not isinstance(self._raw_data, str):
