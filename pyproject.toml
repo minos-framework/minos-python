@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = { git = "https://github.com/Clariteia/minos_microservice_common", branch = "issue-677-add-batch-mode-argument" }
+minos-microservice-common = "^0.3.4"
 minos-microservice-networks = "^0.3.0"
 
 [tool.poetry.dev-dependencies]
