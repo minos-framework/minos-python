@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minos_microservice_aggregate"
-version = "0.2.3"
+version = "0.2.4"
 description = "Python Package for Minos Microservices containing all the Aggregate stuff"
 readme = "README.md"
 repository = "https://github.com/clariteia/minos_microservice_aggregate"
@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-minos-microservice-common = "^0.3.3"
+minos-microservice-common = "^0.3.4"
 minos-microservice-networks = "^0.3.0"
 
 [tool.poetry.dev-dependencies]
@@ -45,7 +45,7 @@ pre-commit = "^2.12.1"
 sphinx-autodoc-typehints = "^1.12.0"
 sphinxcontrib-apidoc = "^0.3.0"
 sphinx-rtd-theme = "^0.5.2"
-m2r2 = "^0.2.7"
+m2r2 = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

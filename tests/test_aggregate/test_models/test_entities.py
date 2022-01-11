@@ -2,6 +2,9 @@ import unittest
 from operator import (
     attrgetter,
 )
+from unittest.mock import (
+    patch,
+)
 from uuid import (
     UUID,
     uuid4,
@@ -17,6 +20,7 @@ from minos.aggregate import (
 from minos.common import (
     NULL_UUID,
     DeclarativeModel,
+    Model,
 )
 
 
@@ -108,11 +112,6 @@ class TestEntitySet(unittest.TestCase):
 
         self.assertEqual({raw[0]}, entities)
 
-    def test_avro_serialization(self):
-        base = EntitySet({_Entity("John"), _Entity("Michael")})
-        recovered = EntitySet.from_avro_bytes(base.avro_bytes)
-        self.assertEqual(base, recovered)
-
     def test_diff(self):
         raw = [_Entity("John"), _Entity("Michael")]
         entities = EntitySet(raw)
@@ -126,6 +125,44 @@ class TestEntitySet(unittest.TestCase):
         raw = [_Entity("John"), _Entity("Michael")]
         entities = EntitySet(raw)
         self.assertEqual(_Entity, entities.data_cls)
+
+    def test_from_avro(self):
+        values = {_Entity("John"), _Entity("Michael")}
+        expected = EntitySet(values)
+        schema = [
+            {
+                "logicalType": "minos.aggregate.models.entities.EntitySet",
+                "type": "array",
+                "items": _Entity.avro_schema[0],
+            },
+        ]
+        data = [v.avro_data for v in values]
+
+        observed = Model.from_avro(schema, data)
+        self.assertEqual(expected, observed)
+
+    def test_avro_schema(self):
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            expected = [
+                {
+                    "logicalType": "minos.aggregate.models.entities.EntitySet",
+                    "type": "array",
+                    "items": _Entity.avro_schema[0],
+                },
+            ]
+            observed = EntitySet({_Entity("John"), _Entity("Michael")}).avro_schema
+        self.assertEqual(expected, observed)
+
+    def test_avro_data(self):
+        values = {_Entity("John"), _Entity("Michael")}
+        expected = sorted([v.avro_data for v in values], key=lambda v: v["uuid"])
+        observed = EntitySet(values).avro_data
+        self.assertIsInstance(observed, list)
+        self.assertEqual(expected, sorted([v.avro_data for v in values], key=lambda v: v["uuid"]))
+
+    def test_avro_bytes(self):
+        expected = EntitySet({_Entity("John"), _Entity("Michael")})
+        self.assertEqual(expected, Model.from_avro_bytes(expected.avro_bytes))
 
 
 class TestEntitySetDiff(unittest.TestCase):

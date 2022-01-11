@@ -16,14 +16,7 @@ from typing import (
 from unittest import (
     TestCase,
 )
-from uuid import (
-    UUID,
-    uuid4,
-)
 
-from cached_property import (
-    cached_property,
-)
 from dependency_injector import (
     containers,
     providers,
@@ -46,9 +39,6 @@ from minos.common import (
     MinosPool,
     MinosSetup,
     current_datetime,
-)
-from minos.networks import (
-    Request,
 )
 
 BASE_PATH = Path(__file__).parent
@@ -181,29 +171,6 @@ class FakeBrokerPool(MinosPool):
 
     async def _destroy_instance(self, instance) -> None:
         """For testing purposes."""
-
-
-class FakeRequest(Request):
-    """For testing purposes"""
-
-    def __init__(self, content):
-        super().__init__()
-        self._content = content
-
-    @cached_property
-    def user(self) -> Optional[UUID]:
-        """For testing purposes"""
-        return uuid4()
-
-    async def content(self, **kwargs):
-        """For testing purposes"""
-        return self._content
-
-    def __eq__(self, other) -> bool:
-        return isinstance(other, type(self)) and self._content == other._content
-
-    def __repr__(self) -> str:
-        return f"FakeRequest({self._content!r})"
 
 
 class Owner(Aggregate):
