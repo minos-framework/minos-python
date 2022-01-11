@@ -4,6 +4,10 @@ from uuid import (
     uuid4,
 )
 
+from orjson import (
+    orjson,
+)
+
 from minos.common import (
     ModelType,
     classname,
@@ -354,11 +358,11 @@ class TestRestResponse(unittest.IsolatedAsyncioTestCase):
 
     async def test_content(self):
         response = RestResponse(self.models)
-        self.assertEqual([item.avro_data for item in self.models], await response.raw_content())
+        self.assertEqual(orjson.dumps([item.avro_data for item in self.models]), await response.content())
 
     async def test_content_single(self):
         response = RestResponse(self.models[0])
-        self.assertEqual(self.models[0].avro_data, await response.raw_content())
+        self.assertEqual(orjson.dumps(self.models[0].avro_data), await response.content())
 
 
 if __name__ == "__main__":
