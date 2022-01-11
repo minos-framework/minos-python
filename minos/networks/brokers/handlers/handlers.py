@@ -4,6 +4,7 @@ from __future__ import (
 
 import logging
 from asyncio import (
+    CancelledError,
     PriorityQueue,
     Task,
     TimeoutError,
@@ -121,10 +122,13 @@ class BrokerHandler(BrokerHandlerSetup):
     async def _consume_one(self) -> None:
         entry = await self._queue.get()
         try:
-            await self._dispatcher.dispatch(entry)
+            try:
+                await self._dispatcher.dispatch(entry.data)
+            except (CancelledError, Exception) as exc:
+                await self.submit_query(self._queries["update_not_processed"], (entry.id,))
+                raise exc
+            await self.submit_query(self._queries["delete_processed"], (entry.id,))
         finally:
-            query_id = "delete_processed" if entry.success else "update_not_processed"
-            await self.submit_query(self._queries[query_id], (entry.id,))
             self._queue.task_done()
 
     @property

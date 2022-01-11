@@ -15,7 +15,6 @@ from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,
     BrokerDispatcher,
-    BrokerHandlerEntry,
     BrokerMessage,
     BrokerMessageStatus,
     BrokerPublisher,
@@ -159,12 +158,10 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         lookup_mock = MagicMock(return_value=callback_mock)
         self.dispatcher.get_action = lookup_mock
 
-        entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1)
-
         send_mock = AsyncMock()
         self.publisher.send = send_mock
 
-        await self.dispatcher.dispatch(entry)
+        await self.dispatcher.dispatch(self.message)
 
         self.assertEqual(1, lookup_mock.call_count)
         self.assertEqual(call("AddOrder"), lookup_mock.call_args)
@@ -195,16 +192,15 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         self.dispatcher.get_action = lookup_mock
 
         topic = "TicketAdded"
-        event = BrokerMessage(topic, FakeModel("Foo"))
-        entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1)
+        message = BrokerMessage(topic, FakeModel("Foo"))
 
-        await self.dispatcher.dispatch(entry)
+        await self.dispatcher.dispatch(message)
 
         self.assertEqual(1, lookup_mock.call_count)
         self.assertEqual(call("TicketAdded"), lookup_mock.call_args)
 
         self.assertEqual(1, callback_mock.call_count)
-        self.assertEqual(call(BrokerRequest(event)), callback_mock.call_args)
+        self.assertEqual(call(BrokerRequest(message)), callback_mock.call_args)
 
 
 if __name__ == "__main__":

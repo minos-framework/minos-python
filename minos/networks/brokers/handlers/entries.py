@@ -43,7 +43,6 @@ class BrokerHandlerEntry:
         retry: int = 0,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
-        exception: Optional[Exception] = None,
     ):
         if created_at is None or updated_at is None:
             now = current_datetime()
@@ -59,15 +58,6 @@ class BrokerHandlerEntry:
         self.retry = retry
         self.created_at = created_at
         self.updated_at = updated_at
-        self.exception = exception
-
-    @property
-    def success(self) -> bool:
-        """Check if the entry is in success state or not
-
-        :return: A boolean value.
-        """
-        return self.exception is None
 
     @cached_property
     def data(self) -> BrokerMessage:
@@ -96,7 +86,6 @@ class BrokerHandlerEntry:
             self.retry,
             self.created_at,
             self.updated_at,
-            self.exception,
         )
 
     def __repr__(self):

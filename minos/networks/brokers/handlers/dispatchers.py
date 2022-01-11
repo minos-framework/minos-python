@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from asyncio import (
-    CancelledError,
-)
 from collections.abc import (
     Awaitable,
     Callable,
@@ -53,9 +50,6 @@ from ..messages import (
 from ..publishers import (
     BrokerPublisher,
 )
-from .entries import (
-    BrokerHandlerEntry,
-)
 from .requests import (
     BrokerRequest,
     BrokerResponse,
@@ -67,9 +61,7 @@ logger = logging.getLogger(__name__)
 class BrokerDispatcher(MinosSetup):
     """Broker Dispatcher class."""
 
-    def __init__(
-        self, actions: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs,
-    ):
+    def __init__(self, actions: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs):
         super().__init__(**kwargs)
         self._actions = actions
         self._publisher = publisher
@@ -121,26 +113,22 @@ class BrokerDispatcher(MinosSetup):
         """
         return self._actions
 
-    async def dispatch(self, entry: BrokerHandlerEntry) -> None:
+    async def dispatch(self, message: BrokerMessage) -> None:
         """Dispatch an entry.
 
-        :param entry: The entry to be dispatched.
+        :param message: The entry to be dispatched.
         :return: This method does not return anything.
         """
-        logger.info(f"Dispatching '{entry!r}'...")
+        logger.info(f"Dispatching '{message!r}'...")
         try:
-            await self._dispatch(entry)
-        except (CancelledError, Exception) as exc:
-            logger.warning(f"Raised an exception while dispatching {entry!r}: {exc!r}")
-            entry.exception = exc
-            if isinstance(exc, CancelledError):
-                raise exc
+            await self._dispatch(message)
+        except Exception as exc:
+            raise exc
 
-    async def _dispatch(self, entry: BrokerHandlerEntry) -> None:
-        action = self.get_action(entry.topic)
+    async def _dispatch(self, message: BrokerMessage) -> None:
+        action = self.get_action(message.topic)
         fn = self.get_callback(action)
 
-        message = entry.data
         data, status, headers = await fn(message)
 
         if message.reply_topic is not None:
