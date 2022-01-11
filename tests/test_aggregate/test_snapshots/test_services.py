@@ -58,7 +58,7 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
 
     async def test_get_aggregate_raises(self):
         with self.assertRaises(ResponseException):
-            await self.service.__get_one__(InMemoryRequest(None))
+            await self.service.__get_one__(InMemoryRequest())
         with patch("minos.aggregate.Aggregate.get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_one__(InMemoryRequest({"uuid": uuid4()}))
@@ -73,7 +73,7 @@ class TestSnapshotService(MinosTestCase, PostgresAsyncTestCase):
 
     async def test_get_aggregates_raises(self):
         with self.assertRaises(ResponseException):
-            await self.service.__get_many__(InMemoryRequest(None))
+            await self.service.__get_many__(InMemoryRequest())
         with patch("minos.aggregate.Aggregate.get", side_effect=ValueError):
             with self.assertRaises(ResponseException):
                 await self.service.__get_many__(InMemoryRequest({"uuids": [uuid4()]}))
