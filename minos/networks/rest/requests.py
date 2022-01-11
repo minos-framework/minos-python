@@ -113,7 +113,7 @@ class RestRequest(Request):
     def _content_parser(self) -> Callable:
         mapper = {
             "application/json": self._raw_json,
-            "application/x-www-form-encoded": self._raw_form,
+            "application/x-www-form-urlencoded": self._raw_form,
             "avro/binary": self._raw_avro,
             "text/plain": self._raw_text,
             "application/octet-stream": self._raw_bytes,
