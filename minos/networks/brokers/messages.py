@@ -81,12 +81,6 @@ class BrokerMessage(DeclarativeModel):
         warnings.warn("The `BrokerMessage.data` attribute has being deprecated", DeprecationWarning)
         return self.content.data
 
-    @property
-    def headers(self) -> Any:
-        """TODO"""
-        warnings.warn("The `BrokerMessage.headers` attribute has being deprecated", DeprecationWarning)
-        return self.content.headers
-
     def __lt__(self, other: Any) -> bool:
         # noinspection PyBroadException
         return isinstance(other, type(self)) and self.content < other.content
