@@ -11,7 +11,9 @@ from minos.networks import (
     BrokerMessageStatus,
     BrokerMessageStrategy,
 )
-from tests.utils import FakeModel
+from tests.utils import (
+    FakeModel,
+)
 
 
 class TestBrokerMessage(unittest.TestCase):
@@ -21,7 +23,9 @@ class TestBrokerMessage(unittest.TestCase):
         self.reply_topic = "AddOrderReply"
         self.strategy = BrokerMessageStrategy.MULTICAST
 
-        self.payload = BrokerMessagePayload([FakeModel("blue"), FakeModel("red")], status=BrokerMessageStatus.SUCCESS)
+        self.payload = BrokerMessagePayload(
+            content=[FakeModel("blue"), FakeModel("red")], headers={"foo": "bar"}, status=BrokerMessageStatus.ERROR
+        )
 
     def test_constructor_simple(self):
         message = BrokerMessage(self.topic, payload=self.payload)
@@ -58,6 +62,13 @@ class TestBrokerMessage(unittest.TestCase):
             warnings.simplefilter("ignore", DeprecationWarning)
             # noinspection PyDeprecation
             self.assertEqual(self.payload.status, message.status)
+
+    def test_headers(self):
+        message = BrokerMessage(self.topic, payload=self.payload)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(self.payload.headers, message.headers)
 
     def test_data(self):
         message = BrokerMessage(self.topic, payload=self.payload)

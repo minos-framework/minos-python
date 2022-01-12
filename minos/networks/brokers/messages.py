@@ -76,6 +76,15 @@ class BrokerMessage(DeclarativeModel):
         return self.payload.status
 
     @property
+    def headers(self) -> dict[str, str]:
+        """Get the payload headers.
+
+        :return: A `dict` with `str` keys and `str` values.
+        """
+        warnings.warn("The `BrokerMessage.headers` attribute has been deprecated", DeprecationWarning)
+        return self.payload.headers
+
+    @property
     def data(self) -> Any:
         """Get the payload content.
 
