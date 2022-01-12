@@ -1,5 +1,6 @@
 import unittest
 from uuid import (
+    UUID,
     uuid4,
 )
 
@@ -32,9 +33,9 @@ class TestBrokerRequest(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(self.request, BrokerRequest(BrokerMessage("FooUpdated", self.data)))
 
     def test_user(self):
-        raw = BrokerMessage("FooCreated", self.data, user=uuid4())
+        raw = BrokerMessage("FooCreated", self.data, headers={"User": str(uuid4())})
         request = BrokerRequest(raw)
-        self.assertEqual(raw.user, request.user)
+        self.assertEqual(UUID(raw.headers["User"]), request.user)
 
     def test_user_unset(self):
         self.assertEqual(None, self.request.user)

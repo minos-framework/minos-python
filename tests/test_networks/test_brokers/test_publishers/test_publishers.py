@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from unittest.mock import (
     AsyncMock,
     call,
@@ -102,7 +103,9 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
         user = uuid4()
 
-        observed = await self.publisher.send(FakeModel("foo"), "fake", reply_topic="ekaf", user=user)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            observed = await self.publisher.send(FakeModel("foo"), "fake", reply_topic="ekaf", user=user)
 
         self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
@@ -110,7 +113,9 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
-        expected = BrokerMessage("fake", FakeModel("foo"), identifier=observed, reply_topic="ekaf", user=user)
+        expected = BrokerMessage(
+            "fake", FakeModel("foo"), identifier=observed, reply_topic="ekaf", headers={"User": str(user)}
+        )
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_status(self):

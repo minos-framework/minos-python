@@ -19,7 +19,6 @@ from cached_property import (
 )
 
 from minos.common import (
-    MinosException,
     current_datetime,
 )
 
@@ -89,7 +88,4 @@ class BrokerHandlerEntry:
         )
 
     def __repr__(self):
-        try:
-            return f"{type(self).__name__}(id={self.id!r}, data={self.data!r})"
-        except MinosException:
-            return f"{type(self).__name__}(id={self.id!r})"
+        return f"{type(self).__name__}({self.id!r}, {self.topic!r})"

@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from typing import (
     Any,
     Optional,
@@ -66,6 +67,14 @@ class BrokerPublisher(BrokerPublisherSetup):
         :param kwargs: Additional named arguments.
         :return: The ``UUID`` identifier of the message.
         """
+        if user is not None:
+            warnings.warn(
+                "The 'user' argument has been deprecated. It must be passed as the headers['User'] field.",
+                DeprecationWarning,
+            )
+            if headers is None:
+                headers = dict()
+            headers["User"] = str(user)
 
         message = BrokerMessage(
             topic=topic,

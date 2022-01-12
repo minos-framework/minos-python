@@ -68,6 +68,10 @@ class TestHandlerEntry(unittest.IsolatedAsyncioTestCase):
         two = BrokerHandlerEntry(1, "AddOrder", 0, data_bytes, 1, created_at=now, updated_at=now)
         self.assertEqual(one, two)
 
+    def test_repr_ok(self):
+        entry = BrokerHandlerEntry(1, "AddOrder", 0, bytes())
+        self.assertEqual("BrokerHandlerEntry(1, 'AddOrder')", repr(entry))
+
 
 if __name__ == "__main__":
     unittest.main()

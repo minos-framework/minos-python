@@ -21,7 +21,6 @@ class TestBrokerMessage(unittest.TestCase):
         self.identifier = uuid4()
         self.reply_topic = "AddOrderReply"
         self.status = BrokerMessageStatus.SUCCESS
-        self.user = uuid4()
         self.strategy = BrokerMessageStrategy.MULTICAST
 
     def test_constructor_simple(self):
@@ -30,7 +29,6 @@ class TestBrokerMessage(unittest.TestCase):
         self.assertEqual(self.data, message.data)
         self.assertIsInstance(message.identifier, UUID)
         self.assertEqual(None, message.reply_topic)
-        self.assertEqual(None, message.user)
         self.assertEqual(BrokerMessageStatus.SUCCESS, message.status)
         self.assertEqual(BrokerMessageStrategy.UNICAST, message.strategy)
 
@@ -40,7 +38,6 @@ class TestBrokerMessage(unittest.TestCase):
             self.data,
             identifier=self.identifier,
             reply_topic=self.reply_topic,
-            user=self.user,
             status=self.status,
             strategy=self.strategy,
         )
@@ -48,7 +45,6 @@ class TestBrokerMessage(unittest.TestCase):
         self.assertEqual(self.data, message.data)
         self.assertEqual(self.identifier, message.identifier)
         self.assertEqual(self.reply_topic, message.reply_topic)
-        self.assertEqual(self.user, message.user)
         self.assertEqual(self.status, message.status)
         self.assertEqual(self.strategy, message.strategy)
 
@@ -63,7 +59,6 @@ class TestBrokerMessage(unittest.TestCase):
             self.data,
             identifier=self.identifier,
             reply_topic=self.reply_topic,
-            user=self.user,
             status=self.status,
             strategy=self.strategy,
         )

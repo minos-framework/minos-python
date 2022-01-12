@@ -119,13 +119,6 @@ class BrokerDispatcher(MinosSetup):
         :param message: The entry to be dispatched.
         :return: This method does not return anything.
         """
-        logger.info(f"Dispatching '{message!r}'...")
-        try:
-            await self._dispatch(message)
-        except Exception as exc:
-            raise exc
-
-    async def _dispatch(self, message: BrokerMessage) -> None:
         action = self.get_action(message.topic)
         fn = self.get_callback(action)
 
@@ -133,12 +126,7 @@ class BrokerDispatcher(MinosSetup):
 
         if message.reply_topic is not None:
             await self.publisher.send(
-                data,
-                topic=message.reply_topic,
-                identifier=message.identifier,
-                status=status,
-                user=message.user,
-                headers=headers,
+                data, topic=message.reply_topic, identifier=message.identifier, status=status, headers=headers,
             )
 
     @staticmethod
@@ -153,6 +141,8 @@ class BrokerDispatcher(MinosSetup):
 
         @wraps(fn)
         async def _wrapper(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus, dict[str, str]]:
+            logger.info(f"Dispatching '{raw!s}'...")
+
             request = BrokerRequest(raw)
             user_token = REQUEST_USER_CONTEXT_VAR.set(request.user)
             headers_token = REQUEST_HEADERS_CONTEXT_VAR.set(raw.headers)

@@ -38,7 +38,6 @@ class BrokerMessage(DeclarativeModel):
     data: Any
     identifier: UUID
     reply_topic: Optional[str]
-    user: Optional[UUID]
     status: BrokerMessageStatus
     strategy: BrokerMessageStrategy
     headers: dict[str, str]
