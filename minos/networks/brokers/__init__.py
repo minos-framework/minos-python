@@ -18,7 +18,7 @@ from .messages import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
     BrokerMessage,
-    BrokerMessageContent,
+    BrokerMessagePayload,
     BrokerMessageStatus,
     BrokerMessageStrategy,
 )

@@ -22,7 +22,7 @@ from minos.common import (
 
 from ..messages import (
     BrokerMessage,
-    BrokerMessageContent,
+    BrokerMessagePayload,
     BrokerMessageStatus,
     BrokerMessageStrategy,
 )
@@ -53,7 +53,7 @@ class BrokerPublisher(BrokerPublisherSetup):
         status: BrokerMessageStatus = BrokerMessageStatus.SUCCESS,
         strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
         headers: Optional[dict[str, str]] = None,
-        content: Optional[BrokerMessageContent] = None,
+        payload: Optional[BrokerMessagePayload] = None,
         **kwargs,
     ) -> UUID:
         """Send a ``BrokerMessage``.
@@ -66,7 +66,7 @@ class BrokerPublisher(BrokerPublisherSetup):
         :param status: The status code of the message.
         :param strategy: The publishing strategy.
         :param headers: A mapping of string values identified by a string key.
-        :param content: TODO
+        :param payload: TODO
         :param kwargs: Additional named arguments.
         :return: The ``UUID`` identifier of the message.
         """
@@ -79,11 +79,11 @@ class BrokerPublisher(BrokerPublisherSetup):
                 headers = dict()
             headers["User"] = str(user)
 
-        if content is None:
-            content = BrokerMessageContent(action=topic, data=data, headers=headers, status=status, **kwargs)
+        if payload is None:
+            payload = BrokerMessagePayload(action=topic, data=data, headers=headers, status=status, **kwargs)
 
         message = BrokerMessage(
-            topic=topic, identifier=identifier, reply_topic=reply_topic, strategy=strategy, content=content,
+            topic=topic, identifier=identifier, reply_topic=reply_topic, strategy=strategy, payload=payload,
         )
         logger.info(f"Publishing '{message!s}'...")
         await self.enqueue(message.topic, message.strategy, message.avro_bytes)

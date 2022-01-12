@@ -40,7 +40,7 @@ class BrokerMessage(DeclarativeModel):
     reply_topic: Optional[str]
     strategy: BrokerMessageStrategy  # FIXME: Remove this attribute!
 
-    content: BrokerMessageContent
+    payload: BrokerMessagePayload
 
     def __init__(
         self,
@@ -49,16 +49,16 @@ class BrokerMessage(DeclarativeModel):
         *,
         identifier: Optional[UUID] = None,
         strategy: Optional[BrokerMessageStrategy] = None,
-        content: Optional[BrokerMessageContent] = None,
+        payload: Optional[BrokerMessagePayload] = None,
         **kwargs
     ):
         if identifier is None:
             identifier = uuid4()
         if strategy is None:
             strategy = BrokerMessageStrategy.UNICAST
-        if content is None:
-            content = BrokerMessageContent(topic, data, **kwargs)
-        super().__init__(topic=topic, identifier=identifier, strategy=strategy, content=content, **kwargs)
+        if payload is None:
+            payload = BrokerMessagePayload(topic, data, **kwargs)
+        super().__init__(topic=topic, identifier=identifier, strategy=strategy, payload=payload, **kwargs)
 
     @property
     def ok(self) -> bool:
@@ -67,27 +67,27 @@ class BrokerMessage(DeclarativeModel):
         :return: ``True`` if the reply is okay or ``False`` otherwise.
         """
         warnings.warn("The `BrokerMessage.ok` attribute has being deprecated", DeprecationWarning)
-        return self.content.ok
+        return self.payload.ok
 
     @property
     def status(self) -> BrokerMessageStatus:
         """TODO"""
         warnings.warn("The `BrokerMessage.status` attribute has being deprecated", DeprecationWarning)
-        return self.content.status
+        return self.payload.status
 
     @property
     def data(self) -> Any:
         """TODO"""
         warnings.warn("The `BrokerMessage.data` attribute has being deprecated", DeprecationWarning)
-        return self.content.data
+        return self.payload.data
 
     def __lt__(self, other: Any) -> bool:
         # noinspection PyBroadException
-        return isinstance(other, type(self)) and self.content < other.content
+        return isinstance(other, type(self)) and self.payload < other.payload
 
 
 @total_ordering
-class BrokerMessageContent(DeclarativeModel):
+class BrokerMessagePayload(DeclarativeModel):
     """TODO"""
 
     action: str
