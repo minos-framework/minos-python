@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from uuid import (
     UUID,
     uuid4,
@@ -10,9 +11,7 @@ from minos.networks import (
     BrokerMessageStatus,
     BrokerMessageStrategy,
 )
-from tests.utils import (
-    FakeModel,
-)
+from tests.utils import FakeModel
 
 
 class TestBrokerMessage(unittest.TestCase):
@@ -46,7 +45,28 @@ class TestBrokerMessage(unittest.TestCase):
         self.assertEqual(self.strategy, message.strategy)
         self.assertEqual(self.payload, message.payload)
 
-    def test_avro_serialization(self):
+    def test_ok(self):
+        message = BrokerMessage(self.topic, payload=self.payload)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(self.payload.ok, message.ok)
+
+    def test_status(self):
+        message = BrokerMessage(self.topic, payload=self.payload)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(self.payload.status, message.status)
+
+    def test_data(self):
+        message = BrokerMessage(self.topic, payload=self.payload)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(self.payload.content, message.data)
+
+    def test_avro(self):
         message = BrokerMessage(
             self.topic,
             identifier=self.identifier,
@@ -81,6 +101,13 @@ class TestBrokerMessagePayload(unittest.TestCase):
         self.assertTrue(BrokerMessagePayload(self.content, status=BrokerMessageStatus.SUCCESS).ok)
         self.assertFalse(BrokerMessagePayload(self.content, status=BrokerMessageStatus.ERROR).ok)
         self.assertFalse(BrokerMessagePayload(self.content, status=BrokerMessageStatus.SYSTEM_ERROR).ok)
+
+    def test_data(self):
+        payload = BrokerMessagePayload(self.content)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            # noinspection PyDeprecation
+            self.assertEqual(self.content, payload.data)
 
 
 if __name__ == "__main__":

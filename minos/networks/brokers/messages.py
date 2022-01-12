@@ -68,13 +68,19 @@ class BrokerMessage(DeclarativeModel):
 
     @property
     def status(self) -> BrokerMessageStatus:
-        """TODO"""
+        """Get the payload status.
+
+        :return: A ``BrokerMessageStatus`` instance.
+        """
         warnings.warn("The `BrokerMessage.status` attribute has been deprecated", DeprecationWarning)
         return self.payload.status
 
     @property
     def data(self) -> Any:
-        """TODO"""
+        """Get the payload content.
+
+        :return: Any value.
+        """
         warnings.warn("The `BrokerMessage.data` attribute has been deprecated", DeprecationWarning)
         return self.payload.content
 
@@ -85,7 +91,7 @@ class BrokerMessage(DeclarativeModel):
 
 @total_ordering
 class BrokerMessagePayload(DeclarativeModel):
-    """TODO"""
+    """Broker Message Payload class."""
 
     content: Any
     status: BrokerMessageStatus
@@ -106,15 +112,18 @@ class BrokerMessagePayload(DeclarativeModel):
 
     @property
     def ok(self) -> bool:
-        """Check if the reply is okay or not.
+        """Check if the message is okay or not.
 
-        :return: ``True`` if the reply is okay or ``False`` otherwise.
+        :return: ``True`` if the message is okay or ``False`` otherwise.
         """
         return self.status == BrokerMessageStatus.SUCCESS
 
     @property
     def data(self) -> Any:
-        """TODO"""
+        """Get the content.
+
+        :return: Any value.
+        """
         warnings.warn("The `BrokerMessage.data` attribute has been deprecated", DeprecationWarning)
         return self.content
 
