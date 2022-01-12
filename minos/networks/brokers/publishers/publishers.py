@@ -92,9 +92,9 @@ class BrokerPublisher(BrokerPublisherSetup):
     async def enqueue(self, topic: str, strategy: BrokerMessageStrategy, raw: bytes) -> int:
         """Send a sequence of bytes to the given topic.
 
-        :param topic: Topic in which the bytes will be send.
+        :param topic: Topic in which the bytes will be sent.
         :param strategy: The publishing strategy.
-        :param raw: Bytes sequence to be send.
+        :param raw: Bytes sequence to be sent.
         :return: The identifier of the message in the queue.
         """
         params = (topic, raw, strategy)
