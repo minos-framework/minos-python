@@ -29,7 +29,6 @@ from minos.networks import (
 from tests.utils import (
     BASE_PATH,
     FakeModel,
-    Message,
 )
 
 
@@ -76,8 +75,8 @@ class TestDynamicBroker(PostgresAsyncTestCase):
 
     async def test_get_one(self):
         expected = BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)
-        await self._insert_one(Message("fooReply", 0, FakeModel("test1").avro_bytes))
-        await self._insert_one(Message("fooReply", 0, FakeModel("test2").avro_bytes))
+        await self._insert_one("fooReply", FakeModel("test1").avro_bytes)
+        await self._insert_one("fooReply", FakeModel("test2").avro_bytes)
 
         observed = await self.handler.get_one()
 
@@ -92,11 +91,11 @@ class TestDynamicBroker(PostgresAsyncTestCase):
         ]
 
         async def _fn():
-            await self._insert_one(Message("fooReply", 0, FakeModel("test1").avro_bytes))
-            await self._insert_one(Message("fooReply", 0, FakeModel("test2").avro_bytes))
+            await self._insert_one("fooReply", FakeModel("test1").avro_bytes)
+            await self._insert_one("fooReply", FakeModel("test2").avro_bytes)
             await sleep(0.5)
-            await self._insert_one(Message("fooReply", 0, FakeModel("test3").avro_bytes))
-            await self._insert_one(Message("fooReply", 0, FakeModel("test4").avro_bytes))
+            await self._insert_one("fooReply", FakeModel("test3").avro_bytes)
+            await self._insert_one("fooReply", FakeModel("test4").avro_bytes)
 
         observed, _ = await gather(self.handler.get_many(count=4, max_wait=0.1), _fn())
 
@@ -108,12 +107,12 @@ class TestDynamicBroker(PostgresAsyncTestCase):
         with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
             await self.handler.get_many(count=3, timeout=0.1)
 
-    async def _insert_one(self, instance):
+    async def _insert_one(self, topic: str, bytes_: bytes):
         async with aiopg.connect(**self.broker_queue_db) as connect:
             async with connect.cursor() as cur:
                 await cur.execute(
                     "INSERT INTO consumer_queue (topic, partition, data) VALUES (%s, %s, %s) RETURNING id;",
-                    (instance.topic, 0, instance.value),
+                    (topic, 0, bytes_),
                 )
                 return (await cur.fetchone())[0]
 

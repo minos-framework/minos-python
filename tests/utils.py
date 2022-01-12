@@ -1,6 +1,3 @@
-from collections import (
-    namedtuple,
-)
 from datetime import (
     timedelta,
 )
@@ -39,9 +36,6 @@ class FakeModel(DeclarativeModel):
     def __lt__(self, other: Any) -> bool:
         # noinspection PyBroadException
         return isinstance(other, type(self)) and self.data < other.data
-
-
-Message = namedtuple("Message", ["topic", "partition", "value"])
 
 
 class FakeDispatcher:
