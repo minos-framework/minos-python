@@ -45,19 +45,16 @@ class BrokerMessage(DeclarativeModel):
     def __init__(
         self,
         topic: str,
-        data: Any = None,
+        payload: BrokerMessagePayload,
         *,
         identifier: Optional[UUID] = None,
         strategy: Optional[BrokerMessageStrategy] = None,
-        payload: Optional[BrokerMessagePayload] = None,
         **kwargs
     ):
         if identifier is None:
             identifier = uuid4()
         if strategy is None:
             strategy = BrokerMessageStrategy.UNICAST
-        if payload is None:
-            payload = BrokerMessagePayload(topic, data, **kwargs)
         super().__init__(topic=topic, identifier=identifier, strategy=strategy, payload=payload, **kwargs)
 
     @property

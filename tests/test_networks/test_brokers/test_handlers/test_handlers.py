@@ -37,6 +37,7 @@ from minos.networks import (
     BrokerHandler,
     BrokerHandlerEntry,
     BrokerMessage,
+    BrokerMessagePayload,
     BrokerPublisher,
 )
 from tests.utils import (
@@ -56,15 +57,12 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.handler = BrokerHandler.from_config(self.config, dispatcher=self.dispatcher)
 
         self.identifier = uuid4()
-        self.user = uuid4()
 
         self.message = BrokerMessage(
-            "AddOrder",
-            FakeModel("foo"),
+            topic="AddOrder",
+            payload=BrokerMessagePayload(action="AddOrder", content=FakeModel("foo"), headers={"foo": "bar"}),
             identifier=self.identifier,
-            user=self.user,
             reply_topic="UpdateTicket",
-            headers={"foo": "bar"},
         )
 
     async def asyncSetUp(self):
@@ -115,7 +113,6 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         async with BrokerHandler.from_config(
             self.config, dispatcher=self.dispatcher, consumer_concurrency=consumer_concurrency
         ) as handler:
-
             self.assertEqual(consumer_concurrency, len(handler.consumers))
             handler.submit_query = mock
 
@@ -172,7 +169,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = BrokerMessage("NoActionTopic", FakeModel("Foo"))
+        instance_2 = BrokerMessage("NoActionTopic", BrokerMessagePayload("NoAction", FakeModel("Foo")))
 
         queue_id_1 = await self._insert_one(instance_1)
         queue_id_2 = await self._insert_one(instance_2)
@@ -181,17 +178,10 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.assertFalse(await self._is_processed(queue_id_2))
 
     async def test_dispatch_concurrent(self):
-        from tests.utils import (
-            FakeModel,
-        )
-
-        identifier = uuid4()
-
-        instance = BrokerMessage("AddOrder", [FakeModel("foo")], identifier=identifier, reply_topic="UpdateTicket")
         instance_wrong = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
 
         for _ in range(10):
-            await self._insert_one(instance)
+            await self._insert_one(self.message)
             await self._insert_one(instance_wrong)
 
         self.assertEqual(20, await self._count())
@@ -208,13 +198,13 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         self.dispatcher.get_action = MagicMock(return_value=_fn2)
 
-        events = [
-            BrokerMessage("TicketAdded", FakeModel("uuid1")),
-            BrokerMessage("TicketAdded", FakeModel("uuid2")),
+        messages = [
+            BrokerMessage("TicketAdded", BrokerMessagePayload("TicketAdded", FakeModel("uuid1"))),
+            BrokerMessage("TicketAdded", BrokerMessagePayload("TicketAdded", FakeModel("uuid2"))),
         ]
 
-        for event in events:
-            await self._insert_one(event)
+        for message in messages:
+            await self._insert_one(message)
 
         await self.handler.dispatch()
 
@@ -232,7 +222,12 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         messages = list()
         for i in range(1, 6):
-            messages.extend([BrokerMessage("TicketAdded", ["uuid1", i]), BrokerMessage("TicketAdded", ["uuid2", i])])
+            messages.extend(
+                [
+                    BrokerMessage("TicketAdded", BrokerMessagePayload("TicketAdded", ["uuid1", i])),
+                    BrokerMessage("TicketAdded", BrokerMessagePayload("TicketAdded", ["uuid2", i])),
+                ]
+            )
         shuffle(messages)
 
         for event in messages:

@@ -191,7 +191,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         self.dispatcher.get_action = lookup_mock
 
         topic = "TicketAdded"
-        message = BrokerMessage(topic, FakeModel("Foo"))
+        message = BrokerMessage(topic, BrokerMessagePayload(topic, FakeModel("Foo")))
 
         await self.dispatcher.dispatch(message)
 
