@@ -66,19 +66,19 @@ class BrokerMessage(DeclarativeModel):
 
         :return: ``True`` if the reply is okay or ``False`` otherwise.
         """
-        warnings.warn("The `BrokerMessage.ok` attribute has being deprecated", DeprecationWarning)
+        warnings.warn("The `BrokerMessage.ok` attribute has been deprecated", DeprecationWarning)
         return self.payload.ok
 
     @property
     def status(self) -> BrokerMessageStatus:
         """TODO"""
-        warnings.warn("The `BrokerMessage.status` attribute has being deprecated", DeprecationWarning)
+        warnings.warn("The `BrokerMessage.status` attribute has been deprecated", DeprecationWarning)
         return self.payload.status
 
     @property
     def data(self) -> Any:
         """TODO"""
-        warnings.warn("The `BrokerMessage.data` attribute has being deprecated", DeprecationWarning)
+        warnings.warn("The `BrokerMessage.data` attribute has been deprecated", DeprecationWarning)
         return self.payload.data
 
     def __lt__(self, other: Any) -> bool:
