@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from contextvars import (
     ContextVar,
 )
@@ -35,35 +36,85 @@ class BrokerMessage(DeclarativeModel):
     """Broker Message class."""
 
     topic: str
-    data: Any
     identifier: UUID
     reply_topic: Optional[str]
-    status: BrokerMessageStatus
-    strategy: BrokerMessageStrategy
-    headers: dict[str, str]
+    strategy: BrokerMessageStrategy  # FIXME: Remove this attribute!
+
+    content: BrokerMessageContent
 
     def __init__(
         self,
         topic: str,
-        data: Any,
+        data: Any = None,
         *,
         identifier: Optional[UUID] = None,
-        status: Optional[BrokerMessageStatus] = None,
         strategy: Optional[BrokerMessageStrategy] = None,
-        headers: Optional[dict[str, str]] = None,
+        content: Optional[BrokerMessageContent] = None,
         **kwargs
     ):
         if identifier is None:
             identifier = uuid4()
-        if status is None:
-            status = BrokerMessageStatus.SUCCESS
         if strategy is None:
             strategy = BrokerMessageStrategy.UNICAST
+        if content is None:
+            content = BrokerMessageContent(topic, data, **kwargs)
+        super().__init__(topic=topic, identifier=identifier, strategy=strategy, content=content, **kwargs)
+
+    @property
+    def ok(self) -> bool:
+        """Check if the reply is okay or not.
+
+        :return: ``True`` if the reply is okay or ``False`` otherwise.
+        """
+        warnings.warn("The `BrokerMessage.ok` attribute has being deprecated", DeprecationWarning)
+        return self.content.ok
+
+    @property
+    def status(self) -> BrokerMessageStatus:
+        """TODO"""
+        warnings.warn("The `BrokerMessage.status` attribute has being deprecated", DeprecationWarning)
+        return self.content.status
+
+    @property
+    def data(self) -> Any:
+        """TODO"""
+        warnings.warn("The `BrokerMessage.data` attribute has being deprecated", DeprecationWarning)
+        return self.content.data
+
+    @property
+    def headers(self) -> Any:
+        """TODO"""
+        warnings.warn("The `BrokerMessage.headers` attribute has being deprecated", DeprecationWarning)
+        return self.content.headers
+
+    def __lt__(self, other: Any) -> bool:
+        # noinspection PyBroadException
+        return isinstance(other, type(self)) and self.content < other.content
+
+
+@total_ordering
+class BrokerMessageContent(DeclarativeModel):
+    """TODO"""
+
+    action: str
+    data: Any
+    status: BrokerMessageStatus
+    headers: dict[str, str]
+
+    def __init__(
+        self,
+        action: str,
+        data: Any,
+        *,
+        status: Optional[BrokerMessageStatus] = None,
+        headers: Optional[dict[str, str]] = None,
+        **kwargs
+    ):
+        if status is None:
+            status = BrokerMessageStatus.SUCCESS
         if headers is None:
             headers = dict()
-        super().__init__(
-            topic=topic, data=data, identifier=identifier, status=status, strategy=strategy, headers=headers, **kwargs
-        )
+        super().__init__(action=action, data=data, status=status, headers=headers, **kwargs)
 
     @property
     def ok(self) -> bool:
