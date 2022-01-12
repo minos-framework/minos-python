@@ -105,15 +105,14 @@ class BrokerMessageContent(DeclarativeModel):
         self,
         action: str,
         data: Any,
-        *,
-        status: Optional[BrokerMessageStatus] = None,
         headers: Optional[dict[str, str]] = None,
+        status: Optional[BrokerMessageStatus] = None,
         **kwargs
     ):
-        if status is None:
-            status = BrokerMessageStatus.SUCCESS
         if headers is None:
             headers = dict()
+        if status is None:
+            status = BrokerMessageStatus.SUCCESS
         super().__init__(action=action, data=data, status=status, headers=headers, **kwargs)
 
     @property

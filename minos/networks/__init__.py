@@ -13,6 +13,7 @@ from .brokers import (
     BrokerHandlerService,
     BrokerHandlerSetup,
     BrokerMessage,
+    BrokerMessageContent,
     BrokerMessageStatus,
     BrokerMessageStrategy,
     BrokerProducer,
