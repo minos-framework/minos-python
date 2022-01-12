@@ -65,7 +65,7 @@ class BrokerRequest(Request):
         return True
 
     async def _content(self, **kwargs) -> Any:
-        return self.raw.data
+        return self.raw.content
 
     @property
     def has_params(self) -> bool:

@@ -80,7 +80,7 @@ class BrokerPublisher(BrokerPublisherSetup):
             headers["User"] = str(user)
 
         if payload is None:
-            payload = BrokerMessagePayload(action=topic, data=data, headers=headers, status=status, **kwargs)
+            payload = BrokerMessagePayload(action=topic, content=data, headers=headers, status=status, **kwargs)
 
         message = BrokerMessage(
             topic=topic, identifier=identifier, reply_topic=reply_topic, strategy=strategy, payload=payload,

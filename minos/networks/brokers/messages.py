@@ -79,7 +79,7 @@ class BrokerMessage(DeclarativeModel):
     def data(self) -> Any:
         """TODO"""
         warnings.warn("The `BrokerMessage.data` attribute has been deprecated", DeprecationWarning)
-        return self.payload.data
+        return self.payload.content
 
     def __lt__(self, other: Any) -> bool:
         # noinspection PyBroadException
@@ -91,14 +91,14 @@ class BrokerMessagePayload(DeclarativeModel):
     """TODO"""
 
     action: str
-    data: Any
+    content: Any
     status: BrokerMessageStatus
     headers: dict[str, str]
 
     def __init__(
         self,
         action: str,
-        data: Any,
+        content: Any,
         headers: Optional[dict[str, str]] = None,
         status: Optional[BrokerMessageStatus] = None,
         **kwargs
@@ -107,7 +107,7 @@ class BrokerMessagePayload(DeclarativeModel):
             headers = dict()
         if status is None:
             status = BrokerMessageStatus.SUCCESS
-        super().__init__(action=action, data=data, status=status, headers=headers, **kwargs)
+        super().__init__(action=action, content=content, status=status, headers=headers, **kwargs)
 
     @property
     def ok(self) -> bool:
@@ -117,10 +117,16 @@ class BrokerMessagePayload(DeclarativeModel):
         """
         return self.status == BrokerMessageStatus.SUCCESS
 
+    @property
+    def data(self) -> Any:
+        """TODO"""
+        warnings.warn("The `BrokerMessage.data` attribute has been deprecated", DeprecationWarning)
+        return self.content
+
     def __lt__(self, other: Any) -> bool:
         # noinspection PyBroadException
         try:
-            return isinstance(other, type(self)) and self.data < other.data
+            return isinstance(other, type(self)) and self.content < other.content
         except Exception:
             return False
 
