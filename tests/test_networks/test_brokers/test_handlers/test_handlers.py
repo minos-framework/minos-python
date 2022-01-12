@@ -60,7 +60,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         self.message = BrokerMessage(
             topic="AddOrder",
-            payload=BrokerMessagePayload(action="AddOrder", content=FakeModel("foo"), headers={"foo": "bar"}),
+            payload=BrokerMessagePayload(content=FakeModel("foo"), headers={"foo": "bar"}),
             identifier=self.identifier,
             reply_topic="UpdateTicket",
         )
@@ -169,7 +169,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = BrokerMessage("NoActionTopic", BrokerMessagePayload("NoAction", FakeModel("Foo")))
+        instance_2 = BrokerMessage("NoActionTopic", BrokerMessagePayload(FakeModel("Foo")))
 
         queue_id_1 = await self._insert_one(instance_1)
         queue_id_2 = await self._insert_one(instance_2)
@@ -199,8 +199,8 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.dispatcher.get_action = MagicMock(return_value=_fn2)
 
         messages = [
-            BrokerMessage("TicketAdded", BrokerMessagePayload("TicketAdded", FakeModel("uuid1"))),
-            BrokerMessage("TicketAdded", BrokerMessagePayload("TicketAdded", FakeModel("uuid2"))),
+            BrokerMessage("TicketAdded", BrokerMessagePayload(FakeModel("uuid1"))),
+            BrokerMessage("TicketAdded", BrokerMessagePayload(FakeModel("uuid2"))),
         ]
 
         for message in messages:
@@ -224,8 +224,8 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         for i in range(1, 6):
             messages.extend(
                 [
-                    BrokerMessage("TicketAdded", BrokerMessagePayload("TicketAdded", ["uuid1", i])),
-                    BrokerMessage("TicketAdded", BrokerMessagePayload("TicketAdded", ["uuid2", i])),
+                    BrokerMessage("TicketAdded", BrokerMessagePayload(["uuid1", i])),
+                    BrokerMessage("TicketAdded", BrokerMessagePayload(["uuid2", i])),
                 ]
             )
         shuffle(messages)

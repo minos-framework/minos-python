@@ -22,9 +22,7 @@ class TestBrokerMessage(unittest.TestCase):
         self.reply_topic = "AddOrderReply"
         self.strategy = BrokerMessageStrategy.MULTICAST
 
-        self.payload = BrokerMessagePayload(
-            "FooCreated", [FakeModel("blue"), FakeModel("red")], status=BrokerMessageStatus.SUCCESS
-        )
+        self.payload = BrokerMessagePayload([FakeModel("blue"), FakeModel("red")], status=BrokerMessageStatus.SUCCESS)
 
     def test_constructor_simple(self):
         message = BrokerMessage(self.topic, payload=self.payload)
@@ -61,12 +59,12 @@ class TestBrokerMessage(unittest.TestCase):
 
     def test_sort(self):
         unsorted = [
-            BrokerMessage("", BrokerMessagePayload("", "foo")),
-            BrokerMessage("", BrokerMessagePayload("", 4)),
-            BrokerMessage("", BrokerMessagePayload("", 2)),
-            BrokerMessage("", BrokerMessagePayload("", 3)),
-            BrokerMessage("", BrokerMessagePayload("", 1)),
-            BrokerMessage("", BrokerMessagePayload("", "bar")),
+            BrokerMessage("", BrokerMessagePayload("foo")),
+            BrokerMessage("", BrokerMessagePayload(4)),
+            BrokerMessage("", BrokerMessagePayload(2)),
+            BrokerMessage("", BrokerMessagePayload(3)),
+            BrokerMessage("", BrokerMessagePayload(1)),
+            BrokerMessage("", BrokerMessagePayload("bar")),
         ]
 
         expected = [unsorted[0], unsorted[4], unsorted[2], unsorted[3], unsorted[1], unsorted[5]]
@@ -77,13 +75,12 @@ class TestBrokerMessage(unittest.TestCase):
 
 class TestBrokerMessagePayload(unittest.TestCase):
     def setUp(self) -> None:
-        self.topic = "FooCreated"
         self.content = [FakeModel("blue"), FakeModel("red")]
 
     def test_ok(self):
-        self.assertTrue(BrokerMessagePayload(self.topic, self.content, status=BrokerMessageStatus.SUCCESS).ok)
-        self.assertFalse(BrokerMessagePayload(self.topic, self.content, status=BrokerMessageStatus.ERROR).ok)
-        self.assertFalse(BrokerMessagePayload(self.topic, self.content, status=BrokerMessageStatus.SYSTEM_ERROR).ok)
+        self.assertTrue(BrokerMessagePayload(self.content, status=BrokerMessageStatus.SUCCESS).ok)
+        self.assertFalse(BrokerMessagePayload(self.content, status=BrokerMessageStatus.ERROR).ok)
+        self.assertFalse(BrokerMessagePayload(self.content, status=BrokerMessageStatus.SYSTEM_ERROR).ok)
 
 
 if __name__ == "__main__":

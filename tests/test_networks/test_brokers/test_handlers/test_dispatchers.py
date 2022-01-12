@@ -68,7 +68,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
             topic="AddOrder",
             identifier=self.identifier,
             reply_topic="UpdateTicket",
-            payload=BrokerMessagePayload(action="AddOrder", content=FakeModel("foo"), headers=self.headers),
+            payload=BrokerMessagePayload(content=FakeModel("foo"), headers=self.headers),
         )
 
     async def asyncSetUp(self):
@@ -191,7 +191,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         self.dispatcher.get_action = lookup_mock
 
         topic = "TicketAdded"
-        message = BrokerMessage(topic, BrokerMessagePayload(topic, FakeModel("Foo")))
+        message = BrokerMessage(topic, BrokerMessagePayload(FakeModel("Foo")))
 
         await self.dispatcher.dispatch(message)
 

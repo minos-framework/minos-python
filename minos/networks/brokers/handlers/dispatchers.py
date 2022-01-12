@@ -127,7 +127,7 @@ class BrokerDispatcher(MinosSetup):
 
         if message.reply_topic is not None:
             await self.publisher.send(
-                data, topic=message.reply_topic, identifier=message.identifier, status=status, headers=headers,
+                data, topic=message.reply_topic, identifier=message.identifier, headers=headers, status=status
             )
 
     @staticmethod

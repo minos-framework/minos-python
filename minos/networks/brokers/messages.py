@@ -87,14 +87,12 @@ class BrokerMessage(DeclarativeModel):
 class BrokerMessagePayload(DeclarativeModel):
     """TODO"""
 
-    action: str
     content: Any
     status: BrokerMessageStatus
     headers: dict[str, str]
 
     def __init__(
         self,
-        action: str,
         content: Any,
         headers: Optional[dict[str, str]] = None,
         status: Optional[BrokerMessageStatus] = None,
@@ -104,7 +102,7 @@ class BrokerMessagePayload(DeclarativeModel):
             headers = dict()
         if status is None:
             status = BrokerMessageStatus.SUCCESS
-        super().__init__(action=action, content=content, status=status, headers=headers, **kwargs)
+        super().__init__(content=content, status=status, headers=headers, **kwargs)
 
     @property
     def ok(self) -> bool:

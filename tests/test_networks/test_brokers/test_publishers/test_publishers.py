@@ -63,7 +63,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
-        expected = BrokerMessage("fake", BrokerMessagePayload("fake", FakeModel("Foo")), identifier=observed)
+        expected = BrokerMessage("fake", BrokerMessagePayload(FakeModel("Foo")), identifier=observed)
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_identifier(self):
@@ -81,7 +81,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
         expected = BrokerMessage(
-            topic="fake", payload=BrokerMessagePayload(action="fake", content=FakeModel("Foo")), identifier=identifier
+            topic="fake", payload=BrokerMessagePayload(content=FakeModel("Foo")), identifier=identifier
         )
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
@@ -99,7 +99,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
         expected = BrokerMessage(
             topic="fake",
-            payload=BrokerMessagePayload(action="fake", content=FakeModel("foo")),
+            payload=BrokerMessagePayload(content=FakeModel("foo")),
             identifier=observed,
             reply_topic="ekaf",
         )
@@ -123,7 +123,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
         expected = BrokerMessage(
             topic="fake",
-            payload=BrokerMessagePayload(action="fake", content=FakeModel("foo"), headers={"User": str(user)}),
+            payload=BrokerMessagePayload(content=FakeModel("foo"), headers={"User": str(user)}),
             identifier=observed,
             reply_topic="ekaf",
         )
@@ -144,7 +144,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
         expected = BrokerMessage(
             topic="fake",
-            payload=BrokerMessagePayload(action="fake", content=FakeModel("foo"), status=BrokerMessageStatus.ERROR),
+            payload=BrokerMessagePayload(content=FakeModel("foo"), status=BrokerMessageStatus.ERROR),
             identifier=observed,
         )
         observed = Model.from_avro_bytes(args[2])
@@ -165,7 +165,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
         expected = BrokerMessage(
             topic="fake",
-            payload=BrokerMessagePayload(action="fake", content=FakeModel("foo")),
+            payload=BrokerMessagePayload(content=FakeModel("foo")),
             identifier=observed,
             strategy=BrokerMessageStrategy.MULTICAST,
         )
