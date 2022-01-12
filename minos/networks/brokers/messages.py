@@ -127,7 +127,7 @@ class BrokerMessagePayload(DeclarativeModel):
 
     @property
     def message(self) -> Optional[BrokerMessage]:
-        """Get the BrokerMessage if available.
+        """Get the ``BrokerMessage`` wrapper if available.
 
         :return: A ``BrokerMessage`` instance or ``None``.
         """
