@@ -103,10 +103,29 @@ class TestBrokerMessage(unittest.TestCase):
         observed = sorted(unsorted)
         self.assertEqual(expected, observed)
 
+    def test_payload_message(self):
+        message = BrokerMessage(self.topic, payload=self.payload)
+        self.assertEqual(message, self.payload.message)
+
+    def test_payload_message_raises(self):
+        BrokerMessage(self.topic, payload=self.payload)
+
+        with self.assertRaises(ValueError):
+            BrokerMessage(self.topic, payload=self.payload)
+
 
 class TestBrokerMessagePayload(unittest.TestCase):
     def setUp(self) -> None:
         self.content = [FakeModel("blue"), FakeModel("red")]
+
+    def test_message_none(self):
+        payload = BrokerMessagePayload(self.content)
+        self.assertEqual(None, payload.message)
+
+    def test_message_setter(self):
+        payload = BrokerMessagePayload(self.content)
+        payload._message = "foo"
+        self.assertEqual("foo", payload.message)
 
     def test_ok(self):
         self.assertTrue(BrokerMessagePayload(self.content, status=BrokerMessageStatus.SUCCESS).ok)

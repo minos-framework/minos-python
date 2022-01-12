@@ -49,12 +49,17 @@ class BrokerMessage(DeclarativeModel):
         *,
         identifier: Optional[UUID] = None,
         strategy: Optional[BrokerMessageStrategy] = None,
-        **kwargs
+        **kwargs,
     ):
         if identifier is None:
             identifier = uuid4()
         if strategy is None:
             strategy = BrokerMessageStrategy.UNICAST
+
+        if payload.message is not None:
+            raise ValueError(f"The given payload already belongs to another message: {payload.message!r}")
+        payload._message = self
+
         super().__init__(topic=topic, identifier=identifier, strategy=strategy, payload=payload, **kwargs)
 
     @property
@@ -111,13 +116,22 @@ class BrokerMessagePayload(DeclarativeModel):
         content: Any,
         headers: Optional[dict[str, str]] = None,
         status: Optional[BrokerMessageStatus] = None,
-        **kwargs
+        **kwargs,
     ):
         if headers is None:
             headers = dict()
         if status is None:
             status = BrokerMessageStatus.SUCCESS
         super().__init__(content=content, status=status, headers=headers, **kwargs)
+        self._message = None
+
+    @property
+    def message(self) -> Optional[BrokerMessage]:
+        """Get the BrokerMessage if available.
+
+        :return: A ``BrokerMessage`` instance or ``None``.
+        """
+        return self._message
 
     @property
     def ok(self) -> bool:
