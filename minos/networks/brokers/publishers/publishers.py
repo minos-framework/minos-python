@@ -50,7 +50,7 @@ class BrokerPublisher(BrokerPublisherSetup):
         identifier: Optional[UUID] = None,
         reply_topic: Optional[str] = None,
         user: Optional[UUID] = None,
-        status: BrokerMessageV1Status = BrokerMessageV1Status.SUCCESS,
+        status: int = BrokerMessageV1Status.SUCCESS,
         strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
         headers: Optional[dict[str, str]] = None,
         payload: Optional[BrokerMessageV1Payload] = None,

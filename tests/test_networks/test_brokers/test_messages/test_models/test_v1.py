@@ -1,10 +1,16 @@
 import unittest
 import warnings
+from unittest.mock import (
+    patch,
+)
 from uuid import (
     UUID,
     uuid4,
 )
 
+from minos.common import (
+    Model,
+)
 from minos.networks import (
     BrokerMessageStrategy,
     BrokerMessageV1,
@@ -16,7 +22,7 @@ from tests.utils import (
 )
 
 
-class TestBrokerMessage(unittest.TestCase):
+class TestBrokerMessageV1(unittest.TestCase):
     def setUp(self) -> None:
         self.topic = "FooCreated"
         self.identifier = uuid4()
@@ -27,8 +33,11 @@ class TestBrokerMessage(unittest.TestCase):
             content=[FakeModel("blue"), FakeModel("red")], headers={"foo": "bar"}, status=BrokerMessageV1Status.ERROR
         )
 
+    def test_version(self):
+        self.assertEqual(1, BrokerMessageV1.version)
+
     def test_constructor_simple(self):
-        message = BrokerMessageV1(self.topic, payload=self.payload)
+        message = BrokerMessageV1(self.topic, self.payload)
         self.assertEqual(self.topic, message.topic)
         self.assertIsInstance(message.identifier, UUID)
         self.assertEqual(None, message.reply_topic)
@@ -50,28 +59,28 @@ class TestBrokerMessage(unittest.TestCase):
         self.assertEqual(self.payload, message.payload)
 
     def test_ok(self):
-        message = BrokerMessageV1(self.topic, payload=self.payload)
+        message = BrokerMessageV1(self.topic, self.payload)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             # noinspection PyDeprecation
             self.assertEqual(self.payload.ok, message.ok)
 
     def test_status(self):
-        message = BrokerMessageV1(self.topic, payload=self.payload)
+        message = BrokerMessageV1(self.topic, self.payload)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             # noinspection PyDeprecation
             self.assertEqual(self.payload.status, message.status)
 
     def test_headers(self):
-        message = BrokerMessageV1(self.topic, payload=self.payload)
+        message = BrokerMessageV1(self.topic, self.payload)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             # noinspection PyDeprecation
             self.assertEqual(self.payload.headers, message.headers)
 
     def test_data(self):
-        message = BrokerMessageV1(self.topic, payload=self.payload)
+        message = BrokerMessageV1(self.topic, self.payload)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             # noinspection PyDeprecation
@@ -104,14 +113,145 @@ class TestBrokerMessage(unittest.TestCase):
         self.assertEqual(expected, observed)
 
     def test_payload_message(self):
-        message = BrokerMessageV1(self.topic, payload=self.payload)
+        message = BrokerMessageV1(self.topic, self.payload)
         self.assertEqual(message, self.payload.message)
 
     def test_payload_message_raises(self):
-        BrokerMessageV1(self.topic, payload=self.payload)
+        BrokerMessageV1(self.topic, self.payload)
 
         with self.assertRaises(ValueError):
-            BrokerMessageV1(self.topic, payload=self.payload)
+            BrokerMessageV1(self.topic, self.payload)
+
+    def test_from_avro(self):
+        expected = BrokerMessageV1(self.topic, self.payload, identifier=self.identifier)
+        schema = {
+            "fields": [
+                {"name": "topic", "type": "string"},
+                {"name": "identifier", "type": {"logicalType": "uuid", "type": "string"}},
+                {"name": "reply_topic", "type": ["string", "null"]},
+                {
+                    "name": "strategy",
+                    "type": {
+                        "logicalType": "minos.networks.brokers.messages.models.v1.BrokerMessageV1Strategy",
+                        "type": "string",
+                    },
+                },
+                {
+                    "name": "payload",
+                    "type": {
+                        "fields": [
+                            {
+                                "name": "content",
+                                "type": {
+                                    "items": {
+                                        "fields": [{"name": "data", "type": "string"}],
+                                        "name": "FakeModel",
+                                        "namespace": "tests.utils.hello",
+                                        "type": "record",
+                                    },
+                                    "type": "array",
+                                },
+                            },
+                            {
+                                "name": "status",
+                                "type": {
+                                    "logicalType": "minos.networks.brokers.messages.models.v1.BrokerMessageV1Status",
+                                    "type": "int",
+                                },
+                            },
+                            {"name": "headers", "type": {"type": "map", "values": "string"}},
+                        ],
+                        "name": "BrokerMessageV1Payload",
+                        "namespace": "minos.networks.brokers.messages.models.v1.hello",
+                        "type": "record",
+                    },
+                },
+                {"name": "version", "type": "int"},
+            ],
+            "name": "BrokerMessage",
+            "namespace": "minos.networks.brokers.messages.models.abc.hello",
+            "type": "record",
+        }
+        data = {
+            "identifier": str(self.identifier),
+            "payload": {"content": [{"data": "blue"}, {"data": "red"}], "headers": {"foo": "bar"}, "status": 400},
+            "reply_topic": None,
+            "strategy": "unicast",
+            "topic": "FooCreated",
+            "version": 1,
+        }
+
+        observed = Model.from_avro(schema, data)
+        self.assertEqual(expected, observed)
+
+    def test_avro_schema(self):
+        schema = {
+            "fields": [
+                {"name": "topic", "type": "string"},
+                {"name": "identifier", "type": {"logicalType": "uuid", "type": "string"}},
+                {"name": "reply_topic", "type": ["string", "null"]},
+                {
+                    "name": "strategy",
+                    "type": {
+                        "logicalType": "minos.networks.brokers.messages.models.v1.BrokerMessageV1Strategy",
+                        "type": "string",
+                    },
+                },
+                {
+                    "name": "payload",
+                    "type": {
+                        "fields": [
+                            {
+                                "name": "content",
+                                "type": {
+                                    "items": {
+                                        "fields": [{"name": "data", "type": "string"}],
+                                        "name": "FakeModel",
+                                        "namespace": "tests.utils.hello",
+                                        "type": "record",
+                                    },
+                                    "type": "array",
+                                },
+                            },
+                            {
+                                "name": "status",
+                                "type": {
+                                    "logicalType": "minos.networks.brokers.messages.models.v1.BrokerMessageV1Status",
+                                    "type": "int",
+                                },
+                            },
+                            {"name": "headers", "type": {"type": "map", "values": "string"}},
+                        ],
+                        "name": "BrokerMessageV1Payload",
+                        "namespace": "minos.networks.brokers.messages.models.v1.hello",
+                        "type": "record",
+                    },
+                },
+                {"name": "version", "type": "int"},
+            ],
+            "name": "BrokerMessage",
+            "namespace": "minos.networks.brokers.messages.models.abc.hello",
+            "type": "record",
+        }
+        with patch("minos.common.AvroSchemaEncoder.generate_random_str", return_value="hello"):
+            observed = BrokerMessageV1(self.topic, self.payload).avro_schema
+        self.assertEqual([schema], observed)
+
+    def test_avro_data(self):
+        expected = {
+            "identifier": str(self.identifier),
+            "payload": {"content": [{"data": "blue"}, {"data": "red"}], "headers": {"foo": "bar"}, "status": 400},
+            "reply_topic": None,
+            "strategy": "unicast",
+            "topic": "FooCreated",
+            "version": 1,
+        }
+        observed = BrokerMessageV1(self.topic, self.payload, identifier=self.identifier).avro_data
+        self.assertEqual(expected, observed)
+
+    def test_avro_bytes(self):
+        expected = BrokerMessageV1(self.topic, self.payload)
+        self.assertEqual(expected, Model.from_avro_bytes(expected.avro_bytes))
 
 
 class TestBrokerMessagePayload(unittest.TestCase):

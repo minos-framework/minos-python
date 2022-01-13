@@ -45,7 +45,6 @@ from ...requests import (
 from ..messages import (
     REQUEST_HEADERS_CONTEXT_VAR,
     BrokerMessage,
-    BrokerMessageV1Payload,
     BrokerMessageV1Status,
 )
 from ..publishers import (
@@ -123,7 +122,7 @@ class BrokerDispatcher(MinosSetup):
         action = self.get_action(message.topic)
         fn = self.get_callback(action)
 
-        data, status, headers = await fn(message.payload)
+        data, status, headers = await fn(message)
 
         if message.reply_topic is not None:
             await self.publisher.send(
@@ -133,7 +132,7 @@ class BrokerDispatcher(MinosSetup):
     @staticmethod
     def get_callback(
         fn: Callable[[BrokerRequest], Union[Optional[BrokerResponse], Awaitable[Optional[BrokerResponse]]]]
-    ) -> Callable[[BrokerMessageV1Payload], Awaitable[tuple[Any, BrokerMessageV1Status, dict[str, str]]]]:
+    ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, int, dict[str, str]]]]:
         """Get the handler function to be used by the Broker Handler.
 
         :param fn: The action function.
@@ -141,7 +140,7 @@ class BrokerDispatcher(MinosSetup):
         """
 
         @wraps(fn)
-        async def _wrapper(raw: BrokerMessageV1Payload) -> tuple[Any, BrokerMessageV1Status, dict[str, str]]:
+        async def _wrapper(raw: BrokerMessage) -> tuple[Any, int, dict[str, str]]:
             logger.info(f"Dispatching '{raw!s}'...")
 
             request = BrokerRequest(raw)

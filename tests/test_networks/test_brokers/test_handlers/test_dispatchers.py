@@ -201,7 +201,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         self.assertEqual(call("TicketAdded"), lookup_mock.call_args)
 
         self.assertEqual(1, callback_mock.call_count)
-        self.assertEqual(call(BrokerRequest(message.payload)), callback_mock.call_args)
+        self.assertEqual(call(BrokerRequest(message)), callback_mock.call_args)
 
 
 if __name__ == "__main__":

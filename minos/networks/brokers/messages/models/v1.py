@@ -5,7 +5,6 @@ from __future__ import (
 import warnings
 from enum import (
     Enum,
-    IntEnum,
 )
 from functools import (
     total_ordering,
@@ -30,7 +29,7 @@ from .abc import (
 
 @total_ordering
 class BrokerMessageV1(BrokerMessage, DeclarativeModel):
-    """Broker Message class."""
+    """Broker Message V1 class."""
 
     topic: str
     identifier: UUID
@@ -59,6 +58,40 @@ class BrokerMessageV1(BrokerMessage, DeclarativeModel):
 
         super().__init__(topic=topic, identifier=identifier, strategy=strategy, payload=payload, **kwargs)
 
+    # noinspection PyPropertyDefinition
+    @classmethod
+    @property
+    def version(cls) -> int:
+        """Get the version of the message.
+
+        :return: A strictly positive ``int`` value.
+        """
+        return 1
+
+    @property
+    def topic(self) -> str:
+        """Get the topic of the message.
+
+        :return: A ``str`` value.
+        """
+        return self.fields["topic"].value
+
+    @property
+    def reply_topic(self) -> Optional[str]:
+        """Get the reply topic of the message if there is someone.
+
+        :return: A ``str`` value or ``None``.
+        """
+        return self.fields["reply_topic"].value
+
+    @property
+    def content(self) -> Any:
+        """Get the content of the message.
+
+        :return: Any value.
+        """
+        return self.payload.content
+
     @property
     def ok(self) -> bool:
         """Check if the reply is okay or not.
@@ -69,12 +102,11 @@ class BrokerMessageV1(BrokerMessage, DeclarativeModel):
         return self.payload.ok
 
     @property
-    def status(self) -> BrokerMessageV1Status:
+    def status(self) -> int:
         """Get the payload status.
 
         :return: A ``BrokerMessageV1Status`` instance.
         """
-        warnings.warn("The `BrokerMessage.status` attribute has been deprecated", DeprecationWarning)
         return self.payload.status
 
     @property
@@ -155,8 +187,8 @@ class BrokerMessageV1Payload(DeclarativeModel):
             return False
 
 
-class BrokerMessageV1Status(IntEnum):
-    """Broker Message Status class."""
+class BrokerMessageV1Status(int, Enum):
+    """Broker Message Status v1 class."""
 
     SUCCESS = 200
     ERROR = 400
