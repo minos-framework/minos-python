@@ -21,10 +21,10 @@ from minos.common import (
 )
 
 from ..messages import (
-    BrokerMessage,
-    BrokerMessagePayload,
-    BrokerMessageStatus,
     BrokerMessageStrategy,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    BrokerMessageV1Status,
 )
 from .abc import (
     BrokerPublisherSetup,
@@ -50,10 +50,10 @@ class BrokerPublisher(BrokerPublisherSetup):
         identifier: Optional[UUID] = None,
         reply_topic: Optional[str] = None,
         user: Optional[UUID] = None,
-        status: BrokerMessageStatus = BrokerMessageStatus.SUCCESS,
+        status: BrokerMessageV1Status = BrokerMessageV1Status.SUCCESS,
         strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
         headers: Optional[dict[str, str]] = None,
-        payload: Optional[BrokerMessagePayload] = None,
+        payload: Optional[BrokerMessageV1Payload] = None,
         **kwargs,
     ) -> UUID:
         """Send a ``BrokerMessage``.
@@ -80,9 +80,9 @@ class BrokerPublisher(BrokerPublisherSetup):
             headers["User"] = str(user)
 
         if payload is None:
-            payload = BrokerMessagePayload(content=data, headers=headers, status=status)
+            payload = BrokerMessageV1Payload(content=data, headers=headers, status=status)
 
-        message = BrokerMessage(
+        message = BrokerMessageV1(
             topic=topic, identifier=identifier, reply_topic=reply_topic, strategy=strategy, payload=payload,
         )
         logger.info(f"Publishing '{message!s}'...")

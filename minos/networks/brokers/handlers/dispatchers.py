@@ -45,8 +45,8 @@ from ...requests import (
 from ..messages import (
     REQUEST_HEADERS_CONTEXT_VAR,
     BrokerMessage,
-    BrokerMessagePayload,
-    BrokerMessageStatus,
+    BrokerMessageV1Payload,
+    BrokerMessageV1Status,
 )
 from ..publishers import (
     BrokerPublisher,
@@ -133,7 +133,7 @@ class BrokerDispatcher(MinosSetup):
     @staticmethod
     def get_callback(
         fn: Callable[[BrokerRequest], Union[Optional[BrokerResponse], Awaitable[Optional[BrokerResponse]]]]
-    ) -> Callable[[BrokerMessagePayload], Awaitable[tuple[Any, BrokerMessageStatus, dict[str, str]]]]:
+    ) -> Callable[[BrokerMessageV1Payload], Awaitable[tuple[Any, BrokerMessageV1Status, dict[str, str]]]]:
         """Get the handler function to be used by the Broker Handler.
 
         :param fn: The action function.
@@ -141,7 +141,7 @@ class BrokerDispatcher(MinosSetup):
         """
 
         @wraps(fn)
-        async def _wrapper(raw: BrokerMessagePayload) -> tuple[Any, BrokerMessageStatus, dict[str, str]]:
+        async def _wrapper(raw: BrokerMessageV1Payload) -> tuple[Any, BrokerMessageV1Status, dict[str, str]]:
             logger.info(f"Dispatching '{raw!s}'...")
 
             request = BrokerRequest(raw)
@@ -154,13 +154,13 @@ class BrokerDispatcher(MinosSetup):
                     response = await response
                 if isinstance(response, Response):
                     response = await response.content()
-                return response, BrokerMessageStatus.SUCCESS, REQUEST_HEADERS_CONTEXT_VAR.get()
+                return response, BrokerMessageV1Status.SUCCESS, REQUEST_HEADERS_CONTEXT_VAR.get()
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
-                return repr(exc), BrokerMessageStatus.ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
+                return repr(exc), BrokerMessageV1Status.ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
-                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
+                return repr(exc), BrokerMessageV1Status.SYSTEM_ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
             finally:
                 REQUEST_USER_CONTEXT_VAR.reset(user_token)
                 REQUEST_HEADERS_CONTEXT_VAR.reset(headers_token)

@@ -20,10 +20,10 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerMessage,
-    BrokerMessagePayload,
-    BrokerMessageStatus,
     BrokerMessageStrategy,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    BrokerMessageV1Status,
     BrokerPublisher,
 )
 from tests.utils import (
@@ -63,7 +63,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
-        expected = BrokerMessage("fake", BrokerMessagePayload(FakeModel("Foo")), identifier=observed)
+        expected = BrokerMessageV1("fake", BrokerMessageV1Payload(FakeModel("Foo")), identifier=observed)
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_identifier(self):
@@ -80,8 +80,8 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
-        expected = BrokerMessage(
-            topic="fake", payload=BrokerMessagePayload(content=FakeModel("Foo")), identifier=identifier
+        expected = BrokerMessageV1(
+            topic="fake", payload=BrokerMessageV1Payload(content=FakeModel("Foo")), identifier=identifier
         )
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
 
@@ -97,9 +97,9 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
-        expected = BrokerMessage(
+        expected = BrokerMessageV1(
             topic="fake",
-            payload=BrokerMessagePayload(content=FakeModel("foo")),
+            payload=BrokerMessageV1Payload(content=FakeModel("foo")),
             identifier=observed,
             reply_topic="ekaf",
         )
@@ -121,9 +121,9 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
-        expected = BrokerMessage(
+        expected = BrokerMessageV1(
             topic="fake",
-            payload=BrokerMessagePayload(content=FakeModel("foo"), headers={"User": str(user)}),
+            payload=BrokerMessageV1Payload(content=FakeModel("foo"), headers={"User": str(user)}),
             identifier=observed,
             reply_topic="ekaf",
         )
@@ -133,7 +133,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         mock = AsyncMock()
         self.publisher.enqueue = mock
 
-        observed = await self.publisher.send(FakeModel("foo"), "fake", status=BrokerMessageStatus.ERROR)
+        observed = await self.publisher.send(FakeModel("foo"), "fake", status=BrokerMessageV1Status.ERROR)
 
         self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
@@ -142,9 +142,9 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
 
-        expected = BrokerMessage(
+        expected = BrokerMessageV1(
             topic="fake",
-            payload=BrokerMessagePayload(content=FakeModel("foo"), status=BrokerMessageStatus.ERROR),
+            payload=BrokerMessageV1Payload(content=FakeModel("foo"), status=BrokerMessageV1Status.ERROR),
             identifier=observed,
         )
         observed = Model.from_avro_bytes(args[2])
@@ -163,9 +163,9 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageStrategy.MULTICAST, args[1])
 
-        expected = BrokerMessage(
+        expected = BrokerMessageV1(
             topic="fake",
-            payload=BrokerMessagePayload(content=FakeModel("foo")),
+            payload=BrokerMessageV1Payload(content=FakeModel("foo")),
             identifier=observed,
             strategy=BrokerMessageStrategy.MULTICAST,
         )

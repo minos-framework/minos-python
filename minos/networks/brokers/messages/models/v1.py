@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import warnings
-from contextvars import (
-    ContextVar,
-)
 from enum import (
     Enum,
     IntEnum,
@@ -15,7 +12,6 @@ from functools import (
 )
 from typing import (
     Any,
-    Final,
     Optional,
 )
 from uuid import (
@@ -27,34 +23,35 @@ from minos.common import (
     DeclarativeModel,
 )
 
-REQUEST_REPLY_TOPIC_CONTEXT_VAR: Final[ContextVar[Optional[str]]] = ContextVar("reply_topic", default=None)
-REQUEST_HEADERS_CONTEXT_VAR: Final[ContextVar[Optional[dict[str, str]]]] = ContextVar("headers", default=None)
+from .abc import (
+    BrokerMessage,
+)
 
 
 @total_ordering
-class BrokerMessage(DeclarativeModel):
+class BrokerMessageV1(BrokerMessage, DeclarativeModel):
     """Broker Message class."""
 
     topic: str
     identifier: UUID
     reply_topic: Optional[str]
-    strategy: BrokerMessageStrategy  # FIXME: Remove this attribute!
+    strategy: BrokerMessageV1Strategy  # FIXME: Remove this attribute!
 
-    payload: BrokerMessagePayload
+    payload: BrokerMessageV1Payload
 
     def __init__(
         self,
         topic: str,
-        payload: BrokerMessagePayload,
+        payload: BrokerMessageV1Payload,
         *,
         identifier: Optional[UUID] = None,
-        strategy: Optional[BrokerMessageStrategy] = None,
+        strategy: Optional[BrokerMessageV1Strategy] = None,
         **kwargs,
     ):
         if identifier is None:
             identifier = uuid4()
         if strategy is None:
-            strategy = BrokerMessageStrategy.UNICAST
+            strategy = BrokerMessageV1Strategy.UNICAST
 
         if payload.message is not None:
             raise ValueError(f"The given payload already belongs to another message: {payload.message!r}")
@@ -72,10 +69,10 @@ class BrokerMessage(DeclarativeModel):
         return self.payload.ok
 
     @property
-    def status(self) -> BrokerMessageStatus:
+    def status(self) -> BrokerMessageV1Status:
         """Get the payload status.
 
-        :return: A ``BrokerMessageStatus`` instance.
+        :return: A ``BrokerMessageV1Status`` instance.
         """
         warnings.warn("The `BrokerMessage.status` attribute has been deprecated", DeprecationWarning)
         return self.payload.status
@@ -104,29 +101,29 @@ class BrokerMessage(DeclarativeModel):
 
 
 @total_ordering
-class BrokerMessagePayload(DeclarativeModel):
+class BrokerMessageV1Payload(DeclarativeModel):
     """Broker Message Payload class."""
 
     content: Any
-    status: BrokerMessageStatus
+    status: BrokerMessageV1Status
     headers: dict[str, str]
 
     def __init__(
         self,
         content: Any,
         headers: Optional[dict[str, str]] = None,
-        status: Optional[BrokerMessageStatus] = None,
+        status: Optional[BrokerMessageV1Status] = None,
         **kwargs,
     ):
         if headers is None:
             headers = dict()
         if status is None:
-            status = BrokerMessageStatus.SUCCESS
+            status = BrokerMessageV1Status.SUCCESS
         super().__init__(content=content, status=status, headers=headers, **kwargs)
         self._message = None
 
     @property
-    def message(self) -> Optional[BrokerMessage]:
+    def message(self) -> Optional[BrokerMessageV1]:
         """Get the ``BrokerMessage`` wrapper if available.
 
         :return: A ``BrokerMessage`` instance or ``None``.
@@ -139,7 +136,7 @@ class BrokerMessagePayload(DeclarativeModel):
 
         :return: ``True`` if the message is okay or ``False`` otherwise.
         """
-        return self.status == BrokerMessageStatus.SUCCESS
+        return self.status == BrokerMessageV1Status.SUCCESS
 
     @property
     def data(self) -> Any:
@@ -158,7 +155,7 @@ class BrokerMessagePayload(DeclarativeModel):
             return False
 
 
-class BrokerMessageStatus(IntEnum):
+class BrokerMessageV1Status(IntEnum):
     """Broker Message Status class."""
 
     SUCCESS = 200
@@ -166,8 +163,11 @@ class BrokerMessageStatus(IntEnum):
     SYSTEM_ERROR = 500
 
 
-class BrokerMessageStrategy(str, Enum):
+class BrokerMessageV1Strategy(str, Enum):
     """Broker Message Strategy class"""
 
     UNICAST = "unicast"
     MULTICAST = "multicast"
+
+
+BrokerMessageStrategy = BrokerMessageV1Strategy

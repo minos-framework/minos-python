@@ -36,8 +36,8 @@ from minos.networks import (
     BrokerDispatcher,
     BrokerHandler,
     BrokerHandlerEntry,
-    BrokerMessage,
-    BrokerMessagePayload,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     BrokerPublisher,
 )
 from tests.utils import (
@@ -58,9 +58,9 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         self.identifier = uuid4()
 
-        self.message = BrokerMessage(
+        self.message = BrokerMessageV1(
             topic="AddOrder",
-            payload=BrokerMessagePayload(content=FakeModel("foo"), headers={"foo": "bar"}),
+            payload=BrokerMessageV1Payload(content=FakeModel("foo"), headers={"foo": "bar"}),
             identifier=self.identifier,
             reply_topic="UpdateTicket",
         )
@@ -169,7 +169,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
     async def test_dispatch_wrong(self):
         instance_1 = namedtuple("FakeCommand", ("topic", "avro_bytes"))("AddOrder", bytes(b"Test"))
-        instance_2 = BrokerMessage("NoActionTopic", BrokerMessagePayload(FakeModel("Foo")))
+        instance_2 = BrokerMessageV1("NoActionTopic", BrokerMessageV1Payload(FakeModel("Foo")))
 
         queue_id_1 = await self._insert_one(instance_1)
         queue_id_2 = await self._insert_one(instance_2)
@@ -189,7 +189,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         await gather(*(self.handler.dispatch() for _ in range(2)))
         self.assertEqual(10, await self._count())
 
-    async def test_dispatch_without_sorting(self):
+    async def test_dispatch_without_ordering(self):
         observed = list()
 
         async def _fn2(request):
@@ -199,8 +199,8 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         self.dispatcher.get_action = MagicMock(return_value=_fn2)
 
         messages = [
-            BrokerMessage("TicketAdded", BrokerMessagePayload(FakeModel("uuid1"))),
-            BrokerMessage("TicketAdded", BrokerMessagePayload(FakeModel("uuid2"))),
+            BrokerMessageV1("TicketAdded", BrokerMessageV1Payload(FakeModel("one"))),
+            BrokerMessageV1("TicketAdded", BrokerMessageV1Payload(FakeModel(1))),
         ]
 
         for message in messages:
@@ -208,10 +208,10 @@ class TestBrokerHandler(PostgresAsyncTestCase):
 
         await self.handler.dispatch()
 
-        expected = [FakeModel("uuid1"), FakeModel("uuid2")]
+        expected = [FakeModel("one"), FakeModel(1)]
         self.assertEqual(expected, observed)
 
-    async def test_dispatch_with_order(self):
+    async def test_dispatch_with_ordering(self):
         observed = defaultdict(list)
 
         async def _fn2(request):
@@ -224,8 +224,8 @@ class TestBrokerHandler(PostgresAsyncTestCase):
         for i in range(1, 6):
             messages.extend(
                 [
-                    BrokerMessage("TicketAdded", BrokerMessagePayload(["uuid1", i])),
-                    BrokerMessage("TicketAdded", BrokerMessagePayload(["uuid2", i])),
+                    BrokerMessageV1("TicketAdded", BrokerMessageV1Payload(["uuid1", i])),
+                    BrokerMessageV1("TicketAdded", BrokerMessageV1Payload(["uuid2", i])),
                 ]
             )
         shuffle(messages)

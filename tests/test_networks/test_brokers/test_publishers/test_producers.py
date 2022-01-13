@@ -22,8 +22,8 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerConsumer,
-    BrokerMessageStatus,
     BrokerMessageStrategy,
+    BrokerMessageV1Status,
     BrokerProducer,
     BrokerPublisher,
 )
@@ -183,10 +183,10 @@ class TestProducer(PostgresAsyncTestCase):
 
         async with BrokerPublisher.from_config(config=self.config) as broker_publisher:
             await broker_publisher.send(
-                model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageStatus.SUCCESS
+                model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageV1Status.SUCCESS
             )
             await broker_publisher.send(
-                model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageStatus.SUCCESS
+                model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageV1Status.SUCCESS
             )
 
             self.producer.publish = AsyncMock(return_value=False)

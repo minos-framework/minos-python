@@ -20,7 +20,7 @@ from ...requests import (
     ResponseException,
 )
 from ..messages import (
-    BrokerMessagePayload,
+    BrokerMessageV1Payload,
 )
 
 
@@ -29,7 +29,7 @@ class BrokerRequest(Request):
 
     __slots__ = "raw"
 
-    def __init__(self, raw: BrokerMessagePayload, *args, **kwargs):
+    def __init__(self, raw: BrokerMessageV1Payload, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.raw = raw
 
