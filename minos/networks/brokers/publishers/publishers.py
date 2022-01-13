@@ -58,7 +58,7 @@ class BrokerPublisher(BrokerPublisherSetup):
     ) -> UUID:
         """Send a ``BrokerMessage``.
 
-        :param data: The data to be send.
+        :param data: The data to be sent.
         :param topic: Topic in which the message will be published.
         :param identifier: The identifier of the message.
         :param reply_topic: An optional topic name to wait for a response.
@@ -66,7 +66,7 @@ class BrokerPublisher(BrokerPublisherSetup):
         :param status: The status code of the message.
         :param strategy: The publishing strategy.
         :param headers: A mapping of string values identified by a string key.
-        :param payload: TODO
+        :param payload: The payload of the message.
         :param kwargs: Additional named arguments.
         :return: The ``UUID`` identifier of the message.
         """
