@@ -116,7 +116,7 @@ class TestDynamicBroker(PostgresAsyncTestCase):
                 )
                 return (await cur.fetchone())[0]
 
-    def _assert_equal_entries(self, expected, observed):
+    def _assert_equal_entries(self, expected: BrokerHandlerEntry, observed: BrokerHandlerEntry):
         self.assertEqual(expected.id, observed.id)
         self.assertEqual(expected.topic, observed.topic)
         self.assertEqual(expected.partition, observed.partition)

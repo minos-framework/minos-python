@@ -10,6 +10,9 @@ from typing import (
     Any,
     Optional,
 )
+from uuid import (
+    UUID,
+)
 
 from minos.common import (
     DataDecoder,
@@ -29,6 +32,14 @@ class BrokerMessage(ABC, Model):
         """Get the topic of the message.
 
         :return: A ``str`` value.
+        """
+
+    @property
+    @abstractmethod
+    def identifier(self) -> UUID:
+        """Get the identifier of the message.
+
+        :return: An ``UUID`` instance.
         """
 
     @property
@@ -59,10 +70,26 @@ class BrokerMessage(ABC, Model):
 
     @property
     @abstractmethod
+    def ok(self) -> bool:
+        """Check if the message is okay or not.
+
+        :return: ``True`` if the message is okay or ``False`` otherwise.
+        """
+
+    @property
+    @abstractmethod
     def status(self) -> int:
         """Get the status of the message.
 
         :return: An ``int`` instance.
+        """
+
+    @property
+    @abstractmethod
+    def headers(self) -> dict[str, str]:
+        """Get the headers of the message.
+
+        :return: A ``dict`` instance with ``str`` keys and ``str`` values.
         """
 
     # noinspection PyMethodParameters
@@ -110,18 +137,15 @@ class BrokerMessage(ABC, Model):
                 BrokerMessageV1,
             )
 
-            # noinspection PyTypeChecker
-            type_ = ModelType.build(
-                BrokerMessageV1.classname, {n: t for n, t in type_.type_hints.items() if n != "version"}
-            )
-        else:  # Biggest available version.
+            name = BrokerMessageV1.classname
+        else:  # Set the highest available version.
             from .v1 import (
                 BrokerMessageV1,
             )
 
-            # noinspection PyTypeChecker
-            type_ = ModelType.build(
-                BrokerMessageV1.classname, {n: t for n, t in type_.type_hints.items() if n != "version"}
-            )
+            name = BrokerMessageV1.classname
+
+        # noinspection PyTypeChecker
+        type_ = ModelType.build(name, {n: t for n, t in type_.type_hints.items() if n != "version"})
 
         return decoder.build(target, type_, **kwargs)

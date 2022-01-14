@@ -77,6 +77,14 @@ class BrokerMessageV1(BrokerMessage, DeclarativeModel):
         return self.fields["topic"].value
 
     @property
+    def identifier(self) -> UUID:
+        """Get the identifier of the message.
+
+        :return: An ``UUID`` instance.
+        """
+        return self.fields["identifier"].value
+
+    @property
     def reply_topic(self) -> Optional[str]:
         """Get the reply topic of the message if there is someone.
 
@@ -94,11 +102,10 @@ class BrokerMessageV1(BrokerMessage, DeclarativeModel):
 
     @property
     def ok(self) -> bool:
-        """Check if the reply is okay or not.
+        """Check if the message is okay or not.
 
-        :return: ``True`` if the reply is okay or ``False`` otherwise.
+        :return: ``True`` if the message is okay or ``False`` otherwise.
         """
-        warnings.warn("The `BrokerMessage.ok` attribute has been deprecated", DeprecationWarning)
         return self.payload.ok
 
     @property
@@ -115,7 +122,6 @@ class BrokerMessageV1(BrokerMessage, DeclarativeModel):
 
         :return: A `dict` with `str` keys and `str` values.
         """
-        warnings.warn("The `BrokerMessage.headers` attribute has been deprecated", DeprecationWarning)
         return self.payload.headers
 
     @property

@@ -16,10 +16,8 @@ from minos.networks import (
 class TestBrokerMessage(unittest.TestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerMessage, (ABC, Model)))
-        # noinspection PyUnresolvedReferences
-        self.assertTrue(
-            {"content", "reply_topic", "status", "topic", "version"}.issubset(BrokerMessage.__abstractmethods__)
-        )
+        expected = {"version", "topic", "identifier", "reply_topic", "content", "headers", "status", "ok"}
+        self.assertTrue(expected.issubset(BrokerMessage.__abstractmethods__))
 
     def test_v1(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))

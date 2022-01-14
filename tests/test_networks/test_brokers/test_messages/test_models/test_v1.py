@@ -33,9 +33,6 @@ class TestBrokerMessageV1(unittest.TestCase):
             content=[FakeModel("blue"), FakeModel("red")], headers={"foo": "bar"}, status=BrokerMessageV1Status.ERROR
         )
 
-    def test_version(self):
-        self.assertEqual(1, BrokerMessageV1.version)
-
     def test_constructor_simple(self):
         message = BrokerMessageV1(self.topic, self.payload)
         self.assertEqual(self.topic, message.topic)
@@ -58,26 +55,36 @@ class TestBrokerMessageV1(unittest.TestCase):
         self.assertEqual(self.strategy, message.strategy)
         self.assertEqual(self.payload, message.payload)
 
+    def test_version(self):
+        self.assertEqual(1, BrokerMessageV1.version)
+
+    def test_topic(self):
+        message = BrokerMessageV1(self.topic, self.payload)
+        self.assertEqual(self.topic, message.topic)
+
+    def test_identifier(self):
+        message = BrokerMessageV1(self.topic, self.payload, identifier=self.identifier)
+        self.assertEqual(self.identifier, message.identifier)
+
+    def test_reply_topic(self):
+        message = BrokerMessageV1(self.topic, self.payload, reply_topic=self.reply_topic)
+        self.assertEqual(self.reply_topic, message.reply_topic)
+
     def test_ok(self):
         message = BrokerMessageV1(self.topic, self.payload)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            # noinspection PyDeprecation
-            self.assertEqual(self.payload.ok, message.ok)
+        self.assertEqual(self.payload.ok, message.ok)
 
     def test_status(self):
         message = BrokerMessageV1(self.topic, self.payload)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            # noinspection PyDeprecation
-            self.assertEqual(self.payload.status, message.status)
+        self.assertEqual(self.payload.status, message.status)
 
     def test_headers(self):
         message = BrokerMessageV1(self.topic, self.payload)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            # noinspection PyDeprecation
-            self.assertEqual(self.payload.headers, message.headers)
+        self.assertEqual(self.payload.headers, message.headers)
+
+    def test_content(self):
+        message = BrokerMessageV1(self.topic, self.payload)
+        self.assertEqual(self.payload.content, message.content)
 
     def test_data(self):
         message = BrokerMessageV1(self.topic, self.payload)
