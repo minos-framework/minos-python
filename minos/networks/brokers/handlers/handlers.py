@@ -59,6 +59,9 @@ class BrokerHandler(BrokerHandlerSetup):
 
     __slots__ = "_handlers", "_records", "_retry", "_queue", "_consumers", "_consumer_concurrency"
 
+    _queue: PriorityQueue[BrokerHandlerEntry]
+    _consumers: list[Task]
+
     def __init__(
         self, dispatcher: BrokerDispatcher, records: int, retry: int, consumer_concurrency: int = 15, **kwargs: Any,
     ):
@@ -69,7 +72,7 @@ class BrokerHandler(BrokerHandlerSetup):
         self._retry = retry
 
         self._queue = PriorityQueue(maxsize=self._records)
-        self._consumers: list[Task] = list()
+        self._consumers = list()
         self._consumer_concurrency = consumer_concurrency
 
     @classmethod
