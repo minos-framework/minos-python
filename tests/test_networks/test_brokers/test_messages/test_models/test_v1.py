@@ -119,16 +119,6 @@ class TestBrokerMessageV1(unittest.TestCase):
         observed = sorted(unsorted)
         self.assertEqual(expected, observed)
 
-    def test_payload_message(self):
-        message = BrokerMessageV1(self.topic, self.payload)
-        self.assertEqual(message, self.payload.message)
-
-    def test_payload_message_raises(self):
-        BrokerMessageV1(self.topic, self.payload)
-
-        with self.assertRaises(ValueError):
-            BrokerMessageV1(self.topic, self.payload)
-
     def test_from_avro(self):
         expected = BrokerMessageV1(self.topic, self.payload, identifier=self.identifier)
         schema = {
@@ -264,15 +254,6 @@ class TestBrokerMessageV1(unittest.TestCase):
 class TestBrokerMessagePayload(unittest.TestCase):
     def setUp(self) -> None:
         self.content = [FakeModel("blue"), FakeModel("red")]
-
-    def test_message_none(self):
-        payload = BrokerMessageV1Payload(self.content)
-        self.assertEqual(None, payload.message)
-
-    def test_message_setter(self):
-        payload = BrokerMessageV1Payload(self.content)
-        payload._message = "foo"
-        self.assertEqual("foo", payload.message)
 
     def test_ok(self):
         self.assertTrue(BrokerMessageV1Payload(self.content, status=BrokerMessageV1Status.SUCCESS).ok)

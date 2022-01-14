@@ -55,10 +55,6 @@ class BrokerMessageV1(BrokerMessage, DeclarativeModel):
         if strategy is None:
             strategy = BrokerMessageV1Strategy.UNICAST
 
-        if payload.message is not None:
-            raise ValueError(f"The given payload already belongs to another message: {payload.message!r}")
-        payload._message = self
-
         super().__init__(topic=topic, identifier=identifier, strategy=strategy, payload=payload, **kwargs)
 
     # noinspection PyPropertyDefinition
@@ -157,15 +153,6 @@ class BrokerMessageV1Payload(DeclarativeModel):
         if status is None:
             status = BrokerMessageV1Status.SUCCESS
         super().__init__(content=content, status=status, headers=headers, **kwargs)
-        self._message = None
-
-    @property
-    def message(self) -> Optional[BrokerMessageV1]:
-        """Get the ``BrokerMessage`` wrapper if available.
-
-        :return: A ``BrokerMessage`` instance or ``None``.
-        """
-        return self._message
 
     @property
     def ok(self) -> bool:
