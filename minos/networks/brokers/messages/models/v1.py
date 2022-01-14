@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 import warnings
 from enum import (
     Enum,
@@ -25,6 +26,8 @@ from minos.common import (
 from .abc import (
     BrokerMessage,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @total_ordering
@@ -147,11 +150,7 @@ class BrokerMessageV1Payload(DeclarativeModel):
     headers: dict[str, str]
 
     def __init__(
-        self,
-        content: Any,
-        headers: Optional[dict[str, str]] = None,
-        status: Optional[BrokerMessageV1Status] = None,
-        **kwargs,
+        self, content: Any, headers: Optional[dict[str, str]] = None, status: Optional[int] = None, **kwargs,
     ):
         if headers is None:
             headers = dict()
@@ -199,6 +198,12 @@ class BrokerMessageV1Status(int, Enum):
     SUCCESS = 200
     ERROR = 400
     SYSTEM_ERROR = 500
+    UNKNOWN = 600
+
+    @classmethod
+    def _missing_(cls, value: Any) -> BrokerMessageV1Status:
+        logger.warning(f"The given status value is unknown: {value}")
+        return cls.UNKNOWN
 
 
 class BrokerMessageV1Strategy(str, Enum):

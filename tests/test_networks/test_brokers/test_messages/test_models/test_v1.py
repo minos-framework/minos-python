@@ -278,6 +278,7 @@ class TestBrokerMessagePayload(unittest.TestCase):
         self.assertTrue(BrokerMessageV1Payload(self.content, status=BrokerMessageV1Status.SUCCESS).ok)
         self.assertFalse(BrokerMessageV1Payload(self.content, status=BrokerMessageV1Status.ERROR).ok)
         self.assertFalse(BrokerMessageV1Payload(self.content, status=BrokerMessageV1Status.SYSTEM_ERROR).ok)
+        self.assertFalse(BrokerMessageV1Payload(self.content, status=BrokerMessageV1Status.UNKNOWN).ok)
 
     def test_data(self):
         payload = BrokerMessageV1Payload(self.content)
@@ -285,6 +286,20 @@ class TestBrokerMessagePayload(unittest.TestCase):
             warnings.simplefilter("ignore", DeprecationWarning)
             # noinspection PyDeprecation
             self.assertEqual(self.content, payload.data)
+
+
+class TestBrokerMessageV1Status(unittest.TestCase):
+    def test_success(self):
+        self.assertEqual(BrokerMessageV1Status.SUCCESS, BrokerMessageV1Status(200))
+
+    def test_error(self):
+        self.assertEqual(BrokerMessageV1Status.ERROR, BrokerMessageV1Status(400))
+
+    def test_system_error(self):
+        self.assertEqual(BrokerMessageV1Status.SYSTEM_ERROR, BrokerMessageV1Status(500))
+
+    def test_unknown(self):
+        self.assertEqual(BrokerMessageV1Status.UNKNOWN, BrokerMessageV1Status(56))
 
 
 if __name__ == "__main__":
