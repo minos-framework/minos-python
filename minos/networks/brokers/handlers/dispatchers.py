@@ -48,7 +48,7 @@ from ..messages import (
     BrokerMessageV1Status,
 )
 from ..publishers import (
-    BrokerPublisher,
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from .requests import (
     BrokerRequest,
@@ -61,7 +61,9 @@ logger = logging.getLogger(__name__)
 class BrokerDispatcher(MinosSetup):
     """Broker Dispatcher class."""
 
-    def __init__(self, actions: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs):
+    def __init__(
+        self, actions: dict[str, Optional[Callable]], publisher: PostgreSqlBrokerPublisherRepositoryEnqueue, **kwargs
+    ):
         super().__init__(**kwargs)
         self._actions = actions
         self._publisher = publisher
@@ -87,18 +89,18 @@ class BrokerDispatcher(MinosSetup):
     @staticmethod
     @inject
     def _get_publisher(
-        publisher: Optional[BrokerPublisher] = None,
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        publisher: Optional[PostgreSqlBrokerPublisherRepositoryEnqueue] = None,
+        broker_publisher: PostgreSqlBrokerPublisherRepositoryEnqueue = Provide["broker_publisher"],
         **kwargs,
-    ) -> BrokerPublisher:
+    ) -> PostgreSqlBrokerPublisherRepositoryEnqueue:
         if publisher is None:
             publisher = broker_publisher
         if publisher is None or isinstance(publisher, Provide):
-            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
+            raise NotProvidedException(f"A {PostgreSqlBrokerPublisherRepositoryEnqueue!r} object must be provided.")
         return publisher
 
     @property
-    def publisher(self) -> BrokerPublisher:
+    def publisher(self) -> PostgreSqlBrokerPublisherRepositoryEnqueue:
         """Get the publisher instance.
 
         :return: A ``BrokerPublisher`` instance.

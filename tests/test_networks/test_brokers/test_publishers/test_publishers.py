@@ -24,7 +24,7 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
-    BrokerPublisher,
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from tests.utils import (
     BASE_PATH,
@@ -37,7 +37,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.publisher = BrokerPublisher.from_config(self.config)
+        self.publisher = PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(self.config)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -48,7 +48,10 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config_default(self):
-        self.assertIsInstance(BrokerPublisher.from_config(config=self.config), BrokerPublisher)
+        self.assertIsInstance(
+            PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(config=self.config),
+            PostgreSqlBrokerPublisherRepositoryEnqueue,
+        )
 
     async def test_send(self):
         mock = AsyncMock()

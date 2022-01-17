@@ -13,9 +13,9 @@ from minos.common.testing import (
 from minos.networks import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
     BrokerConsumer,
-    BrokerPublisher,
     DynamicBroker,
     DynamicBrokerPool,
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from tests.utils import (
     BASE_PATH,
@@ -27,7 +27,7 @@ class TestDynamicBrokerPool(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.publisher = BrokerPublisher.from_config(self.config)
+        self.publisher = PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(self.config)
         self.consumer = BrokerConsumer.from_config(self.config)
         self.pool = DynamicBrokerPool.from_config(self.config, consumer=self.consumer, publisher=self.publisher)
 

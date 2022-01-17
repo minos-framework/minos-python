@@ -11,8 +11,8 @@ from cached_property import (
     cached_property,
 )
 
-from .producers import (
-    BrokerProducer,
+from .queued import (
+    PostgreSqlBrokerPublisherRepositoryDequeue,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,9 +48,9 @@ class BrokerProducerService(Service):
         await self.dispatcher.destroy()
 
     @cached_property
-    def dispatcher(self) -> BrokerProducer:
+    def dispatcher(self) -> PostgreSqlBrokerPublisherRepositoryDequeue:
         """Get the service dispatcher.
 
         :return: A ``Producer`` instance.
         """
-        return BrokerProducer.from_config(**self._init_kwargs)
+        return PostgreSqlBrokerPublisherRepositoryDequeue.from_config(**self._init_kwargs)

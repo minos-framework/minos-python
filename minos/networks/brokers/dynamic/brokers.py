@@ -45,7 +45,7 @@ from ..handlers import (
     BrokerHandlerSetup,
 )
 from ..publishers import (
-    BrokerPublisher,
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 class DynamicBroker(BrokerHandlerSetup):
     """Dynamic Broker class."""
 
-    def __init__(self, topic: str, publisher: BrokerPublisher, **kwargs):
+    def __init__(self, topic: str, publisher: PostgreSqlBrokerPublisherRepositoryEnqueue, **kwargs):
         super().__init__(**kwargs)
 
         self.topic = topic
@@ -70,14 +70,14 @@ class DynamicBroker(BrokerHandlerSetup):
     @staticmethod
     @inject
     def _get_publisher(
-        publisher: Optional[BrokerPublisher] = None,
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        publisher: Optional[PostgreSqlBrokerPublisherRepositoryEnqueue] = None,
+        broker_publisher: PostgreSqlBrokerPublisherRepositoryEnqueue = Provide["broker_publisher"],
         **kwargs,
-    ) -> BrokerPublisher:
+    ) -> PostgreSqlBrokerPublisherRepositoryEnqueue:
         if publisher is None:
             publisher = broker_publisher
         if publisher is None or isinstance(publisher, Provide):
-            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
+            raise NotProvidedException(f"A {PostgreSqlBrokerPublisherRepositoryEnqueue!r} object must be provided.")
         return publisher
 
     async def _setup(self) -> None:

@@ -15,7 +15,7 @@ from minos.common import (
 logger = logging.getLogger(__name__)
 
 
-class BrokerPublisherSetup(PostgreSqlMinosDatabase):
+class PostgreSqlBrokerPublisherRepositorySetup(PostgreSqlMinosDatabase):
     """Broker Publisher Setup class."""
 
     async def _setup(self) -> None:

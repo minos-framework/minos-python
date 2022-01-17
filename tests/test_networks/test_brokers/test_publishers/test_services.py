@@ -12,8 +12,8 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerConsumer,
-    BrokerProducer,
     BrokerProducerService,
+    PostgreSqlBrokerPublisherRepositoryDequeue,
 )
 from tests.utils import (
     BASE_PATH,
@@ -33,7 +33,7 @@ class TestProducerService(PostgresAsyncTestCase):
 
     def test_dispatcher(self):
         service = BrokerProducerService(config=self.config, consumer=self.consumer)
-        self.assertIsInstance(service.dispatcher, BrokerProducer)
+        self.assertIsInstance(service.dispatcher, PostgreSqlBrokerPublisherRepositoryDequeue)
 
     async def test_start_stop(self):
         service = BrokerProducerService(config=self.config, consumer=self.consumer)

@@ -24,8 +24,8 @@ from minos.networks import (
     BrokerConsumer,
     BrokerMessageStrategy,
     BrokerMessageV1Status,
-    BrokerProducer,
-    BrokerPublisher,
+    PostgreSqlBrokerPublisherRepositoryDequeue,
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from tests.utils import (
     BASE_PATH,
@@ -40,7 +40,7 @@ class TestProducer(PostgresAsyncTestCase):
         super().setUp()
 
         self.consumer = BrokerConsumer.from_config(self.config)
-        self.producer = BrokerProducer.from_config(self.config, consumer=self.consumer)
+        self.producer = PostgreSqlBrokerPublisherRepositoryDequeue.from_config(self.config, consumer=self.consumer)
 
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -53,11 +53,11 @@ class TestProducer(PostgresAsyncTestCase):
         await super().asyncTearDown()
 
     def test_from_config_default(self):
-        self.assertIsInstance(self.producer, BrokerProducer)
+        self.assertIsInstance(self.producer, PostgreSqlBrokerPublisherRepositoryDequeue)
 
     async def test_from_config_raises(self):
         with self.assertRaises(NotProvidedException):
-            BrokerProducer.from_config(config=self.config)
+            PostgreSqlBrokerPublisherRepositoryDequeue.from_config(config=self.config)
 
     async def test_dispatch_one_internal_true(self):
         mock = AsyncMock()
@@ -141,7 +141,7 @@ class TestProducer(PostgresAsyncTestCase):
         model = FakeModel("foo")
         identifier = uuid4()
 
-        broker_publisher = BrokerPublisher.from_config(config=self.config)
+        broker_publisher = PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(config=self.config)
 
         async with broker_publisher:
             for x in range(60):
@@ -166,7 +166,7 @@ class TestProducer(PostgresAsyncTestCase):
         assert records[0] == 0
 
     async def test_if_commands_was_deleted(self):
-        async with BrokerPublisher.from_config(config=self.config) as broker_publisher:
+        async with PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(config=self.config) as broker_publisher:
             await broker_publisher.send(FakeModel("Foo"), "TestDeleteReply")
             await broker_publisher.send(FakeModel("Foo"), "TestDeleteReply")
 
@@ -181,7 +181,7 @@ class TestProducer(PostgresAsyncTestCase):
         model = FakeModel("foo")
         identifier = uuid4()
 
-        async with BrokerPublisher.from_config(config=self.config) as broker_publisher:
+        async with PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(config=self.config) as broker_publisher:
             await broker_publisher.send(
                 model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageV1Status.SUCCESS
             )

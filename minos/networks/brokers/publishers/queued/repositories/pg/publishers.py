@@ -20,24 +20,24 @@ from minos.common import (
     MinosConfig,
 )
 
-from ...messages import (
+from .....messages import (
     BrokerMessageStrategy,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
 )
 from .abc import (
-    BrokerPublisherSetup,
+    PostgreSqlBrokerPublisherRepositorySetup,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class BrokerPublisher(BrokerPublisherSetup):
+class PostgreSqlBrokerPublisherRepositoryEnqueue(PostgreSqlBrokerPublisherRepositorySetup):
     """Broker Publisher class."""
 
     @classmethod
-    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> BrokerPublisher:
+    def _from_config(cls, *args, config: MinosConfig, **kwargs) -> PostgreSqlBrokerPublisherRepositoryEnqueue:
         # noinspection PyProtectedMember
         return cls(*args, **config.broker.queue._asdict(), **kwargs)
 

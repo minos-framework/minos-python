@@ -18,12 +18,12 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
-    BrokerPublisher,
     BrokerRequest,
     BrokerResponse,
     BrokerResponseException,
     InMemoryRequest,
     MinosActionNotFoundException,
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
     Request,
     Response,
 )
@@ -57,7 +57,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.publisher = BrokerPublisher.from_config(self.config)
+        self.publisher = PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(self.config)
         self.dispatcher = BrokerDispatcher.from_config(self.config, publisher=self.publisher)
 
         self.identifier = uuid4()

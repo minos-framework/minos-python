@@ -35,23 +35,23 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ....utils import (
+from ......utils import (
     consume_queue,
 )
-from ...handlers import (
+from .....handlers import (
     BrokerConsumer,
 )
-from ...messages import (
+from .....messages import (
     BrokerMessageStrategy,
 )
 from .abc import (
-    BrokerPublisherSetup,
+    PostgreSqlBrokerPublisherRepositorySetup,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class BrokerProducer(BrokerPublisherSetup):
+class PostgreSqlBrokerPublisherRepositoryDequeue(PostgreSqlBrokerPublisherRepositorySetup):
     """Broker Producer class."""
 
     def __init__(
@@ -74,7 +74,7 @@ class BrokerProducer(BrokerPublisherSetup):
         self.consumer = consumer
 
     @classmethod
-    def _from_config(cls, config: MinosConfig, **kwargs) -> BrokerProducer:
+    def _from_config(cls, config: MinosConfig, **kwargs) -> PostgreSqlBrokerPublisherRepositoryDequeue:
         kwargs["broker_host"] = config.broker.host
         kwargs["broker_port"] = config.broker.port
         kwargs["consumer"] = cls._get_consumer(**kwargs)

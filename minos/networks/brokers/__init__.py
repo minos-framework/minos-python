@@ -25,8 +25,13 @@ from .messages import (
     BrokerMessageV1Strategy,
 )
 from .publishers import (
-    BrokerProducer,
     BrokerProducerService,
     BrokerPublisher,
-    BrokerPublisherSetup,
+    BrokerPublisherRepository,
+    KafkaBrokerPublisher,
+    PostgreSqlBrokerPublisherRepository,
+    PostgreSqlBrokerPublisherRepositoryDequeue,
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
+    PostgreSqlBrokerPublisherRepositorySetup,
+    QueuedBrokerPublisher,
 )

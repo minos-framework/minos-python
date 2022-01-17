@@ -6,7 +6,7 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerPublisherSetup,
+    PostgreSqlBrokerPublisherRepositorySetup,
 )
 from tests.utils import (
     BASE_PATH,
@@ -18,7 +18,7 @@ class TestBrokerSetup(PostgresAsyncTestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.broker_setup = BrokerPublisherSetup(**self.config.broker.queue._asdict())
+        self.broker_setup = PostgreSqlBrokerPublisherRepositorySetup(**self.config.broker.queue._asdict())
 
     async def test_setup(self):
         async with self.broker_setup:

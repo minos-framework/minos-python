@@ -38,7 +38,7 @@ from ..messages import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
 )
 from ..publishers import (
-    BrokerPublisher,
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from .brokers import (
     DynamicBroker,
@@ -55,7 +55,7 @@ class DynamicBrokerPool(MinosPool):
         config: MinosConfig,
         client: KafkaAdminClient,
         consumer: BrokerConsumer,
-        publisher: BrokerPublisher,
+        publisher: PostgreSqlBrokerPublisherRepositoryEnqueue,
         maxsize: int = 5,
         recycle: Optional[int] = 3600,
         *args,
@@ -96,14 +96,14 @@ class DynamicBrokerPool(MinosPool):
     @staticmethod
     @inject
     def _get_publisher(
-        publisher: Optional[BrokerPublisher] = None,
-        broker_publisher: BrokerPublisher = Provide["broker_publisher"],
+        publisher: Optional[PostgreSqlBrokerPublisherRepositoryEnqueue] = None,
+        broker_publisher: PostgreSqlBrokerPublisherRepositoryEnqueue = Provide["broker_publisher"],
         **kwargs,
-    ) -> BrokerPublisher:
+    ) -> PostgreSqlBrokerPublisherRepositoryEnqueue:
         if publisher is None:
             publisher = broker_publisher
         if publisher is None or isinstance(publisher, Provide):
-            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
+            raise NotProvidedException(f"A {PostgreSqlBrokerPublisherRepositoryEnqueue!r} object must be provided.")
         return publisher
 
     async def _create_instance(self) -> DynamicBroker:
