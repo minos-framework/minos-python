@@ -106,14 +106,14 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
             rows = await cursor.fetchall()
             for row in rows:
 
-                processed = True
                 try:
                     yield self._dispatch_one(row)
+                    ok = True
                 except Exception as exc:
                     logger.warning(f"There was an exception while trying to dequeue the row with {row[0]} id: {exc}")
-                    processed = False
+                    ok = False
 
-                if processed:
+                if ok:
                     await cursor.execute(self._queries["delete_processed"], (row[0],))
                 else:
                     await cursor.execute(self._queries["update_not_processed"], (row[0],))
