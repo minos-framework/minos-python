@@ -40,6 +40,14 @@ class KafkaBrokerPublisher(BrokerPublisher):
         # noinspection PyProtectedMember
         return cls(**config.broker.queue._asdict(), **kwargs)
 
+    async def _setup(self) -> None:
+        await super()._setup()
+        await self.client.start()
+
+    async def _destroy(self) -> None:
+        await self.client.stop()
+        await super()._destroy()
+
     async def send(self, message: BrokerMessage) -> None:
         """TODO
 

@@ -53,6 +53,23 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("foo", send_mock.call_args.args[0])
         self.assertEqual(message, BrokerMessage.from_avro_bytes(send_mock.call_args.args[1]))
 
+    async def test_setup_destroy(self):
+        publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
+        start_mock = AsyncMock()
+        stop_mock = AsyncMock()
+        publisher.client.start = start_mock
+        publisher.client.stop = stop_mock
+
+        async with publisher:
+            self.assertEqual(1, start_mock.call_count)
+            self.assertEqual(0, stop_mock.call_count)
+
+            start_mock.reset_mock()
+            stop_mock.reset_mock()
+
+        self.assertEqual(0, start_mock.call_count)
+        self.assertEqual(1, stop_mock.call_count)
+
 
 if __name__ == "__main__":
     unittest.main()
