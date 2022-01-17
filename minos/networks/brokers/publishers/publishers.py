@@ -3,6 +3,7 @@ from __future__ import (
 )
 
 import logging
+import warnings
 from typing import (
     Any,
     Optional,
@@ -20,9 +21,10 @@ from minos.common import (
 )
 
 from ..messages import (
-    BrokerMessage,
-    BrokerMessageStatus,
     BrokerMessageStrategy,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    BrokerMessageV1Status,
 )
 from .abc import (
     BrokerPublisherSetup,
@@ -48,14 +50,15 @@ class BrokerPublisher(BrokerPublisherSetup):
         identifier: Optional[UUID] = None,
         reply_topic: Optional[str] = None,
         user: Optional[UUID] = None,
-        status: BrokerMessageStatus = BrokerMessageStatus.SUCCESS,
+        status: int = BrokerMessageV1Status.SUCCESS,
         strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
         headers: Optional[dict[str, str]] = None,
+        payload: Optional[BrokerMessageV1Payload] = None,
         **kwargs,
     ) -> UUID:
         """Send a ``BrokerMessage``.
 
-        :param data: The data to be send.
+        :param data: The data to be sent.
         :param topic: Topic in which the message will be published.
         :param identifier: The identifier of the message.
         :param reply_topic: An optional topic name to wait for a response.
@@ -63,19 +66,24 @@ class BrokerPublisher(BrokerPublisherSetup):
         :param status: The status code of the message.
         :param strategy: The publishing strategy.
         :param headers: A mapping of string values identified by a string key.
+        :param payload: The payload of the message.
         :param kwargs: Additional named arguments.
         :return: The ``UUID`` identifier of the message.
         """
+        if user is not None:
+            warnings.warn(
+                "The 'user' argument has been deprecated. It must be passed as the headers['User'] field.",
+                DeprecationWarning,
+            )
+            if headers is None:
+                headers = dict()
+            headers["User"] = str(user)
 
-        message = BrokerMessage(
-            topic=topic,
-            data=data,
-            identifier=identifier,
-            status=status,
-            reply_topic=reply_topic,
-            user=user,
-            strategy=strategy,
-            headers=headers,
+        if payload is None:
+            payload = BrokerMessageV1Payload(content=data, headers=headers, status=status)
+
+        message = BrokerMessageV1(
+            topic=topic, identifier=identifier, reply_topic=reply_topic, strategy=strategy, payload=payload,
         )
         logger.info(f"Publishing '{message!s}'...")
         await self.enqueue(message.topic, message.strategy, message.avro_bytes)
@@ -84,9 +92,9 @@ class BrokerPublisher(BrokerPublisherSetup):
     async def enqueue(self, topic: str, strategy: BrokerMessageStrategy, raw: bytes) -> int:
         """Send a sequence of bytes to the given topic.
 
-        :param topic: Topic in which the bytes will be send.
+        :param topic: Topic in which the bytes will be sent.
         :param strategy: The publishing strategy.
-        :param raw: Bytes sequence to be send.
+        :param raw: Bytes sequence to be sent.
         :return: The identifier of the message in the queue.
         """
         params = (topic, raw, strategy)

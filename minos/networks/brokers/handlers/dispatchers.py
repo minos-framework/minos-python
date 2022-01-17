@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from asyncio import (
-    CancelledError,
-)
 from collections.abc import (
     Awaitable,
     Callable,
@@ -48,13 +45,10 @@ from ...requests import (
 from ..messages import (
     REQUEST_HEADERS_CONTEXT_VAR,
     BrokerMessage,
-    BrokerMessageStatus,
+    BrokerMessageV1Status,
 )
 from ..publishers import (
     BrokerPublisher,
-)
-from .entries import (
-    BrokerHandlerEntry,
 )
 from .requests import (
     BrokerRequest,
@@ -67,9 +61,7 @@ logger = logging.getLogger(__name__)
 class BrokerDispatcher(MinosSetup):
     """Broker Dispatcher class."""
 
-    def __init__(
-        self, actions: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs,
-    ):
+    def __init__(self, actions: dict[str, Optional[Callable]], publisher: BrokerPublisher, **kwargs):
         super().__init__(**kwargs)
         self._actions = actions
         self._publisher = publisher
@@ -121,42 +113,26 @@ class BrokerDispatcher(MinosSetup):
         """
         return self._actions
 
-    async def dispatch(self, entry: BrokerHandlerEntry) -> None:
+    async def dispatch(self, message: BrokerMessage) -> None:
         """Dispatch an entry.
 
-        :param entry: The entry to be dispatched.
+        :param message: The entry to be dispatched.
         :return: This method does not return anything.
         """
-        logger.info(f"Dispatching '{entry!r}'...")
-        try:
-            await self._dispatch(entry)
-        except (CancelledError, Exception) as exc:
-            logger.warning(f"Raised an exception while dispatching {entry!r}: {exc!r}")
-            entry.exception = exc
-            if isinstance(exc, CancelledError):
-                raise exc
-
-    async def _dispatch(self, entry: BrokerHandlerEntry) -> None:
-        action = self.get_action(entry.topic)
+        action = self.get_action(message.topic)
         fn = self.get_callback(action)
 
-        message = entry.data
         data, status, headers = await fn(message)
 
         if message.reply_topic is not None:
             await self.publisher.send(
-                data,
-                topic=message.reply_topic,
-                identifier=message.identifier,
-                status=status,
-                user=message.user,
-                headers=headers,
+                data, topic=message.reply_topic, identifier=message.identifier, headers=headers, status=status
             )
 
     @staticmethod
     def get_callback(
         fn: Callable[[BrokerRequest], Union[Optional[BrokerResponse], Awaitable[Optional[BrokerResponse]]]]
-    ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, BrokerMessageStatus, dict[str, str]]]]:
+    ) -> Callable[[BrokerMessage], Awaitable[tuple[Any, int, dict[str, str]]]]:
         """Get the handler function to be used by the Broker Handler.
 
         :param fn: The action function.
@@ -164,10 +140,12 @@ class BrokerDispatcher(MinosSetup):
         """
 
         @wraps(fn)
-        async def _wrapper(raw: BrokerMessage) -> tuple[Any, BrokerMessageStatus, dict[str, str]]:
+        async def _wrapper(raw: BrokerMessage) -> tuple[Any, int, dict[str, str]]:
+            logger.info(f"Dispatching '{raw!s}'...")
+
             request = BrokerRequest(raw)
             user_token = REQUEST_USER_CONTEXT_VAR.set(request.user)
-            headers_token = REQUEST_HEADERS_CONTEXT_VAR.set(raw.headers)
+            headers_token = REQUEST_HEADERS_CONTEXT_VAR.set(request.headers)
 
             try:
                 response = fn(request)
@@ -175,13 +153,13 @@ class BrokerDispatcher(MinosSetup):
                     response = await response
                 if isinstance(response, Response):
                     response = await response.content()
-                return response, BrokerMessageStatus.SUCCESS, REQUEST_HEADERS_CONTEXT_VAR.get()
+                return response, BrokerMessageV1Status.SUCCESS, REQUEST_HEADERS_CONTEXT_VAR.get()
             except ResponseException as exc:
                 logger.warning(f"Raised an application exception: {exc!s}")
-                return repr(exc), BrokerMessageStatus.ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
+                return repr(exc), BrokerMessageV1Status.ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
             except Exception as exc:
                 logger.exception(f"Raised a system exception: {exc!r}")
-                return repr(exc), BrokerMessageStatus.SYSTEM_ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
+                return repr(exc), BrokerMessageV1Status.SYSTEM_ERROR, REQUEST_HEADERS_CONTEXT_VAR.get()
             finally:
                 REQUEST_USER_CONTEXT_VAR.reset(user_token)
                 REQUEST_HEADERS_CONTEXT_VAR.reset(headers_token)

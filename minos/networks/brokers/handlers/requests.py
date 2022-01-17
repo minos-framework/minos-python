@@ -10,6 +10,10 @@ from uuid import (
     UUID,
 )
 
+from cached_property import (
+    cached_property,
+)
+
 from ...requests import (
     Request,
     Response,
@@ -35,12 +39,22 @@ class BrokerRequest(Request):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.raw!r})"
 
-    @property
+    @cached_property
     def user(self) -> Optional[UUID]:
         """
         Returns the UUID of the user making the Request.
         """
-        return getattr(self.raw, "user", None)
+        if "User" not in self.headers:
+            return None
+        return UUID(self.headers["User"])
+
+    @property
+    def headers(self) -> dict[str, str]:
+        """Get the headers of the request.
+
+        :return: A dictionary in which keys are ``str`` instances and values are ``str`` instances.
+        """
+        return self.raw.headers
 
     @property
     def has_content(self) -> bool:
@@ -51,7 +65,7 @@ class BrokerRequest(Request):
         return True
 
     async def _content(self, **kwargs) -> Any:
-        return self.raw.data
+        return self.raw.content
 
     @property
     def has_params(self) -> bool:

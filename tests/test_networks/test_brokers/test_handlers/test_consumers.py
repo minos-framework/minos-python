@@ -1,4 +1,7 @@
 import unittest
+from collections import (
+    namedtuple,
+)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -17,8 +20,9 @@ from minos.networks import (
 )
 from tests.utils import (
     BASE_PATH,
-    Message,
 )
+
+_ConsumerMessage = namedtuple("Message", ["topic", "partition", "value"])
 
 
 class _ConsumerClient:
@@ -26,7 +30,7 @@ class _ConsumerClient:
 
     def __init__(self, messages=None):
         if messages is None:
-            messages = [Message(topic="TicketAdded", partition=0, value=bytes())]
+            messages = [_ConsumerMessage(topic="TicketAdded", partition=0, value=bytes())]
         self.messages = messages
 
     async def start(self):
@@ -59,7 +63,7 @@ class TestConsumer(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.client = _ConsumerClient([Message(topic="AddOrder", partition=0, value=b"test")])
+        self.client = _ConsumerClient([_ConsumerMessage("AddOrder", 0, b"test")])
         # noinspection PyTypeChecker
         self.consumer = BrokerConsumer(
             topics={f"{self.config.service.name}Reply"},
@@ -158,7 +162,7 @@ class TestConsumer(PostgresAsyncTestCase):
         mock = MagicMock(side_effect=self.consumer.enqueue)
 
         self.consumer.enqueue = mock
-        await self.consumer.handle_single_message(Message(topic="AddOrder", partition=0, value=b"test"))
+        await self.consumer.handle_single_message(_ConsumerMessage("AddOrder", 0, b"test"))
 
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("AddOrder", 0, b"test"), mock.call_args)

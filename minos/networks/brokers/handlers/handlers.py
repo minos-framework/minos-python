@@ -4,6 +4,7 @@ from __future__ import (
 
 import logging
 from asyncio import (
+    CancelledError,
     PriorityQueue,
     Task,
     TimeoutError,
@@ -58,6 +59,9 @@ class BrokerHandler(BrokerHandlerSetup):
 
     __slots__ = "_handlers", "_records", "_retry", "_queue", "_consumers", "_consumer_concurrency"
 
+    _queue: PriorityQueue[BrokerHandlerEntry]
+    _consumers: list[Task]
+
     def __init__(
         self, dispatcher: BrokerDispatcher, records: int, retry: int, consumer_concurrency: int = 15, **kwargs: Any,
     ):
@@ -68,7 +72,7 @@ class BrokerHandler(BrokerHandlerSetup):
         self._retry = retry
 
         self._queue = PriorityQueue(maxsize=self._records)
-        self._consumers: list[Task] = list()
+        self._consumers = list()
         self._consumer_concurrency = consumer_concurrency
 
     @classmethod
@@ -121,10 +125,13 @@ class BrokerHandler(BrokerHandlerSetup):
     async def _consume_one(self) -> None:
         entry = await self._queue.get()
         try:
-            await self._dispatcher.dispatch(entry)
+            try:
+                await self._dispatcher.dispatch(entry.data)
+            except (CancelledError, Exception) as exc:
+                await self.submit_query(self._queries["update_not_processed"], (entry.id,))
+                raise exc
+            await self.submit_query(self._queries["delete_processed"], (entry.id,))
         finally:
-            query_id = "delete_processed" if entry.success else "update_not_processed"
-            await self.submit_query(self._queries[query_id], (entry.id,))
             self._queue.task_done()
 
     @property

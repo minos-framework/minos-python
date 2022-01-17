@@ -1,10 +1,11 @@
 import unittest
 from uuid import (
+    UUID,
     uuid4,
 )
 
 from minos.networks import (
-    BrokerMessage,
+    BrokerMessageV1Payload,
     BrokerRequest,
     BrokerResponse,
     NotHasParamsException,
@@ -18,7 +19,7 @@ class TestBrokerRequest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.data = [FakeModel("foo"), FakeModel("bar")]
         self.identifier = uuid4()
-        self.raw = BrokerMessage("FooCreated", self.data)
+        self.raw = BrokerMessageV1Payload(self.data)
         self.request = BrokerRequest(self.raw)
 
     def test_repr(self):
@@ -29,12 +30,12 @@ class TestBrokerRequest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.request, BrokerRequest(self.raw))
 
     def test_eq_false(self):
-        self.assertNotEqual(self.request, BrokerRequest(BrokerMessage("FooUpdated", self.data)))
+        self.assertNotEqual(self.request, BrokerRequest(BrokerMessageV1Payload("foo")))
 
     def test_user(self):
-        raw = BrokerMessage("FooCreated", self.data, user=uuid4())
+        raw = BrokerMessageV1Payload(self.data, headers={"User": str(uuid4())})
         request = BrokerRequest(raw)
-        self.assertEqual(raw.user, request.user)
+        self.assertEqual(UUID(raw.headers["User"]), request.user)
 
     def test_user_unset(self):
         self.assertEqual(None, self.request.user)

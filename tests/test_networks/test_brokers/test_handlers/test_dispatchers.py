@@ -15,9 +15,9 @@ from minos.networks import (
     REQUEST_HEADERS_CONTEXT_VAR,
     REQUEST_USER_CONTEXT_VAR,
     BrokerDispatcher,
-    BrokerHandlerEntry,
-    BrokerMessage,
-    BrokerMessageStatus,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
+    BrokerMessageV1Status,
     BrokerPublisher,
     BrokerRequest,
     BrokerResponse,
@@ -62,14 +62,13 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
 
         self.identifier = uuid4()
         self.user = uuid4()
+        self.headers = {"foo": "bar", "User": str(self.user)}
 
-        self.message = BrokerMessage(
-            "AddOrder",
-            FakeModel("foo"),
+        self.message = BrokerMessageV1(
+            topic="AddOrder",
             identifier=self.identifier,
-            user=self.user,
             reply_topic="UpdateTicket",
-            headers={"foo": "bar"},
+            payload=BrokerMessageV1Payload(content=FakeModel("foo"), headers=self.headers),
         )
 
     async def asyncSetUp(self):
@@ -114,21 +113,23 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
 
     async def test_get_callback(self):
         fn = self.dispatcher.get_callback(_Cls._fn)
-        self.assertEqual((FakeModel("foo"), BrokerMessageStatus.SUCCESS, {"foo": "bar"}), await fn(self.message))
+        self.assertEqual(
+            (FakeModel("foo"), BrokerMessageV1Status.SUCCESS, self.headers), await fn(self.message.payload)
+        )
 
     async def test_get_callback_none(self):
         fn = self.dispatcher.get_callback(_Cls._fn_none)
-        self.assertEqual((None, BrokerMessageStatus.SUCCESS, {"foo": "bar"}), await fn(self.message))
+        self.assertEqual((None, BrokerMessageV1Status.SUCCESS, self.headers), await fn(self.message.payload))
 
     async def test_get_callback_raises_response(self):
         fn = self.dispatcher.get_callback(_Cls._fn_raises_response)
-        expected = (repr(BrokerResponseException("foo")), BrokerMessageStatus.ERROR, {"foo": "bar"})
-        self.assertEqual(expected, await fn(self.message))
+        expected = (repr(BrokerResponseException("foo")), BrokerMessageV1Status.ERROR, self.headers)
+        self.assertEqual(expected, await fn(self.message.payload))
 
     async def test_get_callback_raises_exception(self):
         fn = self.dispatcher.get_callback(_Cls._fn_raises_exception)
-        expected = (repr(ValueError()), BrokerMessageStatus.SYSTEM_ERROR, {"foo": "bar"})
-        self.assertEqual(expected, await fn(self.message))
+        expected = (repr(ValueError()), BrokerMessageV1Status.SYSTEM_ERROR, self.headers)
+        self.assertEqual(expected, await fn(self.message.payload))
 
     async def test_get_callback_with_user(self):
         async def _fn(request) -> None:
@@ -138,33 +139,31 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         mock = AsyncMock(side_effect=_fn)
 
         action = self.dispatcher.get_callback(mock)
-        await action(self.message)
+        await action(self.message.payload)
 
         self.assertEqual(1, mock.call_count)
 
     async def test_get_callback_with_headers(self):
         async def _fn(request) -> None:
-            self.assertEqual({"foo": "bar"}, request.raw.headers)
+            self.assertEqual(self.headers, request.raw.headers)
             REQUEST_HEADERS_CONTEXT_VAR.get()["bar"] = "foo"
 
         mock = AsyncMock(side_effect=_fn)
 
         action = self.dispatcher.get_callback(mock)
-        _, _, observed = await action(self.message)
+        _, _, observed = await action(self.message.payload)
 
-        self.assertEqual({"foo": "bar", "bar": "foo"}, observed)
+        self.assertEqual(self.headers | {"bar": "foo"}, observed)
 
     async def test_dispatch_with_response(self):
         callback_mock = AsyncMock(return_value=Response("add_order"))
         lookup_mock = MagicMock(return_value=callback_mock)
         self.dispatcher.get_action = lookup_mock
 
-        entry = BrokerHandlerEntry(1, "AddOrder", 0, self.message.avro_bytes, 1)
-
         send_mock = AsyncMock()
         self.publisher.send = send_mock
 
-        await self.dispatcher.dispatch(entry)
+        await self.dispatcher.dispatch(self.message)
 
         self.assertEqual(1, lookup_mock.call_count)
         self.assertEqual(call("AddOrder"), lookup_mock.call_args)
@@ -175,9 +174,8 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
                     "add_order",
                     topic="UpdateTicket",
                     identifier=self.message.identifier,
-                    status=BrokerMessageStatus.SUCCESS,
-                    user=self.user,
-                    headers={"foo": "bar"},
+                    status=BrokerMessageV1Status.SUCCESS,
+                    headers=self.headers,
                 )
             ],
             send_mock.call_args_list,
@@ -195,16 +193,15 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         self.dispatcher.get_action = lookup_mock
 
         topic = "TicketAdded"
-        event = BrokerMessage(topic, FakeModel("Foo"))
-        entry = BrokerHandlerEntry(1, topic, 0, event.avro_bytes, 1)
+        message = BrokerMessageV1(topic, BrokerMessageV1Payload(FakeModel("Foo")))
 
-        await self.dispatcher.dispatch(entry)
+        await self.dispatcher.dispatch(message)
 
         self.assertEqual(1, lookup_mock.call_count)
         self.assertEqual(call("TicketAdded"), lookup_mock.call_args)
 
         self.assertEqual(1, callback_mock.call_count)
-        self.assertEqual(call(BrokerRequest(event)), callback_mock.call_args)
+        self.assertEqual(call(BrokerRequest(message)), callback_mock.call_args)
 
 
 if __name__ == "__main__":
