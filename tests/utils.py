@@ -39,6 +39,22 @@ class FakeModel(DeclarativeModel):
         return isinstance(other, type(self)) and self.data < other.data
 
 
+class FakeAsyncIterator:
+    """For testing purposes."""
+
+    def __init__(self, seq):
+        self.iter = iter(seq)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self.iter)
+        except StopIteration:
+            raise StopAsyncIteration
+
+
 class FakeDispatcher:
     """For testing purposes"""
 
