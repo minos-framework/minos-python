@@ -7,6 +7,9 @@ from aiokafka import (
     AIOKafkaProducer,
 )
 
+from minos.common import (
+    MinosConfig,
+)
 from minos.networks import (
     BrokerMessage,
     BrokerMessageV1,
@@ -24,10 +27,12 @@ class TestKafkaBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(issubclass(KafkaBrokerPublisher, BrokerPublisher))
 
     def test_from_config(self):
-        publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
+        config = MinosConfig(CONFIG_FILE_PATH)
+        publisher = KafkaBrokerPublisher.from_config(config)
+
         self.assertIsInstance(publisher, KafkaBrokerPublisher)
-        self.assertEqual(publisher.broker_host, "localhost")
-        self.assertEqual(publisher.broker_port, 9092)
+        self.assertEqual(config.broker.host, publisher.broker_host)
+        self.assertEqual(config.broker.port, publisher.broker_port)
 
     async def test_client(self):
         publisher = KafkaBrokerPublisher.from_config(CONFIG_FILE_PATH)
