@@ -1,7 +1,4 @@
 import unittest
-from contextlib import (
-    suppress,
-)
 from unittest.mock import (
     AsyncMock,
     call,
@@ -43,7 +40,7 @@ class TestInMemoryBrokerPublisherRepository(unittest.IsolatedAsyncioTestCase):
         repository.queue.get = get_mock
 
         observed = list()
-        with suppress(InterruptedError):
+        with self.assertRaises(InterruptedError):
             async for message in repository.dequeue_all():
                 observed.append(message)
 

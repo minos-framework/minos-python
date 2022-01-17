@@ -1,7 +1,4 @@
 import unittest
-from contextlib import (
-    suppress,
-)
 from unittest.mock import (
     AsyncMock,
     MagicMock,
@@ -61,7 +58,7 @@ class TestQueuedBrokerPublisher(unittest.IsolatedAsyncioTestCase):
 
         publisher = QueuedBrokerPublisher(self.impl, self.repository)
 
-        with suppress(InterruptedError):
+        with self.assertRaises(InterruptedError):
             await publisher.run()
 
         self.assertEqual([call(), call()], repository_dequeue_mock.call_args_list)

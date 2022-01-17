@@ -9,16 +9,19 @@ from asyncio import (
 from collections.abc import (
     AsyncIterator,
 )
+from contextlib import (
+    suppress,
+)
 from functools import (
     cached_property,
-)
-from sqlite3 import (
-    Cursor,
 )
 from typing import (
     Optional,
 )
 
+from aiopg import (
+    Cursor,
+)
 from psycopg2.sql import (
     SQL,
 )
@@ -44,9 +47,7 @@ logger = logging.getLogger(__name__)
 class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlMinosDatabase):
     """PostgreSql Broker Publisher Repository class."""
 
-    def __init__(
-        self, *args, retry: int, records: int, **kwargs,
-    ):
+    def __init__(self, *args, retry: int, records: int, **kwargs):
         super().__init__(*args, **kwargs)
         self.retry = retry
         self.records = records
@@ -81,53 +82,41 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
             try:
                 while True:
                     await self._wait_for_entries(cursor, max_wait)
-                    async for message in self.dispatch(cursor):
+                    async for message in self._dequeue_batch(cursor):
                         yield message
             finally:
                 await cursor.execute(self._queries["unlisten"])
 
     async def _wait_for_entries(self, cursor: Cursor, max_wait: Optional[float]) -> None:
-        if await self._get_count(cursor):
-            return
-
         while True:
-            try:
+            if await self._get_count(cursor):
+                return
+
+            with suppress(TimeoutError):
                 return await wait_for(consume_queue(cursor.connection.notifies, self.records), max_wait)
-            except TimeoutError:
-                if await self._get_count(cursor):
-                    return
 
     async def _get_count(self, cursor) -> int:
         await cursor.execute(self._queries["count_not_processed"], (self.retry,))
         count = (await cursor.fetchone())[0]
         return count
 
-    async def dispatch(self, cursor: Optional[Cursor] = None) -> AsyncIterator[BrokerMessage]:
-        """Dispatch the items in the publishing queue.
-
-        :return: This method does not return anything.
-        """
-        is_external_cursor = cursor is not None
-        if not is_external_cursor:
-            cursor = await self.cursor().__aenter__()
-
+    async def _dequeue_batch(self, cursor: Cursor) -> AsyncIterator[BrokerMessage]:
         async with cursor.begin():
             await cursor.execute(self._queries["select_not_processed"], (self.retry, self.records))
-
             rows = await cursor.fetchall()
-
             for row in rows:
+
+                processed = True
                 try:
-                    message = self._dispatch_one(row)
+                    yield self._dispatch_one(row)
+                except Exception as exc:
+                    logger.warning(f"There was an exception while trying to dequeue the row with {row[0]} id: {exc}")
+                    processed = False
+
+                if processed:
                     await cursor.execute(self._queries["delete_processed"], (row[0],))
-                except Exception:
+                else:
                     await cursor.execute(self._queries["update_not_processed"], (row[0],))
-                    continue
-
-                yield message
-
-        if not is_external_cursor:
-            await cursor.__aexit__(None, None, None)
 
     @staticmethod
     def _dispatch_one(row: tuple) -> BrokerMessage:
