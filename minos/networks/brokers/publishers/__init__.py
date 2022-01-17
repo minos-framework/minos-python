@@ -9,6 +9,7 @@ from .kafka import (
 )
 from .queued import (
     BrokerPublisherRepository,
+    InMemoryBrokerPublisherRepository,
     PostgreSqlBrokerPublisherRepository,
     QueuedBrokerPublisher,
 )

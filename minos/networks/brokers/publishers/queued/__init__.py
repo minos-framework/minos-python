@@ -3,5 +3,6 @@ from .impl import (
 )
 from .repositories import (
     BrokerPublisherRepository,
+    InMemoryBrokerPublisherRepository,
     PostgreSqlBrokerPublisherRepository,
 )

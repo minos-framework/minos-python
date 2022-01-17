@@ -26,6 +26,7 @@ from .brokers import (
     BrokerResponseException,
     DynamicBroker,
     DynamicBrokerPool,
+    InMemoryBrokerPublisherRepository,
     KafkaBrokerPublisher,
     PostgreSqlBrokerPublisherRepository,
     PostgreSqlQueuedKafkaBrokerPublisher,
