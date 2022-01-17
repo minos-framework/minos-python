@@ -30,6 +30,6 @@ from .publishers import (
     BrokerPublisherRepository,
     KafkaBrokerPublisher,
     PostgreSqlBrokerPublisherRepository,
-    QueuedBrokerPublisher,
     PostgreSqlQueuedKafkaBrokerPublisher,
+    QueuedBrokerPublisher,
 )

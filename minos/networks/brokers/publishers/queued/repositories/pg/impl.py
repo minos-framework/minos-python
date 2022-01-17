@@ -70,11 +70,6 @@ class PostgreSqlBrokerPublisherRepository(BrokerPublisherRepository, PostgreSqlM
         await self.submit_query_and_fetchone(_INSERT_ENTRY_QUERY, params)
         await self.submit_query(_NOTIFY_QUERY)
 
-    async def dequeue(self) -> BrokerMessage:
-        """Enqueue method."""
-        # TODO
-        return await self.dequeue_all().__anext__()
-
     async def dequeue_all(self, max_wait: Optional[float] = 60.0) -> AsyncIterator[BrokerMessage]:
         """Dispatch the items in the publishing queue forever.
 

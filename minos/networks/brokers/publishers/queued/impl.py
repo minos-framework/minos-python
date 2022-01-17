@@ -28,5 +28,5 @@ class QueuedBrokerPublisher(BrokerPublisher):
     async def run(self) -> None:
         """Run method."""
         while True:
-            message = await self.repository.dequeue()
-            await self.impl.send(message)
+            async for message in self.repository.dequeue_all():
+                await self.impl.send(message)
