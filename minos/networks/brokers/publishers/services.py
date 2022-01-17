@@ -7,33 +7,51 @@ import logging
 from aiomisc import (
     Service,
 )
-from cached_property import (
-    cached_property,
+from dependency_injector.wiring import (
+    Provide,
+    inject,
+)
+
+from minos.common import (
+    NotProvidedException,
+)
+
+from .abc import (
+    BrokerPublisher,
+)
+from .queued import (
+    QueuedBrokerPublisher,
 )
 
 logger = logging.getLogger(__name__)
 
 
-class BrokerProducerService(Service):
+class BrokerPublisherService(Service):
     """Broker Producer Service class."""
 
-    def __init__(self, **kwargs):
+    @inject
+    def __init__(self, impl: BrokerPublisher = Provide["broker_publisher"], **kwargs):
         super().__init__(**kwargs)
-        self._init_kwargs = kwargs
+
+        if impl is None or isinstance(impl, Provide):
+            raise NotProvidedException(f"A {BrokerPublisher!r} object must be provided.")
+
+        self.impl = impl
 
     async def start(self) -> None:
         """Start the service execution.
 
         :return: This method does not return anything.
         """
-        await self.dispatcher.setup()
+        await self.impl.setup()
 
         try:
             self.start_event.set()
         except RuntimeError:
             logger.warning("Runtime is not properly setup.")
 
-        await self.dispatcher.dispatch_forever()
+        if isinstance(self.impl, QueuedBrokerPublisher):
+            await self.impl.run()
 
     async def stop(self, err: Exception = None) -> None:
         """Stop the service execution.
@@ -41,16 +59,4 @@ class BrokerProducerService(Service):
         :param err: Optional exception that stopped the execution.
         :return: This method does not return anything.
         """
-        await self.dispatcher.destroy()
-
-    @cached_property
-    def dispatcher(self):
-        """Get the service dispatcher.
-
-        :return: A ``Producer`` instance.
-        """
-        from .queued.repositories.pg.producers import (
-            PostgreSqlBrokerPublisherRepositoryDequeue,
-        )
-
-        return PostgreSqlBrokerPublisherRepositoryDequeue.from_config(**self._init_kwargs)
+        await self.impl.destroy()

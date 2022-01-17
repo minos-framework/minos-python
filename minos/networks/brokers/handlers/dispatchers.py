@@ -45,6 +45,8 @@ from ...requests import (
 from ..messages import (
     REQUEST_HEADERS_CONTEXT_VAR,
     BrokerMessage,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     BrokerMessageV1Status,
 )
 from ..publishers import (
@@ -125,9 +127,12 @@ class BrokerDispatcher(MinosSetup):
         data, status, headers = await fn(message)
 
         if message.reply_topic is not None:
-            await self.publisher.send(
-                data, topic=message.reply_topic, identifier=message.identifier, headers=headers, status=status
+            reply = BrokerMessageV1(
+                topic=message.reply_topic,
+                payload=BrokerMessageV1Payload(content=data, headers=headers, status=status),
+                identifier=message.identifier,
             )
+            await self.publisher.send(reply)
 
     @staticmethod
     def get_callback(

@@ -25,9 +25,9 @@ from .messages import (
     BrokerMessageV1Strategy,
 )
 from .publishers import (
-    BrokerProducerService,
     BrokerPublisher,
     BrokerPublisherRepository,
+    BrokerPublisherService,
     InMemoryBrokerPublisher,
     InMemoryBrokerPublisherRepository,
     KafkaBrokerPublisher,

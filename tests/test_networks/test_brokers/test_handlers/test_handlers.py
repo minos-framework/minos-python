@@ -38,9 +38,7 @@ from minos.networks import (
     BrokerHandlerEntry,
     BrokerMessageV1,
     BrokerMessageV1Payload,
-)
-from minos.networks.brokers.publishers.queued.repositories.pg.publishers import (
-    PostgreSqlBrokerPublisherRepositoryEnqueue,
+    InMemoryBrokerPublisher,
 )
 from tests.utils import (
     BASE_PATH,
@@ -54,7 +52,7 @@ class TestBrokerHandler(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.publisher = PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(self.config)
+        self.publisher = InMemoryBrokerPublisher.from_config(self.config)
         self.dispatcher = BrokerDispatcher.from_config(self.config, publisher=self.publisher)
         self.handler = BrokerHandler.from_config(self.config, dispatcher=self.dispatcher)
 

@@ -17,5 +17,5 @@ from .queued import (
     QueuedBrokerPublisher,
 )
 from .services import (
-    BrokerProducerService,
+    BrokerPublisherService,
 )

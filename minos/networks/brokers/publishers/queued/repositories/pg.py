@@ -31,13 +31,13 @@ from minos.common import (
     PostgreSqlMinosDatabase,
 )
 
-from ......utils import (
+from .....utils import (
     consume_queue,
 )
-from .....messages import (
+from ....messages import (
     BrokerMessage,
 )
-from ..abc import (
+from .abc import (
     BrokerPublisherRepository,
 )
 

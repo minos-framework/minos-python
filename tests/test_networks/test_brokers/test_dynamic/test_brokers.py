@@ -23,10 +23,8 @@ from minos.networks import (
     BrokerHandlerEntry,
     BrokerHandlerSetup,
     DynamicBroker,
+    InMemoryBrokerPublisher,
     MinosHandlerNotFoundEnoughEntriesException,
-)
-from minos.networks.brokers.publishers.queued.repositories.pg.publishers import (
-    PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from tests.utils import (
     BASE_PATH,
@@ -40,7 +38,7 @@ class TestDynamicBroker(PostgresAsyncTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.topic = "fooReply"
-        self.publisher = PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(self.config)
+        self.publisher = InMemoryBrokerPublisher.from_config(self.config)
         self.handler = DynamicBroker.from_config(config=self.config, topic=self.topic, publisher=self.publisher)
 
     async def asyncSetUp(self):
