@@ -16,18 +16,18 @@ from .abc import (
 class InMemoryBrokerPublisherRepository(BrokerPublisherRepository):
     """In Memory Broker Publisher Repository class."""
 
-    impl: Queue[BrokerMessage]
+    queue: Queue[BrokerMessage]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.impl = Queue()
+        self.queue = Queue()
 
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""
-        await self.impl.put(message)
+        await self.queue.put(message)
 
     async def dequeue_all(self) -> AsyncIterator[BrokerMessage]:
         """Dequeue all method."""
         while True:
-            message = await self.impl.get()
+            message = await self.queue.get()
             yield message
