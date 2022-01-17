@@ -13,6 +13,8 @@ from minos.common.testing import (
 from minos.networks import (
     BrokerConsumer,
     BrokerProducerService,
+)
+from minos.networks.brokers.publishers.queued.repositories.pg.producers import (
     PostgreSqlBrokerPublisherRepositoryDequeue,
 )
 from tests.utils import (

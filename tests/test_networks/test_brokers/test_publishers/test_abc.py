@@ -5,7 +5,7 @@ import aiopg
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
-from minos.networks import (
+from minos.networks.brokers.publishers.queued.repositories.pg.abc import (
     PostgreSqlBrokerPublisherRepositorySetup,
 )
 from tests.utils import (

@@ -17,6 +17,8 @@ from minos.networks import (
     BrokerConsumerService,
     BrokerHandler,
     BrokerHandlerService,
+)
+from minos.networks.brokers.publishers.queued.repositories.pg.publishers import (
     PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from tests.utils import (

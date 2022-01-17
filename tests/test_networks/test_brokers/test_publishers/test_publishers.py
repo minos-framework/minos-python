@@ -24,6 +24,8 @@ from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
+)
+from minos.networks.brokers.publishers.queued.repositories.pg.publishers import (
     PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from tests.utils import (

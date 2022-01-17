@@ -23,9 +23,11 @@ from minos.networks import (
     BrokerResponseException,
     InMemoryRequest,
     MinosActionNotFoundException,
-    PostgreSqlBrokerPublisherRepositoryEnqueue,
     Request,
     Response,
+)
+from minos.networks.brokers.publishers.queued.repositories.pg.publishers import (
+    PostgreSqlBrokerPublisherRepositoryEnqueue,
 )
 from tests.utils import (
     BASE_PATH,
