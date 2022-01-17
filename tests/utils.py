@@ -25,6 +25,7 @@ from minos.networks import (
 )
 
 BASE_PATH = Path(__file__).parent
+CONFIG_FILE_PATH = BASE_PATH / "test_config.yml"
 
 
 @total_ordering

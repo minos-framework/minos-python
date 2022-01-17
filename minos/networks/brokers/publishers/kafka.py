@@ -3,12 +3,12 @@ from __future__ import (
 )
 
 import logging
-from typing import (
-    Optional,
-)
 
 from aiokafka import (
     AIOKafkaProducer,
+)
+from cached_property import (
+    cached_property,
 )
 
 from minos.common import (
@@ -28,13 +28,10 @@ logger = logging.getLogger(__name__)
 class KafkaBrokerPublisher(BrokerPublisher):
     """TODO"""
 
-    def __init__(
-        self, *args, broker_host: str, broker_port: int, client: Optional[AIOKafkaProducer] = None, **kwargs,
-    ):
+    def __init__(self, *args, broker_host: str, broker_port: int, **kwargs):
         super().__init__(*args, **kwargs)
         self.broker_host = broker_host
         self.broker_port = broker_port
-        self._client = client
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> KafkaBrokerPublisher:
@@ -49,24 +46,12 @@ class KafkaBrokerPublisher(BrokerPublisher):
         :param message: TODO
         :return: TODO
         """
-        await self._send(message.topic, message.avro_bytes)
+        await self.client.send_and_wait(message.topic, message.avro_bytes)
 
-    async def _send(self, topic: str, message: bytes) -> bool:
-        logger.debug(f"Producing message with {topic!s} topic...")
-
-        # noinspection PyBroadException
-        try:
-            await self.client.send_and_wait(topic, message)
-            return True
-        except Exception:
-            return False
-
-    @property
+    @cached_property
     def client(self) -> AIOKafkaProducer:
         """Get the client instance.
 
         :return: An ``AIOKafkaProducer`` instance.
         """
-        if self._client is None:  # pragma: no cover
-            self._client = AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
-        return self._client
+        return AIOKafkaProducer(bootstrap_servers=f"{self.broker_host}:{self.broker_port}")
