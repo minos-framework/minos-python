@@ -7,6 +7,9 @@ from .compositions import (
 from .kafka import (
     KafkaBrokerPublisher,
 )
+from .memory import (
+    InMemoryBrokerPublisher,
+)
 from .queued import (
     BrokerPublisherRepository,
     InMemoryBrokerPublisherRepository,

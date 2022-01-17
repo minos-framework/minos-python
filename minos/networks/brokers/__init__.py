@@ -28,6 +28,7 @@ from .publishers import (
     BrokerProducerService,
     BrokerPublisher,
     BrokerPublisherRepository,
+    InMemoryBrokerPublisher,
     InMemoryBrokerPublisherRepository,
     KafkaBrokerPublisher,
     PostgreSqlBrokerPublisherRepository,
