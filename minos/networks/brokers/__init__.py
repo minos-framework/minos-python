@@ -31,4 +31,5 @@ from .publishers import (
     KafkaBrokerPublisher,
     PostgreSqlBrokerPublisherRepository,
     QueuedBrokerPublisher,
+    PostgreSqlQueuedKafkaBrokerPublisher,
 )

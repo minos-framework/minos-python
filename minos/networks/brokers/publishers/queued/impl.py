@@ -15,6 +15,12 @@ class QueuedBrokerPublisher(BrokerPublisher):
     impl: BrokerPublisher
     repository: BrokerPublisherRepository
 
+    def __init__(self, impl: BrokerPublisher, repository: BrokerPublisherRepository, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.impl = impl
+        self.repository = repository
+
     async def send(self, message: BrokerMessage) -> None:
         """Send method."""
         await self.repository.enqueue(message)

@@ -1,6 +1,9 @@
 from .abc import (
     BrokerPublisher,
 )
+from .compositions import (
+    PostgreSqlQueuedKafkaBrokerPublisher,
+)
 from .kafka import (
     KafkaBrokerPublisher,
 )

@@ -28,6 +28,7 @@ from .brokers import (
     DynamicBrokerPool,
     KafkaBrokerPublisher,
     PostgreSqlBrokerPublisherRepository,
+    PostgreSqlQueuedKafkaBrokerPublisher,
     QueuedBrokerPublisher,
 )
 from .decorators import (
