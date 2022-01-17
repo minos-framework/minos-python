@@ -20,7 +20,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from ..messages import (
+from ...messages import (
     BrokerMessageStrategy,
     BrokerMessageV1,
     BrokerMessageV1Payload,

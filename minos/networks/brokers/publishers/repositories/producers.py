@@ -35,13 +35,13 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ...utils import (
+from ....utils import (
     consume_queue,
 )
-from ..handlers import (
+from ...handlers import (
     BrokerConsumer,
 )
-from ..messages import (
+from ...messages import (
     BrokerMessageStrategy,
 )
 from .abc import (

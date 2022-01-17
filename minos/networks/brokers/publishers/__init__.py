@@ -1,7 +1,5 @@
-from .producers import (
+from .repositories import (
     BrokerProducer,
-)
-from .publishers import (
     BrokerPublisher,
     BrokerPublisherSetup,
 )
