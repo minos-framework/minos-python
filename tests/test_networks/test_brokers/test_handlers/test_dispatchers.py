@@ -113,23 +113,21 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
 
     async def test_get_callback(self):
         fn = self.dispatcher.get_callback(_Cls._fn)
-        self.assertEqual(
-            (FakeModel("foo"), BrokerMessageV1Status.SUCCESS, self.headers), await fn(self.message.payload)
-        )
+        self.assertEqual((FakeModel("foo"), BrokerMessageV1Status.SUCCESS, self.headers), await fn(self.message))
 
     async def test_get_callback_none(self):
         fn = self.dispatcher.get_callback(_Cls._fn_none)
-        self.assertEqual((None, BrokerMessageV1Status.SUCCESS, self.headers), await fn(self.message.payload))
+        self.assertEqual((None, BrokerMessageV1Status.SUCCESS, self.headers), await fn(self.message))
 
     async def test_get_callback_raises_response(self):
         fn = self.dispatcher.get_callback(_Cls._fn_raises_response)
         expected = (repr(BrokerResponseException("foo")), BrokerMessageV1Status.ERROR, self.headers)
-        self.assertEqual(expected, await fn(self.message.payload))
+        self.assertEqual(expected, await fn(self.message))
 
     async def test_get_callback_raises_exception(self):
         fn = self.dispatcher.get_callback(_Cls._fn_raises_exception)
         expected = (repr(ValueError()), BrokerMessageV1Status.SYSTEM_ERROR, self.headers)
-        self.assertEqual(expected, await fn(self.message.payload))
+        self.assertEqual(expected, await fn(self.message))
 
     async def test_get_callback_with_user(self):
         async def _fn(request) -> None:
@@ -139,7 +137,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         mock = AsyncMock(side_effect=_fn)
 
         action = self.dispatcher.get_callback(mock)
-        await action(self.message.payload)
+        await action(self.message)
 
         self.assertEqual(1, mock.call_count)
 
@@ -151,7 +149,7 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         mock = AsyncMock(side_effect=_fn)
 
         action = self.dispatcher.get_callback(mock)
-        _, _, observed = await action(self.message.payload)
+        _, _, observed = await action(self.message)
 
         self.assertEqual(self.headers | {"bar": "foo"}, observed)
 
@@ -168,18 +166,13 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         self.assertEqual(1, lookup_mock.call_count)
         self.assertEqual(call("AddOrder"), lookup_mock.call_args)
 
-        self.assertEqual(
-            [
-                call(
-                    "add_order",
-                    topic="UpdateTicket",
-                    identifier=self.message.identifier,
-                    status=BrokerMessageV1Status.SUCCESS,
-                    headers=self.headers,
-                )
-            ],
-            send_mock.call_args_list,
+        message = BrokerMessageV1(
+            topic="UpdateTicket",
+            payload=BrokerMessageV1Payload("add_order", status=BrokerMessageV1Status.SUCCESS, headers=self.headers),
+            identifier=self.message.identifier,
         )
+
+        self.assertEqual([call(message)], send_mock.call_args_list)
 
         self.assertEqual(1, callback_mock.call_count)
         observed = callback_mock.call_args[0][0]

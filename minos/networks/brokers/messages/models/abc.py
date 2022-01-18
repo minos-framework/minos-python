@@ -43,6 +43,22 @@ class BrokerMessage(ABC, Model):
         """
 
     @property
+    def should_reply(self) -> bool:
+        """
+
+        :return:
+        """
+        return self.reply_topic is not None
+
+    @abstractmethod
+    def set_reply_topic(self, value: Optional[str]) -> None:
+        """Set the message's reply topic.
+
+        :param value: A ``str`` value or ``None``.
+        :return: This method does not return anything.
+        """
+
+    @property
     @abstractmethod
     def reply_topic(self) -> Optional[str]:
         """Get the reply topic of the message if there is someone.

@@ -91,6 +91,14 @@ class BrokerMessageV1(BrokerMessage, DeclarativeModel):
         """
         return self.fields["reply_topic"].value
 
+    def set_reply_topic(self, value: Optional[str]) -> None:
+        """Set the message's reply topic.
+
+        :param value: A ``str`` value or ``None``.
+        :return: This method does not return anything.
+        """
+        self.fields["reply_topic"].value = value
+
     @property
     def content(self) -> Any:
         """Get the content of the message.
