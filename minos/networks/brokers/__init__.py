@@ -1,3 +1,9 @@
+from .dispatchers import (
+    BrokerDispatcher,
+    BrokerRequest,
+    BrokerResponse,
+    BrokerResponseException,
+)
 from .dynamic import (
     DynamicBroker,
     DynamicBrokerPool,
@@ -5,14 +11,10 @@ from .dynamic import (
 from .handlers import (
     BrokerConsumer,
     BrokerConsumerService,
-    BrokerDispatcher,
     BrokerHandler,
     BrokerHandlerEntry,
     BrokerHandlerService,
     BrokerHandlerSetup,
-    BrokerRequest,
-    BrokerResponse,
-    BrokerResponseException,
 )
 from .messages import (
     REQUEST_HEADERS_CONTEXT_VAR,

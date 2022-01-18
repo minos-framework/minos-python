@@ -41,11 +41,11 @@ from minos.common import (
 from ...utils import (
     consume_queue,
 )
+from ..dispatchers import (
+    BrokerDispatcher,
+)
 from .abc import (
     BrokerHandlerSetup,
-)
-from .dispatchers import (
-    BrokerDispatcher,
 )
 from .entries import (
     BrokerHandlerEntry,
