@@ -1,3 +1,7 @@
+from typing import (
+    NoReturn,
+)
+
 from ...messages import (
     BrokerMessage,
 )
@@ -35,7 +39,7 @@ class QueuedBrokerPublisher(BrokerPublisher):
         """Send method."""
         await self.repository.enqueue(message)
 
-    async def run(self) -> None:
+    async def run(self) -> NoReturn:
         """Run method."""
         while True:
             async for message in self.repository.dequeue_all():
