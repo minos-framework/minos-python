@@ -23,6 +23,8 @@ from minos.common import (
     Model,
 )
 from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     DynamicBroker,
     DynamicBrokerPool,
 )
@@ -64,7 +66,10 @@ class ModelRefResolver:
 
     async def _query(self, references: dict[str, set[UUID]]) -> dict[UUID, Model]:
         async with self.broker_pool.acquire() as broker:
-            futures = (broker.send(data={"uuids": uuids}, topic=f"Get{name}s") for name, uuids in references.items())
+            futures = (
+                broker.send(BrokerMessageV1(f"Get{name}s", BrokerMessageV1Payload({"uuids": uuids})))
+                for name, uuids in references.items()
+            )
             await gather(*futures)
 
             return {model.uuid: model for model in await self._get_response(broker, len(references))}

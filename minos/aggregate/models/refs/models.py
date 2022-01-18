@@ -32,6 +32,8 @@ from minos.common import (
 from minos.networks import (
     DynamicBroker,
     DynamicBrokerPool,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
 )
 
 from ...contextvars import (
@@ -182,8 +184,9 @@ class ModelRef(DeclarativeModel, UUID, Generic[MT]):
 
         name = self.data_cls.__name__
 
+        message = BrokerMessageV1(f"Get{name}", BrokerMessageV1Payload({"uuid": self.uuid}))
         async with self._broker_pool.acquire() as broker:
-            await broker.send(data={"uuid": self.uuid}, topic=f"Get{name}")
+            await broker.send(message)
             self.data = await self._get_response(broker)
 
     @staticmethod
