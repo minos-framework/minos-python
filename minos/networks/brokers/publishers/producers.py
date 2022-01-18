@@ -42,7 +42,7 @@ from ..handlers import (
     BrokerConsumer,
 )
 from ..messages import (
-    BrokerMessageStrategy,
+    BrokerMessageV1Strategy,
 )
 from .abc import (
     BrokerPublisherSetup,
@@ -179,7 +179,7 @@ class BrokerProducer(BrokerPublisherSetup):
 
         # noinspection PyBroadException
         try:
-            if strategy == BrokerMessageStrategy.UNICAST and topic in self.consumer.topics:
+            if strategy == BrokerMessageV1Strategy.UNICAST and topic in self.consumer.topics:
                 await self.consumer.enqueue(topic, -1, message)
                 return True
 

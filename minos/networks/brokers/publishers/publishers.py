@@ -21,10 +21,10 @@ from minos.common import (
 )
 
 from ..messages import (
-    BrokerMessageStrategy,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
+    BrokerMessageV1Strategy,
 )
 from .abc import (
     BrokerPublisherSetup,
@@ -51,7 +51,7 @@ class BrokerPublisher(BrokerPublisherSetup):
         reply_topic: Optional[str] = None,
         user: Optional[UUID] = None,
         status: int = BrokerMessageV1Status.SUCCESS,
-        strategy: BrokerMessageStrategy = BrokerMessageStrategy.UNICAST,
+        strategy: BrokerMessageV1Strategy = BrokerMessageV1Strategy.UNICAST,
         headers: Optional[dict[str, str]] = None,
         payload: Optional[BrokerMessageV1Payload] = None,
         **kwargs,
@@ -89,7 +89,7 @@ class BrokerPublisher(BrokerPublisherSetup):
         await self.enqueue(message.topic, message.strategy, message.avro_bytes)
         return message.identifier
 
-    async def enqueue(self, topic: str, strategy: BrokerMessageStrategy, raw: bytes) -> int:
+    async def enqueue(self, topic: str, strategy: BrokerMessageV1Strategy, raw: bytes) -> int:
         """Send a sequence of bytes to the given topic.
 
         :param topic: Topic in which the bytes will be sent.
