@@ -70,6 +70,12 @@ class TestBrokerMessageV1(unittest.TestCase):
         message = BrokerMessageV1(self.topic, self.payload, reply_topic=self.reply_topic)
         self.assertEqual(self.reply_topic, message.reply_topic)
 
+    def test_set_reply_topic(self):
+        message = BrokerMessageV1(self.topic, self.payload)
+        self.assertIsNone(message.reply_topic)
+        message.set_reply_topic(self.reply_topic)
+        self.assertEqual(self.reply_topic, message.reply_topic)
+
     def test_ok(self):
         message = BrokerMessageV1(self.topic, self.payload)
         self.assertEqual(self.payload.ok, message.ok)

@@ -90,11 +90,11 @@ class DynamicBroker(BrokerHandlerSetup):
     async def send(self, message: BrokerMessage) -> None:
         """Send a ``BrokerMessage``.
 
-        :param message: TODO
+        :param message: The message to be sent.
         :return: This method does not return anything.
         """
-        message.reply_topic = self.topic
-        return await self.publisher.send(message)
+        message.set_reply_topic(self.topic)
+        await self.publisher.send(message)
 
     async def get_one(self, *args, **kwargs) -> BrokerHandlerEntry:
         """Get one handler entry from the given topics.

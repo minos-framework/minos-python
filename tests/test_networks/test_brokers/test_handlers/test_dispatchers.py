@@ -166,20 +166,13 @@ class TestBrokerDispatcher(PostgresAsyncTestCase):
         self.assertEqual(1, lookup_mock.call_count)
         self.assertEqual(call("AddOrder"), lookup_mock.call_args)
 
-        self.assertEqual(
-            [
-                call(
-                    BrokerMessageV1(
-                        topic="UpdateTicket",
-                        payload=BrokerMessageV1Payload(
-                            "add_order", status=BrokerMessageV1Status.SUCCESS, headers=self.headers,
-                        ),
-                        identifier=self.message.identifier,
-                    )
-                )
-            ],
-            send_mock.call_args_list,
+        message = BrokerMessageV1(
+            topic="UpdateTicket",
+            payload=BrokerMessageV1Payload("add_order", status=BrokerMessageV1Status.SUCCESS, headers=self.headers),
+            identifier=self.message.identifier,
         )
+
+        self.assertEqual([call(message)], send_mock.call_args_list)
 
         self.assertEqual(1, callback_mock.call_count)
         observed = callback_mock.call_args[0][0]

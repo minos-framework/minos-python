@@ -126,10 +126,10 @@ class BrokerDispatcher(MinosSetup):
 
         data, status, headers = await fn(message)
 
-        if message.reply_topic is not None:
+        if message.should_reply:
             reply = BrokerMessageV1(
                 topic=message.reply_topic,
-                payload=BrokerMessageV1Payload(content=data, headers=headers, status=status),
+                payload=BrokerMessageV1Payload(content=data, status=status, headers=headers),
                 identifier=message.identifier,
             )
             await self.publisher.send(reply)

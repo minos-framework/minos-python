@@ -1,14 +1,9 @@
 # noqa: F821
 
 import unittest
-import warnings
 from unittest.mock import (
     AsyncMock,
     call,
-)
-from uuid import (
-    UUID,
-    uuid4,
 )
 
 from psycopg2.sql import (
@@ -24,7 +19,6 @@ from minos.common.testing import (
 from minos.networks import (
     BrokerMessageV1,
     BrokerMessageV1Payload,
-    BrokerMessageV1Status,
     BrokerMessageV1Strategy,
 )
 from tests.utils import (
@@ -59,123 +53,32 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         mock = AsyncMock()
         self.publisher.enqueue = mock
 
-        observed = await self.publisher.send(FakeModel("Foo"), "fake")
+        message = BrokerMessageV1("fake", BrokerMessageV1Payload(FakeModel("Foo")))
+        await self.publisher.send(message)
 
-        self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
+
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
-
-        expected = BrokerMessageV1("fake", BrokerMessageV1Payload(FakeModel("Foo")), identifier=observed)
-        self.assertEqual(expected, Model.from_avro_bytes(args[2]))
-
-    async def test_send_with_identifier(self):
-        mock = AsyncMock()
-        self.publisher.enqueue = mock
-
-        identifier = uuid4()
-        observed = await self.publisher.send(FakeModel("Foo"), "fake", identifier=identifier)
-
-        self.assertEqual(identifier, observed)
-        self.assertEqual(1, mock.call_count)
-
-        args = mock.call_args.args
-        self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
-
-        expected = BrokerMessageV1(
-            topic="fake", payload=BrokerMessageV1Payload(content=FakeModel("Foo")), identifier=identifier
-        )
-        self.assertEqual(expected, Model.from_avro_bytes(args[2]))
-
-    async def test_send_with_reply_topic(self):
-        mock = AsyncMock()
-        self.publisher.enqueue = mock
-
-        observed = await self.publisher.send(FakeModel("foo"), "fake", reply_topic="ekaf")
-
-        self.assertIsInstance(observed, UUID)
-        self.assertEqual(1, mock.call_count)
-
-        args = mock.call_args.args
-        self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
-        expected = BrokerMessageV1(
-            topic="fake",
-            payload=BrokerMessageV1Payload(content=FakeModel("foo")),
-            identifier=observed,
-            reply_topic="ekaf",
-        )
-        self.assertEqual(expected, Model.from_avro_bytes(args[2]))
-
-    async def test_send_with_user(self):
-        mock = AsyncMock()
-        self.publisher.enqueue = mock
-
-        user = uuid4()
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            observed = await self.publisher.send(FakeModel("foo"), "fake", reply_topic="ekaf", user=user)
-
-        self.assertIsInstance(observed, UUID)
-        self.assertEqual(1, mock.call_count)
-
-        args = mock.call_args.args
-        self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
-        expected = BrokerMessageV1(
-            topic="fake",
-            payload=BrokerMessageV1Payload(content=FakeModel("foo"), headers={"User": str(user)}),
-            identifier=observed,
-            reply_topic="ekaf",
-        )
-        self.assertEqual(expected, Model.from_avro_bytes(args[2]))
-
-    async def test_send_with_status(self):
-        mock = AsyncMock()
-        self.publisher.enqueue = mock
-
-        observed = await self.publisher.send(FakeModel("foo"), "fake", status=BrokerMessageV1Status.ERROR)
-
-        self.assertIsInstance(observed, UUID)
-        self.assertEqual(1, mock.call_count)
-
-        args = mock.call_args.args
-        self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
-
-        expected = BrokerMessageV1(
-            topic="fake",
-            payload=BrokerMessageV1Payload(content=FakeModel("foo"), status=BrokerMessageV1Status.ERROR),
-            identifier=observed,
-        )
-        observed = Model.from_avro_bytes(args[2])
-        self.assertEqual(expected, observed)
+        self.assertEqual(message, Model.from_avro_bytes(args[2]))
 
     async def test_send_with_multicast_strategy(self):
         mock = AsyncMock()
         self.publisher.enqueue = mock
 
-        observed = await self.publisher.send(FakeModel("foo"), "fake", strategy=BrokerMessageV1Strategy.MULTICAST)
+        message = BrokerMessageV1(
+            "fake", BrokerMessageV1Payload(FakeModel("foo")), strategy=BrokerMessageV1Strategy.MULTICAST
+        )
+        await self.publisher.send(message)
 
-        self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
         self.assertEqual(BrokerMessageV1Strategy.MULTICAST, args[1])
-
-        expected = BrokerMessageV1(
-            topic="fake",
-            payload=BrokerMessageV1Payload(content=FakeModel("foo")),
-            identifier=observed,
-            strategy=BrokerMessageV1Strategy.MULTICAST,
-        )
-        observed = Model.from_avro_bytes(args[2])
-        self.assertEqual(expected, observed)
+        self.assertEqual(message, Model.from_avro_bytes(args[2]))
 
     async def test_enqueue(self):
         query = SQL("INSERT INTO producer_queue (topic, data, strategy) VALUES (%s, %s, %s) RETURNING id")

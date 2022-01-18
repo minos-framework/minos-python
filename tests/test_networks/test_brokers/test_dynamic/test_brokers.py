@@ -70,12 +70,13 @@ class TestDynamicBroker(PostgresAsyncTestCase):
     async def test_send(self):
         mock = AsyncMock()
         self.publisher.send = mock
-
         message = BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56))
         await self.handler.send(message)
 
-        self.assertEqual(self.handler.topic, message.reply_topic)
-        self.assertEqual([call(message)], mock.call_args_list)
+        expected = BrokerMessageV1(
+            "AddFoo", BrokerMessageV1Payload(56), reply_topic=self.topic, identifier=message.identifier
+        )
+        self.assertEqual([call(expected)], mock.call_args_list)
 
     async def test_get_one(self):
         expected = BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)

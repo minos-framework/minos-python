@@ -24,6 +24,8 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerConsumer,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     BrokerMessageV1Status,
     BrokerMessageV1Strategy,
 )
@@ -149,7 +151,12 @@ class TestProducer(PostgresAsyncTestCase):
         async with broker_publisher:
             for x in range(60):
                 await broker_publisher.send(
-                    model, "CommandBroker-Delete", identifier=identifier, reply_topic="TestDeleteReply"
+                    BrokerMessageV1(
+                        "CommandBroker-Delete",
+                        BrokerMessageV1Payload(model),
+                        identifier=identifier,
+                        reply_topic="TestDeleteReply",
+                    )
                 )
 
         async with aiopg.connect(**self.broker_queue_db) as connect:
@@ -172,8 +179,8 @@ class TestProducer(PostgresAsyncTestCase):
         async with PostgreSqlBrokerPublisherRepositoryEnqueue.from_config(  # noqa: F821
             config=self.config
         ) as broker_publisher:
-            await broker_publisher.send(FakeModel("Foo"), "TestDeleteReply")
-            await broker_publisher.send(FakeModel("Foo"), "TestDeleteReply")
+            await broker_publisher.send(BrokerMessageV1("TestDeleteReply", BrokerMessageV1Payload(FakeModel("Foo"))))
+            await broker_publisher.send(BrokerMessageV1("TestDeleteReply", BrokerMessageV1Payload(FakeModel("Foo"))))
 
         await self.producer.dispatch()
 
@@ -190,10 +197,18 @@ class TestProducer(PostgresAsyncTestCase):
             config=self.config
         ) as broker_publisher:
             await broker_publisher.send(
-                model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageV1Status.SUCCESS
+                BrokerMessageV1(
+                    "TestDeleteOrderReply",
+                    identifier=identifier,
+                    payload=BrokerMessageV1Payload(content=model, status=BrokerMessageV1Status.SUCCESS),
+                )
             )
             await broker_publisher.send(
-                model, "TestDeleteOrderReply", identifier=identifier, status=BrokerMessageV1Status.SUCCESS
+                BrokerMessageV1(
+                    "TestDeleteOrderReply",
+                    identifier=identifier,
+                    payload=BrokerMessageV1Payload(content=model, status=BrokerMessageV1Status.SUCCESS),
+                )
             )
 
             self.producer.publish = AsyncMock(return_value=False)

@@ -16,8 +16,25 @@ from minos.networks import (
 class TestBrokerMessage(unittest.TestCase):
     def test_abstract(self):
         self.assertTrue(issubclass(BrokerMessage, (ABC, Model)))
-        expected = {"version", "topic", "identifier", "reply_topic", "content", "headers", "status", "ok"}
+        expected = {
+            "version",
+            "topic",
+            "identifier",
+            "reply_topic",
+            "set_reply_topic",
+            "content",
+            "headers",
+            "status",
+            "ok",
+        }
         self.assertTrue(expected.issubset(BrokerMessage.__abstractmethods__))
+
+    def test_should_reply(self):
+        message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"), reply_topic=None)
+        self.assertFalse(message.should_reply)
+
+        message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"), reply_topic="foobar")
+        self.assertTrue(message.should_reply)
 
     def test_v1(self):
         message = BrokerMessageV1("foo", BrokerMessageV1Payload("bar"))
