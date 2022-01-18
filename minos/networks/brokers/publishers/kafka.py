@@ -54,6 +54,7 @@ class KafkaBrokerPublisher(BrokerPublisher):
         :param message: TODO
         :return: TODO
         """
+        logger.info(f"Publishing {message!r} message...")
         await self.client.send_and_wait(message.topic, message.avro_bytes)
 
     @cached_property

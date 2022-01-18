@@ -21,6 +21,16 @@ class QueuedBrokerPublisher(BrokerPublisher):
         self.impl = impl
         self.repository = repository
 
+    async def _setup(self) -> None:
+        await super()._setup()
+        await self.repository.setup()
+        await self.impl.setup()
+
+    async def _destroy(self) -> None:
+        await self.impl.destroy()
+        await self.repository.destroy()
+        await super()._destroy()
+
     async def send(self, message: BrokerMessage) -> None:
         """Send method."""
         await self.repository.enqueue(message)
