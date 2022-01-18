@@ -34,6 +34,33 @@ class TestQueuedBrokerPublisher(unittest.IsolatedAsyncioTestCase):
         publisher = QueuedBrokerPublisher(self.impl, self.repository)
         self.assertEqual(self.repository, publisher.repository)
 
+    async def test_setup_destroy(self):
+        impl_setup_mock = AsyncMock()
+        impl_destroy_mock = AsyncMock()
+        repository_setup_mock = AsyncMock()
+        repository_destroy_mock = AsyncMock()
+
+        self.impl.setup = impl_setup_mock
+        self.impl.destroy = impl_destroy_mock
+        self.repository.setup = repository_setup_mock
+        self.repository.destroy = repository_destroy_mock
+
+        async with QueuedBrokerPublisher(self.impl, self.repository):
+            self.assertEqual(1, impl_setup_mock.call_count)
+            self.assertEqual(0, impl_destroy_mock.call_count)
+            self.assertEqual(1, repository_setup_mock.call_count)
+            self.assertEqual(0, repository_destroy_mock.call_count)
+
+            impl_setup_mock.reset_mock()
+            impl_destroy_mock.reset_mock()
+            repository_setup_mock.reset_mock()
+            repository_destroy_mock.reset_mock()
+
+        self.assertEqual(0, impl_setup_mock.call_count)
+        self.assertEqual(1, impl_destroy_mock.call_count)
+        self.assertEqual(0, repository_setup_mock.call_count)
+        self.assertEqual(1, repository_destroy_mock.call_count)
+
     async def test_send(self):
         repository_enqueue_mock = AsyncMock()
         self.repository.enqueue = repository_enqueue_mock
