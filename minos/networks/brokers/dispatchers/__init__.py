@@ -1,4 +1,4 @@
-from .dispatchers import (
+from .impl import (
     BrokerDispatcher,
 )
 from .requests import (
