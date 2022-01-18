@@ -15,6 +15,8 @@ from dependency_injector.wiring import (
 )
 
 from minos.networks import (
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     BrokerPublisher,
     DynamicBroker,
     DynamicBrokerPool,
@@ -65,7 +67,7 @@ class TransactionCommitter:
     async def _reserve(self) -> bool:
         async with self.broker_pool.acquire() as broker:
             futures = (
-                broker.send(data=uuid, topic=f"Reserve{service_name.title()}Transaction")
+                broker.send(BrokerMessageV1(f"Reserve{service_name.title()}Transaction", BrokerMessageV1Payload(uuid)))
                 for (uuid, service_name) in self.transactions
             )
             await gather(*futures)
@@ -74,7 +76,9 @@ class TransactionCommitter:
 
     async def _commit(self) -> None:
         futures = (
-            self.broker_publisher.send(data=uuid, topic=f"Commit{service_name.title()}Transaction")
+            self.broker_publisher.send(
+                BrokerMessageV1(f"Commit{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
+            )
             for (uuid, service_name) in self.transactions
         )
         await gather(*futures)
@@ -88,7 +92,9 @@ class TransactionCommitter:
         :return: This method does not return anything.
         """
         futures = (
-            self.broker_publisher.send(data=uuid, topic=f"Reject{service_name.title()}Transaction")
+            self.broker_publisher.send(
+                BrokerMessageV1(f"Reject{service_name.title()}Transaction", BrokerMessageV1Payload(uuid))
+            )
             for (uuid, service_name) in self.transactions
         )
         await gather(*futures)
