@@ -22,6 +22,8 @@ from minos.common.testing import (
 from minos.networks import (
     BrokerHandlerEntry,
     BrokerHandlerSetup,
+    BrokerMessageV1,
+    BrokerMessageV1Payload,
     DynamicBroker,
     InMemoryBrokerPublisher,
     MinosHandlerNotFoundEnoughEntriesException,
@@ -69,9 +71,11 @@ class TestDynamicBroker(PostgresAsyncTestCase):
         mock = AsyncMock()
         self.publisher.send = mock
 
-        await self.handler.send(56, "AddFoo")
+        message = BrokerMessageV1("AddFoo", BrokerMessageV1Payload(56))
+        await self.handler.send(message)
 
-        self.assertEqual([call(56, "AddFoo", reply_topic=self.topic)], mock.call_args_list)
+        self.assertEqual(self.handler.topic, message.reply_topic)
+        self.assertEqual([call(message)], mock.call_args_list)
 
     async def test_get_one(self):
         expected = BrokerHandlerEntry(1, "fooReply", 0, FakeModel("test1").avro_bytes)
