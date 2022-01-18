@@ -4,6 +4,7 @@ from __future__ import (
 
 import logging
 from asyncio import (
+    TimeoutError,
     wait_for,
 )
 from collections.abc import (
