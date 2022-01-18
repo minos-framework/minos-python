@@ -198,6 +198,3 @@ class BrokerMessageV1Strategy(str, Enum):
 
     UNICAST = "unicast"
     MULTICAST = "multicast"
-
-
-BrokerMessageStrategy = BrokerMessageV1Strategy

@@ -12,10 +12,10 @@ from minos.common import (
     Model,
 )
 from minos.networks import (
-    BrokerMessageStrategy,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
+    BrokerMessageV1Strategy,
 )
 from tests.utils import (
     FakeModel,
@@ -27,7 +27,7 @@ class TestBrokerMessageV1(unittest.TestCase):
         self.topic = "FooCreated"
         self.identifier = uuid4()
         self.reply_topic = "AddOrderReply"
-        self.strategy = BrokerMessageStrategy.MULTICAST
+        self.strategy = BrokerMessageV1Strategy.MULTICAST
 
         self.payload = BrokerMessageV1Payload(
             content=[FakeModel("blue"), FakeModel("red")], headers={"foo": "bar"}, status=BrokerMessageV1Status.ERROR
@@ -38,7 +38,7 @@ class TestBrokerMessageV1(unittest.TestCase):
         self.assertEqual(self.topic, message.topic)
         self.assertIsInstance(message.identifier, UUID)
         self.assertEqual(None, message.reply_topic)
-        self.assertEqual(BrokerMessageStrategy.UNICAST, message.strategy)
+        self.assertEqual(BrokerMessageV1Strategy.UNICAST, message.strategy)
         self.assertEqual(self.payload, message.payload)
 
     def test_constructor(self):

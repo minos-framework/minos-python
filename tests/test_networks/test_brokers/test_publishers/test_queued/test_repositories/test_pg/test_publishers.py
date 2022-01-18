@@ -22,10 +22,10 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerMessageStrategy,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
+    BrokerMessageV1Strategy,
 )
 from tests.utils import (
     BASE_PATH,
@@ -66,7 +66,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
+        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
 
         expected = BrokerMessageV1("fake", BrokerMessageV1Payload(FakeModel("Foo")), identifier=observed)
         self.assertEqual(expected, Model.from_avro_bytes(args[2]))
@@ -83,7 +83,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
+        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
 
         expected = BrokerMessageV1(
             topic="fake", payload=BrokerMessageV1Payload(content=FakeModel("Foo")), identifier=identifier
@@ -101,7 +101,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
+        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
         expected = BrokerMessageV1(
             topic="fake",
             payload=BrokerMessageV1Payload(content=FakeModel("foo")),
@@ -125,7 +125,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
+        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
         expected = BrokerMessageV1(
             topic="fake",
             payload=BrokerMessageV1Payload(content=FakeModel("foo"), headers={"User": str(user)}),
@@ -145,7 +145,7 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageStrategy.UNICAST, args[1])
+        self.assertEqual(BrokerMessageV1Strategy.UNICAST, args[1])
 
         expected = BrokerMessageV1(
             topic="fake",
@@ -159,20 +159,20 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         mock = AsyncMock()
         self.publisher.enqueue = mock
 
-        observed = await self.publisher.send(FakeModel("foo"), "fake", strategy=BrokerMessageStrategy.MULTICAST)
+        observed = await self.publisher.send(FakeModel("foo"), "fake", strategy=BrokerMessageV1Strategy.MULTICAST)
 
         self.assertIsInstance(observed, UUID)
         self.assertEqual(1, mock.call_count)
 
         args = mock.call_args.args
         self.assertEqual("fake", args[0])
-        self.assertEqual(BrokerMessageStrategy.MULTICAST, args[1])
+        self.assertEqual(BrokerMessageV1Strategy.MULTICAST, args[1])
 
         expected = BrokerMessageV1(
             topic="fake",
             payload=BrokerMessageV1Payload(content=FakeModel("foo")),
             identifier=observed,
-            strategy=BrokerMessageStrategy.MULTICAST,
+            strategy=BrokerMessageV1Strategy.MULTICAST,
         )
         observed = Model.from_avro_bytes(args[2])
         self.assertEqual(expected, observed)
@@ -183,12 +183,12 @@ class TestBrokerPublisher(PostgresAsyncTestCase):
         mock = AsyncMock(return_value=(56,))
         self.publisher.submit_query_and_fetchone = mock
 
-        observed = await self.publisher.enqueue("test_topic", BrokerMessageStrategy.UNICAST, b"test")
+        observed = await self.publisher.enqueue("test_topic", BrokerMessageV1Strategy.UNICAST, b"test")
 
         self.assertEqual(56, observed)
         self.assertEqual(1, mock.call_count)
 
-        self.assertEqual(call(query, ("test_topic", b"test", BrokerMessageStrategy.UNICAST)), mock.call_args)
+        self.assertEqual(call(query, ("test_topic", b"test", BrokerMessageV1Strategy.UNICAST)), mock.call_args)
 
 
 if __name__ == "__main__":

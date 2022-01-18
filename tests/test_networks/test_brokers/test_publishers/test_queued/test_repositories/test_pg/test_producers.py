@@ -24,8 +24,8 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerConsumer,
-    BrokerMessageStrategy,
     BrokerMessageV1Status,
+    BrokerMessageV1Strategy,
 )
 from tests.utils import (
     BASE_PATH,
@@ -66,7 +66,7 @@ class TestProducer(PostgresAsyncTestCase):
         mock = AsyncMock()
         self.consumer.enqueue = mock
 
-        ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), BrokerMessageStrategy.UNICAST))
+        ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), BrokerMessageV1Strategy.UNICAST))
         self.assertTrue(ok)
 
         self.assertEqual(1, mock.call_count)
@@ -78,7 +78,7 @@ class TestProducer(PostgresAsyncTestCase):
         publish_mock = AsyncMock()
         self.producer.publish = publish_mock
 
-        ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), BrokerMessageStrategy.UNICAST))
+        ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), BrokerMessageV1Strategy.UNICAST))
         self.assertTrue(ok)
 
         self.assertEqual(1, publish_mock.call_count)
@@ -88,7 +88,7 @@ class TestProducer(PostgresAsyncTestCase):
         mock = AsyncMock()
         self.producer.publish = mock
 
-        ok = await self.producer.dispatch_one((0, "GetProduct", bytes(), BrokerMessageStrategy.UNICAST))
+        ok = await self.producer.dispatch_one((0, "GetProduct", bytes(), BrokerMessageV1Strategy.UNICAST))
         self.assertTrue(ok)
 
         self.assertEqual(1, mock.call_count)
@@ -97,14 +97,14 @@ class TestProducer(PostgresAsyncTestCase):
     async def test_dispatch_one_external_true_event(self):
         mock = AsyncMock()
         self.producer.publish = mock
-        ok = await self.producer.dispatch_one((0, "TicketAdded", bytes(), BrokerMessageStrategy.MULTICAST))
+        ok = await self.producer.dispatch_one((0, "TicketAdded", bytes(), BrokerMessageV1Strategy.MULTICAST))
         self.assertTrue(ok)
         self.assertEqual(1, mock.call_count)
         self.assertEqual(call("TicketAdded", bytes()), mock.call_args)
 
     async def test_dispatch_one_external_false(self):
         self.producer.publish = AsyncMock(return_value=False)
-        ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), BrokerMessageStrategy.MULTICAST))
+        ok = await self.producer.dispatch_one((0, "GetOrder", bytes(), BrokerMessageV1Strategy.MULTICAST))
         self.assertFalse(ok)
 
     async def test_publish_true(self):
