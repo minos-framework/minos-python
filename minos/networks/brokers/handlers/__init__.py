@@ -7,10 +7,9 @@ from .consumers import (
 from .entries import (
     BrokerHandlerEntry,
 )
-from .handlers import (
+from .impl import (
     BrokerHandler,
 )
 from .services import (
-    BrokerConsumerService,
     BrokerHandlerService,
 )

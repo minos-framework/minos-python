@@ -31,9 +31,6 @@ from minos.common import (
     NotProvidedException,
 )
 
-from ..handlers import (
-    BrokerConsumer,
-)
 from ..messages import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
 )
@@ -54,7 +51,6 @@ class DynamicBrokerPool(MinosPool):
         self,
         config: MinosConfig,
         client: KafkaAdminClient,
-        consumer: BrokerConsumer,
         publisher: BrokerPublisher,
         maxsize: int = 5,
         recycle: Optional[int] = 3600,
@@ -64,33 +60,17 @@ class DynamicBrokerPool(MinosPool):
         super().__init__(maxsize=maxsize, recycle=recycle, *args, **kwargs)
         self.config = config
         self.client = client
-        self.consumer = consumer
         self.publisher = publisher
 
     @classmethod
     def _from_config(cls, config: MinosConfig, **kwargs) -> DynamicBrokerPool:
         kwargs["client"] = KafkaAdminClient(bootstrap_servers=f"{config.broker.host}:{config.broker.port}")
-        kwargs["consumer"] = cls._get_consumer(**kwargs)
         kwargs["publisher"] = cls._get_publisher(**kwargs)
         return cls(config, **kwargs)
 
     async def _destroy(self) -> None:
         await super()._destroy()
         self.client.close()
-
-    # noinspection PyUnusedLocal
-    @staticmethod
-    @inject
-    def _get_consumer(
-        consumer: Optional[BrokerConsumer] = None,
-        broker_consumer: BrokerConsumer = Provide["broker_consumer"],
-        **kwargs,
-    ) -> BrokerConsumer:
-        if consumer is None:
-            consumer = broker_consumer
-        if consumer is None or isinstance(consumer, Provide):
-            raise NotProvidedException(f"A {BrokerConsumer!r} object must be provided.")
-        return consumer
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -109,14 +89,12 @@ class DynamicBrokerPool(MinosPool):
     async def _create_instance(self) -> DynamicBroker:
         topic = str(uuid4()).replace("-", "")
         await self._create_reply_topic(topic)
-        await self._subscribe_reply_topic(topic)
         instance = DynamicBroker.from_config(self.config, topic=topic, publisher=self.publisher)
         await instance.setup()
         return instance
 
     async def _destroy_instance(self, instance: DynamicBroker):
         await instance.destroy()
-        await self._unsubscribe_reply_topic(instance.topic)
         await self._delete_reply_topic(instance.topic)
 
     async def _create_reply_topic(self, topic: str) -> None:
@@ -126,12 +104,6 @@ class DynamicBrokerPool(MinosPool):
     async def _delete_reply_topic(self, topic: str) -> None:
         logger.info(f"Deleting {topic!r} topic...")
         self.client.delete_topics([topic])
-
-    async def _subscribe_reply_topic(self, topic: str) -> None:
-        await self.consumer.add_topic(topic)
-
-    async def _unsubscribe_reply_topic(self, topic: str) -> None:
-        await self.consumer.remove_topic(topic)
 
     def acquire(self, *args, **kwargs) -> AsyncContextManager:
         """Acquire a new instance wrapped on an asynchronous context manager.

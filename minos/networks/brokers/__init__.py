@@ -10,7 +10,6 @@ from .dynamic import (
 )
 from .handlers import (
     BrokerConsumer,
-    BrokerConsumerService,
     BrokerHandler,
     BrokerHandlerEntry,
     BrokerHandlerService,
@@ -35,4 +34,12 @@ from .publishers import (
     PostgreSqlBrokerPublisherRepository,
     PostgreSqlQueuedKafkaBrokerPublisher,
     QueuedBrokerPublisher,
+)
+from .subscribers import (
+    BrokerSubscriber,
+    BrokerSubscriberRepository,
+    InMemoryBrokerSubscriber,
+    InMemoryQueuedBrokerSubscriberRepository,
+    KafkaBrokerSubscriber,
+    QueuedBrokerSubscriber,
 )
