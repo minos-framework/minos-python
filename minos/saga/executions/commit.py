@@ -103,8 +103,8 @@ class TransactionCommitter:
 
     @staticmethod
     async def _get_response(handler: DynamicBroker, count: int, **kwargs) -> bool:
-        entries = await handler.get_many(count, **kwargs)
-        return all(entry.data.ok for entry in entries)
+        messages = await handler.get_many(count, **kwargs)
+        return all(message.ok for message in messages)
 
     @cached_property
     def transactions(self) -> list[tuple[UUID, str]]:
