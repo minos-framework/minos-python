@@ -2,9 +2,6 @@ import logging
 from asyncio import (
     Queue,
 )
-from collections.abc import (
-    AsyncIterator,
-)
 
 from ....messages import (
     BrokerMessage,
@@ -31,9 +28,8 @@ class InMemoryBrokerSubscriberRepository(BrokerSubscriberRepository):
         logger.info(f"Enqueueing {message!r} message...")
         await self.queue.put(message)
 
-    async def dequeue_all(self) -> AsyncIterator[BrokerMessage]:
+    async def dequeue(self) -> BrokerMessage:
         """Dequeue all method."""
-        while True:
-            message = await self.queue.get()
-            logger.info(f"Dequeuing {message!r} message...")
-            yield message
+        message = await self.queue.get()
+        logger.info(f"Dequeuing {message!r} message...")
+        return message

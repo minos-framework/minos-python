@@ -1,7 +1,3 @@
-from collections.abc import (
-    AsyncIterator,
-)
-
 from ..messages import (
     BrokerMessage,
 )
@@ -13,7 +9,7 @@ from .abc import (
 class InMemoryBrokerSubscriber(BrokerSubscriber):
     """TODO"""
 
-    async def receive_all(self) -> AsyncIterator[BrokerMessage]:
+    async def receive(self) -> BrokerMessage:
         """TODO
 
         :return: TODO

@@ -8,7 +8,7 @@ from contextlib import (
     suppress,
 )
 from typing import (
-    AsyncIterator,
+    Awaitable,
     NoReturn,
 )
 
@@ -67,7 +67,7 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
 
     async def _run(self) -> NoReturn:
         while True:
-            async for message in self.impl.receive_all():
+            async for message in self.impl:
                 await self._queue.put(message)
 
     async def _create_consumers(self):
@@ -100,9 +100,9 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
         finally:
             self._queue.task_done()
 
-    def receive_all(self) -> AsyncIterator[BrokerMessage]:
+    def receive(self) -> Awaitable[BrokerMessage]:
         """TODO
 
         :return: TODO
         """
-        return self.repository.dequeue_all()
+        return self.repository.dequeue()

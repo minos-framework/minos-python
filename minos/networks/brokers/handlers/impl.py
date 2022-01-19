@@ -87,7 +87,7 @@ class BrokerHandler(MinosSetup):
         """TODO"""
 
         while True:
-            async for message in self._subscriber.receive_all():
+            async for message in self._subscriber:
                 await self._queue.put(message)
 
     async def _create_consumers(self):

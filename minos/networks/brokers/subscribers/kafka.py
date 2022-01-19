@@ -3,9 +3,6 @@ from __future__ import (
 )
 
 import logging
-from collections.abc import (
-    AsyncIterator,
-)
 
 from aiokafka import (
     AIOKafkaConsumer,
@@ -58,14 +55,14 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
             pass
         await super()._destroy()
 
-    async def receive_all(self) -> AsyncIterator[BrokerMessage]:
+    async def receive(self) -> BrokerMessage:
         """TODO
 
         :return: TODO
 
         """
-        async for record in self.client:
-            yield self._dispatch_one(record)
+        record = await self.client.getone()
+        return self._dispatch_one(record)
 
     @staticmethod
     def _dispatch_one(record: ConsumerRecord) -> BrokerMessage:

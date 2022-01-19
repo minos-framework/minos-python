@@ -30,15 +30,16 @@ class BrokerSubscriber(ABC, MinosSetup):
         """
         return self._topics
 
-    async def receive(self) -> BrokerMessage:
-        """TODO
+    def __aiter__(self) -> AsyncIterator[BrokerMessage]:
+        return self
 
-        :return: TODO
-        """
-        return await self.receive_all().__anext__()
+    async def __anext__(self) -> BrokerMessage:
+        if self.already_destroyed:
+            raise StopAsyncIteration
+        return await self.receive()
 
     @abstractmethod
-    def receive_all(self) -> AsyncIterator[BrokerMessage]:
+    async def receive(self) -> BrokerMessage:
         """TODO
 
         :return: TODO

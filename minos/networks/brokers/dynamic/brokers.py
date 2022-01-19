@@ -125,7 +125,7 @@ class DynamicBroker(MinosSetup):
 
     async def _get_many(self, count, *args, **kwargs) -> list[BrokerMessage]:
         result = list()
-        async for message in self.subscriber.receive_all():
+        async for message in self.subscriber:
             result.append(message)
 
             if len(result) == count:

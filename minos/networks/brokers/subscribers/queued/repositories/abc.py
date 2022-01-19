@@ -26,10 +26,14 @@ class BrokerSubscriberRepository(ABC, MinosSetup):
         :return: TODO
         """
 
-    async def dequeue(self) -> BrokerMessage:
-        """Dequeue method."""
-        return await self.dequeue_all().__anext__()
+    def __aiter__(self) -> AsyncIterator[BrokerMessage]:
+        return self
+
+    async def __anext__(self) -> BrokerMessage:
+        if self.already_destroyed:
+            raise StopAsyncIteration
+        return await self.dequeue()
 
     @abstractmethod
-    def dequeue_all(self) -> AsyncIterator[BrokerMessage]:
-        """Dequeue all method."""
+    async def dequeue(self) -> BrokerMessage:
+        """Dequeue method."""
