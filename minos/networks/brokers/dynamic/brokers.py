@@ -7,6 +7,9 @@ from asyncio import (
     TimeoutError,
     wait_for,
 )
+from collections.abc import (
+    AsyncIterator,
+)
 from typing import (
     Optional,
 )
@@ -93,16 +96,16 @@ class DynamicBroker(MinosSetup):
         message.set_reply_topic(self.topic)
         await self.publisher.send(message)
 
-    async def get_one(self, *args, **kwargs) -> BrokerMessage:
+    async def receive(self, *args, **kwargs) -> BrokerMessage:
         """Get one handler entry from the given topics.
 
-        :param args: Additional positional parameters to be passed to get_many.
-        :param kwargs: Additional named parameters to be passed to get_many.
+        :param args: Additional positional parameters to be passed to receive_many.
+        :param kwargs: Additional named parameters to be passed to receive_many.
         :return: A ``HandlerEntry`` instance.
         """
-        return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
+        return await self.receive_many(*args, **(kwargs | {"count": 1})).__anext__()
 
-    async def get_many(self, count: int, timeout: float = 60, **kwargs) -> list[BrokerMessage]:
+    async def receive_many(self, count: int, timeout: float = 60, **kwargs) -> AsyncIterator[BrokerMessage]:
         """Get multiple handler entries from the given topics.
 
         :param timeout: Maximum time in seconds to wait for messages.
@@ -110,15 +113,15 @@ class DynamicBroker(MinosSetup):
         :return: A list of ``HandlerEntry`` instances.
         """
         try:
-            entries = await wait_for(self._get_many(count, **kwargs), timeout=timeout)
+            messages = await wait_for(self._get_many(count, **kwargs), timeout=timeout)
         except TimeoutError:
             raise MinosHandlerNotFoundEnoughEntriesException(
                 f"Timeout exceeded while trying to fetch {count!r} entries from {self.topic!r}."
             )
 
-        logger.info(f"Dispatching '{entries if count > 1 else entries[0]!s}'...")
-
-        return entries
+        for message in messages:
+            logger.info(f"Dispatching '{message!s}'...")
+            yield message
 
     async def _get_many(self, count, *args, **kwargs) -> list[BrokerMessage]:
         result = list()
