@@ -2,6 +2,7 @@ from __future__ import (
     annotations,
 )
 
+import logging
 from collections.abc import (
     AsyncIterator,
 )
@@ -27,6 +28,8 @@ from ..messages import (
 from .abc import (
     BrokerSubscriber,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class KafkaBrokerSubscriber(BrokerSubscriber):
@@ -67,7 +70,9 @@ class KafkaBrokerSubscriber(BrokerSubscriber):
     @staticmethod
     def _dispatch_one(record: ConsumerRecord) -> BrokerMessage:
         bytes_ = record.value
-        return BrokerMessage.from_avro_bytes(bytes_)
+        message = BrokerMessage.from_avro_bytes(bytes_)
+        logger.info(f"Consuming {message!r} message...")
+        return message
 
     @cached_property
     def client(self) -> AIOKafkaConsumer:
