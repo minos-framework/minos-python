@@ -38,10 +38,10 @@ from minos.common import (
     MinosConfig,
 )
 
-from ...utils import (
+from ......utils import (
     consume_queue,
 )
-from ..dispatchers import (
+from .....dispatchers import (
     BrokerDispatcher,
 )
 from .abc import (

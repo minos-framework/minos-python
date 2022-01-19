@@ -32,7 +32,7 @@ from minos.common import (
     MinosConfig,
 )
 
-from ...decorators import (
+from ......decorators import (
     EnrouteAnalyzer,
 )
 from .abc import (

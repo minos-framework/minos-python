@@ -34,11 +34,15 @@ from minos.common.testing import (
 )
 from minos.networks import (
     BrokerDispatcher,
-    BrokerHandler,
-    BrokerHandlerEntry,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     InMemoryBrokerPublisher,
+)
+from minos.networks.brokers.subscribers.queued.repositories.pg.entries import (
+    BrokerHandlerEntry,
+)
+from minos.networks.brokers.subscribers.queued.repositories.pg.handlers import (
+    BrokerHandler,
 )
 from tests.utils import (
     BASE_PATH,

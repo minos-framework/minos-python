@@ -12,10 +12,12 @@ from minos.common.testing import (
 )
 from minos.networks import (
     REQUEST_REPLY_TOPIC_CONTEXT_VAR,
-    BrokerConsumer,
     DynamicBroker,
     DynamicBrokerPool,
     KafkaBrokerPublisher,
+)
+from minos.networks.brokers.subscribers.queued.repositories.pg.consumers import (
+    BrokerConsumer,
 )
 from tests.utils import (
     BASE_PATH,

@@ -6,7 +6,7 @@ from uuid import (
 from minos.common import (
     current_datetime,
 )
-from minos.networks import (
+from minos.networks.brokers.subscribers.queued.repositories.pg.entries import (
     BrokerHandlerEntry,
 )
 from tests.utils import (

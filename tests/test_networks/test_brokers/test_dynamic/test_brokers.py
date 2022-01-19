@@ -17,12 +17,14 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerHandlerSetup,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     DynamicBroker,
     InMemoryBrokerPublisher,
     MinosHandlerNotFoundEnoughEntriesException,
+)
+from minos.networks.brokers.subscribers.queued.repositories.pg.abc import (
+    BrokerHandlerSetup,
 )
 from tests.utils import (
     BASE_PATH,

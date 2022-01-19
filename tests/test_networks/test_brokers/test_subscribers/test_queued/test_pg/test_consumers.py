@@ -15,7 +15,7 @@ from psycopg2.sql import (
 from minos.common.testing import (
     PostgresAsyncTestCase,
 )
-from minos.networks import (
+from minos.networks.brokers.subscribers.queued.repositories.pg.consumers import (
     BrokerConsumer,
 )
 from tests.utils import (

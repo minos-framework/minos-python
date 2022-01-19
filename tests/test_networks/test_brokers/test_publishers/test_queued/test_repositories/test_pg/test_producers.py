@@ -1,5 +1,3 @@
-# noqa: F821
-
 import asyncio
 import unittest
 from asyncio import (
@@ -23,11 +21,13 @@ from minos.common.testing import (
     PostgresAsyncTestCase,
 )
 from minos.networks import (
-    BrokerConsumer,
     BrokerMessageV1,
     BrokerMessageV1Payload,
     BrokerMessageV1Status,
     BrokerMessageV1Strategy,
+)
+from minos.networks.brokers.subscribers.queued.repositories.pg.consumers import (
+    BrokerConsumer,
 )
 from tests.utils import (
     BASE_PATH,

@@ -22,7 +22,7 @@ from minos.common import (
     current_datetime,
 )
 
-from ..messages import (
+from .....messages import (
     BrokerMessage,
 )
 
