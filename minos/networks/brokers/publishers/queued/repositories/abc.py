@@ -2,6 +2,9 @@ from abc import (
     ABC,
     abstractmethod,
 )
+from collections.abc import (
+    AsyncIterator,
+)
 
 from minos.common import (
     MinosSetup,
@@ -19,10 +22,10 @@ class BrokerPublisherRepository(ABC, MinosSetup):
     async def enqueue(self, message: BrokerMessage) -> None:
         """Enqueue method."""
 
-    def __aiter__(self):
+    def __aiter__(self) -> AsyncIterator[BrokerMessage]:
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> BrokerMessage:
         if self.already_destroyed:
             raise StopAsyncIteration
         return await self.dequeue()
