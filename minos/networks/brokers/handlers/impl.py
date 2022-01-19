@@ -85,10 +85,8 @@ class BrokerHandler(MinosSetup):
 
     async def run(self) -> NoReturn:
         """TODO"""
-
-        while True:
-            async for message in self._subscriber:
-                await self._queue.put(message)
+        async for message in self._subscriber:
+            await self._queue.put(message)
 
     async def _create_consumers(self):
         while len(self._consumers) < self._consumer_concurrency:

@@ -66,9 +66,8 @@ class QueuedBrokerSubscriber(BrokerSubscriber):
         await super()._destroy()
 
     async def _run(self) -> NoReturn:
-        while True:
-            async for message in self.impl:
-                await self._queue.put(message)
+        async for message in self.impl:
+            await self._queue.put(message)
 
     async def _create_consumers(self):
         while len(self._consumers) < self._consumer_concurrency:
