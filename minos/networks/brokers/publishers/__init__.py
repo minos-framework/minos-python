@@ -3,6 +3,7 @@ from .abc import (
 )
 from .compositions import (
     PostgreSqlQueuedKafkaBrokerPublisher,
+    InMemoryQueuedKafkaBrokerPublisher,
 )
 from .kafka import (
     KafkaBrokerPublisher,
