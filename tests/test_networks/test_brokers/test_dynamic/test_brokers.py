@@ -74,16 +74,16 @@ class TestDynamicBroker(PostgresAsyncTestCase):
         )
         self.assertEqual([call(expected)], mock.call_args_list)
 
-    async def test_get_one(self):
+    async def test_receive(self):
         expected = FakeModel("test1")
         await self._insert_one("fooReply", FakeModel("test1").avro_bytes)
         await self._insert_one("fooReply", FakeModel("test2").avro_bytes)
 
-        observed = await self.handler.get_one()
+        observed = await self.handler.receive()
 
         self.assertEqual(expected, observed)
 
-    async def test_get_many(self):
+    async def test_receive_many(self):
         expected = [
             FakeModel("test1"),
             FakeModel("test2"),
@@ -98,13 +98,13 @@ class TestDynamicBroker(PostgresAsyncTestCase):
             await self._insert_one("fooReply", FakeModel("test3").avro_bytes)
             await self._insert_one("fooReply", FakeModel("test4").avro_bytes)
 
-        observed, _ = await gather(self.handler.get_many(count=4, max_wait=0.1), _fn())
+        observed, _ = await gather(self.handler.receive_many(count=4, max_wait=0.1), _fn())
 
         self.assertEqual(expected, observed)
 
-    async def test_get_many_raises(self):
+    async def test_receive_many_raises(self):
         with self.assertRaises(MinosHandlerNotFoundEnoughEntriesException):
-            await self.handler.get_many(count=3, timeout=0.1)
+            await self.handler.receive_many(count=3, timeout=0.1)
 
     async def _insert_one(self, topic: str, bytes_: bytes):
         async with aiopg.connect(**self.broker_queue_db) as connect:

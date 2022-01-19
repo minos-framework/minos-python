@@ -96,16 +96,16 @@ class DynamicBroker(BrokerHandlerSetup):
         message.set_reply_topic(self.topic)
         await self.publisher.send(message)
 
-    async def get_one(self, *args, **kwargs) -> BrokerMessage:
+    async def receive(self, *args, **kwargs) -> BrokerMessage:
         """Get one handler entry from the given topics.
 
-        :param args: Additional positional parameters to be passed to get_many.
-        :param kwargs: Additional named parameters to be passed to get_many.
+        :param args: Additional positional parameters to be passed to receive_many.
+        :param kwargs: Additional named parameters to be passed to receive_many.
         :return: A ``HandlerEntry`` instance.
         """
-        return (await self.get_many(*args, **(kwargs | {"count": 1})))[0]
+        return (await self.receive_many(*args, **(kwargs | {"count": 1})))[0]
 
-    async def get_many(self, count: int, timeout: float = 60, **kwargs) -> list[BrokerMessage]:
+    async def receive_many(self, count: int, timeout: float = 60, **kwargs) -> list[BrokerMessage]:
         """Get multiple handler entries from the given topics.
 
         :param timeout: Maximum time in seconds to wait for messages.
