@@ -103,7 +103,7 @@ class TransactionCommitter:
 
     @staticmethod
     async def _get_response(handler: DynamicBroker, count: int, **kwargs) -> bool:
-        messages = await handler.receive_many(count, **kwargs)
+        messages = [message async for message in handler.receive_many(count, **kwargs)]
         return all(message.ok for message in messages)
 
     @cached_property
